@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob:; font-src 'self' https://cdn.jsdelivr.net data:; connect-src 'self' blob: data: https://alphafold.ebi.ac.uk https://rest.uniprot.org https://www.uniprot.org https://cdn.jsdelivr.net; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <title>AlloFlow AlphaFold Explorer</title>
 <!--
   AlloFlow AlphaFold Explorer - companion window.
@@ -21,7 +22,7 @@
   notes in memory only. AI coaching, when enabled by the opener, receives public
   structure metadata and student observations, not full sequences.
 -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.css" integrity="sha384-+OaZyMNzr/LWHaWBBaLVIo+d7YRTNTToL8l6b05HXIgKyvVguOjZJX4dF5ykaX2r" crossorigin="anonymous" referrerpolicy="no-referrer">
 <script>
 (function () {
   function applyAlloFlowTheme(value) {
@@ -39,7 +40,7 @@
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   window.addEventListener('message', function (event) {
@@ -979,9 +980,9 @@
     </div>
   </div>
   <div class="links">
-    <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="noopener">AlphaFold DB</a>
-    <a href="https://alphafoldserver.com/" target="_blank" rel="noopener">AlphaFold Server</a>
-    <a href="https://molstar.org/" target="_blank" rel="noopener">Mol*</a>
+    <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="noopener noreferrer">AlphaFold DB</a>
+    <a href="https://alphafoldserver.com/" target="_blank" rel="noopener noreferrer">AlphaFold Server</a>
+    <a href="https://molstar.org/" target="_blank" rel="noopener noreferrer">Mol*</a>
     <button class="linkbtn mobileViewerShortcut" id="mobileViewerShortcut" type="button">Open 3D viewer</button>
   </div>
 </header>
@@ -1214,7 +1215,7 @@
         <div><label for="comparisonOriginalInput">Original result</label><input id="comparisonOriginalInput" type="file" accept=".cif,.mmcif,.bcif,.pdb,.ent"></div>
         <div><label for="comparisonVariantInput">Variant result</label><input id="comparisonVariantInput" type="file" accept=".cif,.mmcif,.bcif,.pdb,.ent"></div>
       </div>
-      <div class="comparisonDropZone" id="comparisonDropZone" aria-label="Drop two local structure files here. The native file controls above remain available for keyboard users.">Or drop two structure files together. Files named WT, original, or reference are assigned as original; mutant or variant files are assigned as variant.</div>
+      <div class="comparisonDropZone" id="comparisonDropZone" role="region" aria-label="Drop two local structure files here. The native file controls above remain available for keyboard users.">Or drop two structure files together. Files named WT, original, or reference are assigned as original; mutant or variant files are assigned as variant.</div>
       <div class="row">
         <button class="primary" id="openComparisonBtn" type="button">Open comparison</button>
         <button class="secondary" id="fitComparisonBtn" type="button" disabled>Fit both</button>
@@ -1257,7 +1258,7 @@
         </div>
         <div class="coordinateMorphPanel" id="coordinateMorphPanel" hidden>
           <canvas class="coordinateMorphCanvas" id="coordinateMorphCanvas" width="720" height="320" role="img" aria-describedby="coordinateMorphSummary">Aligned coordinate morph appears after analysis.</canvas>
-          <div class="morphLegend" aria-label="Displacement marker legend"><span><i class="morphDot low"></i>Lower displacement</span><span><i class="morphDot medium"></i>Moderate displacement</span><span><i class="morphDot high"></i>Higher displacement</span></div>
+          <div class="morphLegend" role="group" aria-label="Displacement marker legend"><span><i class="morphDot low"></i>Lower displacement</span><span><i class="morphDot medium"></i>Moderate displacement</span><span><i class="morphDot high"></i>Higher displacement</span></div>
           <div class="row">
             <button class="secondary" id="coordinateMorphPlayBtn" type="button" aria-pressed="false">Play morph</button>
             <div class="field"><label for="coordinateMorphFrameInput">Morph frame <output class="morphReadout" id="coordinateMorphFrameValue">0%</output></label><input id="coordinateMorphFrameInput" type="range" min="0" max="100" step="1" value="0"></div>
@@ -1455,7 +1456,7 @@
         </div>
         <p class="status" id="variantStatus" role="status">Add a valid protein sequence above to begin.</p>
         <div class="variantSequenceTrack" id="variantSequenceTrack" role="img" aria-label="No protein variant sequence available."></div>
-        <div class="variantMutationList" id="variantMutationList" aria-label="Applied substitutions"><span class="variantMutationEmpty">No substitutions yet.</span></div>
+        <div class="variantMutationList" id="variantMutationList" role="region" aria-label="Applied substitutions"><span class="variantMutationEmpty">No substitutions yet.</span></div>
         <label for="variantChallengeSelect">Guided comparison challenge</label>
         <select id="variantChallengeSelect">
           <option value="charge">Introduce a charge contrast</option>
@@ -1536,15 +1537,15 @@
         <h3 id="paeLiveTitle">Loaded record PAE map</h3>
         <p class="help" id="paeLiveSummary">Choose a public record with predicted aligned error data.</p>
         <canvas id="paeLiveCanvas" width="340" height="340" role="img" aria-label="Loaded predicted aligned error matrix" aria-describedby="paeLiveSummary paeLiveReading"></canvas>
-        <div class="paeLiveScale" aria-label="PAE color scale"><span>0 A lower</span><span class="paeLiveScaleBar" aria-hidden="true"></span><span><output id="paeScaleMax">31.8</output> A higher</span></div>
-        <div class="paeMarkerKey" aria-label="PAE selection marker key"><span><i class="paeMarkerSwatch paeMarkerSelected" aria-hidden="true"></i>Selected A to B</span><span><i class="paeMarkerSwatch paeMarkerReverse" aria-hidden="true"></i>Reverse B to A</span></div>
+        <div class="paeLiveScale" role="group" aria-label="PAE color scale"><span>0 A lower</span><span class="paeLiveScaleBar" aria-hidden="true"></span><span><output id="paeScaleMax">31.8</output> A higher</span></div>
+        <div class="paeMarkerKey" role="group" aria-label="PAE selection marker key"><span><i class="paeMarkerSwatch paeMarkerSelected" aria-hidden="true"></i>Selected A to B</span><span><i class="paeMarkerSwatch paeMarkerReverse" aria-hidden="true"></i>Reverse B to A</span></div>
         <button class="secondary paeLensBtn" id="paeLensBtn" type="button" aria-pressed="false" disabled>Show directional difference</button>
         <div class="paeLiveControls">
           <label for="paeAlignedResidue">Aligned residue <output id="paeAlignedValue" for="paeAlignedResidue">1</output><input id="paeAlignedResidue" type="range" min="1" max="1" value="1"></label>
           <label for="paeComparedResidue">Compared residue <output id="paeComparedValue" for="paeComparedResidue">1</output><input id="paeComparedResidue" type="range" min="1" max="1" value="1"></label>
         </div>
         <div class="summaryBox" id="paeLiveReading" role="status" aria-live="polite"></div>
-        <div class="paePairCompare" id="paePairCompare" aria-label="Selected directional PAE comparison" hidden>
+        <div class="paePairCompare" id="paePairCompare" role="region" aria-label="Selected directional PAE comparison" hidden>
           <div class="paePairRow paePairForward"><span><b>A to B</b><output id="paeForwardValue">Unavailable</output></span><progress id="paeForwardBar" max="31.8" value="0" aria-label="Forward PAE unavailable"></progress></div>
           <div class="paePairRow paePairReverse"><span><b>B to A</b><output id="paeReverseValue">Unavailable</output></span><progress id="paeReverseBar" max="31.8" value="0" aria-label="Reverse PAE unavailable"></progress></div>
           <p class="paePairHint">Shorter bar means lower predicted aligned error.</p>
@@ -1601,7 +1602,7 @@
       <h2 id="cellAtlasReturnTitle">Send evidence back to Cell Atlas</h2>
       <p class="help">This explicit handoff sends public-record metadata and your redacted reasoning. It never sends the amino-acid sequence, structure file, or PAE matrix.</p>
       <div id="cellAtlasReturnContext" class="summaryBox cellAtlasReturnContext"></div>
-      <div id="cellAtlasReturnChecks" class="cellAtlasReturnChecks" aria-label="Cell Atlas return requirements"></div>
+      <div id="cellAtlasReturnChecks" class="cellAtlasReturnChecks" role="region" aria-label="Cell Atlas return requirements"></div>
       <button class="primary" id="sendCellAtlasEvidenceBtn" type="button" disabled>Send verified evidence to Cell Atlas</button>
       <p class="status" id="cellAtlasReturnStatus" role="status" aria-live="polite"></p>
     </section>
@@ -1615,7 +1616,7 @@
         <span class="status" id="viewerToolbarStatus" role="status" aria-live="polite"></span>
       </div>
       <div id="molstar"></div>
-      <div id="molstarCompare" aria-label="Variant structure viewer"></div>
+      <div id="molstarCompare" role="region" aria-label="Variant structure viewer"></div>
       <div class="comparisonLabels" id="comparisonLabels" aria-hidden="true" hidden>
         <span class="comparisonLabel" id="comparisonOriginalLabel">Original</span>
         <span class="comparisonLabel" id="comparisonVariantLabel">Variant</span>
@@ -1641,7 +1642,7 @@
   </main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.js" integrity="sha384-eq20u4xjAngOakfX2/AnZKJBUf3lRv/ULwa5hKesdI12bQdoLE8NS3Dae4LjEn1s" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="../tool_integration_sdk.js"></script>
 <script>
 (function () {
@@ -3080,11 +3081,12 @@
   function readJsonFile(file) {
     if (!file) return Promise.reject(new Error('Choose both PAE JSON files.'));
     if (Number(file.size) > 48 * 1024 * 1024) return Promise.reject(new Error('A PAE file is larger than the 48 MB classroom limit.'));
-    if (typeof file.text === 'function') return file.text().then(function (text) { return JSON.parse(text); });
+    var _safeRev = function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; };
+    if (typeof file.text === 'function') return file.text().then(function (text) { return JSON.parse(text, _safeRev); });
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();
       reader.onload = function () {
-        try { resolve(JSON.parse(String(reader.result || ''))); } catch (error) { reject(error); }
+        try { resolve(JSON.parse(String(reader.result || ''), _safeRev)); } catch (error) { reject(error); }
       };
       reader.onerror = function () { reject(new Error('A PAE file could not be read.')); };
       reader.readAsText(file);
@@ -3885,7 +3887,7 @@
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   function toOpener(payload) {
@@ -6310,7 +6312,7 @@
   guidePromptBtn.addEventListener('click', nextGuidePrompt);
   guideResetBtn.addEventListener('click', resetGuide);
   prepareBtn.addEventListener('click', prepareJson);
-  serverBtn.addEventListener('click', function () { window.open(SERVER_URL, 'alphafold-server'); });
+  serverBtn.addEventListener('click', function () { window.open(SERVER_URL, 'alphafold-server', 'noopener,noreferrer'); });
   copyJsonBtn.addEventListener('click', copyJson);
   downloadJsonBtn.addEventListener('click', downloadJson);
   copyCitationBtn.addEventListener('click', copyCitation);

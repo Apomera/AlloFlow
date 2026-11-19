@@ -451,10 +451,17 @@ describe('the finish screen', () => {
     expect(t.text()).toContain('Your browser is saving ' + blob.name + '.');
   });
 
-  it('a finished check cannot be run again under its session id; Start over asks, mints a new id and counts the try', () => {
+  it('a finished check cannot be run again under its session id; Start over asks before saving, skips confirm after saving, preserves givenName when personalized, mints a new id and counts the try', () => {
     const a = open(FILES.qd.html);
     a.run(QD, 'Ana');
     a.playAll(QD);
+    // Before saving results: Start over asks first so unsaved work is not lost.
+    a.button('Start over').click();
+    expect(a.q('[data-check-again-confirm]').hidden).toBe(false);
+    expect(a.text()).toContain('Do you want to start this check again? It will be saved as a new try. Save your work first.');
+    expect(a.heading()).toBe('You finished. Thank you.');
+    a.button('Keep my work').click();
+    expect(a.q('[data-check-again-confirm]').hidden).toBe(true);
     const first = a.saveJson();
     expect(first.score.attempt).toBe(1);
     // Opened again: the finish screen, not a way to play it again.
@@ -462,14 +469,8 @@ describe('the finish screen', () => {
     expect(b.heading()).toBe('You finished. Thank you.');
     expect(b.q('[data-check-begin]')).toBeNull();
     expect(b.saveJson().sessionId).toBe(first.sessionId);
+    // After results are saved, Start over proceeds cleanly without a redundant confirm.
     b.button('Start over').click();
-    expect(b.q('[data-check-again-confirm]').hidden).toBe(false);
-    expect(b.text()).toContain('Do you want to start this check again? It will be saved as a new try. Save your work first.');
-    expect(b.heading()).toBe('You finished. Thank you.');
-    b.button('Keep my work').click();
-    expect(b.q('[data-check-again-confirm]').hidden).toBe(true);
-    b.button('Start over').click();
-    b.button('Yes, start over').click();
     // 2026-11-17 (review D10): the next run starts with no name; on a shared device it may be another child. Tries stay counted by name.
     expect(b.d.getElementById('learner-name').value).toBe('');
     b.run(QD, 'Ana');
@@ -483,12 +484,20 @@ describe('the finish screen', () => {
     expect(pairs(rows[29]).attempt).toBe('2');
     // Tries are counted for each learner label, and no earlier label stays in the browser's storage.
     b.button('Start over').click();
-    b.button('Yes, start over').click();
     b.run(QD, 'Ben');
     b.playAll(QD);
     expect(b.saveJson().score.attempt).toBe(1);
     expect(Object.values(b.storageDump()).join('')).not.toContain('Ana');
     expect(Object.keys(b.storageDump())).toHaveLength(1);
+    // Personalized check (manifest.learner): Start over keeps the baked-in code name.
+    const namedHtml = PC.withCodeName(FILES.qd.html, 'BlueHeron7');
+    const c = open(namedHtml);
+    expect(c.d.getElementById('learner-name').value).toBe('BlueHeron7');
+    c.run(QD, 'BlueHeron7');
+    c.playAll(QD);
+    c.saveCsv();
+    c.button('Start over').click();
+    expect(c.d.getElementById('learner-name').value).toBe('BlueHeron7');
   });
 });
 
@@ -765,7 +774,7 @@ describe('the number pad', () => {
     const input = () => t.q('[data-pad-input]');
     expect(t.d.activeElement).toBe(input());
     expect(input().getAttribute('inputmode')).toBe('numeric');
-    expect(input().getAttribute('aria-label')).toBe('9 ' + String.fromCharCode(0xD7) + ' 7. Type the answer.');
+    expect(input().getAttribute('aria-label')).toBe('9 times 7. Type the answer.');
     t.tick(300);
     // Focus on the page, not in the box.
     for (const k of ['6', 'x', '4', 'Backspace', '3', '-']) t.key(k);
@@ -1277,7 +1286,11 @@ describe('source check: a check file cannot send anything either', () => {
     // Re-pinned 2026-11-17 (later that day) from 200000: the engine's practice end screen and recall timing travel in every file (about +1.7 KB; about 197 KB). The page says "About 200 KB" since later that day.
     // Re-pinned 2026-11-17 (late) from 204000: "Space between sounds" in Reading tools, which every file carries (+0.3 KB;
     // about 204.2 KB; hidden in a check, which never changes the pause).
-    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(206000);
+    // Re-pinned 2026-11-19 from 206000: Wave 1 player shell fixes (persisted toolPref extra prefs, practice ctx.keys, Read-Along advance/goPrev, Check Start over givenName/savedFile; ~206.8 KB).
+    // Re-pinned 2026-11-19 (Wave 2A) from 208000: unified Voice speed + noVoice notice in Reading tools + shared takeHomeKeypad (~209.3 KB).
+    // Re-pinned 2026-11-19 (Wave 5A+6A+7A) from 210500: HC/dark CSS, keypad/shell repeat/IME/250ms guards, QD arrow nav, MC spoken operators (~211.9 KB).
+    // Re-pinned 2026-11-19 (Wave 8A) from 212500: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier null-guard & touch edge clamp (~213.8 KB).
+    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(214500);
     expect(sealedOf(html)).toMatchObject({ audio: {}, images: {}, submit: null });
   });
 
@@ -1395,6 +1408,15 @@ describe('practice files are as they were', () => {
   // the flattened list follows the sequence, the directions come again when the activity changes, the end screen finds an
   // activity's questions by id. 2 lines out and 17 in; with the player before this change the fixture matched exactly.
   // This file has no sequence, so it behaves as before. The lesson is unchanged. The two lists are empty.
+  // Renewed 2026-11-19 (Wave 1), deliberately, by the recipe above: persisted extra tool prefs (slower/syllables),
+  // duplicate bottom Close removed from Reading tools, practice ctx.keys & safe R replay, Read-Along single-tap
+  // advance/revisit, symbol_runner excluded from Spoken directions, and Check Start over givenName/savedFile handling.
+  // Renewed 2026-11-19 (Wave 4A), deliberately, by the recipe above: practice-mode hardware keyboard delegation for
+  // shared numeric keypad (keyItem.pad = pad + 0-9/Backspace/-/Enter outside <input>; 1 line out, 5 lines in).
+  // Renewed 2026-11-19 (Wave 5A+6A+7A), deliberately, by the recipe above: HC/dark/forced-colors CSS, isolation posKey/
+  // opening, soundGap/choices tools, and trusted 250ms mount-key/IME guards in takeHomeShell.
+  // Renewed 2026-11-19 (Wave 8A), deliberately, by the recipe above: Dark/HC @media print reset, Reading Focus Dark/HC
+  // curtain + resize sync, Magnifier .lt-grip null-guard & touch bounds clamp, and Escape stop-audio state sync.
   const REMOVED = [];
   const ADDED = [];
   it('byte for byte, but for the listed lines', () => {

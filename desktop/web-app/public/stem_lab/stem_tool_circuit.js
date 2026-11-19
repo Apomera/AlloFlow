@@ -598,6 +598,30 @@ window.StemLab = window.StemLab || {
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"circuit\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"circuit\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"circuit\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
+  // Bespoke Electrical Engineering Workbench CSS + High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-circuit-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-circuit-studio-css';
+    st.textContent = [
+      '.ckt-hero-deck { background: linear-gradient(125deg, #0b1220 0%, #162034 54%, #201a0e 100%); border: 1px solid rgba(250,204,21,0.32); border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 12px 28px -18px rgba(2,6,23,0.9); }',
+      '.ckt-emblem-box { width: 48px; height: 48px; border-radius: 13px; background: linear-gradient(135deg, rgba(250,204,21,0.18), rgba(15,23,42,0.9)); border: 1.5px solid rgba(250,204,21,0.52); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 14px rgba(250,204,21,0.16); }',
+      '.ckt-subject-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; background: rgba(56,189,248,0.14); border: 1px solid rgba(125,211,252,0.42); color: #bae6fd; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.ckt-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(148,163,184,0.20); }',
+      '.ckt-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(15,23,42,0.72); border: 1px solid rgba(148,163,184,0.34); color: #e2e8f0; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.ckt-rail-strip { margin-top: 10px; padding: 7px 10px; border-radius: 10px; background: rgba(2,6,23,0.62); border: 1px solid rgba(148,163,184,0.22); }',
+      '.ckt-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(148,163,184,0.20); }',
+      '.ckt-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #cbd5e1; }',
+      '.ckt-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 12px; border-radius: 10px; background: rgba(15,23,42,0.76); border: 1px solid rgba(250,204,21,0.34); color: #f8fafc; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.ckt-starter-chip:hover:not(:disabled) { background: rgba(250,204,21,0.18); border-color: #fde047; color: #ffffff; }',
+      '.ckt-starter-chip:focus-visible, .ckt-hero-deck button:focus-visible { outline: 2px solid #fde047; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="circuit"] .ckt-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="circuit"] .ckt-emblem-box, .theme-contrast [data-stem-tool-shell="circuit"] .ckt-subject-badge, .theme-contrast [data-stem-tool-shell="circuit"] .ckt-telemetry-pill, .theme-contrast [data-stem-tool-shell="circuit"] .ckt-rail-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="circuit"] .ckt-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="circuit"] .ckt-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -7295,42 +7319,48 @@ function CircuitActiveLessonLab(props) {
           var band = getGradeBand(ctx);
 
           // ── State via labToolData ──
-          var ld = ctx.toolData || {};
-          var d = ld._circuit || {};
+          var ld = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+          var d = (ld._circuit && typeof ld._circuit === 'object' && !Array.isArray(ld._circuit)) ? ld._circuit : {};
           var confirmationAction = d.confirmAction || null;
-          var circuitSnapshot = function(c) { return { components: (c.components || []).map(function(p) { return Object.assign({}, p); }), mode: c.mode || 'series', voltage: c.voltage == null ? 9 : c.voltage }; };
+          var circuitSnapshot = function(c) { return { components: (Array.isArray(c && c.components) ? c.components : []).map(function(p) { return Object.assign({}, p); }), mode: (c && c.mode) || 'series', voltage: (c && c.voltage != null) ? c.voltage : 9 }; };
           var travelHistory = function(direction) {
+            if (typeof ctx.setToolData !== 'function') return;
             ctx.setToolData(function(prev) {
-              var prior = prev._circuit || {}, stack = prior[direction] || [];
+              var prevObj = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+              var prior = (prevObj._circuit && typeof prevObj._circuit === 'object' && !Array.isArray(prevObj._circuit)) ? prevObj._circuit : {};
+              var stack = Array.isArray(prior[direction]) ? prior[direction] : [];
               if (!stack.length) return prev;
               var other = direction === 'undo' ? 'redo' : 'undo';
               var next = Object.assign({}, prior, stack[stack.length - 1], { confirmAction: null, experimentResult:null });
-              next[direction] = stack.slice(0, -1); next[other] = (prior[other] || []).concat([circuitSnapshot(prior)]).slice(-30);
-              return Object.assign({}, prev, { _circuit: next });
+              next[direction] = stack.slice(0, -1); next[other] = (Array.isArray(prior[other]) ? prior[other] : []).concat([circuitSnapshot(prior)]).slice(-30);
+              return Object.assign({}, prevObj, { _circuit: next });
             });
             if (typeof announceToSR === 'function') announceToSR(direction === 'undo' ? 'Circuit edit undone.' : 'Circuit edit restored.');
           };
           var upd = function(key, val) {
             if (typeof ctx.setToolData === 'function') {
               ctx.setToolData(function(prev) {
-                var circ = Object.assign({}, (prev && prev._circuit) || {});
+                var prevObj = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+                var prevCirc = (prevObj._circuit && typeof prevObj._circuit === 'object' && !Array.isArray(prevObj._circuit)) ? prevObj._circuit : {};
+                var circ = Object.assign({}, prevCirc);
                 if (['components', 'mode', 'voltage'].indexOf(key) !== -1 && circ[key] !== val) {
-                  circ.undo = (circ.undo || []).concat([circuitSnapshot(circ)]).slice(-30); circ.redo = []; circ.experimentResult=null;
+                  circ.undo = (Array.isArray(circ.undo) ? circ.undo : []).concat([circuitSnapshot(circ)]).slice(-30); circ.redo = []; circ.experimentResult=null;
                 }
                 circ[key] = val;
-                return Object.assign({}, prev, { _circuit: circ });
+                return Object.assign({}, prevObj, { _circuit: circ });
               });
             }
           };
           var updMulti = function(obj) {
             if (typeof ctx.setToolData === 'function') {
               ctx.setToolData(function(prev) {
-                var prior = (prev && prev._circuit) || {};
+                var prevObj = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+                var prior = (prevObj._circuit && typeof prevObj._circuit === 'object' && !Array.isArray(prevObj._circuit)) ? prevObj._circuit : {};
                 var circ = Object.assign({}, prior, obj);
                 if (['components', 'mode', 'voltage'].some(function(k) { return Object.prototype.hasOwnProperty.call(obj, k) && obj[k] !== prior[k]; })) {
-                  circ.undo = (prior.undo || []).concat([circuitSnapshot(prior)]).slice(-30); circ.redo = []; circ.experimentResult=null;
+                  circ.undo = (Array.isArray(prior.undo) ? prior.undo : []).concat([circuitSnapshot(prior)]).slice(-30); circ.redo = []; circ.experimentResult=null;
                 }
-                return Object.assign({}, prev, { _circuit: circ });
+                return Object.assign({}, prevObj, { _circuit: circ });
               });
             }
           };
@@ -8626,39 +8656,108 @@ function CircuitActiveLessonLab(props) {
           // ──────────────────────────────────────────
           return h('div', { 'data-circuit-builder-root': 'true', 'data-circuit-motion': d.pauseMotion ? 'paused' : 'running', className: 'max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950 border-slate-800 text-slate-100 shadow-2xl animate-in fade-in duration-200 motion-reduce:animate-none' },
 
-            // ── Header ──
-            h('div', { className: 'flex items-center gap-3 mb-3 flex-wrap' },
-              h('button', {
-                onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
-                className: 'p-1.5 hover:bg-slate-800 rounded-lg transition-all active:scale-[0.97]',
-                'aria-label': __alloT('stem.circuit.back_to_tools', 'Back to tools')
-              }, h(ArrowLeft, { size: 18, className: 'text-slate-300' })),
+            // ── Electrical Engineering Studio Hero Workbench Header ──
+            h('div', { className: 'ckt-hero-deck' },
+              h('div', { className: 'flex items-center gap-3 flex-wrap' },
+                h('button', {
+                  onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
+                  className: 'min-h-[44px] min-w-[44px] inline-flex items-center justify-center p-1.5 hover:bg-slate-800 rounded-lg transition-all active:scale-[0.97]',
+                  'aria-label': __alloT('stem.circuit.back_to_tools', 'Back to tools')
+                }, h(ArrowLeft, { size: 18, className: 'text-slate-300' })),
 
-              h('h3', { className: 'text-lg font-bold text-white tracking-tight' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder')),
+                h('div', { className: 'ckt-emblem-box', 'aria-hidden': 'true' },
+                  h('svg', { width: 34, height: 34, viewBox: '0 0 44 44', 'aria-hidden': true, focusable: false },
+                    h('rect', { x: 6, y: 10, width: 32, height: 24, rx: 6, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.8 }),
+                    // Battery terminals on left rail
+                    h('line', { x1: 2, y1: 19, x2: 10, y2: 19, stroke: '#facc15', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                    h('line', { x1: 4, y1: 24, x2: 8, y2: 24, stroke: '#facc15', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                    // Resistor zig-zag on top rail
+                    h('polyline', { points: '14,10 17,6 20,14 23,6 26,14 29,10', fill: 'none', stroke: '#fb923c', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                    // Luminous bulb/LED node on right rail
+                    h('circle', { cx: 38, cy: 22, r: 5, fill: 'rgba(250,204,21,0.28)', stroke: '#fde047', strokeWidth: 1.8 }),
+                    h('circle', { cx: 38, cy: 22, r: 2, fill: '#fef08a' })
+                  )
+                ),
 
-              h('span', { className: 'px-2 py-0.5 bg-yellow-950/60 text-yellow-400 text-[0.625rem] font-black rounded-full border border-yellow-500/20' }, __alloT('stem.circuit.interactive_badge', 'INTERACTIVE')),
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                    h('h3', { className: 'text-lg font-bold text-white tracking-tight' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder')),
+                    h('span', { className: 'ckt-subject-badge' }, __alloT('stem.circuit.subject_badge', 'Electrical Engineering · Ohm\'s Law')),
+                    h('span', { className: 'px-2 py-0.5 bg-yellow-950/60 text-yellow-400 text-[0.625rem] font-black rounded-full border border-yellow-500/20' }, __alloT('stem.circuit.interactive_badge', 'INTERACTIVE')),
+                    isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[0.625rem] font-black rounded-full border border-red-500/30 animate-pulse motion-reduce:animate-none' }, '\u26A0 ' + __alloT('stem.circuit.short_circuit_banner', 'SHORT CIRCUIT!'))
+                  )
+                ),
 
-              isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[0.625rem] font-black rounded-full border border-red-500/30 animate-pulse motion-reduce:animate-none' }, '\u26A0 ' + __alloT('stem.circuit.short_circuit_banner', 'SHORT CIRCUIT!')),
+                // Badge toggle
+                h('button', { 'aria-label': __alloT('stem.circuit.badges', 'Badges'), 'aria-expanded': showBadges ? 'true' : 'false', 'aria-controls': 'circuit-badges-panel',
+                  onClick: function() { upd('showBadges', !showBadges); if (!showBadges) setTimeout(function() { var p = document.getElementById('circuit-badges-panel'); if (p) p.focus(); }, 40); },
+                  className: 'min-h-[44px] px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
+                }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges')),
 
-              // Badge toggle
-              h('button', { 'aria-label': __alloT('stem.circuit.badges', 'Badges'), 'aria-expanded': showBadges ? 'true' : 'false', 'aria-controls': 'circuit-badges-panel',
-                onClick: function() { upd('showBadges', !showBadges); if (!showBadges) setTimeout(function() { var p = document.getElementById('circuit-badges-panel'); if (p) p.focus(); }, 40); },
-                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
-              }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges')),
+                // AI toggle (hidden when ctx hands no usable callGemini)
+                typeof callGemini === 'function' && h('button', { 'aria-label': __alloT('stem.circuit.ai_tutor', 'AI Tutor'), 'aria-expanded': showAI ? 'true' : 'false', 'aria-controls': 'circuit-ai-panel',
+                  onClick: function() { upd('showAI', !showAI); if (!showAI) setTimeout(function() { var p = document.getElementById('circuit-ai-panel'); if (p) p.focus(); }, 40); },
+                  className: 'min-h-[44px] px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
+                }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_tutor', 'AI Tutor')),
 
-              // AI toggle (hidden when ctx hands no usable callGemini)
-              typeof callGemini === 'function' && h('button', { 'aria-label': __alloT('stem.circuit.ai_tutor', 'AI Tutor'), 'aria-expanded': showAI ? 'true' : 'false', 'aria-controls': 'circuit-ai-panel',
-                onClick: function() { upd('showAI', !showAI); if (!showAI) setTimeout(function() { var p = document.getElementById('circuit-ai-panel'); if (p) p.focus(); }, 40); },
-                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
-              }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_tutor', 'AI Tutor')),
+                // Mode buttons
+                h('div', { className: 'flex gap-1 ml-auto' },
+                  ['series', 'parallel'].map(function(m) {
+                    return h('button', { key: m, 'aria-pressed': mode === m,
+                      onClick: function() { upd('mode', m); },
+                      className: 'min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-500 text-slate-950 shadow-md shadow-yellow-500/25' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-slate-200 active:scale-[0.97]')
+                    }, m);
+                  })
+                )
+              ),
 
-              // Mode buttons
-              h('div', { className: 'flex gap-1 ml-auto' },
-                ['series', 'parallel'].map(function(m) {
-                  return h('button', { key: m, 'aria-pressed': mode === m,
-                    onClick: function() { upd('mode', m); },
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-500 text-slate-950 shadow-md shadow-yellow-500/25' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-slate-200 active:scale-[0.97]')
-                  }, m);
+              // Live non-spoiler input & bench status telemetry strip
+              h('div', { className: 'ckt-telemetry-strip' },
+                h('span', { className: 'ckt-telemetry-pill' }, '\u26A1 ' + __alloT('stem.circuit.telemetry_supply', 'Supply: ') + voltage + ' V DC'),
+                h('span', { className: 'ckt-telemetry-pill' }, '\uD83D\uDD00 ' + __alloT('stem.circuit.telemetry_mode', 'Topology: ') + (mode === 'parallel' ? __alloT('stem.circuit.mode_parallel', 'Parallel') : __alloT('stem.circuit.mode_series', 'Series'))),
+                h('span', { className: 'ckt-telemetry-pill' }, '\uD83E\uDDE9 ' + __alloT('stem.circuit.telemetry_parts', 'Parts: ') + components.length + ' / 8'),
+                h('span', { className: 'ckt-telemetry-pill' }, (isShort ? '\uD83D\uDD34 ' + __alloT('stem.circuit.status_short', 'Short Circuit') : components.length === 0 ? '\u26AA ' + __alloT('stem.circuit.status_empty', 'Empty Bench') : isOpen ? '\uD83D\uDFE1 ' + __alloT('stem.circuit.status_open', 'Open Path') : '\uD83D\uDFE2 ' + __alloT('stem.circuit.status_closed', 'Closed Loop')))
+              ),
+
+              // Live PCB Voltage Rail & Slot Telemetry SVG (role="img" + aria-label per circuit_svg_alternatives_a11y)
+              h('div', { className: 'ckt-rail-strip' },
+                h('svg', {
+                  viewBox: '0 0 560 44',
+                  role: 'img',
+                  'aria-label': __alloT('stem.circuit.a11y_workbench_telemetry_bar', 'Circuit workbench telemetry showing supply voltage rail and occupied component slots'),
+                  style: { width: '100%', maxHeight: 48, height: 'auto', display: 'block' }
+                },
+                  // Supply rail gauge (0-24 V)
+                  h('text', { x: 8, y: 16, fill: '#fde047', fontSize: 10.5, fontWeight: 800 }, __alloT('stem.circuit.svg_supply_rail', 'DC Rail: ') + voltage + ' V / 24 V'),
+                  h('rect', { x: 8, y: 24, width: 196, height: 10, rx: 5, fill: '#1e293b', stroke: '#334155', strokeWidth: 1 }),
+                  h('rect', { x: 8, y: 24, width: Math.max(4, Math.min(196, Math.round((voltage / 24) * 196))), height: 10, rx: 5, fill: isShort ? '#ef4444' : '#facc15' }),
+                  // Topology divider
+                  h('text', { x: 224, y: 16, fill: '#93c5fd', fontSize: 10.5, fontWeight: 800 }, mode === 'parallel' ? __alloT('stem.circuit.svg_parallel_rails', 'Parallel Branches') : __alloT('stem.circuit.svg_series_loop', 'Single Series Loop')),
+                  h('text', { x: 224, y: 33, fill: '#cbd5e1', fontSize: 10.5 }, mode === 'parallel' ? __alloT('stem.circuit.svg_same_v', 'Full V across each branch') : __alloT('stem.circuit.svg_same_i', 'Shared I around loop')),
+                  // 8 PCB component slots
+                  h('text', { x: 376, y: 16, fill: '#cbd5e1', fontSize: 10.5, fontWeight: 800 }, __alloT('stem.circuit.svg_bench_slots', 'Bench Slots (') + components.length + '/8)'),
+                  [0, 1, 2, 3, 4, 5, 6, 7].map(function(slotIdx) {
+                    var filled = slotIdx < components.length;
+                    return h('rect', {
+                      key: 'slot-' + slotIdx,
+                      x: 376 + slotIdx * 22, y: 23, width: 16, height: 12, rx: 3,
+                      fill: filled ? (isShort ? '#ef4444' : '#34d399') : '#1e293b',
+                      stroke: filled ? '#a7f3d0' : '#475569', strokeWidth: 1
+                    });
+                  })
+                )
+              ),
+
+              // One-click Starter Circuit Preset Chips (hidden during active Ohm quiz, guided lesson, or teacher lock)
+              (!(ohmQuiz && !ohmQuiz.answered) && !d.lessonId && !(ctx && (ctx.quizLock || ctx.teacherLock))) && h('div', { className: 'ckt-starter-bar', role: 'group', 'aria-label': __alloT('stem.circuit.quick_starters_label', 'Quick starter circuits') },
+                h('span', { className: 'ckt-starter-label' }, __alloT('stem.circuit.quick_circuits', 'Starter circuits:')),
+                CIRCUIT_PRESETS.slice(0, 4).map(function(preset) {
+                  return h('button', {
+                    key: 'ckt-hero-pre-' + preset.id,
+                    type: 'button',
+                    className: 'ckt-starter-chip',
+                    onClick: function() { loadPreset(preset); }
+                  }, preset.label);
                 })
               )
             ),

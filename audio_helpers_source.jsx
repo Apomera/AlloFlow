@@ -276,12 +276,15 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
         const voicePool = AVAILABLE_VOICES.filter(v => v !== selectedVoice);
         if (voicePool.length === 0) voicePool.push(selectedVoice || 'Kore');
         if (!persistentVoiceMapRef.current) {
-            persistentVoiceMapRef.current = { "Narrator": selectedVoice, _poolIndex: 0 };
+            const initMap = Object.create(null);
+            initMap["Narrator"] = selectedVoice;
+            initMap._poolIndex = 0;
+            persistentVoiceMapRef.current = initMap;
         }
         const voiceMap = persistentVoiceMapRef.current;
         voiceMap["Narrator"] = selectedVoice;
         const getVoiceFor = (name) => {
-            if (voiceMap[name]) return voiceMap[name];
+            if (Object.prototype.hasOwnProperty.call(voiceMap, name) && voiceMap[name]) return voiceMap[name];
             const poolIndex = voiceMap._poolIndex || 0;
             const assignedVoice = voicePool[poolIndex % voicePool.length];
             voiceMap[name] = assignedVoice;
@@ -481,7 +484,7 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
 const handleCardAudioSequence = async (e, deps) => {
   const { generatedContent, selectedVoice, setIsPlaying, setPlayingContentId, audioRef, isPlayingRef, playbackSessionRef, playbackRateRef, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, addBlobUrl, callTTS, stopPlayback, t, warnLog } = deps;
   if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-  const item = generatedContent?.data[flashcardIndex];
+  const item = generatedContent?.data?.[flashcardIndex];
   const isMuted = () => {
     try { return typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : localStorage.getItem('alloflow-global-muted') === 'true'; }
     catch (_) { return false; }
@@ -678,11 +681,21 @@ const pcmToWav = (pcmData, sampleRate = 24000) => {
   return buffer;
 };
 
+const _toInt16Pcm = (pcmData) => {
+  const evenByteLen = pcmData.byteLength - (pcmData.byteLength & 1);
+  if ((pcmData.byteOffset & 1) === 0) {
+    return new Int16Array(pcmData.buffer, pcmData.byteOffset, evenByteLen / 2);
+  }
+  const aligned = new Uint8Array(evenByteLen);
+  aligned.set(new Uint8Array(pcmData.buffer, pcmData.byteOffset, evenByteLen));
+  return new Int16Array(aligned.buffer);
+};
+
 // kbps defaults to 128 (full-quality downloads). Karaoke per-sentence storage
 // passes 64 — transparent for 24 kHz mono speech at half the embedded size.
 const pcmToMp3 = (pcmData, sampleRate = 24000, kbps = 128) => {
   if (!window.lamejs) throw new Error("lamejs not loaded");
-  const int16Samples = new Int16Array(pcmData.buffer, pcmData.byteOffset, pcmData.byteLength / 2);
+  const int16Samples = _toInt16Pcm(pcmData);
   const mp3Encoder = new window.lamejs.Mp3Encoder(1, sampleRate, kbps || 128);
   const mp3Data = [];
   const sampleBlockSize = 1152;
@@ -705,7 +718,7 @@ const pcmToMp3 = (pcmData, sampleRate = 24000, kbps = 128) => {
 // Yield between small batches so playback and React updates stay responsive.
 const pcmToMp3Async = async (pcmData, sampleRate = 24000, kbps = 128, options = {}) => {
   if (!window.lamejs) throw new Error("lamejs not loaded");
-  const int16Samples = new Int16Array(pcmData.buffer, pcmData.byteOffset, pcmData.byteLength / 2);
+  const int16Samples = _toInt16Pcm(pcmData);
   const mp3Encoder = new window.lamejs.Mp3Encoder(1, sampleRate, kbps || 128);
   const mp3Data = [];
   const sampleBlockSize = 1152;

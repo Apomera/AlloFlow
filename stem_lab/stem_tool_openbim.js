@@ -553,6 +553,7 @@
 
   function printProject(recipe) {
     var popup = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
+    try { if (popup) popup.opener = null; } catch (_) {}
     if (!popup) return false;
     var escape = function (value) { return String(value || '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
     var storeys = recipe.storeys.map(function (storey) {
@@ -563,7 +564,7 @@
     }).join('');
     var questions = (recipe.reviewQuestions || []).map(function (item) { return '<li>' + escape(item) + '</li>'; }).join('');
     var proxyNote = recipe.architectureStudio ? '<p><strong>Architecture Studio handoff:</strong> ' + escape(recipe.architectureStudio.blockCount) + ' source blocks export as approximate, unclassified proxy boxes.</p>' : '';
-    popup.document.write('<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>' + escape(recipe.name) + '</title><style>@page{margin:.55in}body{font:12px/1.5 system-ui,sans-serif;color:#172033;max-width:900px;margin:auto}h1{font-size:28px}h2{font-size:17px}header{border-bottom:3px solid #155e75}table{width:100%;border-collapse:collapse}th,td{text-align:left;border:1px solid #a8b4c5;padding:7px;vertical-align:top}.notice{margin-top:18px;padding:12px;background:#eef6f8;border:1px solid #88b8c3}@media print{button{display:none}}</style></head><body><header><p>AlloFlow OpenBIM Companion</p><h1>' + escape(recipe.name) + '</h1><p>' + escape(recipe.brief) + '</p></header><h2>Spatial plan</h2>' + storeys + '<h2>Semantic element inventory</h2><table><thead><tr><th>IFC class</th><th>Name</th><th>Count</th><th>Storey</th></tr></thead><tbody>' + elements + '</tbody></table>' + proxyNote + '<h2>Questions for the next review</h2><ul>' + questions + '</ul><div class="notice"><strong>Concept-model boundary:</strong> ' + escape(recipe.interoperability.limitations) + '</div><p>Prepared for IFC4 exchange. Continue in Bonsai using the exported recipe and IfcOpenShell starter script.</p><button onclick="window.print()">Print this project brief</button></body></html>');
+    popup.document.write('<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>' + escape(recipe.name) + '</title><style>@page{margin:.55in}body{font:12px/1.5 system-ui,sans-serif;color:#172033;max-width:900px;margin:auto}h1{font-size:28px}h2{font-size:17px}header{border-bottom:3px solid #155e75}table{width:100%;border-collapse:collapse}th,td{text-align:left;border:1px solid #a8b4c5;padding:7px;vertical-align:top}.notice{margin-top:18px;padding:12px;background:#eef6f8;border:1px solid #88b8c3}@media print{button{display:none}}</style></head><body><header><p>AlloFlow OpenBIM Companion</p><h1>' + escape(recipe.name) + '</h1><p>' + escape(recipe.brief) + '</p></header><h2>Spatial plan</h2>' + storeys + '<h2>Semantic element inventory</h2><table><thead><tr><th scope="col">IFC class</th><th scope="col">Name</th><th scope="col">Count</th><th scope="col">Storey</th></tr></thead><tbody>' + elements + '</tbody></table>' + proxyNote + '<h2>Questions for the next review</h2><ul>' + questions + '</ul><div class="notice"><strong>Concept-model boundary:</strong> ' + escape(recipe.interoperability.limitations) + '</div><p>Prepared for IFC4 exchange. Continue in Bonsai using the exported recipe and IfcOpenShell starter script.</p><button onclick="window.print()">Print this project brief</button></body></html>');
     popup.document.close();
     return true;
   }
@@ -614,7 +615,7 @@
       // Student AI-off: decide on ctx.aiAvailable + ctx.callGemini (generateText can outlive a
       // withheld callGemini); when off, the rules-based planner is the only path shown.
       var _bimAiFn = ctx.callGemini, _bimAiOk = false;
-      try { _bimAiOk = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') ? !!window.__alloAiUsable('text', _bimAiFn) : !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true); } catch (_) {}
+      try { _bimAiOk = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') ? !!window.__alloAiUsable('text', _bimAiFn) : !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)); } catch (_) {}
       var aiAvailable = ctx.aiAvailable !== false && typeof _bimAiFn === 'function' && !_bimAiFn._alloQrBlocked && (!!ctx.isTeacherMode || _bimAiOk);
       var announce = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function () {};
       var toast = typeof ctx.addToast === 'function' ? ctx.addToast : function () {};
@@ -639,29 +640,41 @@
         teal: isContrast ? '#ffff00' : isDark ? '#5eead4' : '#0f766e',
         cyan: isContrast ? '#ffff00' : isDark ? '#7dd3fc' : '#155e75',
         gold: isContrast ? '#ffff00' : isDark ? '#fcd34d' : '#a16207',
+        danger: isContrast ? '#ffff00' : isDark ? '#f87171' : '#b91c1c',
         chipBg: isContrast ? '#000000' : isDark ? '#134e4a' : '#ecfdf5',
         chipInk: isContrast ? '#ffff00' : isDark ? '#99f6e4' : '#115e59',
         chipBorder: isContrast ? '#ffff00' : isDark ? '#0f766e' : '#a7d5cf',
-        navActiveBg: isContrast ? '#000000' : isDark ? '#12303f' : '#e6f5f7'
+        navActiveBg: isContrast ? '#000000' : isDark ? '#12303f' : '#e6f5f7',
+        bpBg: isContrast ? '#000000' : isDark ? '#0b1626' : '#0f2537',
+        bpGrid: isContrast ? 'rgba(255,255,0,0.16)' : 'rgba(125,211,252,0.14)',
+        bpStroke: isContrast ? '#ffff00' : '#38bdf8',
+        bpFill: isContrast ? 'rgba(255,255,0,0.12)' : 'rgba(56,189,248,0.16)',
+        bpInk: isContrast ? '#ffff00' : '#e0f2fe',
+        bpMuted: isContrast ? '#ffff00' : '#93c5fd'
       };
       var button = function (label, onClick, options) {
         var opts = options || {};
+        var primaryBg = isContrast ? '#000000' : '#0f766e';
+        var primaryInk = isContrast ? '#00ff00' : '#ffffff';
+        var primaryBorder = isContrast ? '2px solid #00ff00' : '1px solid #0f766e';
         return el('button', {
           type: 'button', onClick: onClick, disabled: !!opts.disabled,
           'aria-label': opts.ariaLabel || label,
           style: {
-            border: opts.primary ? '1px solid #0f766e' : '1px solid ' + colors.border,
-            borderRadius: 9, padding: opts.compact ? '5px 8px' : '9px 13px',
-            background: opts.primary ? '#0f766e' : colors.panel,
-            color: opts.primary ? '#ffffff' : colors.ink,
+            border: opts.primary ? primaryBorder : (isContrast ? '2px solid #ffff00' : '1px solid ' + colors.border),
+            borderRadius: 9, padding: opts.compact ? '6px 10px' : '9px 14px',
+            minHeight: opts.compact ? 32 : 40,
+            background: opts.primary ? primaryBg : colors.panel,
+            color: opts.primary ? primaryInk : colors.ink,
             fontSize: opts.compact ? 12 : 13, fontWeight: 800,
-            cursor: opts.disabled ? 'not-allowed' : 'pointer', opacity: opts.disabled ? 0.55 : 1
+            cursor: opts.disabled ? 'not-allowed' : 'pointer', opacity: opts.disabled ? 0.55 : 1,
+            transition: 'transform .14s ease, border-color .14s ease'
           }
         }, label);
       };
       var card = function () {
         var children = Array.prototype.slice.call(arguments);
-        return el.apply(null, ['section', { style: { background: colors.panel, border: '1px solid ' + colors.border, borderRadius: 14, padding: 16, boxShadow: '0 8px 24px rgba(15,23,42,.06)' } }].concat(children));
+        return el.apply(null, ['section', { style: { minWidth: 0, background: colors.panel, border: (isContrast ? '2px solid #ffff00' : '1px solid ' + colors.border), borderRadius: 14, padding: 16, boxShadow: isContrast ? 'none' : '0 8px 24px rgba(15,23,42,.07)' } }].concat(children));
       };
 
       function setSample(value) { update({ brief: value, stage: 'brief', proposal: null, approvedRecipe: null }); }
@@ -768,22 +781,121 @@
         reader.readAsText(file);
       }
 
+      var livePreviewPlan = (proposal && typeof proposal === 'object' && Array.isArray(proposal.storeys)) ? proposal : buildFallbackPlan(brief, { storeys: requestedStoreys, architecture: arch });
+      var totalElementInstances = (Array.isArray(livePreviewPlan.elements) ? livePreviewPlan.elements : []).reduce(function (sum, item) { return sum + Number((item && item.count) || 0); }, 0);
+      var totalSpacesCount = (Array.isArray(livePreviewPlan.storeys) ? livePreviewPlan.storeys : []).reduce(function (sum, st) { return sum + (st && Array.isArray(st.spaces) ? st.spaces.length : 0); }, 0);
+
+      function renderElevationPreviewSvg(planObj, captionText) {
+        var stList = (planObj && planObj.storeys) || [];
+        var count = Math.max(1, Math.min(3, stList.length));
+        var bldgLeft = 72, bldgRight = 416, bldgW = bldgRight - bldgLeft;
+        var groundY = 166;
+        var floorH = count === 3 ? 38 : (count === 2 ? 48 : 66);
+        var roofTopY = groundY - count * floorH - 22;
+        return el('figure', { style: { margin: '0 0 12px', padding: 10, borderRadius: 12, background: colors.bpBg, border: isContrast ? '2px solid #ffff00' : '1px solid rgba(56,189,248,0.3)' } },
+          el('svg', {
+            viewBox: '0 0 460 192',
+            role: 'img',
+            'aria-label': 'Architectural schematic elevation of ' + planObj.name + ' with ' + count + (count === 1 ? ' storey' : ' storeys') + ' and ' + totalSpacesCount + ' planned spaces.',
+            style: { display: 'block', width: '100%', height: 'auto' }
+          },
+            // Blueprint coordinate grid
+            [24, 52, 80, 108, 136, 166].map(function (gy) {
+              return el('line', { key: 'h-' + gy, x1: 14, y1: gy, x2: 446, y2: gy, stroke: colors.bpGrid, strokeWidth: 1 });
+            }),
+            [72, 140, 208, 276, 344, 416].map(function (gx) {
+              return el('line', { key: 'v-' + gx, x1: gx, y1: 14, x2: gx, y2: 176, stroke: colors.bpGrid, strokeWidth: 1 });
+            }),
+            // Title tag inside blueprint
+            el('text', { x: 20, y: 22, fill: colors.bpMuted, fontSize: 9, fontWeight: '800', letterSpacing: '0.08em' }, 'SCHEMATIC SECTION · IFC4 · METRES'),
+            el('text', { x: 440, y: 22, textAnchor: 'end', fill: colors.bpInk, fontSize: 9.5, fontWeight: '800' }, plain(planObj.name, 30)),
+            // Ground line
+            el('line', { x1: 24, y1: groundY, x2: 440, y2: groundY, stroke: colors.bpStroke, strokeWidth: 2 }),
+            // Roof profile
+            el('polygon', {
+              points: (bldgLeft - 8) + ',' + (groundY - count * floorH) + ' ' + (bldgLeft + bldgW / 2) + ',' + Math.max(30, roofTopY) + ' ' + (bldgRight + 8) + ',' + (groundY - count * floorH),
+              fill: colors.bpFill, stroke: colors.bpStroke, strokeWidth: 1.8
+            }),
+            // Stacked storeys from bottom up
+            stList.slice(0, 3).map(function (st, idx) {
+              var yBottom = groundY - idx * floorH;
+              var yTop = yBottom - floorH;
+              var rooms = (st.spaces && st.spaces.length ? st.spaces : ['Flexible Space']).slice(0, 4);
+              var roomW = bldgW / rooms.length;
+              return el('g', { key: st.id || idx },
+                // Elevation callout on left
+                el('line', { x1: 28, y1: yBottom, x2: bldgLeft - 4, y2: yBottom, stroke: colors.bpMuted, strokeWidth: 1, strokeDasharray: '3 3' }),
+                el('text', { x: 64, y: yBottom - 4, textAnchor: 'end', fill: colors.bpMuted, fontSize: 8.5, fontWeight: '700' }, '+' + Number(st.elevationMetres || 0).toFixed(1) + 'm'),
+                // Floor plate & wall envelope
+                el('rect', { x: bldgLeft, y: yTop, width: bldgW, height: floorH, fill: 'rgba(15,23,42,0.52)', stroke: colors.bpStroke, strokeWidth: 1.8 }),
+                // Interior partitions + space labels
+                rooms.map(function (sp, rIdx) {
+                  var rx = bldgLeft + rIdx * roomW;
+                  var shortSp = plain(sp, rooms.length >= 4 ? 11 : (rooms.length === 3 ? 15 : 22));
+                  return el('g', { key: sp + '-' + rIdx },
+                    rIdx > 0 ? el('line', { x1: rx, y1: yTop, x2: rx, y2: yBottom, stroke: colors.bpStroke, strokeWidth: 1.1, strokeDasharray: '4 2' }) : null,
+                    // Schematic window mullion
+                    el('rect', { x: rx + 6, y: yTop + 6, width: Math.min(20, Math.max(10, roomW - 14)), height: 8, rx: 1, fill: colors.bpFill, stroke: colors.bpMuted, strokeWidth: 0.9 }),
+                    el('text', { x: rx + roomW / 2, y: yBottom - Math.max(8, floorH * 0.28), textAnchor: 'middle', fill: colors.bpInk, fontSize: rooms.length >= 4 ? 8 : 9, fontWeight: '700' }, shortSp)
+                  );
+                })
+              );
+            }),
+            // Footer legend inside SVG
+            el('text', { x: 24, y: 184, fill: colors.bpMuted, fontSize: 8.5, fontWeight: '700' }, 'Schematic preview only — geometry, clearances & code compliance are authored in Bonsai.')
+          ),
+          captionText ? el('figcaption', { style: { marginTop: 6, color: colors.bpMuted, fontSize: 11, lineHeight: 1.4 } }, captionText) : null
+        );
+      }
+
       var stepLabels = [['brief', '1. Brief'], ['review', '2. Review'], ['export', '3. Export'], ['learn', '4. Learn']];
-      var header = el('header', { style: { display: 'flex', gap: 14, alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap' } },
-        el('div', null,
-          el('p', { style: { margin: '0 0 4px', color: colors.teal, fontSize: 12, fontWeight: 900, letterSpacing: '.08em', textTransform: 'uppercase' } }, 'Open architecture pathway'),
-          el('h2', { style: { margin: 0, color: colors.ink, fontSize: 25, lineHeight: 1.15 } }, 'OpenBIM Companion'),
-          el('p', { style: { margin: '7px 0 0', color: colors.soft, maxWidth: 720, lineHeight: 1.5 } }, 'Turn a design idea into an inspectable semantic building proposal, approve each inventory change, and prepare an IFC4 starter project for the open-source Bonsai authoring environment.')),
-        el('div', { style: { border: '1px solid ' + colors.chipBorder, background: colors.chipBg, color: colors.chipInk, borderRadius: 999, padding: '6px 10px', fontSize: 12, fontWeight: 900 } }, 'Open formats | Human approval')
+      var header = el('header', {
+        style: {
+          padding: 20, borderRadius: 18,
+          background: isContrast ? '#000000' : 'linear-gradient(135deg,#0f2537,#134e4a 60%,#155e75)',
+          border: isContrast ? '2px solid #ffff00' : '1px solid rgba(94,234,212,0.3)',
+          color: isContrast ? '#ffff00' : '#ffffff',
+          boxShadow: isContrast ? 'none' : '0 14px 32px rgba(15,23,42,0.18)'
+        }
+      },
+        el('div', { style: { display: 'flex', gap: 14, alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap' } },
+          el('div', { style: { flex: '1 1 320px', minWidth: 0 } },
+            el('p', { style: { margin: '0 0 4px', color: isContrast ? '#ffff00' : '#99f6e4', fontSize: 11, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase' } }, 'Open architecture pathway · Engineering'),
+            el('h2', { style: { margin: 0, color: isContrast ? '#ffff00' : '#ffffff', fontSize: 26, lineHeight: 1.15 } }, 'OpenBIM Companion'),
+            el('p', { style: { margin: '7px 0 0', color: isContrast ? '#ffff00' : '#e2e8f0', maxWidth: 720, fontSize: 13.5, lineHeight: 1.52 } }, 'Turn a design idea into an inspectable semantic building proposal, approve each inventory change, and prepare an IFC4 starter project for the open-source Bonsai authoring environment.')),
+          el('div', { style: { border: isContrast ? '2px solid #ffff00' : '1px solid rgba(153,246,228,0.45)', background: isContrast ? '#000000' : 'rgba(2,6,23,0.4)', color: isContrast ? '#ffff00' : '#ccfbf1', borderRadius: 999, padding: '6px 12px', fontSize: 11.5, fontWeight: 900 } }, 'Open formats | Human approval')
+        ),
+        el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }, role: 'list', 'aria-label': 'Active building model summary' },
+          [
+            livePreviewPlan.storeys.length + (livePreviewPlan.storeys.length === 1 ? ' storey' : ' storeys'),
+            totalSpacesCount + ' planned spaces',
+            totalElementInstances + ' IFC elements',
+            approved ? 'Status: Approved' : (proposal ? 'Status: In review' : 'Status: Drafting brief')
+          ].map(function (pill) {
+            return el('span', { key: pill, role: 'listitem', style: { padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800, background: isContrast ? '#000000' : 'rgba(255,255,255,0.12)', border: isContrast ? '1px solid #ffff00' : '1px solid rgba(255,255,255,0.24)', color: isContrast ? '#ffff00' : '#f8fafc' } }, pill);
+          })
+        )
       );
 
-      var nav = el('nav', { 'aria-label': 'OpenBIM workflow', style: { display: 'flex', gap: 7, flexWrap: 'wrap', margin: '16px 0' } },
+      var _obT = function (key, fb) {
+        try { if (ctx && typeof ctx.t === 'function') { var r = ctx.t(key, fb); if (r && r !== key) return r; } } catch (_) {}
+        try { if (typeof window !== 'undefined' && typeof window.__alloT === 'function') return window.__alloT(key, fb); } catch (_) {}
+        return fb;
+      };
+      var nav = el('nav', { 'aria-label': _obT('stem.openbim.workflow_nav', 'OpenBIM workflow'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', margin: '16px 0' } },
         stepLabels.map(function (entry) {
           var available = entry[0] === 'brief' || entry[0] === 'learn' || (entry[0] === 'review' && proposal) || (entry[0] === 'export' && approved);
+          var isCur = stage === entry[0];
           return el('button', {
             key: entry[0], type: 'button', disabled: !available, onClick: function () { if (available) update({ stage: entry[0] }); },
-            'aria-current': stage === entry[0] ? 'step' : undefined,
-            style: { padding: '7px 11px', borderRadius: 999, border: '1px solid ' + (stage === entry[0] ? colors.cyan : colors.border), background: stage === entry[0] ? colors.navActiveBg : colors.panel, color: stage === entry[0] ? colors.cyan : colors.soft, fontSize: 12, fontWeight: 850, cursor: available ? 'pointer' : 'not-allowed', opacity: available ? 1 : .5 }
+            'aria-current': isCur ? 'step' : undefined,
+            style: {
+              minHeight: 40, padding: '8px 14px', borderRadius: 999,
+              border: (isContrast ? '2px solid ' : '1px solid ') + (isCur ? colors.cyan : colors.border),
+              background: isCur ? colors.navActiveBg : colors.panel,
+              color: isCur ? colors.cyan : colors.soft,
+              fontSize: 12.5, fontWeight: 850, cursor: available ? 'pointer' : 'not-allowed', opacity: available ? 1 : .5
+            }
           }, entry[1]);
         })
       );
@@ -804,13 +916,23 @@
             button(state.aiBusy ? 'Drafting...' : (aiAvailable ? 'Draft with Gemini' : 'Draft proposal'), function () { draft(true); }, { primary: true, disabled: state.aiBusy || plain(brief, 1200).length < 15 }),
             aiAvailable && button('Use rules-based planner', function () { draft(false); }, { disabled: state.aiBusy })
           ),
-          el('p', { style: { color: colors.soft, fontSize: 11, lineHeight: 1.45, margin: '10px 0 0' } }, aiAvailable ? 'Gemini may propose a structure, but AlloFlow filters it to an IFC class allowlist and nothing is approved automatically.' : 'The offline planner remains fully usable. Connect Gemini later for more nuanced space suggestions.')
+          el('p', { style: { color: colors.soft, fontSize: 11.5, lineHeight: 1.45, margin: '10px 0 0' } }, aiAvailable ? 'Gemini may propose a structure, but AlloFlow filters it to an IFC class allowlist and nothing is approved automatically.' : 'The offline planner remains fully usable. Connect Gemini later for more nuanced space suggestions.')
         ),
-        el('div', { style: { display: 'grid', gap: 12, alignContent: 'start' } },
+        el('div', { style: { display: 'grid', gap: 12, alignContent: 'start', minWidth: 0 } },
+          renderElevationPreviewSvg(livePreviewPlan, 'Live schematic preview inferred from your brief & storey count. Draft a proposal to review and edit every IFC element.'),
           card(
             el('h3', { style: { margin: '0 0 8px', color: colors.ink, fontSize: 16 } }, 'Try a starting brief'),
             SAMPLE_BRIEFS.map(function (sample, index) {
-              return el('button', { key: index, type: 'button', onClick: function () { setSample(sample); }, style: { display: 'block', width: '100%', textAlign: 'left', marginTop: index ? 7 : 0, padding: 9, border: '1px solid ' + colors.border, borderRadius: 8, background: colors.surface, color: colors.ink, fontSize: 12, lineHeight: 1.4, cursor: 'pointer' } }, sample);
+              var isSelectedSample = brief.trim() === sample.trim();
+              return el('button', {
+                key: index, type: 'button', onClick: function () { setSample(sample); },
+                style: {
+                  display: 'block', width: '100%', textAlign: 'left', marginTop: index ? 7 : 0, padding: 10,
+                  border: (isSelectedSample ? '2px solid ' + colors.teal : '1px solid ' + colors.border),
+                  borderRadius: 9, background: isSelectedSample ? colors.navActiveBg : colors.surface,
+                  color: colors.ink, fontSize: 12, lineHeight: 1.45, cursor: 'pointer'
+                }
+              }, sample);
             })
           ),
           card(
@@ -827,7 +949,8 @@
       );
 
       var reviewStage = stage === 'review' && proposal && el('div', { className: 'ob-grid' },
-        el('div', { style: { display: 'grid', gap: 12, alignContent: 'start' } },
+        el('div', { style: { display: 'grid', gap: 12, alignContent: 'start', minWidth: 0 } },
+          renderElevationPreviewSvg(proposal, 'Schematic spatial diagram of the active proposal (' + proposal.storeys.length + ' ' + (proposal.storeys.length === 1 ? 'storey' : 'storeys') + ').'),
           card(
             el('p', { style: { margin: 0, color: colors.teal, fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Proposed spatial tree'),
             el('h3', { style: { margin: '4px 0 9px', color: colors.ink, fontSize: 19 } }, proposal.name),
@@ -908,7 +1031,7 @@
               button('IfcOpenShell API guide', function () { openExternal(IFCOS_API); }))
           ),
           card(
-            el('h3', { style: { margin: '0 0 6px', color: '#92400e', fontSize: 16 } }, 'What this export does not claim'),
+            el('h3', { style: { margin: '0 0 6px', color: colors.gold, fontSize: 16 } }, 'What this export does not claim'),
             el('p', { style: { margin: 0, color: colors.soft, fontSize: 12, lineHeight: 1.55 } }, approved.interoperability.limitations)
           ),
           card(
@@ -952,7 +1075,16 @@
         var selectedTrial = trials.find(function(row) { return row.id === state.selectedDesignTrial; }) || null;
         var pendingDimensions = fields.some(function(f) { return String(draft[f[0]]).trim() === '' || Number(draft[f[0]]) !== dims[f[0]]; });
         var changes = state.comparisonBaseline ? comparePlans(state.comparisonBaseline, plan) : [];
-        var scale = Math.min(300 / Math.max(dims.width,dims.workWidth), 170 / Math.max(dims.depth,dims.workDepth));
+        var scale = Math.min(310 / Math.max(dims.width, dims.workWidth), 156 / Math.max(dims.depth, dims.workDepth));
+        var floorPxW = dims.width * scale, floorPxH = dims.depth * scale;
+        var workPxW = dims.workWidth * scale, workPxH = dims.workDepth * scale;
+        var workStroke = !model.fits ? colors.danger : (model.meetsBrief ? colors.teal : colors.gold);
+        var utilizationPct = model.area > 0 ? Math.round((model.workArea / model.area) * 100) : 0;
+        var STUDY_PRESETS = [
+          { label: 'Compact 8×6 / 6×4 m', d: { width: 8, depth: 6, workWidth: 6, workDepth: 4 } },
+          { label: 'Wide 10×5.5 / 8×3.5 m', d: { width: 10, depth: 5.5, workWidth: 8, workDepth: 3.5 } },
+          { label: 'Square 7.5×7.5 / 5×5 m', d: { width: 7.5, depth: 7.5, workWidth: 5, workDepth: 5 } }
+        ];
         function applyDimensions() {
           var valid = fields.every(function(f) { var n=Number(draft[f[0]]);return String(draft[f[0]]).trim()!=='' && isFinite(n) && n>=1 && n<=100; });
           if (!valid) { update({ designNotice: 'Enter dimensions from 1 to 100 metres in all four fields.' }); return; }
@@ -1019,22 +1151,63 @@
             el('p',{style:{fontSize:12,color:colors.soft}},'Unused floor area is not a measurement of usable circulation or accessibility clearance.')
           );
         }
-        return el('section',{ 'data-openbim-workbench':true, style:{margin:'16px 0',padding:16,border:'1px solid '+colors.border,borderRadius:12,background:colors.panel} },
-          el('h3',null,'Design workbench'),
-          el('p',null,'Design challenge: fit a rectangular work area of at least 24 m² inside a floor of at most 60 m². These are classroom design targets.'),
-          el('p',{style:{color:colors.soft,fontSize:12}},'This dimensioned study is separate from the building inventory. The rectangle shows an example floor footprint, not positioned IFC walls or a finished floor plan. Study dimensions travel in the JSON recipe; they do not create IFC geometry.'),
-          el('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10}},fields.map(function(f){
-            return el('label',{key:f[0],style:{display:'block'}},f[1]+' (m)',
-              el('input',{type:'number',min:1,max:100,step:.01,value:draft[f[0]],'aria-label':f[1]+' in metres',onChange:function(e){var next=Object.assign({},draft);next[f[0]]=e.target.value;update({designDraft:next,designNotice:''});},style:{display:'block',width:'100%',padding:9,color:colors.ink,background:colors.surface,border:'1px solid '+colors.border}}));
+        return el('section',{ 'data-openbim-workbench':true, style:{margin:'16px 0',padding:16,border:(isContrast ? '2px solid #ffff00' : '1px solid '+colors.border),borderRadius:14,background:colors.panel} },
+          el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
+            el('h3', { style: { margin: 0, color: colors.ink, fontSize: 18 } }, 'Design workbench'),
+            el('span', { style: { padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800, border: '1px solid ' + workStroke, color: workStroke, background: colors.surface } },
+              !model.fits ? 'Overflow: resize or rotate' : (model.meetsBrief ? 'All 3 targets met · ' + utilizationPct + '% work zone' : 'Adjust targets · ' + utilizationPct + '% work zone'))
+          ),
+          el('p',{style:{margin:'0 0 6px',fontSize:13,lineHeight:1.5}},'Design challenge: fit a rectangular work area of at least 24 m² inside a floor of at most 60 m². These are classroom design targets.'),
+          el('p',{style:{color:colors.soft,fontSize:12,margin:'0 0 10px',lineHeight:1.45}},'This dimensioned study is separate from the building inventory. The rectangle shows an example floor footprint, not positioned IFC walls or a finished floor plan. Study dimensions travel in the JSON recipe; they do not create IFC geometry.'),
+          el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 12 }, role: 'group', 'aria-label': _obT('stem.openbim.floor_study_presets', 'Quick floor study presets') },
+            el('span', { style: { fontSize: 11, fontWeight: 800, color: colors.soft, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Presets:'),
+            STUDY_PRESETS.map(function (preset) {
+              return button(preset.label, function () {
+                var next = JSON.parse(JSON.stringify(plan));
+                next.designStudy = normalizeDesignStudy(preset.d);
+                update({ proposal: next, approvedRecipe: null, stage: 'review', designDraft: null, designNotice: 'Applied preset: ' + preset.label + '.' });
+              }, { compact: true });
+            })
+          ),
+          el('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10,marginBottom:10}},fields.map(function(f){
+            return el('label',{key:f[0],style:{display:'block',fontSize:12,fontWeight:750,color:colors.ink}},f[1]+' (m)',
+              el('input',{type:'number',min:1,max:100,step:.01,value:draft[f[0]],'aria-label':f[1]+' in metres',onChange:function(e){var next=Object.assign({},draft);next[f[0]]=e.target.value;update({designDraft:next,designNotice:''});},style:{display:'block',width:'100%',marginTop:4,padding:9,borderRadius:8,color:colors.ink,background:colors.surface,border:'1px solid '+colors.border}}));
           })),
-          button('Apply study dimensions',applyDimensions),
-          state.designNotice && el('p',{role:'status'},state.designNotice),
-          el('svg',{viewBox:'0 0 390 245',role:'img','aria-label':'Dimensioned floor study. Floor '+dims.width+' by '+dims.depth+' metres; work area '+dims.workWidth+' by '+dims.workDepth+' metres. '+(model.fits?'Work area fits.':'Work area extends beyond the floor.'),style:{display:'block',width:'100%',maxWidth:600,color:colors.ink}},
-            el('rect',{x:40,y:35,width:dims.width*scale,height:dims.depth*scale,fill:colors.surface,stroke:colors.ink,strokeWidth:2}),
-            el('rect',{x:40,y:35,width:dims.workWidth*scale,height:dims.workDepth*scale,fill:colors.chipBg,stroke:colors.teal,strokeWidth:3,strokeDasharray:'8 4'}),
-            el('text',{x:40,y:23,fill:colors.ink,fontSize:13},'Floor width: '+dims.width+' m'),
-            el('text',{x:40,y:230,fill:colors.ink,fontSize:13},'Floor depth: '+dims.depth+' m; dashed outline = work area')),
-          el('p',{role:'status','data-design-result':model.meetsBrief?'meets':'revise'},'Floor: '+model.area+' m². Work area: '+model.workArea+' m². '+(!model.fits?'The work area extends beyond the floor.':model.meetsBrief?'Both classroom targets are met. Explain your tradeoff.':'Revise dimensions to meet both classroom targets.')),
+          button('Apply study dimensions',applyDimensions,{primary:true}),
+          state.designNotice && el('p',{role:'status',style:{marginTop:8,fontSize:12,fontWeight:700,color:colors.teal}},state.designNotice),
+          el('div', { style: { margin: '12px 0', padding: 10, borderRadius: 12, background: colors.bpBg, border: isContrast ? '2px solid #ffff00' : '1px solid rgba(56,189,248,0.28)' } },
+            el('svg',{viewBox:'0 0 440 264',role:'img','aria-label':'Dimensioned floor study. Floor '+dims.width+' by '+dims.depth+' metres; work area '+dims.workWidth+' by '+dims.workDepth+' metres. '+(model.fits?'Work area fits.':'Work area extends beyond the floor.'),style:{display:'block',width:'100%',maxWidth:640,margin:'0 auto'}},
+              el('defs', null,
+                el('pattern', { id: 'ob-hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
+                  el('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: workStroke, strokeWidth: 1.4, strokeOpacity: 0.35 })
+                )
+              ),
+              // Blueprint grid
+              [44, 84, 124, 164, 204].map(function (gy) { return el('line', { key: 'bg-h-' + gy, x1: 16, y1: gy, x2: 424, y2: gy, stroke: colors.bpGrid, strokeWidth: 1 }); }),
+              [56, 126, 196, 266, 336, 406].map(function (gx) { return el('line', { key: 'bg-v-' + gx, x1: gx, y1: 18, x2: gx, y2: 228, stroke: colors.bpGrid, strokeWidth: 1 }); }),
+              // Header callout
+              el('text', { x: 20, y: 18, fill: colors.bpMuted, fontSize: 9, fontWeight: '800', letterSpacing: '0.08em' }, 'CAD FLOOR FOOTPRINT STUDY (PLAN VIEW)'),
+              el('text', { x: 420, y: 18, textAnchor: 'end', fill: colors.bpInk, fontSize: 9.5, fontWeight: '800' }, 'Scale 1m = ' + scale.toFixed(0) + 'px'),
+              // Top width dimension witness line
+              el('line', { x1: 56, y1: 34, x2: 56 + floorPxW, y2: 34, stroke: colors.bpMuted, strokeWidth: 1 }),
+              el('line', { x1: 56, y1: 30, x2: 56, y2: 39, stroke: colors.bpMuted, strokeWidth: 1 }),
+              el('line', { x1: 56 + floorPxW, y1: 30, x2: 56 + floorPxW, y2: 39, stroke: colors.bpMuted, strokeWidth: 1 }),
+              el('text', { x: 56 + floorPxW / 2, y: 31, textAnchor: 'middle', fill: colors.bpInk, fontSize: 10.5, fontWeight: '800' }, 'Floor width: ' + dims.width + ' m'),
+              // Left depth witness line
+              el('line', { x1: 42, y1: 48, x2: 42, y2: 48 + floorPxH, stroke: colors.bpMuted, strokeWidth: 1 }),
+              el('line', { x1: 37, y1: 48, x2: 47, y2: 48, stroke: colors.bpMuted, strokeWidth: 1 }),
+              el('line', { x1: 37, y1: 48 + floorPxH, x2: 47, y2: 48 + floorPxH, stroke: colors.bpMuted, strokeWidth: 1 }),
+              el('text', { x: 28, y: 48 + floorPxH / 2, textAnchor: 'middle', fill: colors.bpInk, fontSize: 10, fontWeight: '800', transform: 'rotate(-90 28 ' + (48 + floorPxH / 2) + ')' }, dims.depth + ' m'),
+              // Outer floor footprint
+              el('rect',{x:56,y:48,width:floorPxW,height:floorPxH,fill:'rgba(15,23,42,0.55)',stroke:colors.bpInk,strokeWidth:2.5}),
+              // Inner work zone
+              el('rect',{x:56,y:48,width:workPxW,height:workPxH,fill:'url(#ob-hatch)',stroke:workStroke,strokeWidth:2.8,strokeDasharray:'7 4'}),
+              // Work zone centered readout
+              el('text', { x: 56 + Math.max(36, workPxW / 2), y: 48 + Math.max(18, workPxH / 2 + 3), textAnchor: 'middle', fill: colors.bpInk, fontSize: 10.5, fontWeight: '800' }, dims.workWidth + '×' + dims.workDepth + 'm (' + model.workArea + ' m²)'),
+              // Footer legend safely inside 440x264
+              el('text',{x:20,y:248,fill:colors.bpMuted,fontSize:10,fontWeight:'700'},'Solid = Floor (' + model.area + ' m² / 60 m² max)  ·  Dashed = Work zone (' + model.workArea + ' m² / 24 m² min)'))
+          ),
+          el('p',{role:'status','data-design-result':model.meetsBrief?'meets':'revise',style:{padding:'9px 12px',borderRadius:9,background:colors.surface,borderLeft:'4px solid '+workStroke,fontSize:13,fontWeight:700}},'Floor: '+model.area+' m². Work area: '+model.workArea+' m². '+(!model.fits?'The work area extends beyond the floor.':model.meetsBrief?'Both classroom targets are met. Explain your tradeoff.':'Revise dimensions to meet both classroom targets.')),
           el('section',{'data-design-constraints':true,style:{margin:'12px 0',padding:14,border:'1px solid '+colors.border,borderRadius:10}},
             el('h4',null,'Check each design target'),
             pendingDimensions ? el('p',null,'These checks use the applied dimensions. Apply your edits to update them.') : null,

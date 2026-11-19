@@ -160,10 +160,13 @@
   .choice:hover, .tool:hover, .view:hover { transform: translateY(-1px); box-shadow: 0 7px 16px rgba(0,0,0,.14); }
   .debrief { box-shadow: 0 10px 24px rgba(0,0,0,.14); }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
+  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
 </style>
 </head>
 <body>
-<main>
+<a class="skip-link" href="#main">Skip to main content</a>
+<main id="main" tabindex="-1">
   <header>
     <div>
       <h1>Day-in-the-Life Capstone</h1>
@@ -191,7 +194,7 @@
         <button class="tool procedure-toggle" id="procedureButton" type="button" hidden>Practice 3D actions</button>
         <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
       </div>
-      <div class="views" aria-label="Scene view presets">
+      <div class="views" role="group" aria-label="Scene view presets">
         <button class="view" type="button" data-view="home">Home</button>
         <button class="view" type="button" data-view="middle">Middle</button>
         <button class="view" type="button" data-view="transit">Transit</button>
@@ -552,8 +555,6 @@
         || host === 'alloflow.org' || host.endsWith('.alloflow.org')
         || host === 'alloflow.app' || host.endsWith('.alloflow.app')
         || host === 'alloflow.com' || host.endsWith('.alloflow.com')
-        || host === 'alloflow.example' || host.endsWith('.alloflow.example')
-        || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(host)
         || host.endsWith('.usercontent.goog')
         || host.endsWith('.googleusercontent.com')
         || host.endsWith('.idx.google.com')
@@ -572,7 +573,7 @@
         }
       } catch (_) { return ''; }
     }
-    return '*';
+    return '';
   }
   function postToOpener(payload) {
     try {

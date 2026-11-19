@@ -94,7 +94,7 @@ module.exports = {
         if (i >= steps.length) { mark(-1); return; }
         var s = steps[i++];
         mark(s.hi == null ? -1 : s.hi);
-        ctx.play(s.id).then(function () { if (mine === token) win.setTimeout(step, s.gap || 0); });
+        ctx.play(s.id).then(function (ok) { if (mine !== token) return; if (ok === false) { mark(-1); return; } win.setTimeout(step, s.gap || 0); });
       };
       step();
     };

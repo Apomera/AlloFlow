@@ -57,25 +57,28 @@ const sw = fs.readFileSync(swPath, 'utf8');
 const fontModule = fs.readFileSync(fontModulePath, 'utf8');
 const count = (text, needle) => text.split(needle).length - 1;
 
+const hostHandlersPath = path.join(root, 'host_handlers_source.jsx');
+const hostHandlers = fs.existsSync(hostHandlersPath) ? fs.readFileSync(hostHandlersPath, 'utf8') : '';
 check(!/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(publicIndex + source), 'app has no external font dependency');
 check(publicIndex.includes("fonts/Inter-latin.woff2"), 'startup HTML preloads the local Latin font subset');
 check(publicIndex.includes('vendor/drag-drop-touch-2.0.3.esm.min.js') && !publicIndex.includes('cdn.jsdelivr.net/npm/@dragdroptouch'), 'touch drag support is self-hosted');
 check(fontModule.includes('__alloEnsureUIFont') && !fontModule.includes("fonts.join('&family=')"), 'optional font catalog loads only the selected family');
 check(source.includes('./vendor/lz-string-1.4.4.min.js') && source.includes('./vendor/idb-keyval-6.2.0.umd.min.js'), 'storage helpers prefer local pinned copies');
 check(count(source, 'jsonrepair.min.js') === 1, 'jsonrepair has one on-demand loader and no eager duplicate');
-check(count(source, 'jszip.min.js') === 1, 'JSZip has one on-demand loader and no eager duplicate');
+check(count(source, 'vendor/jszip-3.10.1.min.js') === 1 && !/jszip(?:-3\.10\.1)?\.min\.js["']\s*><\/script>/i.test(publicIndex + source), 'JSZip has one on-demand loader and no eager duplicate');
 check(count(source, 'pptxgen.bundle.js') === 1, 'PptxGenJS has one on-demand loader and no eager duplicate');
 check(source.includes("classList.contains('alloflow-workspace-concealed')"), 'background module pump waits for the workspace');
 // The adaptive pump counts only its own work and preserves a one-file budget
-// under input pressure / Data Saver. Runtime behavior is covered by
-// tests/deferred_module_pump.test.js; retain the legacy single-file check too.
+// under input pressure / Data Saver (with trickle widening). Runtime behavior
+// is covered by tests/deferred_module_pump.test.js; retain legacy check too.
 const boundedAdaptivePump = source.includes('var PUMP_PARALLEL = 3;')
-  && source.includes('var budget = (blocked || slowBackground) ? 1 : PUMP_PARALLEL;')
+  && (source.includes('var budget = (blocked || slowBackground) ? 1 : PUMP_PARALLEL;')
+      || source.includes('var budget = (blocked || slowBackground) ? 1 : trickle ? (widen ? 2 : 1) : PUMP_PARALLEL;'))
   && source.includes('Math.max(0, budget - inFlight)');
 check(boundedAdaptivePump || source.includes('Math.max(0, 1 - pendingCount)'),
   'background module concurrency is bounded (up to 3 normal, 1 constrained)');
 check(source.includes('pauseUntil = performance.now() + 3000'), 'background work yields for three seconds after input');
-check(sw.includes('ALLOFLOW_ACTIVATE_UPDATE') && source.includes('ALLOFLOW_ACTIVATE_UPDATE'), 'service-worker update requires explicit in-app activation');
+check(sw.includes('ALLOFLOW_ACTIVATE_UPDATE') && (source.includes('ALLOFLOW_ACTIVATE_UPDATE') || hostHandlers.includes('ALLOFLOW_ACTIVATE_UPDATE')), 'service-worker update requires explicit in-app activation');
 
 const fontFiles = fs.readdirSync(fontDir).filter((name) => name.endsWith('.woff2'));
 const fontBytes = fontFiles.reduce((total, name) => total + fs.statSync(path.join(fontDir, name)).size, 0);

@@ -906,8 +906,10 @@
     style.textContent = [
       '.cal-shell{--cal-ink:#102a43;--cal-muted:#486581;--cal-line:#bcccdc;--cal-panel:#f7fbff;--cal-soft:#eaf4fb;--cal-blue:#075985;--cal-teal:#0f766e;box-sizing:border-box;width:min(100%,1240px);margin:0 auto;color:var(--cal-ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif;}',
       '.cal-shell *{box-sizing:border-box}.cal-shell button,.cal-shell select,.cal-shell textarea{font:inherit}.cal-shell button:focus-visible,.cal-shell select:focus-visible,.cal-shell textarea:focus-visible,.cal-shell a:focus-visible,.cal-cluster:focus-visible{outline:3px solid #0369a1;outline-offset:3px}',
-      '.cal-top{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--cal-line);border-radius:16px;background:#fff;box-shadow:0 12px 34px rgba(16,42,67,.09)}',
-      '.cal-back{display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--cal-line);border-radius:11px;background:#fff;color:var(--cal-ink);font-weight:900}.cal-brand{min-width:0;flex:1}.cal-kicker{margin:0 0 2px;color:var(--cal-teal);font-size:10px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.cal-title{margin:0;font-size:clamp(20px,3vw,30px);line-height:1.08}.cal-subtitle{margin:5px 0 0;color:var(--cal-muted);font-size:12px;line-height:1.45}.cal-source-chip{flex:0 0 auto;border:1px solid #99f6e4;border-radius:999px;background:#f0fdfa;color:#115e59;padding:7px 10px;font-size:10px;font-weight:900}',
+      '.cal-top{display:flex;align-items:center;gap:12px;padding:15px 18px;border:1px solid #99d6ea;border-top:4px solid #0e7490;border-radius:16px;background:linear-gradient(135deg,#ffffff 0%,#f0fdfa 58%,#f0f9ff 100%);box-shadow:0 12px 30px rgba(14,116,144,.10);flex-wrap:wrap}',
+      '.cal-back{display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--cal-line);border-radius:11px;background:#fff;color:var(--cal-ink);font-weight:900;cursor:pointer;transition:border-color .15s ease,background-color .15s ease}.cal-back:hover{border-color:#0e7490;background:#f0fdfa}.cal-brand{min-width:200px;flex:1}.cal-kicker{margin:0 0 2px;color:var(--cal-teal);font-size:10px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.cal-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cal-title{margin:0;font-size:clamp(20px,3vw,30px);line-height:1.08}.cal-subject-badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#0f766e;color:#fff;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}.cal-subtitle{margin:5px 0 0;color:var(--cal-muted);font-size:12px;line-height:1.45}.cal-source-chip{flex:0 0 auto;border:1px solid #5eead4;border-radius:999px;background:#f0fdfa;color:#115e59;padding:7px 11px;font-size:10px;font-weight:900}',
+      '.cal-map-legend{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:8px 10px;border:1px solid #bae6fd;border-radius:10px;background:#f0f9ff;color:#164e63;font-size:10px;font-weight:800}.cal-map-legend-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;background:#fff;border:1px solid #99d6ea;color:#0f3b4d;font-size:10px;font-weight:900}.cal-butterfly-wrap{margin-top:12px;padding:12px;border:1px solid #bae6fd;border-radius:14px;background:linear-gradient(135deg,#071b2f,#0f2942);color:#f8fafc}.cal-butterfly-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;font-weight:900}.cal-tissue,.cal-tab,.cal-pill,.cal-choice{transition:transform .14s ease,border-color .14s ease,background-color .14s ease,box-shadow .14s ease;cursor:pointer}.cal-tissue:hover,.cal-tab:hover,.cal-pill:hover{border-color:#0e7490;box-shadow:0 4px 12px rgba(14,116,144,.12)}',
+      '.theme-contrast .cal-top,.theme-contrast .cal-map-legend,.theme-contrast .cal-map-legend-pill,.theme-contrast .cal-butterfly-wrap{background:#000!important;border-color:#ffff00!important;color:#ffff00!important}.theme-contrast .cal-subject-badge{background:#ffff00!important;color:#000!important}',
       '.cal-mission{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr);gap:14px;margin-top:14px;padding:18px;border:1px solid #a5d8ff;border-radius:18px;background:radial-gradient(circle at 92% 10%,rgba(14,116,144,.13),transparent 38%),linear-gradient(135deg,#f8fcff,#eef8f8)}.cal-mission h2{margin:0;font-size:20px}.cal-mission p{margin:7px 0 0;color:var(--cal-muted);font-size:12px;line-height:1.58}.cal-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.cal-metric{padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:#fff}.cal-metric b{display:block;font-size:18px}.cal-metric span{display:block;margin-top:3px;color:var(--cal-muted);font-size:9px;font-weight:800}.cal-route{margin-top:12px;padding:13px 14px;border:1px solid #bae6fd;border-radius:14px;background:linear-gradient(135deg,#f0f9ff,#ecfeff)}.cal-route-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.cal-route-head strong{color:#0f3b4d;font-size:12px}.cal-route-head span{color:#0e7490;font-size:10px;font-weight:950}.cal-route-bar{height:7px;margin-top:8px;overflow:hidden;border-radius:999px;background:#dbeafe}.cal-route-bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#0e7490,#14b8a6);transition:width .2s ease}.cal-route-steps{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.cal-route-step{display:flex;align-items:center;gap:6px;flex:1 1 150px;min-width:0;padding:7px 8px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#47616d;font-size:9px;line-height:1.35}.cal-route-step[data-done=true]{border-color:#86efac;background:#f0fdf4;color:#166534}.cal-route-step-icon{display:grid;place-items:center;width:16px;height:16px;flex:0 0 auto;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:9px;font-weight:950}.cal-route-step[data-done=true] .cal-route-step-icon{background:#bbf7d0;color:#166534}.cal-next-step{margin-top:10px;padding-top:9px;border-top:1px solid #bae6fd;color:#164e63;font-size:10px;line-height:1.45}.cal-next-step strong{display:block;margin-bottom:3px}.cal-next-step span{display:block}.cal-next-step button{margin-top:7px;border:1px solid #0e7490;border-radius:8px;background:#fff;color:#0e7490;padding:6px 9px;font-size:9px;font-weight:900;cursor:pointer}.cal-next-step button:hover{background:#ecfeff}.cal-import-card{border-left:5px solid #0e7490;background:linear-gradient(135deg,#f0fdfa,#f0f9ff)}.cal-import-input{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:9px}.cal-import-input input{max-width:100%;font-size:10px}.cal-import-status{margin-top:9px;padding:8px 10px;border-radius:9px;background:#ecfeff;color:#155e75;font-size:10px;line-height:1.45}.cal-import-status[data-error=true]{background:#fff7ed;color:#9a3412}.cal-import-status .cal-import-route{display:block;margin-top:5px;font-size:9px;font-weight:850}.cal-import-provenance{margin-top:7px;padding:8px 10px;border-radius:9px;font-size:10px;line-height:1.45}.cal-import-provenance[data-status=verified]{background:#f0fdf4;color:#166534}.cal-import-provenance[data-status=review]{background:#fffbeb;color:#92400e}.cal-import-provenance[data-status=missing]{background:#fff7ed;color:#9a3412}.cal-teacher-review{border-left:5px solid #7c3aed;background:linear-gradient(135deg,#faf5ff,#f5f3ff)}.cal-teacher-review-intro{margin:5px 0 9px;color:#6b21a8;font-size:9px;line-height:1.45}.cal-teacher-review-total{margin:8px 0;color:#5b21b6;font-size:12px;font-weight:950}.cal-teacher-review-table{width:100%;border-collapse:collapse;font-size:10px}.cal-teacher-review-table th,.cal-teacher-review-table td{border-bottom:1px solid #ddd6fe;padding:7px;text-align:left;vertical-align:top}.cal-teacher-review-table th{color:#5b21b6;font-size:9px;text-transform:uppercase}.cal-teacher-review-score{font-weight:950;color:#6d28d9;white-space:nowrap}.cal-teacher-review textarea{width:100%;min-height:62px;margin-top:8px;border:1px solid #c4b5fd;border-radius:9px;padding:8px;color:var(--cal-ink);resize:vertical;font-size:10px;line-height:1.4}.cal-teacher-review-next{margin:9px 0;padding:9px 10px;border-left:4px solid #7c3aed;border-radius:9px;background:#ede9fe;color:#5b21b6;font-size:10px;line-height:1.45}.cal-teacher-review-next strong{display:block;margin-bottom:3px;font-size:9px;text-transform:uppercase}.cal-teacher-review-next span{display:block;color:#6b21a8}.cal-portfolio-history{margin-top:12px;padding-top:10px;border-top:1px solid #ddd6fe}.cal-self-check{margin:10px 0;padding:10px;border:1px solid #c4b5fd;border-radius:10px;background:#fff}.cal-self-check h4{margin:0;color:#5b21b6;font-size:12px}.cal-self-check p{margin:4px 0 8px;color:#6b21a8;font-size:9px;line-height:1.45}.cal-self-check-options{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.cal-self-check-options button{border:1px solid #c4b5fd;border-radius:999px;background:#faf5ff;color:#6d28d9;padding:6px 8px;font-size:9px;font-weight:900;cursor:pointer}.cal-self-check-options button[aria-pressed=true]{border-color:#7c3aed;background:#ede9fe;color:#4c1d95}.cal-self-check label{display:block;margin-top:7px;color:#5b21b6;font-size:8px;font-weight:900;text-transform:uppercase}.cal-self-check textarea{width:100%;min-height:44px;margin-top:4px;border:1px solid #ddd6fe;border-radius:8px;padding:7px;color:var(--cal-ink);resize:vertical;font-size:10px;line-height:1.4}.cal-portfolio-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.cal-portfolio-head h4{margin:0;color:#5b21b6;font-size:12px}.cal-portfolio-head span{color:#6d28d9;font-size:9px;font-weight:900}.cal-portfolio-delta{margin:7px 0;padding:8px 10px;border-radius:9px;background:#f5f3ff;color:#5b21b6;font-size:10px;line-height:1.45}.cal-portfolio-list{margin:7px 0 0;padding-left:18px;color:#6b21a8;font-size:10px;line-height:1.55}.cal-portfolio-list li[data-direction=up]{color:#166534}.cal-portfolio-list li[data-direction=down]{color:#9a3412}.cal-evidence-map{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}.cal-evidence-map-item{padding:8px;border:1px solid #ddd6fe;border-radius:9px;background:#fff;color:#5b21b6;font-size:9px;line-height:1.45}.cal-evidence-map-item strong{display:block;margin-bottom:3px;font-size:8px;text-transform:uppercase}.cal-evidence-map-item span{display:block;color:#6b21a8}.cal-portfolio-boundary{margin-top:8px;color:#6b21a8;font-size:9px;line-height:1.45}',
       '.cal-tissues{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0 8px}.cal-tissue{display:flex;align-items:center;gap:9px;min-height:52px;border:1px solid var(--cal-line);border-radius:13px;background:#fff;color:var(--cal-ink);padding:9px 11px;text-align:left}.cal-tissue b{display:block;font-size:12px}.cal-tissue span{color:var(--cal-muted);font-size:9px}.cal-tissue[aria-pressed=true]{border-color:#0f766e;background:#f0fdfa;box-shadow:inset 0 0 0 1px #0f766e}.cal-tissue-icon{font-size:20px;color:#0f766e}',
       '.cal-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 14px}.cal-tab{min-height:38px;border:1px solid var(--cal-line);border-radius:10px;background:#fff;color:var(--cal-ink);padding:8px 12px;font-size:11px;font-weight:900}.cal-tab[aria-pressed=true]{border-color:#075985;background:#075985;color:#fff}',
@@ -1288,7 +1290,7 @@
         reader.onerror = function () { fail('error', 'The packet could not be read.'); };
         reader.onload = function () {
           var artifact = null;
-          try { artifact = JSON.parse(String(reader.result || '')); } catch (error) { fail('invalid', 'That file is not valid JSON.'); return; }
+          try { artifact = JSON.parse(String(reader.result || ''), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); } catch (error) { fail('invalid', 'That file is not valid JSON.'); return; }
           var allowed = ['cross-tissue-cer', 'reproducibility-audit', 'study-design'];
           allowed.push('teacher-review-portfolio');
           if (!artifact || artifact.schemaVersion !== EXPORT_SCHEMA_VERSION || allowed.indexOf(artifact.artifactType) < 0 || !artifact.fields || typeof artifact.fields !== 'object') {
@@ -2263,9 +2265,26 @@
                   h('title', { id: 'cal-svg-title' }, tissue.mapAria),
                   h('desc', { id: 'cal-svg-desc' }, 'Eight labeled cell-type clusters. Dot size and brightness indicate ' + metricLabel + ' for ' + selectedGene.id + '. Coordinates are illustrative, not a published UMAP.'),
                   h('defs', null,
-                    h('radialGradient', { id: 'cal-bg-glow' }, h('stop', { offset: '0%', stopColor: '#164e63', stopOpacity: .45 }), h('stop', { offset: '100%', stopColor: '#071b2f', stopOpacity: 0 }))),
+                    h('radialGradient', { id: 'cal-bg-glow' }, h('stop', { offset: '0%', stopColor: '#164e63', stopOpacity: .52 }), h('stop', { offset: '100%', stopColor: '#071b2f', stopOpacity: 0 }))),
                   h('rect', { x: 0, y: 0, width: 680, height: 430, fill: '#071b2f' }),
-                  h('circle', { cx: 340, cy: 215, r: 260, fill: 'url(#cal-bg-glow)' }),
+                  h('circle', { cx: 340, cy: 215, r: 270, fill: 'url(#cal-bg-glow)' }),
+                  // Subtle expression-space gridlines
+                  [140, 260, 380, 500, 620].map(function (gx) {
+                    return h('line', { key: 'gx-' + gx, x1: gx, y1: 18, x2: gx, y2: 396, stroke: '#16324f', strokeWidth: 0.9, strokeDasharray: '3 5' });
+                  }),
+                  [90, 170, 250, 330].map(function (gy) {
+                    return h('line', { key: 'gy-' + gy, x1: 30, y1: gy, x2: 662, y2: gy, stroke: '#16324f', strokeWidth: 0.9, strokeDasharray: '3 5' });
+                  }),
+                  // Top-right in-SVG expression legend pill
+                  h('g', { 'aria-hidden': 'true' },
+                    h('rect', { x: 454, y: 12, width: 214, height: 34, rx: 10, fill: '#0b2540', stroke: '#2c527a', strokeWidth: 1 }),
+                    h('text', { x: 466, y: 27, fill: '#7dd3fc', fontSize: 9.5, fontWeight: 800 }, 'MARKER: ' + selectedGene.id),
+                    h('circle', { cx: 562, cy: 24, r: 3.5, fill: '#94a3b8', opacity: 0.45 }),
+                    h('text', { x: 570, y: 27, fill: '#cbd5e1', fontSize: 8.5 }, 'Low'),
+                    h('circle', { cx: 604, cy: 24, r: 6.5, fill: '#38bdf8', stroke: '#f8fafc', strokeWidth: 1.5 }),
+                    h('text', { x: 615, y: 27, fill: '#f8fafc', fontSize: 8.5, fontWeight: 800 }, 'High'),
+                    h('text', { x: 466, y: 40, fill: '#94a3b8', fontSize: 8 }, 'Selected: ' + selectedCell.label)
+                  ),
                   h('text', { className: 'cal-axis', x: 15, y: 215, transform: 'rotate(-90 15 215)' }, 'illustrative expression neighborhood 2'),
                   h('text', { className: 'cal-axis', x: 245, y: 418 }, 'illustrative expression neighborhood 1'),
                   CELL_TYPES.map(function (cell) {
@@ -2273,6 +2292,7 @@
                     var strength = rawStrength === null ? 0 : rawStrength;
                     var radius = 4.5 + strength / 22;
                     var opacity = rawStrength === null ? .16 : .28 + strength / 140;
+                    var isSelected = cell.id === selectedCell.id;
                     return h('g', {
                       key: cell.id,
                       className: 'cal-cluster',
@@ -2282,12 +2302,29 @@
                       onClick: function () { chooseCell(cell.id); },
                       onKeyDown: function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chooseCell(cell.id); } }
                     },
+                      // Soft density cloud halo
+                      h('circle', { cx: cell.center[0], cy: cell.center[1], r: 30 + strength / 12, fill: cell.color, opacity: rawStrength === null ? 0.04 : 0.08 + (strength / 500) }),
+                      // Active selection telemetry reticle
+                      isSelected && h('circle', { cx: cell.center[0], cy: cell.center[1], r: 37, fill: 'none', stroke: '#38bdf8', strokeWidth: 2, strokeDasharray: '5 3' }),
                       offsets.map(function (point, index) {
-                        return h('circle', { key: index, cx: cell.center[0] + point[0], cy: cell.center[1] + point[1], r: radius + (index % 2), fill: cell.color, opacity: opacity, stroke: strength >= 80 ? '#f8fafc' : 'rgba(255,255,255,.28)', strokeWidth: strength >= 80 ? 2 : 1 });
+                        return h('circle', { key: index, cx: cell.center[0] + point[0], cy: cell.center[1] + point[1], r: radius + (index % 2), fill: cell.color, opacity: opacity, stroke: (isSelected || strength >= 80) ? '#f8fafc' : 'rgba(255,255,255,.32)', strokeWidth: (isSelected || strength >= 80) ? 2 : 1 });
                       }),
-                      h('text', { x: cell.center[0], y: cell.center[1] + 38, textAnchor: 'middle', fill: strength >= 80 ? '#fff' : '#cbd5e1' }, cell.label + (rawStrength === null ? ' *' : ''))
+                      h('text', { x: cell.center[0], y: cell.center[1] + 40, textAnchor: 'middle', fill: (isSelected || strength >= 80) ? '#ffffff' : '#cbd5e1' }, (isSelected ? '▸ ' : '') + cell.label + (rawStrength === null ? ' *' : ''))
                     );
                   }))),
+              (function () {
+                var topCell = CELL_TYPES.slice().sort(function (a, b) {
+                  var va = currentEvidenceValue(a.id, selectedGene.id);
+                  var vb = currentEvidenceValue(b.id, selectedGene.id);
+                  return (vb == null ? -1 : vb) - (va == null ? -1 : va);
+                })[0];
+                var topVal = topCell ? currentEvidenceValue(topCell.id, selectedGene.id) : null;
+                return h('div', { className: 'cal-map-legend' },
+                  h('span', { className: 'cal-map-legend-pill' }, '🧬 Active marker: ' + selectedGene.id),
+                  topCell && topVal !== null && h('span', { className: 'cal-map-legend-pill' }, '★ Peak cluster: ' + topCell.label + ' (' + Math.round(topVal) + (evidenceMode === 'real' ? '%' : '/100') + ')'),
+                  h('span', null, 'Select any cluster to inspect its full marker profile →')
+                );
+              })(),
               h('p', { className: 'cal-map-note' },
                 evidenceMode === 'real'
                   ? (realMetric === 'detectionPct'
@@ -2343,6 +2380,38 @@
             h('div', { className: 'cal-field' }, h('label', { htmlFor: 'cal-compare-a' }, 'Cell type A'), h('select', { id: 'cal-compare-a', value: compareA.id, onChange: function (event) { patch({ compareA: event.target.value, comparisonViewed: true }); } }, CELL_TYPES.map(function (cell) { return h('option', { key: cell.id, value: cell.id }, cell.label); }))),
             h('div', { className: 'cal-compare-vs', 'aria-hidden': 'true' }, 'VS'),
             h('div', { className: 'cal-field' }, h('label', { htmlFor: 'cal-compare-b' }, 'Cell type B'), h('select', { id: 'cal-compare-b', value: compareB.id, onChange: function (event) { patch({ compareB: event.target.value, comparisonViewed: true }); } }, CELL_TYPES.map(function (cell) { return h('option', { key: cell.id, value: cell.id }, cell.label); })))),
+          // Diverging butterfly comparison chart SVG
+          (function () {
+            var W = 560, rowH = 22, topPad = 24, Hh = topPad + GENES.length * rowH + 14;
+            var midL = 236, midR = 324, maxBar = 194;
+            return h('div', { className: 'cal-butterfly-wrap' },
+              h('div', { className: 'cal-butterfly-head' },
+                h('span', { style: { color: '#7dd3fc' } }, '◀ ' + compareA.label),
+                h('span', { style: { color: '#cbd5e1', fontSize: 10 } }, 'Differential Marker Profile'),
+                h('span', { style: { color: '#fde047' } }, compareB.label + ' ▶')
+              ),
+              h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', role: 'img', 'aria-label': 'Diverging bar comparison of ' + compareA.label + ' and ' + compareB.label + ' across ' + GENES.length + ' marker genes.', style: { display: 'block', maxHeight: 230 } },
+                h('line', { x1: midL, y1: 12, x2: midL, y2: Hh - 8, stroke: '#334155', strokeWidth: 1 }),
+                h('line', { x1: midR, y1: 12, x2: midR, y2: Hh - 8, stroke: '#334155', strokeWidth: 1 }),
+                GENES.map(function (gene, idx) {
+                  var a = evidenceMode === 'real' ? (realEvidence(realSnapshot, compareA.id, gene.id, realMetric) || 0) : compareA.evidence[gene.id];
+                  var b = evidenceMode === 'real' ? (realEvidence(realSnapshot, compareB.id, gene.id, realMetric) || 0) : compareB.evidence[gene.id];
+                  var y = topPad + idx * rowH;
+                  var wa = Math.max(2, (Math.max(0, Math.min(100, a)) / 100) * maxBar);
+                  var wb = Math.max(2, (Math.max(0, Math.min(100, b)) / 100) * maxBar);
+                  return h('g', { key: 'bf-' + gene.id },
+                    h('rect', { x: midL - maxBar, y: y, width: maxBar, height: 12, rx: 3, fill: '#0f2942' }),
+                    h('rect', { x: midL - wa, y: y, width: wa, height: 12, rx: 3, fill: '#38bdf8' }),
+                    h('text', { x: midL - maxBar - 6, y: y + 9.5, textAnchor: 'end', fill: '#bae6fd', fontSize: 9, fontWeight: 800 }, Math.round(a)),
+                    h('text', { x: W / 2, y: y + 9.5, textAnchor: 'middle', fill: '#f8fafc', fontSize: 9.5, fontWeight: 900 }, gene.id),
+                    h('rect', { x: midR, y: y, width: maxBar, height: 12, rx: 3, fill: '#0f2942' }),
+                    h('rect', { x: midR, y: y, width: wb, height: 12, rx: 3, fill: '#fbbf24' }),
+                    h('text', { x: midR + maxBar + 6, y: y + 9.5, textAnchor: 'start', fill: '#fef08a', fontSize: 9, fontWeight: 800 }, Math.round(b))
+                  );
+                })
+              )
+            );
+          })(),
           h('div', { className: 'cal-table-wrap' },
             h('table', { className: 'cal-table' },
               h('caption', { style: { textAlign: 'left', padding: '8px 0', fontWeight: 900 } }, (evidenceMode === 'real' ? 'Real aggregate ' + (realMetric === 'detectionPct' ? 'detection frequency' : 'relative mean signal') : 'Teaching-normalized marker evidence') + ': ' + compareA.label + ' and ' + compareB.label),
@@ -2391,7 +2460,7 @@
             h('h3', null, 'Which cell identity is best supported?'),
             h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_mystery_cell_answer_choices', 'Mystery cell answer choices') },
               CELL_TYPES.map(function (cell) {
-                return h('button', { key: cell.id, type: 'button', className: 'cal-choice', 'aria-pressed': selectedAnswer === cell.id ? 'true' : 'false', onClick: function () { answerMystery(cell.id); } }, cell.label, h('span', { style: { display: 'block', marginTop: '3px', color: '#627d98', fontSize: '9px' } }, 'marker ' + cell.marker));
+                return h('button', { key: cell.id, type: 'button', className: 'cal-choice', 'aria-pressed': selectedAnswer === cell.id ? 'true' : 'false', onClick: function () { answerMystery(cell.id); } }, cell.label, h('span', { style: { display: 'block', marginTop: '3px', color: '#334e68', fontSize: '9px' } }, 'marker ' + cell.marker));
               })),
             selectedAnswer && h('div', { className: 'cal-feedback', 'data-correct': isCorrect ? 'true' : 'false', role: 'status' },
               isCorrect
@@ -2953,9 +3022,25 @@
       return h('main', { className: 'cal-shell', 'data-cell-atlas-tool': 'true' },
         h('header', { className: 'cal-top' },
           h('button', { type: 'button', className: 'cal-back', onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); announce(__alloT('stem.cellatlas.sr_returned_to_steam_lab_tools', 'Returned to STEAM Lab tools.')); }, 'aria-label': __alloT('stem.cellatlas.a11y_back_to_steam_lab_tools', 'Back to STEAM Lab tools') }, '\u2190'),
+          h('svg', { width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+            h('defs', null,
+              h('linearGradient', { id: 'cal-emblem-bg', x1: '0', y1: '0', x2: '1', y2: '1' },
+                h('stop', { offset: '0%', stopColor: '#075985' }),
+                h('stop', { offset: '100%', stopColor: '#0f766e' })
+              )
+            ),
+            h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 11, fill: 'url(#cal-emblem-bg)', stroke: '#99f6e4', strokeWidth: 1.4 }),
+            h('circle', { cx: 21, cy: 21, r: 12, fill: 'none', stroke: '#bae6fd', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.7 }),
+            h('circle', { cx: 16, cy: 17, r: 4.2, fill: '#38bdf8', stroke: '#ffffff', strokeWidth: 1 }),
+            h('circle', { cx: 26, cy: 16, r: 3.4, fill: '#5eead4', stroke: '#ffffff', strokeWidth: 1 }),
+            h('circle', { cx: 22, cy: 26, r: 4.5, fill: '#fbbf24', stroke: '#ffffff', strokeWidth: 1 }),
+            h('circle', { cx: 13, cy: 26, r: 2.2, fill: '#e0f2fe' })
+          ),
           h('div', { className: 'cal-brand' },
             h('p', { className: 'cal-kicker' }, 'Tissue to cell to gene to protein'),
-            h('h1', { className: 'cal-title' }, 'Cell Atlas Lab'),
+            h('div', { className: 'cal-title-row' },
+              h('h1', { className: 'cal-title' }, 'Cell Atlas Lab'),
+              h('span', { className: 'cal-subject-badge' }, 'Science · Genomics')),
             h('p', { className: 'cal-subtitle' }, tissue.subtitle)),
           h('span', { className: 'cal-source-chip' }, 'Open HCA source | ' + SOURCE.license)),
         h('section', { className: 'cal-mission', 'aria-labelledby': 'cal-mission-title' },

@@ -26,7 +26,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 30;
+var VERSION = 31;
 // Apps Script allows 30 simultaneous runs per owner and a run waiting on the
 // script lock still counts, so live writes give up quickly and answer "busy"
 // (the app retries with backoff) instead of queueing for seconds.
@@ -109,10 +109,17 @@ function countAction(action) {
   try {
     var cache = CacheService.getScriptCache();
     var key = 'st:' + Math.floor(Date.now() / 60000);
-    var counts = {};
-    try { counts = JSON.parse(cache.get(key) || '{}') || {}; } catch (e) { counts = {}; }
-    var name = /^[a-z]{1,24}$/.test(action) ? action : 'other';
-    counts[name] = (counts[name] || 0) + 1;
+    var counts = Object.create(null);
+    try {
+      var parsedCounts = JSON.parse(cache.get(key) || '{}');
+      if (parsedCounts && typeof parsedCounts === 'object' && !Array.isArray(parsedCounts)) {
+        Object.keys(parsedCounts).forEach(function (k) {
+          if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') counts[k] = Number(parsedCounts[k]) || 0;
+        });
+      }
+    } catch (e) { counts = Object.create(null); }
+    var name = /^[a-z]{1,24}$/.test(action) && action !== 'constructor' && action !== 'prototype' ? action : 'other';
+    counts[name] = (Object.prototype.hasOwnProperty.call(counts, name) ? counts[name] : 0) + 1;
     cache.put(key, JSON.stringify(counts), LOAD_STAT_TTL_SEC);
   } catch (e) { /* counting must never fail a request */ }
 }
@@ -144,7 +151,7 @@ function doPost(e) {
     return handle(p || {});
   } catch (err) {
     if (err && err.code === 'mailbox-session-busy') return out({ ok: false, e: 'busy' });
-    return out({ ok: false, e: 'server', d: String((err && err.message) || err).slice(0, 200) });
+    return out({ ok: false, e: 'server' });
   }
 }
 
@@ -311,10 +318,10 @@ function handle(p) {
 
   if (a === 'join') {
     var jcode = String(p.c || '').toUpperCase();
+    if (!rateCheck(cache, 'r:' + jcode + ':join', 120)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
     var jsecret = sessionSecretFor(jcode, cache, props);
     if (!jsecret) return out({ ok: false, e: 'no-session' });
-    if (String(p.k || '') !== jsecret) return out({ ok: false, e: 'denied' });
-    if (!rateCheck(cache, 'r:' + jcode + ':join', 120)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+    if (!mbTimingSafeEq_(String(p.k || ''), jsecret)) return out({ ok: false, e: 'denied' });
     var juid = 'mb-' + Utilities.getUuid().replace(/-/g, '').slice(-20);
     return out({ ok: true, uid: juid, pt: participantToken(admin, jcode, juid, jsecret), t: Date.now() });
   }
@@ -1344,9 +1351,22 @@ function docWrite(cache, code, action, p, actor) {
     return out({ ok: true, w: env2.w, d: responseData, t: Date.now() });
   } finally { lock.releaseLock(); }
 }
+function mbMakeDriveItemPrivate_(item) {
+  try {
+    if (item && typeof item.setSharing === 'function' && typeof DriveApp !== 'undefined' && DriveApp.Access && DriveApp.Permission) {
+      item.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);
+    }
+    if (item && typeof item.setShareableByEditors === 'function') {
+      item.setShareableByEditors(false);
+    }
+  } catch (aclErr) {}
+}
 function packFolder() {
   var it = DriveApp.getFoldersByName(FOLDER_NAME);
-  return it.hasNext() ? it.next() : DriveApp.createFolder(FOLDER_NAME);
+  if (it.hasNext()) return it.next();
+  var folder = DriveApp.createFolder(FOLDER_NAME);
+  mbMakeDriveItemPrivate_(folder);
+  return folder;
 }
 
 // Keep a copy of the admin token as a file in the OWNER's Drive folder, so a
@@ -1366,8 +1386,11 @@ function saveTokenNote(token) {
       + 'admin token from Script properties into AlloFlow.';
     var folder = packFolder();
     var it = folder.getFilesByName(name);
-    if (it.hasNext()) it.next().setContent(body);
-    else folder.createFile(name, body, 'text/plain');
+    var tokenFile = it.hasNext() ? it.next().setContent(body) : folder.createFile(name, body, 'text/plain');
+    try {
+      tokenFile.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);
+      if (typeof tokenFile.setShareableByEditors === 'function') tokenFile.setShareableByEditors(false);
+    } catch (aclErr) {}
   } catch (e) { /* best-effort: never block claim/auth on Drive hiccups */ }
 }
 
@@ -1637,7 +1660,7 @@ function assignmentActivityContext(p, requirePackSecret) {
   var found = readPackManifestForActivity(packId);
   if (found.error) return found;
   var manifest = found.manifest;
-  if (requirePackSecret && String(p.k || '') !== String(manifest.k || '')) return { error: 'denied' };
+  if (requirePackSecret && !mbTimingSafeEq_(String(p.k || ''), String(manifest.k || ''))) return { error: 'denied' };
   var activities = assignmentActivitiesFromManifest(manifest);
   var config = null;
   for (var i = 0; i < activities.length; i++) {
@@ -1811,7 +1834,7 @@ function normalizeAvailabilityPicks(value, config) {
   var source = value;
   if (typeof source === 'string') { try { source = JSON.parse(source); } catch (e) { return null; } }
   if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
-  var allowed = {};
+  var allowed = Object.create(null);
   for (var ai = 0; ai < config.options.length; ai++) allowed[config.options[ai].id] = true;
   var picks = {};
   var yesCount = 0;
@@ -1834,7 +1857,7 @@ function normalizeAvailabilityPicks(value, config) {
 // survives the erasure of the rows it came from (spec §4).
 function computeAvailabilityTally(config, responses) {
   var rows = responses && typeof responses === 'object' ? responses : {};
-  var byId = {};
+  var byId = Object.create(null);
   for (var oi = 0; oi < config.options.length; oi++) {
     byId[config.options[oi].id] = { id: config.options[oi].id, label: config.options[oi].label, yes: 0, maybe: 0, no: 0 };
   }
@@ -1907,7 +1930,7 @@ function signupCapacityFor(config, optionId) {
 // person resubmit or change their mind without competing against their own
 // existing claim for the last seat.
 function signupTakenCounts(config, responses, exceptUid) {
-  var counts = {};
+  var counts = Object.create(null);
   for (var i = 0; i < config.options.length; i++) counts[config.options[i].id] = 0;
   var rows = responses && typeof responses === 'object' ? responses : {};
   Object.keys(rows).forEach(function (uid) {
@@ -1924,7 +1947,7 @@ function normalizeSignupClaims(value, config) {
   var source = value;
   if (typeof source === 'string') { try { source = JSON.parse(source); } catch (e) { return null; } }
   if (!Array.isArray(source)) return null;
-  var allowed = {};
+  var allowed = Object.create(null);
   for (var i = 0; i < config.options.length; i++) allowed[config.options[i].id] = true;
   var out = [];
   for (var k = 0; k < source.length; k++) {
@@ -1944,7 +1967,7 @@ function buildSignupSummary(state, isHost) {
   var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
   var counts = state.tally || signupTakenCounts(config, responses, null);
   var slots = [];
-  var claimants = {};
+  var claimants = Object.create(null);
   Object.keys(responses).forEach(function (uid) {
     var claims = responses[uid] && responses[uid].claims;
     if (!Array.isArray(claims)) return;
@@ -2377,7 +2400,7 @@ function buildAssignmentActivityPublicSummary(state) {
   // single approved learner's term once unrelated held responses brought the
   // total over the anonymity floor.
   var participantCount = 0;
-  var buckets = {};
+  var buckets = Object.create(null);
   Object.keys(responses).forEach(function(uid) {
     var row = responses[uid];
     if (!row || row.status !== 'approved') return;
@@ -2819,11 +2842,14 @@ function putSubmission(cache, props, p, admin) {
   } else {
     var packId = String(p.id || '');
     if (!/^PK-[0-9a-f-]{36}$/i.test(packId)) return out({ ok: false, e: 'bad-request' });
+    if (!rateCheck(cache, 'r:subpack:' + packId.slice(-12), 160)) {
+      return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+    }
     var manifest = findPackFile(packId);
     if (!manifest) return out({ ok: false, e: 'no-pack' });
     var packMeta;
     try { packMeta = JSON.parse(manifest.getBlob().getDataAsString()); } catch (e) { return out({ ok: false, e: 'corrupt' }); }
-    if (String(p.k || '') !== String(packMeta.k || '')) return out({ ok: false, e: 'denied' });
+    if (!mbTimingSafeEq_(String(p.k || ''), String(packMeta.k || ''))) return out({ ok: false, e: 'denied' });
     if (packMeta.expiresAt && Date.parse(packMeta.expiresAt) <= Date.now()) return out({ ok: false, e: 'expired' });
     sourceKind = 'homework';
     sourceId = packId;
@@ -3159,7 +3185,7 @@ function getPack(cache, p) {
   if (!file) return out({ ok: false, e: 'no-pack' });
   var body;
   try { body = JSON.parse(file.getBlob().getDataAsString()); } catch (err) { return out({ ok: false, e: 'corrupt' }); }
-  if (String(p.k || '') !== String(body.k || '')) return out({ ok: false, e: 'denied' });
+  if (!mbTimingSafeEq_(String(p.k || ''), String(body.k || ''))) return out({ ok: false, e: 'denied' });
   if (body.expiresAt && Date.parse(body.expiresAt) <= Date.now()) return out({ ok: false, e: 'expired' });
   var part = Math.max(1, parseInt(p.part, 10) || 1);
   if (body.data !== undefined) {
@@ -3217,7 +3243,10 @@ function delPack(cache, p) {
 function deliveryFolder() {
   var parent = packFolder();
   var it = parent.getFoldersByName(DELIVERY_FOLDER_NAME);
-  return it.hasNext() ? it.next() : parent.createFolder(DELIVERY_FOLDER_NAME);
+  if (it.hasNext()) return it.next();
+  var folder = parent.createFolder(DELIVERY_FOLDER_NAME);
+  mbMakeDriveItemPrivate_(folder);
+  return folder;
 }
 
 function safeFileName(value, fallback) {
@@ -3252,13 +3281,18 @@ function driveCreateConverted(bytes, sourceMime, name, targetMime, folderId) {
     + JSON.stringify(meta) + '\r\n--' + boundary + '\r\nContent-Type: ' + sourceMime + '\r\n\r\n';
   var tail = '\r\n--' + boundary + '--\r\n';
   var payload = Utilities.newBlob(head).getBytes().concat(bytes, Utilities.newBlob(tail).getBytes());
-  var res = UrlFetchApp.fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,webViewLink', {
-    method: 'post',
-    contentType: 'multipart/related; boundary=' + boundary,
-    payload: payload,
-    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-    muteHttpExceptions: true
-  });
+  var res;
+  try {
+    res = UrlFetchApp.fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,webViewLink', {
+      method: 'post',
+      contentType: 'multipart/related; boundary=' + boundary,
+      payload: payload,
+      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+      muteHttpExceptions: true
+    });
+  } catch (err) {
+    return { e: 'drive-error', d: String((err && err.message) || err).slice(0, 200) };
+  }
   var code = res.getResponseCode();
   var body = {};
   try { body = JSON.parse(res.getContentText() || '{}'); } catch (err) {}
@@ -3271,12 +3305,12 @@ function driveCreateConverted(bytes, sourceMime, name, targetMime, folderId) {
 
 function deliverDocument(p) {
   var mime = String(p.mime || '').toLowerCase().split(';')[0].trim();
-  if (!DELIVER_ALLOWED_MIMES[mime]) return out({ ok: false, e: 'bad-mime' });
+  if (!Object.prototype.hasOwnProperty.call(DELIVER_ALLOWED_MIMES, mime)) return out({ ok: false, e: 'bad-mime' });
   var convert = String(p.convert || 'auto');
-  var target = DELIVER_CONVERT_TARGETS[mime] || '';
+  var target = Object.prototype.hasOwnProperty.call(DELIVER_CONVERT_TARGETS, mime) ? DELIVER_CONVERT_TARGETS[mime] : '';
   if (convert === 'none') target = '';
   else if (convert !== 'auto') {
-    var wanted = DELIVER_CONVERT_ALIASES[convert] || '';
+    var wanted = Object.prototype.hasOwnProperty.call(DELIVER_CONVERT_ALIASES, convert) ? DELIVER_CONVERT_ALIASES[convert] : '';
     if (!wanted || wanted !== target) return out({ ok: false, e: 'bad-convert' });
   }
   var decoded = decodeDeliveryBytes(p);
@@ -3294,6 +3328,7 @@ function deliverDocument(p) {
   }
   try {
     var file = folder.createFile(Utilities.newBlob(decoded.bytes, mime, name));
+    mbMakeDriveItemPrivate_(file);
     return out({ ok: true, id: file.getId(), url: file.getUrl(), name: name, mime: mime, converted: false, t: Date.now() });
   } catch (err2) {
     return out({ ok: false, e: 'drive-error', d: String((err2 && err2.message) || err2).slice(0, 200) });

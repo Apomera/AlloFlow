@@ -26,7 +26,7 @@ afterEach(() => {
 });
 
 const PAGE_SCRIPTS = [
-  'packets-page.js', 'packets_zip.js', 'packets_verify_core.js', 'word_sounds_take_home_loader.js',
+  'packets-page.js', 'packets_zip.js', 'packets_my_words.js', 'packets_verify_core.js', 'packets_reopen.js', 'word_sounds_take_home_loader.js',
   'word_picture_matcher.js', 'symbol_runner_core.js', 'packet_symbol_runner_builder.js', 'packets-symbol-runner.js',
 ];
 
@@ -48,6 +48,7 @@ function openPage(hooks = {}) {
   for (const src of PAGE_SCRIPTS) {
     w.eval(read(src));
     if (src === 'symbol_runner_core.js' && hooks.afterCore) hooks.afterCore(w);
+    if (src === 'packets_my_words.js' && hooks.afterMyWords) hooks.afterMyWords(w);
   }
   return { w, d: w.document, $: (id) => w.document.getElementById(id) };
 }
@@ -180,9 +181,15 @@ describe('2. The shared maker layout', () => {
     const batch = p.$('sr-batch');
     expect(batch.tagName).toBe('DETAILS');
     expect(batch.classList.contains('batch')).toBe(true);
-    expect(squash(batch.querySelector('summary').textContent)).toBe('Make one for each student');
+    expect(squash(batch.querySelector('summary').textContent)).toBe('Put student code names in the file');
     expect(batch.contains(p.$('sr-learners'))).toBe(true);
     expect(batch.contains(p.$('sr-batch-make'))).toBe(true);
+    // Title sits before Try it / Save the file, matching the other makers (Wave 3A).
+    expect(p.$('sr-title').compareDocumentPosition(saveBtn) & p.w.Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(p.$('sr-code-name-box')).toBeNull();
+    expect(p.$('sr-learner-tip')).toBeNull();
+    expect(p.$('sr-batch-save')).toBeNull();
+    expect(squash(p.$('sr-learners-hint').textContent)).toBe('Use code names or first names only, never full names. At most 40 at a time.');
 
     const foot = p.d.querySelector('footer.foot');
     expect(foot).not.toBeNull();
@@ -385,17 +392,308 @@ describe('4. Stroop and flanker items in the builder', () => {
   });
 });
 
-describe('5. Find a picture', () => {
-  it('no longer links to packets-pictures.html, which Symbol Runner cannot read', () => {
-    const html = read('packets-symbol-runner.html');
-    expect(html).not.toContain('packets-pictures.html');
-    expect(html).not.toMatch(/pictures online|Find a picture|Find more pictures/i);
-    expect(read('packets-symbol-runner.js')).not.toContain('packets-pictures');
+describe('5. Find a picture & AlloPacketMyWords sharing (Wave 3A)', () => {
+  it('reads AlloPacketMyWords IndexedDB and links 2+ letter words to packets-pictures.html#word=<w>&from=symbol-runner', async () => {
+    const pngUri = 'data:image/png;base64,' + Buffer.alloc(64, 7).toString('base64');
+    const p = openPage({
+      afterMyWords(w) {
+        w.AlloPacketMyWords = {
+          normalizeWord: (s) => (/^[a-z]{2,24}$/.test(String(s || '').trim().toLowerCase()) ? String(s).trim().toLowerCase() : ''),
+          normalizeMediaKey: (s) => String(s || '').trim().toLowerCase(),
+          getManyMedia: async (keys) => (keys.some((k) => String(k).toLowerCase() === 'all') ? { all: { picture: { dataUri: pngUri, credit: { own: true } } } } : {}),
+          putMedia: async () => ({}),
+          creditLine: () => "The teacher's own picture.",
+          onChange: () => () => {},
+        };
+      },
+    });
+    // Switch to sight_words so 2+ letter words get Find a picture links and auto-surface My words pictures.
+    p.$('sr-mode').value = 'sight_words';
+    p.$('sr-mode').dispatchEvent(new p.w.Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 30));
+    const link = p.d.querySelector('[data-sr-find-pic="all"]');
+    expect(link).toBeTruthy();
+    expect(link.getAttribute('href')).toBe('packets-pictures.html#word=all&from=symbol-runner');
+    expect(p.w.AlloPacketsSymbolRunner.getPictures().all?.src).toBe(pngUri);
   });
 });
 
 describe('6. The builder copy', () => {
   it('desktop/web-app/public/packet_symbol_runner_builder.js is the same file as the root one', () => {
     expect(read('desktop/web-app/public/packet_symbol_runner_builder.js')).toBe(read('packet_symbol_runner_builder.js'));
+  });
+});
+
+describe('7. Wave 1 hardening, portability & student player fixes', () => {
+  it('refuses unsafe SVG (<script>, onload=) and oversized images in safeDataImage while keeping clean SVG', () => {
+    const builder = require('../packet_symbol_runner_builder.js');
+    const loader = loadLoader();
+    const scriptSvg = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>').toString('base64');
+    const onloadSvg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"><circle r="10"/></svg>');
+    const hugePng = 'data:image/png;base64,' + Buffer.alloc(410000, 1).toString('base64');
+    const cleanSvg = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>').toString('base64');
+    const built = builder.buildSymbolRunnerPacket({
+      loader,
+      mode: 'custom',
+      items: 'cat dog fish bird',
+      pictures: { cat: { src: scriptSvg }, dog: { src: onloadSvg }, fish: { src: hugePng }, bird: { src: cleanSvg } },
+      packetMode: 'practice',
+    });
+    const imgs = Object.values(built.lesson.images || {});
+    expect(imgs).toHaveLength(1);
+    expect(imgs[0]).toBe(cleanSvg);
+  });
+
+  it('clears #rehearse= hash after applying and resets form controls on Forget my choices', () => {
+    const p = openPage({
+      before(w) {
+        w.location.hash = '#rehearse=b,d,p';
+      },
+    });
+    expect(p.w.location.hash).toBe('');
+    expect(p.$('sr-custom').value).toContain('b');
+    p.$('sr-title').value = 'Custom Changed Title';
+    p.$('sr-clear-local').click();
+    expect(p.$('sr-custom').value).toBe('');
+    expect(p.$('sr-title').value).toBe('Symbol Runner Practice');
+    expect(p.$('sr-mode').value).toBe('confusable_letters');
+  });
+
+  it('student player: matches numeric value on digit keys (not slot index), handles lockon arrows at document level, replays audio on R, and hides Spoken directions', () => {
+    const builder = require('../packet_symbol_runner_builder.js');
+    const loader = loadLoader();
+    const wavClip = 'data:audio/wav;base64,' + Buffer.from('RIFF0000WAVE').toString('base64');
+    const built = builder.buildSymbolRunnerPacket({
+      loader,
+      mode: 'subitize_dots',
+      packetMode: 'practice',
+      control: 'lockon',
+      clips: { '1': wavClip, '2': wavClip, '3': wavClip, '4': wavClip, '5': wavClip, '6': wavClip },
+    });
+    const played = [];
+    const dom = new JSDOM(built.html, {
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      url: 'https://packet.test/sr.html',
+      beforeParse(w) {
+        w.Audio = class { play() { played.push(this.src); return Promise.resolve(); } pause() {} };
+      },
+    });
+    opened.push(dom);
+    const w = dom.window;
+    const d = w.document;
+    // Reading Tools hides Spoken directions in Symbol Runner practice.
+    d.querySelector('[data-tools-open]').click();
+    expect(d.querySelector('[data-tool-group="directions"]').hidden).toBe(true);
+    d.querySelector('[data-tools-close-top]').click();
+
+    d.getElementById('learner-name').value = 'Sam';
+    d.querySelector('#app button.primary').click();
+    // Lock-on arrows work at document level to lock onto the target lane.
+    const targetLane = Number(d.querySelector('[data-sr-target="true"]').getAttribute('data-lane'));
+    for (let step = 0; step < 3; step++) {
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: targetLane === 0 ? 'ArrowLeft' : 'ArrowRight', bubbles: true }));
+    }
+    expect(d.querySelector('[data-sr-lanes]').getAttribute('data-locked')).toBe('false');
+    // R key replays item.audio cleanly.
+    const playedBefore = played.length;
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'r', bubbles: true }));
+    expect(played.length).toBeGreaterThan(playedBefore);
+    // Pressing the digit equal to a choice's numeric VALUE submits that value (not blind slot index).
+    const choices = [...d.querySelectorAll('[data-sr-choice]')].map((b) => b.getAttribute('data-sr-choice'));
+    const pickVal = choices.find((c, idx) => Number(c) !== idx + 1 && /^[0-9]$/.test(c)) || choices[0];
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: pickVal, bubbles: true }));
+    const savedRaw = Object.values(Object.fromEntries(Object.keys(w.localStorage).map((k) => [k, w.localStorage.getItem(k)])))[0];
+    expect(JSON.parse(savedRaw).items[0].responses[0]).toBe(pickVal);
+  });
+
+  it('transcodes letter/phoneme WebM clips to portable WAV/MP3 before exporting so zero raw audio/webm enters HTML', async () => {
+    let savedHtml = '';
+    const webmUri = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84E=';
+    const mp3Uri = 'data:audio/mpeg;base64,SUQzBAAAAAA=';
+    const wavUri = 'data:audio/wav;base64,' + Buffer.from('RIFF0000WAVE').toString('base64');
+    const p = openPage({
+      before(w) {
+        w.OfflineAudioContext = class {};
+        w.Blob = class { constructor(parts) { this._text = parts.join(''); } };
+        w.URL.createObjectURL = (b) => { savedHtml = b._text || ''; return 'blob:sr-portable'; };
+        w.HTMLAnchorElement.prototype.click = function () {};
+        w.fetch = async (url) => {
+          const u = String(url);
+          if (u === 'audio_bank/letters.json') return { ok: true, status: 200, json: async () => ({ b: webmUri, d: webmUri, p: webmUri, q: webmUri }) };
+          if (u === 'audio_bank/phonemes.json') return { ok: true, status: 200, json: async () => ({ b: webmUri, d: webmUri, p: webmUri, q: webmUri }) };
+          return { ok: false, status: 404, json: async () => ({}), text: async () => '' };
+        };
+        w.AlloPacketAudioKit = {
+          getMp3: async () => true,
+          wavUriToMp3Uri: () => mp3Uri,
+        };
+      },
+    });
+    // Stub portableAudio on loaded take-home loader to simulate WebM -> WAV decoding in JSDOM.
+    p.w.AlloWordSoundsTakeHome.portableAudio = async (lesson) => {
+      for (const k of Object.keys(lesson.audio)) lesson.audio[k] = wavUri;
+    };
+    p.$('sr-save-html').click();
+    for (let i = 0; i < 60 && !savedHtml; i++) await new Promise((r) => setTimeout(r, 15));
+    expect(savedHtml).toContain('data:audio/mpeg;base64,');
+    expect(savedHtml).not.toContain('data:audio/webm');
+  });
+});
+
+describe('8. Wave 3A: canonical filenames, Show toggle, .txt roster, and deterministic fixed-mode shard audio', () => {
+  it('uses canonical Title__CodeName.html filenames, Show toggle on teacher code, and zero-storage .txt roster', async () => {
+    const downloads = [];
+    const p = openPage({
+      before(w) {
+        w.HTMLAnchorElement.prototype.click = function () {
+          if (this.getAttribute('download')) downloads.push(this.getAttribute('download'));
+        };
+      },
+    });
+    // Teacher code Show toggle
+    expect(p.$('sr-teacher-code').type).toBe('password');
+    p.$('sr-code-show').click();
+    expect(p.$('sr-teacher-code').type).toBe('text');
+    expect(p.$('sr-code-show').textContent).toBe('Hide');
+    p.$('sr-code-show').click();
+    expect(p.$('sr-teacher-code').type).toBe('password');
+
+    // Canonical single-file Title__CodeName.html
+    p.$('sr-title').value = 'Letters Practice';
+    p.$('sr-learners').value = 'BlueHeron7';
+    p.$('sr-learners').dispatchEvent(new p.w.Event('input', { bubbles: true }));
+    expect(p.$('sr-batch-make').hidden).toBe(true);
+    p.$('sr-save-html').click();
+    for (let i = 0; i < 40 && !downloads.length; i++) await new Promise((r) => setTimeout(r, 15));
+    expect(downloads[0]).toBe('Letters-Practice__BlueHeron7.html');
+
+    // Zero-storage .txt roster loader + 1-click Title__N-students.zip
+    const roster = new p.w.File(['BlueHeron7\nRedFox3\n'], 'roster.txt', { type: 'text/plain' });
+    Object.defineProperty(p.$('sr-batch-file'), 'files', { configurable: true, value: [roster] });
+    p.$('sr-batch-file').dispatchEvent(new p.w.Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 25));
+    expect(p.$('sr-batch-make').hidden).toBe(false);
+    expect(p.$('sr-batch-make').textContent).toBe('Save .zip for 2 students');
+    expect(JSON.stringify({ ...p.w.localStorage })).not.toContain('BlueHeron7');
+    p.$('sr-batch-make').click();
+    for (let i = 0; i < 40 && downloads.length < 2; i++) await new Promise((r) => setTimeout(r, 15));
+    expect(downloads[1]).toBe('Letters-Practice__2-students.zip');
+  });
+
+  it('embeds deterministic word_audio_shards/ clips for fixed digits, colors, and directions without speechSynthesis', async () => {
+    const idxJson = read('word_audio_shards/index.json');
+    const wavClip = 'data:audio/wav;base64,' + Buffer.from('RIFF0000WAVE').toString('base64');
+    const savedBlobs = [];
+    const p = openPage({
+      before(w) {
+        w.Blob = class { constructor(parts, opts) { this.body = parts.join(''); this.type = opts && opts.type; } };
+        w.URL.createObjectURL = (blob) => { savedBlobs.push(blob); return 'blob:sr-audio-' + savedBlobs.length; };
+        w.HTMLAnchorElement.prototype.click = function () {};
+        w.fetch = async (url) => {
+          const u = String(url);
+          if (u === 'word_audio_shards/index.json') return { ok: true, json: async () => JSON.parse(idxJson) };
+          if (u.startsWith('word_audio_shards/')) {
+            const idx = JSON.parse(idxJson);
+            const shardFile = u.split('/').pop();
+            const shardKey = Object.keys(idx.shards).find((k) => idx.shards[k].file === shardFile);
+            const words = {};
+            for (const [word, sk] of Object.entries(idx.words)) if (sk === shardKey) words[word] = wavClip;
+            return { ok: true, json: async () => ({ words }) };
+          }
+          return { ok: false, status: 404, json: async () => ({}) };
+        };
+      },
+    });
+    for (const [modeId, customVal, expectedCount] of [['digits_single', '', 10], ['color_word_stroop', '', 4], ['custom', 'up, down, left, right', 4]]) {
+      const before = savedBlobs.length;
+      p.$('sr-mode').value = modeId;
+      p.$('sr-custom').value = customVal;
+      p.$('sr-save-html').click();
+      for (let i = 0; i < 60 && savedBlobs.length === before; i++) await new Promise((r) => setTimeout(r, 20));
+      const html = savedBlobs[savedBlobs.length - 1].body;
+      const lesson = JSON.parse(/var lesson=(.*);\nvar labels=/.exec(html)[1]);
+      expect(Object.keys(lesson.audio || {}).length, modeId).toBe(expectedCount);
+      expect(html).not.toMatch(/speechSynthesis/);
+    }
+  });
+
+  it('Wave 3B: routes wrong-maker (including Word Sounds via identify) and results files in 1 click via AlloPacketHandoff.redirect', async () => {
+    const handed = [];
+    const p = openPage();
+    p.w.AlloPacketHandoff = { HASH: '#open-file', RESULTS_HASH: '#import-results', redirect: async (file, href, hash) => { handed.push({ name: file.name, href, hash }); } };
+    const csv = '\uFEFF"format","session_id"\r\n"alloflow-packet-result/1","S-1"\r\n';
+    p.w.AlloPacketsSymbolRunner.reopenFromText(csv, 'sr-res.csv');
+    const goRes = p.$('sr-reopen-status').querySelector('button[data-handoff-href="packets-results.html"]');
+    expect(goRes).toBeTruthy();
+    goRes.click();
+    expect(handed[0]).toEqual({ name: 'sr-res.csv', href: 'packets-results.html', hash: '#import-results' });
+
+    // A real Word Sounds HTML packet dropped on Symbol Runner identifies cleanly via AlloPacketReopen.identify().
+    const th = p.w.AlloWordSoundsTakeHome;
+    const wsCore = new Function(read('word_sounds_core.js') + ';return createWordSoundsCore();')();
+    const wsHtml = th.buildHtml({
+      schema: th.LESSON_SCHEMA,
+      player: th.PLAYER,
+      lessonId: 'ws-test-1',
+      revision: 'r1',
+      title: 'Short a',
+      mode: 'practice',
+      activityTitles: { isolation: 'Find Sounds' },
+      blocks: [{ activity: 'isolation', items: [{ id: 'iso-1', word: 'cat', target: 'k', position: 0, choices: [{ label: 'k', audio: 'k' }, { label: 'a', audio: 'a' }] }] }],
+      audio: {},
+      images: {},
+      feedback: { correct: [], retry: null },
+      submit: null,
+    }, { core: wsCore });
+    p.w.AlloPacketsSymbolRunner.reopenFromText(wsHtml, 'ws.html');
+    const goWs = p.$('sr-reopen-status').querySelector('button[data-handoff-href="packets-make.html"]');
+    expect(goWs).toBeTruthy();
+    goWs.click();
+    expect(handed[1]).toEqual({ name: 'ws.html', href: 'packets-make.html', hash: '#open-file' });
+  });
+
+  it('Wave 4A: enforces strict style-src self CSP, skips inline style tag with data-sr-css, and reuses My words recordings', async () => {
+    const htmlSrc = read('packets-symbol-runner.html');
+    expect(htmlSrc).toContain('<html lang="en" data-sr-css>');
+    const csp = /http-equiv="Content-Security-Policy"\s+content="([^"]+)"/.exec(htmlSrc)[1];
+    expect(csp).toContain("style-src 'self'");
+    expect(csp).not.toContain('unsafe-inline');
+    expect(read('packets-voice.html')).toContain('My saved words under From this browser');
+    expect(read('packets-voice.html')).not.toContain('Load saved My words');
+
+    const recUri = 'data:audio/mpeg;base64,SUQzBAAAAAA=';
+    const savedBlobs = [];
+    const p = openPage({
+      before(w) {
+        w.Blob = class { constructor(parts, opts) { this.body = parts.join(''); this.type = opts && opts.type; } };
+        w.URL.createObjectURL = (blob) => { savedBlobs.push(blob); return 'blob:sr-4a-' + savedBlobs.length; };
+        w.HTMLAnchorElement.prototype.click = function () {};
+      },
+      afterMyWords(w) {
+        w.AlloPacketMyWords = {
+          normalizeMediaKey: (k) => String(k || '').trim().toLowerCase(),
+          getManyMedia: async (keys) => {
+            const out = {};
+            for (const k of keys) {
+              const nk = String(k || '').toLowerCase();
+              if (nk === 'zayden' || nk === 'amara') out[nk] = { recording: { dataUri: recUri } };
+            }
+            return out;
+          },
+          onChange: () => {},
+        };
+      },
+    });
+    // data-sr-css prevents injecting an inline <style> tag on packets-symbol-runner.html.
+    expect(p.d.getElementById('allo-symbol-runner-styles')).toBeNull();
+    p.$('sr-custom').value = 'Zayden, Amara';
+    p.$('sr-custom').dispatchEvent(new p.w.Event('input', { bubbles: true }));
+    p.$('sr-save-html').click();
+    for (let i = 0; i < 60 && !savedBlobs.length; i++) await new Promise((r) => setTimeout(r, 15));
+    expect(savedBlobs.length).toBeGreaterThan(0);
+    const lesson = JSON.parse(/var lesson=(.*);\nvar labels=/.exec(savedBlobs[0].body)[1]);
+    expect(Object.values(lesson.audio || {})).toContain(recUri);
+    expect(Object.keys(lesson.audio || {}).length).toBe(2);
   });
 });

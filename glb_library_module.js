@@ -221,8 +221,16 @@
       // item to its Prim3D fallback for the whole page session.
       function fail(err) { try { window.__glbLoaderPromise = null; } catch (e) {} reject(err); }
       try {
+        var srcUrl = opts.gltfUrl || GLTF_URL;
+        if (window._isDesktopBundledApp === true && /^https?:/i.test(String(srcUrl))
+          && !/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(String(srcUrl))) {
+          return fail(new Error('External GLTFLoader CDN disabled in Desktop mode'));
+        }
         var s = document.createElement('script');
-        s.src = opts.gltfUrl || GLTF_URL;
+        s.src = srcUrl;
+        if (srcUrl === GLTF_URL) s.integrity = 'sha384-RWeB0lX19DV+SMdmyb/S7JBYCAMzaj7/j5QbG93KiBkj9dCoy1Lk8JEDayyBfOL1';
+        s.crossOrigin = 'anonymous';
+        s.referrerPolicy = 'no-referrer';
         s.async = true;
         s.onload = function () { THREE.GLTFLoader ? resolve(true) : fail(new Error('GLTFLoader loaded but THREE.GLTFLoader missing')); };
         s.onerror = function () { fail(new Error('failed to load GLTFLoader')); };

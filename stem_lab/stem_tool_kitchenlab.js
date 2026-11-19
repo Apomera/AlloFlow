@@ -2457,7 +2457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       var pathname = loc.pathname || '';
       var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
       var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
-      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      var isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled) return new URL(path, loc.href).toString();
       if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
     } catch (_) { /* fall through to the CDN */ }
@@ -4271,6 +4271,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           subtitle ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, maxWidth: 720 } }, subtitle) : null);
       }
 
+      function renderThermalSpectrumSvg(probeF) {
+        var clamped = Math.max(20, Math.min(460, Number(probeF) || 70));
+        var xOf = function(f) { return 12 + ((Math.max(20, Math.min(460, f)) - 20) / 440) * 316; };
+        var px = xOf(clamped);
+        var z = tempZone(clamped);
+        return h('svg', { viewBox: '0 0 340 56', width: 340, height: 56, className: 'kl-thermal-svg', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 340, height: 'auto' } },
+          h('rect', { x: 1, y: 1, width: 338, height: 54, rx: 10, fill: 'rgba(15,23,42,0.72)', stroke: 'rgba(251,146,60,0.34)', strokeWidth: 1.2 }),
+          h('text', { x: 12, y: 14, fill: '#fdba74', fontSize: 10, fontWeight: 800, letterSpacing: '0.06em' }, __alloT('stem.kitchenlab.thermal_spectrum_label', 'THERMAL SPECTRUM')),
+          h('text', { x: 328, y: 14, textAnchor: 'end', fill: z.ink || z.color, fontSize: 10, fontWeight: 800 }, fmtT(clamped) + ' · ' + z.label),
+          h('rect', { x: 12, y: 22, width: xOf(40) - 12, height: 10, rx: 3, fill: '#38bdf8' }),
+          h('rect', { x: xOf(40), y: 22, width: xOf(140) - xOf(40), height: 10, fill: '#dc2626' }),
+          h('rect', { x: xOf(140), y: 22, width: xOf(212) - xOf(140), height: 10, fill: '#16a34a' }),
+          h('rect', { x: xOf(212), y: 22, width: xOf(280) - xOf(212), height: 10, fill: '#f59e0b' }),
+          h('rect', { x: xOf(280), y: 22, width: 328 - xOf(280), height: 10, rx: 3, fill: '#ea580c' }),
+          h('line', { x1: px, y1: 18, x2: px, y2: 36, stroke: '#fde68a', strokeWidth: 2.2 }),
+          h('circle', { cx: px, cy: 27, r: 4.2, fill: '#fde68a', stroke: '#1c1410', strokeWidth: 1.4 }),
+          h('text', { x: 12, y: 47, fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, fmtT(40)),
+          h('text', { x: xOf(140), y: 47, textAnchor: 'middle', fill: '#fca5a5', fontSize: 10, fontWeight: 700 }, fmtT(140)),
+          h('text', { x: xOf(212), y: 47, textAnchor: 'middle', fill: '#86efac', fontSize: 10, fontWeight: 700 }, fmtT(212)),
+          h('text', { x: 328, y: 47, textAnchor: 'end', fill: '#fdba74', fontSize: 10, fontWeight: 700 }, fmtT(450))
+        );
+      }
+
       function renderHeader() {
         var TABS = [
           { id: 'start', label: __alloT('stem.kitchenlab.start_here', 'Start here'), icon: '🏡' },
@@ -4283,19 +4306,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           { id: 'resources', label: __alloT('stem.kitchenlab.resources', 'Resources'), icon: '📚', sub: 'glossary + cheat sheets' }
         ];
         var sectionCount = TABS.length + 1;
-        var currentTab = TABS.find(function(tab) { return tab.id === section; }) || TABS[0];
-        return h('div', { style: { padding: '24px 20px 12px', borderBottom: '1px solid rgba(251,146,60,0.18)' } },
+        var currentTab = TABS.find(function(tab) { return tab.id === section; }) || { id: section, label: __alloT('stem.kitchenlab.browning_lab', 'Browning Lab') };
+        var probeTempF = d.safetyTemp || 70;
+        var probeZone = tempZone(probeTempF);
+        return h('div', { className: 'kl-hero-wrap', style: { padding: '22px 20px 14px', borderBottom: '1px solid rgba(251,146,60,0.22)', background: 'linear-gradient(180deg, rgba(251,146,60,0.08) 0%, rgba(28,20,16,0.25) 100%)' } },
           h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' } },
-            // Accent badge
-            h('div', { 'aria-hidden': 'true',
-              style: { width: 56, height: 56, borderRadius: '50%',
-                background: 'rgba(251,146,60,0.18)',
-                border: '2px solid rgba(251,146,60,0.6)',
+            // Bespoke inline SVG Culinary Chemistry & Skillet Emblem
+            h('div', { 'aria-hidden': 'true', className: 'kl-emblem-badge',
+              style: { width: 56, height: 56, borderRadius: 16,
+                background: 'linear-gradient(145deg, rgba(251,146,60,0.24), rgba(15,23,42,0.8))',
+                border: '1.5px solid rgba(251,146,60,0.65)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 28, flexShrink: 0, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' } }, '🍳'),
-            h('div', { style: { flex: 1, minWidth: 0 } },
-              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' } },
+                flexShrink: 0, boxShadow: '0 4px 14px rgba(0,0,0,0.35)' } },
+              h('svg', { viewBox: '0 0 48 48', width: 42, height: 42, 'aria-hidden': 'true', focusable: 'false' },
+                h('path', { d: 'M15 14C15 10.5 18 10 18 6.5M23 13C23 9.5 26 9 26 5.5M31 14C31 10.5 34 10 34 6.5', fill: 'none', stroke: '#fde68a', strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.85 }),
+                h('ellipse', { cx: 22, cy: 26, rx: 13.5, ry: 7.5, fill: '#292524', stroke: '#fb923c', strokeWidth: 1.8 }),
+                h('ellipse', { cx: 22, cy: 25, rx: 9.5, ry: 4.5, fill: '#b45309', opacity: 0.7 }),
+                h('path', { d: 'M34.5 25L44 21.5', stroke: '#fdba74', strokeWidth: 3.2, strokeLinecap: 'round' }),
+                h('path', { d: 'M14 37C16.5 33.5 18 33.5 19.5 36.5C21 33 23 32.5 24.5 36.5C26 33.5 28 33.5 30 37', fill: 'none', stroke: '#f97316', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                h('circle', { cx: 22, cy: 24.5, r: 2.2, fill: '#fef3c7' })
+              )
+            ),
+            h('div', { style: { flex: 1, minWidth: 'min(260px, 100%)' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: 'var(--allo-stem-text, #fde68a)', letterSpacing: '-0.01em' } }, __alloT('stem.kitchenlab.kitchen_lab', 'Kitchen Lab')),
+                h('span', { className: 'kl-subject-badge', style: { fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#fde68a', background: 'rgba(234,88,12,0.22)', border: '1px solid rgba(251,146,60,0.45)', padding: '2px 9px', borderRadius: 9999 } },
+                  __alloT('stem.kitchenlab.subject_badge', 'Culinary Science · Food Safety')),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fdba74', background: 'rgba(251,146,60,0.12)',
                     border: '1px solid rgba(251,146,60,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   sectionCount + ' sections'),
@@ -4303,10 +4339,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('button', { type: 'button', 'data-kl-units': units, 'aria-pressed': units === 'C' ? 'true' : 'false', onClick: toggleUnits,
                     'aria-label': units === 'C' ? __alloT('stem.kitchenlab.a11y_units_showing_c', 'Temperatures in Celsius. Switch to Fahrenheit') : __alloT('stem.kitchenlab.a11y_units_showing_f', 'Temperatures in Fahrenheit. Switch to Celsius'),
                     style: { marginLeft: 'auto', padding: '4px 10px', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', color: '#fde68a',
-                      background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,146,60,0.4)', borderRadius: 9999, cursor: 'pointer', minHeight: 28 } },
+                      background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,146,60,0.4)', borderRadius: 9999, cursor: 'pointer', minHeight: 32 } },
                   h('span', { style: { opacity: units === 'F' ? 1 : 0.6 } }, '°F'), h('span', { 'aria-hidden': 'true', style: { opacity: 0.5, margin: '0 4px' } }, '/'), h('span', { style: { opacity: units === 'C' ? 1 : 0.6 } }, '°C'))),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
-                __alloT('stem.kitchenlab.cooking_life_skills_culinary_science_f', 'Cooking life skills + culinary science. Food safety, knife technique, heat methods, Maillard chemistry, recipes, glossary. Built for life skills classrooms + family + consumer science.')))));
+                __alloT('stem.kitchenlab.cooking_life_skills_culinary_science_f', 'Cooking life skills + culinary science. Food safety, knife technique, heat methods, Maillard chemistry, recipes, glossary. Built for life skills classrooms + family + consumer science.')),
+              h('div', { className: 'kl-telemetry-row', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
+                h('span', { className: 'kl-telemetry-pill' }, __alloT('stem.kitchenlab.pill_station', 'Station'), ': ', h('strong', null, currentTab.label)),
+                h('span', { className: 'kl-telemetry-pill' }, __alloT('stem.kitchenlab.pill_probe', 'Probe'), ': ', h('strong', { style: { color: probeZone.ink || probeZone.color } }, fmtT(probeTempF))),
+                h('span', { className: 'kl-telemetry-pill' }, __alloT('stem.kitchenlab.pill_handwash', 'WHO Wash'), ': ', h('strong', { style: { color: d.klHandwashCompleted ? '#86efac' : '#fde68a' } }, d.klHandwashCompleted ? __alloT('stem.kitchenlab.pill_done', 'Verified') : __alloT('stem.kitchenlab.pill_ready', 'Ready')))
+              )
+            ),
+            h('div', { style: { flex: '0 1 340px', minWidth: 'min(260px, 100%)', alignSelf: 'center' } },
+              renderThermalSpectrumSvg(probeTempF)
+            )
+          )
+        );
       }
 
       function renderTabs() {
@@ -4388,7 +4435,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('input', { type: 'range', min: 32, max: 220, step: 1, value: curTemp,
                 onChange: function(e) { setKL({ safetyTemp: parseInt(e.target.value, 10) }); },
                 'aria-label': units === 'C' ? __alloT('stem.kitchenlab.food_temperature_in_celsius', 'Food temperature in Celsius') : __alloT('stem.kitchenlab.food_temperature_in_fahrenheit', 'Food temperature in Fahrenheit'),
-                style: { width: '100%', accentColor: zone.color } })),
+                style: { width: '100%', accentColor: zone.color } }),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.kitchenlab.a11y_temp_presets', 'Quick food temperature presets'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
+                [
+                  { label: __alloT('stem.kitchenlab.preset_fridge', 'Fridge'), f: 38 },
+                  { label: __alloT('stem.kitchenlab.preset_room', 'Counter'), f: 72 },
+                  { label: __alloT('stem.kitchenlab.preset_peak', 'Danger Peak'), f: 98 },
+                  { label: __alloT('stem.kitchenlab.preset_steak', 'Whole Cut'), f: 145 },
+                  { label: __alloT('stem.kitchenlab.preset_poultry', 'Poultry'), f: 165 },
+                  { label: __alloT('stem.kitchenlab.preset_boil', 'Boil'), f: 212 }
+                ].map(function(pr) {
+                  var activePreset = Math.abs(curTemp - pr.f) <= 1;
+                  return h('button', { key: pr.f, type: 'button', className: 'kl-preset-chip', 'aria-pressed': activePreset ? 'true' : 'false',
+                    onClick: function() { setKL({ safetyTemp: pr.f }); },
+                    style: { minHeight: 36, padding: '4px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                      background: activePreset ? 'rgba(251,146,60,0.28)' : 'rgba(15,23,42,0.55)',
+                      color: activePreset ? '#fde68a' : '#e2e8f0',
+                      border: '1px solid ' + (activePreset ? '#fb923c' : 'rgba(148,163,184,0.35)') } },
+                    pr.label + ' (' + fmtT(pr.f) + ')');
+                })
+              )),
+            // Live SVG Bacterial Growth Curve across 32°F–220°F
+            (function() {
+              var sx = function(f) { return 24 + ((Math.max(32, Math.min(220, f)) - 32) / 188) * 312; };
+              var pts = [];
+              for (var tf = 32; tf <= 220; tf += 4) {
+                var dm = doublingMinutes(tf);
+                var rate = dm === Infinity ? 0 : Math.min(1, 20 / dm);
+                pts.push(sx(tf).toFixed(1) + ',' + (62 - rate * 40).toFixed(1));
+              }
+              var curX = sx(curTemp);
+              var curDm = doublingMinutes(curTemp);
+              var curY = 62 - (curDm === Infinity ? 0 : Math.min(1, 20 / curDm)) * 40;
+              return h('svg', { viewBox: '0 0 360 84', width: 360, height: 84, 'aria-hidden': 'true', focusable: 'false',
+                style: { display: 'block', width: '100%', maxWidth: 460, height: 'auto', marginBottom: 12 } },
+                h('rect', { x: 1, y: 1, width: 358, height: 82, rx: 10, fill: 'rgba(15,23,42,0.7)', stroke: 'rgba(148,163,184,0.3)', strokeWidth: 1 }),
+                h('rect', { x: sx(40), y: 16, width: sx(140) - sx(40), height: 46, fill: 'rgba(220,38,38,0.16)' }),
+                h('line', { x1: 24, y1: 62, x2: 336, y2: 62, stroke: '#64748b', strokeWidth: 1.2 }),
+                h('polyline', { fill: 'none', stroke: '#f87171', strokeWidth: 2.2, points: pts.join(' ') }),
+                h('line', { x1: curX, y1: 14, x2: curX, y2: 62, stroke: zone.ink || zone.color, strokeWidth: 1.8, strokeDasharray: '3 2' }),
+                h('circle', { cx: curX, cy: curY, r: 4.5, fill: zone.ink || zone.color, stroke: '#0f172a', strokeWidth: 1.5 }),
+                h('text', { x: (sx(40) + sx(140)) / 2, y: 14, textAnchor: 'middle', fill: '#fca5a5', fontSize: 10, fontWeight: 800 }, __alloT('stem.kitchenlab.svg_danger_zone', 'DANGER ZONE')),
+                h('text', { x: sx(40), y: 76, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10, fontWeight: 700 }, fmtT(40)),
+                h('text', { x: sx(140), y: 76, textAnchor: 'middle', fill: '#fbbf24', fontSize: 10, fontWeight: 700 }, fmtT(140)),
+                h('text', { x: sx(165), y: 76, textAnchor: 'middle', fill: '#86efac', fontSize: 10, fontWeight: 700 }, fmtT(165)),
+                h('text', { x: sx(212), y: 76, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, fmtT(212))
+              );
+            })(),
             // Zone callout
             h('div', { style: {
                 background: zone.color + '18', border: '1px solid ' + zone.color + '55',
@@ -7964,7 +8057,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
             h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc)
           ),
-          h('div', { className: 'grid grid-cols-3 gap-3' },
+          // Live reactive Maillard Crust Swatch & Thermal Spectrum SVG
+          (function() {
+            var mx = 16 + ((Math.max(200, Math.min(500, iq.tempF)) - 200) / 300) * 308;
+            var swatchFill = state === 'burnt' ? '#1c1410' : state === 'deep' ? '#6b3a17' : state === 'active' ? '#b46924' : state === 'caramel' ? '#c26a19' : state === 'beginning' ? '#d9b578' : '#efe3c6';
+            return h('svg', { viewBox: '0 0 340 66', width: 340, height: 66, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 420, height: 'auto', margin: '0 auto' } },
+              h('defs', null,
+                h('linearGradient', { id: 'kl-maillard-grad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                  h('stop', { offset: '0%', stopColor: '#f3e9d2' }),
+                  h('stop', { offset: '30%', stopColor: '#dcc18b' }),
+                  h('stop', { offset: '58%', stopColor: '#b46924' }),
+                  h('stop', { offset: '82%', stopColor: '#5c3114' }),
+                  h('stop', { offset: '100%', stopColor: '#1c1410' })
+                )
+              ),
+              h('rect', { x: 1, y: 1, width: 338, height: 64, rx: 10, fill: '#f8fafc', stroke: '#cbd5e1', strokeWidth: 1.2 }),
+              h('rect', { x: 16, y: 14, width: 308, height: 14, rx: 7, fill: 'url(#kl-maillard-grad)', stroke: '#94a3b8', strokeWidth: 1 }),
+              h('line', { x1: mx, y1: 10, x2: mx, y2: 32, stroke: '#0f172a', strokeWidth: 2.2 }),
+              h('circle', { cx: mx, cy: 21, r: 5, fill: swatchFill, stroke: '#ffffff', strokeWidth: 1.8 }),
+              h('text', { x: 16, y: 48, fill: '#334155', fontSize: 10, fontWeight: 700 }, fmtT(200)),
+              h('text', { x: 16 + (80 / 300) * 308, y: 48, textAnchor: 'middle', fill: '#92400e', fontSize: 10, fontWeight: 700 }, fmtT(280)),
+              h('text', { x: 16 + (170 / 300) * 308, y: 48, textAnchor: 'middle', fill: '#9a3412', fontSize: 10, fontWeight: 700 }, fmtT(370)),
+              h('text', { x: 16 + (250 / 300) * 308, y: 48, textAnchor: 'middle', fill: '#991b1b', fontSize: 10, fontWeight: 700 }, fmtT(450)),
+              h('text', { x: 324, y: 48, textAnchor: 'end', fill: '#334155', fontSize: 10, fontWeight: 700 }, fmtT(500))
+            );
+          })(),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.kitchenlab.a11y_maillard_presets', 'Maillard experiment presets'), className: 'flex flex-wrap gap-1.5' },
+            [
+              { label: __alloT('stem.kitchenlab.mh_preset_steam', 'Wet Steam'), t: 212, a: 60, s: 40 },
+              { label: __alloT('stem.kitchenlab.mh_preset_toast', 'Golden Toast'), t: 340, a: 45, s: 65 },
+              { label: __alloT('stem.kitchenlab.mh_preset_sear', 'Steak Sear'), t: 425, a: 80, s: 35 },
+              { label: __alloT('stem.kitchenlab.mh_preset_caramel', 'Sugar Caramel'), t: 350, a: 5, s: 90 },
+              { label: __alloT('stem.kitchenlab.mh_preset_char', 'Charred'), t: 475, a: 50, s: 50 }
+            ].map(function(pr) {
+              var on = iq.tempF === pr.t && iq.aminoPct === pr.a && iq.sugarPct === pr.s;
+              return h('button', { key: pr.label, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                onClick: function() { setIQ({ tempF: pr.t, aminoPct: pr.a, sugarPct: pr.s }); },
+                className: 'px-2.5 py-1.5 rounded-full text-[0.6875rem] font-bold border ' + (on ? 'bg-orange-700 text-white border-orange-800' : 'bg-orange-50 text-orange-950 border-orange-300 hover:bg-orange-100') },
+                pr.label + ' (' + fmtT(pr.t) + ')');
+            })
+          ),
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
             // The slider and the model stay in °F; only what the student reads
             // follows the tool's °C switch (fmtT converts and adds the unit).
             [{ k: 'tempF', l: units === 'C' ? 'Surface °C' : 'Surface °F', mn: 200, mx: 500, st: 5 },
@@ -8027,12 +8160,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         h('style', null,
           '#kitchen-lab-region .kl-start{max-width:1100px;margin:12px auto;padding:8px 0 36px}' +
           '#kitchen-lab-region .kl-start-paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px;margin-top:26px}' +
-          '#kitchen-lab-region .kl-start-path{min-height:200px;padding:24px;text-align:left;background:#30251c;color:#fff7e3;border:1px solid #98714c;border-radius:16px;cursor:pointer;font:inherit}' +
-          '#kitchen-lab-region .kl-start-path:hover{background:#403022}' +
+          '#kitchen-lab-region .kl-start-path{min-height:200px;padding:24px;text-align:left;background:#30251c;color:#fff7e3;border:1px solid #98714c;border-radius:16px;cursor:pointer;font:inherit;transition:background-color .16s ease,border-color .16s ease,transform .16s ease}' +
+          '#kitchen-lab-region .kl-start-path:hover{background:#403022;border-color:#fb923c;transform:translateY(-2px)}' +
+          '#kitchen-lab-region .kl-telemetry-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;background:rgba(15,23,42,0.68);border:1px solid rgba(251,146,60,0.32);font-size:11px;font-weight:700;color:#cbd5e1;font-variant-numeric:tabular-nums}' +
+          '#kitchen-lab-region .kl-telemetry-pill strong{color:#fde68a;font-weight:800}' +
           '#kitchen-lab-region button:focus-visible,#kitchen-lab-region a:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}' +
           '#kitchen-lab-region [role=tab]{min-height:44px}' +
           '#kitchen-lab-region{--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;}' +
-          '.theme-contrast #kitchen-lab-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;}'),
+          '.theme-contrast #kitchen-lab-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;}' +
+          '.theme-contrast #kitchen-lab-region .kl-telemetry-pill,.theme-contrast #kitchen-lab-region .kl-subject-badge,.theme-contrast #kitchen-lab-region .kl-preset-chip{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}' +
+          '.theme-contrast #kitchen-lab-region .kl-telemetry-pill strong{color:#ffff00!important}'),
         renderHeader(),
         renderTabs(),
         h('div', { role: 'tabpanel', id: 'stem-kitchen-panel-' + section, 'aria-labelledby': 'stem-kitchen-tab-' + section, tabIndex: 0, style: { padding: 20 } }, content),

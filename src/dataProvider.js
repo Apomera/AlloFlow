@@ -182,12 +182,76 @@ class FirebaseAdapter {
     }
 }
 
+const _PB_DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+const _PB_SAFE_FIELD_RE = /^[A-Za-z_][A-Za-z0-9_.]*$/;
+
+function _pbSafeBaseUrl(rawUrl) {
+    const candidate = String(rawUrl || 'http://localhost:8090').trim().replace(/\/$/, '');
+    let parsed;
+    try { parsed = new URL(candidate); } catch {
+        throw new Error('PocketBase baseUrl must be a valid http(s) URL.');
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        throw new Error('PocketBase baseUrl must use http: or https:.');
+    }
+    return candidate;
+}
+
+function _pbSafeSegment(value, label) {
+    const s = String(value == null ? '' : value).trim();
+    if (!s || s.length > 128 || s === '.' || s === '..' || /[\\/?#%\u0000-\u001f\u007f]/.test(s) || s.includes('..')) {
+        throw new Error(`Invalid PocketBase ${label || 'identifier'}.`);
+    }
+    return encodeURIComponent(s);
+}
+
+function _pbSafeField(field) {
+    const s = String(field == null ? '' : field).trim();
+    if (!s || s.length > 128 || !_PB_SAFE_FIELD_RE.test(s)) {
+        throw new Error('Invalid PocketBase query field.');
+    }
+    for (const part of s.split('.')) {
+        if (_PB_DANGEROUS_KEYS.has(part)) throw new Error('Invalid PocketBase query field.');
+    }
+    return s;
+}
+
+function _pbFormatFilterValue(value) {
+    if (value === null) return 'null';
+    if (typeof value === 'boolean') return value ? 'true' : 'false';
+    if (typeof value === 'number') {
+        if (!Number.isFinite(value)) throw new Error('Invalid PocketBase numeric filter value.');
+        return String(value);
+    }
+    if (typeof value === 'string') {
+        if (value.length > 2048 || /[\u0000-\u001f\u007f]/.test(value)) {
+            throw new Error('Invalid PocketBase string filter value.');
+        }
+        return '"' + value.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+    }
+    throw new Error('Unsupported PocketBase filter value type.');
+}
+
+function _pbSafeLimit(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return 500;
+    return Math.max(1, Math.min(1000, Math.floor(n)));
+}
+
+function _pbSafeJsonParse(raw, fallback) {
+    try {
+        return JSON.parse(raw, (key, val) => (_PB_DANGEROUS_KEYS.has(key) ? undefined : val));
+    } catch {
+        return fallback;
+    }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
-// PocketBase Adapter — self-hosted, single-binary backend
+// PocketBase Adapter - self-hosted, single-binary backend
 // ═══════════════════════════════════════════════════════════════════════════
 class PocketBaseAdapter {
     constructor({ baseUrl = 'http://localhost:8090', debugLog, warnLog }) {
-        this.baseUrl = baseUrl.replace(/\/$/, '');
+        this.baseUrl = _pbSafeBaseUrl(baseUrl);
         this.debugLog = debugLog || console.log;
         this.warnLog = warnLog || console.warn;
         this._authToken = null;
@@ -199,28 +263,43 @@ class PocketBaseAdapter {
     async _fetch(path, options = {}) {
         const headers = { 'Content-Type': 'application/json', ...options.headers };
         if (this._authToken) headers['Authorization'] = `Bearer ${this._authToken}`;
-        const res = await fetch(`${this.baseUrl}${path}`, { ...options, headers });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({ message: res.statusText }));
-            throw new Error(`PocketBase ${res.status}: ${err.message || JSON.stringify(err)}`);
+        const controller = typeof AbortController !== 'undefined' && !options.signal ? new AbortController() : null;
+        const timer = controller ? setTimeout(() => controller.abort(), 15000) : null;
+        try {
+            const res = await fetch(`${this.baseUrl}${path}`, {
+                credentials: 'omit',
+                referrerPolicy: 'no-referrer',
+                ...options,
+                headers,
+                signal: options.signal || (controller ? controller.signal : undefined),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ message: res.statusText }));
+                throw new Error(`PocketBase ${res.status}: ${err.message || JSON.stringify(err)}`);
+            }
+            return res.status === 204 ? null : res.json();
+        } finally {
+            if (timer) clearTimeout(timer);
         }
-        return res.status === 204 ? null : res.json();
     }
 
-    // Map Firestore collection names → PocketBase collection names
-    _col(collectionPath) { return collectionPath; }
+    // Map Firestore collection names -> PocketBase collection names
+    _col(collectionPath) { return _pbSafeSegment(collectionPath, 'collection'); }
+    _doc(docId) { return _pbSafeSegment(docId, 'record id'); }
 
     async setDoc(collectionPath, docId, data, options = {}) {
         const resolved = this._resolveFieldOps(data);
         resolved.id = docId; // PocketBase uses 'id' field
+        const col = this._col(collectionPath);
+        const safeId = this._doc(docId);
         try {
             // Try update first, create if not exists
-            await this._fetch(`/api/collections/${this._col(collectionPath)}/records/${docId}`, {
+            await this._fetch(`/api/collections/${col}/records/${safeId}`, {
                 method: 'PATCH', body: JSON.stringify(resolved),
             });
         } catch {
             // Record doesn't exist, create it
-            await this._fetch(`/api/collections/${this._col(collectionPath)}/records`, {
+            await this._fetch(`/api/collections/${col}/records`, {
                 method: 'POST', body: JSON.stringify(resolved),
             });
         }
@@ -228,7 +307,7 @@ class PocketBaseAdapter {
 
     async getDoc(collectionPath, docId) {
         try {
-            const record = await this._fetch(`/api/collections/${this._col(collectionPath)}/records/${docId}`);
+            const record = await this._fetch(`/api/collections/${this._col(collectionPath)}/records/${this._doc(docId)}`);
             return record ? { id: record.id, ...record } : null;
         } catch {
             return null;
@@ -237,13 +316,13 @@ class PocketBaseAdapter {
 
     async updateDoc(collectionPath, docId, data) {
         const resolved = this._resolveFieldOps(data);
-        return this._fetch(`/api/collections/${this._col(collectionPath)}/records/${docId}`, {
+        return this._fetch(`/api/collections/${this._col(collectionPath)}/records/${this._doc(docId)}`, {
             method: 'PATCH', body: JSON.stringify(resolved),
         });
     }
 
     async deleteDoc(collectionPath, docId) {
-        return this._fetch(`/api/collections/${this._col(collectionPath)}/records/${docId}`, {
+        return this._fetch(`/api/collections/${this._col(collectionPath)}/records/${this._doc(docId)}`, {
             method: 'DELETE',
         });
     }
@@ -257,11 +336,15 @@ class PocketBaseAdapter {
         for (const c of constraints) {
             if (c.type === 'where') {
                 const opMap = { '==': '=', '!=': '!=', '<': '<', '<=': '<=', '>': '>', '>=': '>=', 'array-contains': '~' };
-                filters.push(`${c.field}${opMap[c.op] || '='}${JSON.stringify(c.value)}`);
+                const safeField = _pbSafeField(c.field);
+                const safeOp = Object.prototype.hasOwnProperty.call(opMap, c.op) ? opMap[c.op] : '=';
+                const safeVal = _pbFormatFilterValue(c.value);
+                filters.push(`${safeField}${safeOp}${safeVal}`);
             } else if (c.type === 'orderBy') {
-                sort = c.direction === 'desc' ? `-${c.field}` : c.field;
+                const safeField = _pbSafeField(c.field);
+                sort = c.direction === 'desc' ? `-${safeField}` : safeField;
             } else if (c.type === 'limit') {
-                perPage = c.value;
+                perPage = _pbSafeLimit(c.value);
             }
         }
 
@@ -281,21 +364,22 @@ class PocketBaseAdapter {
         try {
             eventSource = new EventSource(url);
             const topic = docId
-                ? `${this._col(collectionPath)}/${docId}`
+                ? `${this._col(collectionPath)}/${this._doc(docId)}`
                 : this._col(collectionPath);
 
             eventSource.addEventListener('PB_CONNECT', (e) => {
-                const data = JSON.parse(e.data);
+                const data = _pbSafeJsonParse(e.data, null);
+                if (!data || !data.id) return;
                 // Subscribe to the specific topic
-                fetch(`${this.baseUrl}/api/realtime`, {
+                this._fetch('/api/realtime', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ clientId: data.id, subscriptions: [topic] }),
                 }).catch(err => this.warnLog('[DataProvider] SSE subscribe error:', err));
             });
 
             eventSource.addEventListener(topic, (e) => {
-                const data = JSON.parse(e.data);
+                const data = _pbSafeJsonParse(e.data, null);
+                if (!data) return;
                 if (docId) {
                     callback(data.record ? { id: data.record.id, ...data.record } : null);
                 } else {
@@ -404,6 +488,7 @@ class PocketBaseAdapter {
         if (!data || typeof data !== 'object') return data;
         const resolved = {};
         for (const [key, value] of Object.entries(data)) {
+            if (_PB_DANGEROUS_KEYS.has(key)) continue;
             if (value && value.__op) {
                 switch (value.__op) {
                     case 'serverTimestamp': resolved[key] = new Date().toISOString(); break;
@@ -458,7 +543,9 @@ class LocalStorageAdapter {
 
     async getDoc(collectionPath, docId) {
         const raw = localStorage.getItem(this._key(collectionPath, docId));
-        return raw ? { id: docId, ...JSON.parse(raw) } : null;
+        if (!raw) return null;
+        const parsed = _pbSafeJsonParse(raw, null);
+        return parsed && typeof parsed === 'object' ? { id: docId, ...parsed } : null;
     }
 
     async updateDoc(collectionPath, docId, data) {
@@ -480,10 +567,12 @@ class LocalStorageAdapter {
         const results = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key.startsWith(prefix)) {
+            if (key && key.startsWith(prefix)) {
                 const docId = key.substring(prefix.length);
-                const data = JSON.parse(localStorage.getItem(key));
-                results.push({ id: docId, ...data });
+                const data = _pbSafeJsonParse(localStorage.getItem(key), null);
+                if (data && typeof data === 'object' && !Array.isArray(data)) {
+                    results.push({ id: docId, ...data });
+                }
             }
         }
         // Apply constraints
@@ -491,7 +580,7 @@ class LocalStorageAdapter {
         for (const c of constraints) {
             if (c.type === 'where') {
                 filtered = filtered.filter(doc => {
-                    const val = doc[c.field];
+                    const val = Object.prototype.hasOwnProperty.call(doc, c.field) ? doc[c.field] : undefined;
                     switch (c.op) {
                         case '==': return val === c.value;
                         case '!=': return val !== c.value;
@@ -505,7 +594,8 @@ class LocalStorageAdapter {
                 });
             } else if (c.type === 'orderBy') {
                 filtered.sort((a, b) => {
-                    const aVal = a[c.field], bVal = b[c.field];
+                    const aVal = Object.prototype.hasOwnProperty.call(a, c.field) ? a[c.field] : undefined;
+                    const bVal = Object.prototype.hasOwnProperty.call(b, c.field) ? b[c.field] : undefined;
                     const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
                     return c.direction === 'desc' ? -cmp : cmp;
                 });
@@ -582,24 +672,28 @@ class LocalStorageAdapter {
         if (!data || typeof data !== 'object') return data;
         const resolved = {};
         for (const [key, value] of Object.entries(data)) {
+            if (_PB_DANGEROUS_KEYS.has(key)) continue;
             if (value && value.__op) {
                 switch (value.__op) {
                     case 'serverTimestamp': resolved[key] = new Date().toISOString(); break;
                     case 'arrayUnion': {
-                        const existing = JSON.parse(localStorage.getItem(this._key(collectionPath, docId)) || '{}');
-                        const arr = Array.isArray(existing[key]) ? existing[key] : [];
+                        const existing = _pbSafeJsonParse(localStorage.getItem(this._key(collectionPath, docId)), {}) || {};
+                        const prevVal = Object.prototype.hasOwnProperty.call(existing, key) ? existing[key] : undefined;
+                        const arr = Array.isArray(prevVal) ? prevVal : [];
                         resolved[key] = [...new Set([...arr, ...value.elements])];
                         break;
                     }
                     case 'arrayRemove': {
-                        const existing2 = JSON.parse(localStorage.getItem(this._key(collectionPath, docId)) || '{}');
-                        const arr2 = Array.isArray(existing2[key]) ? existing2[key] : [];
+                        const existing2 = _pbSafeJsonParse(localStorage.getItem(this._key(collectionPath, docId)), {}) || {};
+                        const prevVal2 = Object.prototype.hasOwnProperty.call(existing2, key) ? existing2[key] : undefined;
+                        const arr2 = Array.isArray(prevVal2) ? prevVal2 : [];
                         resolved[key] = arr2.filter(el => !value.elements.includes(el));
                         break;
                     }
                     case 'increment': {
-                        const existing3 = JSON.parse(localStorage.getItem(this._key(collectionPath, docId)) || '{}');
-                        resolved[key] = (existing3[key] || 0) + value.value;
+                        const existing3 = _pbSafeJsonParse(localStorage.getItem(this._key(collectionPath, docId)), {}) || {};
+                        const prevVal3 = Object.prototype.hasOwnProperty.call(existing3, key) ? existing3[key] : 0;
+                        resolved[key] = (typeof prevVal3 === 'number' ? prevVal3 : 0) + value.value;
                         break;
                     }
                     case 'deleteField': break; // Omit from result
@@ -733,9 +827,20 @@ class DataProvider {
                 // Firebase is always "connected" if the SDK loaded
                 return { success: true, backend: 'firebase', message: 'Firebase SDK loaded' };
             } else if (this.backend === 'pocketbase') {
-                const health = await fetch(`${this._adapter.baseUrl}/api/health`);
-                const data = await health.json();
-                return { success: true, backend: 'pocketbase', message: `PocketBase v${data.version || '?'}` };
+                const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+                const timer = controller ? setTimeout(() => controller.abort(), 8000) : null;
+                try {
+                    const health = await fetch(`${this._adapter.baseUrl}/api/health`, {
+                        credentials: 'omit',
+                        referrerPolicy: 'no-referrer',
+                        signal: controller ? controller.signal : undefined,
+                    });
+                    if (!health.ok) return { success: false, backend: 'pocketbase', error: `HTTP ${health.status}` };
+                    const data = await health.json();
+                    return { success: true, backend: 'pocketbase', message: `PocketBase v${data.version || '?'}` };
+                } finally {
+                    if (timer) clearTimeout(timer);
+                }
             } else if (this.backend === 'local') {
                 return { success: true, backend: 'local', message: 'localStorage available' };
             }

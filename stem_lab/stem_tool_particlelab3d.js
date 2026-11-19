@@ -4141,7 +4141,8 @@
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
-      var bucket = (ctx.toolData && ctx.toolData.particleLab3d) || {};
+      var rawBucket = ctx.toolData && ctx.toolData.particleLab3d;
+      var bucket = (rawBucket && typeof rawBucket === 'object' && !Array.isArray(rawBucket)) ? rawBucket : {};
       var _motionState = useState(function () {
         try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
       });
@@ -8574,15 +8575,90 @@
             #particle-stage[data-fullscreen="true"] #particle-secondary-row details[open] { display: flex; align-items: center; gap: 8px; }
             #particle-stage[data-fullscreen="true"] #particle-secondary-row details[open] > div { margin-top: 0; flex-wrap: nowrap; }
           }
+          .particle-hero-banner { position: relative; overflow: hidden; }
+          .particle-hero-emblem { width: 46px; height: 46px; flex: 0 0 46px; border-radius: 13px; display: grid; place-items: center; background: rgba(6, 182, 212, 0.14); border: 1px solid rgba(103, 232, 249, 0.35); }
+          .particle-hero-telemetry { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+          .particle-hero-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(103, 232, 249, 0.32); background: rgba(2, 6, 23, 0.52); color: #e0f2fe; font-size: 11px; font-weight: 700; }
+          .particle-hero-pill strong { color: #67e8f9; font-weight: 900; }
+          .particle-hero-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+          .particle-hero-chip { min-height: 44px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(103, 232, 249, 0.35); background: rgba(15, 23, 42, 0.72); color: #cffafe; font-size: 11px; font-weight: 800; cursor: pointer; }
+          .particle-hero-chip:hover { background: rgba(34, 211, 238, 0.22); }
+          .particle-hero-chip[aria-pressed="true"] { background: #67e8f9; color: #082f49; border-color: #cffafe; }
+          .particle-phase-svg { display: block; width: 244px; max-width: 100%; height: 60px; border-radius: 12px; border: 1px solid rgba(103, 232, 249, 0.28); background: rgba(2, 6, 23, 0.62); }
+          .theme-contrast .particle-hero-banner { background: #000 !important; border: 2px solid #fff !important; box-shadow: none !important; }
+          .theme-contrast .particle-hero-emblem, .theme-contrast .particle-hero-pill, .theme-contrast .particle-phase-svg { background: #000 !important; border: 2px solid #fff !important; color: #fff !important; }
+          .theme-contrast .particle-hero-pill strong { color: #ffff00 !important; }
+          .theme-contrast .particle-hero-chip { background: #000 !important; color: #fff !important; border: 2px solid #fff !important; }
+          .theme-contrast .particle-hero-chip[aria-pressed="true"] { background: #ffff00 !important; color: #000 !important; border-color: #ffff00 !important; }
 `),
-        h('div', { className: 'rounded-2xl border border-cyan-200 bg-gradient-to-r from-slate-950 via-cyan-950 to-slate-900 p-5 text-white shadow-xl' },
-          h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
-            h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-[0.2em] text-cyan-300' }, 'Interactive physics sandbox'), h('h2', { className: 'mt-1 text-2xl font-black' }, '\u2728 Particle Lab 3D'), h('p', { className: 'mt-2 max-w-3xl text-sm leading-relaxed text-cyan-50' }, 'Change the conditions, run the model, and use measurements to explain what the particles do. Pointer users can drag and zoom; keyboard users can use the labeled particle selector, camera views, and chamber shortcuts.')),
-            h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
-              h('details', { className: 'max-w-md rounded-xl border border-cyan-700/60 bg-slate-950/60 px-3 py-2 text-xs text-cyan-100' },
-                h('summary', { className: 'flex min-h-6 cursor-pointer list-none items-center font-bold outline-none focus-visible:ring-2 focus-visible:ring-cyan-200' }, 'Simplified model \u2022 adjustable collision cross section \u2022 fixed timestep \u2022 about this model'),
-                h('p', { className: 'mt-2 leading-relaxed text-cyan-50' }, 'Lengths, speeds and pressure are model units, not SI, and the chamber has no real-world scale. Pressure is the momentum particles deliver to the walls per unit time and wall area, so it rises with particle count and temperature and falls with volume, as the ideal gas law predicts. The count slider re-seeds the chamber with no work done on the gas. The container slider moves the walls, which do work on the gas while it runs: with the heat bath off, squeezing warms the chamber; with it on, the walls exchange heat and the temperature holds. Hold pressure lets the container respond instead: a warmed gas expands at fixed pressure. The pump adds particles to the running chamber. Attraction turns potential energy into motion, so a condensing chamber warms above its setpoint unless the heat bath is on.')),
-              h('a', { href: '#particle-stage', className: 'inline-flex min-h-11 items-center rounded-xl border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 sm:min-h-9', 'aria-label': __alloT('stem.particlelab3d.jump_to_the_3d_particle_chamber','Jump to the 3D particle chamber') }, 'Enter 3D chamber')
+        h('div', { className: 'particle-hero-banner rounded-2xl border border-cyan-200 bg-gradient-to-r from-slate-950 via-cyan-950 to-slate-900 p-5 text-white shadow-xl' },
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-4' },
+            h('div', { className: 'min-w-0 flex-1' },
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('p', { className: 'text-xs font-black uppercase tracking-[0.2em] text-cyan-300' }, 'Interactive physics sandbox'),
+                h('span', { className: 'rounded-full border border-cyan-300/40 bg-cyan-950/70 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-cyan-100' }, 'Physics · Kinetic Theory')
+              ),
+              h('div', { className: 'mt-1.5 flex items-center gap-3' },
+                h('span', { className: 'particle-hero-emblem', 'aria-hidden': 'true' },
+                  h('svg', { width: 32, height: 32, viewBox: '0 0 36 36', fill: 'none' },
+                    h('rect', { x: 4, y: 4, width: 28, height: 28, rx: 6, stroke: '#67e8f9', strokeWidth: 1.5, strokeDasharray: '3 2', opacity: 0.75 }),
+                    h('line', { x1: 12, y1: 13, x2: 23, y2: 18, stroke: '#f59e0b', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                    h('line', { x1: 14, y1: 24, x2: 22, y2: 19, stroke: '#38bdf8', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                    h('circle', { cx: 12, cy: 13, r: 3.4, fill: '#38bdf8' }),
+                    h('circle', { cx: 24, cy: 18, r: 4, fill: '#fbbf24' }),
+                    h('circle', { cx: 14, cy: 24, r: 3, fill: '#a78bfa' }),
+                    h('circle', { cx: 24, cy: 10, r: 2.2, fill: '#67e8f9' })
+                  )
+                ),
+                h('h2', { className: 'text-2xl font-black' }, 'Particle Lab 3D')
+              ),
+              h('p', { className: 'mt-2 max-w-3xl text-sm leading-relaxed text-cyan-50' }, 'Change the conditions, run the model, and use measurements to explain what the particles do. Pointer users can drag and zoom; keyboard users can use the labeled particle selector, camera views, and chamber shortcuts.'),
+              h('div', { className: 'particle-hero-telemetry' },
+                h('span', { className: 'particle-hero-pill' }, 'Phase: ', h('strong', null, String(preset || 'gas').toUpperCase())),
+                h('span', { className: 'particle-hero-pill' }, 'Setpoint: ', h('strong', null, Math.round(temperature) + ' K')),
+                h('span', { className: 'particle-hero-pill' }, 'Particles: ', h('strong', null, String(liveCount))),
+                h('span', { className: 'particle-hero-pill' }, 'Logged: ', h('strong', null, String(Array.isArray(experimentLog) ? experimentLog.length : 0)))
+              ),
+              h('div', { className: 'particle-hero-chips', role: 'group', 'aria-label': 'Quick temperature setpoints' },
+                [
+                  { k: 80, label: '80 K Cryo' },
+                  { k: 300, label: '300 K Room' },
+                  { k: 650, label: '650 K Hot' }
+                ].map(function (chip) {
+                  var activeChip = Math.abs(temperature - chip.k) <= 20;
+                  return h('button', {
+                    key: chip.k,
+                    type: 'button',
+                    className: 'particle-hero-chip',
+                    'aria-pressed': activeChip,
+                    onClick: function () { setTemp(chip.k); }
+                  }, chip.label);
+                })
+              )
+            ),
+            h('div', { className: 'flex flex-col items-end gap-2.5' },
+              (function () {
+                var normT = Math.max(0, Math.min(1, (temperature - 40) / (900 - 40)));
+                var markerX = Math.round(16 + normT * 212);
+                return h('svg', { className: 'particle-phase-svg', viewBox: '0 0 244 60', fill: 'none', 'aria-hidden': 'true' },
+                  h('text', { x: 16, y: 15, fill: '#94a3b8', fontSize: 10, fontWeight: 800 }, 'THERMAL KINETIC SCALE'),
+                  h('text', { x: 228, y: 15, textAnchor: 'end', fill: '#67e8f9', fontSize: 10, fontWeight: 900 }, Math.round(temperature) + ' K'),
+                  h('rect', { x: 16, y: 24, width: 70, height: 8, rx: 4, fill: '#38bdf8' }),
+                  h('rect', { x: 88, y: 24, width: 68, height: 8, rx: 4, fill: '#22c55e' }),
+                  h('rect', { x: 158, y: 24, width: 70, height: 8, rx: 4, fill: '#f59e0b' }),
+                  h('line', { x1: markerX, y1: 19, x2: markerX, y2: 37, stroke: '#ffffff', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                  h('circle', { cx: markerX, cy: 28, r: 4.5, fill: '#0f172a', stroke: '#ffffff', strokeWidth: 2 }),
+                  h('text', { x: 16, y: 50, fill: '#bae6fd', fontSize: 10, fontWeight: 700 }, 'Cold 40K'),
+                  h('text', { x: 122, y: 50, textAnchor: 'middle', fill: '#bbf7d0', fontSize: 10, fontWeight: 700 }, '300K'),
+                  h('text', { x: 228, y: 50, textAnchor: 'end', fill: '#fde68a', fontSize: 10, fontWeight: 700 }, 'Hot 900K')
+                );
+              })(),
+              h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
+                h('details', { className: 'max-w-md rounded-xl border border-cyan-700/60 bg-slate-950/60 px-3 py-2 text-xs text-cyan-100' },
+                  h('summary', { className: 'flex min-h-6 cursor-pointer list-none items-center font-bold outline-none focus-visible:ring-2 focus-visible:ring-cyan-200' }, 'Simplified model \u2022 adjustable collision cross section \u2022 fixed timestep \u2022 about this model'),
+                  h('p', { className: 'mt-2 leading-relaxed text-cyan-50' }, 'Lengths, speeds and pressure are model units, not SI, and the chamber has no real-world scale. Pressure is the momentum particles deliver to the walls per unit time and wall area, so it rises with particle count and temperature and falls with volume, as the ideal gas law predicts. The count slider re-seeds the chamber with no work done on the gas. The container slider moves the walls, which do work on the gas while it runs: with the heat bath off, squeezing warms the chamber; with it on, the walls exchange heat and the temperature holds. Hold pressure lets the container respond instead: a warmed gas expands at fixed pressure. The pump adds particles to the running chamber. Attraction turns potential energy into motion, so a condensing chamber warms above its setpoint unless the heat bath is on.')),
+                h('a', { href: '#particle-stage', className: 'inline-flex min-h-11 items-center rounded-xl border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 sm:min-h-9', 'aria-label': __alloT('stem.particlelab3d.jump_to_the_3d_particle_chamber','Jump to the 3D particle chamber') }, 'Enter 3D chamber')
+              )
             )
           )
         ),

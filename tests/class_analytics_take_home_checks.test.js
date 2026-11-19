@@ -762,7 +762,7 @@ describe('Assessment Center: Save as a file for home', () => {
     catchDownloads();
     await press(opener('missing_number'));
     await until(() => dialog('missing_number') && dialog('missing_number').querySelector('[data-ck-save-go]') && !dialog('missing_number').querySelector('[data-ck-save-go]').disabled, 'the dialog');
-    expect(window.__alloLoadPlugin.mock.calls.map((c) => c[0])).toEqual(['word_sounds_take_home_loader.js', 'packet_check_builder.js']);
+    expect(window.__alloLoadPlugin.mock.calls.map((c) => c[0])).toEqual(['word_sounds_take_home_loader.js', 'packet_check_builder.js', 'packets_check_directions.js']);
     const box = dialog('missing_number');
     expect([box.getAttribute('role'), box.getAttribute('aria-label'), opener('missing_number').getAttribute('aria-expanded')]).toEqual(['dialog', 'Save for home: Missing Number, Grade 1, Form A', 'true']);
     expect(box.querySelector('[data-ck-save-note]').textContent).toBe('Home results are for seeing progress, not for a grade.');
@@ -846,14 +846,27 @@ describe('Assessment Center: Save as a file for home', () => {
     // Not translated here: the loader's own English.
     expect([labels.check_time_up, labels.check_skip, labels.check_stop]).toEqual(['Time is up.', 'Skip', 'Stop the check']);
     expect(built.html).toContain('<html lang="es">');
-    expect(built.html).toContain('<title>Revisión de Comparar cantidades (KA)</title>');
+    expect(built.html).toContain('<title>Revisión de Comparar cantidades (A)</title>');
+    expect(built.html).not.toContain('(KA)');
     // A translated file still plays and its results still read.
     const out = await play(built.html, LESSONS.qd, {secondsPerItem: 1});
     expect(out.text).toContain('Esto es para ver cómo vas.');
     const s = await read(out.csv, out.csvName);
     expect([s.integrity, s.check.measure, s.check.score, s.check.grade, s.check.form]).toEqual(['ok', 'quantity_discrimination', 25, 'K', 'A']);
-    // With no translation at all the file is the plain English one.
+    // With no translation at all the file is the plain English one (grade-free title, matching standalone Packets).
     expect((await AC.buildForm({measure: 'quantity_discrimination', grade: 'K', form: 'A', t: (k) => k})).html).toBe(PC.buildCheckPacket({lesson: LESSONS.qd, loader: TH}).html);
+    // With packets_check_directions.js loaded, K-1 English checks embed spoken directions.
+    const prevDir = window.AlloPacketCheckDirections;
+    try {
+      window.AlloPacketCheckDirections = require('../packets_check_directions.js');
+      const withSpoken = await AC.buildForm({measure: 'quantity_discrimination', grade: 'K', form: 'A', t: (k) => k});
+      expect(withSpoken.ok).toBe(true);
+      expect(withSpoken.html).toContain('Hear the directions');
+      expect(withSpoken.html).toContain('"directions":["directions-1","directions-2","directions-3"]');
+    } finally {
+      if (prevDir === undefined) delete window.AlloPacketCheckDirections;
+      else window.AlloPacketCheckDirections = prevDir;
+    }
   });
   it('gives a plain reason when the form is not loaded or the measure is not one of the three', async () => {
     expect(await AC.buildForm({measure: 'missing_number', grade: '1', form: 'A', t: (k) => k})).toEqual({ok: false, reason: 'no_form'});
@@ -944,5 +957,82 @@ describe('Math Fluency setup: Save as a file for home', () => {
     const groups = AC.overTime(result.students[0], {Ana: result.probeAdds.map((x) => x.record)});
     expect(groups.map((g) => [g.key, g.custom, g.rows.map((r) => [r.date, r.where])])).toEqual([['custom:' + first.packetId + ':digits_correct_per_minute', true, [['2026-11-12', 'th'], ['2026-11-19', 'th']]]]);
     expect(AC.groupName((k) => k, groups[0])).toMatch(/^Math facts check:? Mixed \(your own problems\)$/);
+  });
+
+  it('Wave 2B: unwraps alloflow-packet-results-bundle JSON and accepts read_along, vocab_check, and symbol_runner measures cleanly', async () => {
+    const bundle = {
+      kind: 'alloflow-packet-results-bundle',
+      version: 1,
+      savedLocal: '2026-11-19T10:00:00-05:00',
+      sessions: [
+        {
+          sessionId: 'ra-bundle-1',
+          learner: 'BlueHeron7',
+          packetId: 'ra-fox-1',
+          packetVersion: 'r1',
+          title: 'The Fox',
+          mode: 'practice',
+          date: '2026-11-18',
+          startedLocal: '2026-11-18T09:00:00-05:00',
+          finishedLocal: '2026-11-18T09:03:00-05:00',
+          durationS: 180,
+          integrity: 'ok',
+          items: [
+            { n: 1, itemId: 'ra-0', activity: 'read_along', word: 'The fox ran.', target: 'read', responses: ['read'], attempts: 1, firstTry: true, correct: true, done: true, ms: 2000, practice: 'read', flag: '' },
+          ],
+        },
+        {
+          sessionId: 'vc-bundle-1',
+          learner: 'BlueHeron7',
+          packetId: 'vocab-sci-1',
+          packetVersion: 'r1',
+          title: 'Science Vocab Check',
+          mode: 'probe',
+          measure: 'vocab_items',
+          unit: 'items_correct',
+          form: 'A',
+          date: '2026-11-18',
+          startedLocal: '2026-11-18T09:05:00-05:00',
+          finishedLocal: '2026-11-18T09:07:00-05:00',
+          durationS: 120,
+          integrity: 'ok',
+          score: { measure: 'vocab_items', scoreUnit: 'items_correct', score: 1, itemsCorrect: 1, itemsAttempted: 1, elapsedS: 45, completion: 'complete' },
+          items: [
+            { n: 1, itemId: 'vm-0', activity: 'vocab_meaning', word: 'habitat', target: 'home', responses: ['home'], attempts: 1, firstTry: true, correct: true, done: true, ms: 3000, practice: null, flag: '' },
+          ],
+        },
+        {
+          sessionId: 'sr-bundle-1',
+          learner: 'RedFox3',
+          packetId: 'sr-letters-1',
+          packetVersion: 'r1',
+          title: 'Letter Naming Check',
+          mode: 'probe',
+          measure: 'symbol_naming',
+          unit: 'items_correct',
+          form: 'A',
+          date: '2026-11-18',
+          startedLocal: '2026-11-18T09:10:00-05:00',
+          finishedLocal: '2026-11-18T09:11:00-05:00',
+          durationS: 60,
+          integrity: 'ok',
+          score: { measure: 'symbol_naming', scoreUnit: 'items_correct', score: 1, itemsCorrect: 1, itemsAttempted: 1, elapsedS: 60, completion: 'time' },
+          items: [
+            { n: 1, itemId: 'sr-0', activity: 'symbol_runner', word: 'm', target: 'm', responses: ['m'], attempts: 1, firstTry: true, correct: true, done: true, ms: 1200, practice: null, flag: '' },
+          ],
+        },
+      ],
+    };
+    const got = await AC.readFile(file(JSON.stringify(bundle), 'packets-results-all.json'));
+    expect(got.reason).toBe('');
+    expect(got.sessions).toHaveLength(3);
+    const byId = Object.fromEntries(got.sessions.map((s) => [s.id, s]));
+    expect(byId['th:ra-bundle-1'].check).toBeFalsy();
+    expect(byId['th:ra-bundle-1'].acts).toHaveProperty('read_along');
+    expect(byId['th:ra-bundle-1'].integrity).toBe('ok');
+    expect(byId['th:vc-bundle-1'].check).toBeFalsy();
+    expect(byId['th:vc-bundle-1'].acts).toHaveProperty('vocab_meaning');
+    expect(byId['th:sr-bundle-1'].check).toBeFalsy();
+    expect(byId['th:sr-bundle-1'].acts).toHaveProperty('symbol_runner');
   });
 });

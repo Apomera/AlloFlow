@@ -99,6 +99,20 @@ describe('take-home results in the Submission Inbox', () => {
     await importFiles([json('broken.json', { ...result, items: null })]);
     expect(host.textContent).toContain('This Word Sounds results file could not be read.');
   });
+
+  it('imports a default student CSV results file and uses the real lesson title', async () => {
+    await mount();
+    const csvText = readFileSync('tests/fixtures/packets_results/sample_results.csv', 'utf8');
+    const csvFile = new File([csvText], 'sample_results.csv', { type: 'text/csv' });
+    await importFiles([csvFile]);
+    expect(rowButtons().length).toBeGreaterThanOrEqual(1);
+    const expand = rowButtons()[0];
+    await React.act(async () => { expand.click(); await tick(); });
+    const section = host.querySelector('[data-si-take-home]');
+    expect(section).toBeTruthy();
+    expect(section.textContent).toContain('right on the first try');
+    expect(section.textContent).not.toContain('Word Sounds take-home:');
+  });
 });
 
 describe('Get submissions from Class Mailbox', () => {

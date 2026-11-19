@@ -213,6 +213,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
         value: val,
         onChange: handleChange,
         onKeyDown: (e) => {
+          if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
           if (e.key === "Enter" && placeBankPick()) e.preventDefault();
         },
         readOnly: status === "success",
@@ -1946,6 +1947,7 @@ const WordSoundsReviewPanel = ({
           placeholder: t("word_sounds.image_refine_placeholder") || "e.g., make it cuter, add a banana",
           className: "flex-1 min-h-11 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400",
           onKeyDown: (e) => {
+            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
             if (e.key === "Enter" && onRefineImage && imageRefinementInputs[idx]) {
               if (!_wsAiUsable("images", onRefineImage)) {
                 setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });

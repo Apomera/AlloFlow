@@ -126,7 +126,7 @@ module.exports = {
   // Shared find-all board (identical in sound_sort.js). The label prefix
   // comes from the item id the shell assigns ("<activity>-<n>").
   render: function (item, ctx) {
-    var P = String(item.id || '').replace(/-\d+$/, '') + '_';
+    var P = String(item.id || '').replace(/-\d+(?:-again)?$/, '') + '_';
     var T = function (key, params) { return ctx.fmt(ctx.L[P + key] || '', params); };
     var win = ctx.root.ownerDocument.defaultView;
     var cards = [];
@@ -144,7 +144,7 @@ module.exports = {
         if (i >= steps.length) { mark(-1); return; }
         var s = steps[i++];
         mark(s.hi == null ? -1 : s.hi);
-        ctx.play(s.id).then(function () { if (mine === token) win.setTimeout(step, s.gap || 0); });
+        ctx.play(s.id).then(function (ok) { if (mine !== token) return; if (ok === false) { mark(-1); return; } win.setTimeout(step, s.gap || 0); });
       };
       step();
     };

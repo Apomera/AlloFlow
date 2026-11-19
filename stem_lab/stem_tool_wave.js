@@ -42,6 +42,30 @@ window.StemLab = window.StemLab || {
         ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-rose-900,.text-rose-950,.text-pink-900,.text-red-900){color:#ffe4e6!important}";
       document.head.appendChild(stDark);
     }
+    if (!document.getElementById('allo-wave-polish-css')) {
+      var stPol = document.createElement('style');
+      stPol.id = 'allo-wave-polish-css';
+      stPol.textContent = [
+        '.wav-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:16px 18px;margin-bottom:14px;background:linear-gradient(135deg,#071324 0%,#0b2942 54%,#0d3b46 100%);border:1px solid rgba(56,189,248,.4);box-shadow:0 16px 34px rgba(7,19,36,.26);color:#f0f9ff}',
+        '.wav-hero-deck h3{color:#ffffff!important;background:transparent!important;margin:0}',
+        '.wav-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(56,189,248,.18);border:1px solid rgba(103,232,249,.45);color:#a5f3fc}',
+        '.wav-hero-back{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(148,163,184,.34);color:#ffffff;cursor:pointer}',
+        '.wav-hero-back:hover{background:rgba(255,255,255,.2)}',
+        '.wav-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(7,19,36,.64);border:1px solid rgba(103,232,249,.32);color:#e0f2fe;white-space:nowrap}',
+        '.wav-telemetry-pill strong{color:#67e8f9;font-weight:900}',
+        '.wav-mini-scope{display:flex;align-items:center;gap:10px;padding:7px 11px;border-radius:13px;background:rgba(4,12,24,.66);border:1px solid rgba(56,189,248,.34)}',
+        '.wav-preset-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:11px;padding-top:10px;border-top:1px solid rgba(103,232,249,.22)}',
+        '.wav-preset-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(103,232,249,.38);color:#f0f9ff;cursor:pointer;min-height:36px;transition:background-color .15s,border-color .15s}',
+        '.wav-preset-chip:hover{background:rgba(56,189,248,.24);border-color:#67e8f9;color:#ffffff}',
+        '.theme-contrast .wav-hero-deck{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffff00!important}',
+        '.theme-contrast .wav-hero-deck h3,.theme-contrast .wav-hero-deck p{color:#ffff00!important}',
+        '.theme-contrast .wav-hero-badge,.theme-contrast .wav-telemetry-pill,.theme-contrast .wav-mini-scope{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+        '.theme-contrast .wav-telemetry-pill strong{color:#00ff00!important}',
+        '.theme-contrast .wav-hero-back,.theme-contrast .wav-preset-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffff00!important}',
+        '.theme-contrast .wav-hero-deck button:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
+      ].join('');
+      document.head.appendChild(stPol);
+    }
   })();
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
@@ -5729,10 +5753,14 @@ window.StemLab = window.StemLab || {
                 ? Math.max(60, Math.min(3500, waveMetrics.approachingFreq * 100))
                 : Math.max(80, Math.min(3500, f0Hz * 2.2));
               var fLoHz = Math.max(50, Math.min(2500, (waveMetrics.recedingFreq || d.frequency * 0.7) * 100));
-              if (_waveAudio.dopplerFlyby && _waveAudio.dopplerFlyby.timer) {
-                try { clearTimeout(_waveAudio.dopplerFlyby.timer); } catch (e) {}
+              if (_waveAudio.dopplerFlyby) {
+                try { if (_waveAudio.dopplerFlyby.timer) clearTimeout(_waveAudio.dopplerFlyby.timer); } catch (e) {}
+                try { if (_waveAudio.dopplerFlyby.osc) { _waveAudio.dopplerFlyby.osc.stop(); _waveAudio.dopplerFlyby.osc.disconnect(); } } catch (e) {}
+                try { if (_waveAudio.dopplerFlyby.gain) _waveAudio.dopplerFlyby.gain.disconnect(); } catch (e) {}
+                try { if (_waveAudio.dopplerFlyby.ctx && typeof _waveAudio.dopplerFlyby.ctx.close === 'function') _waveAudio.dopplerFlyby.ctx.close(); } catch (e) {}
+                _waveAudio.dopplerFlyby = null;
               }
-              var sharedCtx = _waveAudio.ctx;
+              var sharedCtx = _waveAudio.ctx || (window.StemLab && typeof window.StemLab.audioContext === 'function' ? window.StemLab.audioContext() : null);
               var ownCtx = !sharedCtx;
               var actx = sharedCtx || new (window.AudioContext || window.webkitAudioContext)();
               if (actx.state === 'suspended' && typeof actx.resume === 'function') actx.resume();
@@ -5755,7 +5783,7 @@ window.StemLab = window.StemLab || {
                 if (ownCtx) { try { actx.close(); } catch (e) {} }
                 if (_waveAudio.dopplerFlyby && _waveAudio.dopplerFlyby.timer === timer) _waveAudio.dopplerFlyby = null;
               }, 1900);
-              _waveAudio.dopplerFlyby = { timer: timer, osc: oscF, gain: gainF };
+              _waveAudio.dopplerFlyby = { timer: timer, osc: oscF, gain: gainF, ctx: ownCtx ? actx : null };
               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.wave.announce_flyby', 'Doppler fly-by sweep: ') + Math.round(fHiHz) + ' Hz down to ' + Math.round(fLoHz) + ' Hz.');
             } catch (e) {
               if (typeof addToast === 'function') addToast(t('stem.wave.u26a0_audio_not_supported_in', '⚠ Audio not supported in this browser'), 'error');
@@ -6532,20 +6560,84 @@ window.StemLab = window.StemLab || {
               );
             })(),
 
-            React.createElement("div", { className: "flex items-center flex-wrap gap-3 mb-3" },
-
-              React.createElement("button", { type: 'button', style: { minWidth: 44, minHeight: 44 }, onClick: () => setStemLabTool(null), className: "transition-colors p-2 hover:bg-slate-100 rounded-lg active:scale-[0.97] inline-flex items-center justify-center", 'aria-label': __alloT('stem.wave.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-700" })),
-
-              React.createElement("h3", { className: "text-lg font-bold tracking-tight" + (ctx.isDark ? "" : " text-slate-800") + onHostInk, style: ctx.isDark ? { color: '#f1f5f9', backgroundColor: '#0f172a' } : undefined }, "\uD83C\uDF0A " + __alloT('stem.wave.title', 'Wave Simulator')),
-
-              React.createElement("span", { className: "px-2.5 py-1 bg-cyan-100 text-cyan-800 text-[0.6875rem] font-bold rounded-full" }, __alloT('stem.wave.badge_animated', 'ANIMATED')),
-
-              React.createElement("span", {
-                'data-wave-mastery-pill': 'true',
-                className: "ml-auto px-3 py-1.5 rounded-full text-xs font-black border border-emerald-600 bg-emerald-700 text-white shadow-sm"
-              }, '\u2B50 ' + masteryCount + ' / ' + WAVE_MASTERY_IDS.length + ' ' + __alloT('stem.wave.mastered_suffix', 'mastered'))
-
-            ),
+            (function() {
+              var wAmp = Math.max(5, Math.min(100, Number(d.amplitude) || 50));
+              var wFreq = Math.max(0.5, Math.min(10, Number(d.frequency) || 2));
+              var wSpeed = Math.max(10, Number(d.waveSpeed) || 343);
+              var wType = d.waveType || 'sine';
+              var wLambda = (wSpeed / Math.max(0.1, wFreq)).toFixed(0);
+              var scopePts = [];
+              for (var xi = 0; xi <= 28; xi++) {
+                var xf = xi / 28;
+                var phase = xf * Math.PI * 2 * Math.min(4, Math.max(1, wFreq * 0.65));
+                var yVal = wType === 'square' ? (Math.sin(phase) >= 0 ? 1 : -1)
+                  : wType === 'triangle' ? (2 / Math.PI) * Math.asin(Math.sin(phase))
+                  : wType === 'sawtooth' ? 2 * ((phase / (2 * Math.PI)) - Math.floor(0.5 + phase / (2 * Math.PI)))
+                  : Math.sin(phase);
+                var px = +(6 + xf * 64).toFixed(1);
+                var py = +(24 - yVal * (wAmp / 100) * 15).toFixed(1);
+                scopePts.push((xi === 0 ? 'M' : 'L') + px + ' ' + py);
+              }
+              var wavEmblemSvg = React.createElement("svg", { width: 48, height: 48, viewBox: "0 0 64 64", className: "shrink-0", 'aria-hidden': 'true', focusable: 'false' },
+                React.createElement("rect", { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : 'rgba(4,12,24,0.74)', stroke: isContrast ? '#00ff00' : 'rgba(56,189,248,0.55)', strokeWidth: 1.5 }),
+                React.createElement("line", { x1: 10, y1: 32, x2: 54, y2: 32, stroke: isContrast ? '#ffffff' : 'rgba(148,163,184,0.45)', strokeWidth: 1.2, strokeDasharray: "3 3" }),
+                React.createElement("path", { d: "M10 32 Q21 10 32 32 T54 32", fill: "none", stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 2.8, strokeLinecap: 'round' }),
+                React.createElement("path", { d: "M10 32 Q21 54 32 32 T54 32", fill: "none", stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 1.8, strokeDasharray: "4 3" }),
+                React.createElement("circle", { cx: 10, cy: 32, r: 2.5, fill: '#67e8f9' }),
+                React.createElement("circle", { cx: 32, cy: 32, r: 2.8, fill: '#fbbf24' }),
+                React.createElement("circle", { cx: 54, cy: 32, r: 2.5, fill: '#67e8f9' })
+              );
+              var wavMiniScopeSvg = React.createElement("svg", { width: 76, height: 48, viewBox: "0 0 76 48", className: "shrink-0", 'aria-hidden': 'true', focusable: 'false' },
+                React.createElement("rect", { x: 1, y: 1, width: 74, height: 46, rx: 8, fill: isContrast ? '#000000' : '#020617', stroke: isContrast ? '#ffff00' : 'rgba(56,189,248,0.35)', strokeWidth: 1 }),
+                React.createElement("line", { x1: 6, y1: 24, x2: 70, y2: 24, stroke: 'rgba(148,163,184,0.3)', strokeWidth: 1 }),
+                React.createElement("path", { d: scopePts.join(' '), fill: "none", stroke: isContrast ? '#00ff00' : '#22d3ee', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+              );
+              var applyWavePreset = function(patch) {
+                updPatch(function(cur) {
+                  var mv = Object.assign({}, cur.modesVisited || {});
+                  if (patch.waveMode) mv[patch.waveMode] = true;
+                  return Object.assign({}, patch, { modesVisited: mv, workspaceTab: cur.workspaceTab === 'library' ? 'explore' : cur.workspaceTab });
+                });
+              };
+              return React.createElement("header", { className: "wav-hero-deck" },
+                React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+                  React.createElement("div", { className: "flex items-start gap-3 min-w-0 flex-1" },
+                    React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "wav-hero-back", 'aria-label': __alloT('stem.wave.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                    wavEmblemSvg,
+                    React.createElement("div", { className: "min-w-0" },
+                      React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                        React.createElement("span", { className: "wav-hero-badge" }, __alloT('stem.wave.hero_badge', 'Physics · Waves, Optics & Acoustics')),
+                        React.createElement("span", { className: "px-2 py-0.5 bg-cyan-900/70 text-cyan-200 border border-cyan-400/40 text-[0.65rem] font-bold rounded-full" }, __alloT('stem.wave.badge_animated', 'ANIMATED'))
+                      ),
+                      React.createElement("h3", { className: "text-xl font-black tracking-tight mt-1" }, "\uD83C\uDF0A " + __alloT('stem.wave.title', 'Wave Simulator')),
+                      React.createElement("p", { className: "text-xs text-sky-100/85 mt-0.5" }, __alloT('stem.wave.hero_sub', 'Explore standing harmonics, superposition beats, ripple-tank interference, Doppler shifts, and spectral analysis.'))
+                    )
+                  ),
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("div", { className: "wav-mini-scope" },
+                      wavMiniScopeSvg,
+                      React.createElement("div", { className: "text-xs leading-snug" },
+                        React.createElement("div", { className: "font-black text-cyan-200 uppercase text-[10px] tracking-wider" }, wType),
+                        React.createElement("div", { className: "font-bold text-white" }, "f " + wFreq.toFixed(1) + " Hz · A " + Math.round(wAmp)),
+                        React.createElement("div", { className: "text-[11px] text-sky-200/80" }, "v " + Math.round(wSpeed) + " m/s · λ " + wLambda + " m")
+                      )
+                    ),
+                    React.createElement("span", {
+                      'data-wave-mastery-pill': 'true',
+                      className: "px-3 py-1.5 rounded-full text-xs font-black border border-emerald-400/50 bg-emerald-700 text-white shadow-sm"
+                    }, '\u2B50 ' + masteryCount + ' / ' + WAVE_MASTERY_IDS.length + ' ' + __alloT('stem.wave.mastered_suffix', 'mastered'))
+                  )
+                ),
+                React.createElement("div", { className: "wav-preset-bar", role: "group", 'aria-label': __alloT('stem.wave.a11y_starter_presets', 'Starter wave presets') },
+                  React.createElement("span", { className: "text-[11px] font-extrabold uppercase tracking-wider text-cyan-300 mr-1" }, __alloT('stem.wave.presets_label', 'Bench presets:')),
+                  React.createElement("button", { type: "button", className: "wav-preset-chip", onClick: function() { applyWavePreset({ waveMode: 'free', waveType: 'sine', frequency: 2.5, amplitude: 55, showSecondWave: false }); } }, "〰️ " + __alloT('stem.wave.preset_pure_sine', 'Pure Sine')),
+                  React.createElement("button", { type: "button", className: "wav-preset-chip", onClick: function() { applyWavePreset({ waveMode: 'standing', harmonicN: 3, amplitude: 50 }); } }, "🎸 " + __alloT('stem.wave.preset_standing', '3rd Harmonic')),
+                  React.createElement("button", { type: "button", className: "wav-preset-chip", onClick: function() { applyWavePreset({ waveMode: 'free', showSecondWave: true, frequency: 3, freq2: 3.3, amplitude: 45 }); } }, "🎵 " + __alloT('stem.wave.preset_beats', 'Acoustic Beats')),
+                  React.createElement("button", { type: "button", className: "wav-preset-chip", onClick: function() { applyWavePreset({ waveMode: 'doppler', sourceSpeed: 0.45, frequency: 3 }); } }, "🚑 " + __alloT('stem.wave.preset_doppler', 'Doppler Shift')),
+                  React.createElement("button", { type: "button", className: "wav-preset-chip", onClick: function() { applyWavePreset({ waveMode: 'ripple', frequency: 3, amplitude: 50 }); } }, "🫧 " + __alloT('stem.wave.preset_ripple', 'Ripple Interference'))
+                )
+              );
+            })(),
 
             // ── UDL Workspace Bar (Focus Tabs + Grade-Band + Read Aloud) ──
             React.createElement("div", {
@@ -8692,7 +8784,12 @@ window.StemLab = window.StemLab || {
                       ? { backgroundColor: '#0c4a6e', color: '#e0f2fe', borderColor: '#38bdf8' }
                       : { backgroundColor: '#e0f2fe', color: '#0c4a6e', borderColor: '#0284c7' }
                 }, '\u2728 ' + __alloT('stem.wave.badge_brewster_match', 'Brewster Glare-Free (R=0%)')),
-                React.createElement("span", { className: "text-[0.6875rem] text-amber-900 ml-auto" },
+                React.createElement("span", {
+                  className: "text-[0.6875rem] text-amber-900 ml-auto",
+                  style: (ctx && ctx.isDark && !(ctx && ctx.isContrast))
+                    ? { backgroundColor: '#1e293b', color: '#e2e8f0', padding: '2px 8px', borderRadius: 999, border: '1px solid #475569' }
+                    : undefined
+                },
                   React.createElement("span", { style: { color: (ctx && ctx.isContrast) ? '#ffff00' : (ctx && ctx.isDark) ? '#fcd34d' : '#92400e', fontWeight: 700 } }, '— ' + __alloT('stem.wave.refl_solid', 'solid')), __alloT('stem.wave.refl_solid_desc', ': M1 net · '),
                   React.createElement("span", { style: { color: (ctx && ctx.isContrast) ? '#00ff88' : (ctx && ctx.isDark) ? '#6ee7b7' : '#047857', fontWeight: 700 } }, '— ' + __alloT('stem.wave.refl_green', 'green')), __alloT('stem.wave.refl_green_desc', ': M2 transmitted · '),
                   React.createElement("span", { style: { color: (ctx && ctx.isContrast) ? '#ff80bf' : (ctx && ctx.isDark) ? '#f9a8d4' : '#be185d', fontWeight: 700 } }, '‑‑ ' + __alloT('stem.wave.refl_dashed', 'dashed')), __alloT('stem.wave.refl_dashed_desc', ': reflected'))

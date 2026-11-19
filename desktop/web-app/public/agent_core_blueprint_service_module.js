@@ -235,10 +235,10 @@
 
     function refreshChangedGenerationRows(next, priorBlueprint, forceAll) {
       if (!next || !Array.isArray(next.plan) || !priorBlueprint || !Array.isArray(priorBlueprint.plan)) return next;
-      var byId = {};
+      var byId = Object.create(null);
       priorBlueprint.plan.forEach(function (row) { if (row && row.uiId) byId[row.uiId] = row; });
       next.plan = next.plan.map(function (row, index) {
-        var prior = byId[row && row.uiId] || priorBlueprint.plan[index];
+        var prior = (row && row.uiId && byId[row.uiId]) || priorBlueprint.plan[index];
         if (!prior || (!forceAll && !generationInputsChanged(prior, row))) return row;
         var cleanRow = Object.assign({}, row);
         ['generationAction', 'generationIdentity', 'generationVariants', 'existingArtifactId', 'variantKey', 'explicitVariantKey', 'variantKeyDerived',
@@ -523,21 +523,25 @@
         // AI revision output is not an educator-authorization surface. Keep
         // existing row metadata when the model omits it, and never let model
         // output mint an educator designation or replacement permission.
-        var priorById = {};
-        var priorByTool = {};
+        var priorById = Object.create(null);
+        var priorByTool = Object.create(null);
         b.plan.forEach(function (row) {
           if (row.uiId) priorById[row.uiId] = row;
-          priorByTool[row.tool] = priorByTool[row.tool] || [];
-          priorByTool[row.tool].push(row);
+          if (row.tool) {
+            priorByTool[row.tool] = priorByTool[row.tool] || [];
+            priorByTool[row.tool].push(row);
+          }
         });
-        var rawById = {};
-        var rawByTool = {};
+        var rawById = Object.create(null);
+        var rawByTool = Object.create(null);
         rawPlan.forEach(function (row) {
           if (!row || typeof row !== 'object') return;
           var rawTool = row.tool || row.type || row.id;
           if (row.uiId) rawById[row.uiId] = row;
-          rawByTool[rawTool] = rawByTool[rawTool] || [];
-          rawByTool[rawTool].push(row);
+          if (rawTool) {
+            rawByTool[rawTool] = rawByTool[rawTool] || [];
+            rawByTool[rawTool].push(row);
+          }
         });
         next.plan = next.plan.map(function (row, index) {
           var prior = priorById[row.uiId]
@@ -803,7 +807,10 @@
         steps = steps.map(function (step) {
           if (step.stepId !== ch.setParam.stepId) return step;
           var params = Object.assign({}, step.params);
-          params[ch.setParam.key] = ch.setParam.value;
+          var paramKey = String(ch.setParam.key || '');
+          if (paramKey && paramKey !== '__proto__' && paramKey !== 'constructor' && paramKey !== 'prototype') {
+            params[paramKey] = ch.setParam.value;
+          }
           var command = commandById(ctx, step.commandId);
           if (typeof d.sanitizeCommandParams === 'function') {
             try { params = d.sanitizeCommandParams(command, params); } catch (_) { params = {}; }

@@ -3731,18 +3731,32 @@ var _alloLatexToSpeakable = function (raw) {
   let s = String(raw);
   // Strip math-mode delimiters
   s = s.replace(/^\$\$/, '').replace(/\$\$$/, '').replace(/^\$/, '').replace(/\$$/, '');
-  // Structural commands first (these contain other math)
-  s = s.replace(/\\frac\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 over $2');
-  s = s.replace(/\\sqrt\s*\[([^\]]+)\]\s*\{([^}]+)\}/g, '$1th root of $2');
-  s = s.replace(/\\sqrt\s*\{([^}]+)\}/g, 'square root of $1');
-  s = s.replace(/\\binom\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 choose $2');
-  s = s.replace(/\\overline\{([^}]+)\}/g, 'the negation of $1');
-  s = s.replace(/\\underline\{([^}]+)\}/g, '$1');
-  s = s.replace(/\\(text|textit|textrm|mathrm|operatorname|textbf|mathbf|mathit|mathbb)\{([^}]+)\}/g, '$2');
-  // Powers and subscripts (longest first so {^...{n}} is caught before {^n})
-  s = s.replace(/\^\{([^}]+)\}/g, ' to the power $1 ');
+  // Structural commands first (inner-to-outer pass handles nested braces like \frac{x^{2}+1}{\sqrt{y}})
+  const _ordRoot = (idx) => {
+    const t = String(idx || '').trim();
+    if (t === '2') return 'square root of ';
+    if (t === '3') return 'cube root of ';
+    if (/^\d+$/.test(t)) {
+      const n = parseInt(t, 10), m100 = n % 100, m10 = n % 10;
+      const suf = (m100 >= 11 && m100 <= 13) ? 'th' : m10 === 1 ? 'st' : m10 === 2 ? 'nd' : m10 === 3 ? 'rd' : 'th';
+      return t + suf + ' root of ';
+    }
+    return t + 'th root of ';
+  };
+  for (let _pass = 0; _pass < 8; _pass++) {
+    const _before = s;
+    s = s.replace(/\\(text|textit|textrm|mathrm|operatorname|textbf|mathbf|mathit|mathbb)\{([^{}]+)\}/g, '$2');
+    s = s.replace(/\\overline\{([^{}]+)\}/g, 'the negation of $1');
+    s = s.replace(/\\underline\{([^{}]+)\}/g, '$1');
+    s = s.replace(/\\sqrt\s*\[([^\]]+)\]\s*\{([^{}]+)\}/g, (_, idx, body) => _ordRoot(idx) + body);
+    s = s.replace(/\\sqrt\s*\{([^{}]+)\}/g, 'square root of $1');
+    s = s.replace(/\\binom\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '$1 choose $2');
+    s = s.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '$1 over $2');
+    s = s.replace(/\^\{([^{}]+)\}/g, ' to the power $1 ');
+    s = s.replace(/_\{([^{}]+)\}/g, ' sub $1 ');
+    if (s === _before) break;
+  }
   s = s.replace(/\^([0-9a-zA-Z+\-])/g, ' to the power $1 ');
-  s = s.replace(/_\{([^}]+)\}/g, ' sub $1 ');
   s = s.replace(/_([0-9a-zA-Z])/g, ' sub $1 ');
   // Big operators
   s = s.replace(/\\sum/g, 'the sum of');
@@ -4120,7 +4134,7 @@ var _alloOcrAccuracy = function (text) {
 // stats.residualLowConf: share of the corrected layer still made of unresolved low-confidence words.
 var _alloAlignVisionOntoOcrWords = function (words, ocrText, visionText) {
   if (!Array.isArray(words) || !words.length || typeof ocrText !== 'string' || typeof visionText !== 'string' || !visionText.trim()) return null;
-  var key = function (s) { return String(s || '').toLowerCase().replace(/[‘’ʼ]/g, "'").replace(/[^a-z0-9]/g, ''); };
+  var key = function (s) { return String(s || '').normalize('NFKC').toLowerCase().replace(/[‘’ʼ]/g, "'").replace(/[^\p{L}\p{N}]+/gu, ''); };
   var LOOK = { '0': 'o', c: 'o', '1': 'l', i: 'l', '2': 'z', '5': 's', '6': 'b', '8': 'b' };
   var look = function (k) { return k.replace(/[0c12i568]/g, function (ch) { return LOOK[ch]; }); };
   var lev = function (a, b) {
@@ -4664,7 +4678,7 @@ function _reattachSourceLinks(html, srcLinks) {
       const name = m[2].toLowerCase();
       const selfClosing = /\/>$/.test(tag);
       if (name === 'a' && !selfClosing) anchorDepth = closing ? Math.max(0, anchorDepth - 1) : anchorDepth + 1;
-      else if ((name === 'style' || name === 'script' || name === 'title') && !selfClosing) skipDepth = closing ? Math.max(0, skipDepth - 1) : skipDepth + 1;
+      else if ((name === 'style' || name === 'script' || name === 'title' || name === 'button' || name === 'textarea' || name === 'option' || name === 'select' || name === 'noscript' || name === 'svg' || name === 'math') && !selfClosing) skipDepth = closing ? Math.max(0, skipDepth - 1) : skipDepth + 1;
       if (!selfClosing && !VOID_TAG.test(name)) {
         const top = hidden[hidden.length - 1];
         if (closing) { if (top && top.name === name && --top.depth === 0) hidden.pop(); }
@@ -4680,14 +4694,14 @@ function _reattachSourceLinks(html, srcLinks) {
   function _rewriteTextRun(run) {
     if (!run || anchorDepth > 0 || skipDepth > 0 || hidden.length > 0) return run;
     for (const l of links) {
-      if ((budget.get(l) || 0) <= 0) continue;
+      if (!l.text || (budget.get(l) || 0) <= 0) continue;
       const at = run.indexOf(l.text);
       if (at === -1) continue;
       budget.set(l, budget.get(l) - 1);
       count++;
-      return run.slice(0, at)
+      return _rewriteTextRun(run.slice(0, at))
         + '<a href="' + _esc(l.url) + '">' + run.slice(at, at + l.text.length) + '</a>'
-        + run.slice(at + l.text.length);
+        + _rewriteTextRun(run.slice(at + l.text.length));
     }
     return run;
   }
@@ -7445,7 +7459,7 @@ function _alloSanitizeImportedCss(css) {
     if (clean === before) break;
   }
   // Unknown escapes or any residual fetch/execution primitive fail closed for this style block.
-  if (/\\|@(?:import|font-face)\b|\b(?:url|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
+  if (/\\|<\/\s*style\b|<!--|<\s*\/?\s*[a-z!?]|@(?:import|font-face)\b|\b(?:url|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
   var residualBare = _alloCssReplaceOutsideStrings(clean, _ALLO_CSS_BARE_IMAGE_SRC_RE, '\0');
   if (residualBare === null || residualBare !== clean) return '';
   // A bare "image(/src(" LEFT OF a string is caught above; one INSIDE a string is inert output.
@@ -7589,8 +7603,8 @@ function _alloSanitizeRemediationHtml(rawHtml) {
   }
   source = _stripGeneratedImageEditorControls(source, true); // generated pickers cannot run after handlers are stripped
   var doc = new DOMParser().parseFromString(source, 'text/html');
-  Array.prototype.slice.call(doc.querySelectorAll('script,iframe,frame,object,embed,base,link,meta,template,svg foreignObject,svg animate,svg animateMotion,svg animateTransform,svg set,svg discard')).forEach(function(node) { try { node.remove(); } catch (_) {} });
-  Array.prototype.slice.call(doc.querySelectorAll('style')).forEach(function(node) { node.textContent = _alloSanitizeImportedCss(node.textContent || ''); });
+  Array.prototype.slice.call(doc.querySelectorAll('script,iframe,frame,frameset,object,embed,base,link,meta,noscript,template,annotation-xml,maction,mglyph,malignmark,xmp,noembed,noframes,plaintext,svg foreignObject,svg animate,svg animateMotion,svg animateTransform,svg set,svg discard')).forEach(function(node) { try { node.remove(); } catch (_) {} });
+  Array.prototype.slice.call(doc.querySelectorAll('style')).forEach(function(node) { var cleanCss = _alloSanitizeImportedCss(node.textContent || ''); if (!cleanCss || /</.test(cleanCss)) { try { node.remove(); } catch (_) {} } else { node.textContent = cleanCss; } });
   Array.prototype.slice.call(doc.querySelectorAll('*')).forEach(function(el) {
     Array.prototype.slice.call(el.attributes || []).forEach(function(attr) {
       var name = String(attr.name || '').toLowerCase();
@@ -7619,6 +7633,17 @@ function _alloSanitizeRemediationHtml(rawHtml) {
     });
     if (String(el.tagName || '').toLowerCase() === 'a' && el.hasAttribute('target')) el.setAttribute('rel', 'noopener noreferrer');
   });
+  if (doc.head) {
+    try {
+      var _vpMeta = doc.createElement('meta');
+      _vpMeta.setAttribute('name', 'viewport');
+      _vpMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+      doc.head.insertBefore(_vpMeta, doc.head.firstChild);
+      var _csMeta = doc.createElement('meta');
+      _csMeta.setAttribute('charset', 'utf-8');
+      doc.head.insertBefore(_csMeta, doc.head.firstChild);
+    } catch (_) {}
+  }
   return '<!DOCTYPE html>\n' + (doc.documentElement ? doc.documentElement.outerHTML : '');
 }
 // Sanitize only model-authored body markup before it enters the separately-authored wrapper.
@@ -8144,17 +8169,30 @@ function fixLandmarkFoundations(html) {
     }
   }
 
-  // 2) Skip-to-content link → #main-content as the first body child (only meaningful once a #main-content
-  //    target exists, guaranteed by step 1). Idempotent via the same guard fix_skip_nav uses.
-  if (/id\s*=\s*["']main-content["']/i.test(out) && !/skip.to|skip-nav|skipnav/i.test(out)) {
-    out = out.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
+  // 2) Skip-to-content link → target main landmark id as the first body child.
+  var _mainIdMatch = out.match(/<main\b[^>]*\bid\s*=\s*["']([^"']+)["']/i)
+    || out.match(/<[a-z][\w:-]*\b[^>]*\brole\s*=\s*["']main["'][^>]*\bid\s*=\s*["']([^"']+)["']/i)
+    || out.match(/<[a-z][\w:-]*\b[^>]*\bid\s*=\s*["']([^"']+)["'][^>]*\brole\s*=\s*["']main["']/i);
+  var _skipTargetId = (_mainIdMatch && _mainIdMatch[1]) || (/id\s*=\s*["']main-content["']/i.test(out) ? 'main-content' : '');
+  var _hasSkipLink = /<a\b[^>]*\bhref\s*=\s*["']#[^"']+["'][^>]*>[\s\S]*?skip\b/i.test(out)
+    || /<a\b[^>]*\bclass\s*=\s*["'][^"']*(?:skip[-_]?link|skip[-_]?nav|skipnav)[^"']*["']/i.test(out);
+  if (_skipTargetId && !_hasSkipLink) {
+    out = out.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#' + _skipTargetId + '" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
   }
 
-  // 3) <title> — derive from the first <h1> (else first heading) if <head> exists with no <title>.
-  if (/<head[\s>]/i.test(out) && !/<title\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/title\s*>/i.test(out)) {
+  // 3) <title> — derive from the first <h1> (else first heading) if <head> exists with no non-empty <title>.
+  var _titleMatch = out.match(/<title\b(?:[^>"']|"[^"]*"|'[^']*')*>([\s\S]*?)<\/title\s*>/i);
+  var _hasNonEmptyTitle = !!(_titleMatch && _titleMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
+  if (/<head[\s>]/i.test(out) && !_hasNonEmptyTitle) {
     var hm = out.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || out.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
     var ttl = hm ? hm[1].replace(/<[^>]+>/g, '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim() : '';
-    if (ttl) out = out.replace(/<\/head>/i, function () { return '<title>' + ttl + '</title>\n</head>'; });
+    if (ttl) {
+      if (_titleMatch) {
+        out = out.replace(/<title\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/title\s*>/i, function () { return '<title>' + ttl + '</title>'; });
+      } else {
+        out = out.replace(/<\/head>/i, function () { return '<title>' + ttl + '</title>\n</head>'; });
+      }
+    }
   }
 
   // 4) <meta charset> if <head> exists without one.
@@ -8168,6 +8206,17 @@ function fixLandmarkFoundations(html) {
   //    is the only thing worse than none, and that only happens if a real signal existed — which it didn't).
   if (/<html[\s>]/i.test(out) && !/<html[^>]*\slang\s*=/i.test(out)) {
     out = out.replace(/<html((?:(?!\slang\s*=)[^>])*)>/i, '<html$1 lang="en">');
+  }
+  // 5b) Idempotent RTL direction backstop — if <html lang> is an RTL language and no dir attribute is set,
+  //     stamp dir="rtl" so screen readers and browsers render bidi text in logical order. Self-contained regex
+  //     so standalone slices of fixLandmarkFoundations never depend on outer-closure helpers.
+  var _htmlTagLang = out.match(/<html\b[^>]*>/i);
+  if (_htmlTagLang && !/\sdir\s*=/i.test(_htmlTagLang[0])) {
+    var _langAttr = _htmlTagLang[0].match(/\slang\s*=\s*["']([^"']+)["']/i);
+    var _langVal = _langAttr ? String(_langAttr[1]).trim().toLowerCase().replace(/_/g, '-') : '';
+    if (/^(?:ar|arc|az-arab|ckb|dv|fa|ha-arab|he|iw|ks|ku-arab|ms-arab|pa-arab|ps|sd|syr|ug|ur|yi)(?:-|$)/i.test(_langVal)) {
+      out = out.replace(/<html\b([^>]*)>/i, '<html$1 dir="rtl">');
+    }
   }
 
   return out;
@@ -9182,21 +9231,31 @@ function _collapseHeadingSkipsStrict(htmlContent) {
   while ((m = re.exec(htmlContent)) !== null) opens.push({ pos: m.index, openLen: m[0].length, level: parseInt(m[1], 10) });
   if (opens.length < 2) return _noop;
   opens[0].newLevel = opens[0].level;
-  let prev = opens[0].level, fixCount = 0;
+  const stack = [{ raw: opens[0].level, mapped: opens[0].level }];
+  let plannedFixes = 0;
   for (let i = 1; i < opens.length; i++) {
-    opens[i].newLevel = (opens[i].level > prev + 1) ? prev + 1 : opens[i].level;
-    if (opens[i].newLevel !== opens[i].level) fixCount++;
-    prev = opens[i].newLevel;
+    const raw = opens[i].level;
+    while (stack.length > 0 && stack[stack.length - 1].raw >= raw) stack.pop();
+    const mapped = stack.length > 0 ? Math.min(6, stack[stack.length - 1].mapped + 1) : raw;
+    opens[i].newLevel = mapped;
+    if (mapped !== raw) plannedFixes++;
+    stack.push({ raw, mapped });
+  }
+  if (plannedFixes === 0) return _noop;
+  const edits = [];
+  let fixCount = 0;
+  for (let i = 0; i < opens.length; i++) {
+    const op = opens[i];
+    if (op.newLevel === op.level) continue;
+    const searchStart = op.pos + op.openLen;
+    const searchEnd = (i + 1 < opens.length) ? opens[i + 1].pos : htmlContent.length;
+    const closeMatch = new RegExp('</h' + op.level + '\\s*>', 'i').exec(htmlContent.slice(searchStart, searchEnd));
+    if (!closeMatch) continue;
+    edits.push({ pos: op.pos, oldStr: htmlContent.slice(op.pos, op.pos + 3), newStr: '<h' + op.newLevel });
+    edits.push({ pos: searchStart + closeMatch.index, oldStr: closeMatch[0], newStr: '</h' + op.newLevel + '>' });
+    fixCount++;
   }
   if (fixCount === 0) return _noop;
-  const edits = [];
-  for (const op of opens) {
-    if (op.newLevel === op.level) continue;
-    edits.push({ pos: op.pos, oldStr: '<h' + op.level, newStr: '<h' + op.newLevel });
-    const cm = '</h' + op.level + '>';
-    const ci = htmlContent.indexOf(cm, op.pos + op.openLen);
-    if (ci !== -1) edits.push({ pos: ci, oldStr: cm, newStr: '</h' + op.newLevel + '>' });
-  }
   edits.sort((a, b) => b.pos - a.pos);
   let result = htmlContent;
   for (const e of edits) result = result.slice(0, e.pos) + e.newStr + result.slice(e.pos + e.oldStr.length);
@@ -9239,7 +9298,12 @@ var _alloFixStructuralFoundations = function (html, options) {
   if (_wanted('html-lang') && /<html[\s>]/i.test(out) && !/<html\b[^>]*\slang\s*=/i.test(out)) {
     var detectedLanguage = String(opts.documentLanguage || '').trim().toLowerCase().replace(/_/g, '-');
     if (/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(detectedLanguage)) {
-      _changed('html-lang', out.replace(/<html\b([^>]*)>/i, '<html$1 lang="' + _attrEsc(detectedLanguage) + '">'), 'Added the language detected by the source audit.');
+      var _isRtlDetected = /^(?:ar|arc|az-arab|ckb|dv|fa|ha-arab|he|iw|ks|ku-arab|ms-arab|pa-arab|ps|sd|syr|ug|ur|yi)(?:-|$)/i.test(detectedLanguage);
+      var _langNext = out.replace(/<html\b([^>]*)>/i, function (m, attrs) {
+        var dirAttr = (_isRtlDetected && !/\sdir\s*=/i.test(attrs)) ? ' dir="rtl"' : '';
+        return '<html' + attrs + ' lang="' + _attrEsc(detectedLanguage) + '"' + dirAttr + '>';
+      });
+      _changed('html-lang', _langNext, 'Added the language detected by the source audit.');
     }
   }
 
@@ -16580,21 +16644,28 @@ var createDocPipeline = function(deps) {
         if (p.target != null) return _applyToAxeTarget(html, p.target, _mutAltText(p));
         if (!p.index && p.index !== 0) return html;
         let idx = 0;
-        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
+        var safeAlt = String(p.alt || 'Image').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return html.replace(/<img(?=[\s>/])([^>]*)>/gi, function(m, attrs) {
           if (idx++ !== p.index) return m;
-          if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
-          return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
+          if (/\balt\s*=\s*(?:"[^"]*"|'[^']*')/i.test(attrs)) {
+            return m.replace(/\balt\s*=\s*(?:"[^"]*"|'[^']*')/i, function() { return 'alt="' + safeAlt + '"'; });
+          }
+          return '<img alt="' + safeAlt + '"' + attrs + '>';
         });
       }
     },
     fix_heading: {
       category: 'CONTENT', wcag: '1.3.1', params: '{index, newLevel}',
       fn: function(html, p) {
-        if (!p.newLevel) return html;
+        if (p.newLevel == null) return html;
+        var rawLvl = String(p.newLevel).trim();
+        if (!/^h?[1-6]$/i.test(rawLvl)) return html;
+        var lvl = parseInt(rawLvl.replace(/^h/i, ''), 10);
+        if (!Number.isInteger(lvl) || lvl < 1 || lvl > 6) return html;
         let idx = 0;
-        return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function(m, lv, attrs, content) {
+        return html.replace(/<h([1-6])(?=[\s>])([^>]*)>([\s\S]*?)<\/h\1\s*>/gi, function(m, lv, attrs, content) {
           if (idx++ !== (p.index || 0)) return m;
-          return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
+          return '<h' + lvl + attrs + '>' + content + '</h' + lvl + '>';
         });
       }
     },
@@ -16874,11 +16945,14 @@ var createDocPipeline = function(deps) {
         if (!p.tag || !p.label) return html;
         if (!SAFE_TAG_NAME.test(p.tag)) return html;
         let idx = 0;
-        var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
+        var safeLabel = String(p.label).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        var re = new RegExp('<' + p.tag + '(?=[\\s>/])([^>]*)>', 'gi');
         return html.replace(re, function(m, attrs) {
           if (idx++ !== (p.index || 0)) return m;
-          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
-          return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+          if (/\baria-label\s*=\s*(?:"[^"]*"|'[^']*')/i.test(attrs)) {
+            return m.replace(/\baria-label\s*=\s*(?:"[^"]*"|'[^']*')/i, function() { return 'aria-label="' + safeLabel + '"'; });
+          }
+          return '<' + p.tag + ' aria-label="' + safeLabel + '"' + attrs + '>';
         });
       }
     },
@@ -16886,9 +16960,12 @@ var createDocPipeline = function(deps) {
       category: 'STRUCTURE', wcag: '1.3.1', params: '{tag, label}',
       fn: function(html, p) {
         var label = p.label || 'Content';
+        var safeLabel = String(label).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         var selector = p.selector || 'body';
-        if (selector === 'body' && !html.includes('<main')) {
-          return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
+        if (selector === 'body' && !/<main(?=[\s>])/i.test(html)) {
+          return html
+            .replace(/<body\b([^>]*)>/i, function(_, bodyAttrs) { return '<body' + bodyAttrs + '>\n<main id="main-content" role="main" aria-label="' + safeLabel + '">'; })
+            .replace(/<\/body\s*>/i, function() { return '</main>\n</body>'; });
         }
         return html;
       }
@@ -16909,12 +16986,23 @@ var createDocPipeline = function(deps) {
     fix_duplicate_id: {
       category: 'STRUCTURE', wcag: '4.1.1', params: '{id}',
       fn: function(html, p) {
-        if (!p.id) return html;
+        if (!p || !p.id) return html;
+        if (typeof fixDuplicateIds === 'function') {
+          try { return fixDuplicateIds(html, String(p.id)).html; } catch (_) {}
+        }
+        // Safe word-bounded fallback (avoids corrupting data-id="..." and checks for collisions).
+        const target = String(p.id);
+        const used = new Set();
+        html.replace(/\sid\s*=\s*(["'])([^"']+)\1/gi, (_, _q, val) => { used.add(val.trim()); return _; });
         let count = 0;
-        return html.replace(new RegExp('id="' + escapeForRegex(p.id) + '"', 'g'), function(m) {
+        return html.replace(new RegExp('(\\s)id\\s*=\\s*(["\'])' + escapeForRegex(target) + '\\2', 'gi'), function(m, ws, q) {
           count++;
           if (count === 1) return m;
-          return 'id="' + p.id + '-' + count + '"';
+          let k = count;
+          while (used.has(target + '-' + k)) k++;
+          const nextId = target + '-' + k;
+          used.add(nextId);
+          return ws + 'id=' + q + nextId + q;
         });
       }
     },
@@ -16940,11 +17028,27 @@ var createDocPipeline = function(deps) {
     fix_lang: {
       category: 'STRUCTURE', wcag: '3.1.1', params: '{lang}',
       fn: function(html, p) {
-        if (!p.lang) return html;
-        // fn replacers: preserve the $1 capture (attrs before lang) via the group arg, and keep p.lang
-        // literal so a $-bearing value can't be misread as a replace token.
-        return html.replace(/<html([^>]*)lang="[^"]*"/, (m, g1) => '<html' + g1 + 'lang="' + p.lang + '"')
-                   .replace(/<html(?![^>]*lang=)/, () => '<html lang="' + p.lang + '"');
+        if (!p || !p.lang) return html;
+        const cleanLang = String(p.lang).trim().replace(/_/g, '-');
+        if (!/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(cleanLang)) return html;
+        p = Object.assign({}, p, { lang: cleanLang });
+        const isRtl = /^(?:ar|arc|az-arab|ckb|dv|fa|ha-arab|he|iw|ks|ku-arab|ms-arab|pa-arab|ps|sd|syr|ug|ur|yi)(?:-|$)/i.test(p.lang);
+        // fn replacers: preserve attrs before lang via group arg, handle both single/double quotes
+        // case-insensitively, keep p.lang literal, and sync dir="rtl" cleanly on <html ...>.
+        let out;
+        if (/<html\b[^>]*\slang\s*=/i.test(html)) {
+          out = html.replace(/<html\b([^>]*?\s)lang\s*=\s*(?:"[^"]*"|'[^']*')/i, (m, g1) => '<html' + g1 + 'lang="' + p.lang + '"');
+        } else {
+          out = html.replace(/<html\b([^>]*)>/i, (m, g1) => '<html' + g1 + ' lang="' + p.lang + '">');
+        }
+        if (isRtl) {
+          if (/<html\b[^>]*>/i.test(out) && !/<html\b[^>]*\sdir\s*=/i.test(out)) {
+            out = out.replace(/<html\b([^>]*)>/i, (m, g1) => '<html' + g1 + ' dir="rtl">');
+          }
+        } else if (/<html\b[^>]*\sdir\s*=\s*["']rtl["']/i.test(out)) {
+          out = out.replace(/(<html\b[^>]*?)\s+dir\s*=\s*["']rtl["']/i, '$1');
+        }
+        return out;
       }
     },
     fix_lang_span: {
@@ -16958,8 +17062,82 @@ var createDocPipeline = function(deps) {
           try { warnLog('[fix_lang_span] rejected non-BCP47 lang (len=' + String(p.lang ?? '').length + ')'); } catch (_) {}
           return html;
         }
-        if (String(p.text).length < 2) return html;
-        return html.replace(new RegExp(escapeForRegex(p.text)), () => '<span lang="' + p.lang + '">' + p.text + '</span>'); // fn replacer: p.text as data, not replace tokens
+        var cleanLang = String(p.lang).trim();
+        var needle = String(p.text);
+        if (needle.length < 2) return html;
+        if (typeof DOMParser !== 'undefined') {
+          try {
+            var doc = new DOMParser().parseFromString(html, 'text/html');
+            var body = doc && doc.body;
+            if (body) {
+              var skipTag = /^(?:script|style|title|textarea|code|pre|noscript)$/i;
+              var stack = [body];
+              var wrapped = false;
+              while (stack.length && !wrapped) {
+                var cur = stack.shift();
+                if (!cur) continue;
+                if (cur.nodeType === 3) {
+                  var val = cur.nodeValue || '';
+                  var pos = val.indexOf(needle);
+                  if (pos !== -1) {
+                    var parent = cur.parentNode;
+                    if (parent) {
+                      if (pos > 0) parent.insertBefore(doc.createTextNode(val.slice(0, pos)), cur);
+                      var sp = doc.createElement('span');
+                      sp.setAttribute('lang', cleanLang);
+                      sp.textContent = needle;
+                      parent.insertBefore(sp, cur);
+                      if (pos + needle.length < val.length) parent.insertBefore(doc.createTextNode(val.slice(pos + needle.length)), cur);
+                      parent.removeChild(cur);
+                      wrapped = true;
+                    }
+                  }
+                } else if (cur.nodeType === 1) {
+                  if (cur !== body && (skipTag.test(cur.tagName) || cur.hasAttribute('lang'))) continue;
+                  var kids = cur.childNodes;
+                  for (var ci = 0; ci < kids.length; ci++) stack.push(kids[ci]);
+                }
+              }
+              if (wrapped) return _serializeDomEdit(html, doc);
+              return html;
+            }
+          } catch (_) {}
+        }
+        // Fallback when DOMParser is unavailable: replace only in text runs inside <body> (never in tags/attributes/<head>)
+        var bodyM = /<body\b[^>]*>/i.exec(html);
+        var startIdx = bodyM ? bodyM.index + bodyM[0].length : 0;
+        var out = html.slice(0, startIdx);
+        var rest = html.slice(startIdx);
+        var safeNeedle = needle.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        var skipDepth = 0;
+        var replaced = false;
+        var pos = 0;
+        while (pos < rest.length) {
+          var lt = rest.indexOf('<', pos);
+          var textRun = lt === -1 ? rest.slice(pos) : rest.slice(pos, lt);
+          if (!replaced && skipDepth === 0 && textRun) {
+            var hit = textRun.indexOf(needle);
+            if (hit !== -1) {
+              textRun = textRun.slice(0, hit) + '<span lang="' + cleanLang + '">' + safeNeedle + '</span>' + textRun.slice(hit + needle.length);
+              replaced = true;
+            }
+          }
+          out += textRun;
+          if (lt === -1) break;
+          var gt = rest.indexOf('>', lt);
+          if (gt === -1) { out += rest.slice(lt); break; }
+          var tagStr = rest.slice(lt, gt + 1);
+          var tm = /^<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9-]*)/.exec(tagStr);
+          if (tm && !/\/>$/.test(tagStr)) {
+            var tn = tm[2].toLowerCase();
+            if (tn === 'script' || tn === 'style' || tn === 'title' || tn === 'textarea' || tn === 'code' || tn === 'pre' || tn === 'noscript') {
+              skipDepth = tm[1] === '/' ? Math.max(0, skipDepth - 1) : skipDepth + 1;
+            }
+          }
+          out += tagStr;
+          pos = gt + 1;
+        }
+        return replaced ? out : html;
       }
     },
     fix_contrast: {
@@ -17152,8 +17330,9 @@ var createDocPipeline = function(deps) {
           var newAttrs = attrs || '';
           if (!/role=/i.test(newAttrs)) newAttrs = ' role="img"' + newAttrs;
           var newContent = content || '';
-          if (!/<title[\s>]/i.test(newContent)) newContent = '<title>' + p.title.replace(/</g, '&lt;') + '</title>' + newContent;
-          if (p.desc && !/<desc[\s>]/i.test(newContent)) newContent = newContent.replace(/<\/title>/i, () => '</title><desc>' + p.desc.replace(/</g, '&lt;') + '</desc>'); // fn replacer: p.desc as data
+          var _escXml = function(v) { return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+          if (!/<title[\s>]/i.test(newContent)) newContent = '<title>' + _escXml(p.title) + '</title>' + newContent;
+          if (p.desc && !/<desc[\s>]/i.test(newContent)) newContent = newContent.replace(/<\/title>/i, () => '</title><desc>' + _escXml(p.desc) + '</desc>'); // fn replacer: p.desc as data
           return '<svg' + newAttrs + '>' + newContent + '</svg>';
         });
       }
@@ -18615,13 +18794,32 @@ var createDocPipeline = function(deps) {
               for (const _la of _pageLinkAnnots) {
                 const _rx0 = Math.min(_la.rect[0], _la.rect[2]), _rx1 = Math.max(_la.rect[0], _la.rect[2]);
                 const _ry0 = Math.min(_la.rect[1], _la.rect[3]), _ry1 = Math.max(_la.rect[1], _la.rect[3]);
-                let _txt = '';
+                let _txt = '', _prevB = null;
                 for (const _b of _boxes) {
                   const _ox = Math.min(_b.x1, _rx1) - Math.max(_b.x0, _rx0);
                   const _oy = Math.min(_b.y1, _ry1) - Math.max(_b.y0, _ry0);
                   if (_ox <= 0 || _oy <= 0) continue;
-                  const _area = Math.max(1, (_b.x1 - _b.x0) * (_b.y1 - _b.y0));
-                  if ((_ox * _oy) / _area > 0.4) _txt += _b.str;
+                  const _bw = Math.max(0.01, _b.x1 - _b.x0), _bh = Math.max(1, _b.y1 - _b.y0);
+                  const _area = Math.max(1, _bw * _bh);
+                  let _part = '';
+                  if ((_ox * _oy) / _area > 0.4) {
+                    _part = _b.str;
+                  } else if (_oy / _bh > 0.4 && _b.str.length > 0) {
+                    const _n = _b.str.length;
+                    let _a = Math.max(0, Math.floor(((_rx0 - _b.x0) / _bw) * _n));
+                    let _e = Math.min(_n, Math.ceil(((_rx1 - _b.x0) / _bw) * _n));
+                    while (_a > 0 && /\S/.test(_b.str[_a - 1]) && /\S/.test(_b.str[_a])) _a--;
+                    while (_e < _n && /\S/.test(_b.str[_e - 1] || '') && /\S/.test(_b.str[_e])) _e++;
+                    _part = _b.str.slice(_a, _e);
+                  }
+                  if (!_part) continue;
+                  if (_txt && !/\s$/.test(_txt) && !/^\s/.test(_part) && _prevB) {
+                    const _diffLine = Math.abs(_b.y0 - _prevB.y0) > 2;
+                    const _gap = _b.x0 - _prevB.x1;
+                    if (_diffLine || _gap > 0.14 * _bh) _txt += ' ';
+                  }
+                  _txt += _part;
+                  _prevB = _b;
                 }
                 _txt = _txt.replace(/\s+/g, ' ').trim();
                 const _lineH = _ry1 - _ry0;
@@ -18866,7 +19064,7 @@ var createDocPipeline = function(deps) {
     const PDFLib = window.PDFLib;
     let doc;
     try {
-      const bytes = _b64ToBytes(base64);
+      const bytes = (typeof Uint8Array !== 'undefined' && base64 instanceof Uint8Array) ? base64 : _b64ToBytes(base64);
       doc = await PDFLib.PDFDocument.load(bytes, { updateMetadata: false, ignoreEncryption: true });
     } catch (e) {
       return { hadForm: false, fields: [], fieldText: '', fieldCharCount: 0, suppressedForConsent: !consent, sentinelNonce, error: (e && e.message) || 'PDF load failed' };
@@ -18875,11 +19073,14 @@ var createDocPipeline = function(deps) {
     // tagging if hasSignatures is true (modifying byte tree invalidates /Sig).
     let hasSignatures = false;
     try {
-      const acro = doc.catalog.get(PDFLib.PDFName.of('AcroForm'));
-      if (acro && acro.get) {
-        const sigFlags = acro.get(PDFLib.PDFName.of('SigFlags'));
+      let acro = doc.catalog.get(PDFLib.PDFName.of('AcroForm'));
+      if (acro && doc.context && typeof doc.context.lookup === 'function') { try { acro = doc.context.lookup(acro) || acro; } catch (_) {} }
+      if (acro && typeof acro.get === 'function') {
+        let sigFlags = acro.get(PDFLib.PDFName.of('SigFlags'));
+        if (sigFlags && doc.context && typeof doc.context.lookup === 'function') { try { sigFlags = doc.context.lookup(sigFlags) || sigFlags; } catch (_) {} }
         if (sigFlags) {
-          const sigVal = (typeof sigFlags.numberValue === 'number') ? sigFlags.numberValue
+          const sigVal = (typeof sigFlags.asNumber === 'function') ? sigFlags.asNumber()
+            : (typeof sigFlags.numberValue === 'number') ? sigFlags.numberValue
             : (typeof sigFlags.value === 'number') ? sigFlags.value
             : Number(String(sigFlags));
           if ((sigVal | 0) & 1) hasSignatures = true;
@@ -18959,9 +19160,62 @@ var createDocPipeline = function(deps) {
       pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise, 60000, 'pdf.js getDocument (structTree)');
       const roleCounts = {};
       const headings = []; // { level, text, page }
+      const figureAlts = []; // { page, indexOnPage, alt }
+      const formulas = []; // { page, alt, actualText, text }
       let altWithText = 0;
       let altMissing = 0;
       let anyTagsFound = false;
+      let catalogLang = null;
+      let markInfo = null;
+      const outlines = [];
+
+      // Fail-soft document-level metadata: catalog /Lang, /MarkInfo, /Outlines bookmarks.
+      const _normBcp47 = (rawLang) => {
+        if (typeof rawLang !== 'string') return null;
+        const c = rawLang.trim().toLowerCase().replace(/_/g, '-');
+        if (!c) return null;
+        const valid = typeof _auditLanguageTagIsValid === 'function'
+          ? _auditLanguageTagIsValid(c)
+          : /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(c);
+        return valid ? c : null;
+      };
+      try {
+        if (typeof pdf.getMetadata === 'function') {
+          const meta = await _withTimeout(pdf.getMetadata(), 15000, 'pdf.getMetadata (structTree)');
+          const infoLang = meta && meta.info && meta.info.Language;
+          const xmpLang = meta && meta.metadata && typeof meta.metadata.get === 'function'
+            ? (meta.metadata.get('dc:language') || meta.metadata.get('xml:lang'))
+            : null;
+          const xmpFirst = Array.isArray(xmpLang) ? xmpLang[0] : xmpLang;
+          catalogLang = _normBcp47(infoLang) || _normBcp47(xmpFirst);
+        }
+      } catch (_) { /* optional metadata */ }
+      try {
+        if (typeof pdf.getMarkInfo === 'function') {
+          const mi = await _withTimeout(pdf.getMarkInfo(), 15000, 'pdf.getMarkInfo (structTree)');
+          if (mi && typeof mi === 'object') {
+            markInfo = { marked: !!mi.Marked, suspects: !!mi.Suspects };
+          }
+        }
+      } catch (_) { /* optional markInfo */ }
+      try {
+        if (typeof pdf.getOutline === 'function') {
+          const rawOutline = await _withTimeout(pdf.getOutline(), 15000, 'pdf.getOutline (structTree)');
+          const _walkOutline = (items, level) => {
+            if (!Array.isArray(items) || level > 6) return;
+            for (let i = 0; i < items.length && outlines.length < 100; i++) {
+              const it = items[i];
+              if (!it || typeof it !== 'object') continue;
+              const title = String(it.title || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+              if (title) outlines.push({ level, title });
+              if (Array.isArray(it.items) && it.items.length > 0 && outlines.length < 100) {
+                _walkOutline(it.items, level + 1);
+              }
+            }
+          };
+          if (Array.isArray(rawOutline) && rawOutline.length > 0) _walkOutline(rawOutline, 1);
+        }
+      } catch (_) { /* optional bookmarks */ }
 
       // Collect every marked-content ID under `node` (recursive), so a heading
       // wrapping multiple text runs assembles its full text.
@@ -19006,6 +19260,7 @@ var createDocPipeline = function(deps) {
           });
         } catch (_) { /* no marked content on this page */ }
 
+        let pageFigIdx = 0;
         const _walk = (node) => {
           if (!node || typeof node !== 'object') return;
           if (node.role) {
@@ -19019,8 +19274,23 @@ var createDocPipeline = function(deps) {
               if (text) headings.push({ level, text, page: p });
             }
             if (node.role === 'Figure' || node.role === 'Image') {
-              if (typeof node.alt === 'string' && node.alt.trim()) altWithText++;
-              else altMissing++;
+              pageFigIdx++;
+              const figAlt = typeof node.alt === 'string' ? node.alt.replace(/\s+/g, ' ').trim() : '';
+              if (figAlt) {
+                altWithText++;
+                if (figureAlts.length < 100) figureAlts.push({ page: p, indexOnPage: pageFigIdx, alt: figAlt.slice(0, 600) });
+              } else {
+                altMissing++;
+              }
+            }
+            if (node.role === 'Formula' && formulas.length < 100) {
+              const fAlt = typeof node.alt === 'string' ? node.alt.replace(/\s+/g, ' ').trim() : '';
+              const fActual = typeof node.actualText === 'string' ? node.actualText.replace(/\s+/g, ' ').trim() : '';
+              const fMcids = _collectMcids(node, []);
+              const fText = fMcids.map(id => mcidToText[id] || '').join('').replace(/\s+/g, ' ').trim();
+              if (fAlt || fActual || fText) {
+                formulas.push({ page: p, alt: fAlt.slice(0, 600), actualText: fActual.slice(0, 600), text: fText.slice(0, 600) });
+              }
             }
           }
           if (Array.isArray(node.children)) {
@@ -19037,6 +19307,11 @@ var createDocPipeline = function(deps) {
         headingCount: headings.length,
         altTextPresent: altWithText,
         altTextMissing: altMissing,
+        figureAlts,
+        formulas,
+        catalogLang,
+        markInfo,
+        outlines,
         pageCount: pdf.numPages,
       };
     } catch (e) {
@@ -20993,14 +21268,29 @@ var createDocPipeline = function(deps) {
         if (m.t === 'rendered' && _p) { _pending.delete(m.id); _p.resolve(m); }
         else if (m.t === 'render-error' && _p) { _pending.delete(m.id); _p.reject(new Error(m.message || 'worker render failed')); }
       };
-      _worker.onerror = () => { _dead = true; };
+      let _rejectInit = null;
+      _worker.onerror = (errEv) => {
+        _dead = true;
+        const msg = (errEv && errEv.message) ? ('raster worker error: ' + errEv.message) : 'raster worker crashed';
+        if (_rejectInit) {
+          const rj = _rejectInit;
+          _rejectInit = null;
+          try { rj(new Error(msg)); } catch (_) {}
+        }
+        _pending.forEach((p) => { try { p.reject(new Error(msg)); } catch (_) {} });
+        _pending.clear();
+      };
       // The host verified and preloaded the complete PDF code graph before
       // starting this protocol. Init carries document bytes, never code URLs.
       const _initDone = new Promise((resolve, reject) => {
         const _onInit = (ev) => {
           const m = (ev && ev.data) || {};
-          if (m.t === 'ready') { _worker.removeEventListener('message', _onInit); resolve(true); }
-          else if (m.t === 'init-error') { _worker.removeEventListener('message', _onInit); reject(new Error(m.message || 'worker init failed')); }
+          if (m.t === 'ready') { _rejectInit = null; _worker.removeEventListener('message', _onInit); resolve(true); }
+          else if (m.t === 'init-error') { _rejectInit = null; _worker.removeEventListener('message', _onInit); reject(new Error(m.message || 'worker init failed')); }
+        };
+        _rejectInit = (err) => {
+          _worker.removeEventListener('message', _onInit);
+          reject(err);
         };
         _worker.addEventListener('message', _onInit);
       });
@@ -21217,7 +21507,14 @@ var createDocPipeline = function(deps) {
           canvas = document.createElement('canvas'); if (typeof canvas.setAttribute === 'function') canvas.setAttribute('aria-hidden', 'true');
           canvas.width = viewport.width; canvas.height = viewport.height;
           const cctx = canvas.getContext('2d');
-          await _withTimeout(page.render({ canvasContext: cctx, viewport }).promise, 45000, 'page.render (mixed-page OCR p' + p + ')');
+          let _renderTask = null;
+          try {
+            _renderTask = page.render({ canvasContext: cctx, viewport });
+            await _withTimeout(_renderTask.promise, 45000, 'page.render (mixed-page OCR p' + p + ')');
+          } catch (_rErr) {
+            try { if (_renderTask && typeof _renderTask.cancel === 'function') _renderTask.cancel(); } catch (_) {}
+            throw _rErr;
+          }
           const result = await _ocrRecognize(canvas, useLang, 'mixed-p' + p);
           const txt = ((result && result.data && result.data.text) || '').trim();
           if (txt) {
@@ -21666,13 +21963,18 @@ var createDocPipeline = function(deps) {
       if (!relsFile) return out;
       const relsXml = await _ooxmlInflatePart(relsFile, 'string', _OOXML_RELS_PART_MAX_BYTES, relsPath);
       const relMap = {};
-      const _relRe = /<Relationship\b[^>]*\bId="([^"]+)"[^>]*\bTarget="([^"]+)"[^>]*\/?>/g;
+      const _relRe = /<Relationship\b([^>]+)\/?>/gi;
       let rm;
-      while ((rm = _relRe.exec(relsXml)) !== null) relMap[rm[1]] = rm[2];
-      const _blipRe = /r:embed="([^"]+)"/g;
+      while ((rm = _relRe.exec(relsXml)) !== null) {
+        const attrs = rm[1];
+        const idM = attrs.match(/\bId\s*=\s*(?:"([^"]+)"|'([^']+)')/i);
+        const tgtM = attrs.match(/\bTarget\s*=\s*(?:"([^"]+)"|'([^']+)')/i);
+        if (idM && tgtM) relMap[idM[1] || idM[2]] = tgtM[1] || tgtM[2];
+      }
+      const _blipRe = /r:embed\s*=\s*(?:"([^"]+)"|'([^']+)')/g;
       const hits = [];
       let bm;
-      while ((bm = _blipRe.exec(partXml)) !== null && hits.length < 60) hits.push({ rid: bm[1], idx: bm.index });
+      while ((bm = _blipRe.exec(partXml)) !== null && hits.length < 60) hits.push({ rid: bm[1] || bm[2], idx: bm.index });
       // #10 (2026-07-03): the 60-image cap dropped images 61+ SILENTLY (unlike the size/EMF/budget skips
       // below). If the loop exited on the cap, bm holds the consumed-but-unpushed 61st blip — disclose it.
       const _cappedAt60 = hits.length >= 60 && bm !== null;
@@ -21680,17 +21982,29 @@ var createDocPipeline = function(deps) {
       for (let _hi = 0; _hi < hits.length; _hi++) {
         const hit = hits[_hi];
         const target = relMap[hit.rid];
-        if (!target || !/media\//i.test(target)) continue;
-        // Alt: the nearest descr= BEFORE the blip (docPr/cNvPr precede it in both OOXML formats).
+        if (!target || !/media[\\/]/i.test(target)) continue;
+        // Alt: the nearest descr= BEFORE the blip (docPr/cNvPr precede it in both OOXML formats),
+        // falling back to title= when descr is absent/empty.
         // #8 (2026-07-03): CLAMP the look-back to AFTER the previous blip, so an image with no descr of
         // its own can't STEAL the previous image's alt out of the 1200-char window. 'Picture N' auto-names
         // don't count as alt.
         const _prevBlipIdx = _hi > 0 ? hits[_hi - 1].idx : -1;
         const before = partXml.slice(Math.max(0, hit.idx - 1200, _prevBlipIdx + 1), hit.idx);
-        const descrs = before.match(/\bdescr="([^"]*)"/g);
+        const descrs = before.match(/\bdescr\s*=\s*(?:"([^"]*)"|'([^']*)')/g);
         let alt = '';
-        if (descrs && descrs.length) { const last = descrs[descrs.length - 1].match(/\bdescr="([^"]*)"/); alt = last ? _xmlDecode(last[1]).trim() : ''; }
+        if (descrs && descrs.length) {
+          const last = descrs[descrs.length - 1].match(/\bdescr\s*=\s*(?:"([^"]*)"|'([^']*)')/);
+          alt = last ? _xmlDecode(last[1] != null ? last[1] : (last[2] || '')).trim() : '';
+        }
         if (/^picture \d+$/i.test(alt)) alt = '';
+        if (!alt) {
+          const titles = before.match(/\btitle\s*=\s*(?:"([^"]*)"|'([^']*)')/g);
+          if (titles && titles.length) {
+            const lastT = titles[titles.length - 1].match(/\btitle\s*=\s*(?:"([^"]*)"|'([^']*)')/);
+            const cand = lastT ? _xmlDecode(lastT[1] != null ? lastT[1] : (lastT[2] || '')).trim() : '';
+            if (cand && !/^picture \d+$/i.test(cand)) alt = cand;
+          }
+        }
         const path = resolveTarget(target);
         const f = path && zip.file(path);
         if (!f) continue;
@@ -21796,6 +22110,9 @@ var createDocPipeline = function(deps) {
           } else if (tag === 'img') {
             const alt = (ch.getAttribute('alt') || '').trim();
             if (alt) s += '[Image: ' + alt + ']';
+          } else if (tag === 'sup' || tag === 'sub') {
+            const inner = inline(ch);
+            if (inner) s += '<' + tag + '>' + inner + '</' + tag + '>';
           } else if (tag === 'br') s += '\n';
           else s += inline(ch);
         });
@@ -21820,12 +22137,25 @@ var createDocPipeline = function(deps) {
           if (tag === 'p') { const t = inline(el).trim(); if (t) { out.push(t); out.push(''); } return; }
           if (tag === 'ul' || tag === 'ol') { walkList(el, tag === 'ol', 0); out.push(''); return; }
           if (tag === 'table') {
-            const rows = Array.from(el.querySelectorAll('tr')).map((tr) =>
-              '| ' + Array.from(tr.children).map((td) => inline(td).replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim()).join(' | ') + ' |');
+            const trs = Array.from(el.querySelectorAll('tr')).filter((tr) => tr.closest('table') === el);
+            const rowCols = [];
+            const rows = trs.map((tr) => {
+              const cells = Array.from(tr.children).filter((c) => /^(td|th)$/i.test(c.tagName));
+              let colCount = 0;
+              const rendered = [];
+              cells.forEach((td) => {
+                const cs = Math.max(1, Math.min(50, parseInt(td.getAttribute('colspan'), 10) || 1));
+                colCount += cs;
+                rendered.push(inline(td).replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim());
+                for (let k = 1; k < cs; k++) rendered.push('');
+              });
+              rowCols.push(colCount);
+              return '| ' + rendered.join(' | ') + ' |';
+            });
             if (rows.length) {
               out.push(rows[0]);
-              const cols = (rows[0].match(/\|/g) || []).length - 1;
-              out.push('|' + Array.from({ length: Math.max(1, cols) }).map(() => ' --- |').join(''));
+              const cols = Math.max(1, rowCols[0] || 1);
+              out.push('|' + Array.from({ length: cols }).map(() => ' --- |').join(''));
               for (let ri = 1; ri < rows.length; ri++) out.push(rows[ri]);
               out.push('');
             }
@@ -21849,7 +22179,19 @@ var createDocPipeline = function(deps) {
       await ensureJsZipLoaded();
       if (!window.JSZip) throw _ooxmlLimitError('the archive inspector is unavailable', 'Word');
       const _gBytes = _base64ToBytes(base64);
-      _ooxmlGuardArchive(await window.JSZip.loadAsync(_gBytes), _gBytes.length, 'Word');
+      const _gZip = await window.JSZip.loadAsync(_gBytes);
+      _ooxmlGuardArchive(_gZip, _gBytes.length, 'Word');
+      let _actualTotal = 0;
+      const _gEntries = [];
+      _gZip.forEach((rel, entry) => { if (entry && !entry.dir) _gEntries.push([rel, entry]); });
+      for (const [_rel, _entry] of _gEntries) {
+        const _remaining = Math.max(1, _OOXML_MAX_TOTAL_BYTES - _actualTotal);
+        const _partCap = Math.min(_OOXML_MAX_ENTRY_BYTES, _remaining);
+        const _inflated = await _ooxmlInflateBytes(_entry, _partCap, _rel);
+        _actualTotal += _inflated.byteLength;
+        if (_actualTotal > _OOXML_MAX_TOTAL_BYTES) throw _ooxmlLimitError('actual inflated size exceeded the total safety budget', 'Word');
+        if (_gBytes.length > 0 && (_actualTotal / _gBytes.length) > _OOXML_MAX_COMPRESSION_RATIO) throw _ooxmlLimitError('actual inflated ratio is zip-bomb shaped', 'Word');
+      }
     } catch (_ge) {
       const _safeError = _ge && _ge.isArchiveLimit ? _ge : _ooxmlLimitError('the archive or its declared sizes could not be inspected before extraction', 'Word');
       return { fullText: '', sourceCharCount: 0, method: 'failed', error: _safeError.message, mediaImages: [] };
@@ -21966,7 +22308,17 @@ var createDocPipeline = function(deps) {
           const _docXmlRaw = await _ooxmlInflatePart(_docXmlF, 'string', _OOXML_XML_PART_MAX_BYTES, 'word/document.xml');
           mediaImages = await _officeMediaFromPart(
             _mzip, 'word/_rels/document.xml.rels', _docXmlRaw,
-            (tgt) => tgt.charAt(0) === '/' ? tgt.slice(1) : 'word/' + tgt.replace(/^\.\.\//, '../').replace(/^word\//, ''),
+            (tgt) => {
+              let p = String(tgt || '').replace(/\\/g, '/').replace(/^(\.\/)+/, '').replace(/\/(?:\.\/)+/g, '/');
+              if (p.charAt(0) === '/') return p.slice(1).replace(/^(\.\/)+/, '');
+              const parts = ('word/' + p.replace(/^word\//i, '')).split('/');
+              const norm = [];
+              for (const seg of parts) {
+                if (!seg || seg === '.') continue;
+                if (seg === '..') { if (norm.length) norm.pop(); } else norm.push(seg);
+              }
+              return norm.join('/');
+            },
             null, { used: 0 }
           );
         }
@@ -21998,9 +22350,49 @@ var createDocPipeline = function(deps) {
       const zip = await window.JSZip.loadAsync(bytes);
       _ooxmlGuardArchive(zip, bytes.length, 'PowerPoint'); // #17: typed archive-limit error before any part inflates
       const allNames = Object.keys(zip.files);
-      const slideFiles = allNames
+      const _numericSlideFiles = allNames
         .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
         .sort((a, b) => parseInt(a.match(/slide(\d+)\.xml/)[1], 10) - parseInt(b.match(/slide(\d+)\.xml/)[1], 10));
+      let slideFiles = _numericSlideFiles;
+      try {
+        const presF = zip.file('ppt/presentation.xml');
+        const presRelsF = zip.file('ppt/_rels/presentation.xml.rels');
+        if (presF && presRelsF) {
+          const presXml = await _ooxmlInflatePart(presF, 'string', _OOXML_XML_PART_MAX_BYTES, 'ppt/presentation.xml');
+          const presRelsXml = await _ooxmlInflatePart(presRelsF, 'string', _OOXML_RELS_PART_MAX_BYTES, 'ppt/_rels/presentation.xml.rels');
+          const relMap = new Map();
+          const relRe = /<Relationship\b([^>]+)>/gi;
+          let rm;
+          while ((rm = relRe.exec(presRelsXml)) !== null) {
+            const attrs = rm[1];
+            const idM = attrs.match(/\bId=(?:"([^"]+)"|'([^']+)')/i);
+            const tgtM = attrs.match(/\bTarget=(?:"([^"]+)"|'([^']+)')/i);
+            if (idM && tgtM) {
+              const relId = idM[1] || idM[2];
+              let p = (tgtM[1] || tgtM[2]).replace(/\\/g, '/').replace(/^(\.\/)+/, '').replace(/\/(?:\.\/)+/g, '/');
+              p = p.charAt(0) === '/' ? p.slice(1).replace(/^(\.\/)+/, '') : ('ppt/' + p).replace(/ppt\/\.\.\//g, '');
+              relMap.set(relId, p);
+            }
+          }
+          const ordered = [];
+          const seen = new Set();
+          const sldLstM = presXml.match(/<(?:p:)?sldIdLst\b[^>]*>([\s\S]*?)<\/(?:p:)?sldIdLst>/i);
+          const sldBody = sldLstM ? sldLstM[1] : presXml;
+          const sldRe = /<(?:p:)?sldId\b[^>]*\br:id=(?:"([^"]+)"|'([^']+)')[^>]*>/gi;
+          let sm;
+          while ((sm = sldRe.exec(sldBody)) !== null) {
+            const target = relMap.get(sm[1] || sm[2]);
+            if (target && zip.file(target) && !seen.has(target)) {
+              seen.add(target);
+              ordered.push(target);
+            }
+          }
+          if (ordered.length > 0) {
+            for (const nf of _numericSlideFiles) { if (!seen.has(nf)) ordered.push(nf); }
+            slideFiles = ordered;
+          }
+        }
+      } catch (_) {}
       const notesFiles = allNames
         .filter(n => /^ppt\/notesSlides\/notesSlide\d+\.xml$/.test(n))
         .sort((a, b) => parseInt(a.match(/notesSlide(\d+)\.xml/)[1], 10) - parseInt(b.match(/notesSlide(\d+)\.xml/)[1], 10));
@@ -22026,23 +22418,36 @@ var createDocPipeline = function(deps) {
           const relsF = zip.file('ppt/slides/_rels/' + sf.split('/').pop() + '.rels');
           if (relsF) {
             const relsXml = await _ooxmlInflatePart(relsF, 'string', _OOXML_RELS_PART_MAX_BYTES, 'PowerPoint slide relationships');
-            const rm = relsXml.match(/<Relationship\b[^>]*\bTarget="([^"]*notesSlide\d+\.xml)"[^>]*>/i);
+            const rm = relsXml.match(/<Relationship\b[^>]*\bTarget\s*=\s*(?:"([^"]*notesSlide\d+\.xml)"|'([^']*notesSlide\d+\.xml)')[^>]*>/i);
             if (rm) {
-              const tgt = rm[1];
-              const path = tgt.charAt(0) === '/' ? tgt.slice(1) : ('ppt/slides/' + tgt).replace(/ppt\/slides\/\.\.\//, 'ppt/');
+              const tgt = (rm[1] || rm[2] || '').replace(/\\/g, '/').replace(/^(\.\/)+/, '').replace(/\/(?:\.\/)+/g, '/');
+              const rawPath = tgt.charAt(0) === '/' ? tgt.slice(1) : ('ppt/slides/' + tgt);
+              const norm = [];
+              for (const seg of rawPath.split('/')) {
+                if (!seg || seg === '.') continue;
+                if (seg === '..') { if (norm.length) norm.pop(); } else norm.push(seg);
+              }
+              const path = norm.join('/');
               if (notesByFile.has(path)) return notesByFile.get(path);
             }
           }
         } catch (_) {}
         return notesByNum.get(slideNum) || '';
       };
+      const _decodeXmlEntities = (s) => String(s || '')
+        .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => { const cp = parseInt(hex, 16); return Number.isFinite(cp) ? String.fromCodePoint(cp) : _; })
+        .replace(/&#(\d+);/g, (_, dec) => { const cp = parseInt(dec, 10); return Number.isFinite(cp) ? String.fromCodePoint(cp) : _; })
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
       const slides = [];
       const mediaImages = [];
       const _mediaBudget = { used: 0 };
-      for (const sf of slideFiles) {
-        const num = parseInt(sf.match(/slide(\d+)\.xml/)[1], 10);
+      for (let _sIdx = 0; _sIdx < slideFiles.length; _sIdx++) {
+        const sf = slideFiles[_sIdx];
+        const _fileNumM = sf.match(/slide(\d+)\.xml/i);
+        const _fileNum = _fileNumM ? parseInt(_fileNumM[1], 10) : (_sIdx + 1);
+        const num = _sIdx + 1;
         const slideText = await _ooxmlExtractPart(zip.file(sf), 'p', 't', _A_NS);
-        const notesText = await _notesForSlide(sf, num);
+        const notesText = await _notesForSlide(sf, _fileNum);
         // Existing alt text (p:cNvPr descr="…"): authored accessibility data
         // that was previously DROPPED at extraction. Surface as [Image: …]
         // markers so remediation preserves the author's descriptions instead
@@ -22058,7 +22463,16 @@ var createDocPipeline = function(deps) {
           try {
             slideImgs = await _officeMediaFromPart(
               zip, 'ppt/slides/_rels/' + sf.split('/').pop() + '.rels', slideXml,
-              (tgt) => tgt.charAt(0) === '/' ? tgt.slice(1) : ('ppt/slides/' + tgt).replace(/ppt\/slides\/\.\.\//, 'ppt/'),
+              (tgt) => {
+                const clean = String(tgt || '').replace(/\\/g, '/').replace(/^(\.\/)+/, '').replace(/\/(?:\.\/)+/g, '/');
+                const rawPath = clean.charAt(0) === '/' ? clean.slice(1) : ('ppt/slides/' + clean);
+                const norm = [];
+                for (const seg of rawPath.split('/')) {
+                  if (!seg || seg === '.') continue;
+                  if (seg === '..') { if (norm.length) norm.pop(); } else norm.push(seg);
+                }
+                return norm.join('/');
+              },
               num, _mediaBudget
             );
             for (const im of slideImgs) mediaImages.push(im);
@@ -22099,11 +22513,11 @@ var createDocPipeline = function(deps) {
       // rels cross-ref so these are NOT linked back to their containing slide.
       const trailingParts = [];
       for (const cf of chartFiles) {
-        // chart text uses <c:tx><c:rich>...<a:t>...</a:t></c:rich></c:tx> — best-effort regex
+        // chart text uses <c:tx><c:rich>...<a:t>...</a:t></c:rich></c:tx> — best-effort regex with XML entity decoding
         try {
           const xml = await _ooxmlInflatePart(zip.file(cf), 'string', _OOXML_XML_PART_MAX_BYTES, cf);
           const m = xml.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/g) || [];
-          const txt = m.map(s => s.replace(/<[^>]+>/g, '')).filter(Boolean).join(' ').trim();
+          const txt = m.map(s => _decodeXmlEntities(s.replace(/<[^>]+>/g, ''))).filter(Boolean).join(' ').trim();
           if (txt) trailingParts.push(_ALLO_SECTION_OPEN('CHART', cf.match(/chart(\d+)/)[1]) + '\n' + txt + '\n' + _ALLO_SECTION_CLOSE);
         } catch (_) {}
       }
@@ -22111,7 +22525,7 @@ var createDocPipeline = function(deps) {
         try {
           const xml = await _ooxmlInflatePart(zip.file(df), 'string', _OOXML_XML_PART_MAX_BYTES, df);
           const m = xml.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/g) || [];
-          const txt = m.map(s => s.replace(/<[^>]+>/g, '')).filter(Boolean).join(' ').trim();
+          const txt = m.map(s => _decodeXmlEntities(s.replace(/<[^>]+>/g, ''))).filter(Boolean).join(' ').trim();
           if (txt) trailingParts.push(_ALLO_SECTION_OPEN('DIAGRAM', df.match(/data(\d+)/)[1]) + '\n' + txt + '\n' + _ALLO_SECTION_CLOSE);
         } catch (_) {}
       }
@@ -23649,22 +24063,33 @@ var createDocPipeline = function(deps) {
         // Dual-track digests carry '## ' section headings — honor them so the
         // Spoken/Shown/Diverge structure survives into the audit and the fix.
         const _paraHtml = (p) => {
+          const escTxt = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           const h = p.match(/^(#{1,3})\s+(.+)$/);
-          if (h) { const lv = h[1].length; return '<h' + lv + '>' + h[2].replace(/</g, '&lt;') + '</h' + lv + '>'; }
+          if (h) { const lv = h[1].length; return '<h' + lv + '>' + escTxt(h[2]) + '</h' + lv + '>'; }
           // Markdown pipe-tables (2026-06-10): CSV/markdown inputs arrive as
           // | cell | cell | blocks — build a REAL scoped table so Stage 5b
           // upgrades it to full /Headers + /IDTree in the tagged output.
           const lines = p.split('\n');
           if (lines.length >= 2 && lines.filter((l) => l.trim().startsWith('|')).length >= Math.max(2, lines.length - 1)) {
+            const splitPipeRow = (l) => {
+              const trimmed = l.replace(/^\||\|$/g, '');
+              const cells = []; let cur = '';
+              for (let i = 0; i < trimmed.length; i++) {
+                if (trimmed[i] === '\\' && trimmed[i + 1] === '|') { cur += '|'; i++; }
+                else if (trimmed[i] === '|') { cells.push(cur.trim()); cur = ''; }
+                else cur += trimmed[i];
+              }
+              cells.push(cur.trim());
+              return cells;
+            };
             const rows = lines.map((l) => l.trim()).filter((l) => l.startsWith('|') && !/^\|[\s:|-]+\|$/.test(l))
-              .map((l) => l.replace(/^\||\|$/g, '').split('|').map((c) => c.trim()));
+              .map(splitPipeRow);
             if (rows.length >= 2) {
-              const esc3 = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-              return '<table><thead><tr>' + rows[0].map((c) => '<th scope="col">' + esc3(c) + '</th>').join('') + '</tr></thead><tbody>'
-                + rows.slice(1).map((r) => '<tr>' + r.map((c) => '<td>' + esc3(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+              return '<table><thead><tr>' + rows[0].map((c) => '<th scope="col">' + escTxt(c) + '</th>').join('') + '</tr></thead><tbody>'
+                + rows.slice(1).map((r) => '<tr>' + r.map((c) => '<td>' + escTxt(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
             }
           }
-          return '<p>' + p.replace(/</g, '&lt;') + '</p>';
+          return '<p>' + escTxt(p) + '</p>';
         };
         const _transcriptTitle = String((options && options.fileName) || (_runFile && _runFile.name) || 'Recording transcript')
           .replace(/[<>&]/g, ' ').trim() || 'Recording transcript';
@@ -24417,7 +24842,9 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
             if (_auditLanguageTagIsValid(code)) _votes[code] = (_votes[code] || 0) + 1;
           });
           const sorted = Object.entries(_votes).sort((a, b) => b[1] - a[1]);
-          return sorted.length > 0 ? sorted[0][0] : undefined;
+          if (sorted.length > 0) return sorted[0][0];
+          const _catLang = _structTree && _structTree.catalogLang ? String(_structTree.catalogLang).trim().toLowerCase().replace(/_/g, '-') : '';
+          return _auditLanguageTagIsValid(_catLang) ? _catLang : undefined;
         })(),
         // Tier 8: surface the pre-extracted tag structure so the UI can show
         // "This PDF ships pre-existing tags" and the remediation phase can
@@ -24426,11 +24853,21 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
           hasTags: true,
           roleCounts: _structTree.roleCounts,
           headingCount: _structTree.headingCount,
-          headings: (_structTree.headings || []).slice(0, 20),
+          headings: (_structTree.headings || []).slice(0, 100),
           altTextPresent: _structTree.altTextPresent,
           altTextMissing: _structTree.altTextMissing,
+          figureAlts: (_structTree.figureAlts || []).slice(0, 100),
+          formulas: (_structTree.formulas || []).slice(0, 100),
+          catalogLang: _structTree.catalogLang || null,
+          markInfo: _structTree.markInfo || null,
+          outlines: (_structTree.outlines || []).slice(0, 100),
           pageCount: _structTree.pageCount,
-        } : { hasTags: false },
+        } : {
+          hasTags: false,
+          catalogLang: (_structTree && _structTree.catalogLang) || null,
+          markInfo: (_structTree && _structTree.markInfo) || null,
+          outlines: (_structTree && Array.isArray(_structTree.outlines) ? _structTree.outlines.slice(0, 100) : []),
+        },
         _slicedAudit: _auditedViaSlices,
         _sliceCount: (_auditedViaSlices && parsedAudits[0]) ? parsedAudits[0]._sliceCount : undefined,
         timestamp: new Date().toISOString(),
@@ -25495,6 +25932,16 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         // accessibleHtml as a data URL, so the typesetter can embed it.
         // (sweep 2026-06-11 LOW[7]): clean generated layout through the
         // same tagger + gates, exactly like the single-file button.
+        const _fileLang = (() => {
+          const _bcp47 = /^[a-zA-Z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/;
+          const _det = f.result && typeof f.result.detectedLanguage === 'string' ? f.result.detectedLanguage.trim() : '';
+          if (_det && _bcp47.test(_det)) return _det;
+          const _aHtml = f.result && typeof f.result.accessibleHtml === 'string' ? f.result.accessibleHtml : '';
+          const _lm = _aHtml.match(/<html\b[^>]*\slang\s*=\s*(?:"([^"]+)"|'([^']+)')/i);
+          const _hLang = ((_lm && (_lm[1] || _lm[2])) || '').trim();
+          if (_hLang && _bcp47.test(_hLang)) return _hLang;
+          return 'en';
+        })();
         if (!f.base64 || f.base64.slice(0, 5) !== 'JVBER') {
           const _isTranscriptSource = !!(f.base64 && f.base64.slice(0, 20) === 'QUxMT1RSQU5TQ1JJUFQ6');
           const _isImageSource = /^image\/(?:png|jpeg|webp)$/i.test(String(f.mimeType || (f.result && f.result.sourceMimeType) || ''))
@@ -25502,7 +25949,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
             || /\.(?:png|jpe?g|webp)$/i.test(String(f.fileName || ''));
           if (_isTranscriptSource || _isImageSource) {
             try { setPdfBatchStep('Typesetting ' + f.fileName + '…'); } catch (_) {}
-            const _ts = await createTypesetTaggedPdf(f.result, { title: f.fileName.replace(/\.(md|markdown|csv|tsv|xlsx|xls|xlsb|ods|txt|png|jpe?g|webp)$/i, ''), lang: 'en', subject: 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
+            const _ts = await createTypesetTaggedPdf(f.result, { title: f.fileName.replace(/\.(md|markdown|csv|tsv|xlsx|xls|xlsb|ods|txt|png|jpe?g|webp)$/i, ''), lang: _fileLang, subject: 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
             const _tsBytes = _ts && _ts.bytes ? _ts.bytes : _ts;
             if (!_tsBytes) { _taggedNotes.set(f.id, 'typeset failed (no bytes returned)'); continue; }
             const _tsVerdict = _alloTaggedPdfDeliveryVerdict(_ts);
@@ -25524,7 +25971,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         const _execFindings = _alloExecutableActiveContentFindings(f.result);
         if (_execFindings.length > 0) {
           try { setPdfBatchStep('Rebuilding a clean tagged PDF for ' + f.fileName + '...'); } catch (_) {}
-          const _safe = await createTypesetTaggedPdf(f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: 'en', subject: 'Clean rebuilt and tagged for accessibility by AlloFlow (executable source actions removed)' });
+          const _safe = await createTypesetTaggedPdf(f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: _fileLang, subject: 'Clean rebuilt and tagged for accessibility by AlloFlow (executable source actions removed)' });
           const _safeBytes = _safe && _safe.bytes ? _safe.bytes : _safe;
           if (!_safeBytes) { _taggedNotes.set(f.id, 'EXCLUDED (clean rebuild returned no bytes)'); continue; }
           const _safeVerdict = _alloTaggedPdfDeliveryVerdict(_safe);
@@ -25538,10 +25985,8 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         }
 
         try { setPdfBatchStep('Tagging ' + f.fileName + '…'); } catch (_) {}
-        const binStr = atob(f.base64);
-        const bytes = new Uint8Array(binStr.length);
-        for (let bi = 0; bi < binStr.length; bi++) bytes[bi] = binStr.charCodeAt(bi);
-        const tagged = await createTaggedPdf(bytes, f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: 'en', subject: 'Prepared with AlloFlow accessibility tools (batch); not a certification of conformance' });
+        const bytes = _b64ToBytes(f.base64);
+        const tagged = await createTaggedPdf(bytes, f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: _fileLang, subject: 'Prepared with AlloFlow accessibility tools (batch); not a certification of conformance' });
         const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
         if (!tBytes) { _taggedNotes.set(f.id, 'failed (no bytes returned)'); continue; }
         const _taggedVerdict = _alloTaggedPdfDeliveryVerdict(tagged);
@@ -25595,7 +26040,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     zip.file('telemetry.json', JSON.stringify(telemetry, null, 2));
 
     const done = _zipQueue.filter(q => q.status === 'done');
-    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${_zipQueue.length} PDFs</span><span class="stat">${done.length} Processed</span><span class="stat">\u2705 ${_zipVerificationSummary.fullyVerified || 0} Fully verified</span><span class="stat">\u26a0 ${_zipVerificationSummary.reviewRequired || 0} Need review</span><span class="stat">Avg: ${_zipSummary?.avgBefore||'?'}\u2192${_zipSummary?.avgAfter||'?'}</span><span class="stat">${_zipVerificationSummary.above90Verified || 0} verified at 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>2nd engine (Equal Access)</th><th>Passes</th><th>Time</th><th>Verification</th><th>Tagged PDF</th><th>Processing Status</th></tr></thead><tbody>${_zipQueue.map((f,i)=>{const r=f.result;const v=_zipVerificationFor(r);const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.secondEngineAudit && typeof r.secondEngineAudit.score==='number' ? (r.secondEngineAudit.score+' ('+(r.secondEngineAudit.failViolations||0)+' fail'+((r.secondEngineAudit.failViolations||0)===1?'':'s')+', '+(r.secondEngineAudit.reviewFindingCount||0)+' review)') : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+(v.verificationState==='complete'?'pass':'warn')+'">'+_escRpt(v.verificationState)+(v.reviewCount>0?' ('+v.reviewCount+' review)':'')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?(v.verificationState==='complete'?'\u2705 Processed · fully verified':'\u26a0 Processed · review required'):f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
+    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${_zipQueue.length} PDFs</span><span class="stat">${done.length} Processed</span><span class="stat">\u2705 ${_zipVerificationSummary.fullyVerified || 0} Fully verified</span><span class="stat">\u26a0 ${_zipVerificationSummary.reviewRequired || 0} Need review</span><span class="stat">Avg: ${_zipSummary?.avgBefore||'?'}\u2192${_zipSummary?.avgAfter||'?'}</span><span class="stat">${_zipVerificationSummary.above90Verified || 0} verified at 90+</span></div><table><thead><tr><th scope="col">#</th><th scope="col">File</th><th scope="col">Before</th><th scope="col">After</th><th scope="col">Gain</th><th scope="col">2nd engine (Equal Access)</th><th scope="col">Passes</th><th scope="col">Time</th><th scope="col">Verification</th><th scope="col">Tagged PDF</th><th scope="col">Processing Status</th></tr></thead><tbody>${_zipQueue.map((f,i)=>{const r=f.result;const v=_zipVerificationFor(r);const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.secondEngineAudit && typeof r.secondEngineAudit.score==='number' ? (r.secondEngineAudit.score+' ('+(r.secondEngineAudit.failViolations||0)+' fail'+((r.secondEngineAudit.failViolations||0)===1?'':'s')+', '+(r.secondEngineAudit.reviewFindingCount||0)+' review)') : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+(v.verificationState==='complete'?'pass':'warn')+'">'+_escRpt(v.verificationState)+(v.reviewCount>0?' ('+v.reviewCount+' review)':'')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?(v.verificationState==='complete'?'\u2705 Processed · fully verified':'\u26a0 Processed · review required'):f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
     const _rptAvgBefore = Number.isFinite(_zipSummary && _zipSummary.avgBefore) ? _zipSummary.avgBefore : '\u2014';
     const _rptAvgAfter = Number.isFinite(_zipSummary && _zipSummary.avgAfter) ? _zipSummary.avgAfter : '\u2014';
     const honestRptHtml = rptHtml
@@ -25630,8 +26075,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     const a = document.createElement('a');
     a.href = url;
     a.download = `alloflow_batch_remediation_${new Date().toISOString().slice(0,10)}.zip`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try { document.body.appendChild(a); a.click(); } finally { if (a.parentNode) a.parentNode.removeChild(a); setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000); }
     addToast(`\ud83d\udce6 Downloaded ZIP: ${results.length} processed file(s)` + (_taggedCount > 0 ? `, ${_taggedCount} tagged PDF(s)` : '') + ' + reports' + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
     }
     // C5 (deep dive 2026-07-01 \u2192 fixed 2026-07-02): files whose tagged PDF was EXCLUDED
@@ -25706,7 +26150,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     const blob = new Blob([JSON.stringify(stats, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `experiment_${fileName.replace(/\.pdf$/i, '')}_${numRuns}runs.json`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    try { document.body.appendChild(a); a.click(); } finally { if (a.parentNode) a.parentNode.removeChild(a); setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000); }
     setPdfBatchProcessing(false); setPdfBatchStep('');
     addToast(`Experiment: ${n} runs, after=${Math.round(mean)}+/-${sd.toFixed(1)} (SEM=${sem.toFixed(1)}, CV=${cv}%, range=${range})`, 'success');
     return stats;
@@ -26416,7 +26860,7 @@ HTML section ${chunkNum}/${chunks.length}:
       try {
         const meta = inert.createElement('meta');
         meta.setAttribute('http-equiv', 'Content-Security-Policy');
-        meta.setAttribute('content', "default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:; script-src 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com");
+        meta.setAttribute('content', "default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:; script-src 'unsafe-inline' https://alloflow-cdn.pages.dev https://cdn.jsdelivr.net https://unpkg.com");
         inert.head.insertBefore(meta, inert.head.firstChild);
       } catch (_) {}
       return '<!DOCTYPE html>' + (inert.documentElement ? inert.documentElement.outerHTML : String(html || ''));
@@ -26605,10 +27049,10 @@ HTML section ${chunkNum}/${chunks.length}:
         totalIncomplete: (results.incomplete || []).length,
         manualReviewRequired: (results.incomplete || []).length > 0,
         verificationStatus: (results.incomplete || []).length > 0 ? 'complete-with-review' : 'complete',
-        critical: critical.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
-        serious: serious.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
-        moderate: moderate.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
-        minor: minor.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl })),
+        critical: critical.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced') ? 40 : 3).map(_mapNode) })),
+        serious: serious.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced') ? 40 : 3).map(_mapNode) })),
+        moderate: moderate.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced') ? 40 : 3).map(_mapNode) })),
+        minor: minor.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced') ? 40 : 3).map(_mapNode) })),
         passes: results.passes.map(p => ({ id: p.id, description: p.help, wcag: (p.tags || []).filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(p.tags), nodes: p.nodes.length })),
         incomplete: (results.incomplete || []).map(i => ({ id: i.id, description: i.help, nodes: i.nodes.length, wcag: (i.tags || []).filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(i.tags), helpUrl: i.helpUrl })), // finding 14: incomplete findings used to omit WCAG identity entirely
         score: Math.max(0, Math.round(100 - (critical.length * SEVERITY_WEIGHTS.critical) - (serious.length * SEVERITY_WEIGHTS.serious) - (moderate.length * SEVERITY_WEIGHTS.moderate) - (minor.length * SEVERITY_WEIGHTS.minor))), // S6: shared weights (per failed RULE — axe nodes are counted separately)
@@ -26889,12 +27333,16 @@ HTML section ${chunkNum}/${chunks.length}:
       const canvas = document.createElement('canvas');
       canvas.width = Math.max(1, Math.round(naturalWidth * scale));
       canvas.height = Math.max(1, Math.round(naturalHeight * scale));
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas unavailable');
-      ctx.drawImage(raster, 0, 0, canvas.width, canvas.height);
-      const pngData = canvas.toDataURL('image/png').split(',')[1] || '';
-      if (!pngData) throw new Error('Image conversion produced no PNG bytes');
-      return Uint8Array.from(atob(pngData), (c) => c.charCodeAt(0));
+      try {
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Canvas unavailable');
+        ctx.drawImage(raster, 0, 0, canvas.width, canvas.height);
+        const pngData = canvas.toDataURL('image/png').split(',')[1] || '';
+        if (!pngData) throw new Error('Image conversion produced no PNG bytes');
+        return Uint8Array.from(atob(pngData), (c) => c.charCodeAt(0));
+      } finally {
+        try { canvas.width = 0; canvas.height = 0; } catch (_) {}
+      }
     };
     const PAGE_W = 612, PAGE_H = 792, M = 54;
     let page = doc.addPage([PAGE_W, PAGE_H]);
@@ -26987,10 +27435,14 @@ HTML section ${chunkNum}/${chunks.length}:
         try {
           const form = _getFormLazy();
           const name = _uniqueFieldName(seg.name || seg.label);
+          const tuLabel = String(seg.label || seg.name || name).trim();
           if (seg.kind === 'checkbox') {
             const box = size + 2;
             if (cx + box > maxX && cx > M + indent) newLine();
             const cb = form.createCheckBox('allo.' + name);
+            if (tuLabel && cb.acroField && cb.acroField.dict && PDFLibNS.PDFName && PDFLibNS.PDFHexString) {
+              try { cb.acroField.dict.set(PDFLibNS.PDFName.of('TU'), PDFLibNS.PDFHexString.fromText(tuLabel)); } catch (_) {}
+            }
             cb.addToPage(page, { x: cx, y: y - 2, width: box, height: box, borderWidth: 1 });
             cx += box + 5;
           } else {
@@ -26998,6 +27450,9 @@ HTML section ${chunkNum}/${chunks.length}:
             if (cx + fw > maxX && cx > M + indent) newLine();
             fw = Math.min(fw, maxX - cx);
             const tf = form.createTextField('allo.' + name);
+            if (tuLabel && tf.acroField && tf.acroField.dict && PDFLibNS.PDFName && PDFLibNS.PDFHexString) {
+              try { tf.acroField.dict.set(PDFLibNS.PDFName.of('TU'), PDFLibNS.PDFHexString.fromText(tuLabel)); } catch (_) {}
+            }
             tf.addToPage(page, { x: cx, y: y - 3, width: fw, height: lineH, borderWidth: 0.75 });
             cx += fw + 5;
           }
@@ -27011,13 +27466,23 @@ HTML section ${chunkNum}/${chunks.length}:
       }
       y -= (o.after != null ? o.after : 4);
     };
-    const els = Array.from((dom.body || dom).querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,th,td,caption,blockquote,figcaption,img'));
+    const els = Array.from((dom.body || dom).querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,th,td,caption,blockquote,figcaption,dt,dd,pre,img'));
+    const _ownTextWithoutNestedLists = (el) => {
+      if (!el) return '';
+      if (!el.querySelector || !el.querySelector('ul,ol,p,div,br')) return (el.textContent || '').trim();
+      const c = el.cloneNode(true);
+      c.querySelectorAll('ul,ol').forEach((n) => n.remove());
+      c.querySelectorAll('br').forEach((n) => n.replaceWith(dom.createTextNode(' ')));
+      c.querySelectorAll('p,div').forEach((n) => {
+        if (n.parentNode) n.parentNode.insertBefore(dom.createTextNode(' '), n);
+        n.appendChild(dom.createTextNode(' '));
+      });
+      return (c.textContent || '').replace(/\s+/g, ' ').trim();
+    };
     for (const el of els) {
       const tag = el.tagName.toLowerCase();
-      // li renders its own text; skip p-inside-li double draws. th/td render
-      // individually (one cell per line — the same shape the tagger's
-      // fixtures use, so table linking behaves identically).
-      if (tag === 'p' && el.closest('li')) continue;
+      // Container blocks draw their own text; skip nested <p> inside them to prevent double draws.
+      if (tag === 'p' && el.closest('li,td,th,blockquote,figcaption,caption,dd')) continue;
       // Fillable blocks take the inline field layout; nested-list li text
       // exclusion doesn't apply (fields live in leaf blocks).
       if (tag !== 'img' && el.querySelector && el.querySelector('input[data-allo-field]') && !(tag === 'li' && el.querySelector('ul,ol'))) {
@@ -27047,12 +27512,44 @@ HTML section ${chunkNum}/${chunks.length}:
         } catch (_) { _imagesDropped++; /* alt remains in the tag tree, but the visual was lost */ }
         continue;
       }
-      const text = (tag === 'li')
-        ? '• ' + (el.childNodes ? Array.from(el.childNodes).filter((n) => !(n.tagName && /^(ul|ol)$/i.test(n.tagName))).map((n) => n.textContent || '').join(' ').trim() : (el.textContent || '').trim())
-        : (el.textContent || '').trim();
+      if (tag === 'pre') {
+        const preLines = String(el.textContent || '').replace(/^\n+|\n+$/g, '').split(/\r?\n/);
+        for (const pl of preLines) {
+          if (pl.trim()) drawBlock(pl, { size: 10, indent: 12, before: 2, after: 2 });
+        }
+        continue;
+      }
+      let text;
+      if (tag === 'li') {
+        const liBody = _ownTextWithoutNestedLists(el);
+        if (!liBody) continue;
+        const parentList = el.parentElement;
+        const parentTag = parentList && parentList.tagName ? parentList.tagName.toLowerCase() : '';
+        const noMarker = /(?:^|;)\s*list-style(?:-type)?\s*:\s*none\b/i.test((parentList && parentList.getAttribute && parentList.getAttribute('style')) || '');
+        let prefix = noMarker ? '' : '• ';
+        if (!noMarker && parentTag === 'ol') {
+          const startAttr = parseInt(parentList.getAttribute('start') || '', 10);
+          let liIdx = Number.isFinite(startAttr) ? startAttr : 1;
+          for (const sib of Array.from(parentList.children || [])) {
+            if (!sib.tagName || sib.tagName.toLowerCase() !== 'li') continue;
+            const valAttr = parseInt(sib.getAttribute('value') || '', 10);
+            if (Number.isFinite(valAttr)) liIdx = valAttr;
+            if (sib === el) break;
+            liIdx++;
+          }
+          prefix = liIdx + '. ';
+        }
+        text = prefix + liBody;
+      } else if (tag === 'td' || tag === 'th' || tag === 'blockquote' || tag === 'figcaption' || tag === 'caption' || tag === 'dd') {
+        text = _ownTextWithoutNestedLists(el);
+      } else {
+        text = (el.textContent || '').trim();
+      }
       if (!text) continue;
       if (H_SIZE[tag]) drawBlock(text, { size: H_SIZE[tag], f: bold, before: 12, after: 6 });
       else if (tag === 'th') drawBlock(text, { f: bold, size: 11, before: 3, after: 1 });
+      else if (tag === 'dt') drawBlock(text, { f: bold, size: 11, before: 6, after: 1 });
+      else if (tag === 'dd') drawBlock(text, { size: 11, indent: 18, before: 1, after: 4 });
       else if (tag === 'td' || tag === 'caption' || tag === 'figcaption') drawBlock(text, { size: 11, before: 3, after: 1 });
       else if (tag === 'blockquote') drawBlock(text, { size: 11, indent: 24 });
       else if (tag === 'li') drawBlock(text, { size: 11, indent: 14, before: 3, after: 2 });
@@ -27583,6 +28080,11 @@ HTML section ${chunkNum}/${chunks.length}:
   const fixContrastViolations = (htmlContent) => {
     // Without DOM ancestry evidence, changing colors against the body can break local surfaces.
     if (typeof DOMParser === 'undefined') return { html: htmlContent, fixCount: 0 };
+    const options = (typeof fixContrastViolations === 'function' && fixContrastViolations._opts && typeof fixContrastViolations._opts === 'object') ? fixContrastViolations._opts : {};
+    const targetRatio = (typeof options.targetRatio === 'number' && options.targetRatio > 0) ? options.targetRatio : 4.5;
+    const largeTargetRatio = (typeof options.largeTargetRatio === 'number' && options.largeTargetRatio > 0)
+      ? options.largeTargetRatio
+      : (targetRatio >= 7.0 ? 4.5 : Math.min(targetRatio, 3.0));
     const hexToRgb = (hex) => {
       const h = hex.replace('#', '');
       if (h.length === 3) return [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)];
@@ -27622,14 +28124,22 @@ HTML section ${chunkNum}/${chunks.length}:
       'rosybrown': '#bc8f8f', 'darkkhaki': '#bdb76b', 'darkseagreen': '#8fbc8f'
     };
 
-    // Darken a color until it meets 4.5:1 against a background (or lighten if bg is dark)
-    const fixToPass = (fgRgb, bgRgb, targetRatio = 4.5) => {
+    const extraNamedColorMap = {
+      'black': '#000000', 'navy': '#000080', 'darkblue': '#00008b', 'midnightblue': '#191970',
+      'darkslategray': '#2f4f4f', 'darkslategrey': '#2f4f4f', 'dimgray': '#696969', 'dimgrey': '#696969',
+      'slategray': '#708090', 'slategrey': '#708090', 'darkgreen': '#006400', 'darkred': '#8b0000',
+      'maroon': '#800000', 'purple': '#800080', 'indigo': '#4b0082', 'teal': '#008080',
+      'blue': '#0000ff', 'green': '#008000', 'brown': '#a52a2a', 'olive': '#808000'
+    };
+
+    // Darken a color until it meets target ratio against a background (or lighten if bg is dark)
+    const fixToPass = (fgRgb, bgRgb, ratioTarget = targetRatio) => {
       let [r, g, b] = fgRgb;
       const bgLum = luminance(...bgRgb);
       const isDarkBg = bgLum < 0.18;
 
       for (let i = 0; i < 30; i++) {
-        if (contrastRatio([r, g, b], bgRgb) >= targetRatio) break;
+        if (contrastRatio([r, g, b], bgRgb) >= ratioTarget) break;
         if (isDarkBg) {
           // Lighten foreground against dark backgrounds
           r = Math.min(255, Math.round(r + (255 - r) * 0.15));
@@ -27648,19 +28158,25 @@ HTML section ${chunkNum}/${chunks.length}:
     // Parse any CSS color value to RGB
     const parseColor = (colorStr) => {
       if (!colorStr) return null;
-      const s = colorStr.trim().toLowerCase();
+      const s = colorStr.trim().replace(/\s*!important\s*$/i, '').trim().toLowerCase();
       if (s.startsWith('#')) {
         // #rrggbbaa / #rgba is a translucent tint, not a surface of its own (rgba is left alone too).
         // Read as opaque, a 10% red tint looked like solid red and its red text was turned near-white.
-        if ((s.length === 9 && parseInt(s.slice(7), 16) < 255) || (s.length === 5 && parseInt(s[4], 16) < 15)) return null;
-        try { return hexToRgb(s); } catch(e) { return null; }
+        const tok = s.split(/\s+/)[0];
+        if (!/^#[0-9a-f]{3,8}$/i.test(tok)) return null;
+        if ((tok.length === 9 && parseInt(tok.slice(7), 16) < 255) || (tok.length === 5 && parseInt(tok[4], 16) < 15)) return null;
+        try { const rgb = hexToRgb(tok); return rgb.every(Number.isFinite) ? rgb : null; } catch(e) { return null; }
       }
       const rgbMatch = s.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
       // B9 (2026-06-28): clamp channels to 0–255. CSS lets rgba(300,…) parse to 300, and 300/255≈1.18
       // breaks the sRGB transfer function in luminance() → wrong contrast ratios (pass/fail flips).
       if (rgbMatch) return [rgbMatch[1], rgbMatch[2], rgbMatch[3]].map((v) => Math.max(0, Math.min(255, parseInt(v, 10))));
-      if (namedColorMap[s]) {
-        try { return hexToRgb(namedColorMap[s]); } catch(e) { return null; }
+      const tok = s.split(/\s+/)[0];
+      if (namedColorMap[tok]) {
+        try { return hexToRgb(namedColorMap[tok]); } catch(e) { return null; }
+      }
+      if (extraNamedColorMap[tok]) {
+        try { return hexToRgb(extraNamedColorMap[tok]); } catch(e) { return null; }
       }
       return null;
     };
@@ -27699,7 +28215,7 @@ HTML section ${chunkNum}/${chunks.length}:
       const styleBlockMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
       if (styleBlockMatch) {
         for (const block of styleBlockMatch) {
-          const bodyRuleMatch = block.match(/body\s*\{[^}]*background(?:-color)?:\s*([^;}\s]+)/i);
+          const bodyRuleMatch = block.match(/body\s*\{[^}]*background(?:-color)?:\s*([^;}]+)/i);
           if (bodyRuleMatch) {
             const parsed = parseColor(bodyRuleMatch[1].trim());
             if (parsed) return parsed;
@@ -27781,8 +28297,14 @@ HTML section ${chunkNum}/${chunks.length}:
               const color = value.replace(/\s*!important\s*$/i, '').trim();
               const foreground = parseColor(color);
               const alpha = color.match(/^rgba\([^)]*,\s*([\d.]+)\s*\)$/i);
-              if (surface.rgb && foreground && (!alpha || Number(alpha[1]) === 1) && contrastRatio(foreground, surface.rgb) < 4.5) {
-                const adjusted = fixToPass(foreground, surface.rgb);
+              const _fsRaw = el.style && el.style.fontSize ? String(el.style.fontSize).trim().toLowerCase() : '';
+              const _fsM = _fsRaw.match(/^([\d.]+)(px|pt)$/);
+              const _fsPx = _fsM ? (_fsM[2] === 'pt' ? parseFloat(_fsM[1]) * 1.333 : parseFloat(_fsM[1])) : 0;
+              const _fwRaw = el.style && el.style.fontWeight ? String(el.style.fontWeight).trim().toLowerCase() : '';
+              const _isBold = _fwRaw === 'bold' || _fwRaw === 'bolder' || parseInt(_fwRaw, 10) >= 700;
+              const _elTarget = (_fsPx >= 24 || (_isBold && _fsPx >= 18.66)) ? largeTargetRatio : targetRatio;
+              if (surface.rgb && foreground && (!alpha || Number(alpha[1]) === 1) && contrastRatio(foreground, surface.rgb) < _elTarget) {
+                const adjusted = fixToPass(foreground, surface.rgb, _elTarget);
                 restored = property + rgbToHex(...adjusted) + (/!important/i.test(value) ? ' !important' : '');
                 fixCount++;
               }
@@ -27852,8 +28374,8 @@ HTML section ${chunkNum}/${chunks.length}:
       try {
         if (_hasLocalBg(fullStr, offset)) return match; // a local background governs — don't darken against the body bg
         const rgb = hexToRgb(hex);
-        if (contrastRatio(rgb, defaultBg) < 4.5) {
-          const [fr, fg, fb] = fixToPass(rgb, defaultBg);
+        if (contrastRatio(rgb, defaultBg) < targetRatio) {
+          const [fr, fg, fb] = fixToPass(rgb, defaultBg, targetRatio);
           fixCount++;
           return prefix + 'color:' + rgbToHex(fr, fg, fb);
         }
@@ -27873,8 +28395,8 @@ HTML section ${chunkNum}/${chunks.length}:
       const alpha = a !== undefined ? parseFloat(a) : 1;
       let out = rgb;
       let changed = false;
-      if (contrastRatio(rgb, defaultBg) < 4.5) {
-        out = fixToPass(rgb, defaultBg);
+      if (contrastRatio(rgb, defaultBg) < targetRatio) {
+        out = fixToPass(rgb, defaultBg, targetRatio);
         fixCount++;
         changed = true;
       }
@@ -27895,8 +28417,8 @@ HTML section ${chunkNum}/${chunks.length}:
       if (_hasLocalBg(fullStr, offset)) return match; // a local background governs (e.g. .sr-only:focus{background:#2563eb;color:white})
       try {
         const rgb = hexToRgb(hex);
-        if (contrastRatio(rgb, defaultBg) < 4.5) {
-          const [fr, fg, fb] = fixToPass(rgb, defaultBg);
+        if (contrastRatio(rgb, defaultBg) < targetRatio) {
+          const [fr, fg, fb] = fixToPass(rgb, defaultBg, targetRatio);
           fixCount++;
           return prefix + 'color:' + rgbToHex(fr, fg, fb);
         }
@@ -27911,8 +28433,8 @@ HTML section ${chunkNum}/${chunks.length}:
       if (fgMatch && bgMatch) {
         const fgRgb = parseColor(fgMatch[1].trim());
         const bgRgb = parseColor(bgMatch[1].trim().replace(/\s*!important/gi, ''));
-        if (fgRgb && bgRgb && contrastRatio(fgRgb, bgRgb) < 4.5) {
-          const [fr, fg, fb] = fixToPass(fgRgb, bgRgb);
+        if (fgRgb && bgRgb && contrastRatio(fgRgb, bgRgb) < targetRatio) {
+          const [fr, fg, fb] = fixToPass(fgRgb, bgRgb, targetRatio);
           const newStyle = styleContent.replace(/(?:^|;)\s*color:\s*[^;]+/i, ';color:' + rgbToHex(fr, fg, fb));
           fixCount++;
           return 'style="' + newStyle + '"';
@@ -27924,12 +28446,12 @@ HTML section ${chunkNum}/${chunks.length}:
         if (bgRgb) {
           const bgLum = luminance(...bgRgb);
           // Dark background with no text color specified — default text (#000) may fail
-          if (bgLum < 0.18 && contrastRatio([0,0,0], bgRgb) < 4.5) {
+          if (bgLum < 0.18 && contrastRatio([0,0,0], bgRgb) < targetRatio) {
             fixCount++;
             return 'style="' + styleContent + ';color:#ffffff"';
           }
           // Light background — ensure dark text
-          if (bgLum > 0.7 && contrastRatio([0,0,0], bgRgb) < 4.5) {
+          if (bgLum > 0.7 && contrastRatio([0,0,0], bgRgb) < targetRatio) {
             fixCount++;
             return 'style="' + styleContent + ';color:#1e293b"';
           }
@@ -27944,7 +28466,7 @@ HTML section ${chunkNum}/${chunks.length}:
     // ── Pass 6: Inject a global CSS rule as a safety net for common light-colored classes ──
     // This catches elements styled by class names rather than inline styles
     // Background-aware: use different overrides for dark vs light document backgrounds
-    if (fixed.includes('<head>') && !fixed.includes('/* a11y-contrast-safety */')) {
+    if (/<head\b[^>]*>/i.test(fixed) && !fixed.includes('/* a11y-contrast-safety */')) {
       const docBgLum = luminance(...defaultBg);
       const isDarkDoc = docBgLum < 0.18;
       const safetyCSS = isDarkDoc
@@ -27966,7 +28488,7 @@ HTML section ${chunkNum}/${chunks.length}:
 .text-purple-300,.text-violet-300{color:#5b21b6 !important}
 .bg-gray-800 *,.bg-slate-800 *,.bg-gray-900 *,.bg-slate-900 *,.bg-black *{color:#e2e8f0}
 </style>`;
-      fixed = fixed.replace('<head>', '<head>\n' + safetyCSS);
+      fixed = fixed.replace(/<head\b[^>]*>/i, (m) => m + '\n' + safetyCSS);
       fixCount++;
     }
 
@@ -27997,86 +28519,18 @@ HTML section ${chunkNum}/${chunks.length}:
     let html = htmlContent;
     let totalFixes = 0;
 
-    // 1. Run contrast fixer (now background-aware via detectDocBg inside fixContrastViolations)
-    //    For AAA level, we need to patch the ratio threshold — fixContrastViolations uses 4.5:1 internally.
-    //    We do a second pass for AAA that catches anything between 4.5:1 and 7:1.
-    const contrastResult = fixContrastViolations(html);
+    // 1. Run contrast fixer (DOM-ancestry & background-aware).
+    //    AAA routes through fixContrastViolations with 7.0 normal / 4.5 large ratio instead of a
+    //    separate regex pass (preserves 1-arg default for AA callers and test stubs).
+    let contrastResult;
+    if (level === 'AAA') {
+      fixContrastViolations._opts = { targetRatio: 7.0, largeTargetRatio: 4.5 };
+      try { contrastResult = fixContrastViolations(html); } finally { delete fixContrastViolations._opts; }
+    } else {
+      contrastResult = fixContrastViolations(html);
+    }
     html = contrastResult.html;
     totalFixes += contrastResult.fixCount;
-
-    // 2. For AAA: second contrast pass with stricter 7:1 ratio
-    if (level === 'AAA') {
-      // Re-implement targeted contrast check at 7:1 threshold
-      const hexToRgb = (hex) => {
-        const h = hex.replace('#', '');
-        if (h.length === 3) return [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)];
-        return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
-      };
-      const rgbToHex = (r, g, b) => '#' + [r, g, b].map(c => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
-      const srgb = (c) => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
-      const lum = (r, g, b) => 0.2126 * srgb(r/255) + 0.7152 * srgb(g/255) + 0.0722 * srgb(b/255);
-      const cr = (rgb1, rgb2) => { const l1 = lum(...rgb1), l2 = lum(...rgb2); return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05); };
-      const fixAAA = (fgRgb, bgRgb) => {
-        let [r, g, b] = fgRgb;
-        const bgLum = lum(...bgRgb);
-        const isDark = bgLum < 0.18;
-        for (let i = 0; i < 30; i++) {
-          if (cr([r,g,b], bgRgb) >= 7.0) break;
-          if (isDark) { r = Math.min(255, Math.round(r+(255-r)*0.15)); g = Math.min(255, Math.round(g+(255-g)*0.15)); b = Math.min(255, Math.round(b+(255-b)*0.15)); }
-          else { r = Math.max(0, Math.round(r*0.82)); g = Math.max(0, Math.round(g*0.82)); b = Math.max(0, Math.round(b*0.82)); }
-        }
-        return [r, g, b];
-      };
-      // Detect background for AAA pass
-      const bodyBgM = html.match(/<body[^>]*style="[^"]*background(?:-color)?:\s*([^;"]+)/i);
-      const styleBgM = html.match(/body\s*\{[^}]*background(?:-color)?:\s*([^;}\s]+)/i);
-      let aaaBg = [255, 255, 255];
-      if (bodyBgM) { try { const p = hexToRgb(bodyBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
-      else if (styleBgM) { try { const p = hexToRgb(styleBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
-
-      // Local-background guard (audit wo72lu4mh #12): the AA pass (fixContrastViolations._hasLocalBg) skips
-      // a color that sits on its OWN local background — never darken white-on-colored against the body bg.
-      // That helper is out of scope here, so mirror it: without it the AAA pass re-introduced the "darkened
-      // white-on-colored" regression (e.g. the High-Contrast theme's white text on a colored band).
-      const _aaaHasLocalBg = (fullStr, offset) => {
-        const back = fullStr.substring(Math.max(0, offset - 600), offset);
-        const lastStyleOpen = back.lastIndexOf('style="');
-        if (lastStyleOpen !== -1) {
-          const afterStyleOpen = back.substring(lastStyleOpen + 7);
-          if (!afterStyleOpen.includes('"')) {
-            const fwd = fullStr.substring(offset, Math.min(fullStr.length, offset + 600));
-            const cq = fwd.indexOf('"');
-            const frag = afterStyleOpen + (cq >= 0 ? fwd.substring(0, cq) : fwd);
-            if (/background(?:-color)?\s*:/i.test(frag)) return true;
-          }
-        }
-        const lastBrace = back.lastIndexOf('{'), lastClose = back.lastIndexOf('}');
-        if (lastBrace !== -1 && lastBrace > lastClose) {
-          const fwd = fullStr.substring(offset, Math.min(fullStr.length, offset + 600));
-          const ci = fwd.indexOf('}');
-          const frag = back.substring(lastBrace + 1) + (ci >= 0 ? fwd.substring(0, ci) : fwd);
-          if (/background(?:-color)?\s*:/i.test(frag)) return true;
-        }
-        return false;
-      };
-
-      // Same JS-safety as fixContrastViolations: never darken a color:#hex inside <script> source.
-      const _aaaScripts = [];
-      html = html.replace(/<script[\s\S]*?<\/script>/gi, function (m) { _aaaScripts.push(m); return '<!--alloflow:script-stash:' + (_aaaScripts.length - 1) + '-->'; });
-      html = html.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex, offset, fullStr) => {
-        try {
-          if (_aaaHasLocalBg(fullStr, offset)) return match; // a local background governs — don't darken against the body bg (#12)
-          const rgb = hexToRgb(hex);
-          if (cr(rgb, aaaBg) < 7.0) {
-            const [fr, fg, fb] = fixAAA(rgb, aaaBg);
-            totalFixes++;
-            return prefix + 'color:' + rgbToHex(fr, fg, fb);
-          }
-        } catch(e) {}
-        return match;
-      });
-      if (_aaaScripts.length) html = html.replace(/<!--alloflow:script-stash:(\d+)-->/g, function (m, i) { var s = _aaaScripts[parseInt(i, 10)]; return s !== undefined ? s : m; });
-    }
 
     // 3. Enforce minimum font-size
     html = html.replace(/font-size:\s*([\d.]+)(px|pt)\b/gi, (match, size, unit) => {
@@ -28094,13 +28548,13 @@ HTML section ${chunkNum}/${chunks.length}:
     //    a real visual break. Element-specific styles still win via CSS cascade
     //    — this only fills in when no rule is set. Idempotent via marker
     //    comment so multiple passes don't stack.
-    if (html.includes('<head>') && !html.includes('/* a11y-text-spacing */')) {
+    if (/<head\b[^>]*>/i.test(html) && !html.includes('/* a11y-text-spacing */')) {
       const textSpacingCSS = '<style>/* a11y-text-spacing */\n' +
         'body{line-height:1.5}\n' +
         'p,li,dd,dt,td,th,blockquote{line-height:1.5}\n' +
         'p+p,li+li{margin-top:0.75em}\n' +
         '</style>';
-      html = html.replace('<head>', '<head>\n' + textSpacingCSS);
+      html = html.replace(/<head\b[^>]*>/i, (m) => m + '\n' + textSpacingCSS);
       totalFixes++;
     }
 
@@ -28116,7 +28570,7 @@ HTML section ${chunkNum}/${chunks.length}:
     //        with a custom focus indicator we can't see at sanitize time.
     //        Don't touch outline:none on decorative divs — that's a layout
     //        signal, not an a11y bug.
-    if (html.includes('<head>')) {
+    if (/<head\b[^>]*>/i.test(html)) {
       const focusTargets = 'a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible';
       // Two solid bands keep a visible edge on both light and dark local surfaces.
       // Forced colors suppress shadows, so retain a system-color outline there.
@@ -28138,7 +28592,7 @@ HTML section ${chunkNum}/${chunks.length}:
           totalFixes++;
         }
       } else if (!html.includes('/* a11y-focus-visible */')) {
-        html = html.replace('<head>', '<head>\n' + focusVisibleCSS);
+        html = html.replace(/<head\b[^>]*>/i, (m) => m + '\n' + focusVisibleCSS);
         totalFixes++;
       }
     }
@@ -28161,13 +28615,13 @@ HTML section ${chunkNum}/${chunks.length}:
     //    requested reduced motion. Doesn't try to find every @keyframes block
     //    and wrap it — a single high-specificity override at the end of <head>
     //    covers the whole document without parsing existing CSS.
-    if (html.includes('<head>') && !html.includes('/* a11y-reduced-motion */')) {
+    if (/<head\b[^>]*>/i.test(html) && !html.includes('/* a11y-reduced-motion */')) {
       const reducedMotionCSS = '<style>/* a11y-reduced-motion */\n' +
         '@media (prefers-reduced-motion: reduce){\n' +
         ' *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important}\n' +
         '}\n' +
         '</style>';
-      html = html.replace('<head>', '<head>\n' + reducedMotionCSS);
+      html = html.replace(/<head\b[^>]*>/i, (m) => m + '\n' + reducedMotionCSS);
       totalFixes++;
     }
     // Keep <meta charset> first in <head>: inside the 1024-byte encoding prescan (see fixContrastViolations).
@@ -28181,70 +28635,81 @@ HTML section ${chunkNum}/${chunks.length}:
 
   // ── Deterministic list-structure fixer (no AI needed) ──
   const fixListViolations = (htmlContent) => {
+    if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    if (typeof DOMParser !== 'undefined') {
+      try {
+        const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+        let fixCount = 0;
+        const lists = Array.from(doc.querySelectorAll('ul, ol')).reverse();
+        for (const list of lists) {
+          // 1) Unwrap direct-child <div> wrappers that contain <li> items (including nested/sibling <div>s)
+          for (let pass = 0; pass < 20; pass++) {
+            let unwrapped = false;
+            for (const child of Array.from(list.children)) {
+              if (child.tagName && child.tagName.toLowerCase() === 'div' && child.querySelector('li')) {
+                while (child.firstChild) list.insertBefore(child.firstChild, child);
+                child.remove();
+                fixCount++;
+                unwrapped = true;
+              }
+            }
+            if (!unwrapped) break;
+          }
+          // 2) Normalize remaining direct children so only <li> / <script> / <template> remain
+          for (const node of Array.from(list.childNodes)) {
+            if (node.nodeType === 3) {
+              const trimmed = (node.nodeValue || '').trim();
+              if (!trimmed) continue;
+              const li = doc.createElement('li');
+              li.textContent = trimmed;
+              list.replaceChild(li, node);
+              fixCount++;
+              continue;
+            }
+            if (node.nodeType !== 1) continue;
+            const tag = (node.tagName || '').toLowerCase();
+            if (tag === 'li' || tag === 'script' || tag === 'template') continue;
+            if (tag === 'br') {
+              node.remove();
+              fixCount++;
+              continue;
+            }
+            if (tag === 'ul' || tag === 'ol') {
+              let prevEl = node.previousElementSibling;
+              if (prevEl && prevEl.tagName && prevEl.tagName.toLowerCase() === 'li') {
+                prevEl.appendChild(node);
+              } else {
+                const li = doc.createElement('li');
+                list.insertBefore(li, node);
+                li.appendChild(node);
+              }
+              fixCount++;
+              continue;
+            }
+            const li = doc.createElement('li');
+            list.insertBefore(li, node);
+            li.appendChild(node);
+            fixCount++;
+          }
+        }
+        warnLog(`[List Fix] Fixed ${fixCount} list-structure issues deterministically`);
+        return { html: fixCount > 0 ? _serializeDomEdit(htmlContent, doc) : htmlContent, fixCount };
+      } catch (e) {
+        warnLog('[List Fix] DOM pass failed, falling back to regex:', e?.message);
+      }
+    }
     let fixed = htmlContent;
     let fixCount = 0;
-
-    // Fix 1: Wrap direct non-<li> children of <ul>/<ol> in <li> tags
-    // Matches <ul> or <ol> content blocks and ensures all direct children are <li>
-    fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>[\s\S]*?<\/\1>/gi, (listBlock, tag) => {
-      // Parse direct children — find text/elements between <ul> and </ul> that aren't <li>
-      let result = listBlock;
-
-      // Remove stray text nodes directly inside <ul>/<ol> (wrap them in <li>)
-      result = result.replace(
-        new RegExp('(<' + tag + '(?:\\s[^>]*)?>)([\\s\\S]*?)(<\\/' + tag + '>)', 'i'),
-        (m, open, content, close) => {
-          // Split content into segments: <li>...</li> blocks and everything else
-          let newContent = content;
-
-          // Wrap ANY bare block/inline element inside <li> (not just div/p/span)
-          // This catches <hr>, <table>, <section>, <article>, <figure>, <blockquote>, <img>, etc.
-          newContent = newContent.replace(
-            /(<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)(\s*)(<(?!li\b|\/li|ul\b|ol\b|\/ul|\/ol|script|template)[a-z][a-z0-9]*\b[^>]*>[\s\S]*?<\/(?!li|ul|ol)[a-z][a-z0-9]*>)(\s*)(?=<li|<\/(?:ul|ol)>)/gi,
-            (m, prefix, ws1, inner, ws2) => { fixCount++; return prefix + '<li>' + inner + '</li>'; }
-          );
-          // Also wrap self-closing elements like <hr/>, <br/>, <img/>
-          newContent = newContent.replace(
-            /(<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)(\s*)(<(?:hr|img|br|input)\b[^>]*\/?>)(\s*)(?=<li|<\/(?:ul|ol)>)/gi,
-            (m, prefix, ws1, inner, ws2) => { fixCount++; return prefix + '<li>' + inner + '</li>'; }
-          );
-
-          // Wrap bare text nodes (non-whitespace text between closing </li> and opening <li>)
-          newContent = newContent.replace(
-            /(<\/li>)\s*([^<\s][^<]*[^<\s])\s*(<li|<\/(?:ul|ol)>)/gi,
-            (m2, closeLi, text, next) => { fixCount++; return closeLi + '<li>' + text.trim() + '</li>' + next; }
-          );
-
-          return open + newContent + close;
-        }
-      );
-
-      return result;
-    });
-
-    // Fix 2: Convert <ul> or <ol> that contain <div> wrappers around <li> items
-    // Pattern: <ul><div><li>...</li></div></ul> → <ul><li>...</li></ul>
-    fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>(\s*)<div[^>]*>([\s\S]*?)<\/div>(\s*)<\/\1>/gi,
-      (m, tag, attrs, ws1, content, ws2) => {
-        if (content.includes('<li')) {
-          fixCount++;
-          return '<' + tag + (attrs || '') + '>' + ws1 + content + ws2 + '</' + tag + '>';
-        }
+    fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>([\s\S]*?)<\/\1>/gi, (listBlock, tag, attrs, inner) => {
+      if (/<(?:ul|ol)\b/i.test(inner)) return listBlock; // avoid corrupting nested lists in regex fallback
+      let newContent = inner;
+      newContent = newContent.replace(/<div\b[^>]*>([\s\S]*?)<\/div>/gi, (m, divInner) => {
+        if (/<li\b/i.test(divInner)) { fixCount++; return divInner; }
         return m;
-      }
-    );
-
-    // Fix 3: Remove bare <br> and empty text between <li> elements inside lists
-    fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>[\s\S]*?<\/\1>/gi, (listBlock, tag) => {
-      let cleaned = listBlock;
-      // Remove stray <br> directly inside <ul>/<ol> (not inside <li>)
-      cleaned = cleaned.replace(
-        new RegExp('(<' + tag + '(?:\\s[^>]*)?>|<\\/li>)\\s*<br\\s*\\/?>\\s*(?=<li|<\\/' + tag + '>)', 'gi'),
-        (m, before) => { fixCount++; return before; }
-      );
-      return cleaned;
+      });
+      newContent = newContent.replace(/(^|<\/li>)\s*<br\s*\/?>\s*(?=<li|$)/gi, (m, before) => { fixCount++; return before; });
+      return '<' + tag + (attrs || '') + '>' + newContent + '</' + tag + '>';
     });
-
     warnLog(`[List Fix] Fixed ${fixCount} list-structure issues deterministically`);
     return { html: fixed, fixCount };
   };
@@ -28252,38 +28717,99 @@ HTML section ${chunkNum}/${chunks.length}:
   // ── fixFormLabels: associate every form field with a label (WCAG 1.3.1, 3.3.2) ──
   const fixFormLabels = (htmlContent) => {
     if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    const _inferLabel = (placeholder, name, type, counter) =>
+      (placeholder && placeholder.trim()) ||
+      (name && name.trim().replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())) ||
+      (type && type.trim().replace(/\b\w/g, c => c.toUpperCase()) + ' field') ||
+      `Field ${counter}`;
+    if (typeof DOMParser !== 'undefined') {
+      try {
+        const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+        let fixCount = 0;
+        let idCounter = 0;
+        const labelForIds = new Set(
+          Array.from(doc.querySelectorAll('label[for]'))
+            .map(l => (l.getAttribute('for') || '').trim())
+            .filter(Boolean)
+        );
+        const controls = Array.from(doc.querySelectorAll('input, select, textarea'));
+        for (const el of controls) {
+          const tag = (el.tagName || '').toLowerCase();
+          const type = tag === 'input' ? (el.getAttribute('type') || '').trim().toLowerCase() : '';
+          if (tag === 'input' && /^(?:hidden|submit|button|image|reset)$/.test(type)) continue;
+          if (el.closest && el.closest('label')) continue; // implicitly labeled by ancestor <label>
+          const hasAriaLabel = (el.getAttribute('aria-label') || '').trim().length > 0;
+          const hasAriaLabelledby = (el.getAttribute('aria-labelledby') || '').trim().length > 0;
+          const hasTitle = (el.getAttribute('title') || '').trim().length > 0;
+          if (hasAriaLabel || hasAriaLabelledby || hasTitle) continue;
+          const existingId = (el.getAttribute('id') || '').trim();
+          if (existingId && labelForIds.has(existingId)) continue;
+          let targetId = existingId;
+          if (!targetId) {
+            do {
+              idCounter++;
+              targetId = `docpipe-field-${idCounter}`;
+            } while (doc.getElementById(targetId) || labelForIds.has(targetId));
+            el.setAttribute('id', targetId);
+          } else {
+            idCounter++;
+          }
+          const labelText = _inferLabel(
+            el.getAttribute('placeholder'),
+            el.getAttribute('name'),
+            type,
+            idCounter
+          );
+          const label = doc.createElement('label');
+          label.setAttribute('for', targetId);
+          label.setAttribute('class', 'sr-only');
+          label.textContent = labelText;
+          if (el.parentNode) el.parentNode.insertBefore(label, el);
+          labelForIds.add(targetId);
+          fixCount++;
+        }
+        if (fixCount > 0) warnLog(`[Form Labels] Added ${fixCount} label associations deterministically`);
+        return { html: fixCount > 0 ? _serializeDomEdit(htmlContent, doc) : htmlContent, fixCount };
+      } catch (e) {
+        warnLog('[Form Labels] DOM pass failed, falling back to regex:', e?.message);
+      }
+    }
     let fixed = htmlContent;
     let fixCount = 0;
     let idCounter = 0;
-
-    // For each <input>/<select>/<textarea> without aria-label/aria-labelledby/id+for, inject an sr-only label
+    const _escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     fixed = fixed.replace(/<(input|select|textarea)\b([^>]*?)(\/?)>/gi, (match, tag, attrs, selfClose) => {
-      // Skip hidden/submit/button types
       if (/type\s*=\s*["']?(hidden|submit|button|image|reset)["']?/i.test(attrs)) return match;
-      // Already labeled?
-      const hasAriaLabel = /\saria-label(?:ledby)?\s*=/i.test(attrs);
+      const hasAriaLabel = /\saria-label(?:ledby)?\s*=\s*(?:"[^"]*\S[^"]*"|'[^']*\S[^']*')/i.test(attrs);
+      const hasTitle = /\stitle\s*=\s*(?:"[^"]*\S[^"]*"|'[^']*\S[^']*')/i.test(attrs);
       const idMatch = attrs.match(/\bid\s*=\s*["']([^"']+)["']/i);
-      if (hasAriaLabel) return match;
+      if (hasAriaLabel || hasTitle) return match;
       if (idMatch) {
-        // Check if there's a <label for="..."> somewhere in the doc pointing at this id
         const forRegex = new RegExp('<label\\b[^>]*\\bfor\\s*=\\s*["\']' + idMatch[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '["\']', 'i');
         if (forRegex.test(htmlContent)) return match;
       }
-      // Needs a label — generate an id if missing
-      idCounter++;
-      const newId = idMatch ? idMatch[1] : `docpipe-field-${idCounter}`;
+      let newId = idMatch ? idMatch[1] : '';
+      if (!newId) {
+        do {
+          idCounter++;
+          newId = `docpipe-field-${idCounter}`;
+        } while (new RegExp('\\bid\\s*=\\s*["\']' + newId + '["\']', 'i').test(fixed));
+      } else {
+        idCounter++;
+      }
       let newAttrs = attrs;
       if (!idMatch) newAttrs = ` id="${newId}"` + attrs;
-      // Infer a label from type/name/placeholder
       const nameMatch = attrs.match(/\bname\s*=\s*["']([^"']+)["']/i);
       const placeholderMatch = attrs.match(/\bplaceholder\s*=\s*["']([^"']+)["']/i);
       const typeMatch = attrs.match(/\btype\s*=\s*["']([^"']+)["']/i);
-      const labelText = (placeholderMatch && placeholderMatch[1]) ||
-                        (nameMatch && nameMatch[1].replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())) ||
-                        (typeMatch && typeMatch[1].replace(/\b\w/g, c => c.toUpperCase()) + ' field') ||
-                        `Field ${idCounter}`;
+      const labelText = _inferLabel(
+        placeholderMatch && placeholderMatch[1],
+        nameMatch && nameMatch[1],
+        typeMatch && typeMatch[1],
+        idCounter
+      );
       fixCount++;
-      return `<label for="${newId}" class="sr-only">${labelText}</label><${tag}${newAttrs}${selfClose}>`;
+      return `<label for="${_escHtml(newId)}" class="sr-only">${_escHtml(labelText)}</label><${tag}${newAttrs}${selfClose}>`;
     });
 
     if (fixCount > 0) warnLog(`[Form Labels] Added ${fixCount} label associations deterministically`);
@@ -28396,26 +28922,147 @@ HTML section ${chunkNum}/${chunks.length}:
   // ── fixComplexTables: add headers="..." associations for merged-cell tables (WCAG 1.3.1) ──
   const fixComplexTables = (htmlContent) => {
     if (!htmlContent) return { html: htmlContent, fixCount: 0 };
-    let fixed = htmlContent;
     let fixCount = 0;
     let tableIdx = 0;
 
+    if (typeof DOMParser !== 'undefined') {
+      try {
+        const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+        const tables = Array.from(doc.querySelectorAll('table'));
+        for (const table of tables) {
+          tableIdx++;
+          const ownRows = Array.from(table.querySelectorAll('tr')).filter((r) => r.closest('table') === table);
+          const ownCells = Array.from(table.querySelectorAll('th,td')).filter((c) => c.closest('table') === table);
+          const hasMerged = ownCells.some((c) => (parseInt(c.getAttribute('colspan'), 10) || 1) >= 2 || (parseInt(c.getAttribute('rowspan'), 10) || 1) >= 2);
+          const hasNested = !!table.querySelector('table');
+          if (!hasMerged && !hasNested) continue;
+
+          // 1. Ensure direct <caption> exists (inject sr-only placeholder if missing)
+          const hasCaption = Array.from(table.children).some((ch) => ch.tagName && ch.tagName.toLowerCase() === 'caption');
+          if (!hasCaption) {
+            const cap = doc.createElement('caption');
+            cap.setAttribute('class', 'sr-only');
+            cap.textContent = 'Data table ' + tableIdx;
+            table.insertBefore(cap, table.firstChild);
+            fixCount++;
+          }
+
+          // 2. If the table has NO direct-owned <th> at all, promote the first row's <td> cells to <th scope="col">
+          //    and place that row inside a direct-child <thead> BEFORE <tbody> (never nested inside <tbody>).
+          const ownThsBefore = ownCells.filter((c) => c.tagName && c.tagName.toLowerCase() === 'th');
+          if (ownThsBefore.length === 0 && ownRows.length > 0) {
+            const firstRow = ownRows[0];
+            const firstRowCells = Array.from(firstRow.children).filter((c) => c.tagName && c.tagName.toLowerCase() === 'td');
+            for (const td of firstRowCells) {
+              const th = doc.createElement('th');
+              th.setAttribute('scope', 'col');
+              Array.from(td.attributes).forEach((attr) => {
+                if (attr.name.toLowerCase() !== 'scope') th.setAttribute(attr.name, attr.value);
+              });
+              while (td.firstChild) th.appendChild(td.firstChild);
+              firstRow.replaceChild(th, td);
+              fixCount++;
+            }
+            const hasDirectThead = Array.from(table.children).some((ch) => ch.tagName && ch.tagName.toLowerCase() === 'thead');
+            if (!hasDirectThead) {
+              const oldParent = firstRow.parentElement;
+              const thead = doc.createElement('thead');
+              thead.appendChild(firstRow);
+              // Insert <thead> as direct child of <table> after <caption>/<colgroup>, before <tbody>/<tfoot>/<tr>.
+              let insertBeforeNode = null;
+              for (const ch of Array.from(table.children)) {
+                const tn = ch.tagName ? ch.tagName.toLowerCase() : '';
+                if (tn !== 'caption' && tn !== 'colgroup') { insertBeforeNode = ch; break; }
+              }
+              table.insertBefore(thead, insertBeforeNode);
+              if (oldParent && oldParent !== table && oldParent.tagName && oldParent.tagName.toLowerCase() === 'tbody' && oldParent.children.length === 0) {
+                oldParent.remove();
+              }
+              fixCount++;
+            }
+          }
+
+          // 3. Assign IDs to all direct-owned <th> elements that don't have one.
+          //    (Geometry-aware scope is applied by _stampThScopeGeometryAware immediately after.)
+          const ownThs = Array.from(table.querySelectorAll('th')).filter((th) => th.closest('table') === table);
+          let thCounter = 0;
+          for (const th of ownThs) {
+            thCounter++;
+            if (!th.getAttribute('id')) {
+              th.setAttribute('id', 'docpipe-th-' + tableIdx + '-' + thCounter);
+              fixCount++;
+            }
+          }
+
+          // 4. H43 headers="..." wiring for merged-cell tables (preserves existing author-supplied headers).
+          if (hasMerged && ownThs.length > 0 && typeof _alloPlaceTableCells === 'function') {
+            const placed = _alloPlaceTableCells(table);
+            const hasThead = Array.from(table.children).some((ch) => ch.tagName && ch.tagName.toLowerCase() === 'thead');
+            const row0Cells = placed.filter((p) => p.r === 0);
+            const rowHeaderStyle = !hasThead && ownRows.length >= 2
+              && row0Cells.some((p) => p.tag === 'td')
+              && ownRows.every((r) => r.firstElementChild && r.firstElementChild.tagName.toLowerCase() === 'th');
+            const colHeaders = [];
+            const rowHeaders = [];
+            for (const p of placed) {
+              if (p.tag !== 'th') continue;
+              const id = p.cell.getAttribute('id');
+              if (!id) continue;
+              const sc = String(p.cell.getAttribute('scope') || '').trim().toLowerCase();
+              const inThead = !!(p.cell.closest && p.cell.closest('thead') && p.cell.closest('thead').parentElement === table);
+              if (sc === 'col' || sc === 'colgroup') {
+                colHeaders.push({ p, id });
+              } else if (sc === 'row' || sc === 'rowgroup') {
+                rowHeaders.push({ p, id });
+              } else if (inThead || (!rowHeaderStyle && p.r === 0)) {
+                colHeaders.push({ p, id });
+              } else {
+                rowHeaders.push({ p, id });
+              }
+            }
+            for (const p of placed) {
+              if (p.tag !== 'td') continue;
+              if (p.cell.getAttribute('headers') && p.cell.getAttribute('headers').trim()) continue;
+              const matched = [];
+              const seenIds = new Set();
+              for (const h of colHeaders) {
+                if (h.p.r + h.p.rs <= p.r && h.p.c < p.c + p.cs && h.p.c + h.p.cs > p.c && !seenIds.has(h.id)) {
+                  seenIds.add(h.id);
+                  matched.push(h.id);
+                }
+              }
+              for (const h of rowHeaders) {
+                if (h.p.c + h.p.cs <= p.c && h.p.r < p.r + p.rs && h.p.r + h.p.rs > p.r && !seenIds.has(h.id)) {
+                  seenIds.add(h.id);
+                  matched.push(h.id);
+                }
+              }
+              if (matched.length > 0) {
+                p.cell.setAttribute('headers', matched.join(' '));
+                fixCount++;
+              }
+            }
+          }
+        }
+        if (fixCount > 0) {
+          warnLog(`[Complex Tables] Applied ${fixCount} complex-table fixes deterministically`);
+          return { html: _serializeDomEdit(htmlContent, doc), fixCount };
+        }
+        return { html: htmlContent, fixCount: 0 };
+      } catch (_) { /* fall through to regex fallback only if DOMParser fails */ }
+    }
+
+    // Fallback when DOMParser is unavailable (non-DOM test environments)
+    let fixed = htmlContent;
     fixed = fixed.replace(/<table\b([^>]*)>([\s\S]*?)<\/table>/gi, (fullMatch, tableAttrs, tableBody) => {
       tableIdx++;
-      // Only touch tables that have merged cells or nested tables
       const hasMerged = /\s(?:colspan|rowspan)\s*=\s*["']?[2-9]/i.test(tableBody);
-      const hasNested = /<table\b/i.test(tableBody);
-      if (!hasMerged && !hasNested) return fullMatch;
-
+      if (!hasMerged) return fullMatch;
       let newBody = tableBody;
-
-      // Ensure <caption> exists (inject sr-only placeholder if missing)
       if (!/<caption\b/i.test(newBody)) {
         newBody = newBody.replace(/^(\s*)/, `$1<caption class="sr-only">Data table ${tableIdx}</caption>`);
         fixCount++;
       }
-
-      // If the table has NO <th> at all, promote the first row's <td> elements to <th scope="col">
       if (!/<th\b/i.test(newBody)) {
         let firstRowDone = false;
         newBody = newBody.replace(/<tr\b([^>]*)>([\s\S]*?)<\/tr>/i, (rowMatch, rowAttrs, rowContent) => {
@@ -28425,16 +29072,9 @@ HTML section ${chunkNum}/${chunks.length}:
             fixCount++;
             return `<th scope="col"${tdAttrs}>${tdContent}</th>`;
           });
-          // Wrap in <thead> if not already inside one
-          if (!/<thead\b/i.test(newBody)) {
-            fixCount++;
-            return `<thead><tr${rowAttrs}>${promoted}</tr></thead>`;
-          }
           return `<tr${rowAttrs}>${promoted}</tr>`;
         });
       }
-
-      // Assign IDs to all <th> elements that don't have one
       let thCounter = 0;
       newBody = newBody.replace(/<th\b([^>]*)>/gi, (m, attrs) => {
         thCounter++;
@@ -28442,12 +29082,6 @@ HTML section ${chunkNum}/${chunks.length}:
         fixCount++;
         return `<th id="docpipe-th-${tableIdx}-${thCounter}"${attrs}>`;
       });
-
-      // Scope on scope-less <th> is NOT stamped here. BUGFIX (audit #14, 2026-06-15): a blanket
-      // scope="col" mis-announced left-column ROW headers in merged-cell tables (a gradebook row
-      // label read as a column header). Geometry-aware scope is applied by
-      // _stampThScopeGeometryAware in runDeterministicWcagFixes immediately after this fixer.
-
       return `<table${tableAttrs}>${newBody}</table>`;
     });
 
@@ -28637,6 +29271,7 @@ HTML section ${chunkNum}/${chunks.length}:
     collect(axeResult.critical);
     collect(axeResult.serious);
     collect(axeResult.moderate);
+    collect(axeResult.minor);
     if (nodes.length === 0) return { html: html, fixCount: 0 };
 
     // Local color math (duplicated to keep this helper self-contained).
@@ -28674,17 +29309,21 @@ HTML section ${chunkNum}/${chunks.length}:
     const seenSel = new Set();
     nodes.forEach((node) => {
       const summary = String(node.failureSummary || '');
-      const fgRaw = (summary.match(/foreground color\s*:?\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))/i) || [])[1];
-      const bgRaw = (summary.match(/background color\s*:?\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))/i) || [])[1];
+      const fgRaw = node.fgColor || (summary.match(/foreground color\s*:?\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))/i) || [])[1];
+      const bgRaw = node.bgColor || (summary.match(/background color\s*:?\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))/i) || [])[1];
       const targetSel = Array.isArray(node.target) ? node.target.join(' ') : String(node.target || '');
       if (!fgRaw || !bgRaw || !targetSel) return;
       const fgHex = parseColor(fgRaw);
       const bgHex = parseColor(bgRaw);
       if (!fgHex || !bgHex) return;
+      const expRaw = node.expectedContrastRatio != null
+        ? parseFloat(String(node.expectedContrastRatio))
+        : parseFloat((summary.match(/expected contrast ratio of\s*([\d.]+)\s*:/i) || [])[1]);
+      const targetRatio = (Number.isFinite(expRaw) && expRaw >= 3.0 && expRaw <= 21) ? expRaw : 4.5;
       try {
         // Deterministic which-colour-to-move fix (auto): move the foreground first, fall back to the
         // BACKGROUND only when the fg alone can't reach the ratio (the "forced into an ugly extreme" case).
-        const _fix = _alloContrastFixPair(fgHex, bgHex);
+        const _fix = _alloContrastFixPair(fgHex, bgHex, targetRatio);
         if (!_fix || _fix.moved === 'none') return;
         const safeSel = targetSel.replace(/[{};<>]/g, '').trim();
         if (!safeSel || safeSel.length > 300 || seenSel.has(safeSel)) return;
@@ -28804,19 +29443,22 @@ HTML section ${chunkNum}/${chunks.length}:
     const fixed = htmlContent.replace(tagRegex, (match, tag, attrs, inner) => {
       // <a> without href is just an anchor — skip (not a control)
       if (tag.toLowerCase() === 'a' && !/\shref\s*=/i.test(attrs)) return match;
-      const hasAriaLabel = /\saria-label\s*=\s*["'][^"']+["']/i.test(attrs);
-      const hasAriaLabelledby = /\saria-labelledby\s*=\s*["'][^"']+["']/i.test(attrs);
-      if (hasAriaLabel || hasAriaLabelledby) return match;
-      // Extract any <img alt="..."> text inside — that IS the accessible name
+      const hasAriaLabel = /\saria-label\s*=\s*(?:"[^"]*\S[^"]*"|'[^']*\S[^']*')/i.test(attrs);
+      const hasAriaLabelledby = /\saria-labelledby\s*=\s*(?:"[^"]*\S[^"]*"|'[^']*\S[^']*')/i.test(attrs);
+      const hasTitle = /\stitle\s*=\s*(?:"[^"]*\S[^"]*"|'[^']*\S[^']*')/i.test(attrs);
+      if (hasAriaLabel || hasAriaLabelledby || hasTitle) return match;
+      // Extract any <img alt="..."> or child <svg aria-label="..."> / <svg><title> — those ARE accessible names
       const imgAltMatches = [...inner.matchAll(/<img\b[^>]*\salt\s*=\s*["']([^"']*)["']/gi)];
       const altText = imgAltMatches.map(m => m[1]).filter(Boolean).join(' ').trim();
+      const hasSvgLabel = /<svg\b[^>]*\saria-label\s*=\s*(?:"[^"]*\S[^"]*"|'[^']*\S[^']*')/i.test(inner)
+        || /<svg\b[\s\S]*?<title\b[^>]*>[^<]*\S[^<]*<\/title>/i.test(inner);
       // Strip remaining HTML tags + entities + whitespace to see if any text remains
       const innerText = inner
         .replace(/<[^>]+>/g, '')
         .replace(/&[a-z#0-9]+;/gi, '')
         .replace(/\s+/g, '')
         .trim();
-      if (altText || innerText) return match; // has visible / alt-supplied name
+      if (altText || hasSvgLabel || innerText) return match; // has visible / alt / svg / title name
       // Empty button/link with no label — add a generic fallback aria-label.
       // For <a>, infer from href when href text is meaningful (mailto:/tel:).
       let label = (tag.toLowerCase() === 'button') ? 'Button' : 'Link';
@@ -28827,7 +29469,12 @@ HTML section ${chunkNum}/${chunks.length}:
         else if (/^tel:/i.test(h)) label = 'Phone ' + h.slice(4);
       }
       fixCount++;
-      return '<' + tag + attrs + ' aria-label="' + label.replace(/"/g, '&quot;') + '">' + inner + '</' + tag + '>';
+      const escapedLabel = label.replace(/"/g, '&quot;');
+      if (/\saria-label\s*=\s*(?:"[^"]*"|'[^']*')/i.test(attrs)) {
+        const replacedAttrs = attrs.replace(/(\s)aria-label\s*=\s*(?:"[^"]*"|'[^']*')/i, (_, sp) => sp + 'aria-label="' + escapedLabel + '"');
+        return '<' + tag + replacedAttrs + '>' + inner + '</' + tag + '>';
+      }
+      return '<' + tag + attrs + ' aria-label="' + escapedLabel + '">' + inner + '</' + tag + '>';
     });
     if (fixCount > 0) warnLog('[Button/Link Labels] Added fallback aria-label to ' + fixCount + ' icon-only controls deterministically');
     return { html: fixed, fixCount };
@@ -28878,36 +29525,38 @@ HTML section ${chunkNum}/${chunks.length}:
     }
     if (opens.length < 2) return { html: htmlContent, fixCount: 0 };
 
-    // Decide new levels in document order; only renumber when skip > 2.
-    let prevLevel = 0;
+    // Decide new levels with an ancestor stack [{ raw, mapped }] so sibling skipped headings
+    // map to the same level instead of staircasing; leniently allows a 2-level step.
+    opens[0].newLevel = opens[0].level;
+    const stack = [{ raw: opens[0].level, mapped: opens[0].level }];
+    let plannedFixes = 0;
+    for (let i = 1; i < opens.length; i++) {
+      const raw = opens[i].level;
+      while (stack.length > 0 && stack[stack.length - 1].raw >= raw) stack.pop();
+      const mapped = stack.length > 0
+        ? Math.min(6, stack[stack.length - 1].mapped + Math.min(raw - stack[stack.length - 1].raw, 2))
+        : raw;
+      opens[i].newLevel = mapped;
+      if (mapped !== raw) plannedFixes++;
+      stack.push({ raw, mapped });
+    }
+    if (plannedFixes === 0) return { html: htmlContent, fixCount: 0 };
+
+    // Build (pos, oldStr, newStr) edit list only for matched open+close pairs (case-insensitive).
+    const edits = [];
     let fixCount = 0;
-    for (const op of opens) {
-      const lvl = op.level;
-      if (prevLevel > 0 && (lvl - prevLevel) > 2) {
-        op.newLevel = prevLevel + 2;
-        if (op.newLevel > 6) op.newLevel = 6;
-        if (op.newLevel !== op.level) fixCount++;
-      } else {
-        op.newLevel = lvl;
-      }
-      prevLevel = op.newLevel;
+    for (let i = 0; i < opens.length; i++) {
+      const op = opens[i];
+      if (op.newLevel === op.level) continue;
+      const searchStart = op.pos + op.openLen;
+      const searchEnd = (i + 1 < opens.length) ? opens[i + 1].pos : htmlContent.length;
+      const closeMatch = new RegExp('</h' + op.level + '\\s*>', 'i').exec(htmlContent.slice(searchStart, searchEnd));
+      if (!closeMatch) continue; // truncated/malformed — leave open as-is
+      edits.push({ pos: op.pos, oldStr: htmlContent.slice(op.pos, op.pos + 3), newStr: '<h' + op.newLevel });
+      edits.push({ pos: searchStart + closeMatch.index, oldStr: closeMatch[0], newStr: '</h' + op.newLevel + '>' });
+      fixCount++;
     }
     if (fixCount === 0) return { html: htmlContent, fixCount: 0 };
-
-    // Build (pos, oldStr, newStr) edit list for opens + their matching closes.
-    const edits = [];
-    for (const op of opens) {
-      if (op.newLevel === op.level) continue;
-      edits.push({ pos: op.pos, oldStr: '<h' + op.level, newStr: '<h' + op.newLevel });
-      // Match the FIRST </hN> after this open — headings don't nest so the
-      // first occurrence is unambiguously this open's close. (We won't be
-      // confused by a later h{level}'s close because that later open hasn't
-      // had its close scanned yet at this point.)
-      const closeMarker = '</h' + op.level + '>';
-      const closeIdx = htmlContent.indexOf(closeMarker, op.pos + op.openLen);
-      if (closeIdx === -1) continue; // truncated/malformed — leave open as-is
-      edits.push({ pos: closeIdx, oldStr: closeMarker, newStr: '</h' + op.newLevel + '>' });
-    }
 
     // Apply edits right-to-left so earlier positions remain valid.
     edits.sort((a, b) => b.pos - a.pos);
@@ -28918,6 +29567,142 @@ HTML section ${chunkNum}/${chunks.length}:
     return { html: result, fixCount };
   };
 
+  // ── fixDuplicateIds: deterministic WCAG 4.1.1 duplicate-id repair with scoped reference updates ──
+  // Keeps the first occurrence of every id, renames subsequent occurrences to collision-free id-N,
+  // and safely updates local scoped references (table <td/th headers>, local <label for>, and
+  // container-local aria-labelledby/aria-describedby/aria-controls/aria-owns/a[href="#id"]) when
+  // the renamed element lives in a distinct scope from the kept first element.
+  const fixDuplicateIds = (htmlContent, targetId = null) => {
+    if (!htmlContent || typeof htmlContent !== 'string' || !/\sid\s*=/i.test(htmlContent)) {
+      return { html: htmlContent || '', fixCount: 0 };
+    }
+    const filterId = (targetId != null && String(targetId).trim()) ? String(targetId).trim() : null;
+    if (typeof DOMParser !== 'undefined') {
+      try {
+        const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+        const allWithId = Array.from(doc.querySelectorAll('[id]')).filter((el) => (el.getAttribute('id') || '').trim().length > 0);
+        if (allWithId.length < 2) return { html: htmlContent, fixCount: 0 };
+        const usedIds = new Set(allWithId.map((el) => el.getAttribute('id').trim()));
+        const firstById = new Map();
+        const renames = [];
+        let fixCount = 0;
+        for (const el of allWithId) {
+          const id = el.getAttribute('id').trim();
+          if (!firstById.has(id)) { firstById.set(id, el); continue; }
+          if (filterId && id !== filterId) continue;
+          let k = 2;
+          while (usedIds.has(id + '-' + k)) k++;
+          const newId = id + '-' + k;
+          usedIds.add(newId);
+          el.setAttribute('id', newId);
+          fixCount++;
+          renames.push({ oldId: id, newId, el, firstEl: firstById.get(id) });
+        }
+        if (fixCount === 0) return { html: htmlContent, fixCount: 0 };
+
+        const _replaceToken = (raw, fromId, toId) => {
+          const toks = String(raw || '').trim().split(/\s+/).filter(Boolean);
+          let changed = false;
+          const out = [];
+          const seen = new Set();
+          for (const t of toks) {
+            const mapped = t === fromId ? toId : t;
+            if (mapped !== t) changed = true;
+            if (!seen.has(mapped)) { seen.add(mapped); out.push(mapped); }
+          }
+          return changed ? out.join(' ') : null;
+        };
+
+        // Track labels already rebound so two duplicate controls don't claim the same label.
+        const reboundLabels = new Set();
+        const dupControlOrdinal = new Map();
+
+        for (const r of renames) {
+          const { oldId, newId, el, firstEl } = r;
+          const tag = (el.tagName || '').toLowerCase();
+
+          // (a) Table headers="..." within the same direct-owned table (distinct from firstEl's table).
+          if (tag === 'th' && el.closest) {
+            const tbl = el.closest('table');
+            if (tbl && (!firstEl.closest || firstEl.closest('table') !== tbl)) {
+              for (const cell of Array.from(tbl.querySelectorAll('td[headers], th[headers]'))) {
+                if (cell.closest && cell.closest('table') !== tbl) continue;
+                const nextH = _replaceToken(cell.getAttribute('headers'), oldId, newId);
+                if (nextH !== null) cell.setAttribute('headers', nextH);
+              }
+            }
+          }
+
+          // (b) Form control <label for="oldId"> — update a local label in a distinct scope, else extra N-th label.
+          if (tag === 'input' || tag === 'select' || tag === 'textarea') {
+            let bound = false;
+            const localScope = el.closest && el.closest('fieldset, tr, li, form, p, div');
+            if (localScope && !localScope.contains(firstEl)) {
+              const localLbls = Array.from(localScope.querySelectorAll('label[for]'))
+                .filter((l) => !reboundLabels.has(l) && (l.getAttribute('for') || '').trim() === oldId);
+              if (localLbls.length > 0) {
+                localLbls[0].setAttribute('for', newId);
+                reboundLabels.add(localLbls[0]);
+                bound = true;
+              }
+            }
+            if (!bound) {
+              const allLbls = Array.from(doc.querySelectorAll('label[for]'))
+                .filter((l) => (l.getAttribute('for') || '').trim() === oldId);
+              // Keep allLbls[0] bound to firstEl; since each prior rebind moves a label's `for`
+              // off oldId, the next unbound duplicate label is always allLbls[1].
+              if (allLbls.length > 1 && !reboundLabels.has(allLbls[1])) {
+                allLbls[1].setAttribute('for', newId);
+                reboundLabels.add(allLbls[1]);
+              }
+            }
+          }
+
+          // (c) Container-scoped ARIA IDREFS and #hash anchors when container holds el but NOT firstEl.
+          const scope = el.closest && el.closest('table, fieldset, section, article, form, li, tr, figure, aside, nav');
+          if (scope && !scope.contains(firstEl)) {
+            for (const attr of ['aria-labelledby', 'aria-describedby', 'aria-controls', 'aria-owns']) {
+              const scopeTargets = Array.from(scope.querySelectorAll('[' + attr + ']'));
+              if (scope.hasAttribute && scope.hasAttribute(attr)) scopeTargets.unshift(scope);
+              for (const refEl of scopeTargets) {
+                const nextV = _replaceToken(refEl.getAttribute(attr), oldId, newId);
+                if (nextV !== null) refEl.setAttribute(attr, nextV);
+              }
+            }
+            for (const aEl of Array.from(scope.querySelectorAll('a[href]'))) {
+              if ((aEl.getAttribute('href') || '').trim() === '#' + oldId) {
+                aEl.setAttribute('href', '#' + newId);
+              }
+            }
+          }
+        }
+
+        if (fixCount > 0) { try { warnLog(`[Duplicate IDs] Repaired ${fixCount} duplicate id attribute(s) deterministically`); } catch (_) {} }
+        return { html: _serializeDomEdit(htmlContent, doc), fixCount };
+      } catch (e) {
+        try { warnLog('[Duplicate IDs] DOM pass failed, falling back to regex:', e?.message); } catch (_) {}
+      }
+    }
+    // Safe word-bounded regex fallback when DOMParser is unavailable.
+    const usedIds = new Set();
+    htmlContent.replace(/\sid\s*=\s*(["'])([^"']+)\1/gi, (_, _q, val) => { const v = val.trim(); if (v) usedIds.add(v); return _; });
+    const seen = new Set();
+    let fixCount = 0;
+    const fixed = htmlContent.replace(/(\s)id\s*=\s*(["'])([^"']+)\2/gi, (m, ws, q, rawId) => {
+      const id = rawId.trim();
+      if (!id) return m;
+      if (!seen.has(id)) { seen.add(id); return m; }
+      if (filterId && id !== filterId) return m;
+      let k = 2;
+      while (usedIds.has(id + '-' + k)) k++;
+      const nextId = id + '-' + k;
+      usedIds.add(nextId);
+      fixCount++;
+      return ws + 'id=' + q + nextId + q;
+    });
+    return { html: fixed, fixCount };
+  };
+
   // Convenience wrapper: run all deterministic WCAG fixes in sequence
   const runDeterministicWcagFixes = (html) => {
     if (!html) return html;
@@ -28926,6 +29711,7 @@ HTML section ${chunkNum}/${chunks.length}:
     // skip-link, <title>, <meta charset>, <html lang> fallback) when the AI-directed fixes didn't add them.
     // Fragment-safe + idempotent. Runs first so the rest of the deterministic fixes operate on a scaffolded doc.
     try { result = fixLandmarkFoundations(result); } catch (e) { warnLog('[Det WCAG] fixLandmarkFoundations failed:', e?.message); }
+    try { result = fixDuplicateIds(result).html; } catch (e) { warnLog('[Det WCAG] fixDuplicateIds failed:', e?.message); }
     try { result = fixFormLabels(result).html; } catch (e) { warnLog('[Det WCAG] fixFormLabels failed:', e?.message); }
     try { result = fixDecorativeImages(result).html; } catch (e) { warnLog('[Det WCAG] fixDecorativeImages failed:', e?.message); }
     // Heading→caption BEFORE fixComplexTables so a heading-titled table gets its real title, not the
@@ -29291,7 +30077,15 @@ HTML section ${chunkNum}/${chunks.length}:
       'document-title': (nodes) => ({ tool: 'fix_title', params: { title: 'Document' } }),
       'html-has-lang':  (nodes) => ({ tool: 'fix_lang',  params: { lang: 'en' } }),
       'duplicate-id':   (nodes) => nodes.map(n => {
-        const m = (n.html || n.failureSummary || '').match(/id="([^"]+)"/);
+        const m = (n.html || n.failureSummary || '').match(/\bid=["']([^"']+)["']/i);
+        return m ? { tool: 'fix_duplicate_id', params: { id: m[1] } } : null;
+      }).filter(Boolean),
+      'duplicate-id-aria': (nodes) => nodes.map(n => {
+        const m = (n.html || n.failureSummary || '').match(/\bid=["']([^"']+)["']/i);
+        return m ? { tool: 'fix_duplicate_id', params: { id: m[1] } } : null;
+      }).filter(Boolean),
+      'duplicate-id-active': (nodes) => nodes.map(n => {
+        const m = (n.html || n.failureSummary || '').match(/\bid=["']([^"']+)["']/i);
         return m ? { tool: 'fix_duplicate_id', params: { id: m[1] } } : null;
       }).filter(Boolean),
       // Honest deterministic text (sweep 2026-06-11 [7]): the old flat
@@ -31271,6 +32065,27 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // Save snapshot before fix attempt
           const snapshotHtml = accessibleHtml;
 
+          // Deterministic axe-guided contrast pre-pass: resolve CSS-surface / computed contrast
+          // failures directly via axe's measured fg/bg/ratio before invoking AI chunking.
+          let _detContrastResolved = false;
+          if (axeResults) {
+            try {
+              const _totalAxeContrastNodes = ['critical', 'serious', 'moderate', 'minor'].reduce((acc, bucket) => {
+                const arr = Array.isArray(axeResults[bucket]) ? axeResults[bucket] : [];
+                return acc + arr.reduce((sum, v) => sum + ((v && (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced')) ? Math.max(0, Number(v.nodes) || (Array.isArray(v.nodeDetails) ? v.nodeDetails.length : 0)) : 0), 0);
+              }, 0);
+              const _detContrast = fixAxeContrastViolationsTargeted(accessibleHtml, axeResults);
+              if (_detContrast && _detContrast.fixCount > 0 && _detContrast.html && _detContrast.html !== accessibleHtml) {
+                const _detGate = acceptFixedHtmlDetailed(_detContrast.html, accessibleHtml, { strictContent: true });
+                if (_detGate && _detGate.accepted) {
+                  accessibleHtml = _detContrast.html;
+                  _detContrastResolved = _totalAxeContrastNodes > 0 && _detContrast.fixCount >= _totalAxeContrastNodes;
+                  warnLog(`[Auto-fix] Pass ${fixPass + 1}: resolved ${_detContrast.fixCount}/${_totalAxeContrastNodes || _detContrast.fixCount} axe contrast node(s) deterministically before AI chunking`);
+                }
+              }
+            } catch (_) {}
+          }
+
           // AI attempts targeted fixes for remaining findings from all three engines.
           // $4 (2026-07-02): built as structured ENTRIES so aiFixChunked can route
           // element-scoped violations to the chunk containing the element (and skip the
@@ -31279,20 +32094,29 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // non-skipped chunks (aiFixChunked re-appends it identically when routing is
           // inactive, so legacy prompts don't change by a byte).
           const _axeEntry = (v, line) => ({ text: line, axeId: v.id, nodes: v.nodes || 0, nodeHtmls: Array.isArray(v.nodeDetails) ? v.nodeDetails.map((n) => n && n.html).filter(Boolean) : [], snippet: null });
-          const _eaEntry = (v, prefix) => ({
-            text: `${prefix} (IBM Equal Access): ${v.description || v.id} (${v.id || 'unknown-rule'}, ${v.nodes || 0} elements)`,
-            axeId: null,
-            nodes: v.nodes || 0,
-            nodeHtmls: [],
-            snippet: v && Array.isArray(v.details) && v.details[0] && v.details[0].snippet ? v.details[0].snippet : null,
-          });
+          const _keepAxeForAi = (v) => !(typeof _detContrastResolved !== 'undefined' && _detContrastResolved && v && (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced'));
+          const _eaEntries = (v, prefix) => {
+            const line = `${prefix} (IBM Equal Access): ${v.description || v.id} (${v.id || 'unknown-rule'}, ${v.nodes || 0} elements)`;
+            const details = v && Array.isArray(v.details) ? v.details : [];
+            const snippets = [];
+            const seenSnippets = new Set();
+            for (const d of details) {
+              const sn = d && typeof d.snippet === 'string' ? d.snippet.trim() : '';
+              if (sn && !seenSnippets.has(sn)) { seenSnippets.add(sn); snippets.push(sn); }
+            }
+            if (!snippets.length || ((v && v.nodes) || 0) > details.length) {
+              return [{ text: line, axeId: null, nodes: (v && v.nodes) || 0, nodeHtmls: [], snippet: null }];
+            }
+            return snippets.map((sn) => ({ text: line, axeId: null, nodes: (v && v.nodes) || 0, nodeHtmls: [], snippet: sn }));
+          };
           const _fixEntries = []
-            .concat((axeResults ? axeResults.critical || [] : []).map(v => _axeEntry(v, `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`)))
-            .concat((axeResults ? axeResults.serious || [] : []).map(v => _axeEntry(v, `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`)))
-            .concat((axeResults ? axeResults.moderate || [] : []).map(v => _axeEntry(v, `MODERATE (axe-core): ${v.description} (${v.id})`)))
-            .concat((equalAccessResults ? equalAccessResults.fails || [] : []).map(v => _eaEntry(v, 'CONFIRMED FAIL')))
-            .concat((equalAccessResults ? equalAccessResults.potentialFindings || [] : []).map(v => _eaEntry(v, 'POTENTIAL REVIEW FINDING')))
-            .concat((equalAccessResults ? equalAccessResults.manualFindings || [] : []).map(v => _eaEntry(v, 'MANUAL REVIEW FINDING')))
+            .concat((axeResults ? axeResults.critical || [] : []).filter(_keepAxeForAi).map(v => _axeEntry(v, `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`)))
+            .concat((axeResults ? axeResults.serious || [] : []).filter(_keepAxeForAi).map(v => _axeEntry(v, `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`)))
+            .concat((axeResults ? axeResults.moderate || [] : []).filter(_keepAxeForAi).map(v => _axeEntry(v, `MODERATE (axe-core): ${v.description} (${v.id})`)))
+            .concat((axeResults ? axeResults.minor || [] : []).filter(_keepAxeForAi).map(v => _axeEntry(v, `MINOR (axe-core): ${v.description} (${v.id})`)))
+            .concat((equalAccessResults ? equalAccessResults.fails || [] : []).flatMap(v => _eaEntries(v, 'CONFIRMED FAIL')))
+            .concat((equalAccessResults ? equalAccessResults.potentialFindings || [] : []).flatMap(v => _eaEntries(v, 'POTENTIAL REVIEW FINDING')))
+            .concat((equalAccessResults ? equalAccessResults.manualFindings || [] : []).flatMap(v => _eaEntries(v, 'MANUAL REVIEW FINDING')))
             // (2026-10-28) A finding merged across audit sections carries each section's instance; each is its own
             // entry so it routes to the fragment that holds it (NSF: one of six figure findings reached the fixer).
             .concat((verification && verification.issues ? verification.issues : []).filter((i) => !_alloTitleIssueSettled(i, accessibleHtml) && !_alloCaptionIssueSettled(i, accessibleHtml))
@@ -31902,6 +32726,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // Extract actual image objects from each page using PDF.js getOperatorList
               for (const [pageNum, imgs] of Object.entries(pageGroups)) {
                 _throwIfImageCancelled();
+                let canvas = null;
                 try {
                   const pg = parseInt(pageNum);
                   if (pg < 1 || pg > pdfDoc.numPages) continue;
@@ -31943,7 +32768,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   // leaves it backgrounded for the whole run still finishes — just with the old
                   // behaviour, which is what they get today anyway.
                   await _awaitImageWork(_alloWaitForVisibleTab(45000, 'page.render p' + pg));
-                  let viewport = null, canvas = null;
+                  let viewport = null; canvas = null;
                   for (const _sc of [1.5, 1.0]) {
                     const _vp = page.getViewport({ scale: _sc });
                     const _c = document.createElement('canvas'); _c.setAttribute('aria-hidden', 'true');
@@ -32017,14 +32842,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                     return near / count > 0.92;
                   };
                   const _cropIsNearUniform = (srcCanvas, strict) => {
+                    let tiny = null;
                     try {
                       const S = 24;
-                      const tiny = document.createElement('canvas'); tiny.setAttribute('aria-hidden', 'true'); tiny.width = S; tiny.height = S;
+                      tiny = document.createElement('canvas'); tiny.setAttribute('aria-hidden', 'true'); tiny.width = S; tiny.height = S;
                       const tctx = tiny.getContext('2d');
                       tctx.drawImage(srcCanvas, 0, 0, S, S);
                       const data = tctx.getImageData(0, 0, S, S).data;
                       return _cropPixelsAreFill(data, strict !== false);
                     } catch (_) { return false; }
+                    finally { if (tiny) { try { tiny.width = 0; tiny.height = 0; } catch (_) {} } }
                   };
 
                   if (imageOps.length > 0) {
@@ -32077,8 +32904,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       }
                       imgOpIdx++;
                       if (_pairedPos && _pairedPos.w > 20 && _pairedPos.h > 20) {
+                        let crop = null;
                         try {
-                          const crop = document.createElement('canvas'); crop.setAttribute('aria-hidden', 'true');
+                          crop = document.createElement('canvas'); crop.setAttribute('aria-hidden', 'true');
                           crop.width = Math.round(_pairedPos.w);
                           crop.height = Math.round(_pairedPos.h);
                           crop.getContext('2d').drawImage(canvas, Math.round(_pairedPos.x), Math.round(_pairedPos.y), Math.round(_pairedPos.w), Math.round(_pairedPos.h), 0, 0, crop.width, crop.height);
@@ -32098,6 +32926,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                             warnLog(`[PDF Fix] Cropped image from page ${pg}: ${Math.round(_pairedPos.w)}x${Math.round(_pairedPos.h)} at (${Math.round(_pairedPos.x)},${Math.round(_pairedPos.y)})`);
                           }
                         } catch(cropErr) { warnLog(`[PDF Fix] Image crop failed:`, cropErr); }
+                        finally { if (crop) { try { crop.width = 0; crop.height = 0; } catch (_) {} } }
                       }
                     }
                   }
@@ -32122,25 +32951,29 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       const y = Math.max(0, Math.floor((_box.y0 - _pad) * canvas.height));
                       const w = Math.min(canvas.width - x, Math.ceil((_box.x1 - _box.x0 + 2 * _pad) * canvas.width));
                       const h = Math.min(canvas.height - y, Math.ceil((_box.y1 - _box.y0 + 2 * _pad) * canvas.height));
-                      const crop = document.createElement('canvas'); crop.setAttribute('aria-hidden', 'true');
-                      crop.width = w; crop.height = h;
-                      crop.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
-                      if (_cropIsNearUniform(crop, false)) {
-                        warnLog(`[PDF Fix] Skipped near-uniform fallback crop on page ${pg} (vision box) — degrading to text placeholder`);
-                      } else {
-                        extractedImages[img.idx].generatedSrc = crop.toDataURL('image/jpeg', 0.85);
-                        extractedImages[img.idx].cropData = { page: pg, x: x, y: y, w: w, h: h, canvasW: canvas.width, canvasH: canvas.height };
-                        warnLog(`[PDF Fix] Fallback crop for image on page ${pg} (vision box ${Math.round(w)}x${Math.round(h)} at (${x},${y}))`);
+                      let crop = null;
+                      try {
+                        crop = document.createElement('canvas'); crop.setAttribute('aria-hidden', 'true');
+                        crop.width = w; crop.height = h;
+                        crop.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+                        if (_cropIsNearUniform(crop, false)) {
+                          warnLog(`[PDF Fix] Skipped near-uniform fallback crop on page ${pg} (vision box) — degrading to text placeholder`);
+                        } else {
+                          extractedImages[img.idx].generatedSrc = crop.toDataURL('image/jpeg', 0.85);
+                          extractedImages[img.idx].cropData = { page: pg, x: x, y: y, w: w, h: h, canvasW: canvas.width, canvasH: canvas.height };
+                          warnLog(`[PDF Fix] Fallback crop for image on page ${pg} (vision box ${Math.round(w)}x${Math.round(h)} at (${x},${y}))`);
+                        }
+                      } finally {
+                        if (crop) { try { crop.width = 0; crop.height = 0; } catch (_) {} }
                       }
                     }
                   }
-                  // Free the per-page render canvas now that crops + the dataURL are
-                  // done — releases the render backing store (1.5x, or 1x on retry)
-                  // immediately instead of waiting on GC (2026-06-15 review fix).
-                  try { canvas.width = 0; canvas.height = 0; } catch (_) {}
                 } catch(pgErr) {
                   if ((pgErr && (pgErr.name === 'AbortError' || pgErr.isAbort)) || _imageCancelled()) throw pgErr;
                   _imageFailureCount++; warnLog(`[PDF Fix] Page ${pageNum} extraction failed:`, pgErr);
+                } finally {
+                  // Free the per-page render canvas even on per-page failure/abort.
+                  if (canvas) { try { canvas.width = 0; canvas.height = 0; } catch (_) {} }
                 }
               }
             } catch(pdfJsErr) {
@@ -32888,7 +33721,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // signal). Used at both the initial deterministic-fix block and inside the auto-fix loop.
     const _applyDetectedLang = (html) => {
       try {
-        const _vl = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+        const _vl = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i;
         const _nm = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'vietnamese': 'vi', 'haitian': 'ht', 'haitian creole': 'ht', 'somali': 'so', 'hebrew': 'he', 'russian': 'ru' };
         const _adRaw = (_auditResult && _auditResult.documentLanguage) ? String(_auditResult.documentLanguage).trim().toLowerCase().replace(/_/g, '-') : '';
         const _ad = _vl.test(_adRaw) ? _adRaw : null;
@@ -32897,10 +33730,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // this, RTL docs (ar/he/fa/ps/ur/…) pass the lang check but render bidi-scrambled. Mirrors
         // translateDoc's RTL handling; reuses the shared isRtlLang helper. LTR docs are never touched.
         let _out;
-        if (!/lang=/i.test(html)) {
-          _out = html.replace(/<html/i, '<html lang="' + (_ad || 'en') + '"');
+        if (!/<html\b[^>]*\slang\s*=/i.test(html)) {
+          _out = html.replace(/<html\b/i, '<html lang="' + (_ad || 'en') + '"');
         } else {
-          _out = html.replace(/<html([^>]*)lang=["']([^"']*)["']/i, (m, before, langVal) => {
+          _out = html.replace(/<html\b([^>]*?)\slang\s*=\s*["']([^"']*)["']/i, (m, before, langVal) => {
             const trimmed = String(langVal).trim().toLowerCase().replace(/_/g, '-');
             const invalid = !trimmed || !_vl.test(trimmed);
             // Compare BASE codes so a more-specific valid region subtag (es-MX, pt-BR, zh-TW) is preserved
@@ -32912,13 +33745,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             if (invalid || overrideToDetected) {
               const fixed = _ad || _nm[trimmed] || 'en';
               try { warnLog('  Deterministic: lang="' + langVal + '" → "' + fixed + '" (' + (_ad ? (overrideToDetected ? 'audit-detected, overrode valid ' + trimmed : 'audit-detected') : (_nm[trimmed] ? 'name-mapped' : 'fallback')) + ')'); } catch (_) {}
-              return '<html' + before + 'lang="' + fixed + '"';
+              return '<html' + before + ' lang="' + fixed + '"';
             }
             return m;
           });
         }
-        // Read back the FINAL effective lang and add dir="rtl" for RTL languages only. Idempotent:
-        // skips when a dir attribute is already present on the <html> tag.
+        // Read back the FINAL effective lang and sync dir="rtl" for RTL languages (and clear stale
+        // dir="rtl" when overriding an RTL language to an LTR language). Idempotent.
         try {
           const _htmlTag = _out.match(/<html[^>]*>/i);
           if (_htmlTag && !/\sdir=/i.test(_htmlTag[0])) {
@@ -32927,6 +33760,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             if (_finalLang && isRtlLang(_finalLang)) {
               _out = _out.replace(/<html([^>]*)>/i, (m, attrs) => '<html' + attrs + ' dir="rtl">');
               try { warnLog('  Deterministic: dir="rtl" set for RTL language "' + _finalLang + '"'); } catch (_) {}
+            }
+          } else if (_htmlTag && /\sdir\s*=\s*["']rtl["']/i.test(_htmlTag[0])) {
+            const _lm = _htmlTag[0].match(/lang=["']([^"']*)["']/i);
+            const _finalLang = _lm ? _lm[1] : '';
+            if (_finalLang && !isRtlLang(_finalLang)) {
+              _out = _out.replace(/(<html\b[^>]*?)\s+dir\s*=\s*["']rtl["']/i, '$1');
+              try { warnLog('  Deterministic: cleared stale dir="rtl" for LTR language "' + _finalLang + '"'); } catch (_) {}
             }
           }
         } catch (_) {}
@@ -34131,6 +34971,39 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             return `\n\n═══ SOURCE TAG TREE — PRESERVE THESE HEADING LEVELS ═══\nThis PDF ships a logical structure tree. The headings below were extracted directly from the source's tags. When you emit h1/h2/h3 blocks, MATCH these levels exactly — do not re-infer from font size or visual weight. If a heading in the outline below is missing from your output, the document loses structure that the source explicitly encoded.\n${_outlineNote}\n${outline}\n═══════════════════════════════════════════════════\n`;
           })()
         : '';
+      const _inRangeFilter = (arr) => {
+        if (!Array.isArray(arr) || !arr.length) return [];
+        if (_pageRange && _pageRange[0]) {
+          const rStart = Math.max(1, _pageRange[0]);
+          const rEnd = rStart + pageCount - 1;
+          return arr.filter((x) => x && typeof x.page === 'number' && x.page >= rStart && x.page <= rEnd);
+        }
+        return arr;
+      };
+      const _rangeFigAlts = _sourceStruct && _sourceStruct.hasTags ? _inRangeFilter(_sourceStruct.figureAlts) : [];
+      const _rangeFormulas = _sourceStruct && _sourceStruct.hasTags ? _inRangeFilter(_sourceStruct.formulas) : [];
+      const _sourceAuthorMediaDirective = (_rangeFigAlts.length > 0 || _rangeFormulas.length > 0)
+        ? (() => {
+            const parts = [];
+            if (_rangeFigAlts.length > 0) {
+              parts.push(_untrustedPromptDataBlock('SOURCE AUTHOR FIGURE ALT TEXT',
+                _rangeFigAlts.slice(0, 30).map((f) => `  p${f.page} fig${f.indexOnPage || 1}: ${(f.alt || '').slice(0, 300)}`).join('\n')));
+            }
+            if (_rangeFormulas.length > 0) {
+              parts.push(_untrustedPromptDataBlock('SOURCE AUTHOR FORMULA DESCRIPTIONS',
+                _rangeFormulas.slice(0, 30).map((f) => `  p${f.page}: ${(f.alt || f.actualText || f.text || '').slice(0, 300)}`).join('\n')));
+            }
+            return `\n\n═══ SOURCE AUTHOR ALT TEXT / FORMULAS — PRESERVE VERBATIM WHERE SUBSTANTIVE ═══\nThe tagged source PDF already provides author-written descriptions below. Preserve substantive descriptions verbatim (only replace generic placeholders or raw filenames).\n${parts.join('\n')}\n═══════════════════════════════════════════════════\n`;
+          })()
+        : '';
+      const _sourceBookmarksDirective = (!(_sourceStruct && _sourceStruct.hasTags && _outlineHeadings.length > 0)
+        && _sourceStruct && Array.isArray(_sourceStruct.outlines) && _sourceStruct.outlines.length > 0)
+        ? (() => {
+            const bm = _untrustedPromptDataBlock('SOURCE PDF BOOKMARKS',
+              _sourceStruct.outlines.slice(0, 30).map((o) => `  L${Math.min(Math.max(o.level || 1, 1), 6)}: ${(o.title || '').slice(0, 150)}`).join('\n'));
+            return `\n\n═══ SOURCE PDF BOOKMARKS — HEADING HIERARCHY HINT ═══\nThis PDF is untagged but includes a bookmark outline. Use these titles and nesting levels as a guide when choosing h2/h3/h4 headings (keep the single document title as h1).\n${bm}\n═══════════════════════════════════════════════════\n`;
+          })()
+        : '';
       // 2026-07-27: a PARTIAL run must say so. pageCount is the RANGE LENGTH, so a 5-page range on
       // a 40-page PDF satisfies pageCount <= 8 and takes this single-pass branch — whose prompt
       // carried NO page instruction at all, against an upload of the WHOLE document. The result:
@@ -34149,7 +35022,7 @@ SCOPE: This file contains a larger document, but you must extract ONLY pages ${M
 IMAGE-SOURCE RULE: The upload is one complete source raster, not a PDF with separate figures. Emit EXACTLY ONE image block for that complete raster. Do not invent crops, subfigures, or additional image blocks. Emit visible text, tables, lists, labels, and questions as separate semantic blocks in reading order, while the single image block preserves the original visual context.
 `
         : '';
-      const jsonPrompt = `You are a WCAG 2.2 AA accessibility specialist extracting a ${_sourceKind === 'image' ? 'source image' : 'PDF'} into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.${_t2SinglePageScope}${_sourceHeadingsDirective}${_imageTransformDirective}
+      const jsonPrompt = `You are a WCAG 2.2 AA accessibility specialist extracting a ${_sourceKind === 'image' ? 'source image' : 'PDF'} into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.${_t2SinglePageScope}${_sourceHeadingsDirective}${_sourceAuthorMediaDirective}${_sourceBookmarksDirective}${_imageTransformDirective}
 
 Extract ALL content as a JSON array of content blocks. Each block must be one of these types:
 
@@ -34321,6 +35194,20 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
                 return `\n\nSOURCE TAG TREE — pages ${startPg}-${endPg} contain these headings (preserve levels exactly, do not re-infer from font):\n${_outlineNote}${outline}\n`;
               })()
             : '';
+          const _chunkMediaDirective = (_sourceStruct && _sourceStruct.hasTags)
+            ? (() => {
+                const figs = Array.isArray(_sourceStruct.figureAlts) ? _sourceStruct.figureAlts.filter(f => f && typeof f.page === 'number' && f.page >= startPg && f.page <= endPg) : [];
+                const forms = Array.isArray(_sourceStruct.formulas) ? _sourceStruct.formulas.filter(f => f && typeof f.page === 'number' && f.page >= startPg && f.page <= endPg) : [];
+                if (!figs.length && !forms.length) return '';
+                const parts = [];
+                if (figs.length) parts.push(_untrustedPromptDataBlock('SOURCE AUTHOR FIGURE ALT TEXT', figs.slice(0, 20).map(f => `  p${f.page} fig${f.indexOnPage || 1}: ${(f.alt || '').slice(0, 300)}`).join('\n')));
+                if (forms.length) parts.push(_untrustedPromptDataBlock('SOURCE AUTHOR FORMULA DESCRIPTIONS', forms.slice(0, 20).map(f => `  p${f.page}: ${(f.alt || f.actualText || f.text || '').slice(0, 300)}`).join('\n')));
+                return `\n\nSOURCE AUTHOR ALT TEXT / FORMULAS — pages ${startPg}-${endPg} (preserve substantive descriptions verbatim):\n${parts.join('\n')}\n`;
+              })()
+            : '';
+          const _chunkBookmarksDirective = (!(_sourceStruct && _sourceStruct.hasTags) && _sourceStruct && Array.isArray(_sourceStruct.outlines) && _sourceStruct.outlines.length > 0 && i === 0)
+            ? `\n\nSOURCE PDF BOOKMARKS (heading hierarchy hint):\n${_untrustedPromptDataBlock('SOURCE PDF BOOKMARKS', _sourceStruct.outlines.slice(0, 25).map(o => `  L${Math.min(Math.max(o.level || 1, 1), 6)}: ${(o.title || '').slice(0, 150)}`).join('\n'))}\n`
+            : '';
           try {
             const chunkResult = await _alloWithPayloadPhase('transform-chunk', () => callGeminiVision(
               `Extract ALL content from pages ${startPg} through ${endPg} of this PDF as a JSON array of content blocks.\n\n` +
@@ -34343,6 +35230,8 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               `- Generate slug IDs for h2/h3 headings.\n` +
               `- Use <strong> for bold text and <em> for italic within text fields.\n` +
               _chunkHeadingsDirective +
+              _chunkMediaDirective +
+              _chunkBookmarksDirective +
               `\nReturn ONLY a JSON array: [{"type":"...","text":"..."}, ...]`,
               _base64, _mimeType
             ));
@@ -35068,10 +35957,10 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               + `try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}}`;
             const _dragOver2 = `event.preventDefault();this.style.borderColor='#4f46e5';this.style.background='#eef2ff';`;
             const _dragLeave2 = `this.style.borderColor='#cbd5e1';this.style.background='#f1f5f9';`;
-            const _dropHandler2 = `(function(c,ev){ev.preventDefault();c.style.borderColor='#cbd5e1';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn2})(c,d.src,d.alt||'${_altSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
-            const _uploadHandler2 = `(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${imgId}-container');(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);})(this)`;
+            const _dropHandler2 = `(function(c,ev){ev.preventDefault();c.style.borderColor='#cbd5e1';c.style.background='#f1f5f9';try{var _ok=function(u){return /^(?:data:image\\/(?:png|jpeg|jpg|webp|gif);base64,|blob:|https?:\\/\\/|\\/(?!\\/)|\\.\\/)/i.test(String(u||'').trim());};var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src&&_ok(d.src)){(${_insertFn2})(c,d.src,d.alt||'${_altSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){if((typeof f.size==='number'&&f.size>20*1024*1024)||/svg/i.test(String(f.type||''))||/\\.svg$/i.test(String(f.name||'')))return;var r=new FileReader();r.onload=function(e){if(_ok(e.target&&e.target.result))(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
+            const _uploadHandler2 = `(function(el){var f=el.files&&el.files[0];if(!f)return;if((typeof f.size==='number'&&f.size>20*1024*1024)||/svg/i.test(String(f.type||''))||/\\.svg$/i.test(String(f.name||''))){el.value='';return;}var _ok=function(u){return /^data:image\\/(?:png|jpeg|jpg|webp|gif);base64,/i.test(String(u||'').trim());};var r=new FileReader();r.onload=function(e){var c=document.getElementById('${imgId}-container');if(c&&_ok(e.target&&e.target.result))(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);})(this)`;
             // See note above on _pickHandler — same HTML-attribute-quote hazard applies here.
-            const _pickHandler2 = `(function(btn){var c=document.getElementById('${imgId}-container');if(!c)return;var _lL=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||null;var _pL=(function(){try{return window.parent&&window.parent.__alloflowExtractedImages;}catch(_){return null;}})();var list=(_pL&&_pL.length)?_pL:((_lL&&_lL.length)?_lL:(_pL||_lL||[]));var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click the \\u201CUpload image\\u201D button to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn2})(c,img.src,img.description||'${_altSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
+            const _pickHandler2 = `(function(btn){var c=document.getElementById('${imgId}-container');if(!c)return;var _ok=function(u){return /^(?:data:image\\/(?:png|jpeg|jpg|webp|gif);base64,|blob:|https?:\\/\\/|\\/(?!\\/)|\\.\\/)/i.test(String(u||'').trim());};var _lL=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||null;var _pL=(function(){try{return window.parent&&window.parent.__alloflowExtractedImages;}catch(_){return null;}})();var list=(_pL&&_pL.length)?_pL:((_lL&&_lL.length)?_lL:(_pL||_lL||[]));var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click the \\u201CUpload image\\u201D button to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src||!_ok(img.src))return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn2})(c,img.src,img.description||'${_altSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
             // If we have a regenerated image, show it; otherwise show placeholder with upload
             return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"${hasCropData ? ` data-crop="${cropJson}"` : ''} style="position:relative;margin:1em 0">
 ${hasSrc ? '' : `<button type="button" contenteditable="false" onclick="(function(){var f=document.getElementById('${imgId}-figure');if(f)f.remove();try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})()" aria-label="Remove this image placeholder" title="Remove this image placeholder" style="position:absolute;top:6px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:14px;line-height:1;cursor:pointer">×</button>`}
@@ -35498,11 +36387,13 @@ window.__pdfCropImage = function(imgId) {
     try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
   }
   function onKeyDown(e) {
+    if (e.isComposing || e.keyCode === 229) return;
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeDialog(); return; }
     if (e.key !== 'Tab') return;
     var focusable = [xInput, yInput, widthInput, heightInput, cancelBtn, applyBtn];
     var first = focusable[0], last = focusable[focusable.length - 1];
-    if (!dialog.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
+    if (!dialog.contains(document.activeElement)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); return; }
+    if (document.activeElement === dialog) { e.preventDefault(); (e.shiftKey ? last : first).focus(); return; }
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
@@ -38568,7 +39459,7 @@ tr { page-break-inside: avoid; }
       html += '<h2>HTML Foundations: all 18 checks</h2>'
         + '<p style="font-size:11px;color:#64748b">Presence-level HTML inventory, not a WCAG score or exported-PDF verdict. Evidence stays separate for the deterministic HTML detector, AI, axe-core, and IBM Equal Access; “Not tested” means that engine’s configured ruleset does not cover the foundation.</p>'
         + '<p style="font-size:11px;font-weight:700;color:#334155">' + esc(_sum.passed || 0) + ' passed · ' + esc(_sum.missing || 0) + ' missing · ' + esc(_sum.notApplicable || 0) + ' not applicable</p>'
-        + '<table style="table-layout:fixed;width:100%;font-size:9px"><thead><tr><th style="width:15%">Foundation</th><th style="width:9%">Presence</th><th style="width:16%">HTML detector</th><th style="width:15%">AI</th><th style="width:15%">axe-core</th><th style="width:15%">Equal Access</th><th style="width:15%">Detail</th></tr></thead><tbody>';
+        + '<table style="table-layout:fixed;width:100%;font-size:9px"><thead><tr><th scope="col" style="width:15%">Foundation</th><th scope="col" style="width:9%">Presence</th><th scope="col" style="width:16%">HTML detector</th><th scope="col" style="width:15%">AI</th><th scope="col" style="width:15%">axe-core</th><th scope="col" style="width:15%">Equal Access</th><th scope="col" style="width:15%">Detail</th></tr></thead><tbody>';
       _foundationItems.forEach((item) => {
         const evidence = item.evidence || {};
         const presence = item.status === 'passed' ? 'Passed / detected' : item.status === 'missing' ? 'Missing' : 'Not applicable';
@@ -38613,29 +39504,29 @@ tr { page-break-inside: avoid; }
     const sectionLabel = isBeforeAfter ? ' (Before Remediation)' : '';
     if (issueSource.critical?.length) {
       html += `<h2>${severityBadge('critical', issueSource.critical.length)} Critical Issues${sectionLabel}</h2>
-      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.critical, 'critical')}</tbody></table>`;
+      <table style="table-layout:fixed;width:100%"><thead><tr><th scope="col" style="width:65%">Issue</th><th scope="col" style="width:20%;text-align:center">WCAG</th><th scope="col" style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.critical, 'critical')}</tbody></table>`;
     }
     const seriousIssues = issueSource.serious || issueSource.major || [];
     if (seriousIssues.length) {
       html += `<h2>${severityBadge('serious', seriousIssues.length)} Serious Issues${sectionLabel}</h2>
-      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(seriousIssues, 'serious')}</tbody></table>`;
+      <table style="table-layout:fixed;width:100%"><thead><tr><th scope="col" style="width:65%">Issue</th><th scope="col" style="width:20%;text-align:center">WCAG</th><th scope="col" style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(seriousIssues, 'serious')}</tbody></table>`;
     }
     if (issueSource.moderate?.length) {
       html += `<h2>${severityBadge('moderate', issueSource.moderate.length)} Moderate Issues${sectionLabel}</h2>
-      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.moderate, 'moderate')}</tbody></table>`;
+      <table style="table-layout:fixed;width:100%"><thead><tr><th scope="col" style="width:65%">Issue</th><th scope="col" style="width:20%;text-align:center">WCAG</th><th scope="col" style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.moderate, 'moderate')}</tbody></table>`;
     }
     if (issueSource.minor?.length) {
       html += `<h2>${severityBadge('minor', issueSource.minor.length)} Minor Issues${sectionLabel}</h2>
-      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.minor, 'minor')}</tbody></table>`;
+      <table style="table-layout:fixed;width:100%"><thead><tr><th scope="col" style="width:65%">Issue</th><th scope="col" style="width:20%;text-align:center">WCAG</th><th scope="col" style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.minor, 'minor')}</tbody></table>`;
     }
     if (issueSource.passes?.length) {
       html += `<h2 style="color:#16a34a">&#10003; AI Audit — Passing Checks (${issueSource.passes.length})</h2>`;
       html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 8px">${isBeforeAfter ? 'Checks that passed during the initial AI audit (before remediation)' : 'Checks the AI review marked as passing (a person should confirm them)'}</p>`;
       issueSource.passes.forEach(p => {
         const text = typeof p === 'string' ? p : p.description || p.id || '';
-        const wcag = typeof p === 'object' && p.wcag ? ` <span style="color:#64748b;font-size:0.85em">[${p.wcag}]</span>` : '';
-        const ruleId = typeof p === 'object' && p.id ? ` <span style="color:#64748b;font-size:0.85em;font-family:monospace">(${p.id})</span>` : '';
-        html += `<div class="pass-item">&#10003; ${text}${ruleId}${wcag}</div>`;
+        const wcag = typeof p === 'object' && p.wcag ? ` <span style="color:#64748b;font-size:0.85em">[${esc(p.wcag)}]</span>` : '';
+        const ruleId = typeof p === 'object' && p.id ? ` <span style="color:#64748b;font-size:0.85em;font-family:monospace">(${esc(p.id)})</span>` : '';
+        html += `<div class="pass-item">&#10003; ${esc(text)}${ruleId}${wcag}</div>`;
       });
     }
 
@@ -38650,7 +39541,7 @@ tr { page-break-inside: avoid; }
         html += `<h3 style="color:#4f46e5;font-size:16px;margin-top:1.5rem">🤖 AI Verification — Remaining Issues (${remainingIssues.length})</h3>`;
         html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 12px">AI re-audit of the remediated HTML for WCAG 2.2 AA compliance</p>`;
         if (remainingIssues.length > 0) {
-          html += `<table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Severity</th></tr></thead><tbody>`;
+          html += `<table style="table-layout:fixed;width:100%"><thead><tr><th scope="col" style="width:65%">Issue</th><th scope="col" style="width:20%;text-align:center">WCAG</th><th scope="col" style="width:15%;text-align:center">Severity</th></tr></thead><tbody>`;
           var escHtml = function(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
           remainingIssues.forEach(i => {
             let wcag = i.wcag || '';
@@ -38690,9 +39581,9 @@ tr { page-break-inside: avoid; }
         }
         if (axe.critical?.length || axe.serious?.length || axe.moderate?.length) {
           html += `<h3 style="color:#dc2626;margin-top:1rem">Remaining Violations</h3>`;
-          html += `<table><thead><tr><th>Rule</th><th>Impact</th><th>Description</th><th>Elements</th></tr></thead><tbody>`;
+          html += `<table><thead><tr><th scope="col">Rule</th><th scope="col">Impact</th><th scope="col">Description</th><th scope="col">Elements</th></tr></thead><tbody>`;
           [...(axe.critical || []), ...(axe.serious || []), ...(axe.moderate || [])].forEach(v => {
-            html += `<tr><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px;font-family:monospace">${v.id}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px;font-weight:bold;color:${v.impact === 'critical' ? '#dc2626' : v.impact === 'serious' ? '#ea580c' : '#d97706'}">${v.impact}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px">${v.description}</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:center">${v.nodes}</td></tr>`;
+            html += `<tr><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px;font-family:monospace">${esc(v.id)}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px;font-weight:bold;color:${v.impact === 'critical' ? '#dc2626' : v.impact === 'serious' ? '#ea580c' : '#d97706'}">${esc(v.impact)}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px">${esc(v.description)}</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:center">${esc(v.nodes)}</td></tr>`;
           });
           html += `</tbody></table>`;
         }
@@ -38700,9 +39591,9 @@ tr { page-break-inside: avoid; }
         if (axe.passes?.length > 0) {
           html += `<details open style="margin-top:1rem"><summary style="cursor:pointer;font-weight:bold;color:#16a34a;font-size:14px">✅ axe-core: ${axe.passes.length} Accessibility Checks Passed</summary>`;
           html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 8px">Complete list of WCAG rules verified as passing by the axe-core automated scanner</p>`;
-          html += `<table style="margin-top:8px"><thead><tr><th>Rule</th><th>Description</th><th>WCAG</th><th>Elements Checked</th></tr></thead><tbody>`;
+          html += `<table style="margin-top:8px"><thead><tr><th scope="col">Rule</th><th scope="col">Description</th><th scope="col">WCAG</th><th scope="col">Elements Checked</th></tr></thead><tbody>`;
           axe.passes.forEach(p => {
-            html += `<tr><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px;font-family:monospace;color:#16a34a">${p.id}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px">${p.description}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px;color:#64748b">${p.wcag || '—'}</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-size:12px">${p.nodes}</td></tr>`;
+            html += `<tr><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px;font-family:monospace;color:#16a34a">${esc(p.id)}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px">${esc(p.description)}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px;color:#64748b">${esc(p.wcag || '—')}</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-size:12px">${esc(p.nodes)}</td></tr>`;
           });
           html += `</tbody></table></details>`;
         }
@@ -38741,7 +39632,7 @@ tr { page-break-inside: avoid; }
 
     html += `<h2 style="margin-top:2rem">Scoring Methodology</h2>
     <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:1rem">
-      <thead><tr style="background:#f8fafc"><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Severity</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:center">Deduction</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Examples</th></tr></thead>
+      <thead><tr style="background:#f8fafc"><th scope="col" style="padding:8px;border:1px solid #e2e8f0;text-align:left">Severity</th><th scope="col" style="padding:8px;border:1px solid #e2e8f0;text-align:center">Deduction</th><th scope="col" style="padding:8px;border:1px solid #e2e8f0;text-align:left">Examples</th></tr></thead>
       <tbody>
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#dc2626">Critical</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-${SEVERITY_WEIGHTS.critical}</td><td style="padding:8px;border:1px solid #e2e8f0">Missing lang attribute, no page title, images without alt text, no main landmark, contrast below 3:1</td></tr>
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#ea580c">Serious</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-${SEVERITY_WEIGHTS.serious}</td><td style="padding:8px;border:1px solid #e2e8f0">No h1 heading, heading level skips, data tables without th/scope, form inputs without labels, contrast below 4.5:1</td></tr>
@@ -38995,7 +39886,7 @@ tr { page-break-inside: avoid; }
       return `
         <h3 style="font-size:14px;margin:20px 0 8px;color:#1e293b">${_esc(cat)}</h3>
         <table style="width:100%;border-collapse:collapse;font-size:12px">
-          <thead><tr style="background:#f1f5f9"><th style="text-align:left;padding:8px;border:1px solid #cbd5e1;width:35%">Rule</th><th style="text-align:left;padding:8px;border:1px solid #cbd5e1;width:15%">Status</th><th style="text-align:left;padding:8px;border:1px solid #cbd5e1">Details</th></tr></thead>
+          <thead><tr style="background:#f1f5f9"><th scope="col" style="text-align:left;padding:8px;border:1px solid #cbd5e1;width:35%">Rule</th><th scope="col" style="text-align:left;padding:8px;border:1px solid #cbd5e1;width:15%">Status</th><th scope="col" style="text-align:left;padding:8px;border:1px solid #cbd5e1">Details</th></tr></thead>
           <tbody>
             ${items.map(c => `<tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:600">${_esc(c.rule)}</td><td style="padding:8px;border:1px solid #e2e8f0">${_statusBadge(c.status)}</td><td style="padding:8px;border:1px solid #e2e8f0;color:#475569">${_esc(c.message)}</td></tr>`).join('')}
           </tbody>
@@ -39596,9 +40487,11 @@ tr { page-break-inside: avoid; }
       return /^[-$]?\d+([.,]\d+)?%?$/.test(s) || /^\d+\s*[-\u2013]\s*\d+$/.test(s);
     };
     try {
+      const _directRows = (tbl) => Array.from(tbl.querySelectorAll('tr')).filter((tr) => tr.closest && tr.closest('table') === tbl);
+      const _directThs = (tbl) => Array.from(tbl.querySelectorAll('th')).filter((th) => th.closest && th.closest('table') === tbl);
       const tables = Array.from(htmlDoc.querySelectorAll('table'));
       for (const table of tables) {
-        const trs = Array.from(table.querySelectorAll('tr'));
+        const trs = _directRows(table);
         if (trs.length === 0) continue;
         // Pass 1a: full-TH first row → scope=col (column-header row pattern).
         if (trs[0]) {
@@ -39619,10 +40512,10 @@ tr { page-break-inside: avoid; }
           }
         }
         // Pass 2: no <th> anywhere → high-confidence promotion only.
-        const hasAnyTh = trs.some(tr => tr.querySelector('th'));
+        const hasAnyTh = _directThs(table).length > 0;
         if (!hasAnyTh && trs.length >= 3) {
           const firstRow = trs[0];
-          const firstRowTds = Array.from(firstRow.querySelectorAll('td'));
+          const firstRowTds = Array.from(firstRow.children).filter(c => c.tagName && c.tagName.toLowerCase() === 'td');
           if (firstRowTds.length >= 3) {
             const allTextual = firstRowTds.every(td => {
               const t = (td.textContent || '').trim();
@@ -39655,7 +40548,7 @@ tr { page-break-inside: avoid; }
         if (!classification || typeof classification.confidence !== 'number' || classification.confidence < 0.7) return false;
         const layout = classification.layout;
         if (layout !== 'standard' && layout !== 'transposed' && layout !== 'crosstab') return false;
-        const trs = Array.from(table.querySelectorAll('tr'));
+        const trs = _directRows(table);
         if (trs.length === 0) return false;
         const promote = (cell, scope) => {
           const th = htmlDoc.createElement('th');
@@ -39667,7 +40560,7 @@ tr { page-break-inside: avoid; }
           cell.parentNode.replaceChild(th, cell);
         };
         if (layout === 'standard' || layout === 'crosstab') {
-          for (const td of Array.from(trs[0].querySelectorAll('td'))) promote(td, 'col');
+          for (const td of Array.from(trs[0].children).filter(c => c.tagName && c.tagName.toLowerCase() === 'td')) promote(td, 'col');
         }
         if (layout === 'transposed' || layout === 'crosstab') {
           for (const tr of trs) {
@@ -39679,12 +40572,12 @@ tr { page-break-inside: avoid; }
       };
       if (typeof callGemini === 'function') {
         for (const table of Array.from(htmlDoc.querySelectorAll('table'))) {
-          const trs = Array.from(table.querySelectorAll('tr'));
+          const trs = _directRows(table);
           if (trs.length < 3) continue;
           const maxCols = trs.reduce((m, tr) => Math.max(m, tr.children.length), 0);
           if (maxCols < 3) continue;
           // Skip if Stage 5a already handled this table
-          const hasScoped = Array.from(table.querySelectorAll('th')).some(th => {
+          const hasScoped = _directThs(table).some(th => {
             const sc = (th.getAttribute('scope') || '').toLowerCase();
             return sc === 'col' || sc === 'row';
           });
@@ -39736,23 +40629,50 @@ tr { page-break-inside: avoid; }
         const _scopeOf = (cell) => (cell.getAttribute('scope') || '').toLowerCase();
         const _colScopes = { col: 1, colgroup: 1 };
         const _rowScopes = { row: 1, rowgroup: 1 };
-        const _headers = _hdrPlaced.filter((p) => p.tag === 'th' && (_colScopes[_scopeOf(p.cell)] || _rowScopes[_scopeOf(p.cell)]));
+        // Collect HTML H43 id tokens explicitly referenced by any direct-owned <td headers="..."> in this table.
+        const _referencedHtmlIds = new Set();
+        for (const p of _hdrPlaced) {
+          if (p.tag !== 'td') continue;
+          const rawH = (p.cell.getAttribute('headers') || '').trim();
+          if (!rawH) continue;
+          for (const tok of rawH.split(/\s+/)) if (tok) _referencedHtmlIds.add(tok);
+        }
+        const _headers = _hdrPlaced.filter((p) => {
+          if (p.tag !== 'th') return false;
+          if (_colScopes[_scopeOf(p.cell)] || _rowScopes[_scopeOf(p.cell)]) return true;
+          const hid = (p.cell.getAttribute('id') || '').trim();
+          return !!(hid && _referencedHtmlIds.has(hid));
+        });
         if (!_headers.length) { tableIndex++; continue; }
         let thIdCounter = 0;
+        const _htmlIdToStructId = new Map();
         for (const h of _headers) {
           h.id = 'hdr_' + tableIndex + '_' + (thIdCounter++);
           h.cell.setAttribute('data-struct-id', h.id);
+          const hid = (h.cell.getAttribute('id') || '').trim();
+          if (hid && !_htmlIdToStructId.has(hid)) _htmlIdToStructId.set(hid, h.id);
         }
         for (const d of _hdrPlaced) {
           if (d.tag !== 'td') continue;
-          const applicable = [];
-          // Column headers: above the cell, sharing at least one of its columns (top to bottom).
-          for (const h of _headers) {
-            if (_colScopes[_scopeOf(h.cell)] && h.r + h.rs - 1 < d.r && h.c < d.c + d.cs && d.c < h.c + h.cs) applicable.push(h.id);
+          let applicable = [];
+          // Honor explicit HTML H43 headers="..." references first (author-authored or fixComplexTables).
+          const rawExplicit = (d.cell.getAttribute('headers') || '').trim();
+          if (rawExplicit) {
+            const seen = new Set();
+            for (const tok of rawExplicit.split(/\s+/)) {
+              const mapped = _htmlIdToStructId.get(tok);
+              if (mapped && !seen.has(mapped)) { seen.add(mapped); applicable.push(mapped); }
+            }
           }
-          // Row headers: left of the cell, sharing at least one of its rows (left to right).
-          for (const h of _headers) {
-            if (_rowScopes[_scopeOf(h.cell)] && h.c + h.cs - 1 < d.c && h.r < d.r + d.rs && d.r < h.r + h.rs) applicable.push(h.id);
+          if (!applicable.length) {
+            // Column headers: above the cell, sharing at least one of its columns (top to bottom).
+            for (const h of _headers) {
+              if (_colScopes[_scopeOf(h.cell)] && h.r + h.rs - 1 < d.r && h.c < d.c + d.cs && d.c < h.c + h.cs) applicable.push(h.id);
+            }
+            // Row headers: left of the cell, sharing at least one of its rows (left to right).
+            for (const h of _headers) {
+              if (_rowScopes[_scopeOf(h.cell)] && h.c + h.cs - 1 < d.c && h.r < d.r + d.rs && d.r < h.r + h.rs) applicable.push(h.id);
+            }
           }
           if (applicable.length > 0) d.cell.setAttribute('data-headers', applicable.join(' '));
         }
@@ -39801,36 +40721,72 @@ tr { page-break-inside: avoid; }
       // exactly the "TR may contain only TH and TD" veraPDF failure. A promoted cell keeps nested
       // structure beneath the cell where it belongs.
       const _cellContainerKeys = new Set();
+      const _lBodyContainerKeys = new Set();
       const _nearestContainerKey = (el) => { let p = el.parentNode; while (p && p !== body) { const k = _containerKeyByEl.get(p); if (k) return k; p = p.parentNode; } return 0; };
+      const _liNumber = (el) => {
+        try {
+          const parent = el.parentNode;
+          if (!parent) return 1;
+          const startAttr = parent.getAttribute ? parseInt(parent.getAttribute('start') || '', 10) : NaN;
+          let n = Number.isFinite(startAttr) ? startAttr : 1;
+          for (const sib of parent.children) {
+            if (sib.tagName && sib.tagName.toLowerCase() === 'li') {
+              const valAttr = sib.getAttribute ? parseInt(sib.getAttribute('value') || '', 10) : NaN;
+              if (Number.isFinite(valAttr)) n = valAttr;
+              if (sib === el) return n;
+              n++;
+            }
+          }
+          return n || 1;
+        } catch (_) { return 1; }
+      };
       const walker = htmlDoc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT, null);
       let _aiSupplementSkipped = 0;
-      // A <br> is a word break in the spoken /ActualText ("...20202-2600www.ed.gov" glued two lines, osep3).
+      // A <br> or block child (<p>, <div>) is a word break in the spoken /ActualText ("...20202-2600www.ed.gov" glued two lines, osep3).
       // (2026-10-27) A list item's own text stops at its nested lists, which are leaves of their own: agenda4's
       // "Assignment of Board Standing Committees 2025-2026:" carried its four sub-items' text and never linked.
       const _leafText = (el) => {
         const nested = !!(el && el.querySelector && /^li$/i.test(el.tagName || '') && el.querySelector('ul, ol'));
-        if (!el || !el.querySelector || (!nested && !el.querySelector('br'))) return (el && el.textContent) || '';
+        const hasBlockBreak = !!(el && el.querySelector && el.querySelector('br, p, div'));
+        if (!el || !el.querySelector || (!nested && !hasBlockBreak)) return (el && el.textContent) || '';
         const c = el.cloneNode(true);
         if (nested) c.querySelectorAll('ul, ol').forEach((n) => n.remove());
         c.querySelectorAll('br').forEach((b) => b.replaceWith(htmlDoc.createTextNode(' ')));
-        return c.textContent || '';
+        c.querySelectorAll('p, div').forEach((b) => {
+          if (b.parentNode) {
+            b.parentNode.insertBefore(htmlDoc.createTextNode(' '), b);
+            b.parentNode.insertBefore(htmlDoc.createTextNode(' '), b.nextSibling);
+          }
+        });
+        return (c.textContent || '').replace(/\s+/g, ' ');
       };
       while (walker.nextNode()) {
         const el = walker.currentNode;
         const tag = (el.tagName || '').toLowerCase();
         let pdfRole = TAG_TO_PDF_ROLE[tag];
-        // Footnote / reference semantics (2026-06-13): note list-items get the
-        // PDF/UA 'Note' standard structure type (ISO 32000 §14.8.4) so screen
-        // readers announce them as footnotes, not generic list items.
-        if (tag === 'li' && el.closest && (el.closest('.allo-footnotes') || el.closest('.allo-references'))) pdfRole = 'Note';
+        if (!pdfRole && tag === 'pre') pdfRole = 'Code';
+        if (!pdfRole && tag === 'math') pdfRole = 'Formula';
+        // Footnote / reference semantics (2026-06-13): note list-items and DPUB-ARIA footnotes get
+        // the PDF/UA 'Note' standard structure type (ISO 32000 §14.8.4) so screen readers announce
+        // them as footnotes, not generic list items.
+        const _elRoleAttr = (el.getAttribute && (el.getAttribute('role') || '').trim().toLowerCase()) || '';
+        if (_elRoleAttr === 'doc-footnote' || _elRoleAttr === 'doc-endnote') pdfRole = 'Note';
+        else if (tag === 'li' && el.closest && (el.closest('.allo-footnotes') || el.closest('.allo-references') || el.closest('[role="doc-endnotes"]') || el.closest('section.footnotes'))) pdfRole = 'Note';
         if (!pdfRole) continue;
         if (tag === 'thead' || tag === 'tbody' || tag === 'tfoot') continue;
-        // (2026-10-27) The AI-made chart data and image transcripts are not printed in this PDF (the chart
-        // or picture is, as a Figure with its alt); their cells could never link and held the PDF back
-        // (budget: ~140 cells). They stay in the HTML export.
-        if (el.closest && el.closest('details.allo-chart-data, details.allo-imagetext')) {
-          if (++_aiSupplementSkipped === 1) { try { warnLog('[createTaggedPdf] AI-made chart data / image transcripts are not printed in the source: left out of the tagged PDF (kept in the HTML)'); } catch (_) {} }
+        // (2026-10-27) The AI-made chart data, image transcripts, and STEM MathML companion panels
+        // are not printed in this PDF (the chart/picture/equation is, as a Figure/Formula with its
+        // alt); their children could never link and withheld pdfuaid:part 1. They stay in the HTML export.
+        if (el.closest && el.closest('details.allo-chart-data, details.allo-imagetext, details.allo-math-source')) {
+          if (++_aiSupplementSkipped === 1) { try { warnLog('[createTaggedPdf] AI-made chart data / image transcripts / math panels are not printed in the source: left out of the tagged PDF (kept in the HTML)'); } catch (_) {} }
           continue;
+        }
+        // Standalone/block <math> becomes /Formula; inline <math> inside text leaves stays folded
+        // into its host leaf (same single-MCID rule as inline <a> below) so no orphan leaf is emitted.
+        if (tag === 'math') {
+          if (el.parentNode && el.parentNode.closest && el.parentNode.closest('math')) continue;
+          const _mathDisplay = (el.getAttribute && (el.getAttribute('display') || '').trim().toLowerCase()) || '';
+          if (_mathDisplay !== 'block' && el.closest && el.closest('p, li, td, th, blockquote, caption')) continue;
         }
         // <figure> wrapping an <img> would produce TWO Figure leaves for one
         // image (both tags map to Figure) — skip the wrapper; the img itself
@@ -39850,7 +40806,41 @@ tr { page-break-inside: avoid; }
           const key = ++_containerSeq;
           const parentKey = _nearestContainerKey(el);
           _containerKeyByEl.set(el, key);
-          items.push({ role: pdfRole, container: true, key, parentKey, text: '', level: 0 });
+          let listNumbering = '';
+          if (tag === 'ul' || tag === 'ol') {
+            const noListStyle = /(?:^|;)\s*list-style(?:-type)?\s*:\s*none\b/i.test((el.getAttribute && el.getAttribute('style')) || '');
+            listNumbering = noListStyle ? 'None' : (tag === 'ol' ? 'Decimal' : 'Disc');
+          }
+          items.push({ role: pdfRole, container: true, key, parentKey, text: '', level: 0, listNumbering });
+          continue;
+        }
+        // ISO 32000-1 §14.8.4.3.3 / PDF/UA-1 §7.2: a list item containing a nested list (<ul>/<ol>)
+        // must place the nested /L inside its /LBody (L > LI > [Lbl?, LBody > [P?, nested L]]) rather
+        // than attaching the nested /L directly under the outer /L.
+        if (tag === 'li' && pdfRole === 'LI' && el.querySelector && el.querySelector('ul, ol')) {
+          const liKey = ++_containerSeq;
+          const parentKey = _nearestContainerKey(el);
+          items.push({ role: 'LI', container: true, key: liKey, parentKey, text: '', level: 0 });
+          const isOrdered = ((el.closest && el.closest('ul, ol') && el.closest('ul, ol').tagName) || '').toLowerCase() === 'ol';
+          const noMarker = /(?:^|;)\s*list-style(?:-type)?\s*:\s*none\b/i.test((el.parentNode && el.parentNode.getAttribute && el.parentNode.getAttribute('style')) || '');
+          if (!noMarker) {
+            items.push({ parentKey: liKey, role: 'Lbl', text: isOrdered ? (_liNumber(el) + '.') : '•', level: 0 });
+          }
+          const lBodyKey = ++_containerSeq;
+          _containerKeyByEl.set(el, lBodyKey);
+          _lBodyContainerKeys.add(lBodyKey);
+          const liLang = (el.getAttribute('lang') || '').trim();
+          items.push({ role: 'LBody', container: true, key: lBodyKey, parentKey: liKey, text: '', level: 0, lang: liLang });
+          let _liOwnText = '';
+          try {
+            const _liClone = el.cloneNode(true);
+            _liClone.querySelectorAll('table, ul, ol, p, pre, math, h1, h2, h3, h4, h5, h6, caption, blockquote, figure, img').forEach((n) => { try { n.remove(); } catch (_) {} });
+            _liClone.querySelectorAll('br').forEach((b) => b.replaceWith(htmlDoc.createTextNode(' ')));
+            _liOwnText = (_liClone.textContent || '').replace(/\s+/g, ' ').trim();
+          } catch (_) { _liOwnText = ''; }
+          if (_liOwnText) {
+            items.push({ parentKey: lBodyKey, role: 'P', text: _liOwnText, level: 0, lang: liLang });
+          }
           continue;
         }
         // §7.2 t10: a cell that CONTAINS a nested table/list becomes a container so the nested
@@ -39879,7 +40869,7 @@ tr { page-break-inside: avoid; }
             // Strip everything that becomes its own StructElem (nested containers AND leaf-role
             // descendants, which now route under this cell) so only the cell's bare inline text
             // remains — otherwise that text would be spoken twice.
-            _cellClone.querySelectorAll('table, ul, ol, p, h1, h2, h3, h4, h5, h6, caption, blockquote, figure, img').forEach((n) => { try { n.remove(); } catch (_) {} });
+            _cellClone.querySelectorAll('table, ul, ol, p, pre, math, h1, h2, h3, h4, h5, h6, caption, blockquote, figure, img').forEach((n) => { try { n.remove(); } catch (_) {} });
             _cellOwnText = (_cellClone.textContent || '').trim();
           } catch (_) { _cellOwnText = ''; }
           if (_cellOwnText) {
@@ -39887,15 +40877,82 @@ tr { page-break-inside: avoid; }
           }
           continue;
         }
-        if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(tag) && !(el.textContent || '').trim()) continue;
+        // Skip <p> and <pre> inside non-promoted leaf containers (<li>, <td>, <th>, <blockquote>, <caption>,
+        // [role="doc-footnote"], [role="doc-endnote"]) so text is not emitted twice (once in the parent
+        // leaf's ActualText and again as an orphaned leaf). Promoted cell/LBody containers still keep their
+        // direct child <p>/<pre> leaves, while a <p>/<pre> inside a <blockquote> nested inside a promoted
+        // <li>/<td> stays skipped.
+        if (tag === 'p' || tag === 'pre') {
+          const _pHost = el.closest && el.closest('li, td, th, blockquote, caption, [role="doc-footnote"], [role="doc-endnote"]');
+          if (_pHost && !_containerKeyByEl.has(_pHost)) {
+            continue;
+          }
+        }
+        if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote','pre'].includes(tag) && !(el.textContent || '').trim()) continue;
+        if (tag === 'math' && !(el.getAttribute('aria-label') || '').trim() && !(el.getAttribute('alttext') || '').trim() && !(el.textContent || '').trim()) continue;
         // Leaf routing: cells/list items/captions attach to their nearest container as before; any
-        // OTHER leaf attaches only when its nearest container is a promoted cell (so a <p> inside
-        // that cell stays under the cell instead of escaping to section level — and a <p> under a
+        // OTHER leaf attaches only when its nearest container is a promoted cell or LBody (so a <p> inside
+        // that cell/LBody stays under it instead of escaping to section level — and a <p> under a
         // plain TR still routes to section level, never into the TR, which §7.2 t10 forbids).
         const _leafNearestKey = _nearestContainerKey(el);
+        const _resolveImgAlt = (imgEl) => {
+          if (imgEl.hasAttribute && imgEl.hasAttribute('alt')) return imgEl.getAttribute('alt') || '';
+          // Missing alt attribute (NOT explicit decorative alt=""): fall back to enclosing figure's visible <figcaption>.
+          try {
+            const fig = imgEl.closest && imgEl.closest('figure');
+            const cap = fig && fig.querySelector && fig.querySelector('figcaption');
+            if (cap && cap.getAttribute('aria-hidden') !== 'true') {
+              const capClone = cap.cloneNode(true);
+              if (capClone.querySelectorAll) {
+                capClone.querySelectorAll('[aria-hidden="true"]').forEach((n) => { try { n.remove(); } catch (_) {} });
+              }
+              const capTxt = (capClone.textContent || '').replace(/\s+/g, ' ').trim();
+              if (capTxt) return capTxt;
+            }
+          } catch (_) {}
+          return '';
+        };
+        const _resolveMathAlt = (mathEl) => {
+          const aria = (mathEl.getAttribute && (mathEl.getAttribute('aria-label') || '').trim()) || '';
+          if (aria) return aria;
+          const altText = (mathEl.getAttribute && (mathEl.getAttribute('alttext') || '').trim()) || '';
+          if (altText) return altText;
+          try {
+            const ann = mathEl.querySelector && mathEl.querySelector('annotation[encoding="application/x-tex"], annotation[encoding="TeX"], annotation[encoding="text/x-latex"]');
+            const tex = ann ? (ann.textContent || '').trim() : '';
+            if (tex && typeof window !== 'undefined' && window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') {
+              const spoken = String(window.AlloMathSpeech.toSpeech(tex) || '').trim();
+              if (spoken) return spoken;
+            }
+            if (tex) return tex;
+          } catch (_) {}
+          return (mathEl.textContent || '').replace(/\s+/g, ' ').trim();
+        };
+        const _urlMeta = (() => {
+          try {
+            if (!el || !el.querySelectorAll || tag === 'img' || tag === 'math') return null;
+            const anchors = Array.from(el.querySelectorAll('a[href]')).filter((a) => /^(?:https?:\/\/|mailto:)/i.test((a.getAttribute('href') || '').trim()));
+            if (!anchors.length) return null;
+            const linkHrefs = [];
+            let changed = false;
+            const clone = el.cloneNode(true);
+            const cAnchors = Array.from(clone.querySelectorAll('a[href]')).filter((a) => /^(?:https?:\/\/|mailto:)/i.test((a.getAttribute('href') || '').trim()));
+            for (const a of cAnchors) {
+              const h = (a.getAttribute('href') || '').trim();
+              linkHrefs.push(h);
+              const vis = (a.textContent || '').trim();
+              if (vis.toLowerCase() !== h.toLowerCase()) {
+                a.replaceWith(clone.ownerDocument.createTextNode(' ' + h + ' '));
+                changed = true;
+              }
+            }
+            const urlRestoredText = changed ? _leafText(clone).replace(/\s+/g, ' ').trim() : '';
+            return { linkHrefs, urlRestoredText };
+          } catch (_) { return null; }
+        })();
         items.push({
           parentKey: (tag === 'th' || tag === 'td' || tag === 'li' || tag === 'caption') ? _leafNearestKey
-            : (_cellContainerKeys.has(_leafNearestKey) ? _leafNearestKey : 0),
+            : ((_cellContainerKeys.has(_leafNearestKey) || _lBodyContainerKeys.has(_leafNearestKey)) ? _leafNearestKey : 0),
           // STEM (2026-06-10): Vision-classified equation images become
           // /Formula (ISO 32000-1 §14.8.4.4.4) instead of /Figure — same
           // image-XObject linkage path, semantically honest role, spoken-math
@@ -39911,9 +40968,16 @@ tr { page-break-inside: avoid; }
           text: (pdfRole === 'Note' && el.querySelector && el.querySelector('.allo-fn-back'))
             ? _leafText(el).replace(/\s*↩\s*$/u, '').trim()
             : _leafText(el).trim(),
-          alt: tag === 'img' ? (el.getAttribute('alt') || '') : null,
+          alt: tag === 'img' ? _resolveImgAlt(el) : (tag === 'math' ? _resolveMathAlt(el) : null),
+          isMathElement: tag === 'math',
           crop: tag === 'img' ? _alloFigureCrop(el) : null,
-          isDecorative: tag === 'img' && (el.getAttribute('role') === 'presentation' || el.getAttribute('aria-hidden') === 'true'),
+          isDecorative: tag === 'img' && (
+            el.getAttribute('role') === 'presentation'
+            || el.getAttribute('role') === 'none'
+            || el.getAttribute('aria-hidden') === 'true'
+            || el.getAttribute('data-allo-kind') === 'decorative'
+            || (el.hasAttribute('alt') && el.getAttribute('alt') === '' && el.getAttribute('data-allo-kind') !== 'equation')
+          ),
           level: HEADING_LEVEL[tag] || 0,
           // Stage 5: capture scope on TH cells so we can emit /Scope on the
           // resulting StructElem. "col" → /Column, "row" → /Row. Other
@@ -39942,24 +41006,13 @@ tr { page-break-inside: avoid; }
           // Capture LI label data so we can emit a proper /Lbl + /LBody
           // child structure (PDF/UA-1 prefers this 3-level pattern over a
           // bare /LI with the bullet baked into the text). Use the LI's
-          // position among its siblings for ordered lists.
-          isOrdered: tag === 'li' ? !!el.closest('ol') : false,
+          // nearest list ancestor (<ul|ol>) and respect <ol start> / <li value>.
+          isOrdered: tag === 'li' ? (((el.closest && el.closest('ul, ol') && el.closest('ul, ol').tagName) || '').toLowerCase() === 'ol') : false,
           // A list drawn with no markers prints none, so a label would be read aloud that is not on the page (ballot: "bullet, YES").
           noMarker: tag === 'li' && /(?:^|;)\s*list-style(?:-type)?\s*:\s*none\b/i.test((el.parentNode && el.parentNode.getAttribute && el.parentNode.getAttribute('style')) || ''),
-          liIndex: tag === 'li' ? (function() {
-              try {
-                  const parent = el.parentNode;
-                  if (!parent) return 1;
-                  let n = 0;
-                  for (const sib of parent.children) {
-                      if (sib.tagName && sib.tagName.toLowerCase() === 'li') {
-                          n++;
-                          if (sib === el) return n;
-                      }
-                  }
-                  return n || 1;
-              } catch (_) { return 1; }
-          })() : 0,
+          liIndex: tag === 'li' ? _liNumber(el) : 0,
+          linkHrefs: _urlMeta ? _urlMeta.linkHrefs : null,
+          urlRestoredText: _urlMeta ? _urlMeta.urlRestoredText : '',
         });
       }
       // Build a leaf StructElem (not a Sect) and register it. The parentRef
@@ -39986,7 +41039,7 @@ tr { page-break-inside: avoid; }
           // full linkage. Now LBody participates in Stage 4b matching and
           // the gate; pure-marker Lbl is exempted there (see _COUNTABLE loop).
           if (lblRef) _unifiableLeafRefs.push({ ref: lblRef, role: 'Lbl', text: lblText });
-          _unifiableLeafRefs.push({ ref: lBodyRef, role: 'LBody', text: (item.text || '') });
+          _unifiableLeafRefs.push({ ref: lBodyRef, role: 'LBody', text: (item.text || ''), linkHrefs: item.linkHrefs || null, urlRestoredText: item.urlRestoredText || '' });
           return liRef;
         }
         const d = { Type: PDFName.of('StructElem'), S: PDFName.of(item.role), P: parentRef };
@@ -40028,7 +41081,7 @@ tr { page-break-inside: avoid; }
             d.Alt = PDFString.of('Link (unlabeled)');
           }
         }
-        if (['H1','H2','H3','H4','H5','H6','P','Caption','BlockQuote','TH','TD','Note'].includes(item.role) && item.text) {
+        if (['H1','H2','H3','H4','H5','H6','P','Caption','BlockQuote','TH','TD','Note','Lbl','Code'].includes(item.role) && item.text) {
           // ActualText carries the element's text in the semantic tree. Until the
           // semantic StructElems are linked to page marked content via MCID (the
           // larger "unified tag tree" work — see docs), ActualText is how an AT that
@@ -40077,7 +41130,7 @@ tr { page-break-inside: avoid; }
         // Track every leaf StructElem ref for the post-build unify pass
         // (retro-patches /K → MCR when isScanned + single-page; gated below).
         // Inert when unify doesn't trigger — pushing a ref into a list is free.
-        _unifiableLeafRefs.push({ ref: elemRef, role: _effRole, text: (item.text || ''), crop: item.crop || null });
+        _unifiableLeafRefs.push({ ref: elemRef, role: _effRole, text: (item.text || ''), crop: item.crop || null, isMathElement: !!item.isMathElement, linkHrefs: item.linkHrefs || null, urlRestoredText: item.urlRestoredText || '' });
         // Stage 5b lite: TH /ID is an indirect spec entry (not inside /A).
         // We collect {id, ref} entries for the /IDTree built after the
         // tree is assembled.
@@ -40132,7 +41185,7 @@ tr { page-break-inside: avoid; }
             const ref = context.nextRef();
             const enclosing = it.parentKey ? containers.get(it.parentKey) : null;
             const pRef = enclosing ? enclosing.ref : (sectStack.length > 0 ? sectStack[sectStack.length - 1].ref : structRootRef);
-            containers.set(it.key, { ref, kids: [], role: it.role, pRef, cellMeta: it.cellMeta || null });
+            containers.set(it.key, { ref, kids: [], role: it.role, pRef, cellMeta: it.cellMeta || null, listNumbering: it.listNumbering || '', lang: it.lang || '' });
             if (enclosing) enclosing.kids.push(ref); else pushChild(ref);
             continue;
           }
@@ -40155,6 +41208,10 @@ tr { page-break-inside: avoid; }
         // /Lang, and TH /ID + IDTree entries buildLeaf emits for ordinary leaf cells.
         for (const c of containers.values()) {
           const d = { Type: PDFName.of('StructElem'), S: PDFName.of(c.role), P: c.pRef, K: context.obj(c.kids) };
+          if (c.lang && !c.cellMeta) d.Lang = PDFString.of(c.lang);
+          if (c.role === 'L' && c.listNumbering) {
+            d.A = context.obj({ O: PDFName.of('List'), ListNumbering: PDFName.of(c.listNumbering) });
+          }
           const m = c.cellMeta;
           if (m) {
             if (m.lang) d.Lang = PDFString.of(m.lang);
@@ -40239,9 +41296,9 @@ tr { page-break-inside: avoid; }
       while (_w.nextNode()) {
         const _el = _w.currentNode;
         const _tag = (_el.tagName || '').toLowerCase();
-        const _role = TAG_TO_PDF_ROLE[_tag];
+        const _role = TAG_TO_PDF_ROLE[_tag] || (_tag === 'pre' ? 'Code' : (_tag === 'math' ? 'Formula' : null));
         if (!_role) continue;
-        if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(_tag) && !(_el.textContent || '').trim()) continue;
+        if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote','pre'].includes(_tag) && !(_el.textContent || '').trim()) continue;
         stage4OutlineItems.push({ role: _role, text: (_el.textContent || '').trim() });
       }
     } catch(_) {}
@@ -41495,7 +42552,8 @@ tr { page-break-inside: avoid; }
         // the marker glyph lives inside the same content line the LBody's MCR
         // covers, and one MCID can map to only one StructElem in the
         // ParentTree — the gate exempts pure-marker Lbls instead.
-        const LINKABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1, TH: 1, TD: 1, LBody: 1, Note: 1 };
+        const LINKABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1, TH: 1, TD: 1, LBody: 1, Note: 1, Code: 1 };
+        const _isStage4bLinkable = (lf) => !!(lf && (LINKABLE[lf.role] || (lf.role === 'Formula' && lf.isMathElement)));
         // Leading list-marker fold: the PDF line is '• Apples' / '1. Apples'
         // while the LBody leaf text is 'Apples' (the builder moves the marker
         // into /Lbl). Compared only for LBody leaves, and only as a FALLBACK
@@ -41568,7 +42626,7 @@ tr { page-break-inside: avoid; }
           }
           if (_pictureTables) { try { warnLog('[Stage4b-PictureTable] ' + _pictureTables + ' table(s) whose amounts no page prints as text (a picture of a table) take no part in linking'); } catch (_) {} }
         } catch (_) {}
-        const leafSeq = _unifiableLeafRefs.filter((lf) => LINKABLE[lf.role] && _norm(lf.text).length >= 1 && !lf._pictureTable);
+        const leafSeq = _unifiableLeafRefs.filter((lf) => _isStage4bLinkable(lf) && _norm(lf.text).length >= 1 && !lf._pictureTable);
         const consumed = new Set();
         let cursor = 0;
         for (const lf of leafSeq) {
@@ -41583,20 +42641,24 @@ tr { page-break-inside: avoid; }
             // lines). For LBody, a second pass retries with the leading list
             // marker stripped from the run's FIRST fragment.
             const scanLimit = Math.min(blockStream.length, cursor + 500);
-            const tryScan = (stripFirst) => {
+            const tryScan = (stripFirst, wantKey) => {
               for (let start = cursor; start < scanLimit; start++) {
                 let keep = '', dropped = ''; // every hyphen kept | word-break hyphen at a fragment edge dropped
                 for (let end = start; end < blockStream.length && end - start < 120; end++) {
                   const frag = (stripFirst && end === start) ? blockStream[end].keyNoMarker : blockStream[end].key;
                   if (end === start) { keep = frag; dropped = frag; }
                   else { keep += frag; dropped = (/\p{L}-$/u.test(dropped) ? dropped.slice(0, -1) : dropped) + frag; }
-                  if (keep === tKey || dropped === tKey) return { start, end };
-                  if (keep.length > tKey.length + 2 && dropped.length > tKey.length + 2) break; // overshoot — no run from this start
+                  if (keep === wantKey || dropped === wantKey) return { start, end };
+                  if (keep.length > wantKey.length + 2 && dropped.length > wantKey.length + 2) break; // overshoot — no run from this start
                 }
               }
               return null;
             };
-            found = tryScan(false) || (allowMarkerStrip ? tryScan(true) : null);
+            found = tryScan(false, tKey) || (allowMarkerStrip ? tryScan(true, tKey) : null);
+            if (!found && lf.urlRestoredText) {
+              const altKey = _key(_norm(lf.urlRestoredText));
+              if (altKey && altKey !== tKey) found = tryScan(false, altKey) || (allowMarkerStrip ? tryScan(true, altKey) : null);
+            }
           } else {
             // SHORT leaf (table cells like 'Ada'/'36', short list items):
             // exact SINGLE-block equality within a tight window right after
@@ -41701,7 +42763,7 @@ tr { page-break-inside: avoid; }
             for (let li = 0; li < leafSeq.length; li++) {
               const lf = leafSeq[li];
               if (lf._linkedRun) { prevEnd = Math.max(prevEnd, lf._linkedRun.end); continue; }
-              if (!LINKABLE[lf.role]) continue;
+              if (!_isStage4bLinkable(lf)) continue;
               const lw = _words(lf.text);
               if (lw.length < 4) continue;
               // (2026-10-27) Exact evidence first: a leaf whose exact text is printed in ADJACENT free blocks (from
@@ -41710,7 +42772,9 @@ tr { page-break-inside: avoid; }
               // "ing address ..." + the separate "Mailing Address" label below it and orphaned that label.
               // Adjacent only: gathering scattered fragments took a line label's text on irs1040 (5 -> 6).
               const _exKey = _key(_norm(lf.text));
-              const _exact = _exKey.length >= 12 ? _alloAdjacentExactRun(blockStream, (k) => !consumed.has(String(blockStream[k].bRef)), _exKey, lf.role === 'LBody', globalRound ? -1 : prevEnd, 6) : null;
+              const _exKeyAlt = lf.urlRestoredText ? _key(_norm(lf.urlRestoredText)) : '';
+              const _exact = (_exKey.length >= 12 ? _alloAdjacentExactRun(blockStream, (k) => !consumed.has(String(blockStream[k].bRef)), _exKey, lf.role === 'LBody', globalRound ? -1 : prevEnd, 6) : null)
+                || (_exKeyAlt && _exKeyAlt !== _exKey && _exKeyAlt.length >= 12 ? _alloAdjacentExactRun(blockStream, (k) => !consumed.has(String(blockStream[k].bRef)), _exKeyAlt, lf.role === 'LBody', globalRound ? -1 : prevEnd, 6) : null);
               if (_exact) {
                 try {
                   const run = _exact.map((k) => blockStream[k]);
@@ -41733,22 +42797,28 @@ tr { page-break-inside: avoid; }
               const free = [];
               for (let k = globalRound ? 0 : prevEnd + 1; k < blockStream.length && free.length < (globalRound ? 1500 : 400); k++) if (!consumed.has(String(blockStream[k].bRef))) free.push(k);
               if (!free.length) continue;
-              const want = new Map(); lw.forEach((w) => want.set(w, (want.get(w) || 0) + 1));
-              let best = null;
-              for (let si = 0; si < free.length && si < (globalRound ? free.length : 80); si++) {
-                const left = new Map(want);
-                let hits = 0, n = 0;
-                for (let ei = si; ei < free.length && ei - si < 160; ei++) {
-                  for (const w of _blockWords[free[ei]]) { n++; const c = left.get(w) || 0; if (c > 0) { hits++; left.set(w, c - 1); } }
-                  if (n > lw.length * 1.4 + 2) break;
-                  const d = (2 * hits) / (lw.length + n);
-                  if (!best || d > best.d) best = { si, ei, d, n };
+              const _findBestDice = (candLw) => {
+                const want = new Map(); candLw.forEach((w) => want.set(w, (want.get(w) || 0) + 1));
+                let b = null;
+                for (let si = 0; si < free.length && si < (globalRound ? free.length : 80); si++) {
+                  const left = new Map(want);
+                  let hits = 0, n = 0;
+                  for (let ei = si; ei < free.length && ei - si < 160; ei++) {
+                    for (const w of _blockWords[free[ei]]) { n++; const c = left.get(w) || 0; if (c > 0) { hits++; left.set(w, c - 1); } }
+                    if (n > candLw.length * 1.4 + 2) break;
+                    const d = (2 * hits) / (candLw.length + n);
+                    if (!b || d > b.d) b = { si, ei, d, n };
+                  }
                 }
-              }
-              if (!best || best.d < minDice || best.n < lw.length * 0.7) continue;
-              const runIdx = free.slice(best.si, best.ei + 1);
-              const runWords = [].concat.apply([], runIdx.map((k) => _blockWords[k]));
-              if (_nums(runWords) !== _nums(lw)) continue; // a changed number never links
+                if (!b || b.d < minDice || b.n < candLw.length * 0.7) return null;
+                const rIdx = free.slice(b.si, b.ei + 1);
+                const rWords = [].concat.apply([], rIdx.map((k) => _blockWords[k]));
+                if (_nums(rWords) !== _nums(candLw)) return null;
+                return rIdx;
+              };
+              const _lwAlt = lf.urlRestoredText ? _words(lf.urlRestoredText) : null;
+              const runIdx = _findBestDice(lw) || (_lwAlt && _lwAlt.length >= 4 ? _findBestDice(_lwAlt) : null);
+              if (!runIdx) continue; // a changed number or low agreement never links
               try {
                 const run = runIdx.map((k) => blockStream[k]);
                 const leafDict = context.lookup(lf.ref);
@@ -41915,7 +42985,7 @@ tr { page-break-inside: avoid; }
         // ── Ordered repeats (2026-10-27, complaint form) ── Repeated short labels re-paired in reading order
         // (_alloOrderedRepeatsPlan); applied only when fewer leaves end unlinked and no taken block is left over.
         try {
-          const _orLeaves = leafSeq.map((lf) => ({ key: _key(_norm(lf.text)), role: lf.role, linkable: !!LINKABLE[lf.role], run: lf._linkedRun || null }));
+          const _orLeaves = leafSeq.map((lf) => ({ key: _key(_norm(lf.text)), role: lf.role, linkable: _isStage4bLinkable(lf), run: lf._linkedRun || null }));
           const _orPlan = _alloOrderedRepeatsPlan(_orLeaves, blockStream.map((b) => ({ key: b.key, keyNoMarker: b.keyNoMarker, free: !consumed.has(String(b.bRef)) })), 30);
           if (_orPlan) {
             let _orMoved = 0, _orNew = 0, _orLost = 0;
@@ -41954,7 +43024,7 @@ tr { page-break-inside: avoid; }
             let got = 0;
             for (let li = 0; li < leafSeq.length; li++) {
               const lf = leafSeq[li];
-              if (lf._linkedRun || !LINKABLE[lf.role]) continue;
+              if (lf._linkedRun || !_isStage4bLinkable(lf)) continue;
               const tKey = _key(_norm(lf.text));
               if (!tKey) continue;
               const before = [], after = [];
@@ -41978,12 +43048,52 @@ tr { page-break-inside: avoid; }
               // closing parentheses may match; the leaf keeps the HTML's text (name and address) as its ActualText.
               // An address wraps into many blocks ("…/the" "-" "types" "-" …): adjacent blocks only, ending inside the gap.
               const _urlM = /\(([^()\s]{8,})\)\s*$/.exec(String(lf.text || ''));
-              const _urlKey = _urlM && /[.@\/]/.test(_urlM[1]) ? _key(_norm(_urlM[1])) : null;
-              const _urlRun = _urlKey && _urlKey !== tKey ? _alloAdjacentExactRun(blockStream, _bnFree, _urlKey, lf.role === 'LBody', lo, 40) : null;
+              const _urlKeys = [];
+              const _addUk = (raw) => {
+                const k = _key(_norm(raw));
+                if (!k || k === tKey || _urlKeys.includes(k)) return;
+                _urlKeys.push(k);
+              };
+              // (2026-11-19) Short descriptive link leaf (<a href="http://...">Label</a>) where the page prints only the bare URL:
+              // only when non-URL prose has <= 4 words so multi-sentence paragraphs keep their full-paragraph matching.
+              const _isShortLinkLeaf = Array.isArray(lf.linkHrefs) && lf.linkHrefs.length === 1 && (() => {
+                const stripped = String(lf.urlRestoredText || lf.text || '').replace(/https?:\/\/\S+|mailto:\S+/gi, ' ').trim();
+                const words = stripped.match(/[\p{L}\p{N}]+/gu) || [];
+                return words.length <= 4;
+              })();
+              if (_isShortLinkLeaf) {
+                const h = lf.linkHrefs[0];
+                const noSlash = h.replace(/\/+$/, '');
+                _addUk(h);
+                if (noSlash !== h) _addUk(noSlash);
+                else _addUk(h + '/');
+                if (/^https:\/\//i.test(h)) { const h2 = h.replace(/^https:\/\//i, 'http://'); _addUk(h2); _addUk(h2.replace(/\/+$/, '')); }
+                else if (/^http:\/\//i.test(h)) { const h2 = h.replace(/^http:\/\//i, 'https://'); _addUk(h2); _addUk(h2.replace(/\/+$/, '')); }
+                _addUk(noSlash.replace(/^https?:\/\//i, ''));
+              }
+              if (_urlM && /[.@\/]/.test(_urlM[1])) _addUk(_urlM[1]);
+              let _urlHit = null;
+              for (const uk of _urlKeys) {
+                const r = _alloAdjacentExactRun(blockStream, _bnFree, uk, lf.role === 'LBody', lo, 40);
+                if (r && (r[r.length - 1] < hi || (blockStream[hi] && String(blockStream[hi].pageRef) === String(blockStream[r[0]].pageRef)))) {
+                  _urlHit = { start: r[0], end: r[r.length - 1] };
+                  break;
+                }
+              }
+              if (!_urlHit && _isShortLinkLeaf) {
+                // Multi-column layouts may draw the bare URL block outside [lo, hi]; link when it is the UNIQUE unclaimed match.
+                for (const uk of _urlKeys) {
+                  if (uk.length < 10) continue;
+                  const first = _alloAdjacentExactRun(blockStream, _bnFree, uk, lf.role === 'LBody', -1, 40);
+                  if (!first) continue;
+                  const second = _alloAdjacentExactRun(blockStream, _bnFree, uk, lf.role === 'LBody', first[first.length - 1], 40);
+                  if (!second) { _urlHit = { start: first[0], end: first[first.length - 1] }; break; }
+                }
+              }
               const hit = _alloBetweenNeighboursRun(blockStream, _bnFree, tKey, lo, hi, lf.role === 'LBody')
                 || (_subLine ? _alloBetweenNeighboursRun(blockStream, _bnFree, _subLine, lo, hi, false) : null)
                 // (2026-11-05) Or on the next leaf's page: a page may draw its footer before the address printed above it.
-                || (_urlRun && (_urlRun[_urlRun.length - 1] < hi || (blockStream[hi] && String(blockStream[hi].pageRef) === String(blockStream[_urlRun[0]].pageRef))) ? { start: _urlRun[0], end: _urlRun[_urlRun.length - 1] } : null);
+                || _urlHit;
               if (!hit) continue;
               try {
                 const run = blockStream.slice(hit.start, hit.end + 1);
@@ -42157,6 +43267,77 @@ tr { page-break-inside: avoid; }
           }
           if (_joinedRows) { try { warnLog('[Stage4b-RowCells] ' + _joinedRows + ' row(s) whose cells the page draws as one string linked to their longest cell'); } catch (_) {} }
         } catch (rcErr) { try { warnLog('[Stage4b-RowCells] non-fatal: ' + (rcErr && rcErr.message)); } catch (_) {} }
+        // ── Non-contiguous merged pieces (2026-11-19, USGS fact sheet) ── When the HTML combines
+        // printed metadata/footer lines drawn at non-contiguous locations (e.g. top-of-p1 + bottom-of-p1
+        // + bottom-of-p2) into one <p>, link those unclaimed exact-substring blocks in HTML reading order
+        // only when they meet the same strict bar as NearMatch (Dice >= 0.85, identical numbers, >= 2 pieces).
+        try {
+          const MP_ROLES = { P: 1, Note: 1, Caption: 1, BlockQuote: 1, LBody: 1 };
+          const _mpWords = (s) => (_norm(String(s || '').normalize('NFKC')).match(/[\p{L}\p{N}]+/gu) || [])
+            .map((w) => w.replace(_LAM_ALEF_RUN, (m) => m.split('').sort().join('')));
+          const _mpNums = (ws) => ws.filter((w) => /^\p{N}+$/u.test(w)).sort().join(' ');
+          const _mpDice = (a, b) => {
+            if (!a.length || !b.length) return 0;
+            const m = new Map(); a.forEach((w) => m.set(w, (m.get(w) || 0) + 1));
+            let hit = 0; b.forEach((w) => { const n = m.get(w) || 0; if (n > 0) { hit++; m.set(w, n - 1); } });
+            return (2 * hit) / (a.length + b.length);
+          };
+          let _mpLinked = 0;
+          for (const lf of leafSeq) {
+            if (lf._linkedRun || !MP_ROLES[lf.role]) continue;
+            const matchText = lf.urlRestoredText || lf.text;
+            const lw = _mpWords(matchText);
+            if (lw.length < 6) continue;
+            const leafKey = _key(_norm(matchText));
+            if (leafKey.length < 16) continue;
+            const cands = [];
+            for (let k = 0; k < blockStream.length; k++) {
+              const b = blockStream[k];
+              if (consumed.has(String(b.bRef)) || !b.key || b.key.length < 4) continue;
+              if (leafKey.includes(b.key)) cands.push({ k, key: b.key });
+            }
+            if (cands.length < 2) continue;
+            cands.sort((a, b) => (b.key.length - a.key.length) || (a.k - b.k));
+            const usedSpan = new Uint8Array(leafKey.length);
+            const picked = [];
+            for (const c of cands) {
+              let from = 0, placed = -1;
+              while (from <= leafKey.length - c.key.length) {
+                const pos = leafKey.indexOf(c.key, from);
+                if (pos < 0) break;
+                let ok = true;
+                for (let j = pos; j < pos + c.key.length; j++) { if (usedSpan[j]) { ok = false; break; } }
+                if (ok) { placed = pos; break; }
+                from = pos + 1;
+              }
+              if (placed >= 0) {
+                for (let j = placed; j < placed + c.key.length; j++) usedSpan[j] = 1;
+                picked.push({ k: c.k, pos: placed });
+              }
+            }
+            if (picked.length < 2 || picked.length > 30) continue;
+            picked.sort((a, b) => a.pos - b.pos);
+            const idxs = picked.map((p) => p.k);
+            const runWords = [].concat.apply([], idxs.map((k) => _mpWords(blockStream[k].ntext)));
+            if (runWords.length < lw.length * 0.7 || runWords.length > lw.length * 1.35) continue;
+            if (_mpDice(lw, runWords) < 0.85) continue;
+            if (_mpNums(runWords) !== _mpNums(lw)) continue;
+            try {
+              const run = idxs.map((k) => blockStream[k]);
+              const leafDict = context.lookup(lf.ref);
+              leafDict.set(PDFName.of('K'), context.obj(run.map((b) => context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) }))));
+              leafDict.set(PDFName.of('Pg'), run[0].pageRef);
+              for (const b of run) {
+                if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} }
+                consumed.add(String(b.bRef));
+              }
+              lf._linkedRun = { start: Math.min.apply(null, idxs), end: Math.max.apply(null, idxs) };
+              _perLeafLinked++;
+              _mpLinked++;
+            } catch (_) { /* leaf stays ActualText-only */ }
+          }
+          if (_mpLinked) { try { warnLog('[Stage4b-MergedPieces] linked ' + _mpLinked + ' leaf/leaves across non-contiguous printed pieces (Dice >= 0.85, identical numbers)'); } catch (_) {} }
+        } catch (mpErr) { try { warnLog('[Stage4b-MergedPieces] non-fatal: ' + (mpErr && mpErr.message)); } catch (_) {} }
         // ── Option B: off-page leaves (2026-10-17) ── A leaf still unlinked whose words are NOT on
         // the page (a title or note the AI wrote) is dropped from this PDF's tag tree; it stays in the
         // HTML export. Not on the page = its folded text is not in the page text, fewer than half its
@@ -42530,7 +43711,7 @@ tr { page-break-inside: avoid; }
           // cropKey); the count and order rules below see only the figures and draws left over.
           let _cropLinked = 0;
           const figureLeaves = _unifiableLeafRefs.filter((lf) => {
-            if (lf.role !== 'Figure' && lf.role !== 'Formula') return false;
+            if ((lf.role !== 'Figure' && lf.role !== 'Formula') || lf.isMathElement) return false;
             const b = lf.crop && cropDraws.get(lf.crop.key);
             if (!b || b._linked) return true;
             try {
@@ -42685,7 +43866,7 @@ tr { page-break-inside: avoid; }
           // pictures decorative as are left, is one of those: decoration (NonStruct, empty Alt), not a Figure reading
           // "Image (description unavailable)" (budget p9 clip art, alt="" in the HTML). Otherwise the placeholder stays.
           try {
-            const _figsAllLinked = _unifiableLeafRefs.filter((lf) => lf.role === 'Figure' || lf.role === 'Formula').every((lf) => {
+            const _figsAllLinked = _unifiableLeafRefs.filter((lf) => (lf.role === 'Figure' || lf.role === 'Formula') && !lf.isMathElement).every((lf) => {
               if (lf._offPage) return true;
               try { const kk = context.lookup(lf.ref).get(PDFName.of('K')); const a = kk ? (context.lookup(kk) || kk) : null; return !!a && (typeof a.size !== 'function' || a.size() > 0); } catch (_) { return false; }
             });
@@ -42889,9 +44070,11 @@ tr { page-break-inside: avoid; }
     let _acroFormForSave = null; // the pdf-lib form, so field appearances can be drawn with an embedded font at save
     let _fieldsNestedInCells = 0; // TD > Form > OBJR pairs (Stage 3)
     try {
-      const _acroSig = doc.catalog.get(PDFName.of('AcroForm'));
-      if (_acroSig && _acroSig.get) {
-        const _sigFlags = _acroSig.get(PDFName.of('SigFlags'));
+      let _acroSig = doc.catalog.get(PDFName.of('AcroForm'));
+      try { _acroSig = context.lookup(_acroSig) || _acroSig; } catch (_) {}
+      if (_acroSig && typeof _acroSig.get === 'function') {
+        let _sigFlags = _acroSig.get(PDFName.of('SigFlags'));
+        try { _sigFlags = context.lookup(_sigFlags) || _sigFlags; } catch (_) {}
         if (_sigFlags) {
           const _sv = (typeof _sigFlags.numberValue === 'number') ? _sigFlags.numberValue
             : (typeof _sigFlags.value === 'number') ? _sigFlags.value
@@ -42989,6 +44172,10 @@ tr { page-break-inside: avoid; }
           // XFA name when the field has no /TU, written onto the FIELD dict too (where AT and veraPDF read it).
           if (!_srcTU && _xfaNames.has(fieldName)) { _srcTU = _xfaNames.get(fieldName); try { field.acroField.dict.set(PDFName.of('TU'), PDFHexString.fromText(_srcTU)); } catch (_) {} }
           const fieldLabelText = _deriveFieldLabel(_srcTU, fieldName, _fieldLabelIdx++).label;
+          // PDF/UA-1 §7.18.1 (veraPDF 7.18.1-2): /TU belongs on the AcroForm field dict itself.
+          if (!_srcTU && fieldLabelText && field.acroField && field.acroField.dict && typeof field.acroField.dict.set === 'function') {
+            try { field.acroField.dict.set(PDFName.of('TU'), PDFHexString.fromText(fieldLabelText)); } catch (_) {}
+          }
           // Collect widget refs for this field (Kids array, or the field
           // itself in the merged-widget case).
           const widgetRefs = [];
@@ -43110,10 +44297,25 @@ tr { page-break-inside: avoid; }
         // link to an href takes the n-th anchor (the last one repeats).
         const _lnkHtml = new Map();
         const _lnkUsed = new Map();
+        const _lnkHashHtml = new Map();
+        const _lnkHashUsed = new Map();
         try {
           for (const el of Array.from(htmlDoc.querySelectorAll('a[href]'))) {
-            const k = _lnkKey(el.getAttribute('href')), txt = _lnkClean(el.textContent);
-            if (!k || k.charAt(0) === '#' || !txt) continue;
+            const rawHref = String(el.getAttribute('href') || '').trim();
+            const txt = _lnkClean(el.textContent);
+            if (!rawHref || !txt) continue;
+            if (rawHref.charAt(0) === '#') {
+              let hk = rawHref.slice(1).trim();
+              try { hk = decodeURIComponent(hk); } catch (_) {}
+              hk = hk.toLowerCase();
+              if (hk) {
+                if (!_lnkHashHtml.has(hk)) _lnkHashHtml.set(hk, []);
+                _lnkHashHtml.get(hk).push(txt);
+              }
+              continue;
+            }
+            const k = _lnkKey(rawHref);
+            if (!k) continue;
             if (!_lnkHtml.has(k)) _lnkHtml.set(k, []);
             _lnkHtml.get(k).push(txt);
           }
@@ -43125,6 +44327,74 @@ tr { page-break-inside: avoid; }
           _lnkUsed.set(k, n + 1);
           return list[Math.min(n, list.length - 1)];
         };
+        const _lnkFromHash = (destName) => {
+          let hk = String(destName || '').replace(/^#/, '').trim();
+          try { hk = decodeURIComponent(hk); } catch (_) {}
+          hk = hk.toLowerCase();
+          const list = hk ? _lnkHashHtml.get(hk) : null;
+          if (!list || !list.length) return '';
+          const n = _lnkHashUsed.get(hk) || 0;
+          _lnkHashUsed.set(hk, n + 1);
+          return list[Math.min(n, list.length - 1)];
+        };
+        // Resolve named destinations (PDF 1.1 catalog /Dests dict and PDF 1.2+ /Names -> /Dests name tree)
+        // to 0-based page indices so internal TOC/footnote/bookmark links carry real page targets.
+        const _namedDestPageMap = new Map();
+        const _pageIdxFromDestVal = (rawDest) => {
+          try {
+            let dv = context.lookup(rawDest) || rawDest;
+            if (dv && typeof dv.get === 'function' && typeof dv.size !== 'function') {
+              dv = context.lookup(dv.get(PDFName.of('D'))) || dv.get(PDFName.of('D'));
+            }
+            if (dv && typeof dv.size === 'function' && dv.size() > 0) {
+              const pr = String(dv.get(0));
+              return pages.findIndex((p) => String(p.ref) === pr);
+            }
+          } catch (_) {}
+          return -1;
+        };
+        const _decodeDestName = (obj) => {
+          if (!obj) return '';
+          if (typeof obj.decodeText === 'function') return String(obj.decodeText() || '').trim();
+          return String(obj).replace(/^\/|^\(|\)$/g, '').trim();
+        };
+        try {
+          const _catDests = context.lookup(catalog.get(PDFName.of('Dests')));
+          if (_catDests && typeof _catDests.keys === 'function') {
+            for (const dk of _catDests.keys()) {
+              if (_namedDestPageMap.size >= 2000) break;
+              const nmKey = _decodeDestName(dk);
+              const piDest = _pageIdxFromDestVal(_catDests.get(dk));
+              if (nmKey && piDest >= 0) _namedDestPageMap.set(nmKey, piDest);
+            }
+          }
+          const _catNames = context.lookup(catalog.get(PDFName.of('Names')));
+          const _destsTree = _catNames && typeof _catNames.get === 'function' ? context.lookup(_catNames.get(PDFName.of('Dests'))) : null;
+          if (_destsTree && typeof _destsTree.get === 'function') {
+            const _visitedTrees = new Set();
+            const _walkDestTree = (node, depth) => {
+              if (!node || depth > 16 || _namedDestPageMap.size >= 2000 || _visitedTrees.has(node)) return;
+              _visitedTrees.add(node);
+              const nmArr = context.lookup(node.get(PDFName.of('Names')));
+              if (nmArr && typeof nmArr.size === 'function') {
+                for (let ni = 0; ni + 1 < nmArr.size() && _namedDestPageMap.size < 2000; ni += 2) {
+                  const kObj = context.lookup(nmArr.get(ni)) || nmArr.get(ni);
+                  const nmKey = _decodeDestName(kObj);
+                  const piDest = _pageIdxFromDestVal(nmArr.get(ni + 1));
+                  if (nmKey && piDest >= 0) _namedDestPageMap.set(nmKey, piDest);
+                }
+              }
+              const kidsArr = context.lookup(node.get(PDFName.of('Kids')));
+              if (kidsArr && typeof kidsArr.size === 'function') {
+                for (let ki = 0; ki < kidsArr.size() && _namedDestPageMap.size < 2000; ki++) {
+                  const kidNode = context.lookup(kidsArr.get(ki));
+                  if (kidNode && typeof kidNode.get === 'function') _walkDestTree(kidNode, depth + 1);
+                }
+              }
+            };
+            _walkDestTree(_destsTree, 0);
+          }
+        } catch (_) {}
         const _lnkReadable = (u) => {
           const s = String(u || '').trim();
           const m = /^mailto:([^?]+)/i.exec(s);
@@ -43178,7 +44448,7 @@ tr { page-break-inside: avoid; }
             if (!subtype || String(subtype) !== '/Link') continue;
             // OBJR /Obj must be an indirect reference; promote a direct annotation dict.
             if (!annotRef || typeof annotRef.objectNumber !== 'number') { annotRef = context.register(annotDict); annots.set(a, annotRef); }
-            let uri = '', destPage = -1, rect = null, srcContents = '';
+            let uri = '', destPage = -1, destName = '', rect = null, srcContents = '';
             try {
               let action = annotDict.get(PDFName.of('A'));
               if (action) { try { action = context.lookup(action) || action; } catch (_) {} }
@@ -43186,14 +44456,20 @@ tr { page-break-inside: avoid; }
               if (u) uri = (typeof u.decodeText === 'function') ? u.decodeText() : String(u).replace(/^\(|\)$/g, '');
               let d = annotDict.get(PDFName.of('Dest')) || (action && action.get ? action.get(PDFName.of('D')) : null);
               try { d = context.lookup(d) || d; } catch (_) {}
-              if (d && typeof d.size === 'function' && d.size() > 0) { const pr = String(d.get(0)); destPage = pages.findIndex((p) => String(p.ref) === pr); }
+              if (d && typeof d.size === 'function' && d.size() > 0) {
+                const pr = String(d.get(0));
+                destPage = pages.findIndex((p) => String(p.ref) === pr);
+              } else if (d) {
+                destName = _decodeDestName(d);
+                if (destName && _namedDestPageMap.has(destName)) destPage = _namedDestPageMap.get(destName);
+              }
             } catch (_) {}
             try { const r = context.lookup(annotDict.get(PDFName.of('Rect'))); if (r && typeof r.asArray === 'function') rect = r.asArray().map((n) => Number(String(n))); } catch (_) {}
             try { const c = annotDict.get(PDFName.of('Contents')); if (c) srcContents = _lnkClean((typeof c.decodeText === 'function') ? c.decodeText() : String(c)); } catch (_) {}
             // PDF/UA-1 §7.18.5 (veraPDF 7.18.5-t2): the annotation ITSELF carries the description in
-            // /Contents. Prefer the link's own words (remediated HTML anchor with the same href, else
-            // the text drawn under /Rect), then a readable URI. Never empty.
-            let desc = srcContents || (uri && _lnkFromHtml(uri)) || await _lnkUnderRect(pi, rect);
+            // /Contents. Prefer the link's own words (remediated HTML anchor with the same href or
+            // matching #destName, else the text drawn under /Rect), then a readable URI. Never empty.
+            let desc = srcContents || (uri && _lnkFromHtml(uri)) || (!uri && destName && _lnkFromHash(destName)) || await _lnkUnderRect(pi, rect);
             if (!desc && uri) desc = _lnkReadable(uri);
             if (!uri && destPage >= 0) desc = desc ? desc + ' (go to page ' + (destPage + 1) + ')' : 'Go to page ' + (destPage + 1);
             desc = String(desc || (uri ? 'Web link' : 'Internal link')).slice(0, 250);
@@ -43894,15 +45170,10 @@ tr { page-break-inside: avoid; }
         if (rootKids.length > 0) {
           outlineRootBody.First = rootKids[0].ref;
           outlineRootBody.Last = rootKids[rootKids.length - 1].ref;
-          // Top-level Count is positive (open) so the panel is expanded
-          // to show top-level headings on first open. Children stay
-          // closed per their negative Count above.
-          const totalDescendants = (function totalDesc(arr) {
-            let c = arr.length;
-            for (const n of arr) c += (function rec(n2) { let r = n2.kids.length; for (const k of n2.kids) r += rec(k); return r; })(n);
-            return c;
-          })(rootKids);
-          outlineRootBody.Count = PDFNumber.of(totalDescendants);
+          // Per ISO 32000-1 Table 152, outline root /Count must equal the total number of
+          // currently visible outline items; since every child branch has negative /Count
+          // (closed by default), only the top-level items (rootKids.length) are visible.
+          outlineRootBody.Count = PDFNumber.of(rootKids.length);
         }
         context.assign(outlineRootRef, context.obj(outlineRootBody));
         catalog.set(PDFName.of('Outlines'), outlineRootRef);
@@ -44102,7 +45373,7 @@ tr { page-break-inside: avoid; }
       }
       // Content-leaf roles only (same set the post-export validator counts):
       // containers like Sect/Part legitimately carry no MCR and must not veto.
-      const _COUNTABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Figure: 1, Formula: 1, Caption: 1, BlockQuote: 1, Lbl: 1, LBody: 1, TH: 1, TD: 1, Span: 1, Link: 1, Note: 1 };
+      const _COUNTABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Figure: 1, Formula: 1, Caption: 1, BlockQuote: 1, Lbl: 1, LBody: 1, TH: 1, TD: 1, Span: 1, Link: 1, Note: 1, Code: 1 };
       for (const lf of _unifiableLeafRefs) {
         if (!lf || !lf.ref || typeof lf.ref.objectNumber !== 'number') continue;
         if (!_COUNTABLE[lf.role]) continue;
@@ -44160,10 +45431,13 @@ tr { page-break-inside: avoid; }
       : /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || ''))) && _ocrUaVerdict.ok && _unreadableTagPages.size === 0;
     const _uaWithheldReason = meta.contentDropped
       ? 'non-Latin / shaping-required text was dropped from this typeset PDF (use the HTML or Word export, which keep it)'
-      : (!_ocrQualityUaVerdict.ok ? _ocrQualityUaVerdict.reason : (!_ocrUaVerdict.ok ? _ocrUaVerdict.reason
-        : _fontsUnrepairable.length ? 'font(s) not embedded: ' + _fontsUnrepairable.slice(0, 3).join('; ')
-        : _fontsWithoutUnicode.length ? 'font(s) with no Unicode map: ' + _fontsWithoutUnicode.slice(0, 3).join('; ')
-        : _orphanedLeafCountAtStamp + ' semantic leaf(s) remain without content linkage'));
+      : (!_ocrQualityUaVerdict.ok ? _ocrQualityUaVerdict.reason
+        : (!_ocrUaVerdict.ok ? _ocrUaVerdict.reason
+          : (_orphanWalkCrashed ? 'structure-tree verification walk failed'
+            : (_unreadableTagPages.size > 0 ? _unreadableTagPages.size + ' page(s) have unreadable text streams'
+              : (_fontsUnrepairable.length ? 'font(s) not embedded: ' + _fontsUnrepairable.slice(0, 3).join('; ')
+                : (_fontsWithoutUnicode.length ? 'font(s) with no Unicode map: ' + _fontsWithoutUnicode.slice(0, 3).join('; ')
+                  : _orphanedLeafCountAtStamp + ' semantic leaf(s) remain without content linkage'))))));
     // Observability: surface the linkage outcome in the summary so the
     // download toast and reports can show real-world per-leaf match rates
     // (the open question for born-digital docs whose HTML the AI rewrote).
@@ -44205,9 +45479,18 @@ tr { page-break-inside: avoid; }
       }
     } catch (_) {}
     try {
-      const pdfTitle = (meta.title || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      const pdfSubject = (meta.subject || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      const pdfLang = lang.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const _xmlClean = (v) => String(v == null ? '' : v)
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+        .replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const _xmlCommentSafe = (v) => String(v == null ? '' : v)
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F<>]/g, '')
+        .replace(/-{2,}/g, (m) => m.split('').join(' '))
+        .replace(/-+$/, '');
+      const _docTitleFallback = (typeof doc.getTitle === 'function' ? doc.getTitle() : '') || '';
+      const _rawTitle = (meta.title && String(meta.title).trim()) || String(_docTitleFallback).trim() || 'Untitled document';
+      const pdfTitle = _xmlClean(_rawTitle) || 'Untitled document';
+      const pdfSubject = _xmlClean(meta.subject || '');
+      const pdfLang = _xmlClean(lang || 'en') || 'en';
       const _now = _modIso; // deterministic when meta.modDate threaded (validate==download)
       const xmp = `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="AlloFlow PDF/UA-1 Pipeline">
@@ -44224,7 +45507,7 @@ tr { page-break-inside: avoid; }
       <pdf:Producer>AlloFlow Accessibility Pipeline</pdf:Producer>
       <xmp:CreatorTool>AlloFlow Accessibility Pipeline</xmp:CreatorTool>
       <xmp:ModifyDate>${_now}</xmp:ModifyDate>
-${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:part withheld: ' + _uaWithheldReason + '; AlloFlow declares PDF/UA-1 only when its own checks can stand behind it -->'}
+${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:part withheld: ' + _xmlCommentSafe(_uaWithheldReason) + '; AlloFlow declares PDF/UA-1 only when its own checks can stand behind it -->'}
     </rdf:Description>
   </rdf:RDF>
 </x:xmpmeta>
@@ -46508,12 +47791,12 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     if (!html || !Array.isArray(missingList) || missingList.length === 0 || !sourceText) {
       return { html: html || '', stillMissing: missingList || [], restoredViaSentence: [] };
     }
-    const splitSentences = (txt) => (txt || '').match(/[^.!?]+[.!?]+/g) || [];
+    const splitSentences = (txt) => (txt || '').match(/[^.!?。！？؟।]+[.!?。！？؟।]+/g) || [];
     const sourceSentences = splitSentences(sourceText).map(s => s.trim()).filter(Boolean);
     if (sourceSentences.length === 0) {
       return { html, stillMissing: missingList, restoredViaSentence: [] };
     }
-    const normalize = (s) => (s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const normalize = (s) => (s || '').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
     const wordSet = (s) => new Set(normalize(s).split(' ').filter(w => w.length >= 3));
     const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const doctypeMatch = html.match(/^\s*<!DOCTYPE[^>]*>/i);
@@ -46580,13 +47863,16 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     for (const m of missingList) {
       const raw = m && m.word ? String(m.word).toLowerCase() : '';
       if (!raw) continue;
-      const needle = raw.replace(/[^a-z0-9'-]/g, '');
+      const needle = raw.normalize('NFKC').replace(/[^\p{L}\p{N}'-]/gu, '');
       if (!needle) continue;
-      const re = new RegExp('\\b' + escapeRe(needle) + '\\b', 'i');
+      const _isCjkNeedle = /[\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(needle);
+      const re = _isCjkNeedle
+        ? new RegExp(escapeRe(needle), 'iu')
+        : new RegExp('(?<![\\p{L}\\p{N}])' + escapeRe(needle) + '(?![\\p{L}\\p{N}])', 'iu');
       let sentIdx = -1;
       for (let i = 0; i < sourceSentences.length; i++) {
         if (usedSentenceIndices.has(i)) continue;
-        if (re.test(sourceSentences[i].toLowerCase())) { sentIdx = i; break; }
+        if (re.test(sourceSentences[i].normalize('NFKC').toLowerCase())) { sentIdx = i; break; }
       }
       if (sentIdx === -1) continue;
       const targetSentence = sourceSentences[sentIdx];
@@ -49025,6 +50311,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       .venn-stacked [data-venn-circle] { width: auto !important; height: auto !important; border-radius: 18px !important; padding: 16px !important; }
                     }
                     html[data-alloflow-theme="dark"] .venn-print-wrapper { background: #f8fafc !important; color: #0f172a !important; }
+                    html[data-alloflow-theme="dark"] .venn-print-wrapper .venn-main-title { color: #0f172a !important; }
+                    html[data-alloflow-theme="dark"] .venn-print-wrapper .venn-compare-label { color: #475569 !important; }
+                    html[data-alloflow-theme="dark"] .venn-print-wrapper .venn-set-a-title { color: #9f1239 !important; background: #ffffff !important; }
+                    html[data-alloflow-theme="dark"] .venn-print-wrapper .venn-set-b-title { color: #1e40af !important; background: #ffffff !important; }
+                    html[data-alloflow-theme="dark"] .venn-print-wrapper .venn-shared-title { color: #6d28d9 !important; background: #ffffff !important; }
+                    html[data-alloflow-theme="dark"] .venn-print-wrapper li { color: #1e293b !important; background: #ffffff !important; }
                     @media print {
                       .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 12px 0; }
                       .venn-visual-viewport { position: relative; height: ${_isThreeCircleVenn ? '550px' : '410px'}; overflow: visible; }
@@ -54974,7 +56266,12 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="dark"] { color-scheme: dark; background: #0f172a !important; }
           html[data-alloflow-theme="dark"] body { background: #0f172a !important; color: #ffffff !important; }
           html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4, html[data-alloflow-theme="dark"] h5, html[data-alloflow-theme="dark"] h6 { color: #ffffff !important; }
-          html[data-alloflow-theme="dark"] .section { background: #1e293b !important; }
+          html[data-alloflow-theme="dark"] .section { background: #1e293b !important; color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .section [style*="background:#f8fafc"], html[data-alloflow-theme="dark"] .section [style*="background: #f8fafc"], html[data-alloflow-theme="dark"] .section [style*="background-color:#f8fafc"], html[data-alloflow-theme="dark"] .section [style*="background-color: #f8fafc"], html[data-alloflow-theme="dark"] .section [style*="background:#fff"], html[data-alloflow-theme="dark"] .section [style*="background: #fff"], html[data-alloflow-theme="dark"] .section [style*="background-color:#fff"], html[data-alloflow-theme="dark"] .section [style*="background-color: #fff"], html[data-alloflow-theme="dark"] .section [style*="background:white"], html[data-alloflow-theme="dark"] .section [style*="background: white"], html[data-alloflow-theme="dark"] .section [style*="background-color:white"], html[data-alloflow-theme="dark"] .section [style*="background-color: white"], html[data-alloflow-theme="dark"] .section [style*="background:#eff6ff"], html[data-alloflow-theme="dark"] .section [style*="background: #eff6ff"], html[data-alloflow-theme="dark"] .section [style*="background-color:#eff6ff"], html[data-alloflow-theme="dark"] .section [style*="background-color: #eff6ff"], html[data-alloflow-theme="dark"] .section [style*="background:#eef2ff"], html[data-alloflow-theme="dark"] .section [style*="background: #eef2ff"], html[data-alloflow-theme="dark"] .section [style*="background-color:#eef2ff"], html[data-alloflow-theme="dark"] .section [style*="background-color: #eef2ff"], html[data-alloflow-theme="dark"] .section [style*="background:#fffbeb"], html[data-alloflow-theme="dark"] .section [style*="background: #fffbeb"], html[data-alloflow-theme="dark"] .section [style*="background-color:#fffbeb"], html[data-alloflow-theme="dark"] .section [style*="background-color: #fffbeb"], html[data-alloflow-theme="dark"] .section [style*="background:#f0fdf4"], html[data-alloflow-theme="dark"] .section [style*="background: #f0fdf4"], html[data-alloflow-theme="dark"] .section [style*="background-color:#f0fdf4"], html[data-alloflow-theme="dark"] .section [style*="background-color: #f0fdf4"], html[data-alloflow-theme="dark"] .section [style*="background:#faf0f0"], html[data-alloflow-theme="dark"] .section [style*="background: #faf0f0"], html[data-alloflow-theme="dark"] .section [style*="background-color:#faf0f0"], html[data-alloflow-theme="dark"] .section [style*="background-color: #faf0f0"], html[data-alloflow-theme="dark"] .section [style*="background:#f0f3fc"], html[data-alloflow-theme="dark"] .section [style*="background: #f0f3fc"], html[data-alloflow-theme="dark"] .section [style*="background-color:#f0f3fc"], html[data-alloflow-theme="dark"] .section [style*="background-color: #f0f3fc"], html[data-alloflow-theme="dark"] .section [style*="background:#eef6f4"], html[data-alloflow-theme="dark"] .section [style*="background: #eef6f4"], html[data-alloflow-theme="dark"] .section [style*="background-color:#eef6f4"], html[data-alloflow-theme="dark"] .section [style*="background-color: #eef6f4"], html[data-alloflow-theme="dark"] .section [style*="background:#f1f5f9"], html[data-alloflow-theme="dark"] .section [style*="background: #f1f5f9"], html[data-alloflow-theme="dark"] .section [style*="background-color:#f1f5f9"], html[data-alloflow-theme="dark"] .section [style*="background-color: #f1f5f9"], html[data-alloflow-theme="dark"] .section [style*="background:#f5f3ff"], html[data-alloflow-theme="dark"] .section [style*="background: #f5f3ff"], html[data-alloflow-theme="dark"] .section [style*="background-color:#f5f3ff"], html[data-alloflow-theme="dark"] .section [style*="background-color: #f5f3ff"], html[data-alloflow-theme="dark"] .section [style*="background:#fefce8"], html[data-alloflow-theme="dark"] .section [style*="background: #fefce8"], html[data-alloflow-theme="dark"] .section [style*="background-color:#fefce8"], html[data-alloflow-theme="dark"] .section [style*="background-color: #fefce8"], html[data-alloflow-theme="dark"] .section [style*="background:#fdf2f8"], html[data-alloflow-theme="dark"] .section [style*="background: #fdf2f8"], html[data-alloflow-theme="dark"] .section [style*="background-color:#fdf2f8"], html[data-alloflow-theme="dark"] .section [style*="background-color: #fdf2f8"] { background: #0f172a !important; background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important; }
+          html[data-alloflow-theme="dark"] .section :is(p, strong, em, li, span, div, figcaption, blockquote, dt, dd):not([data-allo-ink]):not(button):not(button *):not(.alloflow-rt-btn):not(.ka-on):not(.alloflow-fluency-word) { color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .section a:not([data-allo-ink]):not(.alloflow-rt-btn) { color: #93c5fd !important; }
+          html[data-alloflow-theme="hc"] th, html[data-alloflow-theme="hc"] .alloflow-glossary-section thead th { background: #000000 !important; color: #ffffff !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-fluency-key { color: #475569 !important; }
           html[data-alloflow-theme="dark"] .card, html[data-alloflow-theme="dark"] .quiz-box, html[data-alloflow-theme="dark"] .alloflow-bs-card { background: #1e293b !important; border-color: #334155 !important; color: #ffffff !important; }
           html[data-alloflow-theme="dark"] .resource-header { color: #ffffff !important; background: #1e293b !important; }
           html[data-alloflow-theme="dark"] th { background: #1e293b !important; color: #ffffff !important; border-color: #334155 !important; }
@@ -55065,7 +56362,11 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="dark"] .alloflow-tl-controls .alloflow-tl-check-btn { background: #4f46e5 !important; color: white !important; }
           html[data-alloflow-theme="dark"] .alloflow-tl-controls .alloflow-tl-reset-btn { background: #0f172a !important; color: #cbd5e1 !important; border-color: #334155 !important; }
           html[data-alloflow-theme="dark"] .alloflow-tl-results { color: #ffffff !important; }
-          html[data-alloflow-theme="dark"] .alloflow-anchor-card { background-color: #fffdf8 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-anchor-card { background: #1e293b !important; background-color: #1e293b !important; color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .alloflow-anchor-card li > span:first-child { color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .alloflow-anchor-card .answer-key { background: #1e1b4b !important; color: #e0e7ff !important; }
+          html[data-alloflow-theme="dark"] .vp-label { background: rgba(15, 23, 42, 0.94) !important; color: #f8fafc !important; border-color: #818cf8 !important; }
+          html[data-alloflow-theme="dark"] .vp-label-user { background: rgba(6, 78, 59, 0.95) !important; color: #ecfdf5 !important; border-color: #34d399 !important; }
           html[data-alloflow-theme="dark"] .alloflow-note-cue { background: #1e293b !important; color: #e2e8f0 !important; border-color: #475569 !important; }
           html[data-alloflow-theme="dark"] [data-note-typing-space] { background: #0f172a !important; border: 1px solid #334155; }
           html[data-alloflow-theme="dark"] [data-note-typing-space] > div:first-child { color: #cbd5e1 !important; }
@@ -55181,6 +56482,11 @@ function projectStudentGuideData(data, mode) {
           /* ─── High Contrast theme (WCAG AAA target — black/white/blue links) ─── */
           html[data-alloflow-theme="hc"] { background: #ffffff !important; color: #000000 !important; }
           html[data-alloflow-theme="hc"] body { background: #ffffff !important; color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .section [style*="color:#047857"], html[data-alloflow-theme="hc"] .section [style*="color: #047857"], html[data-alloflow-theme="hc"] .section [style*="color:#795548"], html[data-alloflow-theme="hc"] .section [style*="color: #795548"], html[data-alloflow-theme="hc"] .section [style*="color:#92400e"], html[data-alloflow-theme="hc"] .section [style*="color: #92400e"], html[data-alloflow-theme="hc"] .section [style*="color:#666"], html[data-alloflow-theme="hc"] .section [style*="color: #666"], html[data-alloflow-theme="hc"] .section [style*="color:#64748b"], html[data-alloflow-theme="hc"] .section [style*="color: #64748b"], html[data-alloflow-theme="hc"] .section [style*="color:#166534"], html[data-alloflow-theme="hc"] .section [style*="color: #166534"], html[data-alloflow-theme="hc"] .alloflow-cs-category-kicker, html[data-alloflow-theme="hc"] .alloflow-fluency-feedback, html[data-alloflow-theme="hc"] .alloflow-fluency-feedback strong, html[data-alloflow-theme="hc"] .alloflow-fluency-word, html[data-alloflow-theme="hc"] .alloflow-fluency-key { color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-fluency-word.is-correct, html[data-alloflow-theme="hc"] .alloflow-fluency-key-correct { color: #064e3b !important; }
+          html[data-alloflow-theme="hc"] .alloflow-fluency-word.is-stumbled, html[data-alloflow-theme="hc"] .alloflow-fluency-key-stumbled { color: #713f12 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-fluency-word.is-missed, html[data-alloflow-theme="hc"] .alloflow-fluency-key-missed { color: #7f1d1d !important; }
+          html[data-alloflow-theme="hc"] .alloflow-glossary-section tbody .gloss-term, html[data-alloflow-theme="hc"] .alloflow-glossary-section tbody .gloss-term * { color: #000000 !important; }
           html[data-alloflow-theme="hc"] h1, html[data-alloflow-theme="hc"] h2, html[data-alloflow-theme="hc"] h3, html[data-alloflow-theme="hc"] h4 { color: #000000 !important; }
           html[data-alloflow-theme="hc"] .section, html[data-alloflow-theme="hc"] .card, html[data-alloflow-theme="hc"] .quiz-box, html[data-alloflow-theme="hc"] .alloflow-bs-card { background: #ffffff !important; border: 2px solid #000000 !important; color: #000000 !important; }
           html[data-alloflow-theme="hc"] th { background: #000000 !important; color: #ffffff !important; border: 2px solid #000000 !important; }
@@ -55229,18 +56535,18 @@ function projectStudentGuideData(data, mode) {
              :not(#allo-ink-none) matches everything but lifts these over a resource's own
              class-based !important colors (the glossary term kept its green otherwise). */
           @media screen {
-            html[data-alloflow-theme="dark"] [data-allo-ink="light"]:not(#allo-ink-none), html[data-alloflow-theme="sepia"] [data-allo-ink="light"]:not(#allo-ink-none) { color: #f8fafc !important; }
-            html[data-alloflow-theme="dark"] [data-allo-ink="dark"]:not(#allo-ink-none), html[data-alloflow-theme="sepia"] [data-allo-ink="dark"]:not(#allo-ink-none) { color: #0f172a !important; }
-            html[data-alloflow-theme="dark"] [data-allo-ink="link-light"]:not(#allo-ink-none), html[data-alloflow-theme="sepia"] [data-allo-ink="link-light"]:not(#allo-ink-none) { color: #93c5fd !important; }
-            html[data-alloflow-theme="dark"] [data-allo-ink="link-dark"]:not(#allo-ink-none), html[data-alloflow-theme="sepia"] [data-allo-ink="link-dark"]:not(#allo-ink-none) { color: #1d4ed8 !important; }
-            html[data-alloflow-theme="hc"] [data-allo-ink="light"]:not(#allo-ink-none) { color: #ffffff !important; }
-            html[data-alloflow-theme="hc"] [data-allo-ink="dark"]:not(#allo-ink-none) { color: #000000 !important; }
-            html[data-alloflow-theme="hc"] [data-allo-ink="link-light"]:not(#allo-ink-none) { color: #ffff00 !important; }
-            html[data-alloflow-theme="hc"] [data-allo-ink="link-dark"]:not(#allo-ink-none) { color: #0000ee !important; }
-            html:not([data-alloflow-theme]) [data-allo-ink="light"]:not(#allo-ink-none) { color: #f8fafc !important; }
-            html:not([data-alloflow-theme]) [data-allo-ink="dark"]:not(#allo-ink-none) { color: #0f172a !important; }
-            html:not([data-alloflow-theme]) [data-allo-ink="link-light"]:not(#allo-ink-none) { color: #93c5fd !important; }
-            html:not([data-alloflow-theme]) [data-allo-ink="link-dark"]:not(#allo-ink-none) { color: #1d4ed8 !important; }
+            html[data-alloflow-theme="dark"] [data-allo-ink-theme="dark"][data-allo-ink="light"]:not(#allo-ink-none), html[data-alloflow-theme="sepia"] [data-allo-ink-theme="sepia"][data-allo-ink="light"]:not(#allo-ink-none) { color: #f8fafc !important; }
+            html[data-alloflow-theme="dark"] [data-allo-ink-theme="dark"][data-allo-ink="dark"]:not(#allo-ink-none), html[data-alloflow-theme="sepia"] [data-allo-ink-theme="sepia"][data-allo-ink="dark"]:not(#allo-ink-none) { color: #0f172a !important; }
+            html[data-alloflow-theme="dark"] [data-allo-ink-theme="dark"][data-allo-ink="link-light"]:not(#allo-ink-none), html[data-alloflow-theme="sepia"] [data-allo-ink-theme="sepia"][data-allo-ink="link-light"]:not(#allo-ink-none) { color: #93c5fd !important; }
+            html[data-alloflow-theme="dark"] [data-allo-ink-theme="dark"][data-allo-ink="link-dark"]:not(#allo-ink-none), html[data-alloflow-theme="sepia"] [data-allo-ink-theme="sepia"][data-allo-ink="link-dark"]:not(#allo-ink-none) { color: #1d4ed8 !important; }
+            html[data-alloflow-theme="hc"] [data-allo-ink-theme="hc"][data-allo-ink="light"]:not(#allo-ink-none) { color: #ffffff !important; }
+            html[data-alloflow-theme="hc"] [data-allo-ink-theme="hc"][data-allo-ink="dark"]:not(#allo-ink-none) { color: #000000 !important; }
+            html[data-alloflow-theme="hc"] [data-allo-ink-theme="hc"][data-allo-ink="link-light"]:not(#allo-ink-none) { color: #ffff00 !important; }
+            html[data-alloflow-theme="hc"] [data-allo-ink-theme="hc"][data-allo-ink="link-dark"]:not(#allo-ink-none) { color: #0000ee !important; }
+            html:not([data-alloflow-theme]) [data-allo-ink-theme="light"][data-allo-ink="light"]:not(#allo-ink-none) { color: #f8fafc !important; }
+            html:not([data-alloflow-theme]) [data-allo-ink-theme="light"][data-allo-ink="dark"]:not(#allo-ink-none) { color: #0f172a !important; }
+            html:not([data-alloflow-theme]) [data-allo-ink-theme="light"][data-allo-ink="link-light"]:not(#allo-ink-none) { color: #93c5fd !important; }
+            html:not([data-alloflow-theme]) [data-allo-ink-theme="light"][data-allo-ink="link-dark"]:not(#allo-ink-none) { color: #1d4ed8 !important; }
             /* Card surfaces have known theme colors. Keep their text coherent even
                when inkGuard sampled the previous theme during a color transition. */
             html[data-alloflow-theme="dark"] .alloflow-glossary-card :is(.alloflow-glossary-card-front,.alloflow-glossary-card-back):not(#allo-ink-none) { color: #ffffff !important; }
@@ -55920,11 +57226,14 @@ function projectStudentGuideData(data, mode) {
                   resolve(value);
                 }
                 function onKeyDown(event) {
+                  if (event.isComposing || event.keyCode === 229) return;
                   if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(null); return; }
                   if (event.key !== 'Tab') return;
                   var focusable = Array.prototype.slice.call(dialog.querySelectorAll('button:not([disabled]), input:not([disabled])'));
+                  if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
                   var first = focusable[0], last = focusable[focusable.length - 1];
-                  if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); return; }
+                  if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); return; }
+                  if (document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? last : first).focus(); return; }
                   if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
                 }
@@ -56086,7 +57395,7 @@ function projectStudentGuideData(data, mode) {
             }
             function inkScan() {
               var marked = document.querySelectorAll('[data-allo-ink]');
-              for (var m = 0; m < marked.length; m++) marked[m].removeAttribute('data-allo-ink');
+              for (var m = 0; m < marked.length; m++) { marked[m].removeAttribute('data-allo-ink'); marked[m].removeAttribute('data-allo-ink-theme'); }
               var active = root.getAttribute('data-alloflow-theme');
               if (!document.body || typeof getComputedStyle !== 'function') return;
               var hc = active === 'hc', inks = INKS[active] || INKS.dark, surfaces = new Map(), fades = new Map();
@@ -56159,7 +57468,7 @@ function projectStudentGuideData(data, mode) {
                       && surface(target.parentElement) === bg && getComputedStyle(target.parentElement).color === cs.color) target = target.parentElement;
                   if (target.hasAttribute('data-allo-ink')) continue;
                   var pair = el.closest('a') ? ['link-light', 'link-dark'] : ['light', 'dark'];
-                  target.setAttribute('data-allo-ink', ratio(inks[pair[0]], bg) >= ratio(inks[pair[1]], bg) ? pair[0] : pair[1]);
+                  target.setAttribute('data-allo-ink', ratio(inks[pair[0]], bg) >= ratio(inks[pair[1]], bg) ? pair[0] : pair[1]); target.setAttribute('data-allo-ink-theme', active || 'light');
                   added++;
                 }
                 return added;
@@ -56191,6 +57500,7 @@ function projectStudentGuideData(data, mode) {
                   for (var a = 0; a < records[r].addedNodes.length; a++) if (records[r].addedNodes[a].nodeType === 1) return inkSoon();
                 }
               }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-selected'] });
+              new MutationObserver(function () { inkGuard(); }).observe(root, { attributes: true, attributeFilter: ['data-alloflow-theme'] });
             });
             var initial = null;
             try { initial = localStorage.getItem(KEY); } catch (e) {}
@@ -58249,9 +59559,11 @@ function projectStudentGuideData(data, mode) {
                   resolve(accepted === true);
                 }
                 function onKeyDown(event) {
+                  if (event.isComposing || event.keyCode === 229) return;
                   if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); return; }
                   if (event.key !== 'Tab') return;
-                  if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+                  if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? confirm : cancel).focus(); return; }
+                  if (document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? confirm : cancel).focus(); return; }
                   if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirm.focus(); }
                   else if (!event.shiftKey && document.activeElement === confirm) { event.preventDefault(); cancel.focus(); }
                 }

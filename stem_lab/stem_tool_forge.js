@@ -369,6 +369,7 @@
       if (_loaded[url]) return resolve();
       var s = document.createElement('script');
       s.src = url; s.async = true;
+      if (url === ACORN_URL) s.integrity = 'sha384-mnjmEdE52E6cL7DhdNcZCJyzDp1VxguMPlMeRHO+bi6EHHLkU9vcqs9XbpTHPc+d';
       s.crossOrigin = 'anonymous';
       s.referrerPolicy = 'no-referrer';
       s.onload = function () { _loaded[url] = true; resolve(); };
@@ -491,8 +492,8 @@
       '#root{min-height:40px}.forge-fatal{color:' + fatalFg + ';font:12px ui-monospace,SFMono-Regular,Menlo,monospace;',
       'white-space:pre-wrap;padding:10px;background:' + fatalBg + ';border:1px solid ' + fatalBd + ';border-radius:8px}</style></head>',
       '<body><div id="root"></div>',
-      '<script crossorigin src="' + REACT_URL + '"></sc' + 'ript>',
-      '<script crossorigin src="' + REACTDOM_URL + '"></sc' + 'ript>'
+      '<script crossorigin="anonymous" referrerpolicy="no-referrer" integrity="sha384-tMH8h3BGESGckSAVGZ82T9n90ztNXxvdwvdM6UoR56cYcf+0iGXBliJ29D+wZ/x8" src="' + REACT_URL + '"></sc' + 'ript>',
+      '<script crossorigin="anonymous" referrerpolicy="no-referrer" integrity="sha384-bm7MnzvK++ykSwVJ2tynSE5TRdN+xL418osEVF2DE/L/gfWHj91J2Sphe582B1Bh" src="' + REACTDOM_URL + '"></sc' + 'ript>'
     ].join('\n');
 
     var setup = [
@@ -594,7 +595,7 @@
     var aiText = (function () {
       try {
         if (typeof window === 'undefined') return false;
-        if (window.__alloStudentAiDisabled === true || window._alloQrBlocked === true) return false;
+        if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
         if (!ctx || typeof ctx.callGemini !== 'function' || ctx.callGemini._alloQrBlocked) return false;
         if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', ctx.callGemini)) return false;
         if (typeof window.__alloResolveAiCapability !== 'function') {
@@ -602,7 +603,7 @@
         }
         var cap = window.__alloResolveAiCapability();
         return !!(cap && cap.text);
-      } catch (e) { return typeof window !== 'undefined' && window.__alloStudentAiDisabled !== true && window._alloQrBlocked !== true && !!(ctx && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) && (typeof window.__alloAiUsable !== 'function' || window.__alloAiUsable('text', ctx.callGemini)); }
+      } catch (e) { return typeof window !== 'undefined' && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true && window._alloQrBlocked !== true && !!(ctx && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) && (typeof window.__alloAiUsable !== 'function' || window.__alloAiUsable('text', ctx.callGemini)); }
     })();
     // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
     var t = function (k, f) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, f) : null; } catch (e) { v = null; } return (v == null) ? (f != null ? f : k) : v; };
@@ -646,9 +647,13 @@
       function onMsg(e) {
         var d = e && e.data;
         if (!d || !d.__forge || d.type !== 'smoke') return;
-        // only trust our own sandbox iframe — reject forged results from other frames/extensions
+        // only trust our own sandbox iframe (fail-closed if unmounted or wrong origin)
         var fr = iframeRef.current;
-        if (fr && fr.contentWindow && e.source !== fr.contentWindow) return;
+        if (!smokeSrcRef.current) return;
+        if (typeof e.origin === 'string' && e.origin !== '' && e.origin !== 'null') return;
+        if ((fr && fr.contentWindow) || e.source !== null) {
+          if (!fr || !fr.contentWindow || e.source !== fr.contentWindow) return;
+        }
         // cap the error string so a hostile candidate cannot DoS the parent UI with a huge payload
         var err = (d.error == null) ? null : String(d.error).slice(0, 10000);
         setSmoke({ ok: !!d.ok, error: err, ids: Array.isArray(d.ids) ? d.ids.slice(0, 50) : [] });
@@ -835,9 +840,13 @@
         validator_report: { tier1: live, render_smoke: { ok: true } },
         affirmations: AFFIRMATIONS.reduce(function (o, a) { o[a.key] = affirm[a.key] === true; return o; }, {})
       };
-      fetch(WORKER_BASE + '/submitPlugin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      var submitCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var submitTimer = submitCtrl ? setTimeout(function () { submitCtrl.abort(); }, 20000) : null;
+      var clearSubmitTimer = function () { if (submitTimer !== null) { clearTimeout(submitTimer); submitTimer = null; } };
+      fetch(WORKER_BASE + '/submitPlugin', Object.assign({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }, submitCtrl ? { signal: submitCtrl.signal } : {}))
         .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
         .then(function (o) {
+          clearSubmitTimer();
           setSubmitting(false);
           if (o.status === 201 && o.j && o.j.ok) {
             ctx.addToast && ctx.addToast(t('stem.forge.submitted', 'Submitted for maintainer review ✓'), 'success');
@@ -847,7 +856,7 @@
             ctx.addToast && ctx.addToast(t('stem.forge.submit_failed', 'Submit failed: ') + ((o.j && o.j.error) || ('HTTP ' + o.status)), 'error');
           }
         })
-        .catch(function (e) { setSubmitting(false); ctx.addToast && ctx.addToast(t('stem.forge.submit_failed', 'Submit failed: ') + (e && e.message || e), 'error'); });
+        .catch(function (e) { clearSubmitTimer(); setSubmitting(false); ctx.addToast && ctx.addToast(t('stem.forge.submit_failed', 'Submit failed: ') + (e && e.message || e), 'error'); });
     }, [ctx, report, smoke, src, author, license, affirm, t]);
 
     // ── styling helpers ──
@@ -891,11 +900,99 @@
       return { border: '1px solid ' + (ok ? '#86efac' : '#fecaca'), background: ok ? (dark ? '#052e16' : '#f0fdf4') : (dark ? '#450a0a' : '#fef2f2') };
     }
 
+    var lineCount = String(src || '').split('\n').length;
+    var charCount = String(src || '').length;
+    var errs = report ? (report.errors || []).concat((report.tools || []).reduce(function (a, x) { return a.concat((x.errors || []).map(function (e) { return (x.id || '?') + ': ' + e; })); }, [])) : [];
+    var warns = report ? (report.tools || []).reduce(function (a, x) { return a.concat((x.warns || []).map(function (w) { return (x.id || '?') + ': ' + w; })); }, []) : [];
+    var structOk = !!(report && report.ok);
+    var firstTool = report && report.tools && report.tools[0] ? report.tools[0] : null;
+    var heroBg = hc ? HC_BG : (dark ? 'linear-gradient(135deg,#1e1b4b,#0f172a 62%,#0c4a6e)' : 'linear-gradient(135deg,#312e81,#3730a3 58%,#1e40af)');
+    var heroFg = hc ? HC_FG : '#ffffff';
+    var heroSub = hc ? HC_FG : '#e0e7ff';
+
+    function renderPipelineSvg(isLocked) {
+      var stages = [
+        { num: '01', name: 'Author', done: !isLocked && charCount > 40, fail: false },
+        { num: '02', name: 'AST Gate', done: !isLocked && structOk, fail: !isLocked && !!(report && !report.ok) },
+        { num: '03', name: 'Sandbox', done: !isLocked && smokeCurrent, fail: !isLocked && !!(smoke && !smoke.ok) },
+        { num: '04', name: 'Submit', done: !isLocked && canSubmit, fail: false }
+      ];
+      return h('svg', {
+        viewBox: '0 0 560 66',
+        role: 'img',
+        'aria-label': t('stem.forge.pipeline_aria', 'Four-stage plugin forge pipeline: Author, AST Contract Gate, Sandbox Smoke, and Submit Queue.'),
+        style: { display: 'block', width: '100%', maxWidth: 680, height: 'auto', marginTop: 10 }
+      },
+        stages.slice(0, -1).map(function (st, idx) {
+          var x1 = 122 + idx * 140;
+          var x2 = x1 + 26;
+          var lineCol = hc ? HC_FG : (st.done ? '#4ade80' : 'rgba(224,231,255,0.38)');
+          return h('line', { key: 'ln-' + idx, x1: x1, y1: 33, x2: x2, y2: 33, stroke: lineCol, strokeWidth: st.done ? 2.5 : 1.6, strokeDasharray: st.done ? undefined : '4 3' });
+        }),
+        stages.map(function (st, idx) {
+          var x = 10 + idx * 140;
+          var fill = hc ? HC_BG : (st.fail ? 'rgba(220,38,38,0.28)' : st.done ? 'rgba(22,163,74,0.28)' : 'rgba(15,23,42,0.36)');
+          var stk = hc ? (st.done ? HC_BTN : HC_FG) : (st.fail ? '#fca5a5' : st.done ? '#4ade80' : 'rgba(199,210,254,0.45)');
+          var badgeText = st.fail ? '✖' : (st.done ? '✔' : st.num);
+          return h('g', { key: st.num },
+            h('rect', { x: x, y: 12, width: 112, height: 42, rx: 10, fill: fill, stroke: stk, strokeWidth: st.done || st.fail ? 2 : 1.2 }),
+            h('circle', { cx: x + 22, cy: 33, r: 11, fill: hc ? HC_BG : (st.fail ? '#dc2626' : st.done ? '#16a34a' : 'rgba(255,255,255,0.16)'), stroke: stk, strokeWidth: 1.2 }),
+            h('text', { x: x + 22, y: 36.5, textAnchor: 'middle', fill: hc ? (st.done ? HC_BTN : HC_FG) : '#ffffff', fontSize: 9.5, fontWeight: '800' }, badgeText),
+            h('text', { x: x + 40, y: 30, fill: hc ? HC_FG : '#ffffff', fontSize: 10.5, fontWeight: '800' }, st.name),
+            h('text', { x: x + 40, y: 44, fill: hc ? HC_FG : '#c7d2fe', fontSize: 8.5, fontWeight: '600' }, st.fail ? 'Check log' : (st.done ? 'Ready' : (isLocked ? 'Locked' : 'Pending')))
+          );
+        })
+      );
+    }
+
+    var SVG_TEMPLATE = [
+      "(function () {",
+      "  'use strict';",
+      "  if (!window.StemLab || !window.StemLab.registerTool) return;",
+      "  window.StemLab." + "registerTool('balanceDemo', {",
+      "    icon: '\\u2696\\uFE0F',",
+      "    label: 'Balance Scale Demo',",
+      "    desc: 'Adjust left and right weights to balance the SVG beam.',",
+      "    color: 'indigo',",
+      "    category: 'math',",
+      "    render: function (ctx) { return ctx.React.createElement(BalanceApp, { ctx: ctx }); }",
+      "  });",
+      "  function BalanceApp(props) {",
+      "    var ctx = props.ctx, React = ctx.React, h = React.createElement;",
+      "    var lState = React.useState(4), left = lState[0], setLeft = lState[1];",
+      "    var rState = React.useState(6), right = rState[0], setRight = rState[1];",
+      "    var dark = !!ctx.isDark, tilt = Math.max(-14, Math.min(14, (right - left) * 3));",
+      "    return h('div', { style: { padding: 14, color: dark ? '#e2e8f0' : '#0f172a' } },",
+      "      h('h3', { style: { marginTop: 0 } }, 'Balance Scale (' + left + ' vs ' + right + ')'),",
+      "      h('svg', { viewBox: '0 0 260 110', style: { width: '100%', maxWidth: 320, display: 'block' } },",
+      "        h('polygon', { points: '130,64 114,96 146,96', fill: '#4f46e5' }),",
+      "        h('g', { transform: 'rotate(' + tilt + ' 130 64)' },",
+      "          h('line', { x1: 42, y1: 64, x2: 218, y2: 64, stroke: '#4f46e5', strokeWidth: 5, strokeLinecap: 'round' }),",
+      "          h('circle', { cx: 60, cy: 48, r: 8 + left, fill: '#0ea5e9' }),",
+      "          h('circle', { cx: 200, cy: 48, r: 8 + right, fill: '#10b981' }))),",
+      "      h('div', { style: { display: 'flex', gap: 10, marginTop: 8 } },",
+      "        h('button', { onClick: function () { setLeft(function (v) { return (v % 9) + 1; }); } }, 'Left: ' + left),",
+      "        h('button', { onClick: function () { setRight(function (v) { return (v % 9) + 1; }); } }, 'Right: ' + right))",
+      "    );",
+      "  }",
+      "})();"
+    ].join('\n');
+
+    var AI_PROMPTS = [
+      { label: 'Electric Field Lab', text: 'A physics lab where students place positive and negative charges on an SVG canvas and watch electric field vectors update live, with a quest to build a balanced dipole.' },
+      { label: 'Fraction Balance', text: 'An interactive fraction equivalence studio with visual SVG fraction bars and a challenge mode where students match equivalent fractions.' },
+      { label: 'Check-In Wheel', text: 'An accessible SEL check-in wheel where students pick an emotion zone, reflect on a calming strategy, and log a private note.' }
+    ];
+
     if (!ctx.isTeacherMode) {
-      return h('div', { style: { padding: 24, color: fg, maxWidth: 640, background: hc ? HC_BG : (dark ? '#0f172a' : undefined), borderRadius: (hc || dark) ? 12 : undefined } },
-        h('h2', { style: { marginTop: 0 } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
-        h('p', { style: { color: sub, lineHeight: 1.6 } },
-          t('stem.forge.teacher_only', 'The Tool Forge is a teacher / developer workspace for authoring new STEAM Lab and SEL Hub tools. Switch on Teacher Mode to open it.'))
+      return h('div', { style: { padding: 18, color: fg, maxWidth: 740, margin: '0 auto', background: hc ? HC_BG : (dark ? '#0f172a' : '#f8fafc'), border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 16 } },
+        h('div', { style: { padding: 18, borderRadius: 12, background: heroBg, border: hc ? '2px solid ' + HC_FG : '1px solid rgba(165,180,252,0.3)', color: heroFg } },
+          h('div', { style: { fontSize: 10.5, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: heroSub, marginBottom: 4 } }, t('stem.forge.kicker', 'PLUGIN FOUNDRY · CONTRACT v') + (CONTRACT.version || '1.0')),
+          h('h2', { style: { margin: 0, fontSize: 22, color: heroFg } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
+          h('p', { style: { color: heroSub, lineHeight: 1.55, margin: '8px 0 0', fontSize: 13.5 } },
+            t('stem.forge.teacher_only', 'The Tool Forge is a teacher / developer workspace for authoring new STEAM Lab and SEL Hub tools. Switch on Teacher Mode to open it.')),
+          renderPipelineSvg(true)
+        )
       );
     }
 
@@ -907,55 +1004,83 @@
       { id: 'fixer', label: t('stem.forge.fixer', 'Fixer') }
     ];
 
-    var errs = report ? (report.errors || []).concat((report.tools || []).reduce(function (a, x) { return a.concat((x.errors || []).map(function (e) { return (x.id || '?') + ': ' + e; })); }, [])) : [];
-    var warns = report ? (report.tools || []).reduce(function (a, x) { return a.concat((x.warns || []).map(function (w) { return (x.id || '?') + ': ' + w; })); }, []) : [];
-    var structOk = report && report.ok;
-
-    return h('div', { style: { color: fg, padding: 12, display: 'flex', flexDirection: 'column', gap: 12, minHeight: 480, background: hc ? HC_BG : (dark ? '#0f172a' : undefined), borderRadius: (hc || dark) ? 12 : undefined } },
-      // header
-      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' } },
-        h('h2', { style: { margin: 0, fontSize: 20 } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
-        h('span', { style: { color: sub, fontSize: 12 } }, 'contract v' + (CONTRACT.version || '1.0') + ' · ' + (acornReady ? t('stem.forge.gate_live', 'gate live') : t('stem.forge.gate_loading', 'loading validator…')))
+    return h('div', { style: { color: fg, padding: 14, display: 'flex', flexDirection: 'column', gap: 14, minHeight: 480, background: hc ? HC_BG : (dark ? '#0b1220' : '#f8fafc'), border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 16 } },
+      // Hero Workbench Header
+      h('header', { style: { padding: 16, borderRadius: 14, background: heroBg, border: hc ? '2px solid ' + HC_FG : '1px solid rgba(165,180,252,0.28)', color: heroFg, boxShadow: hc ? 'none' : '0 10px 26px rgba(30,27,75,0.22)' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' } },
+          h('div', { style: { flex: '1 1 280px', minWidth: 0 } },
+            h('div', { style: { fontSize: 10.5, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: heroSub, marginBottom: 4 } }, t('stem.forge.kicker', 'PLUGIN FOUNDRY · CONTRACT v') + (CONTRACT.version || '1.0')),
+            h('h2', { style: { margin: 0, fontSize: 22, color: heroFg, lineHeight: 1.15 } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
+            h('p', { style: { margin: '6px 0 0', fontSize: 12.5, color: heroSub, lineHeight: 1.45 } },
+              'contract v' + (CONTRACT.version || '1.0') + ' · ' + (acornReady ? t('stem.forge.gate_live', 'gate live') : t('stem.forge.gate_loading', 'loading validator…')))
+          ),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 }, role: 'list', 'aria-label': t('stem.forge.telemetry_aria', 'Plugin build status') },
+            [
+              lineCount + ' lines',
+              structOk ? '✔ Contract OK' : (report ? '✖ ' + errs.length + ' error(s)' : 'Validator ready'),
+              smokeCurrent ? '✔ Sandbox OK' : (smoke && !smoke.ok ? '✖ Crash' : 'Preview pending')
+            ].map(function (pill) {
+              return h('span', { key: pill, role: 'listitem', style: { padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800, background: hc ? HC_BG : 'rgba(15,23,42,0.45)', border: '1px solid ' + (hc ? HC_FG : 'rgba(199,210,254,0.35)'), color: heroFg } }, pill);
+            })
+          )
+        ),
+        renderPipelineSvg(false)
       ),
 
       // doors
-      h('div', { style: { display: 'flex', borderBottom: '1px solid ' + border } },
+      h('div', { role: 'tablist', 'aria-label': t('stem.forge.doors_aria', 'Authoring mode'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, borderBottom: (hc ? '2px solid ' : '1px solid ') + border } },
         h('button', {
+          type: 'button', role: 'tab', id: 'forge-tab-ai',
           onClick: function () { setDoor('ai'); },
           style: tab(door === 'ai'),
+          'aria-selected': door === 'ai',
           'aria-pressed': door === 'ai',
-          // Still reachable — the panel explains how to enable it — but never
-          // presented as if it were ready to use.
           title: !aiText ? t('stem.forge.ai_unavailable_short', 'Needs an AI connection') : undefined
         }, '🤖 ' + t('stem.forge.door_ai', 'Describe (AI)') + (aiText ? '' : ' ' + t('stem.forge.door_ai_locked_suffix', '(needs AI)'))),
-        h('button', { onClick: function () { setDoor('code'); }, style: tab(door === 'code'), 'aria-pressed': door === 'code' }, '⌨️ ' + t('stem.forge.door_code', 'Code'))
+        h('button', {
+          type: 'button', role: 'tab', id: 'forge-tab-code',
+          onClick: function () { setDoor('code'); },
+          style: tab(door === 'code'),
+          'aria-selected': door === 'code',
+          'aria-pressed': door === 'code'
+        }, '⌨️ ' + t('stem.forge.door_code', 'Code'))
       ),
 
       // body: two columns
-      h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'stretch' } },
+      h('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'stretch' } },
 
         // LEFT — the active door
-        h('div', { style: { flex: '1 1 420px', minWidth: 300, display: 'flex', flexDirection: 'column', gap: 8 } },
+        h('div', { style: { flex: '1 1 400px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10, padding: 12, borderRadius: 12, background: panelBg, border: (hc ? '2px solid ' : '1px solid ') + border } },
           door === 'ai'
-            ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 // Say it BEFORE the textarea, not in a toast after Generate.
                 !aiText ? h('div', {
                   role: 'status',
-                  style: { padding: 10, borderRadius: 8, border: '1px solid ' + border, background: panelBg, color: fg, fontSize: 13, lineHeight: 1.5 }
+                  style: { padding: 10, borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg, fontSize: 13, lineHeight: 1.5 }
                 },
                   t('stem.forge.ai_unavailable',
                     'This door needs an AI connection, and this copy of AlloFlow does not have one. Add a Gemini API key in Settings, or switch to the Code door — the editor, the contract validator, the live preview and Submit all work without a key.')
                 ) : null,
-                h('label', { style: { fontSize: 13, fontWeight: 600 } }, t('stem.forge.describe', 'Describe the tool you want')),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' } },
+                  h('span', { style: { fontSize: 11, fontWeight: 800, color: sub, textTransform: 'uppercase', letterSpacing: '0.06em' } }, t('stem.forge.prompt_ideas', 'Starter ideas:')),
+                  AI_PROMPTS.map(function (item) {
+                    return h('button', {
+                      key: item.label, type: 'button',
+                      onClick: function () { setDesc(item.text); },
+                      style: Object.assign({}, btn(false), { padding: '5px 10px', fontSize: 11.5 })
+                    }, item.label);
+                  })
+                ),
+                h('label', { style: { fontSize: 13, fontWeight: 700 } }, t('stem.forge.describe', 'Describe the tool you want')),
                 h('textarea', {
                   value: desc, onChange: function (e) { setDesc(e.target.value); }, rows: 5,
                   'aria-label': t('stem.forge.describe', 'Describe the tool you want'),
                   placeholder: t('stem.forge.placeholder', 'e.g. A lab where students drag charges around and see the electric field lines update live, with a quest to build a dipole.'),
-                  style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid ' + border, background: panelBg, color: fg, font: '14px system-ui', resize: 'vertical' }
+                  style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg, font: '14px system-ui', resize: 'vertical' }
                 }),
                 h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-                  h('label', { style: { fontSize: 13 } }, t('stem.forge.target', 'Target') + ':'),
-                  h('select', { value: target, onChange: function (e) { setTarget(e.target.value); }, 'aria-label': t('stem.forge.target', 'Target'), style: { padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } },
+                  h('label', { style: { fontSize: 13, fontWeight: 600 } }, t('stem.forge.target', 'Target') + ':'),
+                  h('select', { value: target, onChange: function (e) { setTarget(e.target.value); }, 'aria-label': t('stem.forge.target', 'Target'), style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg } },
                     h('option', { value: 'stem' }, 'STEAM Lab'),
                     h('option', { value: 'sel' }, 'SEL Hub')),
                   h('button', {
@@ -980,34 +1105,45 @@
                     return h('span', { key: p.id, style: { fontSize: 12, padding: '3px 8px', borderRadius: 999, border: '1px solid ' + border, background: active ? accent : 'transparent', color: active ? '#fff' : sub } }, p.label);
                   })
                 ) : null,
-                h('p', { style: { fontSize: 12, color: sub, lineHeight: 1.5 } }, t('stem.forge.ai_note', 'The generator drafts a conforming plugin, then self-reviews and fixes against the contract. Always review the validator and the live preview before submitting.'))
+                h('p', { style: { fontSize: 12, color: sub, lineHeight: 1.5, margin: 0 } }, t('stem.forge.ai_note', 'The generator drafts a conforming plugin, then self-reviews and fixes against the contract. Always review the validator and the live preview before submitting.'))
               )
-            : h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, height: '100%' } },
-                h('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
-                  h('label', { style: { fontSize: 13, fontWeight: 600 } }, t('stem.forge.source', 'Plugin source')),
-                  h('button', { onClick: function () { setSrc(SKELETON); }, style: btn(false) }, t('stem.forge.skeleton', 'Reset to skeleton'))
+            : h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, flex: 1 } },
+                h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                    h('label', { style: { fontSize: 13, fontWeight: 700 } }, t('stem.forge.source', 'Plugin source')),
+                    h('span', { style: { fontSize: 11, color: sub, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' } }, lineCount + ' ln · ' + charCount + ' ch')
+                  ),
+                  h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                    h('button', { type: 'button', onClick: function () { setSrc(SKELETON); }, style: Object.assign({}, btn(false), { padding: '6px 10px', fontSize: 12 }) }, t('stem.forge.skeleton', 'Reset to skeleton')),
+                    h('button', { type: 'button', onClick: function () { setSrc(SVG_TEMPLATE); }, style: Object.assign({}, btn(false), { padding: '6px 10px', fontSize: 12 }) }, t('stem.forge.svg_template', 'Load SVG template'))
+                  )
                 ),
                 h('textarea', {
                   value: src, onChange: function (e) { setSrc(e.target.value); }, spellCheck: false,
                   'aria-label': t('stem.forge.source', 'Plugin source'),
-                  style: { width: '100%', boxSizing: 'border-box', minHeight: 360, padding: 10, borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg, font: '12.5px ui-monospace, SFMono-Regular, Menlo, monospace', lineHeight: 1.5, whiteSpace: 'pre', overflowWrap: 'normal', resize: 'vertical' }
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 370, padding: 12, borderRadius: 10, border: '1px solid ' + border, background: editorBg, color: fg, font: '12.5px ui-monospace, SFMono-Regular, Menlo, monospace', lineHeight: 1.55, whiteSpace: 'pre', overflowWrap: 'normal', resize: 'vertical' }
                 })
               )
         ),
 
         // RIGHT — validator + preview
-        h('div', { style: { flex: '1 1 380px', minWidth: 300, display: 'flex', flexDirection: 'column', gap: 10 } },
+        h('div', { style: { flex: '1 1 360px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 } },
           // validator
-          h('div', { role: 'status', 'aria-live': 'polite', style: { border: '1px solid ' + border, borderRadius: 10, padding: 10, background: panelBg } },
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
-              h('strong', { style: { fontSize: 13 } }, t('stem.forge.validator', 'Contract validator')),
+          h('div', { role: 'status', 'aria-live': 'polite', style: { border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 12, padding: 12, background: panelBg } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+              h('strong', { style: { fontSize: 13.5 } }, t('stem.forge.validator', 'Contract validator')),
               h('button', { onClick: runPreview, style: btn(true) }, t('stem.forge.run', 'Validate + preview'))
             ),
             !report
               ? h('div', { style: { fontSize: 12, color: sub } }, acornReady ? t('stem.forge.edit_to_validate', 'Edit the source to validate.') : t('stem.forge.gate_loading', 'loading validator…'))
               : h('div', { style: { fontSize: 12.5 } },
-                  h('div', { style: { fontWeight: 700, color: structOk ? okFg : errFg, marginBottom: 4 } },
+                  h('div', { style: { fontWeight: 700, color: structOk ? okFg : errFg, marginBottom: 6 } },
                     structOk ? '✔ ' + t('stem.forge.struct_ok', 'Structurally conformant') : '✖ ' + t('stem.forge.struct_fail', 'Structural problems')),
+                  firstTool ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
+                    h('span', { style: { fontSize: 11, padding: '2px 8px', borderRadius: 999, background: editorBg, border: '1px solid ' + border, color: fg } }, 'id: ' + (firstTool.id || '?')),
+                    h('span', { style: { fontSize: 11, padding: '2px 8px', borderRadius: 999, background: editorBg, border: '1px solid ' + border, color: fg } }, 'hub: ' + (firstTool.target || '?')),
+                    h('span', { style: { fontSize: 11, padding: '2px 8px', borderRadius: 999, background: editorBg, border: '1px solid ' + border, color: fg } }, 'ctx keys: ' + ((firstTool.ctxMembers && firstTool.ctxMembers.length) || 0))
+                  ) : null,
                   errs.length ? h('ul', { style: { margin: '4px 0', paddingLeft: 18, color: errFg } }, errs.map(function (e, i) { return h('li', { key: 'e' + i }, e); })) : null,
                   warns.length ? h('details', { style: { marginTop: 4 } },
                     h('summary', { style: { cursor: 'pointer', color: warnFg } }, warns.length + ' ' + t('stem.forge.warnings', 'warning(s)')),
@@ -1016,7 +1152,7 @@
                 )
           ),
           // render-smoke result
-          smoke ? h('div', { role: 'status', 'aria-live': 'polite', style: Object.assign({ borderRadius: 10, padding: 8, fontSize: 12.5 }, verdictBox(smoke.ok)) },
+          smoke ? h('div', { role: 'status', 'aria-live': 'polite', style: Object.assign({ borderRadius: 10, padding: 10, fontSize: 12.5 }, verdictBox(smoke.ok)) },
             smoke.ok
               ? h('span', { style: { color: okFg, fontWeight: 600 } }, '✔ ' + t('stem.forge.renders', 'Mounted without an immediate crash') + (smoke.ids && smoke.ids.length ? ' · id: ' + smoke.ids[0] : ''))
               : h('div', null,
@@ -1024,26 +1160,39 @@
                   h('pre', { style: { margin: 0, whiteSpace: 'pre-wrap', font: '11.5px ui-monospace, monospace', color: hc ? HC_FG : (dark ? '#fca5a5' : '#991b1b') } }, String(smoke.error || '').slice(0, 800)))
           ) : null,
           // live preview iframe (sandboxed: allow-scripts only)
-          h('div', { style: { border: '1px solid ' + border, borderRadius: 10, overflow: 'hidden', background: smokeDoc ? '#fff' : panelBg, minHeight: 220, flex: 1 } },
+          h('div', { style: { border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 12, overflow: 'hidden', background: smokeDoc ? (hc ? HC_BG : (dark ? '#0f172a' : '#fff')) : panelBg, minHeight: 240, flex: 1, display: 'flex', flexDirection: 'column' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '7px 12px', borderBottom: '1px solid ' + border, background: editorBg, fontSize: 11, color: sub } },
+              h('strong', { style: { color: fg, fontSize: 11.5 } }, t('stem.forge.sandbox_title', 'Isolated Sandbox Preview')),
+              h('span', { style: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 10.5 } }, "sandbox='allow-scripts' · offline CSP")
+            ),
             smokeDoc
-              ? h('iframe', { ref: iframeRef, srcDoc: smokeDoc, sandbox: 'allow-scripts', title: t('stem.forge.preview', 'Plugin preview (sandboxed)'), style: { width: '100%', height: 280, border: 0, background: '#fff' } })
-              : h('div', { style: { padding: 16, color: sub, fontSize: 12.5 } }, t('stem.forge.preview_hint', 'Press “Validate + preview” to render this plugin in an isolated sandbox.'))
+              ? h('iframe', { ref: iframeRef, srcDoc: smokeDoc, sandbox: 'allow-scripts', title: t('stem.forge.preview', 'Plugin preview (sandboxed)'), style: { width: '100%', height: 280, border: 0, background: hc ? HC_BG : (dark ? '#0f172a' : '#fff') } })
+              : h('div', { style: { padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 8, flex: 1 } },
+                  h('svg', { viewBox: '0 0 280 92', 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', maxWidth: 260, height: 'auto' } },
+                    h('rect', { x: 10, y: 10, width: 260, height: 72, rx: 10, fill: editorBg, stroke: border, strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                    h('rect', { x: 26, y: 24, width: 94, height: 14, rx: 4, fill: hc ? HC_FG : accent, fillOpacity: hc ? 0.3 : 0.25 }),
+                    h('rect', { x: 26, y: 46, width: 168, height: 10, rx: 3, fill: sub, fillOpacity: 0.28 }),
+                    h('rect', { x: 26, y: 62, width: 72, height: 12, rx: 6, fill: hc ? HC_BTN : accent, fillOpacity: 0.75 }),
+                    h('circle', { cx: 232, cy: 48, r: 18, fill: hc ? HC_BG : accent, fillOpacity: 0.16, stroke: hc ? HC_FG : accent, strokeWidth: 1.8 }),
+                    h('polygon', { points: '227,40 241,48 227,56', fill: hc ? HC_BTN : accent })
+                  ),
+                  h('div', { style: { color: sub, fontSize: 12.5, maxWidth: 320, lineHeight: 1.45 } }, t('stem.forge.preview_hint', 'Press “Validate + preview” to render this plugin in an isolated sandbox.')))
           ),
           // submit → /submitPlugin (private KV; human-gated publish)
-          h('details', { style: { border: '1px solid ' + border, borderRadius: 10, background: panelBg } },
-            h('summary', { style: { cursor: 'pointer', padding: 10, fontSize: 13, fontWeight: 600 } },
+          h('details', { style: { border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 12, background: panelBg } },
+            h('summary', { style: { cursor: 'pointer', padding: 12, fontSize: 13, fontWeight: 700 } },
               '📤 ' + t('stem.forge.submit_section', 'Submit for review')),
-            h('div', { style: { padding: '0 10px 10px', display: 'flex', flexDirection: 'column', gap: 8 } },
+            h('div', { style: { padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 8 } },
               h('p', { style: { fontSize: 11.5, color: sub, margin: '4px 0', lineHeight: 1.5 } },
                 t('stem.forge.submit_note', 'Submitting stages this tool in a private review queue — it never goes live until a maintainer reviews the source + validator report + preview and publishes it. Requires a green validator and a clean render.')),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                h('input', { value: author, onChange: function (e) { setAuthor(e.target.value); }, 'aria-label': t('stem.forge.author', 'Your name / credit (optional)'), placeholder: t('stem.forge.author', 'Your name / credit (optional)'), style: { flex: '1 1 180px', padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } }),
-                h('select', { value: license, onChange: function (e) { setLicense(e.target.value); }, 'aria-label': t('stem.forge.license', 'License'), style: { padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } },
+                h('input', { value: author, onChange: function (e) { setAuthor(e.target.value); }, 'aria-label': t('stem.forge.author', 'Your name / credit (optional)'), placeholder: t('stem.forge.author', 'Your name / credit (optional)'), style: { flex: '1 1 180px', minWidth: 0, padding: '7px 10px', borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg } }),
+                h('select', { value: license, onChange: function (e) { setLicense(e.target.value); }, 'aria-label': t('stem.forge.license', 'License'), style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg } },
                   LICENSES.map(function (l) { return h('option', { key: l, value: l }, l); }))
               ),
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
                 AFFIRMATIONS.map(function (a) {
-                  return h('label', { key: a.key, style: { fontSize: 12, display: 'flex', gap: 6, alignItems: 'flex-start', cursor: 'pointer' } },
+                  return h('label', { key: a.key, style: { fontSize: 12, display: 'flex', gap: 7, alignItems: 'flex-start', cursor: 'pointer' } },
                     h('input', { type: 'checkbox', checked: affirm[a.key] === true, onChange: function (e) { var nx = Object.assign({}, affirm); nx[a.key] = e.target.checked; setAffirm(nx); }, style: { marginTop: 2 } }),
                     h('span', null, a.label));
                 })
@@ -1051,7 +1200,7 @@
               h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                 h('button', { onClick: submitPlugin, disabled: !canSubmit, style: Object.assign({}, btn(true), canSubmit ? {} : { opacity: 0.5, cursor: 'not-allowed' }) },
                   submitting ? t('stem.forge.submitting', 'Submitting…') : '📤 ' + t('stem.forge.submit', 'Submit')),
-                !canSubmit ? h('span', { style: { fontSize: 11, color: sub } },
+                !canSubmit ? h('span', { style: { fontSize: 11.5, color: sub } },
                   (!(report && report.ok)) ? t('stem.forge.gate_struct', 'needs a green validator')
                     : (!(smoke && smoke.ok)) ? t('stem.forge.gate_render', 'run preview first')
                     : (!allAffirmed) ? t('stem.forge.gate_affirm', 'confirm all statements')

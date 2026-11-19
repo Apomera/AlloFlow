@@ -570,7 +570,10 @@
       if (ui >= 0) {
         var merged = stClone(objects[ui]);
         var patch = op.patch || {};
-        for (var k in patch) { if (Object.prototype.hasOwnProperty.call(patch, k)) merged[k] = stClone(patch[k]); }
+        for (var k in patch) {
+          if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+          if (Object.prototype.hasOwnProperty.call(patch, k)) merged[k] = stClone(patch[k]);
+        }
         if (patch.frame) merged.frame = stClampFrame(merged.frame, scene.canvas);
         objects[ui] = merged;
       }
@@ -766,7 +769,7 @@
     var prev = null;
     for (var i = 0; i < ops.length; i++) {
       var op = ops[i];
-      if (out[op.actor] !== undefined) out[op.actor]++;
+      if (Object.prototype.hasOwnProperty.call(out, op.actor) && typeof out[op.actor] === 'number') out[op.actor]++;
       if (out.firstTs === null) out.firstTs = op.ts;
       out.lastTs = op.ts;
       if (prev !== null && op.ts - prev > 0 && op.ts - prev < 5 * 60 * 1000) out.activeMs += (op.ts - prev);
@@ -4286,6 +4289,7 @@
     var MAX_PPTX_FILE_BYTES = 50 * 1024 * 1024;
     var MAX_PPTX_ENTRIES = 2000;
     var MAX_PPTX_SLIDES = 200;
+    var MAX_PPTX_ENTRY_BYTES = 25 * 1024 * 1024;
     var MAX_PPTX_DECODED_BYTES = 100 * 1024 * 1024;
     if (!JSZipCtor || typeof JSZipCtor.loadAsync !== 'function') {
       return Promise.reject(new Error('The file-import library (JSZip) is not loaded.'));
@@ -4295,7 +4299,7 @@
     }
     return JSZipCtor.loadAsync(file).then(function (zip) {
       var files = {};
-      var jobs = [];
+      var entries = [];
       var entryCount = 0;
       var slideCount = 0;
       var decodedBytes = 0;
@@ -4315,21 +4319,66 @@
           }
         }
         if (/\.(xml|rels)$/i.test(path)) {
-          jobs.push(entry.async('string').then(function (s) {
-            decodedBytes += String(s || '').length;
-            if (decodedBytes > MAX_PPTX_DECODED_BYTES) throw new Error('PowerPoint archive exceeds the 100 MB extracted content limit.');
-            files[path] = s;
-          }));
+          entries.push({ path: path, entry: entry, kind: 'string' });
         } else if (/^ppt\/media\//i.test(path)) {
-          jobs.push(entry.async('base64').then(function (s) {
-            decodedBytes += Math.ceil(String(s || '').length * 3 / 4);
-            if (decodedBytes > MAX_PPTX_DECODED_BYTES) throw new Error('PowerPoint archive exceeds the 100 MB extracted content limit.');
-            files[path] = s;
-          }));
+          entries.push({ path: path, entry: entry, kind: 'base64' });
         }
       });
       if (limitError) return Promise.reject(limitError);
-      return Promise.all(jobs).then(function () { return stImportPptxDoc(files, file && file.name, now); });
+      var bytesToBase64 = function (bytes) {
+        var bin = '';
+        for (var bi = 0; bi < bytes.byteLength; bi += 8192) {
+          bin += String.fromCharCode.apply(null, bytes.subarray(bi, Math.min(bi + 8192, bytes.byteLength)));
+        }
+        return btoa(bin);
+      };
+      var readEntryBounded = function (item) {
+        var entry = item.entry;
+        if (entry && typeof entry.internalStream === 'function') {
+          return new Promise(function (resolve, reject) {
+            var chunks = [];
+            var entryBytes = 0;
+            var done = false;
+            var stream = entry.internalStream('uint8array');
+            stream.on('data', function (chunk) {
+              if (done) return;
+              var len = chunk ? chunk.byteLength || chunk.length || 0 : 0;
+              entryBytes += len;
+              decodedBytes += len;
+              if (entryBytes > MAX_PPTX_ENTRY_BYTES || decodedBytes > MAX_PPTX_DECODED_BYTES) {
+                done = true;
+                try { if (typeof stream.pause === 'function') stream.pause(); } catch (_) {}
+                reject(new Error('PowerPoint archive exceeds the 100 MB extracted content limit.'));
+                return;
+              }
+              chunks.push(chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk));
+            }).on('error', function (err) {
+              if (!done) { done = true; reject(err); }
+            }).on('end', function () {
+              if (done) return;
+              done = true;
+              var merged = new Uint8Array(entryBytes);
+              var offset = 0;
+              for (var ci = 0; ci < chunks.length; ci++) { merged.set(chunks[ci], offset); offset += chunks[ci].byteLength; }
+              files[item.path] = item.kind === 'string' ? new TextDecoder('utf-8').decode(merged) : bytesToBase64(merged);
+              resolve();
+            }).resume();
+          });
+        }
+        return entry.async(item.kind).then(function (s) {
+          var size = item.kind === 'string' ? String(s || '').length : Math.ceil(String(s || '').length * 3 / 4);
+          decodedBytes += size;
+          if (size > MAX_PPTX_ENTRY_BYTES || decodedBytes > MAX_PPTX_DECODED_BYTES) {
+            throw new Error('PowerPoint archive exceeds the 100 MB extracted content limit.');
+          }
+          files[item.path] = s;
+        });
+      };
+      var chain = Promise.resolve();
+      entries.forEach(function (item) {
+        chain = chain.then(function () { return readEntryBounded(item); });
+      });
+      return chain.then(function () { return stImportPptxDoc(files, file && file.name, now); });
     });
   }
 
@@ -5569,6 +5618,14 @@
       var f = ev.target.files && ev.target.files[0];
       ev.target.value = '';
       if (!f) return;
+      if (typeof f.size === 'number' && f.size > 20 * 1024 * 1024) {
+        addToast(TT('studio.image_too_large', 'Image exceeds the 20 MB safety limit.'), 'error');
+        return;
+      }
+      if (/svg/i.test(String(f.type || '')) || /\.svg$/i.test(String(f.name || ''))) {
+        addToast(TT('studio.image_svg_blocked', 'SVG images are not allowed here. Use PNG, JPG, GIF, or WebP.'), 'error');
+        return;
+      }
       var r = new FileReader();
       r.onload = function (e) {
         // actor 'import': the asset came from outside the editor — the ledger
@@ -6573,7 +6630,7 @@
       var r = new FileReader();
       r.onload = function (e) {
         try {
-          var parsed = JSON.parse(e.target.result);
+          var parsed = JSON.parse(e.target.result, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
           var errs = stValidateDoc(parsed);
           if (errs.length) { addToast(TT('studio.load_failed', 'Could not open: ') + errs[0], 'error'); return; }
           _docRef.current = stCanonicalizeDoc(parsed);
@@ -8065,6 +8122,14 @@
             var f2 = ev.target.files && ev.target.files[0];
             ev.target.value = '';
             if (!f2) return;
+            if (typeof f2.size === 'number' && f2.size > 20 * 1024 * 1024) {
+              addToast(TT('studio.image_too_large', 'Image exceeds the 20 MB safety limit.'), 'error');
+              return;
+            }
+            if (/svg/i.test(String(f2.type || '')) || /\.svg$/i.test(String(f2.name || ''))) {
+              addToast(TT('studio.image_svg_blocked', 'SVG images are not allowed here. Use PNG, JPG, GIF, or WebP.'), 'error');
+              return;
+            }
             var r2 = new FileReader();
             r2.onload = function (e2) {
               stImportImageDataUrl(e2.target.result, 1600).then(function (src2) {

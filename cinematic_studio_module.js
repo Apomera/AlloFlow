@@ -652,8 +652,20 @@
   // Gemini formed its own query from the whole prompt; the Canvas transport
   // fetches client-side, so the caller owns the query now. (Same root cause as
   // the Find-standards bug, 2026-07-27.)
+  function csAiUsable(fn) {
+    if (typeof fn !== 'function') return false;
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+      try { return !!window.__alloAiUsable('text', fn); } catch (_) { return false; }
+    }
+    if (fn._alloQrBlocked) return false;
+    if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+    return true;
+  }
+  function escapeTripleQuotes(s) {
+    return String(s == null ? '' : s).replace(/"""/g, '"\\""');
+  }
   function callSwarmStage(callGemini, stageLabel, prompt, searchQuery) {
-    if (!callGemini) return Promise.reject(new Error(stageLabel + ': AI is not available here'));
+    if (!csAiUsable(callGemini)) return Promise.reject(new Error(stageLabel + ': AI is not available here'));
     return Promise.resolve().then(function () { return callGemini(prompt, false, true, null, searchQuery || null); }).then(function (res) {
       var text = (typeof res === 'string') ? res : (res && res.text) ? res.text : '';
       if (!text || !text.trim()) throw new Error(stageLabel + ': the AI returned nothing');
@@ -690,7 +702,7 @@
       + 'Choose scene types ONLY from: ' + TEMPLATE_TYPES.join(', ') + '. '
       + 'Return ONLY JSON: {"title": string, "scenes": [{"type": one allowed type, "heading": short label, "narrationIntent": one sentence, "estDurationSec": number 3-20}]}. '
       + 'Use 5-10 scenes in a clear arc (open, build, close). Content scenes must be grounded in the document.\n\n'
-      + 'BRIEF:\n"""\n' + briefSummary(f) + '\n"""\n\nSOURCE DOCUMENT:\n"""\n' + String(doc).slice(0, DOC_LIMIT) + '\n"""';
+      + 'BRIEF:\n"""\n' + escapeTripleQuotes(briefSummary(f)) + '\n"""\n\nSOURCE DOCUMENT:\n"""\n' + escapeTripleQuotes(String(doc).slice(0, DOC_LIMIT)) + '\n"""';
     return callSwarmStage(callGemini, 'Stage 2 (outline)', prompt, f && f.topic);
   }
   function stageScene(callGemini, doc, f, spec, idx, total) {
@@ -699,7 +711,7 @@
       + 'Scene type "' + spec.type + '". Intent: ' + (spec.narrationIntent || spec.heading || '') + '. '
       + 'EVERY fact in the narration must be supported by the source document. '
       + 'Return ONLY JSON: {"narration": string (1-3 grade-appropriate sentences), "onScreenText": [short lines], "props": ' + propHint(spec.type) + ', "sourceAnchors": [VERBATIM quotes copied exactly from the document that support the narration], "durationSec": number 3-20}.\n\n'
-      + 'SOURCE DOCUMENT:\n"""\n' + String(doc).slice(0, DOC_LIMIT) + '\n"""';
+      + 'SOURCE DOCUMENT:\n"""\n' + escapeTripleQuotes(String(doc).slice(0, DOC_LIMIT)) + '\n"""';
     return callSwarmStage(callGemini, 'Stage 3 (scene ' + (idx + 1) + ')', prompt, f && f.topic).then(function (obj) {
       obj.type = spec.type; obj.id = 's' + (idx + 1); return obj;
     });
@@ -761,19 +773,26 @@
     var headingRef = useRef(null);
     var dialogRef = useRef(null);
     var cancelRef = useRef(false);
+    var mountedRef = useRef(true);
     var composeFocusRef = useRef(null);
-    // Focus the heading on open; restore focus to the opener (the launch card) on close.
+    // Focus the heading on open; restore focus to the opener (the launch card) on close,
+    // and cancel any in-flight scene-writing swarm on unmount.
     useEffect(function () {
+      mountedRef.current = true;
       var opener = (typeof document !== 'undefined') ? document.activeElement : null;
       if (headingRef.current) { try { headingRef.current.focus(); } catch (_) {} }
-      return function () { if (opener && opener.isConnected && opener.focus) { try { opener.focus(); } catch (_) {} } };
+      return function () {
+        mountedRef.current = false;
+        cancelRef.current = true;
+        if (opener && opener.isConnected && opener.focus) { try { opener.focus(); } catch (_) {} }
+      };
     }, []);
     // Escape closes; a Tab focus-trap keeps focus inside the modal (honors aria-modal).
     useEffect(function () {
       var dialog = dialogRef.current;
       if (!dialog) return undefined;
       function onKey(e) {
-        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (onClose) onClose(); return; }
+        if (e.key === 'Escape') { if (e.isComposing || e.keyCode === 229) return; e.preventDefault(); e.stopPropagation(); if (onClose) onClose(); return; }
         if (e.key !== 'Tab') return;
         var f = Array.prototype.filter.call(dialog.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'), function (el) {
           if (el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
@@ -929,6 +948,10 @@
     }
     function onImportCaptions(file) {
       if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        if (addToast) addToast('Caption file exceeds the 5 MB limit', 'error');
+        return;
+      }
       var reader = new FileReader();
       reader.onerror = function () { if (addToast) addToast('Could not read the file', 'error'); };
       reader.onload = function () {
@@ -983,9 +1006,10 @@
     function runOutline() {
       if (!cDoc || !cDoc.trim()) { if (addToast) addToast('Paste a source document first', 'info'); return; }
       if (!cFerpa) { if (addToast) addToast('Please confirm the document has no student names / PII first', 'info'); return; }
-      if (!callGemini) { if (addToast) addToast('AI is not available here', 'info'); return; }
+      if (!csAiUsable(callGemini)) { if (addToast) addToast('AI is not available here', 'info'); return; }
       setCBusy(true); setCErr(''); setCStoryboard(null); setCStage('outline'); setCStatus('Stage 2: drafting the storyboard outline'); announce('Drafting storyboard outline');
       stageOutline(callGemini, cDoc, fields).then(function (o) {
+        if (!mountedRef.current) return;
         var proposed = (o && Array.isArray(o.scenes)) ? o.scenes : [];
         var scenes = proposed.filter(function (s) { return s && TEMPLATE_CATALOG[s.type]; }).map(function (s, i) {
           return { id: 'o' + i, type: s.type, heading: String(s.heading || '').slice(0, 100), narrationIntent: String(s.narrationIntent || ''), estDurationSec: +s.estDurationSec || 6 };
@@ -995,9 +1019,10 @@
         setCOutline({ title: String((o && o.title) || fields.topic || 'Lesson video'), scenes: scenes });
         setCStage('review'); setCStatus(''); announce(scenes.length + ' scenes proposed; review before generating');
       }).catch(function (e) {
+        if (!mountedRef.current) return;
         setCErr((e && e.message) || String(e)); setCStage('error');
         if (addToast) addToast((e && e.message) || 'Outline failed', 'error'); announce('Outline failed');
-      }).then(function () { setCBusy(false); });
+      }).then(function () { if (mountedRef.current) setCBusy(false); });
     }
     function updateOutlineScene(id, patch) { setCOutline(function (p) { return p ? { title: p.title, scenes: p.scenes.map(function (s) { return s.id === id ? Object.assign({}, s, patch) : s; }) } : p; }); }
     function removeOutlineScene(id) { setCOutline(function (p) { return p ? { title: p.title, scenes: p.scenes.filter(function (s) { return s.id !== id; }) } : p; }); announce('Scene removed'); }
@@ -1019,12 +1044,13 @@
       var chain = Promise.resolve();
       specs.forEach(function (spec, i) {
         chain = chain.then(function () {
-          if (cancelRef.current) throw new Error('__cancelled__');
+          if (cancelRef.current || !mountedRef.current) throw new Error('__cancelled__');
           setCStatus('Stage 3: writing scene ' + (i + 1) + ' of ' + total);
           return stageScene(callGemini, cDoc, fields, spec, i, total).then(function (sc) { raw.push(sc); });
         });
       });
       chain.then(function () {
+        if (!mountedRef.current) return;
         // Validate grounding ONLY against the slice the model actually saw (DOC_LIMIT),
         // never the full doc -- else claims "ground" against text the model never read.
         var docSeen = String(cDoc).slice(0, DOC_LIMIT);
@@ -1034,6 +1060,7 @@
         if (addToast) addToast('Storyboard ready: ' + sb.scenes.length + ' scenes. Review before use.', 'success');
         announce('Storyboard ready with ' + sb.scenes.length + ' scenes');
       }).catch(function (e) {
+        if (!mountedRef.current) return;
         if (e && e.message === '__cancelled__') {
           setCStage('review'); setCStatus(''); // keep the reviewed outline intact
           if (addToast) addToast('Stopped. Your outline is kept; edit it and try again.', 'info'); announce('Scene generation stopped');
@@ -1041,7 +1068,7 @@
         }
         setCErr((e && e.message) || String(e)); setCStage('error');
         if (addToast) addToast((e && e.message) || 'Scene generation failed', 'error'); announce('Scene generation failed');
-      }).then(function () { setCBusy(false); });
+      }).then(function () { if (mountedRef.current) setCBusy(false); });
     }
     function stopScenes() { cancelRef.current = true; setCStatus('Stopping...'); }
     function downloadStoryboard() {

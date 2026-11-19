@@ -289,7 +289,8 @@ function DisproChart({ rows, tt }) {
   const H = MT + MB + plotRows.length * ROW_H;
   const x = (v) => ML + v / axisMax * PW;
   const ticks = [];
-  for (let v = 0; v <= axisMax + 1e-3; v += axisMax > 4 ? 1 : 0.5) ticks.push(Math.round(v * 2) / 2);
+  const tickStep = axisMax <= 4 ? 0.5 : Math.max(1, Math.ceil(axisMax / 8));
+  for (let v = 0; v <= axisMax + 1e-3; v += tickStep) ticks.push(Math.round(v * 2) / 2);
   return /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto mt-2" }, /* @__PURE__ */ React.createElement(
     "svg",
     {
@@ -300,6 +301,7 @@ function DisproChart({ rows, tt }) {
       "aria-label": tt("dispro.chart_aria", "Bar chart of each group’s risk ratio versus all other students. Exact values are in the results table above.")
     },
     ticks.map((v) => /* @__PURE__ */ React.createElement("g", { key: v }, /* @__PURE__ */ React.createElement("line", { x1: x(v), x2: x(v), y1: MT - 4, y2: H - MB, stroke: v === 1 ? "#898781" : "#e1e0d9", strokeWidth: v === 1 ? "1.5" : "1", strokeDasharray: v === 1 ? "4 3" : "none" }), /* @__PURE__ */ React.createElement("text", { x: x(v), y: H - 8, textAnchor: "middle", fontSize: "10", fill: "#898781" }, v))),
+    !ticks.includes(1) && /* @__PURE__ */ React.createElement("line", { x1: x(1), x2: x(1), y1: MT - 4, y2: H - MB, stroke: "#898781", strokeWidth: "1.5", strokeDasharray: "4 3" }),
     /* @__PURE__ */ React.createElement("text", { x: x(1), y: MT - 8, textAnchor: "middle", fontSize: "9", fill: "#52514e" }, tt("dispro.chart_parity", "parity (1.0)")),
     plotRows.map((r, i) => {
       const y = MT + i * ROW_H + 5;

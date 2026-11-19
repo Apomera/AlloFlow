@@ -92,7 +92,7 @@ function TimelineView(props) {
         try {
           if (typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('vision', fn);
         } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+        return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
       })() ? window.callGeminiVision : null;
       if (!A || !vision || altRequestRef.current) return;
       const resource = props.generatedContent;
@@ -299,6 +299,7 @@ function TimelineView(props) {
     size: 14
   }), " ", isTeacherMode ? t('timeline.preview_game') : t('timeline.launch_sequencer')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-pressed": !!isEditingTimeline,
     onClick: handleToggleIsEditingTimeline,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingTimeline ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'}`
   }, isEditingTimeline ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -345,37 +346,39 @@ function TimelineView(props) {
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 14
-  }), isRevisingTimeline ? t('timeline.revising') : t('timeline.revise_button'))), isTeacherMode && !Array.isArray(generatedContent?.data) && Array.isArray(generatedContent?.data?.validationIssues) && generatedContent.data.validationIssues.length > 0 && /*#__PURE__*/React.createElement("details", {
+  }), isRevisingTimeline ? t('timeline.revising') : t('timeline.revise_button'))), isTeacherMode && !Array.isArray(generatedContent?.data) && Array.isArray(generatedContent?.data?.validationIssues) && generatedContent.data.validationIssues.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "bg-amber-50 border border-amber-200 rounded-lg shadow-sm p-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("details", {
+    className: "flex-1 min-w-0"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer flex flex-wrap items-center gap-2 text-xs font-bold text-amber-800"
   }, /*#__PURE__*/React.createElement(AlertTriangle, {
     size: 14,
-    className: "text-amber-600"
+    className: "text-amber-600",
+    "aria-hidden": "true"
   }), t('timeline.validation.issues_header', {
     count: generatedContent.data.validationIssues.length
-  }) || `${generatedContent.data.validationIssues.length} structural issue(s) detected`, /*#__PURE__*/React.createElement("button", {
+  }) || `${generatedContent.data.validationIssues.length} structural issue(s) detected`), /*#__PURE__*/React.createElement("ul", {
+    className: "mt-2 text-[12px] text-amber-900 list-disc list-inside space-y-1"
+  }, generatedContent.data.validationIssues.map((iss, i) => /*#__PURE__*/React.createElement("li", {
+    key: i
+  }, iss.message)))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: e => {
-      e.preventDefault();
-      e.stopPropagation();
-      handleAutoFixTimeline();
-    },
+    onClick: () => handleAutoFixTimeline(),
     disabled: isAutoFixingTimeline || !timelineTextAiUsable,
     title: !timelineTextAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : undefined,
-    className: "ml-auto flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 transition-colors disabled:opacity-50",
+    className: "shrink-0 self-start flex items-center gap-1 px-2.5 py-1.5 min-h-8 rounded-full text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 transition-colors disabled:opacity-50",
     "aria-busy": isAutoFixingTimeline
   }, isAutoFixingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 12,
     className: reducedMotion ? '' : 'animate-spin',
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
-    size: 12
-  }), isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing…' : t('timeline.validation.auto_fix') || 'Auto-fix')), /*#__PURE__*/React.createElement("ul", {
-    className: "mt-2 text-[12px] text-amber-900 list-disc list-inside space-y-1"
-  }, generatedContent.data.validationIssues.map((iss, i) => /*#__PURE__*/React.createElement("li", {
-    key: i
-  }, iss.message)))), isTeacherMode && generatedContent?.data && /*#__PURE__*/React.createElement("div", {
+    size: 12,
+    "aria-hidden": "true"
+  }), isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing…' : t('timeline.validation.auto_fix') || 'Auto-fix'))), isTeacherMode && generatedContent?.data && /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap justify-end items-center gap-2"
   }, (() => {
     const items = (Array.isArray(generatedContent.data) ? generatedContent.data : generatedContent.data.items || []).filter(item => item && typeof item === 'object');
@@ -431,8 +434,10 @@ function TimelineView(props) {
     onClick: handleLockTimelineMode,
     className: "bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm hover:bg-amber-100 transition-colors",
     title: t('timeline.click_to_lock_tooltip') || 'Click to lock this mode for future generations',
-    "aria-label": t('timeline.click_to_lock_aria') || 'Click to lock this mode'
-  }, "✨ ", t('timeline.detected_label') || 'Detected', ": ", TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label) : /*#__PURE__*/React.createElement("span", {
+    "aria-label": `${t('timeline.detected_label') || 'Detected'}: ${TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label} — ${t('timeline.click_to_lock_aria') || 'Click to lock this mode'}`
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "✨ "), t('timeline.detected_label') || 'Detected', ": ", TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label) : /*#__PURE__*/React.createElement("span", {
     className: "bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm"
   }, "🔒 ", TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label))), /*#__PURE__*/React.createElement("div", {
     className: "absolute left-[-5px] bottom-[-10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[12px] border-t-indigo-200"
@@ -589,12 +594,13 @@ function TimelineView(props) {
     size: 14
   }))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.delete'),
+    "aria-label": `${t('common.delete')} ${timelinePositionLabel(idx)}${item.event ? ': ' + item.event : ''}`,
     onClick: () => handleDeleteTimelineStep(idx),
-    className: "p-1.5 text-slate-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors mt-1",
+    className: "min-w-8 min-h-8 inline-flex items-center justify-center p-1.5 text-slate-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors mt-1",
     title: t('timeline.remove_step_title')
   }, /*#__PURE__*/React.createElement(Trash2, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   })), item.image && isEditingTimeline && /*#__PURE__*/React.createElement("div", {
     "data-timeline-image-tools": true,
     className: "basis-full min-w-0 flex flex-col gap-2 border-t border-slate-200 pt-2 motion-safe:animate-in motion-safe:slide-in-from-top-2 motion-reduce:animate-none"
@@ -612,7 +618,8 @@ function TimelineView(props) {
     className: reducedMotion ? '' : 'animate-spin',
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Ban, {
-    size: 10
+    size: 10,
+    "aria-hidden": "true"
   }), " ", t('timeline.visuals.remove_text_btn') || 'Remove Text'), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-1 min-w-[10rem] gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -624,9 +631,10 @@ function TimelineView(props) {
       [idx]: e.target.value
     })),
     placeholder: t('timeline.visuals.refine_placeholder') || 'e.g., make it cuter',
-    className: "text-xs border border-yellow-600 rounded px-2 py-1 flex-1 focus:outline-none focus:ring-1 focus:ring-yellow-400 min-w-0",
+    className: "text-xs border border-yellow-600 rounded px-2 py-1 flex-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700 min-w-0",
     onKeyDown: e => {
-      if (e.key === 'Enter' && timelineRefinementInputs[idx] && timelineImageAiUsable) {
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Enter' && timelineRefinementInputs[idx] && !isGeneratingTimelineImage[idx] && timelineImageAiUsable) {
         handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]);
       }
     }
@@ -634,14 +642,15 @@ function TimelineView(props) {
     type: "button",
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]),
     disabled: !timelineRefinementInputs[idx] || isGeneratingTimelineImage[idx] || !timelineImageAiUsable,
-    className: "bg-yellow-400 text-yellow-900 px-2 rounded hover:bg-yellow-500 disabled:opacity-50 shrink-0",
+    className: "min-h-8 min-w-8 inline-flex items-center justify-center bg-yellow-400 text-yellow-900 px-2 rounded hover:bg-yellow-500 disabled:opacity-50 shrink-0",
     "aria-label": t('common.apply_edit') || 'Apply edit'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 10,
     className: reducedMotion ? '' : 'animate-spin',
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Send, {
-    size: 10
+    size: 10,
+    "aria-hidden": "true"
   })))), renderTimelineAltField(item, idx)))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleAddTimelineStep,
@@ -697,11 +706,12 @@ function TimelineView(props) {
         next.add(_vKey);
         return next;
       }),
-      className: "ml-auto text-red-600 hover:text-red-600 p-0.5 rounded",
+      className: "ml-auto min-w-6 min-h-6 inline-flex items-center justify-center text-red-700 hover:text-red-900 p-1 rounded",
       "aria-label": t('timeline.validation.dismiss') || 'Dismiss verification concern',
       title: t('timeline.validation.dismiss') || 'Dismiss'
     }, /*#__PURE__*/React.createElement(X, {
-      size: 12
+      size: 12,
+      "aria-hidden": "true"
     }))), /*#__PURE__*/React.createElement("div", {
       className: "text-red-700 leading-relaxed pl-4"
     }, item.verification.concern || (item.verification.factual === false ? t('timeline.validation.factual_concern') || 'Factual concern — review this item.' : t('timeline.validation.position_concern') || 'Position may be wrong — check placement on the axis.')));

@@ -359,11 +359,15 @@
         ? { ok: false, reason: 'undecryptable', retryAfterMs: 0 }
         : { ok: true, reason: 'unlocked', retryAfterMs: 0 };
     }
+    var now = options && Number.isFinite(options.now) ? options.now : Date.now();
+    var wait = retryAfter(now);
+    if (wait > 0) return { ok: false, reason: 'backoff', retryAfterMs: wait };
     try {
       await unlockAiKey(code);
+      writeBackoff(null);
       return { ok: true, reason: 'unlocked', retryAfterMs: 0 };
     } catch (_) {
-      return { ok: false, reason: 'incorrect', retryAfterMs: 0 };
+      return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(now) };
     }
   }
 
@@ -400,7 +404,8 @@
     };
   }
 
-  async function verify(code, options) {
+  var _verifyQueue = Promise.resolve();
+  async function _verifySerialized(code, options) {
     var now = options && Number.isFinite(options.now) ? options.now : Date.now();
     var wait = retryAfter(now);
     if (wait > 0) return { ok: false, reason: 'backoff', retryAfterMs: wait };
@@ -419,6 +424,11 @@
     }
     await syncAiKeyAfterVerifiedCode(code, options);
     return { ok: true, reason: 'verified', retryAfterMs: 0 };
+  }
+  function verify(code, options) {
+    var run = _verifyQueue.then(function () { return _verifySerialized(code, options); });
+    _verifyQueue = run.catch(function () {});
+    return run;
   }
 
   async function setCode(newCode, options) {

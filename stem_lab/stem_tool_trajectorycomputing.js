@@ -1836,38 +1836,40 @@
       t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k) ? (fb != null ? fb : k) : v; }; // robust: a host t() that returns undefined or the raw key on a pack miss (see stem_tool_geologyexplorer.js's note) must still yield the English fallback
       var React = ctx.React;
       var h = React.createElement;
-      var d = (ctx.toolData && ctx.toolData[STATE_KEY]) || {};
+      var isContrast = !!ctx.isContrast;
+      var _tcPlainObj = function (v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+      var d = (ctx.toolData && _tcPlainObj(ctx.toolData[STATE_KEY])) ? ctx.toolData[STATE_KEY] : {};
       var stage = safeStage(d.stage);
-      var completed = d.completed || {};
+      var completed = _tcPlainObj(d.completed) ? d.completed : {};
       var mode = ['guided', 'standard', 'expert'].indexOf(d.mode) >= 0 ? d.mode : 'guided';
       var supportProfile = getSupportProfile(mode);
       var attempts = normalizeAttempts(d.attempts);
       var diagnosticHistory = mergeDiagnosticCodes(d.diagnosticHistory, []);
       var revisionSummary = summarizeRevisionEvidence(attempts, diagnosticHistory);
-      var worksheet = d.worksheet || {};
-      var worksheetResult = d.worksheetResult || null;
-      var tableLookup = d.tableLookup || {};
-      var tableResult = d.tableResult || null;
-      var tableApproximationPrediction = d.tableApproximationPrediction || '';
-      var tableApproximationResult = d.tableApproximationResult || null;
-      var formatAudit = d.formatAudit || {};
-      var formatAuditResult = d.formatAuditResult || null;
-      var printPreview = d.printPreview || null;
-      var printPreviewResult = d.printPreviewResult || null;
+      var worksheet = _tcPlainObj(d.worksheet) ? d.worksheet : {};
+      var worksheetResult = _tcPlainObj(d.worksheetResult) ? d.worksheetResult : null;
+      var tableLookup = _tcPlainObj(d.tableLookup) ? d.tableLookup : {};
+      var tableResult = _tcPlainObj(d.tableResult) ? d.tableResult : null;
+      var tableApproximationPrediction = typeof d.tableApproximationPrediction === 'string' ? d.tableApproximationPrediction : '';
+      var tableApproximationResult = _tcPlainObj(d.tableApproximationResult) ? d.tableApproximationResult : null;
+      var formatAudit = _tcPlainObj(d.formatAudit) ? d.formatAudit : {};
+      var formatAuditResult = _tcPlainObj(d.formatAuditResult) ? d.formatAuditResult : null;
+      var printPreview = _tcPlainObj(d.printPreview) ? d.printPreview : null;
+      var printPreviewResult = _tcPlainObj(d.printPreviewResult) ? d.printPreviewResult : null;
       var printPreviewConfirmed = d.printPreviewConfirmed === true;
-      var batchReadback = d.batchReadback || {};
-      var batchReadbackResult = d.batchReadbackResult || null;
+      var batchReadback = _tcPlainObj(d.batchReadback) ? d.batchReadback : {};
+      var batchReadbackResult = _tcPlainObj(d.batchReadbackResult) ? d.batchReadbackResult : null;
       var code = typeof d.code === 'string' ? d.code : STARTER_PROGRAM;
-      var compileResult = d.compileResult || null;
+      var compileResult = _tcPlainObj(d.compileResult) ? d.compileResult : null;
       var deck = normalizeDeck(d.deck);
-      var deckResult = d.deckResult || null;
-      var runStatus = d.runStatus || 'idle';
-      var batchFailure = d.batchFailure && ['reader', 'compiler'].indexOf(d.batchFailure.stage) >= 0 ? d.batchFailure : null;
-      var reproducibility = d.reproducibility || {};
-      var reproducibilityResult = d.reproducibilityResult || null;
+      var deckResult = _tcPlainObj(d.deckResult) ? d.deckResult : null;
+      var runStatus = typeof d.runStatus === 'string' ? d.runStatus : 'idle';
+      var batchFailure = _tcPlainObj(d.batchFailure) && ['reader', 'compiler'].indexOf(d.batchFailure.stage) >= 0 ? d.batchFailure : null;
+      var reproducibility = _tcPlainObj(d.reproducibility) ? d.reproducibility : {};
+      var reproducibilityResult = _tcPlainObj(d.reproducibilityResult) ? d.reproducibilityResult : null;
       var auditTrail = normalizeAuditTrail(d.auditTrail);
-      var verification = d.verification || {};
-      var verificationResult = d.verificationResult || null;
+      var verification = _tcPlainObj(d.verification) ? d.verification : {};
+      var verificationResult = _tcPlainObj(d.verificationResult) ? d.verificationResult : null;
       var workPattern = d.workPattern === 'solo' ? 'solo' : 'pair';
       var rangeReconciliation = reconcileRangeEvidence(d);
       var verificationReadiness = getVerificationReadiness({ workPattern: workPattern, verification: verification, reproducibilityResult: reproducibilityResult });
@@ -2422,6 +2424,56 @@
             dataTile('release speed', '215 m/s'), dataTile('launch angle', '38 degrees'),
             dataTile('initial height', '30 m'), dataTile('landing zone', '4.55-4.70 km')
           ),
+          /* Bespoke Aurora-3 Ballistic Launch Profile Blueprint SVG */
+          h('div', {
+            style: {
+              margin: '14px 0',
+              borderRadius: 10,
+              overflow: 'hidden',
+              backgroundColor: isContrast ? '#000000' : '#0f2922',
+              border: isContrast ? '2px solid #ffff00' : '1.5px solid #2d6653'
+            }
+          },
+            h('svg', {
+              viewBox: '0 0 640 168',
+              role: 'img',
+              'aria-label': t('stem.trajectorycomputing.briefing_blueprint_aria', 'Aurora Test 3 launch schematic showing a 30 meter tower releasing at 215 meters per second at 38 degrees, decomposed into Vx and Vy components, arcing toward the 4.55 to 4.70 kilometer landing zone.'),
+              style: { width: '100%', height: 'auto', display: 'block' }
+            },
+              h('rect', { x: 0, y: 0, width: 640, height: 168, fill: isContrast ? '#000000' : '#0f2922' }),
+              /* Subtle archival drafting gridlines */
+              [34, 68, 102, 136].map(function (gy) {
+                return h('line', { key: 'gy-' + gy, x1: 16, y1: gy, x2: 624, y2: gy, stroke: isContrast ? '#333333' : '#1f4e42', strokeWidth: 0.8 });
+              }),
+              [120, 240, 360, 480, 600].map(function (gx) {
+                return h('line', { key: 'gx-' + gx, x1: gx, y1: 16, x2: gx, y2: 146, stroke: isContrast ? '#333333' : '#1f4e42', strokeWidth: 0.8 });
+              }),
+              /* Blueprint Header */
+              h('text', { x: 20, y: 24, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'FIG 1.0 // AURORA-3 BALLISTIC LAUNCH PROFILE'),
+              h('text', { x: 620, y: 24, textAnchor: 'end', fill: isContrast ? '#ffffff' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'g = 9.81 m/s\u00B2'),
+              /* Ground Datum Line */
+              h('line', { x1: 24, y1: 138, x2: 616, y2: 138, stroke: isContrast ? '#ffff00' : '#9ad7c0', strokeWidth: 2 }),
+              /* 30m Launch Tower */
+              h('rect', { x: 48, y: 112, width: 12, height: 26, fill: isContrast ? '#ffff00' : '#d8d0b3', stroke: isContrast ? '#000000' : '#173c32', strokeWidth: 1 }),
+              h('text', { x: 54, y: 154, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#cce3d9', fontSize: 10, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }, 'Y0 = 30m'),
+              /* Target Landing Zone Bracket (4.55 - 4.70 km) */
+              h('rect', { x: 472, y: 131, width: 92, height: 14, rx: 3, fill: isContrast ? '#000000' : 'rgba(255,191,71,0.24)', stroke: isContrast ? '#00ff00' : '#ffbf47', strokeWidth: 1.8 }),
+              h('text', { x: 518, y: 156, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'ZONE: 4.55-4.70 km'),
+              /* Unknown Ballistic Arc (dashed — student computes exact landing range) */
+              h('path', { d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 2.6, strokeDasharray: '7 5' }),
+              /* Release Point & Decomposed Velocity Vectors */
+              h('line', { x1: 58, y1: 112, x2: 148, y2: 112, stroke: isContrast ? '#00ff00' : '#9ad7c0', strokeWidth: 2, strokeDasharray: '4 3' }),
+              h('line', { x1: 148, y1: 112, x2: 148, y2: 58, stroke: isContrast ? '#00ff00' : '#9ad7c0', strokeWidth: 2, strokeDasharray: '4 3' }),
+              h('line', { x1: 58, y1: 112, x2: 148, y2: 58, stroke: isContrast ? '#ffffff' : '#ff8a5b', strokeWidth: 3, strokeLinecap: 'round' }),
+              h('circle', { cx: 58, cy: 112, r: 4.5, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#000000', strokeWidth: 1.2 }),
+              h('text', { x: 108, y: 74, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#ffcfb8', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'V0=215 m/s'),
+              h('text', { x: 106, y: 126, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vx = V cos 38\u00B0'),
+              h('text', { x: 156, y: 88, fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vy = V sin 38\u00B0'),
+              /* Apex Callout */
+              h('circle', { cx: 288, cy: 62, r: 4, fill: isContrast ? '#ffff00' : '#ffbf47' }),
+              h('text', { x: 288, y: 49, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Compute t & R = ?')
+            )
+          ),
           h('h3', null, t('stem.trajectorycomputing.your_assignment', 'Your assignment')),
           h('ol', { className: 'tc-lede' },
             h('li', null, t('stem.trajectorycomputing.read_the_printed_trigonometry_table_an', 'Read the printed trigonometry table and record the 38-degree reference values.')),
@@ -2461,6 +2513,44 @@
           h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.keep_units_beside_every_value_use_at_l', 'Keep units beside every value. Use at least two decimal places until the final step.')),
           renderSupportCue('worksheet'),
           renderReferenceTable(),
+          /* Live Velocity Decomposition Vector Triangle SVG */
+          (function () {
+            var vxDisp = worksheet.vx !== undefined && String(worksheet.vx).trim() !== '' ? (String(worksheet.vx).trim() + ' m/s') : 'Vx = ?';
+            var vyDisp = worksheet.vy !== undefined && String(worksheet.vy).trim() !== '' ? (String(worksheet.vy).trim() + ' m/s') : 'Vy = ?';
+            var vxOk = worksheetResult && worksheetResult.fields && worksheetResult.fields.vx && worksheetResult.fields.vx.ok;
+            var vyOk = worksheetResult && worksheetResult.fields && worksheetResult.fields.vy && worksheetResult.fields.vy.ok;
+            return h('div', {
+              style: {
+                margin: '12px 0',
+                borderRadius: 9,
+                overflow: 'hidden',
+                backgroundColor: isContrast ? '#000000' : '#142e27',
+                border: isContrast ? '2px solid #ffff00' : '1.5px solid #2d6653'
+              }
+            },
+              h('svg', {
+                viewBox: '0 0 460 112',
+                role: 'img',
+                'aria-label': t('stem.trajectorycomputing.vector_triangle_aria', 'Right triangle decomposing launch velocity 215 meters per second at 38 degrees into horizontal Vx and vertical Vy components.'),
+                style: { width: '100%', maxWidth: 480, height: 'auto', display: 'block', margin: '0 auto' }
+              },
+                h('rect', { x: 0, y: 0, width: 460, height: 112, fill: isContrast ? '#000000' : '#142e27' }),
+                /* Right triangle */
+                h('line', { x1: 48, y1: 88, x2: 248, y2: 88, stroke: isContrast ? '#00ff00' : (vxOk ? '#4ade80' : '#9ad7c0'), strokeWidth: 2.6 }),
+                h('line', { x1: 248, y1: 88, x2: 248, y2: 22, stroke: isContrast ? '#00ff00' : (vyOk ? '#4ade80' : '#9ad7c0'), strokeWidth: 2.6 }),
+                h('line', { x1: 48, y1: 88, x2: 248, y2: 22, stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 3, strokeLinecap: 'round' }),
+                h('rect', { x: 236, y: 76, width: 12, height: 12, fill: 'none', stroke: isContrast ? '#ffffff' : '#cce3d9', strokeWidth: 1.2 }),
+                h('path', { d: 'M 88 88 A 40 40 0 0 0 84 76', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 1.8 }),
+                h('text', { x: 96, y: 82, fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, '38\u00B0'),
+                h('text', { x: 136, y: 42, fill: isContrast ? '#ffff00' : '#ffbf47', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'V = 215 m/s'),
+                h('text', { x: 148, y: 104, textAnchor: 'middle', fill: isContrast ? '#00ff00' : (vxOk ? '#86efac' : '#e9f7f1'), fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, (vxOk ? '\u2713 ' : '') + vxDisp),
+                h('text', { x: 258, y: 58, fill: isContrast ? '#00ff00' : (vyOk ? '#86efac' : '#e9f7f1'), fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, (vyOk ? '\u2713 ' : '') + vyDisp),
+                h('text', { x: 356, y: 40, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'cos 38\u00B0 \u2192 Vx'),
+                h('text', { x: 356, y: 58, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'sin 38\u00B0 \u2192 Vy'),
+                h('text', { x: 356, y: 78, fill: isContrast ? '#ffffff' : '#cce3d9', fontSize: 10, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }, 'Check: Vx\u00B2+Vy\u00B2=V\u00B2')
+              )
+            );
+          })(),
           (supportProfile.formulaVisibility === 'always' || d.showReference) && h('div', { className: 'tc-formula', 'aria-label': t('stem.trajectorycomputing.formula_reference', 'Formula reference') },
             t('stem.trajectorycomputing.theta_radians_theta_degrees_x_pi_180', 'theta radians = theta degrees x pi / 180\n'),
             t('stem.trajectorycomputing.vx_v_x_cos_theta_vy_v_x_sin_theta', 'Vx = V x cos(theta)        Vy = V x sin(theta)\n'),
@@ -3367,9 +3457,60 @@
           h('a', { className: 'tc-skip-link', href: '#tc-main-content' }, t('stem.trajectorycomputing.skip_to_station_content', 'Skip to station content')),
           h('header', { className: 'tc-top' },
             h('div', null,
-              h('p', { className: 'tc-kicker' }, t('stem.trajectorycomputing.original_historical_stem_simulation', 'Original historical STEM simulation')),
-              h('h1', { className: 'tc-title' }, t('stem.trajectorycomputing.trajectory_computing_lab', 'Trajectory Computing Lab')),
-              h('p', { className: 'tc-subtitle' }, t('stem.trajectorycomputing.from_pencil_table_and_trigonometry_to_', 'From pencil, table, and trigonometry to FORTRAN-style code, punch cards, batch output, and human verification.')),
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14 } },
+                /* Bespoke 1960s Trajectory & Punch-Card Computing Emblem SVG */
+                h('svg', {
+                  width: 52, height: 52, viewBox: '0 0 52 52',
+                  'aria-hidden': 'true',
+                  style: { flexShrink: 0, display: 'block', marginTop: 2 }
+                },
+                  h('rect', {
+                    x: 1, y: 1, width: 50, height: 50, rx: 11,
+                    fill: isContrast ? '#000000' : '#102d27',
+                    stroke: isContrast ? '#ffff00' : '#9ad7c0',
+                    strokeWidth: 1.5
+                  }),
+                  /* Punch-card top registration holes */
+                  [10, 18, 26, 34, 42].map(function (hx) {
+                    return h('rect', { key: 'h-' + hx, x: hx - 2, y: 6, width: 4, height: 3, rx: 0.7, fill: isContrast ? '#ffff00' : '#9ad7c0', opacity: isContrast ? 1 : 0.75 });
+                  }),
+                  /* Parabolic launch arc */
+                  h('path', { d: 'M 9 39 Q 25 10 43 38', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 2.5, strokeLinecap: 'round' }),
+                  /* Launch tower tick & landing reticle */
+                  h('line', { x1: 9, y1: 35, x2: 9, y2: 43, stroke: isContrast ? '#ffffff' : '#e9f7f1', strokeWidth: 2 }),
+                  h('circle', { cx: 43, cy: 38, r: 3.5, fill: isContrast ? '#00ff00' : '#ff8a5b', stroke: isContrast ? '#ffff00' : '#ffffff', strokeWidth: 1.2 }),
+                  /* Horizontal range baseline */
+                  h('line', { x1: 7, y1: 43, x2: 45, y2: 43, stroke: isContrast ? '#ffff00' : '#9ad7c0', strokeWidth: 1.4, strokeDasharray: '3 2' })
+                ),
+                h('div', { style: { minWidth: 0 } },
+                  h('p', { className: 'tc-kicker', style: { margin: 0 } }, t('stem.trajectorycomputing.original_historical_stem_simulation', 'Original historical STEM simulation')),
+                  h('h1', { className: 'tc-title' }, t('stem.trajectorycomputing.trajectory_computing_lab', 'Trajectory Computing Lab')),
+                  h('p', { className: 'tc-subtitle' }, t('stem.trajectorycomputing.from_pencil_table_and_trigonometry_to_', 'From pencil, table, and trigonometry to FORTRAN-style code, punch cards, batch output, and human verification.'))
+                )
+              ),
+              /* Live Mission Telemetry Strip */
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }, 'aria-label': t('stem.trajectorycomputing.mission_telemetry_aria', 'Mission telemetry summary') },
+                [
+                  'AURORA-3',
+                  'V0 215 m/s \u00B7 38\u00B0',
+                  'MODE: ' + mode.toUpperCase(),
+                  'AUDIT: ' + (workPattern === 'pair' ? 'PAIRED' : 'SOLO DUAL-PASS')
+                ].map(function (pill) {
+                  return h('span', {
+                    key: pill,
+                    style: {
+                      padding: '3px 9px',
+                      borderRadius: 999,
+                      backgroundColor: isContrast ? '#000000' : '#102d27',
+                      color: isContrast ? '#ffff00' : '#fff0b5',
+                      border: isContrast ? '1px solid #ffff00' : '1px solid rgba(154,215,192,0.5)',
+                      fontFamily: 'ui-monospace, monospace',
+                      fontSize: 10.5,
+                      fontWeight: 800
+                    }
+                  }, pill);
+                })
+              ),
               h('div', { className: 'tc-progress', role: 'group', 'aria-label': t('stem.trajectorycomputing.audit_progress', 'Audit progress') },
             h('div', { className: 'tc-progress-head' },
                   h('span', { id: 'tc-progress-label' }, t('stem.trajectorycomputing.audit_progress_2', 'Audit progress')),

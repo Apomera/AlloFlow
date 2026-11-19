@@ -1642,7 +1642,7 @@ onSpeak: function(formats) {
                 onKeyDown: function(e) { if (e.key === 'Enter') handleSolve(); },
                 placeholder: 'e.g. ' + ((EXAMPLES[mode] || [])[0] || '2x + 5 = 13'),
                 'aria-label': t('stem.algebraCAS.algebra_expression_input', 'Algebra expression input'),
-                style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
+                style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: '2px solid transparent', outlineOffset: '2px', fontFamily: 'monospace', fontSize: '13px' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
               mathInputButton(expression, function(value) { updMulti({ expression: value, result: null, verify: null, stepCheck: null }); }, 'Enter an algebra expression'),
               // The accessible name is the visible label: it used to be "TRY:".
@@ -1661,6 +1661,61 @@ onSpeak: function(formats) {
               h('div', { style: { fontSize: '11px', fontWeight: '700', color: ACCENT, marginBottom: '8px' } }, t('stem.algebraCAS.step_by_step_solution_2', '\uD83D\uDCCB Step-by-Step Solution')),
               h('div', { style: { fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.6' } },
                 (verify && verify.exact && renderLinearList(expression)) || renderSteps(typeof result === 'string' ? result : '')),
+              // Live Linear Intersection SVG: plots y = LHS(x) and y = RHS(x) to connect symbolic solving to geometry
+              verify && verify.exact && (function() {
+                var parsed = __alloCASPure.parseEquation(expression);
+                var work = __alloCASPure.linearSteps(expression);
+                if (!parsed || !work || !work.ok) return null;
+                var l0 = __alloCASPure.evalAt(parsed.lhs, 0), l1 = __alloCASPure.evalAt(parsed.lhs, 1);
+                var r0 = __alloCASPure.evalAt(parsed.rhs, 0), r1 = __alloCASPure.evalAt(parsed.rhs, 1);
+                if (!isFinite(l0) || !isFinite(l1) || !isFinite(r0) || !isFinite(r1)) return null;
+                var mL = l1 - l0, bL = l0, mR = r1 - r0, bR = r0;
+                var solX = work.kind === 'unique' ? parseFloat(work.answer) : 0;
+                if (!isFinite(solX)) {
+                  var partsF = String(work.answer || '').split('/');
+                  solX = partsF.length === 2 && parseFloat(partsF[1]) ? parseFloat(partsF[0]) / parseFloat(partsF[1]) : 0;
+                }
+                var solY = mL * solX + bL;
+                var xSpan = Math.max(6, Math.ceil(Math.abs(solX) * 1.6) + 2);
+                var xMin = Math.round(solX - xSpan), xMax = Math.round(solX + xSpan);
+                var ySamples = [mL * xMin + bL, mL * xMax + bL, mR * xMin + bR, mR * xMax + bR, solY, 0];
+                var yLo = Math.min.apply(null, ySamples), yHi = Math.max.apply(null, ySamples);
+                var yPad = Math.max(2, (yHi - yLo) * 0.18);
+                var yMin = yLo - yPad, yMax = yHi + yPad;
+                var VW = 340, VH = 148, pX = 34, pY = 18;
+                var gx = function(x) { return pX + ((x - xMin) / (xMax - xMin)) * (VW - 2 * pX); };
+                var gy = function(y) { return VH - pY - ((y - yMin) / (yMax - yMin)) * (VH - 2 * pY); };
+                var colL = isContrast ? '#00ff00' : (isDark ? '#818cf8' : '#4f46e5');
+                var colR = isContrast ? '#ffff00' : (isDark ? '#34d399' : '#059669');
+                var axisCol = isContrast ? '#ffff00' : (isDark ? '#64748b' : '#94a3b8');
+                var x0px = gx(0), y0px = gy(0);
+                var sxPx = gx(solX), syPx = gy(solY);
+                return h('div', { style: { marginTop: '10px', padding: '10px', borderRadius: '10px', border: '1px solid ' + BORDER, background: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc') } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px', marginBottom: '6px', fontSize: '11px', fontWeight: '700' } },
+                    h('span', { style: { color: ACCENT } }, t('stem.algebraCAS.visual_intersection_title', '\uD83D\uDCC8 Geometric View: y = Left vs y = Right')),
+                    h('span', { style: { fontFamily: 'monospace', color: TEXT } }, work.kind === 'unique' ? ('Intersection at x = ' + work.answer) : (work.kind === 'identity' ? 'Lines coincide (all x)' : 'Parallel lines (no intersection)'))
+                  ),
+                  h('svg', {
+                    viewBox: '0 0 ' + VW + ' ' + VH,
+                    width: '100%',
+                    role: 'img',
+                    'aria-label': t('stem.algebraCAS.graph_aria', 'Linear graph comparing left side and right side of ') + expression
+                  },
+                    h('rect', { x: pX, y: pY, width: VW - 2 * pX, height: VH - 2 * pY, fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff'), stroke: BORDER, strokeWidth: 1 }),
+                    x0px >= pX && x0px <= VW - pX && h('line', { x1: x0px, y1: pY, x2: x0px, y2: VH - pY, stroke: axisCol, strokeWidth: 1.2, strokeDasharray: '3 3' }),
+                    y0px >= pY && y0px <= VH - pY && h('line', { x1: pX, y1: y0px, x2: VW - pX, y2: y0px, stroke: axisCol, strokeWidth: 1.2, strokeDasharray: '3 3' }),
+                    h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: colL, strokeWidth: 2.5 }),
+                    h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: colR, strokeWidth: 2.5, strokeDasharray: work.kind === 'identity' ? '6 4' : 'none' }),
+                    work.kind === 'unique' && h('g', null,
+                      h('line', { x1: sxPx, y1: syPx, x2: sxPx, y2: VH - pY, stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 1.4, strokeDasharray: '3 2' }),
+                      h('circle', { cx: sxPx, cy: syPx, r: 5.5, fill: isContrast ? '#00ff00' : '#f59e0b', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.8 }),
+                      h('text', { x: Math.max(pX + 26, Math.min(VW - pX - 26, sxPx)), y: Math.max(pY + 12, syPx - 9), textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: isContrast ? '#ffff00' : TEXT }, 'x = ' + work.answer)
+                    ),
+                    h('text', { x: pX + 4, y: VH - 4, fontSize: 9.5, fontWeight: 700, fill: colL }, '— Left: ' + parsed.lhs),
+                    h('text', { x: VW - pX - 4, y: VH - 4, textAnchor: 'end', fontSize: 9.5, fontWeight: 700, fill: colR }, '— Right: ' + parsed.rhs)
+                  )
+                );
+              })(),
               h('p', { role: 'status', 'data-cas-verification': verify && verify.exact ? 'exact' : 'ai', style: { color: TEXT, fontSize: 12, lineHeight: 1.6 } },
                 verify && verify.unavailable ? 'No AI provider is connected. The local linear solver and local practice are available.' : verify && verify.exact ? 'Exact local solution and algebraic steps. ' + verify.detail :
                   'AI explanation: steps are not independently checked. ' + (verify && verify.method === 'sample' ? (verify.decidable ? (verify.verified ? t('stem.algebraCAS.ai_result_equivalent', 'The engine checked the final result: it equals your expression at {n} test points. This checks the value, not whether the form is the one asked for.').replace('{n}', verify.points || 0) : t('stem.algebraCAS.ai_result_not_equivalent', 'The engine checked the final result and it is NOT equal to your expression, so the AI made a mistake. Do not copy this answer.')) : 'The answer could not be checked locally.') :
@@ -1694,8 +1749,8 @@ onSpeak: function(formats) {
             h('button', { type: 'button', style: btnStyle(false), disabled: isLoading, onClick: startLocalPractice }, 'Start local linear practice'),
             typeof d.practiceNotice === 'string' && d.practiceNotice ? h('p', { role: 'status' }, d.practiceNotice) : null,
             (practiceScore > 0 || practiceStreak > 0) ? h('div', { style: { display: 'flex', gap: '10px', marginBottom: '8px' } },
-              practiceScore > 0 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: 'rgba(34,197,94,0.9)' } }, '\u2B50 ' + practiceScore + ' correct') : null,
-              practiceStreak > 1 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: '#f97316' } }, '\uD83D\uDD25 ' + practiceStreak + ' streak') : null
+              practiceScore > 0 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: (isDark || isContrast) ? '#4ade80' : '#15803d' } }, '\u2B50 ' + practiceScore + ' correct') : null,
+              practiceStreak > 1 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: (isDark || isContrast) ? '#fb923c' : '#c2410c' } }, '\uD83D\uDD25 ' + practiceStreak + ' streak') : null
             ) : null,
             h('div', { style: { marginBottom: '8px' } },
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, t('stem.algebraCAS.difficulty', 'Difficulty')),
@@ -1736,7 +1791,7 @@ onSpeak: function(formats) {
                   onKeyDown: function(e) { if (e.key === 'Enter') handlePracticeCheck(); },
                   placeholder: t('stem.algebraCAS.your_answer', 'Your answer...'),
                   'aria-label': t('stem.algebraCAS.practice_answer_input', 'Practice answer input'),
-                  style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
+                  style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: '2px solid transparent', outlineOffset: '2px', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
                 mathInputButton(practiceAnswer, function(value) { upd('practiceAnswer', value); }, 'Enter your practice answer'),
                 h('button', { onClick: handlePracticeCheck, disabled: isLoading || !practiceAnswer.trim(),
@@ -1754,7 +1809,7 @@ onSpeak: function(formats) {
                   (practiceFeedback.keyStatus === 'wrong' ? t('stem.algebraCAS.key_wrong_note', 'The AI\'s answer key ({key}) does not fit the problem, so the key was wrong. Your answer was checked against the problem itself. The AI\'s worked solution below may repeat the same mistake.') :
                     t('stem.algebraCAS.key_incomplete_note', 'The AI\'s answer key ({key}) left out a solution that you found.')).replace('{key}', String(practiceQ.answer || ''))) : null,
                 h('button', { type: 'button', 'aria-expanded': !!showSolution, onClick: function() { upd('showSolution', !showSolution); },
-                  style: { fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '8px', background: showSolution ? 'rgba(99,102,241,0.15)' : CARD, color: showSolution ? '#a5b4fc' : MUTED, border: '1px solid ' + BORDER, cursor: 'pointer', marginBottom: '6px' }
+                  style: { fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '8px', background: showSolution ? 'rgba(99,102,241,0.15)' : CARD, color: showSolution ? ACCENT : MUTED, border: '1px solid ' + BORDER, cursor: 'pointer', marginBottom: '6px' }
                 }, (showSolution ? '\u25BC' : '\u25B6') + ' Step-by-Step Solution'),
                 showSolution ? h('div', { style: { marginTop: '6px', padding: '8px', borderRadius: '10px', fontSize: '11px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.5', background: 'rgba(15,23,42,0.5)', border: '1px solid ' + BORDER } },
                   (function() { if (practiceQ.source === 'local-linear') { var exactList = renderLinearList(practiceQ.problem); if (exactList) return exactList; } var sol = practiceFeedback.text.match(/SOLUTION:[\s\S]*/i); return sol ? renderSteps(sol[0]) : h('span', { style: { color: MUTED } }, t('stem.algebraCAS.no_solution_available_2', 'No solution available.')); })()
@@ -2103,11 +2158,28 @@ onSpeak: function(formats) {
                   onKeyDown: function(e) { if (e.key === 'Enter') updMulti({ scaleSteps: [], scaleSolved: false, scaleNotice: '', scaleTrialChecked: null, scalePreviousEq: '', scaleTileStep: null, scaleOpResult: null }); },
                   placeholder: t('stem.algebraCAS.e_g_3x_5_14', 'e.g. 3x + 5 = 14'),
                   'aria-label': t('stem.algebraCAS.balance_scale_equation_input', 'Balance scale equation input'),
-                  style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
+                  style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: '2px solid transparent', outlineOffset: '2px', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
                 mathInputButton(scaleEq, function(value) { updMulti({scaleEq:value,scaleSteps:[],scaleSolved:false,scaleNotice:'',scaleTrialChecked:null,scalePreviousEq:'',scaleTileStep:null,scaleOpResult:null}); }, 'Enter a balance-scale equation'),
                 h('button', { 'aria-label': t('stem.algebraCAS.load', 'Load'), onClick: function() { updMulti({ scaleSteps: [], scaleSolved: false, scaleNotice: '', scaleTrialChecked: null, scalePreviousEq: '', scaleTileStep: null, scaleOpResult: null }); },
                   style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, t('stem.algebraCAS.load_2', 'Load'))
+              ),
+              h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px', alignItems: 'center' } },
+                h('span', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase' } }, t('stem.algebraCAS.scale_presets', 'Presets:')),
+                ['2x + 3 = 11', '3x - 4 = 8', '5x + 2 = 2x + 14', '2(x + 3) = 14'].map(function(peq) {
+                  var activeEq = (typeof scaleEq === 'string' ? scaleEq : '').replace(/\s+/g, '') === peq.replace(/\s+/g, '');
+                  return h('button', {
+                    key: peq,
+                    type: 'button',
+                    onClick: function() { updMulti({ scaleEq: peq, scaleSteps: [], scaleSolved: false, scaleNotice: '', scaleTrialChecked: null, scalePreviousEq: '', scaleTileStep: null, scaleOpResult: null }); },
+                    style: {
+                      padding: '3px 8px', borderRadius: '8px', fontSize: '11px', fontFamily: 'monospace', fontWeight: '700', cursor: 'pointer',
+                      background: activeEq ? BTN_FLAT : CARD,
+                      color: activeEq ? BTN_TEXT : ACCENT,
+                      border: '1px solid ' + BORDER
+                    }
+                  }, peq);
+                })
               )
             ),
             // Fullscreen stage: the beam plus the sentences under it. The picture
@@ -2197,7 +2269,7 @@ onSpeak: function(formats) {
                 onKeyDown: function(e) { if (e.key === 'Enter') handleTutorSend(); },
                 placeholder: t('stem.algebraCAS.ask_about_algebra', 'Ask about algebra...'),
                 'aria-label': t('stem.algebraCAS.ask_the_algebra_tutor', 'Ask the algebra tutor'),
-                style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontSize: '12px' },
+                style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: '2px solid transparent', outlineOffset: '2px', fontSize: '12px' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
               // Without a provider Send did nothing at all; it is now disabled and says why.
               h('button', { type: 'button', onClick: handleTutorSend, disabled: !callGemini || isLoading || !tutorInput.trim(), 'aria-describedby': callGemini ? undefined : 'cas-tutor-offline',
@@ -2234,14 +2306,69 @@ onSpeak: function(formats) {
         );
 
         /* ============ MAIN RENDER ============ */
+        var totalSolved = (typeof d._solveCount === 'number' && isFinite(d._solveCount)) ? d._solveCount : 0;
+        var totalScale = (typeof d._scaleSolves === 'number' && isFinite(d._scaleSolves)) ? d._scaleSolves : 0;
+        var safeStreak = (typeof practiceStreak === 'number' && isFinite(practiceStreak)) ? practiceStreak : 0;
         return h('div', { 'data-algebra-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: { padding: '14px', color: TEXT, background: BG, border: '1px solid ' + BORDER, borderRadius: '16px', minHeight: '400px' } },
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-            h('div', null,
-              h('h3', { style: { fontSize: '16px', fontWeight: '700', margin: 0 } }, t('stem.algebraCAS.algebra_cas', '\uD83E\uDDEE Algebra CAS')),
-              h('p', { style: { fontSize: '10px', color: MUTED, margin: '2px 0 0 0' } }, GRADE_INTROS[band] || 'Step-by-step symbolic math powered by AI')
-            ),
-            h('button', { 'aria-label': t('stem.algebraCAS.back', 'Back'), onClick: function() { setStemLabTool(null); },
-              style: { padding: '6px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, fontWeight: '700', fontSize: '11px', cursor: 'pointer' } }, t('stem.algebraCAS.back_2', '\u2190 Back'))
+          // Bespoke Symbolic Algebra Studio Hero Header
+          h('div', {
+            style: isContrast
+              ? { padding: '14px 16px', borderRadius: '14px', background: '#000000', border: '2px solid #ffff00', marginBottom: '12px', color: '#ffff00' }
+              : { padding: '14px 16px', borderRadius: '14px', background: isDark ? 'linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #0f172a 100%)' : 'linear-gradient(135deg, #312e81 0%, #4f46e5 55%, #1e1b4b 100%)', border: '1px solid rgba(165,180,252,0.35)', marginBottom: '12px', color: '#ffffff', boxShadow: '0 8px 24px rgba(49,46,129,0.22)' }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: '1 1 220px' } },
+                // Bespoke Inline SVG Symbolic Balance & Curve Emblem
+                h('svg', {
+                  viewBox: '0 0 48 48', width: 44, height: 44, style: { flexShrink: 0 },
+                  role: 'img', 'aria-label': t('stem.algebraCAS.emblem_aria', 'Symbolic algebra balance and function curve emblem')
+                },
+                  h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.45)', stroke: isContrast ? '#ffff00' : '#a5b4fc', strokeWidth: 2 }),
+                  h('path', { d: 'M 10 34 Q 24 8, 38 14', fill: 'none', stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth: 2.6, strokeLinecap: 'round' }),
+                  h('line', { x1: 10, y1: 28, x2: 38, y2: 28, stroke: isContrast ? '#ffff00' : '#e0e7ff', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('polygon', { points: '24,28 19,38 29,38', fill: isContrast ? '#ffff00' : '#c7d2fe' }),
+                  h('circle', { cx: 26, cy: 20, r: 3.5, fill: isContrast ? '#00ff00' : '#fbbf24' })
+                ),
+                h('div', { style: { minWidth: 0 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' } },
+                    h('span', {
+                      style: isContrast
+                        ? { padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.06em', background: '#000000', color: '#00ff00', border: '1px solid #00ff00' }
+                        : { padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(255,255,255,0.16)', color: '#e0e7ff', border: '1px solid rgba(255,255,255,0.28)' }
+                    }, t('stem.algebraCAS.subject_badge', 'Math \u00B7 Symbolic CAS')),
+                    h('span', {
+                      style: isContrast
+                        ? { padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: '700', background: '#000000', color: '#ffff00', border: '1px solid #ffff00' }
+                        : { padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: '700', background: 'rgba(16,185,129,0.22)', color: '#a7f3d0', border: '1px solid rgba(52,211,153,0.4)' }
+                    }, t('stem.algebraCAS.exact_engine_pill', 'Exact Linear Engine'))
+                  ),
+                  h('h3', { style: { fontSize: '18px', fontWeight: '800', margin: 0, color: isContrast ? '#ffff00' : '#ffffff' } }, t('stem.algebraCAS.algebra_cas', '\uD83E\uDDEE Algebra CAS')),
+                  h('p', { style: { fontSize: '11px', color: isContrast ? '#fde047' : '#e0e7ff', margin: '2px 0 0 0', lineHeight: 1.4 } }, GRADE_INTROS[band] || 'Step-by-step symbolic math')
+                )
+              ),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
+                [
+                  { label: t('stem.algebraCAS.metric_solved', 'Solved'), val: totalSolved },
+                  { label: t('stem.algebraCAS.metric_scale', 'Scale'), val: totalScale },
+                  { label: t('stem.algebraCAS.metric_streak', 'Streak'), val: safeStreak }
+                ].map(function(m) {
+                  return h('div', {
+                    key: m.label,
+                    style: isContrast
+                      ? { padding: '4px 10px', borderRadius: '10px', background: '#000000', border: '1px solid #ffff00', textAlign: 'center' }
+                      : { padding: '4px 10px', borderRadius: '10px', background: 'rgba(15,23,42,0.38)', border: '1px solid rgba(255,255,255,0.2)', textAlign: 'center' }
+                  },
+                    h('div', { style: { fontSize: '13px', fontWeight: '800', color: isContrast ? '#00ff00' : '#ffffff', fontVariantNumeric: 'tabular-nums' } }, m.val),
+                    h('div', { style: { fontSize: '9px', fontWeight: '700', textTransform: 'uppercase', color: isContrast ? '#ffff00' : '#c7d2fe' } }, m.label)
+                  );
+                }),
+                h('button', { 'aria-label': t('stem.algebraCAS.back', 'Back'), onClick: function() { setStemLabTool(null); },
+                  style: isContrast
+                    ? { padding: '7px 12px', borderRadius: '10px', background: '#000000', border: '1px solid #ffff00', color: '#ffff00', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }
+                    : { padding: '7px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.3)', color: '#ffffff', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }
+                }, t('stem.algebraCAS.back_2', '\u2190 Back'))
+              )
+            )
           ),
           badgeBar,
           tabBar,

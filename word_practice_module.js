@@ -5444,8 +5444,23 @@ return assets;
     const title = String((pack && pack.title) || (input && input.title) || fallbackTitle).trim() || fallbackTitle;
     return { title, items };
   }
+  function printableCreditsFooter(items) {
+    const list = Array.isArray(items) ? items : [];
+    if (!list.some(it => it && it.imgSrc)) return '';
+    const seen = new Set(), credits = [];
+    list.forEach(it => {
+      if (!it || !it.imgSrc) return;
+      const c = String(it.imgCredit || '').replace(/!/g, '.').trim();
+      if (c && !seen.has(c)) { seen.add(c); credits.push(c); }
+    });
+    const text = credits.length
+      ? 'Picture credits: ' + credits.map(escHtml).join('; ') + '.'
+      : 'Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0.';
+    return '<footer class="credits">' + text + '</footer>';
+  }
   function buildFlashcardsHtml(input, rawOptions = {}) {
     const data = printableCardsData(input, rawOptions, 'Word Flashcards');
+    const creditsHtml = printableCreditsFooter(data.items);
     const rows = data.items.map(it => {
       const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
       const picHtml = it.imgSrc ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + escHtml(it.imgAlt || it.word) + '">' : '';
@@ -5478,6 +5493,7 @@ return assets;
       '.elkonin-box{border:2px solid #334155;min-width:28px;height:30px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border-radius:4px}',
       '.card-pic{width:76px;height:76px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff;flex-shrink:0}',
       '.back-text p{margin:0 0 6px;font-size:14px;line-height:1.4}',
+      '.credits{margin-top:16px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:11px;color:#475569;line-height:1.4}',
       '@media print{body{margin:10mm} .noprint{display:none}}',
       '</style>',
       '</head>',
@@ -5485,12 +5501,14 @@ return assets;
       '<h1>' + escHtml(data.title) + ' — Cut-and-Fold Flashcards</h1>',
       '<p class="directions">Cut across each card row, fold along the dashed line, and tape or glue the front and back together.</p>',
       rows,
+      creditsHtml,
       '</body>',
       '</html>',
     ].join('\n');
   }
   function buildFrayerHtml(input, rawOptions = {}) {
     const data = printableCardsData(input, rawOptions, 'Frayer Study Sheets');
+    const creditsHtml = printableCreditsFooter(data.items);
     const cards = data.items.map(it => {
       const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
       const picBlock = it.imgSrc
@@ -5527,12 +5545,14 @@ return assets;
       '.card-pic{max-width:86px;max-height:86px;object-fit:contain;display:block}',
       '.sketch-space{height:64px;border:1px dashed #94a3b8;border-radius:4px;display:grid;place-items:center;font-size:12px;color:#64748b}',
       '.write-lines div{border-bottom:1px solid #94a3b8;height:26px}',
+      '.credits{margin-top:16px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:11px;color:#475569;line-height:1.4}',
       '@media print{body{margin:10mm} .frayer-card{page-break-inside:avoid;break-inside:avoid}}',
       '</style>',
       '</head>',
       '<body>',
       '<h1>' + escHtml(data.title) + ' — Frayer Study Sheets</h1>',
       cards,
+      creditsHtml,
       '</body>',
       '</html>',
     ].join('\n');
@@ -5850,7 +5870,7 @@ return assets;
     const items = data.items || [];
     const order = sortingOrder(items.length, 313);
     const chain = order.map(idx => items[idx]);
-    const cardsHtml = chain.length
+    const cardsHtml = chain.length >= 2
       ? chain.map((cur, i) => {
           const next = chain[(i + 1) % chain.length];
           const boxes = cur.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
@@ -5862,7 +5882,7 @@ return assets;
           const whoClue = nextDef || nextEx || ('the word with sound boxes: ' + next.boxes.join(' / '));
           const roleTag = i === 0
             ? 'Card 1 — Start Card'
-            : (i === chain.length - 1 && chain.length > 1 ? ('Card ' + (i + 1) + ' — Loops to Card 1') : ('Card ' + (i + 1)));
+            : (i === chain.length - 1 ? ('Card ' + (i + 1) + ' — Loops to Card 1') : ('Card ' + (i + 1)));
           return '<article class="loop-card" data-step="' + (i + 1) + '">'
             + '<div class="loop-tag">' + escHtml(roleTag) + '</div>'
             + '<div class="loop-have"><div class="loop-label">I have</div><div class="loop-word">' + escHtml(cur.word) + '</div>'
@@ -5872,7 +5892,7 @@ return assets;
             + '</article>';
         }).join('\n')
       : '<article class="loop-card"><div class="loop-have"><div class="loop-label">Add words</div><p class="loop-clue">Add at least two words before printing loop cards.</p></div></article>';
-    const keyRows = chain.map((cur, i) => {
+    const keyRows = chain.length >= 2 ? chain.map((cur, i) => {
       const next = chain[(i + 1) % chain.length];
       const nextDef = blankedSentence(next.definition, next.word);
       const nextEx = blankedSentence(next.example, next.word);
@@ -5881,7 +5901,7 @@ return assets;
         ? ('Yes' + (cur.imgCredit ? ' (' + escHtml(cur.imgCredit) + ')' : ''))
         : 'None';
       return '<tr><td>' + (i + 1) + '</td><td><strong>' + escHtml(cur.word) + '</strong></td><td>' + escHtml(whoClue) + '</td><td><strong>' + escHtml(next.word) + '</strong></td><td>' + picInfo + '</td></tr>';
-    }).join('\n');
+    }).join('\n') : '';
     return [
       '<!doctype html>',
       '<html lang="en">',
@@ -6016,7 +6036,7 @@ return assets;
 (function (root) {
   'use strict';
   const CSS = `
-.awp,.awp *{box-sizing:border-box}.awp{font:1rem/1.5 system-ui,sans-serif;color:#14213d;background:#f5f7fb;overflow-wrap:anywhere;color-scheme:light}.awp-overlay{position:fixed;inset:0;z-index:2147483000;padding:20px;display:flex;align-items:center;justify-content:center;background:#14213dcc}.awp-dialog{width:min(100%,1100px);max-height:calc(100dvh - 40px);overflow:auto;border-radius:20px;background:#f5f7fb;padding:1.5rem;box-shadow:0 16px 80px #0005}.awp h1:not(.allo-anno-scope *),.awp p:not(.allo-anno-scope *){margin:0 0 .75rem}.awp h1{font-size:1.625rem;line-height:1.2}.awp button:not(.allo-anno-scope *),.awp input:not(.allo-anno-scope *),.awp textarea:not(.allo-anno-scope *),.awp select:not(.allo-anno-scope *){font:inherit;color:#14213d}.awp button:not(.allo-anno-scope *){min-height:44px;padding:.5625rem .9375rem;border:1px solid #a8b4c7;border-radius:9px;background:white;cursor:pointer;white-space:normal}.awp button:hover:not(:disabled):not(.allo-anno-scope *){background:#e9effa}.awp button:disabled:not(.allo-anno-scope *){color:#596579;background:#e7ebf2;cursor:default}.awp .awp-primary{color:white;background:#294fc3;border-color:#294fc3}.awp .awp-primary:hover:not(:disabled){background:#1e3d99}.awp .awp-aa{min-width:44px;font-weight:700}.awp :focus-visible{outline:3px solid #bc4a00;outline-offset:3px}.awp input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.allo-anno-scope *),.awp textarea:not(.allo-anno-scope *),.awp select:not(.allo-anno-scope *){width:100%;max-width:100%;border:1px solid #8191a9;background:white;border-radius:7px;padding:.5625rem}.awp textarea:not(.allo-anno-scope *){resize:vertical;min-height:10.625rem}.awp label:not(.allo-anno-scope *){display:block;font-weight:600}.awp label>span{display:block;margin-bottom:.3125rem}.awp label:has(input[type=checkbox]):not(.allo-anno-scope *){display:flex;align-items:center;gap:.5625rem;font-weight:400}.awp input[type=checkbox]:not(.allo-anno-scope *){width:1.25rem;height:1.25rem;flex-shrink:0;accent-color:#294fc3}.awp-head,.awp-row{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap}.awp-head{justify-content:space-between;margin-bottom:1.25rem}.awp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem}.awp-fields{display:grid;gap:.8125rem}.awp-note{font-size:.875rem;color:#45536a}.awp-status{min-height:1.5625rem;margin-top:.875rem!important;color:#263e6c}.awp-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.125rem}.awp-surface{border:1px solid #bdc8da;border-radius:14px;background:white;padding:1.125rem;min-width:0}.awp-player{width:100%;max-width:1400px;margin:auto;padding:1.25rem}.awp-stage{position:relative;display:flex;align-items:safe center;justify-content:center;min-height:48vh;max-height:60dvh;padding:2.125rem;border:1px solid #bac6d9;border-radius:16px;background:white;margin:1rem 0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}.awp-card{max-width:100%;width:100%;text-align:center;line-height:var(--allo-reader-line-height,1.5);letter-spacing:var(--allo-reader-letter-spacing,normal)}.awp-word{font-weight:750;font-size:clamp(2.125rem,9vw,7rem);line-height:var(--allo-reader-line-height,1.5);overflow-wrap:anywhere;white-space:normal}.awp-stage[data-position^=top]{align-items:flex-start}.awp-stage[data-position^=bottom]{align-items:safe flex-end}.awp-stage[data-position$=left] .awp-card{text-align:left}.awp-stage[data-position$=right] .awp-card{text-align:right}.awp-detail{font-size:clamp(1.25rem,3vw,2.125rem);line-height:var(--allo-reader-line-height,1.5);white-space:pre-wrap}.awp-phonemes{display:flex;justify-content:center;flex-wrap:wrap;gap:.875rem;font-size:clamp(1.75rem,6vw,4.5rem);font-weight:650}.awp-phoneme{padding:.125rem .75rem;border-bottom:4px solid #294fc3}.awp-choices{display:flex;justify-content:center;flex-wrap:wrap;gap:.625rem;margin-top:1.5rem}.awp-choices button{font-size:clamp(1.25rem,3vw,1.875rem);min-width:5.625rem}.awp-feedback{font-size:1.25rem;min-height:1.875rem;margin-top:.875rem!important}.awp-progress{font-variant-numeric:tabular-nums}.awp-footer{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap}.awp:fullscreen{overflow:auto;background:#f5f7fb}.awp [hidden]{display:none!important}.awp .awp-gap{margin-top:.875rem}.awp .awp-review[aria-pressed=true]{background:#fdf0cf;border-color:#926300;color:#664500}
+.awp,.awp *{box-sizing:border-box}.awp{font:1rem/1.5 system-ui,sans-serif;color:#14213d;background:#f5f7fb;overflow-wrap:anywhere;color-scheme:light}.awp-overlay{position:fixed;inset:0;z-index:2147483000;padding:20px;display:flex;align-items:center;justify-content:center;background:#14213dcc}.awp-dialog{width:min(100%,1100px);max-height:calc(100dvh - 40px);overflow:auto;border-radius:20px;background:#f5f7fb;padding:1.5rem;box-shadow:0 16px 80px #0005}.awp h1:not(.allo-anno-scope *),.awp .awp-head h2:not(.allo-anno-scope *),.awp p:not(.allo-anno-scope *){margin:0 0 .75rem}.awp h1{font-size:1.625rem;line-height:1.2}.awp .awp-head h2{font-size:1.625rem;line-height:1.2}.awp button:not(.allo-anno-scope *),.awp input:not(.allo-anno-scope *),.awp textarea:not(.allo-anno-scope *),.awp select:not(.allo-anno-scope *){font:inherit;color:#14213d}.awp button:not(.allo-anno-scope *){min-height:44px;padding:.5625rem .9375rem;border:1px solid #a8b4c7;border-radius:9px;background:white;cursor:pointer;white-space:normal}.awp button:hover:not(:disabled):not(.allo-anno-scope *){background:#e9effa}.awp button:disabled:not(.allo-anno-scope *){color:#596579;background:#e7ebf2;cursor:default}.awp .awp-primary{color:white;background:#294fc3;border-color:#294fc3}.awp .awp-primary:hover:not(:disabled){background:#1e3d99}.awp .awp-aa{min-width:44px;font-weight:700}.awp :focus-visible{outline:3px solid #bc4a00;outline-offset:3px}.awp input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.allo-anno-scope *),.awp textarea:not(.allo-anno-scope *),.awp select:not(.allo-anno-scope *){width:100%;max-width:100%;border:1px solid #8191a9;background:white;border-radius:7px;padding:.5625rem}.awp textarea:not(.allo-anno-scope *){resize:vertical;min-height:10.625rem}.awp label:not(.allo-anno-scope *){display:block;font-weight:600}.awp label>span{display:block;margin-bottom:.3125rem}.awp label:has(input[type=checkbox]):not(.allo-anno-scope *){display:flex;align-items:center;gap:.5625rem;font-weight:400}.awp input[type=checkbox]:not(.allo-anno-scope *){width:1.25rem;height:1.25rem;flex-shrink:0;accent-color:#294fc3}.awp-head,.awp-row{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap}.awp-head{justify-content:space-between;margin-bottom:1.25rem}.awp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem}.awp-fields{display:grid;gap:.8125rem}.awp-note{font-size:.875rem;color:#45536a}.awp-status{min-height:1.5625rem;margin-top:.875rem!important;color:#263e6c}.awp-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.125rem}.awp-surface{border:1px solid #bdc8da;border-radius:14px;background:white;padding:1.125rem;min-width:0}.awp-player{width:100%;max-width:1400px;margin:auto;padding:1.25rem}.awp-stage{position:relative;display:flex;align-items:safe center;justify-content:center;min-height:48vh;max-height:60dvh;padding:2.125rem;border:1px solid #bac6d9;border-radius:16px;background:white;margin:1rem 0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}.awp-card{max-width:100%;width:100%;text-align:center;line-height:var(--allo-reader-line-height,1.5);letter-spacing:var(--allo-reader-letter-spacing,normal)}.awp-word{font-weight:750;font-size:clamp(2.125rem,9vw,7rem);line-height:var(--allo-reader-line-height,1.5);overflow-wrap:anywhere;white-space:normal}.awp-stage[data-position^=top]{align-items:flex-start}.awp-stage[data-position^=bottom]{align-items:safe flex-end}.awp-stage[data-position$=left] .awp-card{text-align:left}.awp-stage[data-position$=right] .awp-card{text-align:right}.awp-detail{font-size:clamp(1.25rem,3vw,2.125rem);line-height:var(--allo-reader-line-height,1.5);white-space:pre-wrap}.awp-phonemes{display:flex;justify-content:center;flex-wrap:wrap;gap:.875rem;font-size:clamp(1.75rem,6vw,4.5rem);font-weight:650}.awp-phoneme{padding:.125rem .75rem;border-bottom:4px solid #294fc3}.awp-choices{display:flex;justify-content:center;flex-wrap:wrap;gap:.625rem;margin-top:1.5rem}.awp-choices button{font-size:clamp(1.25rem,3vw,1.875rem);min-width:5.625rem}.awp-feedback{font-size:1.25rem;min-height:1.875rem;margin-top:.875rem!important}.awp-progress{font-variant-numeric:tabular-nums}.awp-footer{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap}.awp:fullscreen{overflow:auto;background:#f5f7fb}.awp [hidden]{display:none!important}.awp .awp-gap{margin-top:.875rem}.awp .awp-review[aria-pressed=true]{background:#fdf0cf;border-color:#926300;color:#664500}
 .awp-anno-tools{margin-top:.5rem}.awp-anno-tools:empty{display:none}.awp-anno-layer{position:static;width:0;height:0;flex:none}
 .awp-sr{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .awp-card .awp-definition,.awp-card .awp-example,.awp-card .awp-origin{text-align:start}
@@ -6405,7 +6425,7 @@ return assets;
       });
       const back = add('keep_editing', 'Keep editing', cancel);
       dialog.addEventListener('cancel', event => { event.preventDefault(); cancel(); });
-      dialog.addEventListener('keydown', event => { event.stopPropagation(); if (event.key === 'Escape') { event.preventDefault(); cancel(); } });
+      dialog.addEventListener('keydown', event => { event.stopPropagation(); if (event.key === 'Escape' && !(event.isComposing || event.keyCode === 229)) { event.preventDefault(); cancel(); } });
       signal?.addEventListener('abort', cancel, { once: true }); doc.body.appendChild(dialog);
       if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', ''); back.focus();
     });
@@ -6441,7 +6461,7 @@ return assets;
       dialog.addEventListener('cancel', event => { event.preventDefault(); cancel(); });
       dialog.addEventListener('keydown', event => {
         event.stopPropagation();
-        if (event.key === 'Escape') { event.preventDefault(); cancel(); }
+        if (event.key === 'Escape' && !(event.isComposing || event.keyCode === 229)) { event.preventDefault(); cancel(); }
       });
       signal.addEventListener('abort', cancel, { once: true });
       doc.body.appendChild(dialog);
@@ -7205,7 +7225,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     if (inlineHost) inlineHost.replaceChildren(overlay);
     else { doc.body.style.overflow = 'hidden'; doc.body.appendChild(overlay); }
     const make = (tag, text, parent, cls) => { const node = doc.createElement(tag); if (text != null) { node.textContent = text; if (dialogTextLanguages.has(text)) setLanguage(node, dialogTextLanguages.get(text)); } if (cls) node.className = cls; (parent || dialog).appendChild(node); return node; };
-    const header = make('div', null, dialog, 'awp-head'); make('h1', tx('word_practice.title', 'Present & Export'), header);
+    const header = make('div', null, dialog, 'awp-head'); make(inlineHost ? 'h2' : 'h1', tx('word_practice.title', 'Present & Export'), header);
     const headerActions = make('div', null, header, 'awp-row');
     // The host's reading settings, checked now: a host without the bridge gets no button.
     const readingLibrary = () => { try { const lib = root.AlloModules && root.AlloModules.UIFontLibrary; return lib && typeof lib.openReadingSettings === 'function' && lib.readingSettingsAvailable() ? lib : null; } catch (_) { return null; } };
@@ -8082,7 +8102,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     wordsInput.addEventListener('input', scheduleCoverage); repetitions.addEventListener('input', scheduleCoverage);
     function trap(event) {
       if (inlineHost) return;
-      if (event.key === 'Escape' && !doc.fullscreenElement) { event.preventDefault(); requestClose(); return; }
+      if (event.key === 'Escape' && !doc.fullscreenElement && !(event.isComposing || event.keyCode === 229)) { event.preventDefault(); requestClose(); return; }
       if (event.key !== 'Tab') return;
       const scope = doc.fullscreenElement && doc.fullscreenElement.contains(playerHost) ? doc.fullscreenElement : dialog;
       const candidates = Array.from(scope.querySelectorAll('button,input,textarea,select,summary,a[href],[tabindex="0"]')).filter(node => !node.disabled && !node.closest('[hidden]') && (!node.closest('details:not([open])') || node.tagName === 'SUMMARY') && node.getClientRects().length);

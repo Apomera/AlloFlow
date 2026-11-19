@@ -456,6 +456,17 @@ describe('teacher preview mode (T4)', () => {
     expect(afterRemove.blocks[0].items.some((it) => it.word === 'cat')).toBe(false);
     expect(afterRemove.blocks[1].items.some((it) => it.word === 'cat')).toBe(true);
 
+    // Wave 2B: Preview edits survive a read-only Back visit to step 2 and offer a Restore button in #sum-out.
+    expect(page.$('sum-out').textContent).toContain('1 question removed in Preview');
+    expect(page.$('preview-restore')).toBeTruthy();
+    page.$('back-3').click();
+    page.$('next-2').click();
+    await page.ready();
+    expect(lessonOf(page.built()).blocks[0].items.some((it) => it.word === 'cat')).toBe(false);
+    page.$('preview-restore').click();
+    await page.ready();
+    expect(lessonOf(page.built()).blocks[0].items.some((it) => it.word === 'cat')).toBe(true);
+
     peer.close();
   });
 
@@ -635,5 +646,97 @@ describe('teacher preview mode (T4)', () => {
     const visibleAndStrings = doc.title + '\n' + doc.body.textContent + '\n' + (js.match(/'[^'\n]*'/g) || []).join('\n');
     expect(visibleAndStrings).not.toMatch(/\blearners?\b|\btests?\b|\bquiz|\bassessments?\b|\bprobes?\b|practis|licence|colour/i);
     expect((js.match(/'[^'\n]*'/g) || []).join('\n')).not.toMatch(/practice|learner/i);
+  });
+
+  it('handoff.put() resolves true and hostPreview without onAction renders a read-only bar with no action buttons', async () => {
+    const dbs = new Map();
+    const fakeIdb = {
+      open(name) {
+        const req = {};
+        queueMicrotask(() => {
+          let fresh = false;
+          if (!dbs.has(name)) { dbs.set(name, new Map()); fresh = true; }
+          const stores = dbs.get(name);
+          req.result = {
+            objectStoreNames: { contains: (s) => stores.has(s) },
+            createObjectStore(s, o) { stores.set(s, { keyPath: o.keyPath, rows: new Map() }); },
+            close() {},
+            transaction(s) {
+              const store = stores.get(s), tx = {};
+              let pending = 0;
+              const done = () => queueMicrotask(() => { if (!pending && tx.oncomplete) tx.oncomplete(); });
+              const ask = (fn) => { const r = {}; pending++; queueMicrotask(() => { r.result = fn(); if (r.onsuccess) r.onsuccess(); pending--; done(); }); return r; };
+              tx.objectStore = () => ({ put: (v) => ask(() => { store.rows.set(v[store.keyPath], v); }), get: (k) => ask(() => store.rows.get(k)), delete: (k) => ask(() => { store.rows.delete(k); }) });
+              return tx;
+            },
+          };
+          if (fresh && req.onupgradeneeded) req.onupgradeneeded();
+          req.onsuccess();
+        });
+        return req;
+      },
+    };
+    const dom = new JSDOM('<!doctype html><html><body></body></html>', { runScripts: 'outside-only', url: 'https://site.test/packets-open.html' });
+    opened.push(dom.window);
+    Object.defineProperty(dom.window, 'indexedDB', { configurable: true, value: fakeIdb });
+    dom.window.eval(read('packets_handoff.js'));
+    const ok = await dom.window.AlloPacketHandoff.put({ name: 'test.html', bytes: new TextEncoder().encode('<p>ok</p>').buffer });
+    expect(ok).toBe(true);
+
+    const Bus = channelBus();
+    const sampleHtml = checkBuilder.buildCheckPacket({ lesson: checkBuilder.lessonFromMathProblems({ title: 'Facts', problems: checkBuilder.parseProblems('2+3,4+1'), timeLimitS: 60 }), loader }).html;
+    const session = dom.window.AlloPacketHandoff.hostPreview({ url: 'blob:read-only', html: sampleHtml, Channel: Bus });
+    const peer = new Bus('alloflow-packets-preview');
+    const bars = [];
+    peer.onmessage = (e) => { if (e.data && e.data.type === 'preview-bar') bars.push(e.data.bar); };
+    peer.postMessage({ type: 'preview-hello', id: 'blob:read-only' });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(bars.length).toBeGreaterThanOrEqual(1);
+    expect(bars[0].where).toMatch(/Question 1 of 2/);
+    expect(bars[0].buttons).toEqual([]);
+    session.stop();
+    peer.close();
+  });
+
+  it('Wave 5B: packets-try.js revokes the initial dynamic blobUrl on first preview-reload and revokes active blobUrl on pagehide', async () => {
+    const Bus = channelBus();
+    const previewId = 'blob:https://packets.test/init-leak-check';
+    const makeHtml = (n) => checkBuilder.buildCheckPacket({
+      lesson: checkBuilder.lessonFromMathProblems({ title: 'Facts', problems: checkBuilder.parseProblems('2+3,4+1,5+2').slice(0, n), timeLimitS: 60 }),
+      loader,
+    }).html;
+    const initHtml = makeHtml(3);
+    const nextHtml = makeHtml(2);
+
+    const tryDom = new JSDOM(read('packets-try.html'), {
+      runScripts: 'outside-only',
+      pretendToBeVisual: true,
+      url: 'https://packets.test/packets-try.html#' + previewId,
+    });
+    const tw = tryDom.window;
+    opened.push(tw);
+    const created = [], revoked = [];
+    tw.BroadcastChannel = Bus;
+    tw.Blob = KeepBlob;
+    tw.URL.createObjectURL = () => { const u = 'blob:https://packets.test/dyn-' + (created.length + 1); created.push(u); return u; };
+    tw.URL.revokeObjectURL = (u) => { revoked.push(u); };
+    tw.fetch = async (url) => url === previewId
+      ? { ok: true, status: 200, text: async () => initHtml }
+      : { ok: false, status: 404, text: async () => '' };
+
+    tw.eval(read('packets-try.js'));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(created).toEqual(['blob:https://packets.test/dyn-1']);
+    expect(revoked).toEqual([]);
+
+    const peer = new Bus('alloflow-packets-preview');
+    peer.postMessage({ type: 'preview-reload', id: previewId, html: nextHtml, snapshot: {}, bar: { hidden: false, where: 'Question 1 of 2', buttons: [] } });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(created).toEqual(['blob:https://packets.test/dyn-1', 'blob:https://packets.test/dyn-2']);
+    expect(revoked).toEqual(['blob:https://packets.test/dyn-1']);
+
+    tw.dispatchEvent(new tw.Event('pagehide'));
+    expect(revoked).toEqual(['blob:https://packets.test/dyn-1', 'blob:https://packets.test/dyn-2']);
+    peer.close();
   });
 });

@@ -502,7 +502,7 @@
     try {
       if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
     } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   }
   // Hosts whose callGeminiAudio advertises _alloJsonMaxOutputTokens handle keyless
   // Canvas and long JSON output, so the voice goes through the host transport and
@@ -563,12 +563,17 @@
               responseMimeType: 'application/json'
           }
       };
+      var gemCtrl = typeof AbortController === 'function' ? new AbortController() : null;
+      var gemTimer = gemCtrl ? setTimeout(function () { gemCtrl.abort(); }, 45000) : null;
       try {
-          var response = await fetch(url, {
+          var fetchOpts = {
               method: 'POST',
               headers: headers,
               body: JSON.stringify(payload)
-          });
+          };
+          if (gemCtrl) fetchOpts.signal = gemCtrl.signal;
+          var response = await fetch(url, fetchOpts);
+          if (!response || !response.ok) return null;
           var data = await response.json();
           var resultText = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
           if (!resultText) return null;
@@ -576,6 +581,8 @@
       } catch (error) {
           warnLog('Gemini Audio Analysis Failed:', error);
           return null;
+      } finally {
+          if (gemTimer) clearTimeout(gemTimer);
       }
   }
 
@@ -681,8 +688,12 @@
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
       var tmpCtx = new AC();
-      var decoded = await tmpCtx.decodeAudioData(bytes.buffer.slice(0));
-      try { tmpCtx.close(); } catch (_) {}
+      var decoded;
+      try {
+        decoded = await tmpCtx.decodeAudioData(bytes.buffer.slice(0));
+      } finally {
+        try { Promise.resolve(tmpCtx.close()).catch(function () {}); } catch (_) {}
+      }
       var targetRate = 16000;
       var frames = Math.ceil(decoded.duration * targetRate);
       var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
@@ -703,9 +714,11 @@
   // Discover the managed ASR server (desktop School Box only). Returns the
   // inference URL if the server is running, else null (caller uses cloud path).
   async function _getLocalAsrInferenceUrl() {
+    var statusCtrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var statusTimer = statusCtrl ? setTimeout(function () { statusCtrl.abort(); }, 5000) : null;
     try {
       if (typeof fetch !== 'function') return null;
-      var res = await fetch('/api/asr/status', { method: 'GET' });
+      var res = await fetch('/api/asr/status', statusCtrl ? { method: 'GET', signal: statusCtrl.signal } : { method: 'GET' });
       if (!res.ok) return null;
       var st = await res.json();
       // Prefer the runtime's SAME-ORIGIN proxy over whisper-server's own
@@ -716,6 +729,7 @@
       if (st && st.running && (st.proxyUrl || st.inferenceUrl)) return st.proxyUrl || st.inferenceUrl;
       return null;
     } catch (_) { return null; }
+    finally { if (statusTimer) clearTimeout(statusTimer); }
   }
   function isLocalAsrAvailable() {
     return _getLocalAsrInferenceUrl().then(function (u) { return !!u; }).catch(function () { return false; });
@@ -730,13 +744,15 @@
     if (!inferenceUrl) return null;
     var wav = await _audioBase64ToWav16k(audioBase64, mimeType);
     if (!wav) return null;
+    var asrCtrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var asrTimer = asrCtrl ? setTimeout(function () { asrCtrl.abort(); }, 60000) : null;
     try {
       var form = new FormData();
       form.append('file', wav, 'reading.wav');
       form.append('response_format', 'json');
       form.append('temperature', '0');
       if (opts.language && String(opts.language).trim()) form.append('language', String(opts.language).trim());
-      var res = await fetch(inferenceUrl, { method: 'POST', body: form });
+      var res = await fetch(inferenceUrl, asrCtrl ? { method: 'POST', body: form, signal: asrCtrl.signal } : { method: 'POST', body: form });
       if (!res.ok) return null;
       var data = await res.json();
       var text = (data && (data.text || data.transcription)) || '';
@@ -745,6 +761,8 @@
     } catch (e) {
       (window.warnLog || console.warn)('[Fluency] local ASR transcription failed:', e && e.message);
       return null;
+    } finally {
+      if (asrTimer) clearTimeout(asrTimer);
     }
   }
 
@@ -1079,13 +1097,16 @@
       if (!familyRecords.length) return;
       var familyAggregateAllowed = familyRecords.length >= FLUENCY_ALLOSHEET_LIMITS.minimumAggregateSessions;
       aggregateFamilies[family] = familyAggregateAllowed;
+      var finiteRates = familyAggregateAllowed ? familyRecords.map(function (item) { return item.rate; }).filter(function (v) { return Number.isFinite(v); }) : [];
+      var minRate = finiteRates.length ? finiteRates.reduce(function (a, b) { return b < a ? b : a; }, finiteRates[0]) : null;
+      var maxRate = finiteRates.length ? finiteRates.reduce(function (a, b) { return b > a ? b : a; }, finiteRates[0]) : null;
       var values = {
         measure_family: family,
         sample_count: familyAggregateAllowed ? familyRecords.length : null,
         median_rate: familyAggregateAllowed ? fluencyAlloMedian(familyRecords.map(function (item) { return item.rate; })) : null,
         median_accuracy_percent: familyAggregateAllowed ? fluencyAlloMedian(familyRecords.map(function (item) { return item.accuracy; })) : null,
-        minimum_rate: familyAggregateAllowed ? Math.min.apply(null, familyRecords.map(function (item) { return item.rate; }).filter(function (v) { return Number.isFinite(v); })) : null,
-        maximum_rate: familyAggregateAllowed ? Math.max.apply(null, familyRecords.map(function (item) { return item.rate; }).filter(function (v) { return Number.isFinite(v); })) : null,
+        minimum_rate: minRate,
+        maximum_rate: maxRate,
         evidence_kind: family === 'reading' && readingEvidence ? readingEvidence.evidenceKind : 'descriptive-only',
         benchmark_ready: family === 'reading' && readingEvidence ? readingEvidence.benchmarkReady : false,
         privacy_status: familyAggregateAllowed ? 'descriptive aggregate' : 'suppressed (<3 sessions)'

@@ -1213,6 +1213,7 @@ function AtlasTab({ t, onRequestClose }) {
       onChange: (event) => setAtlasQuery(event.target.value),
       onKeyDown: (event) => {
         if (event.key === "Escape" && atlasQuery) {
+          if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
           event.preventDefault();
           event.stopPropagation();
           clearSearch();
@@ -1461,6 +1462,10 @@ function InfoModal({
           const directSummary = ancestor.querySelector(":scope > summary");
           if (element !== directSummary) return false;
         }
+        if (typeof window.getComputedStyle === "function") {
+          const aStyle = window.getComputedStyle(ancestor);
+          if (aStyle && (aStyle.display === "none" || aStyle.visibility === "hidden")) return false;
+        }
         ancestor = ancestor.parentElement;
       }
       const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
@@ -1599,7 +1604,7 @@ function InfoModal({
     const categoryName = featuresList?.categories?.[feature.category] || feature.category || "";
     return [feature.title, feature.desc, categoryName].some((value) => String(value || "").toLocaleLowerCase().includes(normalizedFeatureQuery));
   }) : featureCatalogItems;
-  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-stretch sm:items-center justify-center p-0 sm:p-4 motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:duration-200", onClick: handleSetShowInfoModalToFalse }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-4xl w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "info-modal-title", "aria-describedby": "info-modal-description", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("p", { id: "info-modal-description", className: "sr-only" }, "Explore AlloFlow\u2019s approach, catalog map, guided workflows, privacy data paths, and open-source credits."), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-700 px-4 py-3 sm:p-4 text-white flex justify-between items-center gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("h3", { id: "info-modal-title", className: "min-w-0 font-bold text-lg leading-tight flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 20, className: "shrink-0", "aria-hidden": "true" }), " ", t("about.title")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowInfoModalToFalse, className: "min-h-11 min-w-11 shrink-0 inline-flex items-center justify-center rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { ref: tabListRef, className: "flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto overscroll-x-contain scroll-px-2", role: "tablist", "aria-orientation": "horizontal", "aria-label": t("about.title") }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-stretch sm:items-center justify-center p-0 sm:p-4 motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:duration-200", onClick: handleSetShowInfoModalToFalse }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "allo-docsuite bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-4xl w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2", role: "dialog", "aria-modal": "true", "aria-labelledby": "info-modal-title", "aria-describedby": "info-modal-description", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("p", { id: "info-modal-description", className: "sr-only" }, "Explore AlloFlow\u2019s approach, catalog map, guided workflows, privacy data paths, and open-source credits."), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-700 px-4 py-3 sm:p-4 text-white flex justify-between items-center gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("h3", { id: "info-modal-title", className: "min-w-0 font-bold text-lg leading-tight flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 20, className: "shrink-0", "aria-hidden": "true" }), " ", t("about.title")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowInfoModalToFalse, className: "min-h-11 min-w-11 shrink-0 inline-flex items-center justify-center rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { ref: tabListRef, className: "flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto overscroll-x-contain scroll-px-2", role: "tablist", "aria-orientation": "horizontal", "aria-label": t("about.title") }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1743,6 +1748,7 @@ function InfoModal({
       onChange: (event) => setFeatureQuery(event.target.value),
       onKeyDown: (event) => {
         if (event.key === "Escape" && featureQuery) {
+          if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
           event.preventDefault();
           event.stopPropagation();
           setFeatureQuery("");

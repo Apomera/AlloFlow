@@ -909,7 +909,7 @@ window.StemLab = window.StemLab || {
       if (format === 'csv') {
         var rows = [['trial_hour','model_hour','parameter','unit','baseline','tank_a','tank_b','b_minus_a']];
         exp.series.forEach(function (point) { metrics.forEach(function (m) { var av = point.a[m[0]], bv = point.b[m[0]]; if (Number.isFinite(av) && Number.isFinite(bv)) rows.push([point.hour, (exp.baseline.simTick || 0) + point.hour, m[1], m[2], exp.baseline.waterChem[m[0]], av, bv, Number((bv-av).toFixed(6))]); }); });
-        return { extension: 'csv', mime: 'text/csv;charset=utf-8', body: rows.map(function (row) { return row.map(function (cell) { return '"' + String(cell === undefined ? '' : cell).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n') };
+        return { extension: 'csv', mime: 'text/csv;charset=utf-8', body: rows.map(function (row) { return row.map(function (cell) { var s = String(cell === undefined ? '' : cell); if (typeof cell !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s) && !Number.isFinite(Number(s))) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n') };
       }
       var lines = ['AQUARIUM INVESTIGATION REPORT', '', 'Habitat: ' + exp.tank, 'Starting model hour: ' + (exp.baseline.simTick || 0), 'Hours observed: ' + exp.elapsed, 'A — ' + original, 'B — ' + changed, '', 'PREDICTION', exp.prediction, '', 'MEASURED EVIDENCE'];
       metrics.forEach(function (m) { var av = exp.a.waterChem[m[0]], bv = exp.b.waterChem[m[0]]; if (!Number.isFinite(av) || !Number.isFinite(bv)) return; lines.push(m[1] + ' (' + (m[2] || 'unitless') + '): start ' + Number(exp.baseline.waterChem[m[0]]).toFixed(3) + '; A ' + av.toFixed(3) + '; B ' + bv.toFixed(3) + '; B minus A ' + (bv-av).toFixed(3)); });
@@ -930,6 +930,38 @@ window.StemLab = window.StemLab || {
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"aquarium\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"aquarium\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"aquarium\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
+
+  // Bespoke Aquatic Ecology & Water Chemistry Studio CSS + High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-aquarium-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-aquarium-studio-css';
+    st.textContent = [
+      '.aq-studio-deck { background: linear-gradient(130deg, #06283d 0%, #0b4a6f 52%, #0e4a52 100%) !important; border: 1px solid rgba(103,232,249,0.38) !important; color: #f0f9ff !important; box-shadow: 0 14px 32px -20px rgba(6,40,61,0.8) !important; }',
+      '.aq-studio-emblem { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, rgba(34,211,238,0.28), rgba(6,40,61,0.92)); border: 1.5px solid rgba(103,232,249,0.52); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 16px rgba(6,40,61,0.5); }',
+      '.aq-studio-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; background: rgba(34,211,238,0.2); border: 1px solid rgba(103,232,249,0.48); color: #cffafe; font-size: 10px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.aq-studio-back { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border-radius: 11px; background: rgba(6,40,61,0.68); border: 1px solid rgba(103,232,249,0.36); color: #e0f2fe; cursor: pointer; flex-shrink: 0; }',
+      '.aq-studio-back:hover { background: rgba(34,211,238,0.22); border-color: #67e8f9; color: #ffffff; }',
+      '.aq-studio-snap { display: inline-flex; min-height: 44px; margin-left: auto; flex-shrink: 0; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 850; color: #f0f9ff; background: rgba(6,40,61,0.75); border: 1px solid rgba(103,232,249,0.44); border-radius: 999px; padding: 6px 13px; cursor: pointer; }',
+      '.aq-studio-snap:hover { background: rgba(34,211,238,0.24); border-color: #67e8f9; }',
+      '.aq-studio-telemetry { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding-top: 10px; border-top: 1px solid rgba(103,232,249,0.22); }',
+      '.aq-studio-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(4,24,38,0.68); border: 1px solid rgba(103,232,249,0.34); color: #e0f2fe; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.aq-studio-cycle { padding: 7px 10px; border-radius: 12px; background: rgba(4,24,38,0.64); border: 1px solid rgba(103,232,249,0.26); }',
+      '.aq-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding-top: 10px; border-top: 1px solid rgba(103,232,249,0.22); }',
+      '.aq-starter-label { font-size: 10.5px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; color: #a5f3fc; }',
+      '.aq-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 7px 12px; border-radius: 10px; background: rgba(4,24,38,0.76); border: 1px solid rgba(103,232,249,0.36); color: #f0f9ff; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.aq-starter-chip:hover:not(:disabled) { background: rgba(34,211,238,0.24); border-color: #67e8f9; color: #ffffff; }',
+      '.aq-starter-chip[data-active="true"] { background: #0e7490; border-color: #67e8f9; color: #ffffff; }',
+      '.aq-studio-deck button:focus-visible { outline: 2px solid #67e8f9; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="aquarium"] .aq-studio-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="aquarium"] .aq-studio-emblem, .theme-contrast [data-stem-tool-shell="aquarium"] .aq-studio-badge, .theme-contrast [data-stem-tool-shell="aquarium"] .aq-studio-pill, .theme-contrast [data-stem-tool-shell="aquarium"] .aq-studio-cycle { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="aquarium"] .aq-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="aquarium"] .aq-studio-back, .theme-contrast [data-stem-tool-shell="aquarium"] .aq-studio-snap, .theme-contrast [data-stem-tool-shell="aquarium"] .aq-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="aquarium"] .aq-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -14728,7 +14760,8 @@ window.StemLab = window.StemLab || {
 
       // ── Tool body (aquarium) ──
       return (function() {
-var d = (labToolData && labToolData._aquarium) || {};
+var _rawAq = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData._aquarium : null;
+var d = (_rawAq && typeof _rawAq === 'object' && !Array.isArray(_rawAq)) ? _rawAq : {};
           var runtimeRef = React.useRef(null);
           if (!runtimeRef.current) {
             runtimeRef.current = { simInterval: null, ambient: null, ambientStopTimeout: null, audioContext: null };
@@ -22572,45 +22605,98 @@ var d = (labToolData && labToolData._aquarium) || {};
             // ── Header ──
 
             React.createElement("div", {
-              className: "rounded-2xl overflow-hidden border border-cyan-200 bg-gradient-to-br from-white via-cyan-50 to-sky-100 shadow-sm",
+              className: "aq-studio-deck rounded-2xl overflow-hidden border border-cyan-200 shadow-sm",
               'data-aquarium-focus-panel': 'true'
             },
 
-              React.createElement("div", { className: "p-4 sm:p-5 flex flex-col gap-4" },
+              React.createElement("div", { className: "p-4 sm:p-5 flex flex-col gap-3" },
 
                 React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
 
                   React.createElement("button", {
-
+                    type: "button",
                     onClick: function () { stopAquariumRuntime(true); updMulti({ simRunning: false }); setStemLabTool(null); },
+                    className: "aq-studio-back", 'aria-label': __alloT('stem.aquarium.back_to_tools', 'Back to tools')
+                  }, React.createElement(ArrowLeft, { size: 18 })),
 
-                    className: "mt-0.5 p-2 hover:bg-white/80 rounded-xl transition-colors border border-transparent hover:border-cyan-200", 'aria-label': __alloT('stem.aquarium.back_to_tools', 'Back to tools')
-
-                  }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+                  React.createElement("div", { className: "aq-studio-emblem", "aria-hidden": "true" },
+                    React.createElement("svg", { viewBox: "0 0 46 46", width: 36, height: 36, fill: "none" },
+                      React.createElement("path", { d: "M6 34 Q14 30 23 34 T40 34", stroke: "#38bdf8", strokeWidth: 1.8, strokeLinecap: "round" }),
+                      React.createElement("path", { d: "M12 38 C12 28 16 24 14 16 M18 38 C19 30 21 26 20 20", stroke: "#34d399", strokeWidth: 1.8, strokeLinecap: "round" }),
+                      React.createElement("path", { d: "M18 19 C23 13 31 13 36 19 C31 24 23 24 18 19 Z", fill: "#38bdf8", stroke: "#e0f2fe", strokeWidth: 1.2 }),
+                      React.createElement("polygon", { points: "18,19 13,15 13,23", fill: "#fbbf24" }),
+                      React.createElement("circle", { cx: 31, cy: 18, r: 1.5, fill: "#06283d" }),
+                      React.createElement("circle", { cx: 36, cy: 10, r: 2, stroke: "#a5f3fc", strokeWidth: 1.1 }),
+                      React.createElement("circle", { cx: 32, cy: 7, r: 1.3, stroke: "#a5f3fc", strokeWidth: 1 })
+                    )
+                  ),
 
                   React.createElement("div", { className: "flex-1 min-w-[160px]" },
-                    React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-[0.16em] text-cyan-700" }, __alloT('stem.aquarium.tank_systems_mission', 'Tank Systems Mission')),
-                    React.createElement("h3", { className: "text-xl sm:text-2xl font-black text-slate-900 leading-tight" }, __alloT('stem.aquarium.aquaculture_ocean_lab', "\uD83D\uDC20 Aquaculture & Ocean Lab")),
-                    React.createElement("p", { className: "text-[0.75rem] sm:text-sm text-slate-700 leading-relaxed max-w-2xl mt-1" },
+                    React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-1" },
+                      React.createElement("span", { className: "aq-studio-badge" }, __alloT('stem.aquarium.badge_subject', 'Aquatic Ecology · Water Chemistry')),
+                      React.createElement("span", { className: "text-[0.6875rem] font-black uppercase tracking-[0.14em] text-cyan-200" }, __alloT('stem.aquarium.tank_systems_mission', 'Tank Systems Mission'))
+                    ),
+                    React.createElement("h3", { className: "text-xl sm:text-2xl font-black text-white leading-tight m-0" }, __alloT('stem.aquarium.aquaculture_ocean_lab', "\uD83D\uDC20 Aquaculture & Ocean Lab")),
+                    React.createElement("p", { className: "text-[0.75rem] sm:text-sm text-cyan-100 leading-relaxed max-w-2xl mt-1 mb-0" },
                       __alloT('stem.aquarium.aquarium_focus_copy', 'Keep a miniature ecosystem stable: choose a tank, stock it carefully, read the water chemistry, and connect those choices to ocean-scale systems.'))
                   ),
 
                   React.createElement("button", { type: "button", 'data-aquarium-snapshot': 'true', "aria-label": __alloT('stem.aquarium.snapshot', "Snapshot"),
-
                     onClick: function () {
-
                       var snap = { id: 'aqua-' + Date.now(), tool: 'aquarium', label: mode === 'tank' ? 'Tank: ' + (selectedTank || 'none') : mode === 'ocean' ? 'Ocean Year ' + oceanYear : activeModeMeta.label, data: Object.assign({}, d), timestamp: Date.now() };
-
                       setToolSnapshots(function (prev) { return prev.concat([snap]); });
-
                       if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
-
                     },
-
-                    className: "inline-flex min-h-[44px] ml-auto shrink-0 items-center justify-center text-[0.6875rem] font-black text-cyan-900 bg-white/85 hover:bg-white border border-cyan-200 rounded-full px-3 py-1.5 transition-all shadow-sm"
-
+                    className: "aq-studio-snap"
                   }, __alloT('stem.aquarium.snapshot_2', "\uD83D\uDCF8 Snapshot"))
 
+                ),
+
+                // Live non-spoiler telemetry strip
+                React.createElement("div", { className: "aq-studio-telemetry" },
+                  React.createElement("span", { className: "aq-studio-pill" }, activeModeMeta.icon + " " + activeModeMeta.label),
+                  React.createElement("span", { className: "aq-studio-pill" }, "\uD83E\uDEE7 " + (activeTankMeta ? activeTankMeta.name : __alloT('stem.aquarium.not_chosen_yet', 'Not chosen yet'))),
+                  React.createElement("span", { className: "aq-studio-pill" }, "\uD83D\uDC20 " + (tankFish || []).length + " " + __alloT('stem.aquarium.telemetry_organisms', 'Organisms') + " · " + (tankPlants || []).length + " " + __alloT('stem.aquarium.telemetry_plants', 'Plants')),
+                  React.createElement("span", { className: "aq-studio-pill" }, "\u23F1\uFE0F " + (selectedTank ? ('Day ' + (simDay || 0)) : __alloT('stem.aquarium.ready', 'Ready')))
+                ),
+
+                // Nitrogen Cycle & Ecosystem Stability Schematic (inline SVG, >=10.5px labels, non-spoiler)
+                React.createElement("div", { className: "aq-studio-cycle" },
+                  React.createElement("svg", {
+                    viewBox: "0 0 580 58", role: "img",
+                    "aria-label": __alloT('stem.aquarium.a11y_nitrogen_cycle_diagram', 'Aquatic nitrogen and oxygen cycle: fish feed and waste produce ammonia, nitrifying biofilter bacteria convert ammonia to nitrite and nitrate, and aquatic plants absorb nitrate while balancing dissolved oxygen'),
+                    style: { width: '100%', maxHeight: 60, height: 'auto', display: 'block' }
+                  },
+                    React.createElement("line", { x1: 174, y1: 29, x2: 208, y2: 29, stroke: "#38bdf8", strokeWidth: 2 }),
+                    React.createElement("line", { x1: 372, y1: 29, x2: 406, y2: 29, stroke: "#34d399", strokeWidth: 2 }),
+                    React.createElement("rect", { x: 8, y: 7, width: 166, height: 44, rx: 10, fill: (mode === 'tank' || mode === 'designer') ? 'rgba(14,165,233,0.34)' : 'rgba(6,40,61,0.72)', stroke: (mode === 'tank' || mode === 'designer') ? '#38bdf8' : '#33658a', strokeWidth: (mode === 'tank' || mode === 'designer') ? 2 : 1.3 }),
+                    React.createElement("text", { x: 91, y: 25, textAnchor: "middle", fill: "#f0f9ff", fontSize: 11.5, fontWeight: 800 }, "1. Living Stock & Feed"),
+                    React.createElement("text", { x: 91, y: 41, textAnchor: "middle", fill: "#bae6fd", fontSize: 10.5 }, "Fish · Habitat · NH\u2083 Waste"),
+                    React.createElement("rect", { x: 208, y: 7, width: 164, height: 44, rx: 10, fill: (mode === 'waterlab' || mode === 'stressHunt') ? 'rgba(139,92,246,0.32)' : 'rgba(6,40,61,0.72)', stroke: (mode === 'waterlab' || mode === 'stressHunt') ? '#a78bfa' : '#33658a', strokeWidth: (mode === 'waterlab' || mode === 'stressHunt') ? 2 : 1.3 }),
+                    React.createElement("text", { x: 290, y: 25, textAnchor: "middle", fill: "#f0f9ff", fontSize: 11.5, fontWeight: 800 }, "2. Biofilter & Chemistry"),
+                    React.createElement("text", { x: 290, y: 41, textAnchor: "middle", fill: "#ddd6fe", fontSize: 10.5 }, "NO\u2082\u207B \u2192 NO\u2083\u207B · pH · O\u2082"),
+                    React.createElement("rect", { x: 406, y: 7, width: 166, height: 44, rx: 10, fill: (mode === 'ocean' || mode === 'marine') ? 'rgba(16,185,129,0.3)' : 'rgba(6,40,61,0.72)', stroke: (mode === 'ocean' || mode === 'marine') ? '#34d399' : '#33658a', strokeWidth: (mode === 'ocean' || mode === 'marine') ? 2 : 1.3 }),
+                    React.createElement("text", { x: 489, y: 25, textAnchor: "middle", fill: "#f0f9ff", fontSize: 11.5, fontWeight: 800 }, "3. Plants & Ocean Scale"),
+                    React.createElement("text", { x: 489, y: 41, textAnchor: "middle", fill: "#a7f3d0", fontSize: 10.5 }, "Uptake · Carbon · Reefs")
+                  )
+                ),
+
+                // One-click Aquatic Lab Starters (44px touch targets, hidden during quiz/lock)
+                (mode !== 'quiz' && !(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked))) && React.createElement("div", { className: "aq-starter-bar", role: "group", "aria-label": __alloT('stem.aquarium.a11y_quick_starters', 'Quick aquarium lab starters') },
+                  React.createElement("span", { className: "aq-starter-label" }, __alloT('stem.aquarium.quick_launch', 'Quick launch:')),
+                  [
+                    { id: 'tank', icon: '\uD83D\uDC20', label: __alloT('stem.aquarium.starter_tank', 'Living Tank') },
+                    { id: 'waterlab', icon: '\uD83E\uDDEA', label: __alloT('stem.aquarium.starter_waterlab', 'Water Lab') },
+                    { id: 'designer', icon: '\u270F\uFE0F', label: __alloT('stem.aquarium.starter_designer', 'Habitat Designer') },
+                    { id: 'stressHunt', icon: '\uD83D\uDC1F', label: __alloT('stem.aquarium.starter_stress', 'Stress Lab') },
+                    { id: 'ocean', icon: '\uD83C\uDF0A', label: __alloT('stem.aquarium.starter_ocean', 'Ocean Ecology') }
+                  ].map(function (st) {
+                    return React.createElement("button", {
+                      key: 'aq-st-' + st.id, type: "button", className: "aq-starter-chip",
+                      "data-active": mode === st.id ? "true" : "false",
+                      onClick: function () { navigateAquariumMode(st.id); }
+                    }, React.createElement("span", { "aria-hidden": "true" }, st.icon), React.createElement("span", null, st.label));
+                  })
                 ),
 
                 !aquariumWorkspaceOpen && React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-4 gap-2", 'data-aquarium-status-strip': 'true' },

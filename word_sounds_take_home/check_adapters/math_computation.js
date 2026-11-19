@@ -37,8 +37,10 @@ module.exports = {
       if (!display || display.length > 40) return { missing: ['a problem of 1 to 40 characters'] };
       if (!whole(p.answer)) return { missing: ['a whole-number answer'] };
       var own = { word: display, display: display, answer: String(Number(p.answer)) };
-      var signs = display.replace(/(^|\s)-(?=\s|\d)/g, function (all, lead) { return lead + String.fromCharCode(0x2212); })
-        .replace(/(\d) [xX*] (?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xD7) + ' '; }).replace(/(\d) \/ (?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xF7) + ' '; });
+      var signs = display.replace(/(^|\s)[-\u2013\u2014](?=\s|\d)/g, function (all, lead) { return lead + String.fromCharCode(0x2212); })
+        .replace(/(\d)\s*[-\u2013\u2014]\s*(?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0x2212) + ' '; })
+        .replace(/(\d)\s*[xX*\u00B7\u22C5]\s*(?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xD7) + ' '; })
+        .replace(/(\d)\s*\/\s*(?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xF7) + ' '; });
       // said: the label's text (the signs, the plain numbers).
       if (signs !== display) own.said = signs;
       if (grouped(signs) !== display) own.shown = grouped(signs);
@@ -60,8 +62,10 @@ module.exports = {
   },
   render: function (item, ctx) {
     var problem = item.display || item.a + ' ' + item.symbol + ' ' + item.b, shown = item.shown || (item.display ? problem : problem + ' ='), n = shown.length;
+    var spoken = String(item.said || problem).split(String.fromCharCode(0x2212)).join('minus ')
+      .split(String.fromCharCode(0xD7)).join('times').split(String.fromCharCode(0xF7)).join('divided by').replace(/\s+/g, ' ').trim();
     var note = item.remainder ? ' ' + ctx.L.math_computation_remainder : '';
-    var pad = ctx.keypad({ label: ctx.fmt(ctx.L.math_computation_label, { problem: item.said || problem }) + note, onNext: function (value) { ctx.answer(value); } });
+    var pad = ctx.keypad({ label: ctx.fmt(ctx.L.math_computation_label, { problem: spoken }) + note, onNext: function (value) { ctx.answer(value); } });
     ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', style: 'white-space:nowrap;font-size:min(2.6rem,' + (137 / n | 0) + 'vw,' + (1130 / n | 0) + 'px)', text: shown }));
     if (note) ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'text-align:center', text: note }));
     ctx.root.appendChild(pad.node);

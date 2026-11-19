@@ -329,7 +329,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   function shareBase() {
     try {
       var loc = window.location, host = loc.hostname || '';
-      if (/(^|\.)alloflow/i.test(host) || /\.pages\.dev$/i.test(host) || /\.web\.app$/i.test(host)) return loc.origin + loc.pathname;
+      if (/^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host)) return loc.origin + loc.pathname;
     } catch (_) {}
     return 'https://alloflow-cdn.pages.dev/app/';
   }

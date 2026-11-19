@@ -1535,6 +1535,7 @@
         chipId === "other" && /* @__PURE__ */ React.createElement(
           "textarea",
           {
+            "aria-label": t("humanities.loopback_other_label") || "Reason for looping back",
             value: otherText,
             onChange: function(e) {
               setOtherText(e.target.value);
@@ -1623,7 +1624,7 @@
     } }, /* @__PURE__ */ React.createElement("strong", { style: { marginRight: "4px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6E1}\uFE0F "), t("humanities.blocked_prefix") || "AI helper paused:"), reason);
   }
   function TextareaCard(props) {
-    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, props.label), props.help && /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, props.label, props.help && /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: "4px 0", fontSize: "11px", fontWeight: 400, color: "#475569", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: props.value || "",
@@ -1641,12 +1642,13 @@
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
+          fontWeight: 400,
           fontFamily: "inherit",
           resize: "vertical",
           minHeight: "60px"
         }
       }
-    ));
+    )));
   }
   function ExemplarGate(props) {
     var t = props.t, stageKey = props.stageKey;
@@ -1977,6 +1979,7 @@
     } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "13px", fontWeight: 800, color: "#9d174d" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F9ED} "), t("humanities.positionality_edit_title") || "Your standpoint \u2014 material relationship to the question"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#831843", lineHeight: 1.5 } }, t("humanities.positionality_edit_help", { min: floors.positionality }) || "Name your MATERIAL relationship to this question, not a generic identity. \u2265" + floors.positionality + ' chars or 5s+ voice. Generic-identity statements ("as a student", "an observer") are refused.'), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("humanities.positionality_edit_title") || "Your standpoint \u2014 material relationship to the question",
         value: draft,
         rows: 4,
         maxLength: 1500,
@@ -2179,6 +2182,7 @@
     } }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "12px", color: "#9d174d" } }, source.citation || "(no citation)"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", color: "#831843", marginTop: "2px" } }, "tier: ", /* @__PURE__ */ React.createElement("strong", null, sift.tier || "unvetted"), prov.publishingOrg && /* @__PURE__ */ React.createElement("span", null, " \xB7 publisher: ", prov.publishingOrg), srcHost && /* @__PURE__ */ React.createElement("span", null, " \xB7 host: ", srcHost))), allGatesOk && /* @__PURE__ */ React.createElement(
       "select",
       {
+        "aria-label": (t("humanities.sift_tier_aria") || "Source verification tier") + ": " + (source.citation || source.id),
         value: sift.tier || "unvetted",
         onChange: function(e) {
           promoteTier(e.target.value);
@@ -2213,6 +2217,7 @@
     )), /* @__PURE__ */ React.createElement(HumanitiesSourceContextPanel, { source, onUpdate }), gateRow("stop", t("humanities.sift_stop_title") || "Stop \u2014 first reaction", stopOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 4px", fontSize: "10px", color: "#64748b" } }, "What is your first reaction to this source, before reading further? (\u226540 chars)"), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": (t("humanities.sift_stop_aria") || "First reaction to this source") + ": " + (source.citation || source.id),
         value: stop.firstReactionText || "",
         rows: 2,
         maxLength: 400,
@@ -2275,6 +2280,7 @@
         "input",
         {
           type: "text",
+          "aria-label": (t("humanities.who_made_it_aria") || "Who made this source fact") + " " + (i + 1),
           value: f.text || "",
           maxLength: 240,
           onChange: function(e) {
@@ -3029,7 +3035,7 @@
         display: "flex",
         alignItems: "center",
         gap: "8px"
-      } }, /* @__PURE__ */ React.createElement(
+      } }, /* @__PURE__ */ React.createElement("label", { style: { flex: 1, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" } }, /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "radio",
@@ -3039,7 +3045,7 @@
             setWorkingPosition(p.id);
           }
         }
-      ), /* @__PURE__ */ React.createElement("span", { style: { flex: 1 } }, p.text), /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("span", null, p.text)), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -3144,6 +3150,7 @@
       "input",
       {
         type: "text",
+        "aria-label": t("humanities.stakeholder_question_label") || "Whose question is this",
         value: draft.whoseQuestionIsThis,
         maxLength: 120,
         onChange: function(e) {
@@ -3155,6 +3162,7 @@
     ), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("humanities.stakeholder_why_label") || "Why do they care",
         value: draft.whyTheyCareText,
         rows: 2,
         maxLength: 400,
@@ -3168,6 +3176,7 @@
       "input",
       {
         type: "text",
+        "aria-label": t("humanities.stakeholder_foreground_label") || "What does their framing foreground",
         value: draft.whatThisFramingForegrounds,
         maxLength: 200,
         onChange: function(e) {
@@ -3180,6 +3189,7 @@
       "input",
       {
         type: "text",
+        "aria-label": t("humanities.stakeholder_obscure_label") || "What does their framing obscure",
         value: draft.whatThisFramingObscures,
         maxLength: 200,
         onChange: function(e) {
@@ -3249,6 +3259,7 @@
     } }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("humanities.plausible_answer_label") || "Competing plausible answer",
         value: text,
         rows: 2,
         maxLength: 600,
@@ -3493,6 +3504,7 @@
       "input",
       {
         type: "text",
+        "aria-label": t("humanities.source_citation_label") || "Source URL or full citation",
         value: newSrc.citation,
         maxLength: 400,
         onChange: function(e) {
@@ -3504,6 +3516,7 @@
     ), /* @__PURE__ */ React.createElement(
       "select",
       {
+        "aria-label": t("humanities.source_kind_label") || "Source type",
         value: newSrc.kind,
         onChange: function(e) {
           setNewSrc(Object.assign({}, newSrc, { kind: e.target.value }));
@@ -3536,6 +3549,7 @@
     }, style: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "44px", marginTop: "3px", padding: "7px", borderRadius: "6px", border: "1px solid #94a3b8", fontSize: "13px" } })))), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("humanities.source_notes_label") || "Initial source notes",
         value: newSrc.notes,
         rows: 2,
         maxLength: 400,
@@ -3787,6 +3801,7 @@
       "input",
       {
         type: "text",
+        "aria-label": t("humanities.framing_label_aria") || "Label for this framing",
         value: draft.label,
         maxLength: 80,
         onChange: function(e) {
@@ -3798,6 +3813,7 @@
     ), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("humanities.framing_prompt_aria") || "Framing prompt question",
         value: draft.framingPrompt,
         rows: 2,
         maxLength: 400,
@@ -3810,6 +3826,7 @@
     ), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("humanities.framing_foreground_aria") || "What this framing foregrounds",
         value: draft.whatItForegrounds,
         rows: 2,
         maxLength: 400,
@@ -3828,6 +3845,7 @@
     ), draft.whatItForegrounds && !anchorOk && /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "10px", color: "#dc2626" } }, "No anchor word from this chip found. Include one of: ", (chip && chip.semanticAnchorWhitelist || []).slice(0, 5).join(", "), "\u2026"), draft.whatItForegrounds && !pairwiseDistinct && /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "10px", color: "#dc2626" } }, "Too similar to an existing framing. Make this one substantively different."), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("humanities.framing_occlude_aria") || "What this framing occludes",
         value: draft.whatItOccludes,
         rows: 2,
         maxLength: 400,
@@ -3837,13 +3855,14 @@
         placeholder: t("humanities.framing_occlude_ph") || "What does it OCCLUDE? (optional)",
         style: { padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px", fontFamily: "inherit" }
       }
-    ), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#9d174d" } }, "Which vetted sources fit this framing? (\u22651)", /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, vettedSources.map(function(s) {
+    ), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Which vetted sources fit this framing? (at least 1)", style: { fontSize: "11px", fontWeight: 700, color: "#9d174d" } }, /* @__PURE__ */ React.createElement("div", null, "Which vetted sources fit this framing? (\u22651)"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, vettedSources.map(function(s) {
       var on = draft.whichVettedSourcesFitIt.indexOf(s.id) !== -1;
       return /* @__PURE__ */ React.createElement(
         "button",
         {
           key: s.id,
           type: "button",
+          "aria-pressed": on,
           onClick: function() {
             var arr = draft.whichVettedSourcesFitIt.slice();
             var idx = arr.indexOf(s.id);
@@ -4083,9 +4102,10 @@
         onReturnToReckoning: props.onReturnToReckoning,
         primitives
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 6px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("humanities.position_title") || "Your position"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, "\u226560 chars. Must include a multi-word phrase (\u22653 content words, \u226512 chars) verbatim from your positionality OR an absent-voice entry. Refuses thesis platitudes."), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 6px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("humanities.position_title") || "Your position"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", fontSize: "11px", color: "#475569", lineHeight: 1.5 } }, "\u226560 chars. Must include a multi-word phrase (\u22653 content words, \u226512 chars) verbatim from your positionality OR an absent-voice entry. Refuses thesis platitudes."), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("humanities.position_title") || "Your position",
         value: hpDraft.text,
         rows: 3,
         maxLength: 1500,
@@ -4107,6 +4127,7 @@
       "input",
       {
         type: "text",
+        "aria-label": t("humanities.position_link_label") || "Verbatim phrase from positionality or absent voice",
         value: hpDraft.positionalityLinkText || "",
         maxLength: 200,
         onChange: function(e) {
@@ -4126,6 +4147,7 @@
     ), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("humanities.position_notspeak_label") || "What this claim does not speak to",
         value: hpDraft.whatThisClaimDoesNotSpeakTo || "",
         rows: 2,
         maxLength: 1e3,
@@ -4151,6 +4173,7 @@
         {
           key: lab,
           type: "button",
+          "aria-pressed": selected,
           onClick: function() {
             setHpDraft(Object.assign({}, hpDraft, { label: lab }));
           },
@@ -4567,6 +4590,7 @@
         } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#92400e" } }, t("humanities.all_survives_warning") || "All-survives distribution detected."), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0", fontSize: "11px", color: "#92400e", lineHeight: 1.5 } }, 'Every framing probe so far returned "warrant survives." That is unusual \u2014 frameworks usually contract under at least one alternative reading. Author a \u2265120-char justification explaining why your warrant genuinely survives every framing.'), /* @__PURE__ */ React.createElement(
           "textarea",
           {
+            "aria-label": t("humanities.all_survives_just_label") || "Justification for why warrant survives every framing",
             value: asJust,
             rows: 3,
             maxLength: 1200,

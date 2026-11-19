@@ -1432,7 +1432,7 @@ function LessonPlanView(props) {
       "aria-hidden": "true"
     }, "→")));
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-center pb-8"
+    className: "no-print flex justify-center pb-8"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleExportPDF,

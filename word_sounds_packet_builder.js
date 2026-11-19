@@ -505,6 +505,34 @@
       var extra = 0;
       seg.chips = seg.chips.filter(function (c) { if (!c || !(c.isDistractor || c.type === 'distractor')) return true; extra += 1; return extra <= 1; });
     }
+    // Sight & Spell at Easy (2026-11-19, Wave 6B parity with word_sounds_module.js:23504-23521):
+    // scaffold the tile bank to the word's own letters plus up to 4 seeded distractors (sorted
+    // alphabetically so tiles are easy to scan without leaking letter order) and show a word-length
+    // placeholder. Omitted on Medium and Hard so existing packets stay unchanged.
+    var ortho = boards.orthography;
+    if (level === 'easy' && ortho) {
+      var orthoLower = String(word || '').toLowerCase();
+      var orthoLetterRe = null;
+      try { orthoLetterRe = new RegExp('[\\p{L}\\p{M}\\p{N}]', 'u'); } catch (_) {}
+      var orthoChars = orthoLower.split('').filter(function (ch) {
+        return ch.trim() && (/[a-z]/.test(ch) || (orthoLetterRe ? orthoLetterRe.test(ch) : !/^['’\-.]$/.test(ch)));
+      });
+      if (orthoChars.length > 1) {
+        var wordLetters = [];
+        var inWord = Object.create(null);
+        orthoChars.forEach(function (ch) {
+          if (!inWord[ch]) { inWord[ch] = true; wordLetters.push(ch); }
+        });
+        var pool = 'abcdefghijklmnopqrstuvwxyz'.split('').filter(function (l) { return !inWord[l]; });
+        var randOrtho = mulberry32(seedFor(seed, 'orthography|' + orthoLower));
+        var distractors = [];
+        while (distractors.length < 4 && pool.length) {
+          distractors.push(pool.splice(Math.floor(randOrtho() * pool.length), 1)[0]);
+        }
+        ortho.letterBank = wordLetters.concat(distractors).sort();
+        ortho.lengthHint = true;
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------

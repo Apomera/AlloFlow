@@ -3281,9 +3281,19 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
     // One boundary covers generation, extraction, verification, corrections,
     // and translation. Review changes only the outbound copy; the clinical
     // record, citation IDs, and transport options remain under their owners.
+    const rwAiUsable = (fn) => {
+        if (typeof fn !== 'function') return false;
+        if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+            try { return !!window.__alloAiUsable('text', fn); } catch (_) { return false; }
+        }
+        if (fn._alloQrBlocked) return false;
+        if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+        return true;
+    };
     const rwCreateReviewedAiCaller = (rawCallGemini, { getGate, getOptions, isCurrent, getWorkspace, createOperation }) => {
-        if (typeof rawCallGemini !== 'function') return null;
+        if (!rwAiUsable(rawCallGemini)) return null;
         return async (prompt, ...args) => {
+            if (!rwAiUsable(rawCallGemini)) throw new Error('AI is unavailable in this session.');
             let signal = args[4];
             let operation = null;
             const workspace = typeof getWorkspace === 'function' ? getWorkspace() : null;
@@ -3969,10 +3979,11 @@ Return ONLY valid JSON with this exact structure:
 Include 6-10 assessment scores using REAL subtest names from the assessment batteries listed. Make scores clinically consistent with the chosen profile. Use person-first language in all narrative sections.`;
 
                 const result = await callGen(callGemini, prompt, true);
-                const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                const rawResult = String(result || '');
+                const cleaned = rawResult.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
-                catch { const m = result.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Could not parse AI response'); }
+                catch { const m = rawResult.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Could not parse AI response'); }
 
                 // Load the generated case using the same pattern as loadDemoCase
                 setReportTitle(parsed.reportTitle || 'Psychoeducational Evaluation Report');
@@ -4054,7 +4065,9 @@ Return ONLY the adapted text, no commentary.`;
                 const fullReport = header + scrubPII(body);
                 const prompt = `Translate the following psychoeducational report into ${translationLang}. Maintain all clinical terminology accuracy — use the accepted ${translationLang} clinical equivalents for assessment names and diagnostic terms. Keep all scores, numbers, and assessment names (WISC-V, BASC-3, etc.) in their original form. Copy every token in square brackets, such as [Student], exactly as written: never translate it. Preserve all formatting including headers and section breaks.\n\n${fullReport}`;
                 const result = await aiCall('translate', prompt, false);
-                setTranslatedReport(result.trim().replace(/\[REPORT_GENERATED_DATE\]/g, () => reportDate));
+                const translatedText = String(result || '').trim();
+                if (!translatedText) throw new Error('empty translation');
+                setTranslatedReport(translatedText.replace(/\[REPORT_GENERATED_DATE\]/g, () => reportDate));
                 setTranslatedFingerprint(reportFingerprint);
                 if (addToast) addToast((rwFmt(__alloT('report_writer.toast_report_translated_to', 'Report translated to {translationLang}'), { translationLang }) + ' ✅'), 'success');
             } catch (err) {
@@ -4827,6 +4840,7 @@ Return ONLY valid JSON array of objects:
 Extract 5-20 key facts. Be precise and factual.`;
                     try {
                         const result = await callGemini(prompt, true);
+                        if (typeof result !== 'string' || !result.trim()) continue;
                         const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                         let parsed;
                         try { parsed = JSON.parse(cleaned); }
@@ -4977,6 +4991,7 @@ Extract 5-20 key facts. Be precise and factual.`;
             const prompt = 'You are a clinical evidence organizer. Given verified assessment data, organize the evidence for and against each diagnostic hypothesis.\n\nVERIFIED FACT CHUNKS:\n' + chunksText + (referenceCtx ? '\n\nCLINICAL REFERENCE:\n' + referenceCtx : '') + (userRefs ? '\n\n' + userRefs : '') + '\n\nHYPOTHESES TO EVALUATE:\n' + scrubPII(hypotheses.map((h, i) => (i + 1) + '. ' + h).join('\n')) + '\n\nFor each hypothesis provide:\n1. Evidence FOR (specific facts that support, with strength: strong/moderate/weak)\n2. Evidence AGAINST (facts that contradict)\n3. Evidence GAPS (additional data needed)\n4. Overall strength score (1-10)\n\nIMPORTANT: Organize EXISTING evidence only. Do NOT diagnose. All evidence must trace to fact chunks.\n\nReturn ONLY valid JSON:\n{"hypotheses":[{"name":"name","strengthScore":7,"evidenceFor":[{"fact":"desc","strength":"strong","explanation":"why"}],"evidenceAgainst":[{"fact":"desc","explanation":"why"}],"evidenceGaps":["missing data"]}]}';
             try {
                 const result = await callGemini(prompt, true);
+                if (typeof result !== 'string' || !result.trim()) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -5157,6 +5172,7 @@ If no errors, return {"errors":[]}.`, true); }
             const verifiedChunks = factChunks.filter(c => c.verified);
             if (verifiedChunks.length === 0) { setGenerating(false); if (addToast) addToast(t('toasts.verified_fact_chunks'), 'error'); return; }
             const run = beginAiRun('sections');
+            try {
             let stopped = false;
             // Sections whose score check finished in this run, and its findings.
             const checkedThisRun = new Set();
@@ -5469,6 +5485,12 @@ Return ONLY JSON:
                 if (failedSections.length) addToast(rwFmt(__alloT('report_writer.toast_generation_sections_failed', 'The report was generated, but {count} section(s) could not be written: {sections}. Their earlier text was kept; regenerate them or try again.'), { count: failedSections.length, sections: failedSections.join(', ') }), 'error');
                 else addToast(__alloT('report_writer.toast_report_draft_generated_run_the_full', 'Report draft generated. Run the full Accuracy Dashboard audit before formal export.'), 'success');
             }
+            } finally {
+                endAiRun('sections', run);
+                setGenFraction(null);
+                setGenProgress('');
+                setGenerating(false);
+            }
         };
 
         // ── Section-by-Section: Regenerate a single section ──
@@ -5560,7 +5582,7 @@ Return ONLY JSON:
                     const raw = typeof ev.target.result === 'string' ? ev.target.result.replace(/^\uFEFF/, '') : '';
                     if (!raw) throw new Error('The selected discrepancy report is empty');
                     if (raw.length > RW_MAX_DISCREPANCY_JSON_CHARS) throw new Error('Psycheck JSON exceeds the 1 MB limit');
-                    const data = validateDiscrepancyPayload(JSON.parse(raw));
+                    const data = validateDiscrepancyPayload(JSON.parse(raw, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v)));
                     if (discrepancyReport && discrepancyReport._source === 'alloflow-inline') {
                         if (addToast) addToast(__alloT('report_writer.toast_replacing_the_inline_verify_result_with', 'Replacing the inline verify result with the imported file.'), 'info');
                     }
@@ -6262,8 +6284,12 @@ Return ONLY valid JSON:
             const plain = draftNotice + header + body + (scoreTable ? '\n\n' + '─'.repeat(50) + '\n' + scoreTable : '') + (refs ? '\n\n' + '─'.repeat(50) + '\n' + refs : '') + footer;
             // Formatted as well as plain, so pasting into Word keeps the headings
             // and the score table instead of a wall of text.
-            const clip = navigator.clipboard;
-            const copy = (typeof window.ClipboardItem === 'function' && clip && typeof clip.write === 'function')
+            const clip = typeof navigator !== 'undefined' ? navigator.clipboard : null;
+            if (!clip || (typeof clip.write !== 'function' && typeof clip.writeText !== 'function')) {
+                if (addToast) addToast(__alloT('report_writer.toast_could_not_copy_the_report_to', 'Could not copy the report to the clipboard.'), 'error');
+                return;
+            }
+            const copy = (typeof window.ClipboardItem === 'function' && typeof clip.write === 'function')
                 ? clip.write([new window.ClipboardItem({
                     'text/html': new Blob([buildReportPrintHtml(printHtmlArgs())], { type: 'text/html' }),
                     'text/plain': new Blob([plain], { type: 'text/plain' }) })])
@@ -6383,6 +6409,7 @@ Return ONLY valid JSON:
                     if (addToast) addToast(__alloT('report_writer.toast_the_print_window_was_blocked_allow', 'The print window was blocked. Allow pop-ups and try again.'), 'error');
                     return false;
                 }
+                try { if (window.AlloModules?.SensitiveWorkspace?.registerDetachedWindow) window.AlloModules.SensitiveWorkspace.registerDetachedWindow(w); } catch (_) {}
                 try { w.opener = null; } catch { /* browser may prevent opener reassignment */ }
                 const html = buildReportPrintHtml(printHtmlArgs());
                 w.document.write(html);

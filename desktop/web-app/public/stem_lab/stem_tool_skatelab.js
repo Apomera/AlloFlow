@@ -3207,7 +3207,7 @@ window.StemLab = window.StemLab || {
       '.theme-contrast .skatelab-shell{--sk-bg:#000000;--sk-panel:#000000;--sk-text:#ffff00;--sk-muted:#ffff00;--sk-border:#ffff00;--sk-cyan:#00ffff;--sk-green:#00ff00;--sk-red:#ff6b6b;--sk-compare:#ffffff;background:#000000}',
       '.theme-contrast .skatelab-shell .sk-run{background-image:none!important}',
       '.skatelab-shell *{box-sizing:border-box}.skatelab-shell button,.skatelab-shell input,.skatelab-shell select,.skatelab-shell textarea,.skatelab-shell summary{font:inherit}.skatelab-shell button,.skatelab-shell summary,.skatelab-shell input,.skatelab-shell select{min-block-size:40px}.skatelab-shell button:focus-visible,.skatelab-shell input:focus-visible,.skatelab-shell select:focus-visible,.skatelab-shell textarea:focus-visible,.skatelab-shell summary:focus-visible{outline:3px solid var(--sk-cyan);outline-offset:3px}',
-      '.sk-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:15px}.sk-heading{display:flex;gap:12px;align-items:flex-start}.sk-back{border:1px solid var(--sk-border);background:transparent;color:var(--sk-text);border-radius:11px;padding:8px 11px;cursor:pointer}.sk-title{margin:0;font-size:clamp(1.45rem,3vw,2.15rem);line-height:1.02;letter-spacing:-.03em}.sk-kicker{margin:6px 0 0;color:var(--sk-muted);font-size:.9rem}.sk-view-switch{display:flex;gap:5px;padding:4px;border:1px solid var(--sk-border);background:color-mix(in srgb,var(--sk-panel) 84%,transparent);border-radius:13px}.sk-view-switch button{border:0;background:transparent;color:var(--sk-muted);border-radius:9px;padding:7px 12px;font-weight:750;cursor:pointer}.sk-view-switch button[aria-pressed=true]{background:var(--sk-accent);color:#251600;box-shadow:0 3px 12px rgba(246,184,63,.24)}',
+      '.sk-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:15px;padding:16px 18px;border-radius:18px;background:linear-gradient(135deg,#0b1629 0%,#14233d 56%,#0f2c3a 100%);border:1px solid rgba(78,215,232,.34);box-shadow:0 14px 32px rgba(2,8,20,.28)}.sk-heading{display:flex;gap:12px;align-items:flex-start;min-width:0;flex:1 1 260px}.sk-hero-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:rgba(78,215,232,.14);border:1px solid rgba(78,215,232,.42);color:var(--sk-cyan);margin-bottom:4px}.sk-hero-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;width:100%;padding-top:10px;border-top:1px solid rgba(148,163,184,.2)}.sk-hero-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:.73rem;font-weight:750;background:rgba(6,16,30,.65);border:1px solid rgba(148,163,184,.32);color:var(--sk-muted);white-space:nowrap}.sk-hero-pill strong{color:var(--sk-text);font-weight:850}.sk-preset-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-left:auto}.sk-preset-label{font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--sk-accent);margin-right:2px}.sk-preset-chip{min-block-size:34px!important;padding:5px 10px;border-radius:999px;font-size:.73rem;font-weight:750;background:rgba(255,255,255,.07);border:1px solid rgba(246,184,63,.38);color:var(--sk-text);cursor:pointer;transition:background-color .15s,border-color .15s}.sk-preset-chip:hover:not(:disabled){background:rgba(246,184,63,.2);border-color:var(--sk-accent)}.sk-preset-chip:disabled{opacity:.48;cursor:not-allowed}.theme-contrast .skatelab-shell .sk-header{background:#000000!important;border:2px solid #ffff00!important;box-shadow:none!important}.theme-contrast .skatelab-shell .sk-hero-badge,.theme-contrast .skatelab-shell .sk-hero-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}.theme-contrast .skatelab-shell .sk-preset-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffff00!important}.sk-back{border:1px solid var(--sk-border);background:rgba(6,16,30,.55);color:var(--sk-text);border-radius:11px;padding:8px 11px;cursor:pointer}.sk-title{margin:0;font-size:clamp(1.45rem,3vw,2.15rem);line-height:1.05;letter-spacing:-.03em}.sk-kicker{margin:5px 0 0;color:var(--sk-muted);font-size:.88rem}.sk-view-switch{display:flex;gap:5px;padding:4px;border:1px solid var(--sk-border);background:color-mix(in srgb,var(--sk-panel) 84%,transparent);border-radius:13px}.sk-view-switch button{border:0;background:transparent;color:var(--sk-muted);border-radius:9px;padding:7px 12px;font-weight:750;cursor:pointer}.sk-view-switch button[aria-pressed=true]{background:var(--sk-accent);color:#251600;box-shadow:0 3px 12px rgba(246,184,63,.24)}',
       '.sk-workbench{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,350px);gap:15px;align-items:start}.sk-stage,.sk-controls,.sk-panel,.sk-metric{border:1px solid var(--sk-border);background:color-mix(in srgb,var(--sk-panel) 91%,transparent);border-radius:17px}.sk-stage{padding:11px;min-width:0;background:linear-gradient(160deg,color-mix(in srgb,var(--sk-panel) 96%,transparent),color-mix(in srgb,var(--sk-bg) 90%,transparent))}.sk-canvas-frame{position:relative;overflow:hidden;border-radius:14px;background:#06101e;box-shadow:inset 0 0 0 1px rgba(148,163,184,.26),0 12px 34px rgba(2,8,20,.20)}.sk-canvas{display:block;width:100%;height:auto;aspect-ratio:16/9}.sk-stage-toolbar{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;padding:10px 2px 4px}.sk-live-telemetry{display:flex;align-items:center;gap:0;flex-wrap:wrap;color:var(--sk-muted);font-size:.74rem;font-variant-numeric:tabular-nums}.sk-live-telemetry span{padding:3px 8px;border-right:1px solid var(--sk-border)}.sk-live-telemetry span:first-child{padding-left:0}.sk-live-telemetry span:last-child{border-right:0}.sk-live-telemetry .sk-phase{color:var(--sk-cyan);font-weight:850;text-transform:uppercase;letter-spacing:.045em}.sk-stage-legend{display:block;padding:6px 2px 2px;font-size:.72rem;color:var(--sk-muted);line-height:1.4}.sk-stage-legend b{color:var(--sk-text)}.sk-timeline{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr);align-items:center;gap:11px;padding:9px 10px;margin:3px 0;border-radius:11px;background:color-mix(in srgb,var(--sk-bg) 75%,transparent)}.sk-timeline label{display:flex;justify-content:space-between;gap:8px;color:var(--sk-muted);font-size:.76rem;font-weight:750}.sk-timeline output{color:var(--sk-cyan);font-variant-numeric:tabular-nums}.sk-timeline-control{position:relative;min-width:0;padding-bottom:24px}.sk-timeline input{display:block;width:100%;accent-color:var(--sk-cyan)}.sk-phase-markers{position:absolute;left:7px;right:7px;bottom:0;height:20px;pointer-events:none}.sk-phase-marker{position:absolute;bottom:0;display:grid;justify-items:center;gap:1px;transform:translateX(-50%);color:var(--sk-muted);white-space:nowrap}.sk-phase-marker:first-child{transform:none}.sk-phase-marker:last-child{transform:translateX(-100%)}.sk-phase-marker i{display:block;width:2px;height:6px;background:var(--sk-cyan);opacity:.8}.sk-phase-marker small{font-size:.7rem;line-height:1.1;text-transform:uppercase;letter-spacing:.035em}.sk-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.sk-canvas-summary{margin:8px 0 0;padding:8px 10px;border-left:3px solid var(--sk-cyan);background:color-mix(in srgb,var(--sk-cyan) 7%,transparent);font-size:.8rem;line-height:1.45;color:var(--sk-muted)}',
       '.sk-timeline{align-items:start}.sk-trace-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;min-height:18px;margin-bottom:2px;color:var(--sk-muted);font-size:.7rem;font-weight:750}.sk-trace-head span:last-child{color:var(--sk-text);font-variant-numeric:tabular-nums;text-align:right}.sk-timeline-trace{display:block;width:100%;height:48px;margin:0 0 2px;overflow:visible}.sk-trace-axis,.sk-trace-reference,.sk-trace-peak,.sk-trace-previous,.sk-trace-modeled,.sk-trace-cursor,.sk-trace-current{vector-effect:non-scaling-stroke}.sk-trace-axis{stroke:var(--sk-border);stroke-width:1}.sk-trace-reference{stroke:color-mix(in srgb,var(--sk-muted) 44%,transparent);stroke-width:1}.sk-trace-peak{stroke:var(--sk-muted);stroke-width:1;stroke-dasharray:3 3}.sk-trace-previous{fill:none;stroke:var(--sk-compare);stroke-width:1.5;stroke-dasharray:3 4;stroke-linecap:round;stroke-linejoin:round}.sk-trace-modeled{fill:none;stroke:var(--sk-red);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.sk-trace-cursor{stroke:var(--sk-text);stroke-width:1;opacity:.46}.sk-trace-current{stroke:var(--sk-text);stroke-width:3;stroke-linecap:round}',
       '.sk-controls{padding:14px;display:grid;gap:13px;background:linear-gradient(180deg,color-mix(in srgb,var(--sk-panel) 96%,transparent),color-mix(in srgb,var(--sk-panel) 87%,transparent))}.sk-mode-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.sk-mode-tabs button{border:1px solid var(--sk-border);background:transparent;color:var(--sk-muted);border-radius:10px;padding:8px;font-weight:800;cursor:pointer}.sk-mode-tabs button[aria-selected=true]{border-color:var(--sk-accent);background:color-mix(in srgb,var(--sk-accent) 16%,transparent);color:var(--sk-text)}.sk-control-group{display:grid;gap:11px}.sk-control{display:grid;gap:5px}.sk-control-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:.82rem;font-weight:750}.sk-control-head output{max-width:58%;color:var(--sk-cyan);font-variant-numeric:tabular-nums;text-align:right;font-size:.75rem}.sk-help{font-size:.72rem;line-height:1.4;color:var(--sk-muted);margin:0}.skatelab-shell input[type=range]{width:100%;accent-color:var(--sk-accent)}.skatelab-shell select,.skatelab-shell input[type=number],.skatelab-shell textarea{width:100%;border:1px solid var(--sk-border);background:var(--sk-bg);color:var(--sk-text);border-radius:9px;padding:8px 10px}',
@@ -6803,11 +6803,12 @@ window.StemLab = window.StemLab || {
       var setStemLabTool = ctx.setStemLabTool;
       skatelabTranslate = typeof ctx.t === 'function' ? ctx.t : null;
 
-      var seeded = toolData.skatelab || {};
+      var rawSeeded = toolData && toolData.skatelab;
+      var seeded = (rawSeeded && typeof rawSeeded === 'object' && !Array.isArray(rawSeeded)) ? rawSeeded : {};
       var d = Object.assign({}, DEFAULTS, seeded);
-      d.stats = Object.assign({}, DEFAULTS.stats, seeded.stats || {});
-      d.runViews = Object.assign({}, seeded.runViews || {});
-      d.runSurfaces = Object.assign({}, seeded.runSurfaces || {});
+      d.stats = Object.assign({}, DEFAULTS.stats, (seeded.stats && typeof seeded.stats === 'object' && !Array.isArray(seeded.stats)) ? seeded.stats : {});
+      d.runViews = Object.assign({}, (seeded.runViews && typeof seeded.runViews === 'object' && !Array.isArray(seeded.runViews)) ? seeded.runViews : {});
+      d.runSurfaces = Object.assign({}, (seeded.runSurfaces && typeof seeded.runSurfaces === 'object' && !Array.isArray(seeded.runSurfaces)) ? seeded.runSurfaces : {});
       d.experiments = logEntriesOf(seeded.experiments);
       d.estimateCredits = Array.isArray(seeded.estimateCredits) ? seeded.estimateCredits : [];
       d.xpCredits = Array.isArray(seeded.xpCredits) ? seeded.xpCredits : [];
@@ -6853,7 +6854,9 @@ window.StemLab = window.StemLab || {
         if (typeof setToolData !== 'function') return;
         setToolData(function(previous) {
           previous = previous || {};
-          var current = Object.assign({}, DEFAULTS, previous.skatelab || {});
+          var rawCur = previous && previous.skatelab;
+          var safeCur = (rawCur && typeof rawCur === 'object' && !Array.isArray(rawCur)) ? rawCur : {};
+          var current = Object.assign({}, DEFAULTS, safeCur);
           current.stats = Object.assign({}, DEFAULTS.stats, current.stats || {});
           current.runViews = Object.assign({}, current.runViews || {});
           current.runSurfaces = Object.assign({}, current.runSurfaces || {});
@@ -10677,6 +10680,7 @@ window.StemLab = window.StemLab || {
         var html = buildReportHtml(d, reportMeta());
         var opened = null;
         try { opened = window.open('', '_blank'); } catch (err) { opened = null; }
+        try { if (opened) opened.opener = null; } catch (_) {}
         if (opened && opened.document) {
           try {
             opened.document.open();
@@ -10791,6 +10795,24 @@ window.StemLab = window.StemLab || {
         );
       }
 
+      var skEmblemSvg = h('svg', { width: 48, height: 48, viewBox: '0 0 64 64', style: { flexShrink: 0 }, 'aria-hidden': 'true', focusable: 'false' },
+        h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: 'rgba(6,16,30,0.72)', stroke: 'rgba(78,215,232,0.52)', strokeWidth: 1.5 }),
+        h('path', { d: 'M10 18 Q10 48 32 48 Q54 48 54 18', fill: 'none', stroke: '#4ed7e8', strokeWidth: 3.2, strokeLinecap: 'round' }),
+        h('path', { d: 'M16 20 Q32 42 48 20', fill: 'none', stroke: '#f6b83f', strokeWidth: 1.8, strokeDasharray: '4 3' }),
+        h('rect', { x: 22, y: 40, width: 20, height: 4, rx: 2, fill: '#f6b83f' }),
+        h('circle', { cx: 26, cy: 46, r: 2.5, fill: '#5ee092' }),
+        h('circle', { cx: 38, cy: 46, r: 2.5, fill: '#5ee092' })
+      );
+      var skActiveSurface = getSurface(d.surfaceId);
+      var skActiveVehicle = getVehicle(d.vehicle);
+      function applySkPreset(patch) {
+        if (running) return;
+        commitPlayhead(0);
+        setLocalStatus(null);
+        upd(withLocks(patch));
+      }
+      var skPresetDisabled = running || isLocked('mode') || isLocked('gravity') || isLocked('surfaceId');
+
       return h('div', {
         ref: shellRef,
         className: 'skatelab-shell',
@@ -10807,7 +10829,9 @@ window.StemLab = window.StemLab || {
               onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
               'aria-label': __alloT('stem.skatelab.back_to_stem_lab', 'Back to STEAM Lab')
             }, '←'),
-            h('div', null,
+            skEmblemSvg,
+            h('div', { style: { minWidth: 0 } },
+              h('span', { className: 'sk-hero-badge' }, __alloT('stem.skatelab.hero_badge', 'Physics · Energy, Forces & Motion Workbench')),
               h('h2', { className: 'sk-title' }, __alloT('stem.skatelab.title', 'Skate Lab')),
               h('p', { className: 'sk-kicker' }, __alloT('stem.skatelab.subtitle', 'Build a setup. Run the model. Explain the motion.'))
             )
@@ -10825,6 +10849,19 @@ window.StemLab = window.StemLab || {
               disabled: running,
               onClick: function() { chooseView('3d'); }
             }, __alloT('stem.skatelab.view_3d', '3D orbit view'))
+          ),
+          h('div', { className: 'sk-hero-meta' },
+            h('span', { className: 'sk-hero-pill' }, __alloT('stem.skatelab.pill_gravity', 'g'), ' ', h('strong', null, rounded(d.gravity, 2) + ' m/s²')),
+            h('span', { className: 'sk-hero-pill' }, __alloT('stem.skatelab.pill_surface', 'Surface'), ' ', h('strong', null, skActiveSurface.label + ' (μ ' + skActiveSurface.rollingMu + ')')),
+            h('span', { className: 'sk-hero-pill' }, __alloT('stem.skatelab.pill_rider', 'Rider'), ' ', h('strong', null, vehicleName(skActiveVehicle.id))),
+            h('span', { className: 'sk-hero-pill' }, __alloT('stem.skatelab.pill_runs', 'Logged'), ' ', h('strong', null, logEntries.length)),
+            h('div', { className: 'sk-preset-row', role: 'group', 'aria-label': __alloT('stem.skatelab.a11y_starter_presets', 'Starter physics setups') },
+              h('span', { className: 'sk-preset-label' }, __alloT('stem.skatelab.presets_label', 'Presets:')),
+              h('button', { type: 'button', className: 'sk-preset-chip', disabled: skPresetDisabled, onClick: function() { applySkPreset({ mode: 'halfpipe', gravity: 9.81, surfaceId: 'wax', pumps: 2 }); } }, '🛹 ' + __alloT('stem.skatelab.preset_earth_pipe', 'Earth Halfpipe')),
+              h('button', { type: 'button', className: 'sk-preset-chip', disabled: skPresetDisabled, onClick: function() { applySkPreset({ mode: 'halfpipe', gravity: 1.62, surfaceId: 'standard', pumps: 1 }); } }, '🌙 ' + __alloT('stem.skatelab.preset_moon_pipe', 'Moon Low-G')),
+              h('button', { type: 'button', className: 'sk-preset-chip', disabled: skPresetDisabled, onClick: function() { applySkPreset({ mode: 'gap', gravity: 3.71, surfaceId: 'standard' }); } }, '🔴 ' + __alloT('stem.skatelab.preset_mars_gap', 'Mars Gap')),
+              h('button', { type: 'button', className: 'sk-preset-chip', disabled: skPresetDisabled, onClick: function() { applySkPreset({ mode: 'flat', gravity: 9.81, surfaceId: 'rough' }); } }, '🧱 ' + __alloT('stem.skatelab.preset_rough_coast', 'Rough Coast'))
+            )
           )
         ),
 

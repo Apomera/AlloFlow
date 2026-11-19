@@ -1910,6 +1910,30 @@ function renderGalaxyEvidenceWorkbench(o) {
     document.body.appendChild(liveRegion);
   })();
 
+  // Galaxy Explorer workbench header, starter exploration chips & Light/Dark/Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-galaxy-workbench-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-galaxy-workbench-css';
+    st.textContent = [
+      '.gx-hero-deck{position:relative;overflow:hidden;border-radius:16px;padding:12px 14px;border:1px solid rgba(129,140,248,.42);background:linear-gradient(135deg,#030712 0%,#0f172a 55%,#1e1b4b 100%);box-shadow:0 14px 32px rgba(2,6,23,.30);color:#f8fafc}',
+      '.gx-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(129,140,248,.18);border:1px solid rgba(165,180,252,.45);color:#e0e7ff}',
+      '.gx-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(15,23,42,.68);border:1px solid rgba(148,163,184,.4);color:#e2e8f0}',
+      '.gx-telemetry-pill strong{color:#fde68a;font-weight:900}',
+      '.gx-starter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;margin-bottom:12px;border-radius:12px;background:#0f172a;border:1px solid rgba(129,140,248,.38);color:#e2e8f0}',
+      '.gx-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#c7d2fe;margin-right:2px}',
+      '.gx-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#1e293b;border:1px solid rgba(165,180,252,.45);color:#f8fafc;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
+      '.gx-starter-chip:hover{background:#312e81;border-color:#a5b4fc;color:#ffffff}',
+      '.gx-starter-chip[aria-pressed="true"]{background:#4f46e5;border-color:#c7d2fe;color:#ffffff}',
+      '.theme-contrast .gx-hero-deck,.theme-contrast .gx-starter-bar{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .gx-hero-badge,.theme-contrast .gx-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .gx-telemetry-pill strong,.theme-contrast .gx-starter-label{color:#00ff00!important}',
+      '.theme-contrast .gx-starter-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .gx-starter-chip[aria-pressed="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   // ── Is WebGL actually available here? ──
   // The tool used to infer this from a THREE.WebGLRenderer constructor throw,
@@ -2274,7 +2298,8 @@ function renderGalaxyEvidenceWorkbench(o) {
 
       // ── Tool body (galaxy) ──
       return (function() {
-var d = labToolData.galaxy || {};
+var _rawGal = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData.galaxy : null;
+var d = (_rawGal && typeof _rawGal === 'object' && !Array.isArray(_rawGal)) ? _rawGal : {};
 // Hoisted out of the first-load guard below. That guard runs ONCE per page, so a
 // saved session carrying a mode this build no longer has - 'quiz' moved to its own
 // flag, for instance - reached the renderer unchecked on every later mount and the
@@ -2286,12 +2311,12 @@ if (!window._galaxyHasLoadedOnce) {
     window._galaxyHasLoadedOnce = true;
     var allowedGalaxyModes = ALLOWED_GALAXY_MODES;
     if (d.simMode && !allowedGalaxyModes[d.simMode]) {
-        setTimeout(function() { ctx.setToolData(function(prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, {simMode: 'galaxy'})}); })}, 10);
+        setTimeout(function() { if (typeof ctx.setToolData === 'function') ctx.setToolData(function(prev) { var bp = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {}; var pg = (bp.galaxy && typeof bp.galaxy === 'object' && !Array.isArray(bp.galaxy)) ? bp.galaxy : {}; return Object.assign({}, bp, { galaxy: Object.assign({}, pg, {simMode: 'galaxy'})}); })}, 10);
         d.simMode = 'galaxy';
     }
 }
 
-          var patchGalaxy = function (patch) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, patch) }); }); };
+          var patchGalaxy = function (patch) { if (typeof setLabToolData !== 'function') return; setLabToolData(function (prev) { var bp = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {}; var pg = (bp.galaxy && typeof bp.galaxy === 'object' && !Array.isArray(bp.galaxy)) ? bp.galaxy : {}; return Object.assign({}, bp, { galaxy: Object.assign({}, pg, patch) }); }); };
           var upd = function (key, val) { patchGalaxy((function () { var o = {}; o[key] = val; return o; })()); };
           function cancelGalaxyQuizGeneration() {
             var request = galaxyQuizRequest.current; if (!request.active) return;
@@ -3823,6 +3848,14 @@ if (!window._galaxyHasLoadedOnce) {
 
             ];
 
+            if (window._isDesktopBundledApp === true) {
+              window._galaxyPPLoading = false;
+              var _cbs = window._galaxyPPCallbacks || [];
+              window._galaxyPPCallbacks = [];
+              _cbs.forEach(function (fn) { try { fn(); } catch (e) {} });
+              return;
+            }
+            var _sri = ['sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj','sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R','sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg','sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs','sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3','sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa'];
             var idx = 0;
 
             function next() {
@@ -3838,7 +3871,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               var s = document.createElement('script');
 
-              s.src = urls[idx]; s.onload = function () { idx++; next(); };
+              s.src = urls[idx]; s.integrity = _sri[idx]; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer'; s.onload = function () { idx++; next(); };
 
               s.onerror = function () { idx++; next(); };
 
@@ -13273,15 +13306,30 @@ if (!window._galaxyHasLoadedOnce) {
 
             renderTutorial('galaxy', _tutGalaxy),
 
-            // ── Header ──
+            // ── Header — Bespoke Cosmology & Astrophysics Workbench Deck ──
 
-            React.createElement("div", { "data-galaxy-header": "true", className: "flex flex-wrap items-center gap-3 mb-3" },
+            React.createElement("div", { "data-galaxy-header": "true", className: "gx-hero-deck flex flex-wrap items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "flex h-11 w-11 items-center justify-center rounded-xl hover:bg-slate-100", 'aria-label': __alloT('stem.galaxy.aria_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors", 'aria-label': __alloT('stem.galaxy.aria_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-white" })),
 
-              React.createElement("h3", { id: "galaxy-tool-title", "data-galaxy-transition-focus": "true", tabIndex: -1, className: "text-xl font-black text-slate-900" + (isContrast ? " text-white" : "") }, galaxyShapeIcon(React, 'grandDesign'), __alloT('stem.galaxy.header_title', 'Galaxy Explorer')),
+              React.createElement("svg", { width: 42, height: 42, viewBox: "0 0 64 64", className: "shrink-0", "aria-hidden": "true", focusable: "false" },
+                React.createElement("rect", { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? "#000000" : "#030712", stroke: isContrast ? "#00ff00" : "rgba(165,180,252,0.55)", strokeWidth: 1.8 }),
+                React.createElement("ellipse", { cx: 32, cy: 32, rx: 22, ry: 11, transform: "rotate(-22 32 32)", fill: "none", stroke: isContrast ? "#ffff00" : "#818cf8", strokeWidth: 2 }),
+                React.createElement("ellipse", { cx: 32, cy: 32, rx: 14, ry: 6.5, transform: "rotate(-22 32 32)", fill: "none", stroke: isContrast ? "#00ff00" : "#38bdf8", strokeWidth: 1.8 }),
+                React.createElement("circle", { cx: 32, cy: 32, r: 4.5, fill: isContrast ? "#ffffff" : "#fde68a" }),
+                React.createElement("circle", { cx: 16, cy: 20, r: 1.8, fill: "#38bdf8" }),
+                React.createElement("circle", { cx: 49, cy: 42, r: 1.8, fill: "#f472b6" })
+              ),
 
-              React.createElement("div", { "data-galaxy-navigation": "true", className: "ml-auto grid w-full grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 sm:grid-cols-3 xl:flex xl:w-auto", role: "group", "aria-label": __alloT('stem.galaxy.mode_switcher_label', 'Galaxy Explorer modes') },
+              React.createElement("div", { className: "min-w-0" },
+                React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" },
+                  React.createElement("span", { className: "gx-hero-badge" }, __alloT('stem.galaxy.hero_badge', 'Astrophysics · Galaxies & Spacetime')),
+                  !d.quizMode && React.createElement("span", { className: "gx-telemetry-pill" }, __alloT('stem.galaxy.pill_morphology', 'Type'), " ", React.createElement("strong", null, gType.label))
+                ),
+                React.createElement("h3", { id: "galaxy-tool-title", "data-galaxy-transition-focus": "true", tabIndex: -1, className: "mt-0.5 text-xl font-black text-white flex items-center gap-1.5" }, galaxyShapeIcon(React, 'grandDesign'), __alloT('stem.galaxy.header_title', 'Galaxy Explorer'))
+              ),
+
+              React.createElement("div", { "data-galaxy-navigation": "true", className: "ml-auto grid w-full grid-cols-2 gap-1 rounded-xl bg-slate-900/80 border border-white/15 p-1 sm:grid-cols-3 xl:flex xl:w-auto", role: "group", "aria-label": __alloT('stem.galaxy.mode_switcher_label', 'Galaxy Explorer modes') },
 
                 [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: __alloT('stem.galaxy.mode_galaxy', 'Galaxy') }, { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: __alloT('stem.galaxy.mode_black_hole', 'Black Hole') }, { key: 'realSky', icon: '\uD83D\uDD2D', label: __alloT('stem.galaxy.mode_real_sky_atlas', 'Real Sky Atlas'), ariaLabel: __alloT('stem.galaxy.mode_real_sky', 'Real Sky'), badge: __alloT('stem.galaxy.live_data_badge', 'LIVE') }, { key: 'star', icon: '\u2B50', label: __alloT('stem.galaxy.mode_star_life', 'Star Life') }, { key: 'quiz', icon: '\uD83E\uDDE0', label: __alloT('stem.galaxy.mode_quiz', 'Quiz') }, { key: 'metalHunt', icon: '\uD83C\uDF1F', label: __alloT('stem.galaxy.mode_metallicity', 'Metallicity') }].map(function (m) {
 
@@ -13361,6 +13409,30 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("span", { className: "font-semibold" }, __alloT('stem.galaxy.real_sky_launcher_desc', 'Pan, zoom, and compare 12 real galaxies, nebulae, and star clusters in optical and infrared light.'))
               ),
               React.createElement("span", { className: "ml-auto inline-flex items-center rounded-lg bg-cyan-700 px-2.5 py-1 text-xs font-black text-white transition group-hover:bg-cyan-800" }, __alloT('stem.galaxy.real_sky_launcher_action', 'Open atlas') + " \u2192")
+            ),
+
+            // One-click Cosmic Starter Presets (hidden during quiz mode)
+            !d.quizMode && simMode === 'galaxy' && React.createElement("div", {
+              className: "gx-starter-bar",
+              role: "group",
+              "aria-label": __alloT('stem.galaxy.starter_presets_aria', 'Starter galaxy explorations')
+            },
+              React.createElement("span", { className: "gx-starter-label" }, __alloT('stem.galaxy.starter_presets_label', 'Quick Explorations:')),
+              [
+                { id: 'gx-bar', label: __alloT('stem.galaxy.starter_barred', '🌌 Barred Spiral'), active: simMode === 'galaxy' && galaxyType === 'barredSpiral', run: function () { patchGalaxy({ simMode: 'galaxy', galaxyType: 'barredSpiral' }); } },
+                { id: 'gx-gd', label: __alloT('stem.galaxy.starter_grand', '🌀 Grand Design'), active: simMode === 'galaxy' && galaxyType === 'grandDesign', run: function () { patchGalaxy({ simMode: 'galaxy', galaxyType: 'grandDesign' }); } },
+                { id: 'gx-ell', label: __alloT('stem.galaxy.starter_elliptical', '🟡 Elliptical'), active: simMode === 'galaxy' && galaxyType === 'elliptical', run: function () { patchGalaxy({ simMode: 'galaxy', galaxyType: 'elliptical' }); } },
+                { id: 'gx-bh', label: __alloT('stem.galaxy.starter_blackhole', '🕳️ Event Horizon'), active: simMode === 'blackHole', run: function () { patchGalaxy({ quizMode: false, simMode: 'blackHole' }); } },
+                { id: 'gx-star', label: __alloT('stem.galaxy.starter_starlife', '⭐ Stellar Lifecycle'), active: simMode === 'star', run: function () { patchGalaxy({ quizMode: false, simMode: 'star', showLifecycle: true }); } }
+              ].map(function (st) {
+                return React.createElement("button", {
+                  key: st.id,
+                  type: "button",
+                  className: "gx-starter-chip",
+                  "aria-pressed": st.active ? "true" : "false",
+                  onClick: function () { sfxGalClick(); st.run(); }
+                }, st.label);
+              })
             ),
 
             !d.quizMode && simMode === 'galaxy' && React.createElement("div", null,

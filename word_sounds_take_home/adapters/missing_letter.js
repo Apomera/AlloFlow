@@ -93,6 +93,7 @@ module.exports = {
       // The app records this support once per item.
       if (on && !shownOnce) { shownOnce = true; ctx.support('wordShown'); }
     } }, text: ctx.L.missing_letter_show_word });
+    var doc = ctx.root.ownerDocument;
     var cards = [];
     var check = ctx.el('button', { type: 'button', class: 'primary', 'aria-disabled': 'true', on: { click: function () {
       if (ctx.isDone() || check.getAttribute('aria-disabled') === 'true') { if (!ctx.isDone() && !selected) ctx.announce(ctx.L.missing_letter_pick_first); return; }
@@ -101,11 +102,21 @@ module.exports = {
         correctText: ctx.fmt(ctx.L.missing_letter_correct, { letter: cased(item.target) }),
         missedText: ctx.fmt(ctx.L.missing_letter_missed, { letter: cased(item.target) }),
       });
-      // A retry starts from an empty slot; choosing again counts as a new answer,
-      // as an edit does in the app.
-      if (outcome === 'retry') select('');
+      // A retry marks the wrong letter as tried (matching all other choice adapters) and clears the slot.
+      if (outcome === 'retry') {
+        var missed = answer.trim().toLowerCase();
+        cards.forEach(function (c) {
+          if (c.letter === missed) {
+            c.tried = true;
+            c.box.classList.add('tried');
+            c.button.setAttribute('aria-disabled', 'true');
+          }
+        });
+        select('');
+      }
     } }, text: ctx.L.missing_letter_check });
     var select = function (letter) {
+      if (letter && cards.some(function (c) { return c.letter === letter && c.tried; })) return;
       selected = letter;
       cards.forEach(function (c) { c.button.setAttribute('aria-pressed', c.letter === letter ? 'true' : 'false'); });
       check.setAttribute('aria-disabled', letter ? 'false' : 'true');
@@ -113,13 +124,38 @@ module.exports = {
     };
     var list = ctx.el('ul', { class: 'row', 'aria-label': ctx.L.missing_letter_choices, style: 'list-style:none;padding:0;margin:16px 0' });
     item.options.forEach(function (letter) {
+      var card = { box: null, button: null, letter: letter, tried: false };
       var button = ctx.el('button', { type: 'button', 'aria-pressed': 'false', 'aria-label': ctx.fmt(ctx.L.missing_letter_choose, { letter: cased(letter) }),
         style: 'min-width:64px;min-height:64px;font-size:1.4rem;font-weight:700',
-        on: { click: function () { if (!ctx.isDone()) select(letter); } } }, [cased(letter)]);
+        on: { click: function () { if (!ctx.isDone() && !card.tried && button.getAttribute('aria-disabled') !== 'true') select(letter); } } }, [cased(letter)]);
       var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
-      cards.push({ box: box, button: button, letter: letter });
+      card.box = box; card.button = button;
+      cards.push(card);
       list.appendChild(box);
     });
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        if (ctx.isDone()) return false;
+        var k = String(key == null ? '' : key);
+        if (k === 'Enter') {
+          var ae = doc && doc.activeElement;
+          var onSelectedChoice = cards.some(function (c) { return c.button === ae && c.letter === selected; });
+          var onOtherBtn = !!(ae && String(ae.tagName || '').toUpperCase() === 'BUTTON' && ae !== check && !onSelectedChoice && !ae.closest('[hidden]') && !ae.disabled && ae.getAttribute('aria-disabled') !== 'true');
+          if (onOtherBtn || !selected) return false;
+          check.click();
+          return true;
+        }
+        if (k.length === 1) {
+          var lc = k.toLowerCase();
+          var hit = cards.filter(function (c) { return c.letter === lc; })[0];
+          if (hit) {
+            if (!hit.tried) select(hit.letter);
+            return true;
+          }
+        }
+        return false;
+      });
+    }
     updateWord('');
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.missing_letter_question }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [

@@ -586,16 +586,18 @@ const extractSourceTextForProcessing = (text, preferEnglish = true) => {
 
 const scrambleWord = (word) => {
   if (!word || word.length < 2) return word;
-  const arr = word.split('');
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  const chars = word.split('');
+  if (new Set(chars).size < 2) return word;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const arr = chars.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    const result = arr.join('');
+    if (result !== word) return result;
   }
-  const result = arr.join('');
-  if (result === word) {
-      return scrambleWord(word);
-  }
-  return result;
+  return chars.slice(1).concat(chars[0]).join('');
 };
 
 const toSuperscript = (num) => {
@@ -610,8 +612,9 @@ const fixCitationPlacement = (text) => {
     if (!text) return text;
     let fixed = text;
     fixed = fixed.replace(/(^|\n)(#{1,6})([^\s#])/gm, '$1$2 $3');
-    fixed = fixed.replace(/(\s*(?:\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\)\s*,?\s*)+)([.!?])/g, '$2$1');
-    fixed = fixed.replace(/(\s*(?:\[\d+\]\s*,?\s*)+)([.!?])/g, '$2$1');
+    // Unambiguous linear-time separators avoid exponential backtracking when citations are not followed by [.!?].
+    fixed = fixed.replace(/(\s*\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\)(?:(?:[ \t]*,[ \t]*|[ \t]+)\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))*[ \t]*)([.!?])/g, '$2$1');
+    fixed = fixed.replace(/(\s*\[\d+\](?:(?:[ \t]*,[ \t]*|[ \t]+)\[\d+\])*[ \t]*)([.!?])/g, '$2$1');
     return fixed;
 };
 
@@ -638,7 +641,7 @@ const processMathHTML = (text) => {
     content = content.replace(/\\begin\{cases\}([\s\S]*?)\\end\{cases\}/g, (_, body) => {
         const rows = body.split(/\\\\\s*/).filter(r => r.trim());
         const rendered = rows.map(row => {
-            const parts = row.split('&').map(p => p.trim());
+            const parts = row.split('&amp;').map(p => p.trim());
             return `<span style="display:flex;gap:1em;"><span>${parts[0] || ''}</span>${parts[1] ? `<span>${parts[1]}</span>` : ''}</span>`;
         }).join('');
         return `<span style="display:inline-flex;flex-direction:column;border-left:2px solid currentColor;padding-left:6px;align-items:flex-start;gap:2px;vertical-align:middle;">${rendered}</span>`;
@@ -646,7 +649,7 @@ const processMathHTML = (text) => {
     content = content.replace(/\\begin\{(aligned|align)\}([\s\S]*?)\\end\{\1\}/g, (_, _env, body) => {
         const rows = body.split(/\\\\\s*/).filter(r => r.trim());
         const rendered = rows.map(row => {
-            const parts = row.split('&').map(p => p.trim());
+            const parts = row.split('&amp;').map(p => p.trim());
             return `<span style="display:flex;gap:4px;justify-content:center;">${parts.map(p => `<span>${p}</span>`).join('')}</span>`;
         }).join('');
         return `<span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;vertical-align:middle;">${rendered}</span>`;

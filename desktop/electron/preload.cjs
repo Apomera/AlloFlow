@@ -2,30 +2,40 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('alloflowDesktop', {
-  getRuntimeInfo: () => ipcRenderer.invoke('alloflow-desktop:runtime-info'),
-  getUpdateStatus: () => ipcRenderer.invoke('alloflow-desktop:update-status'),
-  setUpdateChannel: (channel) => ipcRenderer.invoke('alloflow-desktop:set-update-channel', channel),
-  checkForUpdates: () => ipcRenderer.invoke('alloflow-desktop:check-for-updates'),
-  downloadUpdate: () => ipcRenderer.invoke('alloflow-desktop:download-update'),
-  installUpdate: () => ipcRenderer.invoke('alloflow-desktop:install-update'),
-  setFullScreen: (enabled) => ipcRenderer.invoke('alloflow-desktop:set-full-screen', Boolean(enabled)),
-  isFullScreen: () => ipcRenderer.invoke('alloflow-desktop:is-full-screen'),
-  updateCoachOverlay: (payload) => ipcRenderer.invoke('alloflow-desktop:coach-overlay-update', payload),
-  hideCoachOverlay: () => ipcRenderer.invoke('alloflow-desktop:coach-overlay-hide'),
-  onFullScreenChange: (callback) => {
-    if (typeof callback !== 'function') return () => {};
-    const listener = (_event, enabled) => callback(Boolean(enabled));
-    ipcRenderer.on('alloflow-desktop:full-screen-changed', listener);
-    return () => ipcRenderer.removeListener('alloflow-desktop:full-screen-changed', listener);
-  },
-  onUpdateStatus: (callback) => {
-    if (typeof callback !== 'function') return () => {};
-    const listener = (_event, status) => callback(status);
-    ipcRenderer.on('alloflow-desktop:update-status', listener);
-    return () => ipcRenderer.removeListener('alloflow-desktop:update-status', listener);
-  },
-});
+const isMainFrame = typeof window !== 'undefined' && window === window.top;
+
+if (isMainFrame) {
+  contextBridge.exposeInMainWorld('alloflowDesktop', {
+    getRuntimeInfo: () => ipcRenderer.invoke('alloflow-desktop:runtime-info'),
+    getUpdateStatus: () => ipcRenderer.invoke('alloflow-desktop:update-status'),
+    setUpdateChannel: (channel) => ipcRenderer.invoke('alloflow-desktop:set-update-channel', channel),
+    checkForUpdates: () => ipcRenderer.invoke('alloflow-desktop:check-for-updates'),
+    downloadUpdate: () => ipcRenderer.invoke('alloflow-desktop:download-update'),
+    installUpdate: () => ipcRenderer.invoke('alloflow-desktop:install-update'),
+    setFullScreen: (enabled) => ipcRenderer.invoke('alloflow-desktop:set-full-screen', Boolean(enabled)),
+    isFullScreen: () => ipcRenderer.invoke('alloflow-desktop:is-full-screen'),
+    updateCoachOverlay: (payload) => ipcRenderer.invoke('alloflow-desktop:coach-overlay-update', payload),
+    hideCoachOverlay: () => ipcRenderer.invoke('alloflow-desktop:coach-overlay-hide'),
+    onFullScreenChange: (callback) => {
+      if (typeof callback !== 'function') return () => {};
+      const listener = (_event, enabled) => callback(Boolean(enabled));
+      ipcRenderer.on('alloflow-desktop:full-screen-changed', listener);
+      return () => ipcRenderer.removeListener('alloflow-desktop:full-screen-changed', listener);
+    },
+    onUpdateStatus: (callback) => {
+      if (typeof callback !== 'function') return () => {};
+      const listener = (_event, status) => callback(status);
+      ipcRenderer.on('alloflow-desktop:update-status', listener);
+      return () => ipcRenderer.removeListener('alloflow-desktop:update-status', listener);
+    },
+  });
+} else {
+  // Embedded app subframes only need the video coach overlay controls, never updater or shell IPC.
+  contextBridge.exposeInMainWorld('alloflowDesktop', {
+    updateCoachOverlay: (payload) => ipcRenderer.invoke('alloflow-desktop:coach-overlay-update', payload),
+    hideCoachOverlay: () => ipcRenderer.invoke('alloflow-desktop:coach-overlay-hide'),
+  });
+}
 
 // Ported from the AlloFlow Admin app: the doc pipeline's batch export checks
 // window.alloAPI.remediation.saveFiles and, when present, saves the artifact

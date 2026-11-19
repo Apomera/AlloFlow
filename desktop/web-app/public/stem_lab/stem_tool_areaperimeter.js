@@ -1360,8 +1360,8 @@
       var h = React.createElement;
       var icons = ctx.icons || {};
       var ArrowLeft = icons.ArrowLeft;
-      var rootData = ctx.toolData || {};
-      var state = rootData._areaPerimeter || {};
+      var rootData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var state = (rootData._areaPerimeter && typeof rootData._areaPerimeter === 'object' && !Array.isArray(rootData._areaPerimeter)) ? rootData._areaPerimeter : {};
       var setToolData = ctx.setToolData;
       var announce = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function() {};
       var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : function() {};
@@ -1374,19 +1374,22 @@
         muted: '#ffffff', border: '#fbbf24', soft: '#111111', teal: '#ffff00',
         tealDark: '#ffff00', blue: '#00ffff', amber: '#ffff00', red: '#ff6b6b',
         green: '#00ff66', tile: '#ffff00', tileSoft: '#000000', onTeal: '#000000',
-        shapeB: '#000000', ghost: '#00ffff'
+        shapeB: '#000000', ghost: '#00ffff',
+        shadow: 'none'
       } : isDark ? {
         page: '#0f172a', panel: '#172033', panelAlt: '#111827', text: '#f8fafc',
-        muted: '#cbd5e1', border: '#475569', soft: '#1e293b', teal: '#2dd4bf',
+        muted: '#cbd5e1', border: '#334155', soft: '#1e293b', teal: '#2dd4bf',
         tealDark: '#99f6e4', blue: '#60a5fa', amber: '#fbbf24', red: '#f87171',
         green: '#4ade80', tile: '#2dd4bf', tileSoft: '#134e4a', onTeal: '#0f172a',
-        shapeB: '#1e3a5f', ghost: '#fbbf24'
+        shapeB: '#1e3a5f', ghost: '#fbbf24',
+        shadow: '0 4px 18px rgba(2,6,23,0.36)'
       } : {
         page: '#f8fafc', panel: '#ffffff', panelAlt: '#f0fdfa', text: '#0f172a',
         muted: '#475569', border: '#cbd5e1', soft: '#e2e8f0', teal: '#0f766e',
         tealDark: '#115e59', blue: '#2563eb', amber: '#b45309', red: '#b91c1c',
         green: '#15803d', tile: '#0f766e', tileSoft: '#ccfbf1', onTeal: '#ffffff',
-        shapeB: '#dbeafe', ghost: '#b45309'
+        shapeB: '#dbeafe', ghost: '#b45309',
+        shadow: '0 2px 12px rgba(15,118,110,0.08)'
       };
       var GRID_STROKE = isContrast ? '#ffffff' : (isDark ? '#94a3b8' : '#64748b');
 
@@ -1890,7 +1893,7 @@
       function panel(children, extra) {
         return h('section', Object.assign({
           className: 'rounded-2xl border shadow-sm',
-          style: { background: COLORS.panel, borderColor: COLORS.border, padding: 'clamp(14px, 2.5vw, 24px)', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', overflowX: 'auto' }
+          style: { background: COLORS.panel, borderColor: COLORS.border, padding: 'clamp(14px, 2.5vw, 24px)', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', overflowX: 'auto', boxShadow: COLORS.shadow }
         }, extra || {}), children);
       }
 
@@ -1925,10 +1928,10 @@
           key: key || 'metric-' + label,
           'data-ap-metric': key || undefined,
           className: 'rounded-xl border',
-          style: { borderColor: COLORS.border, background: COLORS.panelAlt, padding: '14px', minWidth: 0 }
+          style: { borderColor: COLORS.border, borderTop: '3px solid ' + (accent || COLORS.teal), background: COLORS.panelAlt, padding: '14px', minWidth: 0, boxShadow: COLORS.shadow }
         }, [
-          h('div', { key: 'label', style: { color: COLORS.muted, fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, label),
-          h('div', { key: 'value', style: { color: accent || COLORS.tealDark, fontSize: 'clamp(1.45rem, 4vw, 2rem)', fontWeight: 800, lineHeight: 1.2 } }, value),
+          h('div', { key: 'label', style: { color: COLORS.muted, fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, label),
+          h('div', { key: 'value', style: { color: accent || COLORS.tealDark, fontSize: 'clamp(1.45rem, 4vw, 2rem)', fontWeight: 900, lineHeight: 1.2, fontVariantNumeric: 'tabular-nums' } }, value),
           h('div', { key: 'formula', style: { color: COLORS.muted, fontSize: '0.9rem', marginTop: '4px' } }, formula)
         ]);
       }
@@ -2438,6 +2441,15 @@
         }, [
           h('title', { key: 'title', id: 'ap-explore-title' }, fill(t('stem.areaperimeter.explore_title', '{w} by {h} tiled rectangle'), { w: width, h: height })),
           h('desc', { key: 'desc', id: 'ap-explore-desc' }, description),
+          // Architectural dimension brackets along top & left
+          h('g', { key: 'dim-brackets', 'aria-hidden': 'true', pointerEvents: 'none', stroke: COLORS.teal, strokeWidth: 1.5, opacity: isContrast ? 1 : 0.72 }, [
+            h('line', { key: 't-bar', x1: originX, y1: originY - 22, x2: originX + shapeW, y2: originY - 22 }),
+            h('line', { key: 't-l', x1: originX, y1: originY - 27, x2: originX, y2: originY - 17 }),
+            h('line', { key: 't-r', x1: originX + shapeW, y1: originY - 27, x2: originX + shapeW, y2: originY - 17 }),
+            h('line', { key: 's-bar', x1: originX - 24, y1: originY, x2: originX - 24, y2: originY + shapeH }),
+            h('line', { key: 's-t', x1: originX - 29, y1: originY, x2: originX - 19, y2: originY }),
+            h('line', { key: 's-b', x1: originX - 29, y1: originY + shapeH, x2: originX - 19, y2: originY + shapeH })
+          ]),
           h('text', { key: 'top', x: originX + shapeW / 2, y: originY - 32, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, nUnits(width)),
           h('text', { key: 'side', x: originX - 38, y: originY + shapeH / 2, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800, transform: 'rotate(-90 ' + (originX - 38) + ' ' + (originY + shapeH / 2) + ')' }, nUnits(height))
         ].concat(cells).concat([
@@ -2569,6 +2581,21 @@
                 }, { key: 'hide-all', compact: true, disabled: validRevealed === 0 })
               ])
             ]),
+            h('div', { key: 'starter-presets', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', marginTop: '10px', padding: '8px 10px', borderRadius: '11px', background: COLORS.panelAlt, border: '1px solid ' + COLORS.border } }, [
+              h('span', { key: 'lbl', style: { fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: COLORS.muted } }, t('stem.areaperimeter.starter_shapes', 'Starter rectangles:'))
+            ].concat([
+              { w: 4, h: 4, tag: fill(t('stem.areaperimeter.preset_by', '{w} by {h}'), { w: 4, h: 4 }) },
+              { w: 6, h: 4, tag: fill(t('stem.areaperimeter.preset_by', '{w} by {h}'), { w: 6, h: 4 }) },
+              { w: 8, h: 3, tag: fill(t('stem.areaperimeter.preset_by', '{w} by {h}'), { w: 8, h: 3 }) },
+              { w: 9, h: 2, tag: fill(t('stem.areaperimeter.preset_by', '{w} by {h}'), { w: 9, h: 2 }) },
+              { w: 5, h: 5, tag: fill(t('stem.areaperimeter.preset_by', '{w} by {h}'), { w: 5, h: 5 }) }
+            ].map(function(pr) {
+              var active = width === pr.w && height === pr.h;
+              return actionButton(pr.tag, function() {
+                patch(Object.assign({ width: pr.w, height: pr.h, revealedTiles: {}, boundaryStep: 0, walkSteps: 0 }, PREDICTION_RESET));
+                speak(fill(t('stem.areaperimeter.sr_resized', 'The rectangle is now {w} by {h}.'), { w: pr.w, h: pr.h }));
+              }, { key: 'pre-' + pr.w + 'x' + pr.h, compact: true, primary: active, pressed: active, style: { minHeight: '44px', padding: '6px 12px', borderRadius: '999px', fontSize: '0.82rem', fontVariantNumeric: 'tabular-nums' } });
+            }))),
             predicting ? h('p', { key: 'prediction-prompt', id: 'ap-predict-prompt', style: { color: COLORS.text } }, t('stem.areaperimeter.prediction_prompt_entry', 'Predict the area in square units and the perimeter in units. Count tiles and trace edges if it helps, then check.')) : null,
             predicting ? h('form', { key: 'predict-form', onSubmit: checkPrediction, 'data-ap-predict-form': true, style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '12px' } }, [
               textField('ap-predict-area', t('stem.areaperimeter.predict_area_label', 'My area prediction (square units)'), state.predictArea, function(value) { patch({ predictArea: value }); }, { describedBy: 'ap-predict-prompt' }),
@@ -5090,32 +5117,62 @@
         : visibleModes;
       var foldedCount = visibleModes.length - shownModes.length;
 
+      var apEmblem = h('svg', {
+        key: 'emblem', width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true',
+        style: { flexShrink: 0, display: 'block' }
+      }, [
+        h('rect', { key: 'bg', x: 2, y: 2, width: 38, height: 38, rx: 10, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.42)', stroke: isContrast ? '#fbbf24' : 'rgba(204,251,241,0.48)', strokeWidth: 1.5 }),
+        h('rect', { key: 'fill', x: 9, y: 11, width: 24, height: 20, rx: 2, fill: isContrast ? '#000000' : 'rgba(45,212,191,0.34)', stroke: isContrast ? '#ffff00' : '#5eead4', strokeWidth: 2 }),
+        h('line', { key: 'v1', x1: 17, y1: 11, x2: 17, y2: 31, stroke: isContrast ? '#ffff00' : '#99f6e4', strokeWidth: 1, strokeDasharray: '2 2' }),
+        h('line', { key: 'v2', x1: 25, y1: 11, x2: 25, y2: 31, stroke: isContrast ? '#ffff00' : '#99f6e4', strokeWidth: 1, strokeDasharray: '2 2' }),
+        h('line', { key: 'h1', x1: 9, y1: 21, x2: 33, y2: 21, stroke: isContrast ? '#ffff00' : '#99f6e4', strokeWidth: 1, strokeDasharray: '2 2' }),
+        h('circle', { key: 'c1', cx: 9, cy: 11, r: 2.5, fill: isContrast ? '#00ff66' : '#fbbf24' }),
+        h('circle', { key: 'c2', cx: 33, cy: 31, r: 2.5, fill: isContrast ? '#00ff66' : '#fbbf24' })
+      ]);
+      var heroPill = isContrast
+        ? { padding: '5px 10px', borderRadius: '999px', border: '1px solid #fbbf24', background: '#000000', color: '#ffff00', fontWeight: 800, fontSize: '0.78rem', fontVariantNumeric: 'tabular-nums' }
+        : { padding: '5px 10px', borderRadius: '999px', border: '1px solid rgba(204,251,241,0.35)', background: 'rgba(15,23,42,0.42)', color: '#f0fdfa', fontWeight: 800, fontSize: '0.78rem', fontVariantNumeric: 'tabular-nums' };
+
       return h('div', {
         className: 'area-perimeter-lab',
-        style: { background: COLORS.page, color: COLORS.text, borderRadius: '18px', padding: 'clamp(12px, 2.5vw, 24px)', minHeight: '620px', fontFamily: 'inherit' }
+        style: { background: COLORS.page, color: COLORS.text, borderRadius: '18px', padding: 'clamp(12px, 2.5vw, 24px)', minHeight: '620px', fontFamily: 'inherit', minWidth: 0 }
       }, [
         h('header', { key: 'header', style: { marginBottom: '16px' } }, [
-          h('div', { key: 'top', style: { display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' } }, [
-            h('div', { key: 'titleWrap', style: { display: 'flex', alignItems: 'center', gap: '11px', minWidth: 0 } }, [
+          h('div', {
+            key: 'top',
+            style: {
+              display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap',
+              padding: '14px 16px', borderRadius: '16px',
+              background: isContrast ? '#000000' : 'linear-gradient(135deg, #0f172a 0%, #115e59 56%, #0f766e 100%)',
+              border: isContrast ? '2px solid #fbbf24' : '1px solid rgba(94,234,212,0.28)',
+              boxShadow: isContrast ? 'none' : '0 8px 24px rgba(15,118,110,0.22)'
+            }
+          }, [
+            h('div', { key: 'titleWrap', style: { display: 'flex', alignItems: 'center', gap: '11px', minWidth: 0, flex: '1 1 200px' } }, [
               typeof ctx.setStemLabTool === 'function' ? h('button', {
                 key: 'back', type: 'button', onClick: function() { ctx.setStemLabTool(null); },
                 'aria-label': t('stem.areaperimeter.back_to_stem_tools', "Back to STEM tools"), title: t('stem.areaperimeter.back_to_stem_tools', "Back to STEM tools"),
                 className: 'rounded-xl border focus:outline-none focus:ring-2 focus:ring-teal-500',
-                style: { width: '44px', height: '44px', display: 'grid', placeItems: 'center', borderColor: COLORS.border, background: COLORS.panel, color: COLORS.text, cursor: 'pointer', flex: '0 0 auto' }
+                style: { width: '44px', height: '44px', display: 'grid', placeItems: 'center', borderColor: isContrast ? '#fbbf24' : 'rgba(204,251,241,0.38)', background: isContrast ? '#000000' : 'rgba(15,23,42,0.44)', color: isContrast ? '#fbbf24' : '#ffffff', cursor: 'pointer', flex: '0 0 auto' }
               }, ArrowLeft ? h(ArrowLeft, { size: 20, 'aria-hidden': true }) : '←') : null,
+              apEmblem,
               h('div', { key: 'titles', style: { minWidth: 0 } }, [
-                h('h1', { key: 'h', style: { margin: 0, color: COLORS.text, fontSize: 'clamp(1.45rem, 4vw, 2.15rem)', lineHeight: 1.15 } }, t('stem.areaperimeter.area_perimeter_lab', "📐 Area & Perimeter Lab")),
-                h('p', { key: 'p', style: { margin: '5px 0 0', color: COLORS.muted, lineHeight: 1.45 } }, t('stem.areaperimeter.measure_space_inside_distance_around_a', "Measure space inside, distance around, and the shapes between."))
+                h('div', { key: 'badges', style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '3px' } }, [
+                  h('span', { key: 'subj', style: Object.assign({}, heroPill, { padding: '2px 8px', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }) }, t('stem.areaperimeter.subject_badge', 'Mathematics · Geometry & Measurement')),
+                  h('span', { key: 'band', style: Object.assign({}, heroPill, { padding: '2px 8px', fontSize: '0.7rem' }) }, bandLabel(band))
+                ]),
+                h('h1', { key: 'h', style: { margin: 0, color: isContrast ? '#ffff00' : '#ffffff', fontSize: 'clamp(1.35rem, 3.8vw, 1.95rem)', lineHeight: 1.15, overflowWrap: 'anywhere' } }, t('stem.areaperimeter.area_perimeter_lab', "📐 Area & Perimeter Lab")),
+                h('p', { key: 'p', style: { margin: '4px 0 0', color: isContrast ? '#ffffff' : '#ccfbf1', lineHeight: 1.4, fontSize: '0.88rem' } }, t('stem.areaperimeter.measure_space_inside_distance_around_a', "Measure space inside, distance around, and the shapes between."))
               ])
             ]),
-            h('div', { key: 'quick', style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, [
-              h('span', { key: 'solved', style: { padding: '7px 11px', borderRadius: '999px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.green, fontWeight: 800 } }, fill(t('stem.areaperimeter.n_solved', '{n} solved'), { n: challengeProgressCount(state.solvedChallenges) })),
-              h('span', { key: 'best', style: { padding: '7px 11px', borderRadius: '999px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.amber, fontWeight: 800 } }, fill(t('stem.areaperimeter.best_streak_n', 'Best streak: {n}'), { n: state.bestStreak || 0 }))
+            h('div', { key: 'quick', style: { display: 'flex', gap: '8px', flexWrap: 'wrap', minWidth: 0 } }, [
+              h('span', { key: 'solved', style: Object.assign({}, heroPill, { color: isContrast ? '#00ff66' : '#a7f3d0', borderColor: isContrast ? '#00ff66' : 'rgba(110,231,183,0.45)' }) }, fill(t('stem.areaperimeter.n_solved', '{n} solved'), { n: challengeProgressCount(state.solvedChallenges) })),
+              h('span', { key: 'best', style: Object.assign({}, heroPill, { color: isContrast ? '#ffff00' : '#fde68a', borderColor: isContrast ? '#ffff00' : 'rgba(253,230,138,0.45)' }) }, fill(t('stem.areaperimeter.best_streak_n', 'Best streak: {n}'), { n: state.bestStreak || 0 }))
             ])
           ]),
           teacherPanel(),
           pathPanel(),
-          h('nav', { key: 'nav', 'aria-label': t('stem.areaperimeter.area_and_perimeter_lab_modes', "Area and perimeter lab modes"), style: { marginTop: '16px' } }, [
+          h('nav', { key: 'nav', 'aria-label': t('stem.areaperimeter.area_and_perimeter_lab_modes', "Area and perimeter lab modes"), style: { marginTop: '14px', padding: '8px', borderRadius: '14px', background: COLORS.panel, border: '1px solid ' + COLORS.border, boxShadow: COLORS.shadow } }, [
             visibleModes.length > 1 ? h('p', { key: 'core-note', id: 'ap-core-note', style: canFold && !moreOpen ? srOnlyStyle() : { margin: '0 0 8px', color: COLORS.muted, fontSize: '0.9rem' } }, fill(t('stem.areaperimeter.core_note', '★ marks the core activities for {band}. They come first.'), { band: bandLabel(band) })) : null,
             h('div', { key: 'row', style: { display: 'flex', gap: '7px', flexWrap: 'wrap', alignItems: 'stretch' } }, [
               h('div', { key: 'tabs', id: 'ap-tablist', role: 'tablist', 'aria-label': t('stem.areaperimeter.lab_modes', "Lab modes"), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 125px), 1fr))', gap: '7px', flex: '1 1 420px', minWidth: 0 } }, shownModes.map(function(item, index) {

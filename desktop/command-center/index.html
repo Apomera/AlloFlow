@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:* http://localhost:*; frame-src 'self' http://127.0.0.1:* http://localhost:*; base-uri 'none'; form-action 'none'; object-src 'none'">
   <title>AlloFlow Desktop</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
@@ -42,7 +44,7 @@
             <button id="save-app-url" type="button">Save</button>
             <button id="start-app" type="button">Start App</button>
             <button id="stop-app" type="button">Stop App</button>
-            <a id="open-app-link" class="button-link" target="_blank" rel="noreferrer">Open</a>
+            <a id="open-app-link" class="button-link" target="_blank" rel="noopener noreferrer">Open</a>
             <button id="refresh-all" type="button">Refresh</button>
             <button id="toggle-app-focus" type="button" aria-pressed="false">Full Screen</button>
           </div>
@@ -306,7 +308,7 @@
             <button id="setup-schoolbox" type="button">Prepare</button>
             <button id="start-schoolbox" type="button">Start Server</button>
             <button id="stop-schoolbox" type="button">Stop Server</button>
-            <a id="open-schoolbox-link" class="button-link" target="_blank" rel="noreferrer">Open Server</a>
+            <a id="open-schoolbox-link" class="button-link" target="_blank" rel="noopener noreferrer">Open Server</a>
           </div>
         </header>
         <div class="schoolbox-grid">
@@ -345,7 +347,7 @@
               <input id="presenter-code" type="text" maxlength="24" autocomplete="off" placeholder="e.g. TIGERS1">
               <button id="show-join-qr" type="button">Show QR</button>
               <button id="copy-join-link" type="button">Copy join link</button>
-              <a id="open-presenter" class="button-link" target="_blank" rel="noreferrer">Presenter view</a>
+              <a id="open-presenter" class="button-link" target="_blank" rel="noopener noreferrer">Presenter view</a>
             </div>
             <div id="join-qr" class="join-qr" role="img" aria-label="QR code for the class join link" hidden></div>
             <div id="join-link" class="join-link" aria-live="polite"></div>
@@ -509,7 +511,7 @@
       <!-- Step: gemini -->
       <div class="wiz-step hidden" data-wizard-step="gemini">
         <ol class="wiz-list">
-          <li><a class="wiz-btn-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Open Google AI Studio ↗</a> — it opens in your web browser.</li>
+          <li><a class="wiz-btn-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Open Google AI Studio ↗</a> — it opens in your web browser.</li>
           <li>Sign in with any Google account (a school or personal Gmail both work).</li>
           <li>Click <strong>“Create API key”</strong>, then click the <strong>copy</strong> button next to the new key.</li>
           <li>Come back here and paste it below.</li>

@@ -3488,8 +3488,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       '.firstresponse-status{flex:0 0 auto;padding:8px 11px;border:1px solid rgba(147,197,253,.35);border-radius:999rem;background:rgba(2,6,23,.66);color:#bfdbfe;font-size:10px;font-weight:800;white-space:nowrap;}',
       '.firstresponse-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:17px;}',
       '.firstresponse-metric{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(15,23,42,.72);}',
-      '.firstresponse-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.firstresponse-metric-label{display:block;color:#94a3b8;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
       '.firstresponse-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.firstresponse-brand-row{display:flex;align-items:flex-start;gap:14px;min-width:0;flex:1;}',
+      '.firstresponse-emblem{width:46px;height:46px;flex-shrink:0;border-radius:14px;border:1.5px solid rgba(96,165,250,.55);background:linear-gradient(145deg,rgba(37,99,235,.28),rgba(15,23,42,.88));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(2,6,23,.32);}',
+      '.firstresponse-badge-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px;}',
+      '.firstresponse-subject-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;border:1px solid rgba(96,165,250,.48);background:rgba(37,99,235,.2);color:#bfdbfe;font-size:10px;font-weight:850;letter-spacing:.07em;text-transform:uppercase;}',
+      '.firstresponse-chain-svg{display:block;width:100%;max-width:460px;height:auto;margin-top:12px;}',
+      '.firstresponse-quick-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}',
+      '.firstresponse-quick-chip{min-height:44px;padding:6px 12px;border-radius:999px;border:1px solid rgba(148,163,184,.36);background:rgba(15,23,42,.68);color:#e2e8f0;font-size:12px;font-weight:750;cursor:pointer;transition:border-color .16s,background .16s;}',
+      '.firstresponse-quick-chip:hover{border-color:#60a5fa;background:rgba(37,99,235,.22);color:#fff;}',
+      '.firstresponse-quick-chip[data-visited="true"]{border-color:rgba(52,211,153,.55);color:#a7f3d0;}',
+      '.theme-contrast .firstresponse-subject-badge,.theme-contrast .firstresponse-quick-chip{background:#000!important;color:#ffff00!important;border-color:#ffff00!important;}',
       '.firstresponse-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px;}',
       '.firstresponse-primary{min-height:44px;padding:10px 16px;border:1px solid rgba(219,234,254,.42);border-radius:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(37,99,235,.22);transition:transform .18s,box-shadow .18s;}',
       '.firstresponse-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(37,99,235,.3);}',
@@ -3687,7 +3697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       var useRef = React.useRef;
 
       // State persistence via ctx.toolData (system-managed; survives reload).
-      var d = (ctx.toolData && ctx.toolData['firstResponse']) || {};
+      var d = (ctx.toolData && ctx.toolData['firstResponse'] && typeof ctx.toolData['firstResponse'] === 'object' && !Array.isArray(ctx.toolData['firstResponse'])) ? ctx.toolData['firstResponse'] : {};
       var upd = function(key, val) { ctx.update('firstResponse', key, val); };
       var updMulti = function(obj) {
         if (ctx.updateMulti) ctx.updateMulti('firstResponse', obj);
@@ -4278,11 +4288,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           emergencyBanner(),
           h('header', { className: 'firstresponse-command' },
             h('div', { className: 'firstresponse-command-top' },
-              h('div', null,
-                h('p', { className: 'firstresponse-eyebrow' }, __alloT('stem.firstresponse.readiness_label', 'Emergency response readiness')),
-                h('h2', { className: 'firstresponse-title' }, __alloT('stem.firstresponse.first_response_lab', 'First Response Lab')),
-                h('p', { className: 'firstresponse-subtitle' }, __alloT('stem.firstresponse.readiness_blurb', 'Build the decision sequence: recognize the emergency, activate help, then choose the appropriate first action.'))),
+              h('div', { className: 'firstresponse-brand-row' },
+                h('div', { className: 'firstresponse-emblem', 'aria-hidden': 'true' },
+                  h('svg', { viewBox: '0 0 44 44', width: 38, height: 38, 'aria-hidden': 'true', focusable: 'false' },
+                    h('path', { d: 'M22 4L37 10V21.5C37 31 30.5 38 22 40.5C13.5 38 7 31 7 21.5V10L22 4Z', fill: 'rgba(15,23,42,0.85)', stroke: '#60a5fa', strokeWidth: 1.8 }),
+                    h('rect', { x: 19.5, y: 11, width: 5, height: 15, rx: 1.5, fill: '#ef4444' }),
+                    h('rect', { x: 14.5, y: 16, width: 15, height: 5, rx: 1.5, fill: '#ef4444' }),
+                    h('polyline', { fill: 'none', stroke: '#34d399', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', points: '10,30 16,30 18.5,25.5 21.5,33.5 24.5,27.5 27,30 34,30' })
+                  )
+                ),
+                h('div', { style: { minWidth: 0, flex: 1 } },
+                  h('div', { className: 'firstresponse-badge-row' },
+                    h('span', { className: 'firstresponse-subject-badge' }, __alloT('stem.firstresponse.subject_badge', 'Health & Safety · Emergency Response')),
+                    h('p', { className: 'firstresponse-eyebrow', style: { margin: 0 } }, __alloT('stem.firstresponse.readiness_label', 'Emergency response readiness'))
+                  ),
+                  h('h2', { className: 'firstresponse-title' }, __alloT('stem.firstresponse.first_response_lab', 'First Response Lab')),
+                  h('p', { className: 'firstresponse-subtitle' }, __alloT('stem.firstresponse.readiness_blurb', 'Build the decision sequence: recognize the emergency, activate help, then choose the appropriate first action.'))
+                )
+              ),
               h('div', { className: 'firstresponse-status', role: 'status' }, __alloT('stem.firstresponse.education_status', 'Educational only - real emergencies: call 911'))),
+            // Live Chain-of-Survival Telemetry SVG
+            (function() {
+              var chainNodes = [
+                { id: 'recognize', x: 52, label: __alloT('stem.firstresponse.chain_recognize', 'Recognize') },
+                { id: 'call', x: 156, label: __alloT('stem.firstresponse.chain_call', 'Call 911') },
+                { id: 'cpr', x: 260, label: __alloT('stem.firstresponse.chain_cpr', 'CPR + AED') },
+                { id: 'bleed', x: 368, label: __alloT('stem.firstresponse.chain_stabilize', 'Stabilize') }
+              ];
+              return h('svg', { viewBox: '0 0 420 66', width: 420, height: 66, className: 'firstresponse-chain-svg', 'aria-hidden': 'true', focusable: 'false' },
+                h('rect', { x: 1, y: 1, width: 418, height: 64, rx: 12, fill: 'rgba(15,23,42,0.72)', stroke: 'rgba(96,165,250,0.32)', strokeWidth: 1.2 }),
+                h('text', { x: 14, y: 15, fill: '#93c5fd', fontSize: 10, fontWeight: 800, letterSpacing: '0.07em' }, __alloT('stem.firstresponse.chain_title', 'CHAIN OF SURVIVAL')),
+                h('text', { x: 406, y: 15, textAnchor: 'end', fill: '#34d399', fontSize: 10, fontWeight: 800 }, coreCompleted + '/' + coreTiles.length + ' ' + __alloT('stem.firstresponse.chain_ready', 'CORE')),
+                h('line', { x1: 52, y1: 34, x2: 368, y2: 34, stroke: '#334155', strokeWidth: 2, strokeDasharray: '4 3' }),
+                chainNodes.map(function(cn) {
+                  var done = !!modulesVisited[cn.id];
+                  return h('g', { key: cn.id },
+                    h('circle', { cx: cn.x, cy: 34, r: 9.5, fill: done ? '#10b981' : '#1e293b', stroke: done ? '#6ee7b7' : '#60a5fa', strokeWidth: 1.6 }),
+                    done
+                      ? h('path', { d: 'M' + (cn.x - 3.5) + ' 34.2L' + (cn.x - 1) + ' 36.8L' + (cn.x + 4) + ' 31.2', fill: 'none', stroke: '#022c22', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                      : h('circle', { cx: cn.x, cy: 34, r: 2.5, fill: '#93c5fd' }),
+                    h('text', { x: cn.x, y: 56, textAnchor: 'middle', fill: done ? '#a7f3d0' : '#e2e8f0', fontSize: 10, fontWeight: 700 }, cn.label)
+                  );
+                })
+              );
+            })(),
             h('div', { className: 'firstresponse-metrics', role: 'list', 'aria-label': __alloT('stem.firstresponse.progress_label', 'First Response progress') },
               metric(__alloT('stem.firstresponse.core_readiness', 'Core readiness'), coreCompleted + ' / ' + coreTiles.length),
               metric(__alloT('stem.firstresponse.modules_explored', 'Modules explored'), visitedCount + ' / ' + learningTiles.length),
@@ -4291,7 +4340,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('div', { className: 'firstresponse-actions' },
               h('button', { type: 'button', className: 'firstresponse-primary', onClick: function() { openTile(nextTile); } },
                 coreCompleted < coreTiles.length ? __alloT('stem.firstresponse.continue_core', 'Continue core response path') : __alloT('stem.firstresponse.continue_practice', 'Continue practice')),
-              h('span', { className: 'firstresponse-action-note' }, nextTile ? nextTile.label : __alloT('stem.firstresponse.review', 'Review mastery')))),
+              h('span', { className: 'firstresponse-action-note' }, nextTile ? nextTile.label : __alloT('stem.firstresponse.review', 'Review mastery'))),
+            h('div', { className: 'firstresponse-quick-chips', role: 'group', 'aria-label': __alloT('stem.firstresponse.quick_launch_core', 'Quick launch core modules') },
+              coreTiles.map(function(ct) {
+                var isDone = !!modulesVisited[ct.id];
+                return h('button', { key: ct.id, type: 'button', className: 'firstresponse-quick-chip', 'data-visited': String(isDone), onClick: function() { openTile(ct); } },
+                  (isDone ? '✓ ' : '') + ct.label);
+              })
+            )),
 
           h('section', { className: 'firstresponse-section', 'aria-labelledby': 'firstresponse-core-heading' },
             h('div', { className: 'firstresponse-section-head' },

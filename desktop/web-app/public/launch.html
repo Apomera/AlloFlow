@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#4f46e5" />
   <title>Launch AlloFlow in Gemini Canvas</title>
@@ -27,15 +28,12 @@
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web, Windows, macOS","description":"Free open-source AI classroom assistant for differentiated instruction, AAC communication, RTI progress monitoring, accessible learning supports, STEM/SEL tools, and local-first school deployments.","url":"https://apomera.github.io/AlloFlow/launch.html","codeRepository":"https://github.com/Apomera/AlloFlow","license":"https://www.gnu.org/licenses/agpl-3.0.html","author":{"@type":"Person","name":"Aaron Pomeranz"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
     body {
       min-height: 100vh;
-      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       background: radial-gradient(ellipse at top, #1e1b4b 0%, #0f172a 60%, #020617 100%);
       color: #e2e8f0;
       display: flex;
@@ -341,10 +339,14 @@
     @media (prefers-reduced-motion: reduce) {
       .launch-btn, .browser-app-btn { transition: none; }
     }
+    .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 999; background: #1e1b4b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+    .skip-link:focus { left: 12px; outline: 3px solid #facc15; outline-offset: 2px; }
+    @media (forced-colors: active) { .brand { -webkit-text-fill-color: CanvasText; color: CanvasText; background: none; } a:focus-visible, button:focus-visible { outline: 3px solid Highlight; outline-offset: 2px; } }
   </style>
 </head>
 <body>
-  <main class="card" role="main" aria-labelledby="brand-heading">
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <main id="main" tabindex="-1" class="card" role="main" aria-labelledby="brand-heading">
     <h1 id="brand-heading" class="brand">AlloFlow</h1>
     <p class="tagline">Adaptive Levels, Layers, &amp; Outputs</p>
 
@@ -363,12 +365,12 @@
 
     <div class="actions">
       <button id="copy-btn" type="button" class="secondary-btn"
-              aria-label="Copy current AlloFlow Canvas link to clipboard">
+              aria-label="Copy Canvas link to clipboard">
         Copy Canvas link
       </button>
       <nav class="secondary-nav" aria-label="AlloFlow pages">
         <a id="changelog-link" class="secondary-link" href="changelog.html"
-           aria-label="View AlloFlow changelog">
+           aria-label="View changelog for AlloFlow">
           View changelog
         </a>
         <a class="secondary-link" href="about.html" aria-label="Learn about AlloFlow">About AlloFlow</a>
@@ -385,7 +387,7 @@
       </p>
       <a id="browser-app-btn" class="browser-app-btn" href="https://alloflow.dev/app/"
          target="_blank" rel="noopener noreferrer"
-         aria-label="Open the AlloFlow browser app in a new tab">
+         aria-label="Open browser app in a new tab">
         Open browser app
         <span aria-hidden="true">&rarr;</span>
       </a>

@@ -41,17 +41,23 @@ const GUTENBERG_LANG_NAMES = {
 };
 const RTL_LANG_CODES = new Set(['ar', 'he', 'fa', 'ur', 'yi']);
 
-function corsHeaders() {
+function corsHeaders(status) {
   return {
     'Access-Control-Allow-Origin': ALLOW_ORIGIN,
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'public, max-age=86400',
+    'Cache-Control': (status && status >= 400) ? 'no-store' : 'public, max-age=86400',
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'no-referrer',
+    'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
   };
 }
 function json(body, status) {
-  return new Response(JSON.stringify(body), { status: status || 200, headers: corsHeaders() });
+  const code = status || 200;
+  return new Response(JSON.stringify(body), { status: code, headers: corsHeaders(code) });
 }
 
 function compact(s) {
@@ -147,7 +153,10 @@ async function fetchPlainText(source) {
     seen.add(next);
     current = next;
   }
-  if (!res.ok) throw new Error('text HTTP ' + res.status);
+  if (!res.ok) {
+    try { await res.body?.cancel(); } catch (_) {}
+    throw new Error('text HTTP ' + res.status);
+  }
   const buf = await readBoundedBuffer(res, MAX_GUTENBERG_TEXT_BYTES);
   const charset = /(?:iso-8859-1|latin-1|windows-1252)/i.test(mime) || /-8\.txt(?:$|\?)/i.test(current)
     ? 'windows-1252' : 'utf-8';
@@ -215,11 +224,50 @@ function bookLanguage(metadata) {
   return { langCode: code, language: GUTENBERG_LANG_NAMES[code] || code.toUpperCase(), isRtl: RTL_LANG_CODES.has(code) };
 }
 
+async function fetchGutendexMetadata(id) {
+  let current = GUTENDEX + id;
+  const seen = new Set([current]);
+  for (let hop = 0; hop <= 3; hop += 1) {
+    const metaOpts = { headers: { 'User-Agent': 'AlloFlow import worker' }, redirect: 'manual' };
+    if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
+      metaOpts.signal = AbortSignal.timeout(15000);
+    }
+    const metaRes = await fetch(current, metaOpts);
+    if (metaRes.status >= 300 && metaRes.status < 400) {
+      const loc = metaRes.headers.get('Location');
+      try { await metaRes.body?.cancel(); } catch (_) {}
+      if (!loc) throw new Error('Gutendex redirect missing target.');
+      const next = new URL(loc, current);
+      const nextHost = next.hostname.toLowerCase().replace(/\.$/, '');
+      if (
+        next.protocol !== 'https:'
+        || next.username || next.password
+        || (next.port && next.port !== '443')
+        || (nextHost !== 'gutendex.com' && !nextHost.endsWith('.gutendex.com'))
+      ) {
+        throw new Error('Blocked unsafe Gutendex redirect.');
+      }
+      const nextUrl = next.toString();
+      if (seen.has(nextUrl)) throw new Error('Blocked redirect loop on Gutendex.');
+      seen.add(nextUrl);
+      current = nextUrl;
+      continue;
+    }
+    if (!metaRes.ok) {
+      try { await metaRes.body?.cancel(); } catch (_) {}
+      throw new Error('Gutendex HTTP ' + metaRes.status);
+    }
+    const metaBuf = await readBoundedBuffer(metaRes, 2 * 1024 * 1024);
+    const metaRaw = new TextDecoder('utf-8', { fatal: false }).decode(metaBuf);
+    return JSON.parse(metaRaw, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
+  }
+  throw new Error('Too many Gutendex redirects.');
+}
+
 async function buildBook(id) {
-  const metaRes = await fetch(GUTENDEX + id, { headers: { 'User-Agent': 'AlloFlow import worker' } });
-  if (!metaRes.ok) throw new Error('Gutendex HTTP ' + metaRes.status);
-  const metadata = await metaRes.json();
-  if (!metadata || !metadata.id) throw new Error('No such Gutenberg book.');
+  const metadata = await fetchGutendexMetadata(id);
+  const safeId = Number(metadata && metadata.id);
+  if (!metadata || !Number.isInteger(safeId) || safeId <= 0) throw new Error('No such Gutenberg book.');
   if (metadata.copyright !== false) throw new Error('That book is not in the public domain.');
   const textSource = choosePlainTextSource(metadata.formats, id);
   const body = stripGutenbergBoilerplate(await fetchPlainText(textSource));
@@ -236,7 +284,7 @@ async function buildBook(id) {
   const pages = [note].concat(splitIntoReadingPages(paragraphs)).map((text, idx) => ({ n: idx + 1, img: null, text }));
   return {
     schema: 'allo-reading-book@1',
-    slug: 'gutenberg-ebook-' + metadata.id + '-' + slugify(title),
+    slug: 'gutenberg-ebook-' + safeId + '-' + slugify(title),
     title,
     description: 'A full in-app Project Gutenberg public-domain text, imported on request.',
     language: langInfo.language,
@@ -253,7 +301,7 @@ async function buildBook(id) {
     publisher: 'Project Gutenberg',
     license: 'Public Domain in the U.S. / Project Gutenberg License',
     licenseUrl: PG_LICENSE,
-    source: { id: 'gutenberg', name: 'Project Gutenberg', url: 'https://www.gutenberg.org/ebooks/' + metadata.id, textUrl: textSource.url },
+    source: { id: 'gutenberg', name: 'Project Gutenberg', url: 'https://www.gutenberg.org/ebooks/' + safeId, textUrl: safeGutenbergTextUrl(textSource.url) },
     cover: null,
     audio: null,
     pages,
@@ -271,8 +319,8 @@ export default {
       if (!Number.isInteger(id) || id <= 0) return json({ error: 'Pass a Project Gutenberg id, e.g. ?id=1342.' }, 400);
       const book = await buildBook(id);
       return json({ book });
-    } catch (err) {
-      return json({ error: String((err && err.message) || err).slice(0, 200) }, 502);
+    } catch (_) {
+      return json({ error: 'Could not import that Project Gutenberg book right now.' }, 502);
     }
   },
 };

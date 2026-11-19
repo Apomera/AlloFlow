@@ -216,12 +216,20 @@ function PdfDiffViewer(props) {
     const nestedDialog = event.target?.closest?.('[role="alertdialog"]');
     if (nestedDialog && nestedDialog !== container) return;
     if (event.key === 'Escape') {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       if (typeof onEscape === 'function') onEscape();
       return;
     }
     if (event.key !== 'Tab') return;
-    const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+    const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let node = el; node && node !== container; node = node.parentElement) {
+        const s = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+        if (s && (s.display === 'none' || s.visibility === 'hidden')) return false;
+      }
+      return true;
+    });
     if (!focusable.length) { event.preventDefault(); container.focus(); return; }
     const first = focusable[0], last = focusable[focusable.length - 1];
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -872,7 +880,7 @@ function PdfDiffViewer(props) {
                 <div ref={diffConfirmRef} role="alertdialog" aria-modal="true" aria-labelledby="allo-diff-confirm-title" aria-describedby="allo-diff-confirm-message" tabIndex={-1}
                   onKeyDown={(event) => {
                     event.stopPropagation();
-                    if (event.key === 'Escape') { event.preventDefault(); finishDiffConfirmation(false); return; }
+                    if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); finishDiffConfirmation(false); return; }
                     containDiffFocus(event, diffConfirmRef.current, () => finishDiffConfirmation(false));
                   }}
                   className="w-full max-w-md rounded-2xl border-2 border-amber-300 bg-white p-5 shadow-2xl">
@@ -915,9 +923,17 @@ function GroupSessionModal(props) {
   };
   const containGroupFocus = (event) => {
     if (!event || !groupDialogRef.current) return;
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     if (event.key === 'Escape') { event.preventDefault(); handleSetShowGroupModalToFalse(); return; }
     if (event.key !== 'Tab') return;
-    const focusable = Array.from(groupDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+    const focusable = Array.from(groupDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let node = el; node && node !== groupDialogRef.current; node = node.parentElement) {
+        const s = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+        if (s && (s.display === 'none' || s.visibility === 'hidden')) return false;
+      }
+      return true;
+    });
     if (!focusable.length) { event.preventDefault(); groupDialogRef.current.focus(); return; }
     const first = focusable[0], last = focusable[focusable.length - 1];
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -1181,26 +1197,26 @@ function GroupSessionModal(props) {
                                     <div key={gid} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-bold text-slate-700">{group.name}</span>
-                                            <button type="button" onClick={() => handleDeleteGroup(gid)} className="text-red-800 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
+                                            <button type="button" onClick={() => handleDeleteGroup(gid)} className="min-w-8 min-h-8 inline-flex items-center justify-center text-red-800 hover:text-red-900 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={(t('common.delete') || 'Delete') + ': ' + (group.name || '')}><X size={16} aria-hidden="true"/></button>
                                         </div>
-                                        <label className="text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
+                                        <label htmlFor={`group-resource-${gid}`} className="text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
                                             {t('groups.assign_resource_label')}
                                             {isPushingResource[gid] === 'pushing' && (
-                                                <span className="flex items-center gap-1 text-[10px] text-purple-600 font-bold normal-case">
-                                                    <RefreshCw size={11} className="animate-spin motion-reduce:animate-none" /> {t('groups.pushing') || 'Pushing…'}
+                                                <span role="status" aria-live="polite" className="flex items-center gap-1 text-[10px] text-purple-700 font-bold normal-case">
+                                                    <RefreshCw size={11} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {t('groups.pushing') || 'Pushing…'}
                                                 </span>
                                             )}
                                             {isPushingResource[gid] === 'success' && (
-                                                <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold normal-case">
-                                                    <CheckCircle2 size={11} /> {t('groups.pushed') || 'Sent'}
+                                                <span role="status" aria-live="polite" className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold normal-case">
+                                                    <CheckCircle2 size={11} aria-hidden="true" /> {t('groups.pushed') || 'Sent'}
                                                 </span>
                                             )}
                                         </label>
-                                        <select aria-label={t('common.selection')}
+                                        <select id={`group-resource-${gid}`} aria-label={(t('groups.assign_resource_label') || 'Assign resource') + ': ' + (group.name || '')}
                                             value={group.resourceId || ""}
                                             onChange={(e) => handleSetGroupResource(gid, e.target.value || null)}
                                             disabled={isPushingResource[gid] === 'pushing'}
-                                            className="w-full text-sm p-2 rounded-lg border border-slate-400 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full text-sm p-2 rounded-lg border border-slate-400 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <option value="">{t('groups.assign_resource_placeholder')}</option>
                                             {sessionData.resources && sessionData.resources.map(res => {
@@ -1501,7 +1517,7 @@ function FluencyModePanel(props) {
                             <div className="flex justify-center mb-4 gap-4 flex-wrap">
                                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden">
                                     <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">{t('fluency.accuracy_score')}</div>
-                                    <div className={`text-6xl font-black ${fluencyResult.accuracy >= 90 ? 'text-green-500' : fluencyResult.accuracy >= 70 ? 'text-yellow-500' : 'text-red-500'}`}>
+                                    <div className={`text-6xl font-black ${fluencyResult.accuracy >= 90 ? 'text-green-700' : fluencyResult.accuracy >= 70 ? 'text-amber-700' : 'text-red-600'}`}>
                                         {fluencyResult.accuracy}%
                                     </div>
                                     {isTeacherMode && (
@@ -1979,16 +1995,16 @@ function FluencyModePanel(props) {
                     ) : (<>
                     {fluencyStatus === 'listening' && fluencyTimeLimit > 0 && fluencyTimerVisibility === 'visible' && (
                         <div className={`text-4xl font-black tabular-nums transition-colors ${
-                            fluencyTimeRemaining <= 10 ? 'text-red-500 animate-pulse motion-reduce:animate-none' :
-                            fluencyTimeRemaining <= 30 ? 'text-yellow-500' :
+                            fluencyTimeRemaining <= 10 ? 'text-red-600 animate-pulse motion-reduce:animate-none' :
+                            fluencyTimeRemaining <= 30 ? 'text-amber-700' :
                             'text-indigo-600'
                         }`}>
                             {Math.floor(fluencyTimeRemaining / 60)}:{(fluencyTimeRemaining % 60).toString().padStart(2, '0')}
                         </div>
                     )}
                     <div className={`text-sm font-bold uppercase tracking-widest transition-colors ${
-                        fluencyStatus === 'listening' ? 'text-red-500' :
-                        fluencyStatus === 'processing' ? 'text-indigo-500 animate-pulse motion-reduce:animate-none' :
+                        fluencyStatus === 'listening' ? 'text-red-600' :
+                        fluencyStatus === 'processing' ? 'text-indigo-600 animate-pulse motion-reduce:animate-none' :
                         'text-slate-600'
                     }`}>
                         {fluencyStatus === 'listening' ? t('fluency.listening') :
@@ -2382,7 +2398,7 @@ function SourceDuplicateChoice({ info, onChoose, text }) {
     const buttons = () => Array.from(dialog.querySelectorAll('button'));
     buttons()[0].focus();
     const keydown = (event) => {
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onChoose('skip'); }
+      if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); event.stopPropagation(); onChoose('skip'); }
       if (event.key === 'Tab') {
         const items = buttons();
         const index = items.indexOf(document.activeElement);
@@ -2442,7 +2458,7 @@ function SourceResearchDialog({ title, onClose, children, sourceText, busy, scro
     };
   }, []);
   const containFocus = event => {
-    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); if (!busy) onClose(); return; }
+    if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); event.stopPropagation(); if (!busy) onClose(); return; }
     if (event.key !== 'Tab') return;
     const controls = Array.from(ref.current.querySelectorAll('button, input, select, textarea, a[href], summary, [tabindex="0"]'))
       .filter(el => {
@@ -3499,7 +3515,7 @@ function SourceGenPanel(props) {
                                             className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                             title={t('standards.search_button_title')}
                                         >
-                                            {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Search size={14}/>}
+                                            {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Search size={14} aria-hidden="true"/>}
                                         </button>
                                     </div>
                                     {suggestedStandards.length > 0 && (
@@ -3516,15 +3532,15 @@ function SourceGenPanel(props) {
                                                             addToast(t('standards.toast_max_limit'), "error");
                                                         }
                                                     }}
-                                                    className="w-full text-left p-2 hover:bg-indigo-50 transition-colors group"
+                                                    className="w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
                                                 >
-                                                    <div className="flex justify-between items-start gap-1">
+                                                    <span className="flex justify-between items-start gap-1">
                                                         <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
                                                         <span className="text-[11px] text-slate-600 uppercase">{std.framework}</span>
-                                                    </div>
-                                                    <p className="text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
+                                                    </span>
+                                                    <span className="block text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
                                                         {std.description}
-                                                    </p>
+                                                    </span>
                                                 </button>
                                             ))}
                                         </div>
@@ -3814,7 +3830,7 @@ function SourceGenPanel(props) {
                         const keepText = () => { setConfirmReplace(false); if (writeButtonRef.current) writeButtonRef.current.focus(); };
                         return (
                           <div data-source-replace-confirm role="alertdialog" aria-modal="false" aria-labelledby="allo-source-replace-title" aria-describedby="allo-source-replace-desc"
-                            onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); keepText(); } }}
+                            onKeyDown={(e) => { if (e.key === 'Escape') { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; e.preventDefault(); e.stopPropagation(); keepText(); } }}
                             className="rounded-lg border-2 border-amber-400 bg-amber-50 p-3">
                             <h4 id="allo-source-replace-title" className="text-sm font-bold text-amber-950">{sourceText('input.replace_source_title', 'Replace your source text?')}</h4>
                             <p id="allo-source-replace-desc" className="mt-1 text-xs text-amber-950">{fill(sourceText('input.replace_source_body', 'Your source has {words} words. A new passage about “{topic}” will replace them. You can undo this afterwards.', values), values)}</p>
@@ -3896,9 +3912,17 @@ function TourOverlay(props) {
   };
   const containTourFocus = (event) => {
     if (!event || !tourDialogRef.current) return;
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeTourOverlay(); return; }
     if (event.key !== 'Tab') return;
-    const focusable = Array.from(tourDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+    const focusable = Array.from(tourDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let node = el; node && node !== tourDialogRef.current; node = node.parentElement) {
+        const s = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+        if (s && (s.display === 'none' || s.visibility === 'hidden')) return false;
+      }
+      return true;
+    });
     if (!focusable.length) { event.preventDefault(); tourDialogRef.current.focus(); return; }
     const first = focusable[0], last = focusable[focusable.length - 1];
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -4302,14 +4326,18 @@ function VolumeBuilderView(props) {
     setCubeFeedback, setCubeNotch, setCubeRotation, setCubeScale,
     setCubeShape, setCubeShowLayers, setExploreDifficulty, t
   } = props;
+  const cubeDragCleanupRef = React.useRef(null);
+  React.useEffect(() => () => {
+    if (typeof cubeDragCleanupRef.current === 'function') cubeDragCleanupRef.current();
+  }, []);
   if (!(mathMode === 'Volume Builder')) return null;
                             const isLBlock = cubeShape === 'lblock';
                             // Clamp notch dims so they never equal or exceed the parent
                             // axis (an axis-equal notch would slice the entire prism).
                             const safeNotch = {
-                                l: Math.max(1, Math.min(cubeNotch.l, cubeDims.l - 1)),
-                                w: Math.max(1, Math.min(cubeNotch.w, cubeDims.w - 1)),
-                                h: Math.max(1, Math.min(cubeNotch.h, cubeDims.h - 1)),
+                                l: Math.max(0, Math.min(cubeNotch.l, cubeDims.l - 1)),
+                                w: Math.max(0, Math.min(cubeNotch.w, cubeDims.w - 1)),
+                                h: Math.max(0, Math.min(cubeNotch.h, cubeDims.h - 1)),
                             };
                             const rectVolume = cubeDims.l * cubeDims.w * cubeDims.h;
                             const notchVolume = isLBlock ? (safeNotch.l * safeNotch.w * safeNotch.h) : 0;
@@ -4326,7 +4354,12 @@ function VolumeBuilderView(props) {
                                 }));
                                 cubeDragRef.current = { x: e.clientX, y: e.clientY };
                             };
-                            const handleCubeDragEnd = () => { cubeDragRef.current = null; window.removeEventListener('mousemove', handleCubeDrag); window.removeEventListener('mouseup', handleCubeDragEnd); };
+                            const handleCubeDragEnd = () => {
+                                cubeDragRef.current = null;
+                                cubeDragCleanupRef.current = null;
+                                window.removeEventListener('mousemove', handleCubeDrag);
+                                window.removeEventListener('mouseup', handleCubeDragEnd);
+                            };
                             const maxLayer = cubeShowLayers !== null ? Math.min(cubeShowLayers, cubeDims.h) : cubeDims.h;
                             const cubeGridElements = [];
                             for (let z = 0; z < maxLayer; z++)
@@ -4517,7 +4550,7 @@ function VolumeBuilderView(props) {
                                     aria-label={`3D ${isLBlock ? 'L-block' : 'rectangular prism'}, ${cubeDims.l} by ${cubeDims.w} by ${cubeDims.h}, volume ${volume} cubic units`}
                                     className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none"
                                     style={{ minHeight: '400px', perspective: '900px' }}
-                                    onMouseDown={(e) => { cubeDragRef.current = { x: e.clientX, y: e.clientY }; window.addEventListener('mousemove', handleCubeDrag); window.addEventListener('mouseup', handleCubeDragEnd); }}
+                                    onMouseDown={(e) => { if (typeof cubeDragCleanupRef.current === 'function') cubeDragCleanupRef.current(); cubeDragRef.current = { x: e.clientX, y: e.clientY }; cubeDragCleanupRef.current = handleCubeDragEnd; window.addEventListener('mousemove', handleCubeDrag, { passive: true }); window.addEventListener('mouseup', handleCubeDragEnd); }}
                                     onWheel={(e) => { e.preventDefault(); setCubeScale(s => Math.max(0.4, Math.min(2.5, s + (e.deltaY > 0 ? -0.08 : 0.08)))); }}
                                     onTouchStart={(e) => { if (e.touches.length === 1) cubeDragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
                                     onTouchMove={(e) => { if (cubeDragRef.current && e.touches.length === 1) { const dx = e.touches[0].clientX - cubeDragRef.current.x; const dy = e.touches[0].clientY - cubeDragRef.current.y; setCubeRotation(prev => ({ x: Math.max(-80, Math.min(10, prev.x + dy * 0.5)), y: prev.y + dx * 0.5 })); cubeDragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; } }}
@@ -4541,23 +4574,23 @@ function VolumeBuilderView(props) {
                                         onChange={(e) => setCubeShowLayers(parseInt(e.target.value))}
                                         className="flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
                                     <span className="text-xs font-mono text-emerald-600 w-12 text-center">{cubeShowLayers !== null ? cubeShowLayers : cubeDims.h} / {cubeDims.h}</span>
-                                    {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button type="button" onClick={() => setCubeShowLayers(null)} className="text-xs text-emerald-500 hover:text-emerald-700 font-bold">{t('volume_builder.layers_all') || 'All'}</button>}
+                                    {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button type="button" onClick={() => setCubeShowLayers(null)} className="text-xs text-emerald-700 hover:text-emerald-900 font-bold">{t('volume_builder.layers_all') || 'All'}</button>}
                                 </div>
                                 <div className="bg-white/80 rounded-lg p-3 border border-emerald-100" data-help-key="volume_builder_volume_readout">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="text-center">
-                                            <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('stem.volume_label')}</div>
+                                            <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">{t('stem.volume_label')}</div>
                                             <div className="text-lg font-bold text-emerald-800">
                                                 {isLBlock ? (
-                                                    <>V = ({cubeDims.l}×{cubeDims.w}×{cubeDims.h}) − ({safeNotch.l}×{safeNotch.w}×{safeNotch.h}) = {vbHideAnswer ? <span className="text-2xl text-emerald-600" aria-label={vbText('answer_hidden', 'hidden until you answer')}>?</span> : <>{rectVolume} − {notchVolume} = <span className="text-2xl text-emerald-600">{volume}</span></>}</>
+                                                    <>V = ({cubeDims.l}×{cubeDims.w}×{cubeDims.h}) − ({safeNotch.l}×{safeNotch.w}×{safeNotch.h}) = {vbHideAnswer ? <><span className="text-2xl text-emerald-700" aria-hidden="true">?</span><span className="sr-only">{vbText('answer_hidden', 'hidden until you answer')}</span></> : <>{rectVolume} − {notchVolume} = <span className="text-2xl text-emerald-700">{volume}</span></>}</>
                                                 ) : (
-                                                    <>V = {cubeDims.l} × {cubeDims.w} × {cubeDims.h} = {vbHideAnswer ? <span className="text-2xl text-emerald-600" aria-label={vbText('answer_hidden', 'hidden until you answer')}>?</span> : <span className="text-2xl text-emerald-600">{volume}</span>}</>
+                                                    <>V = {cubeDims.l} × {cubeDims.w} × {cubeDims.h} = {vbHideAnswer ? <><span className="text-2xl text-emerald-700" aria-hidden="true">?</span><span className="sr-only">{vbText('answer_hidden', 'hidden until you answer')}</span></> : <span className="text-2xl text-emerald-700">{volume}</span>}</>
                                                 )}
                                             </div>
                                             <div className="text-xs text-slate-600">{vbHideAnswer ? vbText('unit_cubes_hidden', 'How many unit cubes?') : vbText(volume === 1 ? 'unit_cubes_one' : 'unit_cubes_other', volume === 1 ? '{count} unit cube' : '{count} unit cubes', { count: volume })}</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">{t('stem.surface_area')}{isLBlock && <span className="ml-1 text-[10px] font-normal text-teal-500/70">{t('volume_builder.surface_area_approx') || '(approx — full prism)'}</span>}</div>
+                                            <div className="text-xs font-bold text-teal-700 uppercase tracking-wider mb-1">{t('stem.surface_area')}{isLBlock && <span className="ml-1 text-[10px] font-normal text-teal-700">{t('volume_builder.surface_area_approx') || '(approx — full prism)'}</span>}</div>
                                             <div className="text-lg font-bold text-teal-800">
                                                 SA {isLBlock ? '≈ ' : '= '}<span className="text-2xl text-teal-600">{surfaceArea}</span>
                                             </div>
@@ -4573,17 +4606,20 @@ function VolumeBuilderView(props) {
                                 </div>
                                 <div className="flex gap-2">
                                     <button type="button" onClick={() => {
-                                        const vdiff = getAdaptiveDifficulty(); const vmax = vdiff === 'easy' ? 4 : vdiff === 'hard' ? 10 : 7; const l = Math.floor(Math.random() * (vmax - 1)) + 1;
-                                        const w = Math.floor(Math.random() * (vmax - 1)) + 1;
-                                        const h = Math.floor(Math.random() * (vmax - 1)) + 1;
+                                        const vdiff = getAdaptiveDifficulty(); const vmax = vdiff === 'easy' ? 4 : vdiff === 'hard' ? 10 : 7;
+                                        const minDim = cubeShape === 'lblock' ? 2 : 1;
+                                        const span = Math.max(1, vmax - minDim);
+                                        const l = Math.floor(Math.random() * span) + minDim;
+                                        const w = Math.floor(Math.random() * span) + minDim;
+                                        const h = Math.floor(Math.random() * span) + minDim;
                                         setCubeDims({ l, w, h });
                                         // Challenge answer adapts to current shape: rectangular
                                         // uses V = L*W*H; L-block subtracts the (clamped) notch
                                         // volume so what's shown equals what's checked.
                                         if (cubeShape === 'lblock') {
-                                            const nL = Math.max(1, Math.min(cubeNotch.l, l - 1));
-                                            const nW = Math.max(1, Math.min(cubeNotch.w, w - 1));
-                                            const nH = Math.max(1, Math.min(cubeNotch.h, h - 1));
+                                            const nL = Math.max(0, Math.min(cubeNotch.l, l - 1));
+                                            const nW = Math.max(0, Math.min(cubeNotch.w, w - 1));
+                                            const nH = Math.max(0, Math.min(cubeNotch.h, h - 1));
                                             setCubeChallenge({ l, w, h, shape: 'lblock', notch: { l: nL, w: nW, h: nH }, answer: l * w * h - nL * nW * nH });
                                         } else {
                                             setCubeChallenge({ l, w, h, shape: 'rect', answer: l * w * h });

@@ -53,7 +53,7 @@ module.exports = {
     var cards = [];
     var list = ctx.el('ul', { class: 'counting-numbers', style: 'display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0;margin:16px 0' });
     values.forEach(function (v) {
-      var button = ctx.el('button', { type: 'button', class: 'primary', 'aria-label': countText(v),
+      var button = ctx.el('button', { type: 'button', class: 'primary', 'aria-label': v === '11+' ? '11+ — ' + ctx.L.counting_sounds_more : countText(v),
         style: 'min-width:64px;min-height:64px;font-size:1.4rem;font-weight:700',
         on: { click: function () {
           if (ctx.isDone() || button.getAttribute('aria-disabled') === 'true') return;
@@ -72,6 +72,7 @@ module.exports = {
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
+      ctx.el('button', { type: 'button', 'data-stop-audio': '', on: { click: function () { if (typeof ctx.stop === 'function') ctx.stop(); } }, text: ctx.L.stop_audio || 'Stop audio' }),
     ]));
     ctx.root.appendChild(list);
     return {

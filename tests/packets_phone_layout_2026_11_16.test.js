@@ -64,9 +64,9 @@ describe('the student file on a phone', () => {
   it('four or more sound choices go two across; a list that sets its own columns is left alone', () => {
     expect(phone).toContain('.choices:not([style]):has(>.choice:nth-child(4)){grid-template-columns:1fr 1fr;gap:10px}');
     expect(phone).toContain('.choices:not([style]):has(>.choice:nth-child(4))>.choice:not([style]){flex-direction:column;padding:8px}');
-    // The meaning lists of a vocabulary file carry their own columns, so long sentences never go two across.
+    // The meaning lists of a vocabulary file carry their own columns (in shared takeHomeVocab), so long sentences never go two across.
     const loader = read('word_sounds_take_home_loader.js');
-    expect(loader.split("class: 'choices', style: 'grid-template-columns:1fr'").length - 1).toBeGreaterThanOrEqual(3);
+    expect(loader).toContain("class: 'choices', style: pictured ? 'grid-template-columns:repeat(2,minmax(0,1fr))' : 'grid-template-columns:1fr'");
   });
 
   it('the start screen keeps the full title; a screen with its own heading is marked for the phone rules', () => {
@@ -98,8 +98,8 @@ describe('Reading tools: a Close at the top of the panel', () => {
     top.click();
     expect(panel.hidden).toBe(true);
     expect(d.activeElement).toBe(aa);
-    // The Close at the bottom is still there.
-    expect(panel.querySelectorAll('[data-tools-close]')).toHaveLength(1);
+    // 2026-11-19: duplicate bottom Close button removed; top Close remains the single close button in the panel.
+    expect(panel.querySelectorAll('[data-tools-close]')).toHaveLength(0);
   });
 });
 

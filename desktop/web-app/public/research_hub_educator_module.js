@@ -302,7 +302,7 @@
     if (loops.length === 0) {
       return EmptyTrajectory("Loop-back trajectory", "No loop-backs yet. Loop-backs are how rigor accumulates \u2014 encourage student to revise when evidence demands it.");
     }
-    var dist = {};
+    var dist = /* @__PURE__ */ Object.create(null);
     loops.forEach(function(l) {
       var c = l.whyChipId || "unspecified";
       dist[c] = (dist[c] || 0) + 1;
@@ -327,14 +327,14 @@
       return h.blocked;
     }).length;
     var ok = hist.length - blocked;
-    var byTp = {};
+    var byTp = /* @__PURE__ */ Object.create(null);
     hist.forEach(function(h) {
       var k = h.touchpoint || "unknown";
       byTp[k] = byTp[k] || { ok: 0, blocked: 0 };
       if (h.blocked) byTp[k].blocked++;
       else byTp[k].ok++;
     });
-    var bypassDist = {};
+    var bypassDist = /* @__PURE__ */ Object.create(null);
     hist.forEach(function(h) {
       (h.bypass_signals || []).forEach(function(b) {
         bypassDist[b] = (bypassDist[b] || 0) + 1;

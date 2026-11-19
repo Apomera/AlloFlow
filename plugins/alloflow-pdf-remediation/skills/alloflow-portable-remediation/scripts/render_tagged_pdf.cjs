@@ -113,7 +113,15 @@ function validateInputs(htmlPath, pdfPath) {
   if (fs.statSync(resolvedHtml).size > MAX_HTML_BYTES) {
     throw new Error('HTML input exceeds the 8 MiB limit.');
   }
-  if (fs.existsSync(resolvedPdf)) throw new Error('Refusing to overwrite an existing PDF.');
+  try {
+    const existingStat = fs.lstatSync(resolvedPdf);
+    if (existingStat.isSymbolicLink()) {
+      throw new Error('Refusing to write PDF output through a symbolic link.');
+    }
+    throw new Error('Refusing to overwrite an existing PDF.');
+  } catch (err) {
+    if (!err || err.code !== 'ENOENT') throw err;
+  }
   const parent = path.dirname(resolvedPdf);
   if (!fs.existsSync(parent) || !fs.statSync(parent).isDirectory()) {
     throw new Error('PDF output directory does not exist.');
@@ -231,7 +239,8 @@ function wrapUntaggedPrefix(content) {
 }
 
 function xmlEscape(value) {
-  return String(value)
+  return String(value || '')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
@@ -260,8 +269,21 @@ function buildXmpPacket(title, pdfuaPart) {
 
 function decodeEntities(text) {
   return String(text || '')
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (m, hex) => {
+      const cp = parseInt(hex, 16);
+      if (!Number.isFinite(cp) || cp <= 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) return '';
+      return String.fromCodePoint(cp);
+    })
+    .replace(/&#(\d+);/g, (m, dec) => {
+      const cp = parseInt(dec, 10);
+      if (!Number.isFinite(cp) || cp <= 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) return '';
+      return String.fromCodePoint(cp);
+    })
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -274,11 +296,13 @@ function decodeEntities(text) {
  */
 function extractAnchorTexts(html) {
   const map = new Map();
-  const anchorPattern = /<a\s[^>]*href\s*=\s*"([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
+  const anchorPattern = /<a\s[^>]*href\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>([\s\S]*?)<\/a>/gi;
   let match;
   while ((match = anchorPattern.exec(html)) !== null) {
-    const text = decodeEntities(match[2].replace(/<[^>]+>/g, ''));
-    if (text && !map.has(match[1])) map.set(match[1], text);
+    const rawHref = match[1] !== undefined ? match[1] : match[2];
+    const href = decodeEntities(rawHref);
+    const text = decodeEntities(match[3].replace(/<[^>]+>/g, ''));
+    if (text && href && !map.has(href)) map.set(href, text);
   }
   return map;
 }
@@ -293,12 +317,70 @@ function pdfTextString(value) {
 function extractHtmlTitle(html) {
   const match = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html);
   if (!match) return 'Accessible document';
-  const text = match[1]
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
-  return text || 'Accessible document';
+  return decodeEntities(match[1]) || 'Accessible document';
+}
+
+function sanitizeToUnicodeCmapStream(cmapText) {
+  if (typeof cmapText !== 'string' || !cmapText.includes('begincmap')) {
+    return { text: cmapText, fixedCount: 0 };
+  }
+  let fixedCount = 0;
+  let updated = cmapText.replace(/(\d+)\s+beginbfchar([\s\S]*?)endbfchar/g, (_whole, countStr, block) => {
+    const replaced = block.replace(/<([0-9a-fA-F]+)>(\s+)<([0-9a-fA-F]+)>/g, (m, src, ws, dst) => {
+      if (/^(?:0000|feff|fffe)$/i.test(dst)) {
+        fixedCount += 1;
+        return `<${src}>${ws}<200D>`;
+      }
+      return m;
+    });
+    return `${countStr} beginbfchar${replaced}endbfchar`;
+  });
+  updated = updated.replace(/(\d+)\s+beginbfrange([\s\S]*?)endbfrange/g, (_whole, countStr, block) => {
+    const replaced = block.replace(
+      /(<([0-9a-fA-F]+)>\s*<([0-9a-fA-F]+)>\s*)(?:\[([^\]]*)\]|<([0-9a-fA-F]+)>)/g,
+      (m, prefix, lowHex, highHex, arrBody, scalarHex) => {
+        if (arrBody !== undefined) {
+          let arrChanged = false;
+          const nextArr = arrBody.replace(/<([0-9a-fA-F]+)>/g, (am, hex) => {
+            if (/^(?:0000|feff|fffe)$/i.test(hex)) {
+              fixedCount += 1;
+              arrChanged = true;
+              return '<200D>';
+            }
+            return am;
+          });
+          return arrChanged ? `${prefix}[${nextArr}]` : m;
+        }
+        const low = parseInt(lowHex, 16);
+        const high = parseInt(highHex, 16);
+        const span = Number.isFinite(low) && Number.isFinite(high) && high >= low ? (high - low + 1) : 1;
+        const startCp = scalarHex.length === 4 ? parseInt(scalarHex, 16) : NaN;
+        const crossesForbidden = Number.isFinite(startCp) && (
+          startCp === 0
+          || (startCp <= 0xFEFF && startCp + span - 1 >= 0xFEFF)
+          || (startCp <= 0xFFFE && startCp + span - 1 >= 0xFFFE)
+        );
+        if (!/^(?:0000|feff|fffe)$/i.test(scalarHex) && !crossesForbidden) return m;
+        if (span > 1 && span <= 256 && Number.isFinite(startCp)) {
+          const items = [];
+          for (let i = 0; i < span; i += 1) {
+            const cp = startCp + i;
+            if (cp === 0 || cp === 0xFEFF || cp === 0xFFFE) {
+              fixedCount += 1;
+              items.push('<200D>');
+            } else {
+              items.push('<' + cp.toString(16).toUpperCase().padStart(4, '0') + '>');
+            }
+          }
+          return `${prefix}[${items.join(' ')}]`;
+        }
+        fixedCount += 1;
+        return `${prefix}<200D>`;
+      },
+    );
+    return `${countStr} beginbfrange${replaced}endbfrange`;
+  });
+  return { text: updated, fixedCount };
 }
 
 function finalizeTaggedPdf(pdfPath, title, pdfuaPart, anchorTexts) {
@@ -344,10 +426,13 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart, anchorTexts) {
     throw new Error('Finalize expects a Catalog without an existing Metadata entry.');
   }
 
-  // Page objects -> content stream object numbers (direct ref or array).
+  // Page objects -> content stream object numbers (direct ref or array) + ToUnicode CMaps.
   const contentNums = new Set();
+  const toUnicodeNums = new Set();
   for (const [, span] of objectSpans) {
     const body = text.slice(span.start, span.end);
+    const tuRef = /\/ToUnicode\s+(\d+)\s+0\s+R\b/.exec(body);
+    if (tuRef) toUnicodeNums.add(Number(tuRef[1]));
     if (!/\/Type\s*\/Page\b/.test(body) || /\/Type\s*\/Pages\b/.test(body)) continue;
     const direct = /\/Contents\s+(\d+)\s+0\s+R/.exec(body);
     if (direct) {
@@ -392,6 +477,52 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart, anchorTexts) {
   }
 
   /*
+   * PDF/UA-1 clause 7.21.7 (testNumber 2): Unicode values in ToUnicode CMaps
+   * must be > 0 and never U+FEFF or U+FFFE. Chromium Skia PDF writes `<GID> <0000>`
+   * for shaped Indic (e.g. Devanagari) glyphs that are already wrapped in /ActualText.
+   * Replace forbidden destinations with <200D> (Zero Width Joiner) so both
+   * 7.21.7-1 and 7.21.7-2 pass without altering /ActualText reading order.
+   */
+  let cmapEntriesFixed = 0;
+  for (const num of toUnicodeNums) {
+    const span = objectSpans.get(num);
+    if (!span) continue;
+    const body = text.slice(span.start, span.end);
+    const streamIdx = body.indexOf('stream');
+    if (streamIdx < 0) continue;
+    let dataStart = streamIdx + 'stream'.length;
+    if (body[dataStart] === '\r') dataStart += 1;
+    if (body[dataStart] === '\n') dataStart += 1;
+    const dataEnd = body.lastIndexOf('endstream');
+    if (dataEnd < 0) continue;
+    const isFlate = /\/Filter\s*\/FlateDecode\b/.test(body);
+    let cmapStr;
+    try {
+      const raw = original.slice(span.start + dataStart, span.start + dataEnd);
+      cmapStr = isFlate ? zlib.inflateSync(raw).toString('latin1') : raw.toString('latin1');
+    } catch (_) {
+      continue;
+    }
+    const sanitized = sanitizeToUnicodeCmapStream(cmapStr);
+    if (sanitized.fixedCount === 0) continue;
+    cmapEntriesFixed += sanitized.fixedCount;
+    const outStream = isFlate
+      ? zlib.deflateSync(Buffer.from(sanitized.text, 'latin1'))
+      : Buffer.from(sanitized.text, 'latin1');
+    const dictHeader = isFlate
+      ? `<</Filter /FlateDecode /Length ${outStream.length}>>`
+      : `<</Length ${outStream.length}>>`;
+    replacements.push({
+      num,
+      body: Buffer.concat([
+        Buffer.from(`${num} 0 obj\n${dictHeader}\nstream\n`, 'latin1'),
+        outStream,
+        Buffer.from('\nendstream\nendobj\n', 'latin1'),
+      ]),
+    });
+  }
+
+  /*
    * PDF/UA-1 7.18.1-2 / 7.18.5-2: every annotation needs an alternate
    * description in /Contents; Chromium writes Link annotations without one.
    * Add /Contents carrying the link's own visible anchor text (fallback: its
@@ -401,9 +532,29 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart, anchorTexts) {
   for (const [num, span] of objectSpans) {
     const body = text.slice(span.start, span.end);
     if (!/\/Subtype\s*\/Link\b/.test(body) || /\/Contents\b/.test(body)) continue;
-    const uri = /\/URI\s*\(((?:[^()\\]|\\.)*)\)/.exec(body);
+    let actionText = body;
+    const actionRef = /\/A\s+(\d+)\s+0\s+R\b/.exec(body);
+    if (actionRef) {
+      const aSpan = objectSpans.get(Number(actionRef[1]));
+      if (aSpan) actionText += '\n' + text.slice(aSpan.start, aSpan.end);
+    }
+    const uri = /\/URI\s*\(((?:[^()\\]|\\.)*)\)/.exec(actionText);
     const uriText = uri ? uri[1].replace(/\\([()\\])/g, '$1') : '';
-    const description = (anchorTexts && anchorTexts.get(uriText)) || uriText || 'Link';
+    let description = (anchorTexts && uriText && anchorTexts.get(uriText)) || uriText;
+    if (!description) {
+      const destMatch = /\/(?:Dest|D)\s*(?:\(((?:[^()\\]|\\.)*)\)|\/([^\s/\[\]<>()]+))/.exec(actionText);
+      const destName = destMatch
+        ? (destMatch[1] !== undefined ? destMatch[1].replace(/\\([()\\])/g, '$1') : destMatch[2])
+        : '';
+      if (destName) {
+        const cleanDest = destName.replace(/^#/, '');
+        let decodedDest = cleanDest;
+        try { decodedDest = decodeURIComponent(cleanDest); } catch (_) {}
+        description = (anchorTexts && (anchorTexts.get('#' + cleanDest) || anchorTexts.get('#' + decodedDest)))
+          || ('Jump to ' + decodedDest);
+      }
+    }
+    description = description || 'Link';
     replacements.push({
       num,
       body: Buffer.from(
@@ -420,7 +571,7 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart, anchorTexts) {
    * <em> and <strong> as literal /Em and /Strong types and writes no RoleMap,
    * so inline emphasis failed validation until this existed (corpus round 5).
    */
-  const NON_STANDARD_ROLES = { Em: 'Span', Strong: 'Span' };
+  const NON_STANDARD_ROLES = { Em: 'Span', Strong: 'Span', Aside: 'Sect', Sub: 'Span', Title: 'H1', FENote: 'Note' };
   const rolesPresent = Object.keys(NON_STANDARD_ROLES).filter(
     (role) => new RegExp(`/S\\s*/${role}\\b`).test(text),
   );
@@ -462,32 +613,93 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart, anchorTexts) {
   for (const [num, span] of objectSpans) {
     const body = text.slice(span.start, span.end);
     if (!/\/S\s*\/LI\b/.test(body)) continue;
-    const kids = /\/K\s*\[([^\]]*)\]/.exec(body);
-    if (!kids) continue;
-    const refs = [...kids[1].matchAll(/(\d+)\s+0\s+R/g)].map((m) => Number(m[1]));
-    const labels = refs.filter((ref) => structTypeOf(ref) === 'Lbl');
-    const rest = refs.filter((ref) => {
-      const type = structTypeOf(ref);
-      return type !== 'Lbl' && type !== 'LBody';
-    });
-    if (!rest.length) continue;
+    const pgMatch = /\/Pg\s+(\d+\s+0\s+R)/.exec(body);
+    const pgClause = pgMatch ? `\n/Pg ${pgMatch[1]}` : '';
+    const arrayKids = /\/K\s*\[([^\]]*)\]/.exec(body);
+    if (arrayKids) {
+      // Bail safely if /K [...] contains inline dictionaries (e.g. /Type /MCR) so we never shred
+      // their inner object references or page pointers.
+      if (arrayKids[1].includes('<<')) continue;
+      // Tokenize /K [...] preserving BOTH indirect refs (`N 0 R`) and direct integer MCIDs
+      // in their exact document order so mixed `/K [10 0 R 0 12 0 R]` never drops MCIDs.
+      const tokens = [];
+      const tokenRe = /(\d+)\s+0\s+R|\b(\d+)\b/g;
+      let tok;
+      while ((tok = tokenRe.exec(arrayKids[1])) !== null) {
+        if (tok[1] !== undefined) {
+          tokens.push({ kind: 'ref', ref: Number(tok[1]), raw: `${tok[1]} 0 R` });
+        } else {
+          tokens.push({ kind: 'mcid', raw: tok[2] });
+        }
+      }
+      const labels = [];
+      const existingBodies = [];
+      const restTokens = [];
+      let hasNonLblRef = false;
+      for (const item of tokens) {
+        if (item.kind === 'ref') {
+          const type = structTypeOf(item.ref);
+          if (type === 'Lbl') {
+            labels.push(item.raw);
+          } else if (type === 'LBody') {
+            existingBodies.push(item.raw);
+          } else {
+            hasNonLblRef = true;
+            restTokens.push(item);
+          }
+        } else {
+          restTokens.push(item);
+        }
+      }
+      const needsWrap = hasNonLblRef || (labels.length > 0 && existingBodies.length === 0 && restTokens.length > 0);
+      if (!needsWrap || !restTokens.length) continue;
+      const bodyNum = nextObjectNumber++;
+      replacements.push({
+        num: bodyNum,
+        body: Buffer.from(
+          `${bodyNum} 0 obj\n<</Type /StructElem\n/S /LBody\n/P ${num} 0 R${pgClause}\n` +
+            `/K [${restTokens.map((item) => item.raw).join(' ')}]>>\nendobj\n`,
+          'latin1',
+        ),
+      });
+      const newKids = [...labels, ...existingBodies, `${bodyNum} 0 R`].join(' ');
+      replacements.push({
+        num,
+        body: Buffer.from(body.replace(/\/K\s*\[[^\]]*\]/, `/K [${newKids}]`) + '\n', 'latin1'),
+      });
+      for (const item of restTokens) {
+        if (item.kind !== 'ref') continue;
+        const childSpan = objectSpans.get(item.ref);
+        if (!childSpan) continue;
+        const childBody = text.slice(childSpan.start, childSpan.end);
+        replacements.push({
+          num: item.ref,
+          body: Buffer.from(childBody.replace(/\/P\s+\d+\s+0\s+R/, `/P ${bodyNum} 0 R`) + '\n', 'latin1'),
+        });
+      }
+      continue;
+    }
+    // Single indirect-ref /K 15 0 R (non-array): wrap non-Lbl/non-LBody child in /LBody.
+    const singleRef = /\/K\s+(\d+)\s+0\s+R\b/.exec(body);
+    if (!singleRef) continue;
+    const ref = Number(singleRef[1]);
+    const type = structTypeOf(ref);
+    if (type === 'Lbl' || type === 'LBody') continue;
     const bodyNum = nextObjectNumber++;
     replacements.push({
       num: bodyNum,
       body: Buffer.from(
-        `${bodyNum} 0 obj\n<</Type /StructElem\n/S /LBody\n/P ${num} 0 R\n` +
-          `/K [${rest.map((ref) => `${ref} 0 R`).join(' ')}]>>\nendobj\n`,
+        `${bodyNum} 0 obj\n<</Type /StructElem\n/S /LBody\n/P ${num} 0 R${pgClause}\n` +
+          `/K ${ref} 0 R>>\nendobj\n`,
         'latin1',
       ),
     });
-    const newKids = [...labels.map((ref) => `${ref} 0 R`), `${bodyNum} 0 R`].join(' ');
     replacements.push({
       num,
-      body: Buffer.from(body.replace(/\/K\s*\[[^\]]*\]/, `/K [${newKids}]`) + '\n', 'latin1'),
+      body: Buffer.from(body.replace(/\/K\s+\d+\s+0\s+R\b/, `/K ${bodyNum} 0 R`) + '\n', 'latin1'),
     });
-    for (const ref of rest) {
-      const childSpan = objectSpans.get(ref);
-      if (!childSpan) continue;
+    const childSpan = objectSpans.get(ref);
+    if (childSpan) {
       const childBody = text.slice(childSpan.start, childSpan.end);
       replacements.push({
         num: ref,
@@ -506,12 +718,13 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart, anchorTexts) {
       Buffer.from('\nendstream\nendobj\n', 'latin1'),
     ]),
   });
+  let updatedCatalog = catalogSource.replace('/Type /Catalog', `/Type /Catalog\n/Metadata ${metadataNum} 0 R`);
+  if (!/\/ViewerPreferences\b/.test(updatedCatalog)) {
+    updatedCatalog = updatedCatalog.replace('/Type /Catalog', '/Type /Catalog\n/ViewerPreferences <</DisplayDocTitle true>>');
+  }
   replacements.push({
     num: rootNum,
-    body: Buffer.from(
-      catalogSource.replace('/Type /Catalog', `/Type /Catalog\n/Metadata ${metadataNum} 0 R`) + '\n',
-      'latin1',
-    ),
+    body: Buffer.from(updatedCatalog + '\n', 'latin1'),
   });
 
   // Append the update: objects, then a classic xref with /Prev.
@@ -552,6 +765,7 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart, anchorTexts) {
   fs.writeFileSync(pdfPath, Buffer.concat(pieces));
   return {
     wrappedContentStreams: wrappedStreams,
+    cmapEntriesFixed,
     metadataAdded: true,
     linkContentsAdded,
     pdfuaIdentifierClaimed: Boolean(pdfuaPart),
@@ -669,4 +883,19 @@ async function main() {
   }
 }
 
-main();
+module.exports = {
+  wrapUntaggedPrefix,
+  xmlEscape,
+  buildXmpPacket,
+  decodeEntities,
+  extractAnchorTexts,
+  pdfTextString,
+  extractHtmlTitle,
+  sanitizeToUnicodeCmapStream,
+  finalizeTaggedPdf,
+  structuralMarkers,
+};
+
+if (require.main === module) {
+  main();
+}

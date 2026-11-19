@@ -240,7 +240,7 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
   const { inputText, selectedLanguages, studentInterests, generatedContent, gradeLevel, leveledTextLanguage, setGradeLevel, setSourceTopic, setInputText, setSelectedLanguages, setLeveledTextLanguage, setStudentInterests, setLeveledTextCustomInstructions, setSourceTone, setSourceLength, setTextFormat, setDokLevel, setVisualStyle, setIncludeSourceCitations, setFullPackTargetGroup, setDifferentiationRange, setTargetStandards, setVoiceSpeed, setVoiceVolume, setSelectedVoice, setIsGeneratingEtymology, setGeneratedContent, setHistory, callGemini, warnLog, addToast, t } = deps;
   try { if (window._DEBUG_GLOSSARY) console.log("[GlossaryHelpers] handleGenerateTermEtymology fired"); } catch(_) {}
     if (!generatedContent || generatedContent.type !== 'glossary') return;
-    if (typeof callGemini !== 'function' || callGemini._alloQrBlocked || (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', callGemini))))) return;
+    if (typeof callGemini !== 'function' || callGemini._alloQrBlocked || (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', callGemini))))) return;
     const task = beginGlossaryTask(deps, index, ['term', 'def', 'etymology', 'roots', 'etymologyByLang'], 'etymology');
     if (!task) return;
     task.busy(setIsGeneratingEtymology, true);

@@ -69,16 +69,17 @@ function LearningHubModal(props) {
         'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
       )).filter(function (element) {
         if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
-        let ancestor = element.parentElement;
-        while (ancestor && ancestor !== dialog) {
-          if (ancestor.matches && ancestor.matches('details:not([open])')) {
-            const directSummary = ancestor.querySelector(':scope > summary');
+        let node = element;
+        while (node && node !== dialog) {
+          if (node !== element && node.matches && node.matches('details:not([open])')) {
+            const directSummary = node.querySelector(':scope > summary');
             if (element !== directSummary) return false;
           }
-          ancestor = ancestor.parentElement;
+          const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+          if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+          node = node.parentElement;
         }
-        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+        return true;
       });
     };
     const first = getFocusable()[0];
@@ -137,7 +138,7 @@ function LearningHubModal(props) {
       const pathname = loc.pathname || '';
       const isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
       const isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
-      const isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      const isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled) url = new URL('text_inquiry/text_inquiry.html?v=1', loc.href).toString();
       else if (isLocalHost || isAlloHosted) url = new URL('/text_inquiry/text_inquiry.html?v=1', loc.origin).toString();
     } catch (_) {}
@@ -275,7 +276,7 @@ function LearningHubModal(props) {
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes('family') ? 'family' : (hubRoleRaw.includes('teacher') || hubRoleRaw.includes('educator')) ? 'teacher' : 'student';
   const hubRoleLabel = ({ teacher: tr('hub.role_teacher_lower', 'teachers'), student: tr('hub.role_student_lower', 'students'), family: tr('hub.role_family_lower', 'families') }[hubRoleKey] || tr('hub.role_learners_lower', 'learners'));
-  const hubRoleRecommendations = { teacher: ['learning-web-explorer', 'throughline', 'research-hub', 'stem-lab', 'reading-library'], student: ['learning-web-explorer', 'lumen-study', 'reading-library', 'stem-lab', 'text-inquiry'], family: ['reading-library', 'lingua-practice', 'sel-hub', 'allohaven', 'storyforge'] };
+  const hubRoleRecommendations = { teacher: ['learning-web-explorer', 'timeline-studio', 'research-hub', 'stem-lab', 'reading-library'], student: ['learning-web-explorer', 'lumen-study', 'reading-library', 'stem-lab', 'text-inquiry'], family: ['reading-library', 'lingua-practice', 'sel-hub', 'allohaven', 'storyforge'] };
   const hubUsageRankedIds = Object.entries(hubUsageCounts).sort((a, b) => Number(b[1]) - Number(a[1])).map(([id]) => id);
   const hubRecommendedIds = Array.from(new Set([...(hubRoleRecommendations[hubRoleKey] || hubRoleRecommendations.student), ...hubUsageRankedIds])).slice(0, 5);
   const recommendedCards = hubRecommendedIds.map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
@@ -379,8 +380,8 @@ function LearningHubModal(props) {
                 }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-blue-50 border border-amber-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                   <span className="text-4xl" aria-hidden="true">💡</span>
                   <div>
-                    <h3 className="font-bold text-amber-900">{tr('learning_hub.lumen_title', 'Lumen Study')}</h3>
-                    <p className="text-xs text-amber-800 mt-1">{tr('learning_hub.lumen_desc', 'Ask questions, inspect exact supporting passages, and save source-grounded notes.')}</p>
+                    <span className="block font-bold text-amber-900">{tr('learning_hub.lumen_title', 'Lumen Study')}</span>
+                    <span className="block text-xs text-amber-800 mt-1">{tr('learning_hub.lumen_desc', 'Ask questions, inspect exact supporting passages, and save source-grounded notes.')}</span>
                   </div>
                 </button>
 
@@ -392,8 +393,8 @@ function LearningHubModal(props) {
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setIsReadingLibraryOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-blue-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                   <span className="text-4xl" aria-hidden="true">{'📚'}</span>
                   <div>
-                    <h3 className="font-bold text-sky-800">{t('learning_hub.reading_library_title') || 'Reading Library'}</h3>
-                    <p className="text-xs text-sky-700 mt-1">{t('learning_hub.reading_library_desc') || 'Browse picture books, longer reads, textbooks, and primary sources'}</p>
+                    <span className="block font-bold text-sky-800">{t('learning_hub.reading_library_title') || 'Reading Library'}</span>
+                    <span className="block text-xs text-sky-700 mt-1">{t('learning_hub.reading_library_desc') || 'Browse picture books, longer reads, textbooks, and primary sources'}</span>
                   </div>
                 </button>
 
@@ -404,8 +405,8 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowStemLab(true); setStemLabTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDD2C'}</span>
                 <div>
-                  <h3 className="font-bold text-indigo-800">{t('learning_hub.stem_title') || 'STEAM Lab'}</h3>
-                  <p className="text-xs text-indigo-700 mt-1">{t('learning_hub.stem_desc') || '100+ interactive math & science explorations'}</p>
+                  <span className="block font-bold text-indigo-800">{t('learning_hub.stem_title') || 'STEAM Lab'}</span>
+                  <span className="block text-xs text-indigo-700 mt-1">{t('learning_hub.stem_desc') || '100+ interactive math & science explorations'}</span>
                 </div>
               </button>
 
@@ -415,8 +416,8 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="learning_hub_text_inquiry_card" onClick={openTextInquiryStudio} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-fuchsia-50 to-cyan-50 border border-fuchsia-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" aria-describedby={textInquiryLaunchError ? 'text-inquiry-launch-error' : undefined}>
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDCC3'}</span>
                 <div>
-                  <h3 className="font-bold text-fuchsia-900">{tr('learning_hub.text_inquiry_title', 'Text Inquiry Studio')}</h3>
-                  <p className="text-xs text-fuchsia-800 mt-1">{tr('learning_hub.text_inquiry_desc', 'Inspect frequency and concordance, then test an interpretation against exceptions and context.')}</p>
+                  <span className="block font-bold text-fuchsia-900">{tr('learning_hub.text_inquiry_title', 'Text Inquiry Studio')}</span>
+                  <span className="block text-xs text-fuchsia-800 mt-1">{tr('learning_hub.text_inquiry_desc', 'Inspect frequency and concordance, then test an interpretation against exceptions and context.')}</span>
                 </div>
               </button>
 
@@ -437,8 +438,8 @@ function LearningHubModal(props) {
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setIsLinguaPracticeOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                   <span className="w-12 h-12 rounded-lg bg-emerald-700 text-white flex items-center justify-center text-sm font-black" aria-hidden="true">A/文</span>
                   <div>
-                    <h3 className="font-bold text-emerald-900">{tr('learning_hub.lingua_title', 'Lingua Practice')}</h3>
-                    <p className="text-xs text-emerald-800 mt-1">{tr('learning_hub.lingua_desc', 'Build vocabulary, practice speaking, and rehearse real conversations')}</p>
+                    <span className="block font-bold text-emerald-900">{tr('learning_hub.lingua_title', 'Lingua Practice')}</span>
+                    <span className="block text-xs text-emerald-800 mt-1">{tr('learning_hub.lingua_desc', 'Build vocabulary, practice speaking, and rehearse real conversations')}</span>
                   </div>
                 </button>
 
@@ -450,8 +451,8 @@ function LearningHubModal(props) {
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setIsTestPrepHubOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                   <span className="text-4xl" aria-hidden="true">{'\uD83C\uDFAF'}</span>
                   <div>
-                    <h3 className="font-bold text-indigo-900">{tr('learning_hub.test_prep_title', 'Test Prep Hub')}</h3>
-                    <p className="text-xs text-indigo-800 mt-1">{tr('learning_hub.test_prep_desc', 'Accessible practice packs for licensure, vocational, and professional exams')}</p>
+                    <span className="block font-bold text-indigo-900">{tr('learning_hub.test_prep_title', 'Test Prep Hub')}</span>
+                    <span className="block text-xs text-indigo-800 mt-1">{tr('learning_hub.test_prep_desc', 'Accessible practice packs for licensure, vocational, and professional exams')}</span>
                   </div>
                 </button>
 
@@ -462,8 +463,8 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowSelHub(true); setSelHubTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDC96'}</span>
                 <div>
-                  <h3 className="font-bold text-emerald-800">{t('learning_hub.sel_title') || 'SEL Hub'}</h3>
-                  <p className="text-xs text-emerald-700 mt-1">{t('learning_hub.sel_desc') || 'Social-emotional learning for self-awareness & growth'}</p>
+                  <span className="block font-bold text-emerald-800">{t('learning_hub.sel_title') || 'SEL Hub'}</span>
+                  <span className="block text-xs text-emerald-700 mt-1">{t('learning_hub.sel_desc') || 'Social-emotional learning for self-awareness & growth'}</span>
                 </div>
               </button>
 
@@ -474,11 +475,11 @@ function LearningHubModal(props) {
                   way a student reaches the unrestricted coach. It opens in its
                   own window because the site it coaches is not AlloFlow. */}
               <div className="relative group" data-hub-ai-only="true" data-hub-id="screen-coach" data-hub-label="Screen Coach" data-hub-section="practice">
-                <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); try { const VS = (window.AlloModules && window.AlloModules.VideoStudio) || null; if (VS && typeof VS.openCoachWindow === 'function') { VS.openCoachWindow('learner'); } else { try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {} const w = window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner', 'alloflow-it-coach'); if (w) { window.__alloPendingCoachWin = w; window.__alloPendingCoachPosture = 'learner'; } } } catch (_) {} }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
+                <button type="button" data-hub-launch="true" onClick={() => { try { const VS = (window.AlloModules && window.AlloModules.VideoStudio) || null; if (VS && typeof VS.openCoachWindow === 'function') { setShowLearningHub(false); VS.openCoachWindow('learner'); } else { try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {} const w = window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner', 'alloflow-it-coach'); if (w) { window.__alloPendingCoachWin = w; window.__alloPendingCoachPosture = 'learner'; setShowLearningHub(false); } else if (typeof props.addToast === 'function') { props.addToast(t('toasts.pop_up_blocked') || 'Pop-up blocked. Allow pop-ups to open Screen Coach.', 'warning'); } } } catch (_) {} }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\u23F1\uFE0F'}</span>
                 <div>
-                  <h3 className="font-bold text-sky-900">{t('learning_hub.screen_coach_title') || 'Screen Coach'}</h3>
-                  <p className="text-xs text-sky-800 mt-1">{t('learning_hub.screen_coach_desc') || 'Stuck on a website? Share it and get the next step. It helps you use the site, not answer your work.'}</p>
+                  <span className="block font-bold text-sky-900">{t('learning_hub.screen_coach_title') || 'Screen Coach'}</span>
+                  <span className="block text-xs text-sky-800 mt-1">{t('learning_hub.screen_coach_desc') || 'Stuck on a website? Share it and get the next step. It helps you use the site, not answer your work.'}</span>
                 </div>
               </button>
 
@@ -497,8 +498,8 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); if (typeof setShowResearchHub === 'function') setShowResearchHub(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDCD1'}</span>
                 <div>
-                  <h3 className="font-bold text-indigo-800">{t('learning_hub.research_title') || 'Research Hub'}</h3>
-                  <p className="text-xs text-indigo-700 mt-1">{t('learning_hub.research_desc') || 'Scientific Inquiry, Engineering Design, and Humanities research — one inquiry journal, three lanes.'}</p>
+                  <span className="block font-bold text-indigo-800">{t('learning_hub.research_title') || 'Research Hub'}</span>
+                  <span className="block text-xs text-indigo-700 mt-1">{t('learning_hub.research_desc') || 'Scientific Inquiry, Engineering Design, and Humanities research — one inquiry journal, three lanes.'}</span>
                 </div>
               </button>
 
@@ -509,8 +510,8 @@ function LearningHubModal(props) {
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowLearningWebExplorer(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                     <span className="text-4xl" aria-hidden="true">{'\uD83D\uDD78\uFE0F'}</span>
                     <div>
-                      <h3 className="font-bold text-violet-900">{tr('learning_hub.learning_web_explorer_title', 'Learning Web: Explore')}</h3>
-                      <p className="text-xs text-violet-700 mt-1">{tr('learning_hub.learning_web_explorer_desc', 'Explore standards, concepts, lessons, evidence, and word connections in one accessible map.')}</p>
+                      <span className="block font-bold text-violet-900">{tr('learning_hub.learning_web_explorer_title', 'Learning Web: Explore')}</span>
+                      <span className="block text-xs text-violet-700 mt-1">{tr('learning_hub.learning_web_explorer_desc', 'Explore standards, concepts, lessons, evidence, and word connections in one accessible map.')}</span>
                     </div>
                   </button>
                   <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('learning-web-explorer')} aria-label={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Explore' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Explore'} title={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('learning-web-explorer'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-violet-700 text-lg leading-none shadow-sm hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('learning-web-explorer') ? '★' : '☆'}</button>
@@ -521,8 +522,8 @@ function LearningHubModal(props) {
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setIsTimelineStudioOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                   <span className="text-4xl" aria-hidden="true">{'\uD83D\uDD70\uFE0F'}</span>
                   <div>
-                    <h3 className="font-bold text-rose-800">{t('learning_hub.timeline_studio_title') || 'Timeline Studio'}</h3>
-                    <p className="text-xs text-rose-700 mt-1">{t('learning_hub.timeline_studio_desc') || 'Turn readings into interactive timelines, or build one by hand.'}</p>
+                    <span className="block font-bold text-rose-800">{t('learning_hub.timeline_studio_title') || 'Timeline Studio'}</span>
+                    <span className="block text-xs text-rose-700 mt-1">{t('learning_hub.timeline_studio_desc') || 'Turn readings into interactive timelines, or build one by hand.'}</span>
                   </div>
                 </button>
 
@@ -542,8 +543,8 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowStoryForge(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDCD6'}</span>
                 <div>
-                  <h3 className="font-bold text-rose-800">{t('learning_hub.storyforge_title') || 'StoryForge'}</h3>
-                  <p className="text-xs text-rose-700 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
+                  <span className="block font-bold text-rose-800">{t('learning_hub.storyforge_title') || 'StoryForge'}</span>
+                  <span className="block text-xs text-rose-700 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</span>
                 </div>
               </button>
 
@@ -553,8 +554,8 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowLitLab(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">🎭</span>
                 <div>
-                  <h3 className="font-bold text-violet-800">{t('learning_hub.litlab_title') || 'LitLab'}</h3>
-                  <p className="text-xs text-violet-700 mt-1">{t('learning_hub.litlab_desc') || 'Bring stories to life with character voices & literary analysis'}</p>
+                  <span className="block font-bold text-violet-800">{t('learning_hub.litlab_title') || 'LitLab'}</span>
+                  <span className="block text-xs text-violet-700 mt-1">{t('learning_hub.litlab_desc') || 'Bring stories to life with character voices & literary analysis'}</span>
                 </div>
               </button>
 
@@ -564,8 +565,8 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowPoetTree(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\uD83C\uDF43'}</span>
                 <div>
-                  <h3 className="font-bold text-teal-800">{t('learning_hub.poettree_title') || 'PoetTree'}</h3>
-                  <p className="text-xs text-teal-700 mt-1">{t('learning_hub.poettree_desc') || 'Write poems with form scaffolds, rhyme & meter analysis, AI feedback'}</p>
+                  <span className="block font-bold text-teal-800">{t('learning_hub.poettree_title') || 'PoetTree'}</span>
+                  <span className="block text-xs text-teal-700 mt-1">{t('learning_hub.poettree_desc') || 'Write poems with form scaffolds, rhyme & meter analysis, AI feedback'}</span>
                 </div>
               </button>
 
@@ -576,8 +577,8 @@ function LearningHubModal(props) {
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setIsOpenGrooveOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-cyan-50 to-emerald-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                   <span className="text-4xl" aria-hidden="true">{'\uD83C\uDF9B\uFE0F'}</span>
                   <div>
-                    <h3 className="font-bold text-cyan-900">{t('learning_hub.open_groove_title') || 'Open Groove Studio'}</h3>
-                    <p className="text-xs text-cyan-700 mt-1">{t('learning_hub.open_groove_desc') || 'Make beats, shape synths, and connect patterns to real composition and notation.'}</p>
+                    <span className="block font-bold text-cyan-900">{t('learning_hub.open_groove_title') || 'Open Groove Studio'}</span>
+                    <span className="block text-xs text-cyan-700 mt-1">{t('learning_hub.open_groove_desc') || 'Make beats, shape synths, and connect patterns to real composition and notation.'}</span>
                   </div>
                 </button>
 
@@ -588,8 +589,8 @@ function LearningHubModal(props) {
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setIsAlloHavenOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-green-50 to-lime-50 border border-green-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">🌿</span>
                 <div>
-                  <h3 className="font-bold text-green-800">{tr('learning_hub.allohaven_title', 'AlloHaven')}</h3>
-                  <p className="text-xs text-green-700 mt-1">{tr('learning_hub.allohaven_desc', 'A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt.')}</p>
+                  <span className="block font-bold text-green-800">{tr('learning_hub.allohaven_title', 'AlloHaven')}</span>
+                  <span className="block text-xs text-green-700 mt-1">{tr('learning_hub.allohaven_desc', 'A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt.')}</span>
                 </div>
               </button>
 

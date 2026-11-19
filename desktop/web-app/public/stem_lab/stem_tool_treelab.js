@@ -4342,7 +4342,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // spoken on change. All three read the same two keys.
       function speedLabel(o) { return __alloT('stem.treelab.speed_' + o.id, o.label); }
       function speedHint(o) { return __alloT('stem.treelab.speed_hint_' + o.id, o.hint); }
-      var d = (ctx.toolData && ctx.toolData.treeLab) || {};
+      var rawTreeLab = ctx.toolData && ctx.toolData.treeLab;
+      var d = (rawTreeLab && typeof rawTreeLab === 'object' && !Array.isArray(rawTreeLab)) ? rawTreeLab : {};
       var addToast = ctx.addToast;
       var a11yClick = ctx.a11yClick;
       var isDark = !!ctx.isDark;
@@ -4400,11 +4401,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-hero:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 76% 18%,var(--hero-speck) 0 2px,transparent 2.5px);background-size:24px 24px;opacity:.72;}',
         '.allo-tree-hero:after{content:"";position:absolute;width:260px;height:260px;right:-98px;bottom:-174px;border-radius:50%;border:42px solid var(--hero-ring);box-shadow:0 0 0 26px var(--hero-ring-soft);pointer-events:none;}',
         '.allo-tree-hero-copy{max-width:680px;}',
+        '.allo-tree-hero-title-row{display:flex;align-items:center;gap:12px;}',
+        '.allo-tree-hero-emblem{width:46px;height:46px;flex:0 0 46px;border-radius:13px;display:grid;place-items:center;background:var(--hero-chip);border:1px solid var(--hero-chip-border);box-shadow:0 6px 16px var(--tree-shadow);}',
+        '.allo-tree-hero-badges{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px;}',
+        '.allo-tree-subject-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;border:1px solid var(--hero-chip-border);background:var(--hero-chip);color:var(--tree-ink);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;}',
+        '.allo-tree-hero-side{display:flex;flex-direction:column;gap:8px;align-items:stretch;position:relative;z-index:1;flex:0 1 320px;}',
+        '.allo-tree-ring-card{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--hero-chip);border:1px solid var(--hero-chip-border);}',
+        '.allo-tree-ring-svg{display:block;width:228px;max-width:100%;height:62px;flex-shrink:0;}',
         '.allo-tree-hero-title{font-size:clamp(27px,3vw,38px)!important;}',
         '.allo-tree-hero-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}',
         '.allo-tree-hero-stat{display:grid;gap:1px;min-width:104px;padding:8px 11px;border-radius:12px;background:var(--hero-chip);border:1px solid var(--hero-chip-border);box-shadow:0 7px 18px var(--tree-shadow);}',
-        '.allo-tree-hero-stat-label{font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-hero-stat-label{font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-hero-stat-value{font-size:13px;font-weight:850;color:var(--tree-ink);}',
+        '[data-tree-theme="contrast"] .allo-tree-hero-emblem,[data-tree-theme="contrast"] .allo-tree-subject-badge,[data-tree-theme="contrast"] .allo-tree-ring-card{background:#000!important;border:2px solid #fff!important;box-shadow:none!important;}',
         '.allo-tree-setup-label{flex:1 0 100%;font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-workbench{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);grid-template-areas:"scene mission" "scene controls";grid-template-rows:auto minmax(0,1fr);gap:20px;align-items:start;}',
         '.allo-tree-workbench-mission{grid-area:mission;min-width:0;}',
@@ -13799,10 +13808,26 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           }
         }, [
           h('div', { key: 'a', className: 'allo-tree-hero-copy', style: { flex: '1 1 330px', position: 'relative', zIndex: 1 } }, [
-            h('div', { key: 'eyebrow', style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 9px', marginBottom: 8, borderRadius: 999, border: '1px solid ' + T.border, background: isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.1)' : 'rgba(255,255,255,.7)'), color: (isDark || isContrast) ? T.accent : '#047857', fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase' } },
-              '● ' + __alloT('stem.treelab.studio_label', 'Living systems studio')),
-            h('h2', { key: 't', className: 'allo-tree-hero-title', style: { fontSize: 25, lineHeight: 1.04, fontWeight: 900, letterSpacing: '-0.045em', margin: 0, color: T.text } },
-              '🌳 ' + __alloT('stem.treelab.title', 'Tree Life Lab')),
+            h('div', { key: 'badges', className: 'allo-tree-hero-badges' }, [
+              h('span', { key: 'eyebrow', style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 9px', borderRadius: 999, border: '1px solid ' + T.border, background: isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.1)' : 'rgba(255,255,255,.7)'), color: (isDark || isContrast) ? T.accent : '#047857', fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase' } },
+                '● ' + __alloT('stem.treelab.studio_label', 'Living systems studio')),
+              h('span', { key: 'subject', className: 'allo-tree-subject-badge' }, 'Biology · Forest Ecology')
+            ]),
+            h('div', { key: 'title-row', className: 'allo-tree-hero-title-row' }, [
+              h('span', { key: 'emblem', className: 'allo-tree-hero-emblem', 'aria-hidden': 'true' },
+                view === 'compare'
+                  ? h('span', { style: { fontSize: 22, lineHeight: 1 } }, '🌳')
+                  : h('svg', { width: 32, height: 32, viewBox: '0 0 36 36', fill: 'none' }, [
+                      h('circle', { key: 'c1', cx: 18, cy: 13, r: 9.5, fill: isContrast ? '#000' : (isDark ? '#065f46' : '#d1fae5'), stroke: isContrast ? '#ffff00' : T.accent, strokeWidth: 1.8 }),
+                      h('circle', { key: 'c2', cx: 13, cy: 15, r: 5.5, fill: isContrast ? '#000' : (isDark ? '#047857' : '#a7f3d0'), stroke: isContrast ? '#fff' : T.accent, strokeWidth: 1.4 }),
+                      h('circle', { key: 'c3', cx: 23, cy: 15, r: 5.5, fill: isContrast ? '#000' : (isDark ? '#047857' : '#a7f3d0'), stroke: isContrast ? '#fff' : T.accent, strokeWidth: 1.4 }),
+                      h('path', { key: 'tr', d: 'M18 15 V29', stroke: isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#92400e'), strokeWidth: 2.6, strokeLinecap: 'round' }),
+                      h('path', { key: 'rt', d: 'M18 28 Q13 30 9 32 M18 28 Q23 30 27 32 M18 29 V33', stroke: isContrast ? '#fff' : (isDark ? '#d97706' : '#b45309'), strokeWidth: 1.6, strokeLinecap: 'round' })
+                    ])
+              ),
+              h('h2', { key: 't', className: 'allo-tree-hero-title', style: { fontSize: 25, lineHeight: 1.04, fontWeight: 900, letterSpacing: '-0.045em', margin: 0, color: T.text } },
+                __alloT('stem.treelab.title', 'Tree Life Lab'))
+            ]),
             h('div', { key: 's', style: { fontSize: 13, color: T.dim, marginTop: 7, maxWidth: 570, lineHeight: 1.55 } },
               __alloT('stem.treelab.discovery_subtitle', 'Make a prediction. Grow a tree. Discover what changed.')),
             h('div', { key: 'quick', className: 'allo-tree-hero-stats' }, [
@@ -13820,25 +13845,64 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               ])
             ])
           ]),
-          h('div', { key: 'b', className: 'allo-tree-hero-controls', style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap', position: 'relative', zIndex: 1, padding: 8, borderRadius: 12, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.34)' : 'rgba(255,255,255,.7)'), border: '1px solid ' + T.border } }, [
-            h('div', { key: 'setup-label', className: 'allo-tree-setup-label' }, __alloT('stem.treelab.setup_tree', 'Set up your tree')),
-            h('div', { key: 'band-field', className: 'allo-tree-hero-field', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
-              h('label', { key: 'bl', htmlFor: 'treelab-band', style: { fontSize: 11, color: T.dim } },
-              __alloT('stem.treelab.level', 'Level')),
-            h('select', {
-              key: 'bs', id: 'treelab-band', value: band,
-              onChange: function (e) { upd('bandOverride', e.target.value); srSay(__alloT('stem.treelab.say_level_set', 'Level set to ') + bandLabel(e.target.value) + '.'); },
-              style: { padding: '7px 10px', minHeight: 34, borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, fontSize: 12, fontWeight: 600 }
-              }, BANDS.map(function (b) { return h('option', { key: b, value: b }, bandLabel(b)); }))
-            ]),
-            h('div', { key: 'species-field', className: 'allo-tree-hero-field', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
-              h('label', { key: 'sl', htmlFor: 'treelab-species', style: { fontSize: 11, color: T.dim } },
-                __alloT('stem.treelab.species', 'Species')),
+          h('div', { key: 'side', className: 'allo-tree-hero-side' }, [
+            (function () {
+              var ringCount = Math.max(1, Math.min(5, Math.floor((tree.age || 0) / 8) + 1));
+              var hPct = Math.max(0.08, Math.min(1, (tree.heightM || 0) / Math.max(10, sp.maxH || 30)));
+              var barW = Math.round(hPct * 112);
+              var ringStroke = isContrast ? '#ffff00' : (isDark ? '#34d399' : '#059669');
+              var ringSub = isContrast ? '#ffffff' : (isDark ? '#94a3b8' : '#475569');
+              var trackFill = isContrast ? '#000000' : (isDark ? '#0f172a' : '#e2e8f0');
+              if (view === 'compare') {
+                return h('div', { key: 'rings', className: 'allo-tree-ring-card', 'aria-hidden': 'true' }, [
+                  h('div', { key: 'dial', style: { width: 42, height: 42, borderRadius: '50%', border: '2px solid ' + ringStroke, background: trackFill, display: 'grid', placeItems: 'center', flexShrink: 0 } },
+                    h('span', { style: { fontSize: 11, fontWeight: 900, color: ringStroke } }, ringCount + '/5')
+                  ),
+                  h('div', { key: 'meta', style: { flex: 1, minWidth: 0 } }, [
+                    h('div', { key: 'l1', style: { fontSize: 10, fontWeight: 800, color: ringSub, letterSpacing: '.06em' } }, 'CAMBIUM RINGS · ' + ringCount + '/5'),
+                    h('div', { key: 'l2', style: { fontSize: 11, fontWeight: 800, color: T.text, marginTop: 2 } }, sp.name + ' · ' + round(tree.heightM, 1) + 'm (' + Math.round(hPct * 100) + '%)'),
+                    h('div', { key: 'trk', style: { marginTop: 5, height: 7, borderRadius: 999, background: trackFill, overflow: 'hidden', border: isContrast ? '1px solid #fff' : 'none' } },
+                      h('div', { style: { width: Math.round(hPct * 100) + '%', height: '100%', background: ringStroke } })
+                    )
+                  ])
+                ]);
+              }
+              return h('div', { key: 'rings', className: 'allo-tree-ring-card', 'aria-hidden': 'true' },
+                h('svg', { className: 'allo-tree-ring-svg', viewBox: '0 0 228 62', fill: 'none' }, [
+                  h('circle', { key: 'outer', cx: 31, cy: 31, r: 24, fill: trackFill, stroke: isContrast ? '#fff' : (isDark ? '#475569' : '#cbd5e1'), strokeWidth: 1.5 }),
+                  [1, 2, 3, 4, 5].map(function (idx) {
+                    var active = idx <= ringCount;
+                    return h('circle', { key: 'r' + idx, cx: 31, cy: 31, r: idx * 4.2, stroke: active ? ringStroke : ringSub, strokeWidth: active ? 1.5 : 0.8, opacity: active ? 0.95 : 0.35 });
+                  }),
+                  h('circle', { key: 'pith', cx: 31, cy: 31, r: 2.2, fill: ringStroke }),
+                  h('text', { key: 'lbl1', x: 66, y: 17, fill: ringSub, fontSize: 10, fontWeight: 800 }, 'CAMBIUM RINGS · ' + ringCount + '/5'),
+                  h('text', { key: 'lbl2', x: 66, y: 33, fill: T.text, fontSize: 11, fontWeight: 800 }, sp.name + ' · ' + round(tree.heightM, 1) + 'm'),
+                  h('rect', { key: 'trk', x: 66, y: 41, width: 112, height: 8, rx: 4, fill: trackFill, stroke: isContrast ? '#fff' : 'none', strokeWidth: isContrast ? 1 : 0 }),
+                  h('rect', { key: 'fill', x: 66, y: 41, width: barW, height: 8, rx: 4, fill: ringStroke }),
+                  h('text', { key: 'pct', x: 184, y: 49, fill: ringStroke, fontSize: 10, fontWeight: 900 }, Math.round(hPct * 100) + '%')
+                ])
+              );
+            })(),
+            h('div', { key: 'b', className: 'allo-tree-hero-controls', style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap', position: 'relative', zIndex: 1, padding: 8, borderRadius: 12, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.34)' : 'rgba(255,255,255,.7)'), border: '1px solid ' + T.border } }, [
+              h('div', { key: 'setup-label', className: 'allo-tree-setup-label' }, __alloT('stem.treelab.setup_tree', 'Set up your tree')),
+              h('div', { key: 'band-field', className: 'allo-tree-hero-field', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
+                h('label', { key: 'bl', htmlFor: 'treelab-band', style: { fontSize: 11, color: T.dim } },
+                __alloT('stem.treelab.level', 'Level')),
               h('select', {
-              key: 'ss', id: 'treelab-species', value: sp.id,
-              onChange: function (e) { resetTree(e.target.value); },
-              style: { padding: '7px 10px', minHeight: 34, borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, fontSize: 12, fontWeight: 600 }
-              }, SPECIES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); }))
+                key: 'bs', id: 'treelab-band', value: band,
+                onChange: function (e) { upd('bandOverride', e.target.value); srSay(__alloT('stem.treelab.say_level_set', 'Level set to ') + bandLabel(e.target.value) + '.'); },
+                style: { padding: '7px 10px', minHeight: 34, borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, fontSize: 12, fontWeight: 600 }
+                }, BANDS.map(function (b) { return h('option', { key: b, value: b }, bandLabel(b)); }))
+              ]),
+              h('div', { key: 'species-field', className: 'allo-tree-hero-field', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
+                h('label', { key: 'sl', htmlFor: 'treelab-species', style: { fontSize: 11, color: T.dim } },
+                  __alloT('stem.treelab.species', 'Species')),
+                h('select', {
+                key: 'ss', id: 'treelab-species', value: sp.id,
+                onChange: function (e) { resetTree(e.target.value); },
+                style: { padding: '7px 10px', minHeight: 34, borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, fontSize: 12, fontWeight: 600 }
+                }, SPECIES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); }))
+              ])
             ])
           ])
         ]),

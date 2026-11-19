@@ -4032,10 +4032,9 @@ function _awaitCommandCompletion(completion, timeoutMs, t, command, via) {
     }
   };
   return Promise.race([completion, timer]).then((result) => {
-    clearTimer();
     if (result && result.__alloTimeout) return { handled: true, ok: true, timedOut: true, narration: t("router.still_working", "Still working - it will finish in the background."), commandId: command.id, via };
     return result;
-  });
+  }).finally(clearTimer);
 }
 function executeCommand(ctx, commandOrId, params, opts = {}) {
   const t = _mkT(ctx && ctx.t);
@@ -5274,10 +5273,16 @@ function createVoiceLoop(getCtx, opts = {}) {
       }
       bargeStream = stream;
       bargeOwnsStream = !!ownsStream;
-      bargeAudioCtx = new Ctx();
-      const analyser = bargeAudioCtx.createAnalyser();
-      analyser.fftSize = 1024;
-      bargeAudioCtx.createMediaStreamSource(stream).connect(analyser);
+      let analyser;
+      try {
+        bargeAudioCtx = new Ctx();
+        analyser = bargeAudioCtx.createAnalyser();
+        analyser.fftSize = 1024;
+        bargeAudioCtx.createMediaStreamSource(stream).connect(analyser);
+      } catch (_) {
+        stopBargeWatch();
+        return;
+      }
       const buf = new Float32Array(analyser.fftSize);
       let last = Date.now();
       const tick = function() {
@@ -6099,15 +6104,37 @@ function createVoiceLoop(getCtx, opts = {}) {
     }
     const AC2 = window.AudioContext || window.webkitAudioContext;
     const ac = new AC2();
+    const cleanupWhisperSetup = () => {
+      try {
+        stream.getTracks().forEach(function(tr) {
+          tr.stop();
+        });
+      } catch (_) {
+      }
+      try {
+        ac.close();
+      } catch (_) {
+      }
+    };
     try {
       await ac.resume();
     } catch (_) {
     }
-    const src = ac.createMediaStreamSource(stream);
-    const proc = ac.createScriptProcessor(4096, 1, 1);
-    const gain = ac.createGain();
-    gain.gain.value = 0;
-    const seg = createVadSegmenter({ sampleRate: ac.sampleRate });
+    if (!active) {
+      cleanupWhisperSetup();
+      return;
+    }
+    let src, proc, gain, seg;
+    try {
+      src = ac.createMediaStreamSource(stream);
+      proc = ac.createScriptProcessor(4096, 1, 1);
+      gain = ac.createGain();
+      gain.gain.value = 0;
+      seg = createVadSegmenter({ sampleRate: ac.sampleRate });
+    } catch (setupErr) {
+      cleanupWhisperSetup();
+      throw setupErr;
+    }
     let busy = false;
     proc.onaudioprocess = (ev) => {
       if (!active || engineName !== "whisper") return;
@@ -7194,7 +7221,7 @@ const AlloCommandPalette = ({ ctx }) => {
       "aria-labelledby": "allo-palette-title",
       tabIndex: -1,
       "data-help-ignore": "true",
-      className: "relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-indigo-200 overflow-hidden",
+      className: "allo-docsuite relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-indigo-200 overflow-hidden",
       onClick: (e) => e.stopPropagation()
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 py-3 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("h2", { id: "allo-palette-title", className: "sr-only" }, t("palette.aria", "AlloFlow command palette")), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u26A1"), /* @__PURE__ */ React.createElement(
@@ -7230,7 +7257,7 @@ const AlloCommandPalette = ({ ctx }) => {
         "aria-controls": commandRowCount > 0 ? "allo-palette-list" : void 0,
         "aria-describedby": "allo-palette-status",
         "aria-activedescendant": commandRowCount > 0 && selectedCommandId ? "allo-cmd-" + selectedCommandId : void 0,
-        className: "min-w-0 flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500"
+        className: "min-w-0 flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500 rounded px-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
       }
     ), /* @__PURE__ */ React.createElement(
       "button",
@@ -7345,7 +7372,7 @@ const AlloCommandProgress = ({ ctx }) => {
         "aria-atomic": "true",
         className: `rounded-xl border p-3 shadow-xl ${failed ? "border-rose-300 bg-rose-50 text-rose-950" : cancelled ? "border-amber-300 bg-amber-50 text-amber-950" : item.status === "success" ? "border-emerald-300 bg-emerald-50 text-emerald-950" : "border-indigo-300 bg-white text-slate-900"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse" : ""}`, "aria-hidden": "true" }, pending ? "\u23F3" : failed ? "\u26A0\uFE0F" : cancelled ? "\u23F9\uFE0F" : "\u2705"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : cancelled ? t("cmd.cancelled", "Cancellation requested.") : t("router.done", "Done."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, pending && item.cancellable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancel(item), "aria-label": cancelLabel, className: "min-h-9 rounded-lg border border-amber-500 bg-amber-50 px-3 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, t("cmd.cancel", "Cancel")), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), "aria-label": retryLabel, className: "min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, t("cmd.retry", "Retry")))), !pending && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": t("palette.dismiss_progress", "Dismiss progress for {label}").replace("{label}", item.label || item.commandId), className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")))
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse motion-reduce:animate-none" : ""}`, "aria-hidden": "true" }, pending ? "\u23F3" : failed ? "\u26A0\uFE0F" : cancelled ? "\u23F9\uFE0F" : "\u2705"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : cancelled ? t("cmd.cancelled", "Cancellation requested.") : t("router.done", "Done."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, pending && item.cancellable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancel(item), "aria-label": cancelLabel, className: "min-h-9 rounded-lg border border-amber-500 bg-amber-50 px-3 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, t("cmd.cancel", "Cancel")), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), "aria-label": retryLabel, className: "min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, t("cmd.retry", "Retry")))), !pending && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": t("palette.dismiss_progress", "Dismiss progress for {label}").replace("{label}", item.label || item.commandId), className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")))
     );
   }));
 };

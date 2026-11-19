@@ -41,9 +41,20 @@
     try { return JSON.parse(txt); } catch (e) { return null; }
   }
 
+  function _quizAiUsable(fn) {
+    if (typeof fn !== 'function' || fn._alloQrBlocked === true) return false;
+    if (typeof window !== 'undefined') {
+      if (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true) return false;
+      if (typeof window.__alloAiUsable === 'function') {
+        try { return !!window.__alloAiUsable('text', fn); } catch (_) { return false; }
+      }
+    }
+    return true;
+  }
+
   function clampStatus(s) {
     var allowed = { 'correct': 1, 'partially-correct': 1, 'incorrect': 1, 'unclear': 1 };
-    return (s && allowed[s]) ? s : 'unclear';
+    return (typeof s === 'string' && Object.prototype.hasOwnProperty.call(allowed, s)) ? s : 'unclear';
   }
 
   function studentCriteria(args) {
@@ -79,7 +90,7 @@
    * @returns {Promise<{status, feedback, expectedAnswer}>}
    */
   async function gradeFreeformAnswer(args) {
-    if (!args || typeof args.callGemini !== 'function') {
+    if (!args || !_quizAiUsable(args.callGemini)) {
       return { status: 'error', feedback: 'Grader unavailable: callGemini not provided.' };
     }
     if (!args.studentResponse || !args.studentResponse.trim()) {
@@ -164,7 +175,7 @@
     }
     if (policy === 'review-variants') return { status: 'submitted', needsReview: true, feedback: 'Your response is saved for teacher review because it differs from the accepted answers.', expectedFill: ef };
     if (policy === 'exact') return { status: 'incorrect', feedback: 'This item checks exact spelling and capitalization. Review your response against the directions.', expectedFill: ef };
-    if (typeof args.callGemini !== 'function') return { status: 'incorrect', feedback: 'Your response does not match the accepted answers. Check spelling or ask your teacher to review an alternative answer.', expectedFill: ef };
+    if (!_quizAiUsable(args.callGemini)) return { status: 'incorrect', feedback: 'Your response does not match the accepted answers. Check spelling or ask your teacher to review an alternative answer.', expectedFill: ef };
     // Fall back to LLM fuzzy grader
     var ctx = String(args.contextSentence || '');
     var grade = args.gradeLevel || 'middle school';
@@ -213,7 +224,7 @@
    * @returns {Promise<{status, feedback, score}>}
    */
   async function gradeFreeformAnswerWithCalibration(args) {
-    if (!args || typeof args.callGemini !== 'function') {
+    if (!args || !_quizAiUsable(args.callGemini)) {
       return { status: 'error', feedback: 'Grader unavailable: callGemini not provided.', score: 0 };
     }
     if (!args.studentResponse || !String(args.studentResponse).trim()) {

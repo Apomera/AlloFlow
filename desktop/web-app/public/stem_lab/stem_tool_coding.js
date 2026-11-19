@@ -62,7 +62,10 @@
       '[data-coding-tool="true"] .coding-playground-mode-toggle > button:last-child,' +
       '[data-coding-tool="true"] .coding-mode-toggle > button:last-child { border-radius: 0 0.5rem 0.5rem 0; }' +
       '[data-coding-tool="true"] .coding-playground-mode-toggle > button:focus-visible,' +
-      '[data-coding-tool="true"] .coding-mode-toggle > button:focus-visible { position: relative; z-index: 1; }';
+      '[data-coding-tool="true"] .coding-mode-toggle > button:focus-visible { position: relative; z-index: 1; }' +
+      '[data-coding-tool="true"] button { transition: transform 120ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }' +
+      '[data-coding-tool="true"] button:not([disabled]):hover { transform: translateY(-1px); }' +
+      '@media (prefers-reduced-motion: reduce) { [data-coding-tool="true"] button { transition: none !important; transform: none !important; } }';
     if (document.head) document.head.appendChild(style);
   })();
 
@@ -1084,8 +1087,9 @@
 
       // ── Tool body (codingPlayground) ──
     return (function() {
-          // ── State from labToolData ──
-          var d = (labToolData && labToolData._codingPlayground) || {};
+          // ── State from labToolData (hostile-toolData guarded) ──
+          var d = (labToolData && typeof labToolData === 'object' && labToolData._codingPlayground && typeof labToolData._codingPlayground === 'object' && !Array.isArray(labToolData._codingPlayground)) ? labToolData._codingPlayground : {};
+          var isHostContrast = !!(ctx && ctx.isContrast);
           var reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           var projectName = d.projectName || '';
           function slugifyName(nm) { var z = String(nm || '').trim().replace(/[^A-Za-z0-9_ -]+/g, '').replace(/ +/g, '_').slice(0, 40); return z || 'coding'; }
@@ -1114,16 +1118,24 @@
           };
 
           // ── Defaults ──
-          var blocks = d.blocks || [];
+          var blocks = Array.isArray(d.blocks) ? d.blocks : [];
           var blocklyState = d.blocklyState || null;
-          var turtleState = d.turtle || { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
-          var drawnLines = d.lines || [];
-          var running = d.running || false;
+          var rawTurtle = (d.turtle && typeof d.turtle === 'object' && !Array.isArray(d.turtle)) ? d.turtle : {};
+          var turtleState = {
+            x: (typeof rawTurtle.x === 'number' && isFinite(rawTurtle.x)) ? rawTurtle.x : 250,
+            y: (typeof rawTurtle.y === 'number' && isFinite(rawTurtle.y)) ? rawTurtle.y : 250,
+            angle: (typeof rawTurtle.angle === 'number' && isFinite(rawTurtle.angle)) ? rawTurtle.angle : -90,
+            penDown: rawTurtle.penDown !== false,
+            color: (typeof rawTurtle.color === 'string' && rawTurtle.color) ? rawTurtle.color : '#6366f1',
+            width: (typeof rawTurtle.width === 'number' && isFinite(rawTurtle.width)) ? rawTurtle.width : 2
+          };
+          var drawnLines = Array.isArray(d.lines) ? d.lines : [];
+          var running = !!d.running;
           var stepIdx = (typeof d.stepIdx === 'number' && isFinite(d.stepIdx)) ? d.stepIdx : -1;
           var rawCodeMode = d.codeMode || 'visual';
           var codeMode = rawCodeMode === 'text' || rawCodeMode === 'outline' ? rawCodeMode : 'visual';
           var workspaceTab = d.workspaceTab || 'build';
-          var textCode = d.textCode || '';
+          var textCode = typeof d.textCode === 'string' ? d.textCode : '';
           // -1 is the 'no challenge open' sentinel the render checks for, so an
       // invalid value must fall back to it rather than to 0.
       // -1 is the 'no challenge open' sentinel the render checks for, so an
@@ -1133,26 +1145,26 @@
       // Consumers index it as CHALLENGES[challengeIdx] after their own
       // `>= 0` test, and an out-of-range positive reads as undefined there.
       var challengeIdx = (Number.isInteger(d.challengeIdx) && d.challengeIdx >= 0) ? d.challengeIdx : -1;
-          var completed = d.completed || [];
-          var speed = d.speed || 200;
+          var completed = Array.isArray(d.completed) ? d.completed : [];
+          var speed = (typeof d.speed === 'number' && isFinite(d.speed) && d.speed > 0) ? d.speed : 200;
           var showTurtle = d.showTurtle !== false;
-          var cumulativeMode = d.cumulativeMode || false;
-          var runHistory = d.history || [];
-          var undoStack = d.undoStack || [];
-          var redoStack = d.redoStack || [];
-          var showTemplates = d.showTemplates || false;
-          var tutorialDismissed = d.tutorialDismissed || false;
+          var cumulativeMode = !!d.cumulativeMode;
+          var runHistory = Array.isArray(d.history) ? d.history : [];
+          var undoStack = Array.isArray(d.undoStack) ? d.undoStack : [];
+          var redoStack = Array.isArray(d.redoStack) ? d.redoStack : [];
+          var showTemplates = !!d.showTemplates;
+          var tutorialDismissed = !!d.tutorialDismissed;
           var pendingReplacement = d.pendingReplacement || null;
 
           var showGrid = d.showGrid !== false;
 
-          var aiExplanation = d.aiExplanation || '';
+          var aiExplanation = typeof d.aiExplanation === 'string' ? d.aiExplanation : '';
 
-          var aiLoading = d.aiLoading || false;
+          var aiLoading = !!d.aiLoading;
 
-          var showAIPanel = d.showAIPanel || false;
-          var earnedBadges = d.earnedBadges || [];
-          var highContrastMode = d.highContrastMode || false;
+          var showAIPanel = !!d.showAIPanel;
+          var earnedBadges = Array.isArray(d.earnedBadges) ? d.earnedBadges : [];
+          var highContrastMode = !!d.highContrastMode;
 
 
           // ── 3D Perspective Engine ──
@@ -2052,8 +2064,10 @@
             try {
               var encoded = btoa(JSON.stringify(blocks));
               var url = window.location.origin + window.location.pathname + '?codingShare=' + encoded;
-              (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(url).then(function() {
+              Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(url)).then(function() {
                 if (addToast) addToast('🔗 Share link copied to clipboard!', 'success');
+              }, function() {
+                if (addToast) addToast('Could not generate share link', 'error');
               });
             } catch(e) {
               if (addToast) addToast('Could not generate share link', 'error');
@@ -2080,10 +2094,11 @@
             input.onchange = function(e) {
               var file = e.target.files[0];
               if (!file) return;
+              if (file.size > 5 * 1024 * 1024) { if (addToast) addToast('Program file exceeds the 5 MB limit.', 'error'); return; }
               var reader = new FileReader();
               reader.onload = function(ev) {
                 try {
-                  var data = JSON.parse(ev.target.result);
+                  var data = JSON.parse(ev.target.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
                   if (data.blocks && Array.isArray(data.blocks)) {
                     pushUndo();
                     updMulti({ blocks: data.blocks });
@@ -2618,7 +2633,18 @@
             ),
 
             workspaceTab === 'inquiry' && (function() {
-              var iq = d.complexityIQ || { n: 100, loopDepth: 1, dataStruct: 'array', recursion: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              var rawIQ = (d.complexityIQ && typeof d.complexityIQ === 'object' && !Array.isArray(d.complexityIQ)) ? d.complexityIQ : {};
+              var iq = {
+                n: (typeof rawIQ.n === 'number' && isFinite(rawIQ.n)) ? Math.max(1, Math.min(100, Math.round(rawIQ.n))) : 100,
+                loopDepth: (typeof rawIQ.loopDepth === 'number' && isFinite(rawIQ.loopDepth)) ? Math.max(0, Math.min(4, Math.round(rawIQ.loopDepth))) : 1,
+                dataStruct: typeof rawIQ.dataStruct === 'string' ? rawIQ.dataStruct : 'array',
+                recursion: (typeof rawIQ.recursion === 'number' && isFinite(rawIQ.recursion)) ? Math.max(0, Math.min(3, Math.round(rawIQ.recursion))) : 0,
+                hypothesis: typeof rawIQ.hypothesis === 'string' ? rawIQ.hypothesis : '',
+                stuckRevealed: !!rawIQ.stuckRevealed,
+                understood: !!rawIQ.understood,
+                explanation: typeof rawIQ.explanation === 'string' ? rawIQ.explanation : '',
+                log: Array.isArray(rawIQ.log) ? rawIQ.log : []
+              };
               function setIQ(patch) { upd('complexityIQ', Object.assign({}, iq, patch)); }
               function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
               var dsLookup = ({
@@ -2641,32 +2667,54 @@
                 slow: { label: t('stem.coding.slow', 'Slow'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.coding.seconds_to_minutes_batch_job_territory', 'Seconds to minutes. Batch-job territory; user gets coffee.') },
                 intractable: { label: t('stem.coding.intractable', 'Intractable'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.coding.practically_infinite_at_this_scale_nee', 'Practically infinite at this scale. Need a better algorithm or smaller input.') }
               })[state];
-              return React.createElement("div", { id: "coding-inquiry-panel", role: "region", "aria-label": t('stem.coding.inquiry_lab', 'Inquiry Lab'), className: "col-span-2 rounded-xl p-3", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-                React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, t('stem.coding.big_o_inquiry_predict_the_slowdown', '🔬 Big-O Inquiry — Explore the Slowdown')),
-                React.createElement("p", { className: "text-[0.625rem] opacity-85 mb-2 leading-snug" }, t('stem.coding.set_input_size_loop_depth_data_structu', 'Set input size, loop depth, data structure, and recursion shape, then observe how the operation estimate changes. The result updates live; record a hypothesis or pattern you notice.')),
-                React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · ~' + totalOps.toExponential(1) + ' ops · ~' + (msAt1GHz < 1 ? (msAt1GHz * 1000).toFixed(2) + ' µs' : msAt1GHz < 1000 ? msAt1GHz.toFixed(1) + ' ms' : (msAt1GHz / 1000).toFixed(1) + ' s')),
-                React.createElement("p", { className: "text-[0.625rem] opacity-80 mb-2" }, sm.desc),
-                React.createElement("svg", { role: "img", "aria-label": "Big-O growth comparison chart. Current estimate: " + sm.label + ", approximately " + totalOps.toExponential(1) + " operations.", width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
-                  React.createElement("line", { x1: 30, y1: 80, x2: 310, y2: 80, stroke: '#1e293b' }),
-                  React.createElement("line", { x1: 30, y1: 10, x2: 30, y2: 80, stroke: '#1e293b' }),
+              var dotX = 34 + (Math.min(100, iq.n) / 100) * 236;
+              var dotY = 92 - Math.max(0, Math.min(76, Math.log10(Math.max(1, totalOps)) * 5.5));
+              return React.createElement("div", { id: "coding-inquiry-panel", role: "region", "aria-label": t('stem.coding.inquiry_lab', 'Inquiry Lab'), className: "col-span-2 rounded-xl p-3", style: { backgroundColor: isHostContrast ? '#000000' : sm.bg, border: (isHostContrast ? '2px solid #ffff00' : '1px solid ' + sm.border), color: isHostContrast ? '#ffffff' : '#e8f0f5' } },
+                React.createElement("div", { className: "flex items-center justify-between gap-2 flex-wrap mb-1" },
+                  React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider m-0", style: { color: isHostContrast ? '#ffff00' : sm.color } }, t('stem.coding.big_o_inquiry_predict_the_slowdown', '🔬 Big-O Inquiry — Explore the Slowdown')),
+                  React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                    [
+                      { id: 'o1', lbl: 'Hash O(1)', n: 100, ld: 0, ds: 'hash', rec: 0 },
+                      { id: 'olog', lbl: 'BST O(log n)', n: 100, ld: 0, ds: 'bst', rec: 0 },
+                      { id: 'on2', lbl: 'Nested O(n²)', n: 60, ld: 2, ds: 'array', rec: 0 },
+                      { id: 'o2n', lbl: 'Branch O(2ⁿ)', n: 24, ld: 0, ds: 'array', rec: 3 }
+                    ].map(function(pr) {
+                      return React.createElement("button", {
+                        key: pr.id, type: "button",
+                        onClick: function() { setIQ({ n: pr.n, loopDepth: pr.ld, dataStruct: pr.ds, recursion: pr.rec }); },
+                        className: "px-2 py-0.5 rounded-full text-[0.625rem] font-bold",
+                        style: { backgroundColor: '#0a0a1a', color: isHostContrast ? '#ffff00' : '#cbd5e1', border: '1px solid ' + (isHostContrast ? '#ffff00' : '#334155'), cursor: 'pointer' }
+                      }, pr.lbl);
+                    }))),
+                React.createElement("p", { className: "text-[0.6875rem] opacity-90 mb-2 leading-snug" }, t('stem.coding.set_input_size_loop_depth_data_structu', 'Set input size, loop depth, data structure, and recursion shape, then observe how the operation estimate changes. The result updates live; record a hypothesis or pattern you notice.')),
+                React.createElement("div", { className: "inline-block px-2.5 py-1 rounded-full text-[0.6875rem] font-bold mb-2", style: { backgroundColor: isHostContrast ? '#ffff00' : sm.color, color: '#000000' } }, sm.label + ' · ~' + totalOps.toExponential(1) + ' ops · ~' + (msAt1GHz < 1 ? (msAt1GHz * 1000).toFixed(2) + ' µs' : msAt1GHz < 1000 ? msAt1GHz.toFixed(1) + ' ms' : (msAt1GHz / 1000).toFixed(1) + ' s')),
+                React.createElement("p", { className: "text-[0.6875rem] opacity-85 mb-2" }, sm.desc),
+                React.createElement("svg", { role: "img", "aria-label": "Big-O growth comparison chart. Current estimate: " + sm.label + ", approximately " + totalOps.toExponential(1) + " operations.", width: '100%', height: 132, viewBox: '0 0 360 132', style: { backgroundColor: '#0a0a1a', borderRadius: 8, marginBottom: 8, border: '1px solid ' + (isHostContrast ? '#ffff00' : '#1e293b') } },
+                  [28, 50, 72, 92].map(function(gy) { return React.createElement("line", { key: gy, x1: 34, y1: gy, x2: 274, y2: gy, stroke: '#1e293b', strokeDasharray: gy === 92 ? undefined : '3 3' }); }),
+                  React.createElement("line", { x1: 34, y1: 12, x2: 34, y2: 92, stroke: '#475569', strokeWidth: 1.5 }),
+                  React.createElement("line", { x1: 34, y1: 92, x2: 274, y2: 92, stroke: '#475569', strokeWidth: 1.5 }),
                   // Reference curves: O(1) O(log n) O(n) O(n²) O(2^n)
                   [
-                    { lab: 'O(1)', col: '#4ade80', f: function() { return 1; } },
-                    { lab: 'O(log n)', col: '#22d3ee', f: function(nn) { return Math.log2(nn); } },
-                    { lab: 'O(n)', col: '#facc15', f: function(nn) { return nn; } },
-                    { lab: 'O(n²)', col: '#fb923c', f: function(nn) { return nn * nn; } },
-                    { lab: 'O(2ⁿ)', col: '#f87171', f: function(nn) { return Math.pow(2, Math.min(20, nn)); } }
+                    { lab: 'O(1)', col: '#4ade80', yLeg: 88, f: function() { return 1; } },
+                    { lab: 'O(log n)', col: '#22d3ee', yLeg: 71, f: function(nn) { return Math.log2(nn); } },
+                    { lab: 'O(n)', col: '#facc15', yLeg: 54, f: function(nn) { return nn; } },
+                    { lab: 'O(n²)', col: '#fb923c', yLeg: 37, f: function(nn) { return nn * nn; } },
+                    { lab: 'O(2ⁿ)', col: '#f87171', yLeg: 20, f: function(nn) { return Math.pow(2, Math.min(20, nn)); } }
                   ].map(function(c) {
                     var pts = '';
                     for (var nn = 2; nn <= 100; nn += 2) {
-                      var x = 30 + (nn / 100) * 280;
-                      var y = 80 - Math.max(0, Math.min(70, Math.log10(Math.max(1, c.f(nn))) * 10));
-                      pts += x + ',' + y + ' ';
+                      var x = 34 + (nn / 100) * 236;
+                      var y = 92 - Math.max(0, Math.min(76, Math.log10(Math.max(1, c.f(nn))) * 10.5));
+                      pts += x.toFixed(1) + ',' + y.toFixed(1) + ' ';
                     }
-                    return React.createElement("polyline", { key: c.lab, points: pts.trim(), fill: 'none', stroke: c.col, strokeWidth: 1, opacity: 0.5 });
+                    return React.createElement("g", { key: c.lab },
+                      React.createElement("polyline", { points: pts.trim(), fill: 'none', stroke: c.col, strokeWidth: 1.6, opacity: 0.72 }),
+                      React.createElement("text", { x: 282, y: c.yLeg, fill: c.col, fontSize: 10, fontWeight: 700 }, c.lab));
                   }),
-                  React.createElement("circle", { cx: 30 + (Math.min(100, iq.n) / 100) * 280, cy: 80 - Math.max(0, Math.min(70, Math.log10(Math.max(1, totalOps)) * 5)), r: 4, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
-                  React.createElement("text", { x: 160, y: 96, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'log scale — green=O(1), red=O(2ⁿ); dot=your config at n=' + iq.n)
+                  React.createElement("line", { x1: dotX, y1: dotY, x2: dotX, y2: 92, stroke: isHostContrast ? '#ffff00' : sm.color, strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.75 }),
+                  React.createElement("line", { x1: 34, y1: dotY, x2: dotX, y2: dotY, stroke: isHostContrast ? '#ffff00' : sm.color, strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.75 }),
+                  React.createElement("circle", { cx: dotX, cy: dotY, r: 5, fill: isHostContrast ? '#00ff00' : sm.color, stroke: '#ffffff', strokeWidth: 1.8 }),
+                  React.createElement("text", { x: 154, y: 116, fill: isHostContrast ? '#ffff00' : '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Log scale · Your config at n = ' + iq.n)
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                   React.createElement("label", { className: "text-[0.625rem]" },
@@ -2728,18 +2776,30 @@
               );
             })(),
 
-            // ── Header bar ──
+            // ── Header bar (Bespoke Coding Studio Workbench Header) ──
             React.createElement("div", {
-              className: "coding-header col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-700 to-purple-700 rounded-xl shadow-lg"
+              className: "coding-header col-span-2 flex items-center gap-3 p-3.5 rounded-xl shadow-lg",
+              style: isHostContrast
+                ? { backgroundColor: '#000000', border: '2px solid #ffff00', color: '#ffff00' }
+                : { backgroundColor: '#312e81', background: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 52%, #4c1d95 100%)', border: '1px solid rgba(165,180,252,0.35)' }
             },
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-white/20 rounded-lg transition-all", 'aria-label': t('stem.coding.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 20, className: "text-white" })),
-              React.createElement("span", { className: "text-2xl" }, playgroundMode === 'robot' ? "\uD83E\uDD16" : "\uD83D\uDDA5\uFE0F"),
-              React.createElement("div", { className: "flex-1" },
-                React.createElement("h2", { className: "text-white font-bold text-lg" }, t('stem.coding.coding_playground', "Coding Playground")),
-                React.createElement("p", { className: "text-indigo-100 text-xs" },
-                  playgroundMode === 'robot' ? (robotChallengeIdx >= 0 ? '\uD83C\uDFAF ' + ROBOT_CHALLENGES[robotChallengeIdx].title + ' — ' + ROBOT_CHALLENGES[robotChallengeIdx].desc : 'Program a robot to navigate mazes, collect gems, and solve puzzles!') :
-                  (challengeIdx >= 0 ? '\uD83C\uDFAF ' + CHALLENGES[challengeIdx].title + ' — ' + CHALLENGES[challengeIdx].desc :
-                    'Build programs with blocks or code. The turtle draws your creation!')
+              // Bespoke Coding Studio Emblem SVG (< /> + vector node)
+              React.createElement("div", { 'aria-hidden': 'true', style: { width: '42px', height: '42px', borderRadius: '11px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: isHostContrast ? '#000000' : 'rgba(15,23,42,0.45)', border: isHostContrast ? '2px solid #ffff00' : '1px solid rgba(199,210,254,0.38)' } },
+                React.createElement("svg", { viewBox: "0 0 40 40", width: 32, height: 32, 'aria-hidden': 'true' },
+                  React.createElement("path", { d: "M14 13 L7 20 L14 27", fill: "none", stroke: isHostContrast ? "#ffff00" : "#7dd3fc", strokeWidth: 2.6, strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "M26 13 L33 20 L26 27", fill: "none", stroke: isHostContrast ? "#ffff00" : "#7dd3fc", strokeWidth: 2.6, strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("line", { x1: 22, y1: 11, x2: 18, y2: 29, stroke: isHostContrast ? "#00ff00" : "#34d399", strokeWidth: 2.4, strokeLinecap: "round" }),
+                  React.createElement("circle", { cx: 20, cy: 20, r: 2.6, fill: isHostContrast ? "#ffff00" : "#fbbf24" })
+                )),
+              React.createElement("div", { className: "flex-1", style: { minWidth: '180px' } },
+                React.createElement("div", { style: { fontSize: '10px', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: isHostContrast ? '#00ff00' : '#c7d2fe', marginBottom: '1px' } },
+                  t('stem.coding.badge_subject', 'Technology · Visual & Text Coding Studio')),
+                React.createElement("h2", { className: "text-white font-bold text-lg m-0", style: { color: isHostContrast ? '#ffff00' : '#ffffff', lineHeight: 1.2 } }, t('stem.coding.coding_playground', "Coding Playground")),
+                React.createElement("p", { className: "text-indigo-100 text-xs m-0 mt-0.5", style: { color: isHostContrast ? '#ffffff' : '#e0e7ff' } },
+                  playgroundMode === 'robot' ? (robotChallengeIdx >= 0 && ROBOT_CHALLENGES[robotChallengeIdx] ? '\uD83C\uDFAF ' + ROBOT_CHALLENGES[robotChallengeIdx].title + ' — ' + ROBOT_CHALLENGES[robotChallengeIdx].desc : t('stem.coding.robot_subtitle', 'Program a robot to navigate mazes, collect gems, and solve puzzles!')) :
+                  (challengeIdx >= 0 && CHALLENGES[challengeIdx] ? '\uD83C\uDFAF ' + CHALLENGES[challengeIdx].title + ' — ' + CHALLENGES[challengeIdx].desc :
+                    t('stem.coding.turtle_subtitle', 'Build programs with blocks or code. The turtle draws your creation!'))
                 )
               ),
               // Playground Mode Tabs (Turtle / Robot)
@@ -2914,29 +2974,66 @@
               }, "❓")
             ),
 
-            // ── Topic-accent hero band per playground mode ──
+            // ── Topic-accent hero band + Live Telemetry & Quick Starters per playground mode ──
             (function() {
               var MODE_META = {
-                turtle: { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)', icon: '\uD83D\uDC22', title: t('stem.coding.turtle_logo_s_drawing_robot_born_1967', 'Turtle \u2014 LOGO\u2019s drawing robot, born 1967'),           hint: t('stem.coding.move_forward_turn_pen_down_a_few_primi', 'Move forward, turn, pen down: a few primitives \u2192 fractals, spirals, polygons. Seymour Papert\u2019s Mindstorms (1980) showed kids could BUILD intuition for math by teaching the turtle, not the other way round.') },
-                robot:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83E\uDD16', title: t('stem.coding.robot_navigate_the_grid_collect_solve', 'Robot \u2014 navigate the grid, collect, solve'),           hint: t('stem.coding.sequencing_conditionals_loops_function', 'Sequencing \u2192 conditionals \u2192 loops \u2192 functions, wrapped in a maze you can SEE. Mirrors Karel the Robot (Stanford 1981) and modern code.org puzzles. Errors become spatial: \u201Cit walked into a wall.\u201D') }
+                turtle: { accent: isHostContrast ? '#00ff00' : '#22c55e', soft: 'rgba(34,197,94,0.14)', icon: '\uD83D\uDC22', title: t('stem.coding.turtle_logo_s_drawing_robot_born_1967', 'Turtle \u2014 LOGO\u2019s drawing robot, born 1967'),           hint: t('stem.coding.move_forward_turn_pen_down_a_few_primi', 'Move forward, turn, pen down: a few primitives \u2192 fractals, spirals, polygons. Seymour Papert\u2019s Mindstorms (1980) showed kids could BUILD intuition for math by teaching the turtle, not the other way round.') },
+                robot:  { accent: isHostContrast ? '#00ff00' : '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83E\uDD16', title: t('stem.coding.robot_navigate_the_grid_collect_solve', 'Robot \u2014 navigate the grid, collect, solve'),           hint: t('stem.coding.sequencing_conditionals_loops_function', 'Sequencing \u2192 conditionals \u2192 loops \u2192 functions, wrapped in a maze you can SEE. Mirrors Karel the Robot (Stanford 1981) and modern code.org puzzles. Errors become spatial: \u201Cit walked into a wall.\u201D') }
               };
               var meta = MODE_META[playgroundMode] || MODE_META.turtle;
+              var rad = (turtleState.angle || 0) * Math.PI / 180;
+              var pillS = {
+                fontSize: '10.5px', fontWeight: 800, padding: '3px 8px', borderRadius: '999px',
+                backgroundColor: isHostContrast ? '#000000' : 'rgba(15,23,42,0.85)',
+                border: '1px solid ' + (isHostContrast ? '#ffff00' : 'rgba(148,163,184,0.35)'),
+                color: isHostContrast ? '#ffff00' : '#e2e8f0', whiteSpace: 'nowrap'
+              };
               return React.createElement('div', {
                 className: 'col-span-2',
                 style: {
-                  margin: '0 0 12px',
+                  margin: '0 0 8px',
                   padding: '12px 14px',
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
-                  border: '1px solid ' + meta.accent + '55',
+                  backgroundColor: isHostContrast ? '#000000' : '#0f172a',
+                  background: isHostContrast ? '#000000' : ('linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a'),
+                  border: isHostContrast ? '2px solid #ffff00' : ('1px solid ' + meta.accent + '55'),
                   borderLeft: '4px solid ' + meta.accent,
                   display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
                 }
               },
-                React.createElement('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
-                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                // Live Turtle Heading Compass SVG (in Turtle mode) or Robot Grid Badge
+                playgroundMode === 'turtle'
+                  ? React.createElement('svg', { viewBox: '0 0 56 56', width: 48, height: 48, 'aria-hidden': 'true', style: { flexShrink: 0, borderRadius: '10px', backgroundColor: '#020617', border: '1px solid ' + meta.accent + '80' } },
+                      React.createElement('circle', { cx: 28, cy: 28, r: 22, fill: 'none', stroke: isHostContrast ? '#ffff00' : '#334155', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                      React.createElement('line', { x1: 28, y1: 28, x2: (28 + 16 * Math.cos(rad)).toFixed(1), y2: (28 + 16 * Math.sin(rad)).toFixed(1), stroke: meta.accent, strokeWidth: 3, strokeLinecap: 'round' }),
+                      React.createElement('circle', { cx: 28, cy: 28, r: 5, fill: turtleState.penDown ? (isHostContrast ? '#00ff00' : turtleState.color) : '#64748b', stroke: '#ffffff', strokeWidth: 1.5 }))
+                  : React.createElement('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: '1 1 240px', minWidth: 0 } },
+                  React.createElement('h3', { style: { color: isHostContrast ? '#ffff00' : meta.accent, fontSize: 14.5, fontWeight: 900, margin: 0, lineHeight: 1.25 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 6px', color: isHostContrast ? '#ffffff' : '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint),
+                  // Live Telemetry Pills + Quick Starter Chips
+                  React.createElement('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
+                    React.createElement('span', { style: pillS },
+                      playgroundMode === 'turtle'
+                        ? ('Pos: (' + Math.round(turtleState.x) + ', ' + Math.round(turtleState.y) + ') · ' + Math.round(((turtleState.angle % 360) + 360) % 360) + '°')
+                        : (t('stem.coding.pill_robot_blocks', 'Blocks: ') + (Array.isArray(robotBlocks) ? robotBlocks.length : 0))),
+                    React.createElement('span', { style: pillS },
+                      t('stem.coding.pill_program', 'Program: ') + (codeMode === 'text' ? (textCode.split('\n').filter(Boolean).length + ' ' + t('stem.coding.lines_unit', 'lines')) : (blocks.length + ' ' + t('stem.coding.blocks_unit', 'blocks')))),
+                    React.createElement('span', { style: pillS },
+                      t('stem.coding.pill_challenges', 'Challenges: ') + completed.length + '/' + CHALLENGES.length),
+                    playgroundMode === 'turtle' && TEMPLATES.slice(0, 4).map(function(tmpl, ti) {
+                      return React.createElement('button', {
+                        key: 'qs-' + ti, type: 'button',
+                        onClick: function() { loadTemplate(tmpl, ti); },
+                        style: {
+                          fontSize: '10.5px', fontWeight: 700, padding: '3px 9px', borderRadius: '999px', cursor: 'pointer',
+                          backgroundColor: isHostContrast ? '#000000' : 'rgba(99,102,241,0.22)',
+                          border: '1px solid ' + (isHostContrast ? '#00ff00' : 'rgba(165,180,252,0.5)'),
+                          color: isHostContrast ? '#00ff00' : '#e0e7ff'
+                        }
+                      }, tmpl.icon + ' ' + tmpl.name);
+                    })
+                  )
                 )
               );
             })(),

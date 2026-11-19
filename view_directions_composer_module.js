@@ -59,7 +59,16 @@ function DirectionsComposerView({
   previewOpenRef.current = !!showDirectionsChoicePreview;
   const getFocusableIn = (container) => {
     if (!container || typeof container.querySelectorAll !== "function") return [];
-    return Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true" && !(typeof el.closest === "function" && el.closest("[inert]")));
+    return Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.hidden || el.getAttribute("aria-hidden") === "true" || typeof el.closest === "function" && el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+        for (let cur = el; cur && cur !== container; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === "none" || st.visibility === "hidden")) return false;
+        }
+      }
+      return true;
+    });
   };
   React.useEffect(() => {
     const doc = typeof window !== "undefined" ? window.document : null;
@@ -171,7 +180,7 @@ function DirectionsComposerView({
     updateGoalText(value);
     if (legacySetGoalText) legacySetGoalText(value);
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4", onKeyDown: (e) => {
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4", onKeyDown: (e) => {
     if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
     const stack = typeof window !== "undefined" ? window.__alloFocusTrapStack : null;
     const expectedRoot = showDirectionsChoicePreview ? previewDialogRef.current : composerDialogRef.current;
@@ -185,7 +194,7 @@ function DirectionsComposerView({
         setShowDirectionsComposer(false);
       }
     }
-  } }, /* @__PURE__ */ React.createElement("div", { ref: composerDialogRef, tabIndex: -1, "data-help-key": "directions_composer", role: "dialog", "aria-modal": "true", "aria-label": t("directions.title") || "Lesson Directions", className: "bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden", style: { maxHeight: "calc(100dvh - 2rem)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-1" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 18, className: "text-amber-600", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { className: "text-sm font-bold text-slate-800 flex-1" }, t("directions.title") || "Lesson Directions"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowDirectionsComposer(false), "aria-label": t("common.close") || "Close", className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 p-1 rounded-lg transition-all motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(X, { size: 16 }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mb-2" }, t("directions.subtitle") || "Student-facing. Students see this first \u2014 in class, on homework QRs, and on the take-home shelf."), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 min-h-0 flex-1 overflow-y-auto pr-1", "data-directions-scroll": true }, /* @__PURE__ */ React.createElement("input", { "data-help-key": "directions_title", autoFocus: true, value: mbDirectionsDraft?.title || "", onChange: (e) => setMbDirectionsDraft((p) => ({ ...p || {}, title: e.target.value })), placeholder: t("directions.title_placeholder") || "Title (e.g. Tonight's homework)", "aria-label": t("directions.title_aria") || "Directions title", className: "w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" }), /* @__PURE__ */ React.createElement("textarea", { "data-help-key": "directions_body", value: mbDirectionsDraft?.body || "", onChange: (e) => setMbDirectionsDraft((p) => ({ ...p || {}, body: e.target.value })), placeholder: t("directions.body_placeholder") || "Directions for students: the steps, and what finished work looks like.", "aria-label": t("directions.body_aria") || "Directions for students", rows: 6, className: "w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" }), /* @__PURE__ */ React.createElement("input", { "data-help-key": "directions_due", value: mbDirectionsDraft?.due || "", onChange: (e) => setMbDirectionsDraft((p) => ({ ...p || {}, due: e.target.value })), placeholder: t("directions.due_placeholder") || "Due (optional, e.g. Friday)", "aria-label": t("directions.due_aria") || "Due date", className: "w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" }), /* @__PURE__ */ React.createElement("details", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2", "data-directions-preview": true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-indigo-800" }, previewLabel && previewLabel !== "common.preview" ? previewLabel : "Preview"), directionsPreviewHtml ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 text-sm text-slate-800 break-words", dangerouslySetInnerHTML: { __html: typeof window.sanitizeHtml === "function" ? window.sanitizeHtml(directionsPreviewHtml) : "" } }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, t("directions.body_placeholder") || "Write directions to preview them here.")), /* @__PURE__ */ React.createElement("div", { className: "border-t border-indigo-100 pt-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
+  } }, /* @__PURE__ */ React.createElement("div", { ref: composerDialogRef, tabIndex: -1, "data-help-key": "directions_composer", role: "dialog", "aria-modal": "true", "aria-label": t("directions.title") || "Lesson Directions", className: "allo-docsuite bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden", style: { maxHeight: "calc(100dvh - 2rem)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-1" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 18, className: "text-amber-600", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { className: "text-sm font-bold text-slate-800 flex-1" }, t("directions.title") || "Lesson Directions"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowDirectionsComposer(false), "aria-label": t("common.close") || "Close", className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 p-1 rounded-lg transition-all motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(X, { size: 16, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("directions.subtitle") || "Student-facing. Students see this first \u2014 in class, on homework QRs, and on the take-home shelf."), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 min-h-0 flex-1 overflow-y-auto pr-1", "data-directions-scroll": true }, /* @__PURE__ */ React.createElement("input", { "data-help-key": "directions_title", autoFocus: true, value: mbDirectionsDraft?.title || "", onChange: (e) => setMbDirectionsDraft((p) => ({ ...p || {}, title: e.target.value })), placeholder: t("directions.title_placeholder") || "Title (e.g. Tonight's homework)", "aria-label": t("directions.title_aria") || "Directions title", className: "w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" }), /* @__PURE__ */ React.createElement("textarea", { "data-help-key": "directions_body", value: mbDirectionsDraft?.body || "", onChange: (e) => setMbDirectionsDraft((p) => ({ ...p || {}, body: e.target.value })), placeholder: t("directions.body_placeholder") || "Directions for students: the steps, and what finished work looks like.", "aria-label": t("directions.body_aria") || "Directions for students", rows: 6, className: "w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" }), /* @__PURE__ */ React.createElement("input", { "data-help-key": "directions_due", value: mbDirectionsDraft?.due || "", onChange: (e) => setMbDirectionsDraft((p) => ({ ...p || {}, due: e.target.value })), placeholder: t("directions.due_placeholder") || "Due (optional, e.g. Friday)", "aria-label": t("directions.due_aria") || "Due date", className: "w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" }), /* @__PURE__ */ React.createElement("details", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2", "data-directions-preview": true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-indigo-800" }, previewLabel && previewLabel !== "common.preview" ? previewLabel : "Preview"), directionsPreviewHtml ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 text-sm text-slate-800 break-words", dangerouslySetInnerHTML: { __html: typeof window.sanitizeHtml === "function" ? window.sanitizeHtml(directionsPreviewHtml) : "" } }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, t("directions.body_placeholder") || "Write directions to preview them here.")), /* @__PURE__ */ React.createElement("div", { className: "border-t border-indigo-100 pt-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "checkbox",
@@ -276,7 +285,7 @@ function DirectionsComposerView({
       placeholder: tr("directions.choice_board_desc_placeholder", "Optional: what students will do here"),
       className: "w-full rounded border border-slate-300 bg-white p-1.5 text-[10px] text-slate-800"
     }
-  ))), showDirectionsChoicePreview && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4", onClick: () => setShowDirectionsChoicePreview(false), onKeyDown: (e) => {
+  ))), showDirectionsChoicePreview && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4", onClick: () => setShowDirectionsChoicePreview(false), onKeyDown: (e) => {
     if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
     const stack = typeof window !== "undefined" ? window.__alloFocusTrapStack : null;
     if (Array.isArray(stack) && stack.length > 0 && previewDialogRef.current && stack[stack.length - 1]?.root !== previewDialogRef.current) return;
@@ -285,68 +294,76 @@ function DirectionsComposerView({
       e.stopPropagation();
       setShowDirectionsChoicePreview(false);
     }
-  } }, /* @__PURE__ */ React.createElement("div", { ref: previewDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "directions-choice-preview-title", className: "max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wide text-indigo-700" }, tr("directions.student_preview_badge", "Student preview")), /* @__PURE__ */ React.createElement("h3", { id: "directions-choice-preview-title", className: "text-base font-black text-slate-900" }, mbDirectionsDraft.choiceBoard.title || boardTitleDefault), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, mbDirectionsDraft.choiceBoard.prompt || boardPromptDefault)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowDirectionsChoicePreview(false), "aria-label": tr("directions.close_preview_aria", "Close student choice board preview"), className: "min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100" }, /* @__PURE__ */ React.createElement(X, { size: 16, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-3 sm:grid-cols-2" }, _mbDirectionsChoicePreviewItems.map(({ choice, resource }) => {
+  } }, /* @__PURE__ */ React.createElement("div", { ref: previewDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "directions-choice-preview-title", className: "allo-docsuite max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wide text-indigo-700" }, tr("directions.student_preview_badge", "Student preview")), /* @__PURE__ */ React.createElement("h3", { id: "directions-choice-preview-title", className: "text-base font-black text-slate-900" }, mbDirectionsDraft.choiceBoard.title || boardTitleDefault), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, mbDirectionsDraft.choiceBoard.prompt || boardPromptDefault)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowDirectionsChoicePreview(false), "aria-label": tr("directions.close_preview_aria", "Close student choice board preview"), className: "min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100" }, /* @__PURE__ */ React.createElement(X, { size: 16, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-3 sm:grid-cols-2" }, _mbDirectionsChoicePreviewItems.map(({ choice, resource }) => {
     const station = _alloStationStyle(resource.type);
     return /* @__PURE__ */ React.createElement("article", { key: "preview-" + choice.resourceRef, className: "flex min-h-24 items-start gap-3 rounded-xl border-2 border-indigo-100 bg-white p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-sm" }, choice.icon || station.icon || "\u2022"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-black text-slate-800" }, choice.label), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-[10px] font-bold uppercase tracking-wide text-indigo-700" }, station.label), choice.description && /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-xs leading-5 text-slate-600" }, choice.description), /* @__PURE__ */ React.createElement("span", { className: "mt-2 block text-[11px] font-bold text-indigo-700" }, tr("directions.open_activity", "Open activity"), " ", /* @__PURE__ */ React.createElement(ArrowRight, { size: 12, className: "inline", "aria-hidden": "true" }))));
-  })), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[10px] text-slate-600" }, tr("directions.preview_footer_note", "This preview shows the cards students will see on the directions page.")))))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, t("directions.objectives") || "Goals (auto-check where possible)"), (mbDirectionsDraft?.objectives || []).map((o, oi) => /* @__PURE__ */ React.createElement("div", { key: o.id, className: "flex items-center gap-1.5 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 " + (o.kind === "xp" ? "bg-indigo-50 text-indigo-700" : o.kind === "game" ? "bg-emerald-50 text-emerald-700" : o.kind === "manual" ? "bg-slate-100 text-slate-600" : "bg-sky-50 text-sky-700") }, o.kind === "manual" ? t("directions.kind_manual") || "self-check" : o.kind === "visited" ? t("directions.kind_visited") || "opened" : o.kind === "responded" ? t("directions.kind_responded") || "answered" : o.kind === "completed" ? t("directions.kind_completed") || "finished" : o.kind === "time" ? t("directions.kind_time") || "time" : o.kind), /* @__PURE__ */ React.createElement("input", { value: o.label, onChange: (e) => setMbDirectionsDraft((p) => {
-    const list = [...p && p.objectives || []];
-    list[oi] = { ...list[oi], label: e.target.value };
-    return { ...p || {}, objectives: list };
-  }), "aria-label": t("directions.objective_label") || "Goal label", className: "flex-1 min-w-0 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800" }), o.kind === "xp" && /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "1000", value: Object.prototype.hasOwnProperty.call(numDrafts, o.id + ":xp") ? numDrafts[o.id + ":xp"] : o.amount ?? 25, onChange: (e) => {
-    const raw = e.target.value;
-    const key = o.id + ":xp";
-    setNumDrafts((prev) => ({ ...prev, [key]: raw }));
-    const parsed = Number(raw);
-    if (raw !== "" && Number.isFinite(parsed) && parsed >= 1 && parsed <= 1e3) {
+  })), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[10px] text-slate-600" }, tr("directions.preview_footer_note", "This preview shows the cards students will see on the directions page.")))))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, t("directions.objectives") || "Goals (auto-check where possible)"), (mbDirectionsDraft?.objectives || []).map((o, oi) => {
+    const xpRaw = Object.prototype.hasOwnProperty.call(numDrafts, o.id + ":xp") ? numDrafts[o.id + ":xp"] : null;
+    const xpNum = xpRaw === null ? null : Number(xpRaw);
+    const xpInvalid = o.kind === "xp" && xpRaw !== null && xpRaw !== "" && (!Number.isFinite(xpNum) || xpNum < 1 || xpNum > 1e3);
+    const timeRaw = Object.prototype.hasOwnProperty.call(numDrafts, o.id + ":time") ? numDrafts[o.id + ":time"] : null;
+    const timeNum = timeRaw === null ? null : Number(timeRaw);
+    const timeInvalid = o.kind === "time" && timeRaw !== null && timeRaw !== "" && (!Number.isFinite(timeNum) || timeNum < 1 || timeNum > 240);
+    return /* @__PURE__ */ React.createElement("div", { key: o.id, className: "mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 " + (o.kind === "xp" ? "bg-indigo-50 text-indigo-700" : o.kind === "game" ? "bg-emerald-50 text-emerald-700" : o.kind === "manual" ? "bg-slate-100 text-slate-600" : "bg-sky-50 text-sky-700") }, o.kind === "manual" ? t("directions.kind_manual") || "self-check" : o.kind === "visited" ? t("directions.kind_visited") || "opened" : o.kind === "responded" ? t("directions.kind_responded") || "answered" : o.kind === "completed" ? t("directions.kind_completed") || "finished" : o.kind === "time" ? t("directions.kind_time") || "time" : o.kind), /* @__PURE__ */ React.createElement("input", { value: o.label, onChange: (e) => setMbDirectionsDraft((p) => {
+      const list = [...p && p.objectives || []];
+      list[oi] = { ...list[oi], label: e.target.value };
+      return { ...p || {}, objectives: list };
+    }), "aria-label": t("directions.objective_label") || "Goal label", className: "flex-1 min-w-0 min-h-6 text-[11px] border border-slate-300 rounded p-1 bg-white text-slate-800" }), o.kind === "xp" && /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "1000", "aria-invalid": xpInvalid ? "true" : void 0, "aria-describedby": xpInvalid ? `dir-xp-err-${o.id}` : void 0, value: xpRaw !== null ? xpRaw : o.amount ?? 25, onChange: (e) => {
+      const raw = e.target.value;
+      const key = o.id + ":xp";
+      setNumDrafts((prev) => ({ ...prev, [key]: raw }));
+      const parsed = Number(raw);
+      if (raw !== "" && Number.isFinite(parsed) && parsed >= 1 && parsed <= 1e3) {
+        setMbDirectionsDraft((p) => {
+          const list = [...p && p.objectives || []];
+          if (list[oi]) list[oi] = { ...list[oi], amount: Math.round(parsed) };
+          return { ...p || {}, objectives: list };
+        });
+      }
+    }, onBlur: (e) => {
+      const raw = e.target.value;
+      const key = o.id + ":xp";
+      const parsed = Number(raw);
+      const amt = raw === "" ? o.amount || 25 : Math.max(1, Math.min(1e3, Number.isFinite(parsed) ? Math.round(parsed) : 1));
+      setNumDrafts((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
       setMbDirectionsDraft((p) => {
         const list = [...p && p.objectives || []];
-        if (list[oi]) list[oi] = { ...list[oi], amount: Math.round(parsed) };
+        if (list[oi]) list[oi] = { ...list[oi], amount: amt };
         return { ...p || {}, objectives: list };
       });
-    }
-  }, onBlur: (e) => {
-    const raw = e.target.value;
-    const key = o.id + ":xp";
-    const parsed = Number(raw);
-    const amt = raw === "" ? o.amount || 25 : Math.max(1, Math.min(1e3, Number.isFinite(parsed) ? Math.round(parsed) : 1));
-    setNumDrafts((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
-    setMbDirectionsDraft((p) => {
-      const list = [...p && p.objectives || []];
-      if (list[oi]) list[oi] = { ...list[oi], amount: amt };
-      return { ...p || {}, objectives: list };
-    });
-  }, "aria-label": t("directions.xp_amount") || "XP amount", className: "w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" }), o.kind === "time" && /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "240", value: Object.prototype.hasOwnProperty.call(numDrafts, o.id + ":time") ? numDrafts[o.id + ":time"] : o.minutes ?? 10, onChange: (e) => {
-    const raw = e.target.value;
-    const key = o.id + ":time";
-    setNumDrafts((prev) => ({ ...prev, [key]: raw }));
-    const parsed = Number(raw);
-    if (raw !== "" && Number.isFinite(parsed) && parsed >= 1 && parsed <= 240) {
+    }, "aria-label": t("directions.xp_amount") || "XP amount", className: "w-16 min-h-6 text-[11px] border rounded p-1 bg-white text-slate-800 flex-shrink-0 " + (xpInvalid ? "border-rose-600" : "border-slate-300") }), o.kind === "time" && /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "240", "aria-invalid": timeInvalid ? "true" : void 0, "aria-describedby": timeInvalid ? `dir-time-err-${o.id}` : void 0, value: timeRaw !== null ? timeRaw : o.minutes ?? 10, onChange: (e) => {
+      const raw = e.target.value;
+      const key = o.id + ":time";
+      setNumDrafts((prev) => ({ ...prev, [key]: raw }));
+      const parsed = Number(raw);
+      if (raw !== "" && Number.isFinite(parsed) && parsed >= 1 && parsed <= 240) {
+        setMbDirectionsDraft((p) => {
+          const list = [...p && p.objectives || []];
+          if (list[oi]) list[oi] = { ...list[oi], minutes: Math.round(parsed) };
+          return { ...p || {}, objectives: list };
+        });
+      }
+    }, onBlur: (e) => {
+      const raw = e.target.value;
+      const key = o.id + ":time";
+      const parsed = Number(raw);
+      const mins = raw === "" ? o.minutes || 10 : Math.max(1, Math.min(240, Number.isFinite(parsed) ? Math.round(parsed) : 1));
+      setNumDrafts((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
       setMbDirectionsDraft((p) => {
         const list = [...p && p.objectives || []];
-        if (list[oi]) list[oi] = { ...list[oi], minutes: Math.round(parsed) };
+        if (list[oi]) list[oi] = { ...list[oi], minutes: mins };
         return { ...p || {}, objectives: list };
       });
-    }
-  }, onBlur: (e) => {
-    const raw = e.target.value;
-    const key = o.id + ":time";
-    const parsed = Number(raw);
-    const mins = raw === "" ? o.minutes || 10 : Math.max(1, Math.min(240, Number.isFinite(parsed) ? Math.round(parsed) : 1));
-    setNumDrafts((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
-    setMbDirectionsDraft((p) => {
-      const list = [...p && p.objectives || []];
-      if (list[oi]) list[oi] = { ...list[oi], minutes: mins };
-      return { ...p || {}, objectives: list };
-    });
-  }, "aria-label": t("directions.time_minutes") || "Minutes", className: "w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setMbDirectionsDraft((p) => ({ ...p || {}, objectives: (p && p.objectives || []).filter((x) => x.id !== o.id) })), "aria-label": t("directions.remove_objective") || "Remove goal", className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-rose-600 p-0.5 flex-shrink-0" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1" }, /* @__PURE__ */ React.createElement(
+    }, "aria-label": t("directions.time_minutes") || "Minutes", className: "w-16 min-h-6 text-[11px] border rounded p-1 bg-white text-slate-800 flex-shrink-0 " + (timeInvalid ? "border-rose-600" : "border-slate-300") }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setMbDirectionsDraft((p) => ({ ...p || {}, objectives: (p && p.objectives || []).filter((x) => x.id !== o.id) })), "aria-label": t("directions.remove_objective") || "Remove goal", className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-rose-600 p-0.5 flex-shrink-0" }, /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" }))), xpInvalid && /* @__PURE__ */ React.createElement("p", { id: `dir-xp-err-${o.id}`, role: "alert", className: "mt-0.5 text-[11px] font-bold text-rose-700" }, t("directions.xp_range_error") || "Enter XP between 1 and 1000."), timeInvalid && /* @__PURE__ */ React.createElement("p", { id: `dir-time-err-${o.id}`, role: "alert", className: "mt-0.5 text-[11px] font-bold text-rose-700" }, t("directions.time_range_error") || "Enter minutes between 1 and 240."));
+  }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       value: mbDirectionsGoalText,

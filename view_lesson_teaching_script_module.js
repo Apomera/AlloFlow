@@ -101,6 +101,13 @@ function LessonSpokenDirections({
         if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
         const closedDetails = el.closest('details:not([open])');
         if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+        if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+          for (let cur = el; cur && cur !== node.parentElement; cur = cur.parentElement) {
+            const cs = window.getComputedStyle(cur);
+            if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+            if (cur === node) break;
+          }
+        }
         return true;
       });
     };

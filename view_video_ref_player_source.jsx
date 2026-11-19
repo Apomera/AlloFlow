@@ -166,6 +166,10 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
             const directSummary = ancestor.querySelector(':scope > summary');
             if (el !== directSummary) return false;
           }
+          try {
+            const aSt = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(ancestor) : null;
+            if (aSt && (aSt.display === 'none' || aSt.visibility === 'hidden')) return false;
+          } catch (_) {}
           ancestor = ancestor.parentElement;
         }
         try {
@@ -420,13 +424,13 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
 
   return (
     <div className="fixed inset-0 z-[210] flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.72)' }} role="dialog" aria-modal="true" aria-label={t('video_ref.player_title') || 'Video reference'}>
-      <div ref={rootRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div ref={rootRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-violet-50">
           <div className="flex items-center gap-2 min-w-0">
-            <MonitorPlay size={20} className="text-violet-700 shrink-0" />
+            <MonitorPlay size={20} className="text-violet-700 shrink-0" aria-hidden="true" />
             <h2 className="font-bold text-slate-800 text-base truncate">{String(ref.title || item.title || 'Teacher video')}</h2>
           </div>
-          <button type="button" onClick={onClose} data-alloflow-close-on-escape="true" className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-700 text-2xl leading-none px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('video_ref.close') || 'Close video card'}>×</button>
+          <button type="button" onClick={onClose} data-alloflow-close-on-escape="true" className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 text-2xl leading-none px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('video_ref.close') || 'Close video card'}>×</button>
         </div>
         <div className="p-5 overflow-y-auto flex-1">
           <p className="text-xs text-slate-600 mb-3">

@@ -483,7 +483,7 @@ function eeSafePacket_(value) {
     }
   });
 
-  var known = { walkthrough: {}, formal_observation: {}, spm: {} };
+  var known = { walkthrough: Object.create(null), formal_observation: Object.create(null), spm: Object.create(null) };
   walkthroughs.forEach(function (item) { known.walkthrough[item.id] = true; });
   observations.forEach(function (item) { known.formal_observation[item.id] = true; });
   spms.forEach(function (item) { known.spm[item.id] = true; });
@@ -885,7 +885,8 @@ function shareEvaluationPacketLocked_(request) {
   }
   var academicYear = packetMeta.academicYear;
   var educatorLabel = packetMeta.educatorLabel;
-  var role = EE_SHARE_ROLES[String(request.role || 'view')] || 'view';
+  var requestedRole = String(request.role || 'view');
+  var role = Object.prototype.hasOwnProperty.call(EE_SHARE_ROLES, requestedRole) ? EE_SHARE_ROLES[requestedRole] : 'view';
   var driveRole = eePermissionRole_(role);
   var expiry = eeExpiryDate_(request.expiresOn);
   var expiresOn = expiry ? String(request.expiresOn).trim() : '';

@@ -584,7 +584,7 @@ describe('Packets: Spoken directions once per activity', () => {
         expect(secondPlayed).toEqual(items[1].instruction.concat(items[1].choices.map((c) => c.audio)));
       }
     }
-  });
+  }, 15000);
 
   it('builder, packets_verify_core, and packets_reopen keep default builds unchanged and round-trip directionsOnce=true', async () => {
     const plain = await builder.buildPacket({

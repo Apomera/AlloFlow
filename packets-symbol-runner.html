@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-sr-css>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
 <title>Make Symbol Runner practice</title>
@@ -17,8 +17,10 @@
 <script src="packets_reopen.js" defer></script>
 <script src="packets_handoff.js" defer></script>
 <script src="packets_zip.js" defer></script>
+<script src="packets_my_words.js" defer></script>
 <script src="vendor/pptxgenjs-3.12.0.bundle.js" defer></script>
 <script src="word_sounds_take_home_loader.js" defer></script>
+<script src="packets_audio_kit.js" defer></script>
 <script src="word_sounds_symbols_en.js" defer></script>
 <script src="word_picture_matcher.js" defer></script>
 <script src="word_practice_core.js" defer></script>
@@ -54,7 +56,7 @@
       <li>There are no cookies and nothing to sign in to.</li>
       <li>The page loads files from this site only. It gets the recordings of letters and sounds from this site too. Some words have their sounds in small files of about 40 words each, and the page gets only the ones your words need.</li>
       <li>Like any website, the server that sends these files can see that your browser asked for them. That includes which of the small sound files were asked for, but not which words. It receives nothing else.</li>
-      <li>On this device the page keeps your last choices. It never keeps a student's code name or a teacher code. The button that removes your choices is under About this page, at the bottom.</li>
+      <li>On this device the page keeps your last choices, and pictures you add are resized on this device and kept in the browser's shared My words database on this device. It never keeps a student's code name or a teacher code. The button that removes your choices is under About this page, at the bottom.</li>
       <li>Open a file I made reads a file you saved before, on this device only. Nothing in it is run.</li>
     </ul>
     <p>Every file this page loads: <span data-show-files>they are listed in the page's source, and all of them are on this site.</span></p>
@@ -227,12 +229,15 @@
           <span class="hint" id="sr-code-why">Without a code, the screen at the end shows only the score. With a code, it also shows each answer. It is a lock on the screen, not secret writing.</span>
           <span class="hint" id="sr-code-hint">4 or more characters. This page does not keep the code, so write it down. It cannot be recovered.</span>
           <input id="sr-teacher-code" type="password" autocomplete="off" maxlength="64" autocapitalize="none" spellcheck="false" aria-describedby="sr-code-why sr-code-hint">
+          <div class="loosen">
+            <button type="button" class="btn btn-small" id="sr-code-show" aria-pressed="false" aria-controls="sr-teacher-code" aria-label="Show the teacher code">Show</button>
+          </div>
         </div>
       </div>
 
       <details class="sr-pics-panel block">
         <summary>Pictures to help (optional)</summary>
-        <p class="hint">A small picture next to a symbol, such as a ball for b. The built-in pictures are on this site. You can also use a picture from this device.</p>
+        <p class="hint">A small picture next to a symbol, such as a ball for b. The built-in pictures are on this site. You can also use a picture from this device (shared with My words on this device).</p>
         <div class="sr-pic-toolbar">
           <button type="button" class="btn btn-small" id="sr-auto-pics">Fill in the built-in pictures</button>
           <input type="file" id="sr-pic-file" accept="image/*" hidden aria-label="A picture from this device">
@@ -281,6 +286,12 @@
         <p id="sr-summary-line" class="summary-facts"></p>
       </div>
 
+      <div class="field block" id="sr-title-field">
+        <label for="sr-title">Title</label>
+        <span class="hint" id="sr-title-hint">The student sees it at the top of the file. The results file's name starts with it.</span>
+        <input id="sr-title" type="text" value="Symbol Runner Practice" maxlength="120" autocomplete="off" aria-describedby="sr-title-hint">
+      </div>
+
       <div class="actions actions-file">
         <button type="button" class="btn" id="sr-back-3">Back</button>
         <button type="button" class="btn push" id="sr-try-packet">Try it <span class="sr-only">(opens in a new tab)</span></button>
@@ -296,42 +307,27 @@
         </ol>
         <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
         <p id="sr-after-code" hidden>The answers screen inside the file opens with your teacher code. This page has not kept the code.</p>
-        <details class="why" id="sr-learner-tip">
-          <summary>Fill in a student's code name for them</summary>
-          <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
-        </details>
       </div>
-
-      <div class="field block">
-        <label for="sr-title">Title</label>
-        <span class="hint" id="sr-title-hint">The student sees it at the top of the file. The results file's name starts with it.</span>
-        <input id="sr-title" type="text" value="Symbol Runner Practice" maxlength="120" autocomplete="off" aria-describedby="sr-title-hint">
-      </div>
-
-      <details class="why code-box" id="sr-code-name-box">
-        <summary>Put a student's code name in the file</summary>
-        <div class="field">
-          <label for="sr-code-name">Student's code name</label>
-          <span class="hint" id="sr-code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
-          <input type="text" id="sr-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="sr-code-name-hint">
-        </div>
-      </details>
 
       <details class="batch" id="sr-batch">
-        <summary>Make one for each student</summary>
+        <summary>Put student code names in the file</summary>
         <div class="batch-body">
-          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name.</p>
+          <p class="hint">Type 1 code name to put it into the file above, or 2 to 40 (one per line) to save one file per student in a .zip. In Google Classroom, where one assignment gives every student the same file, leave this empty and each student types a code name at the start.</p>
           <div class="field">
             <label for="sr-learners">Code names, one on each line</label>
-            <span class="hint" id="sr-learners-hint">Use code names, not real names. At most 40 at a time.</span>
-            <textarea id="sr-learners" rows="6" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" placeholder="BlueHeron7&#10;RedFox3" aria-describedby="sr-learners-hint sr-batch-said"></textarea>
+            <span class="hint" id="sr-learners-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
+            <textarea id="sr-learners" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" placeholder="BlueHeron7&#10;RedFox3" aria-describedby="sr-learners-hint sr-batch-said"></textarea>
           </div>
+          <p class="row">
+            <button type="button" class="btn btn-small" id="sr-batch-load">Load list from a .txt file</button>
+            <input type="file" id="sr-batch-file" accept=".txt,text/plain" aria-label="A text file of code names" hidden>
+          </p>
           <p id="sr-batch-said" class="result-sub" role="status"></p>
           <p class="row batch-row">
-            <button type="button" class="btn" id="sr-batch-make">Make the files</button>
-            <button type="button" class="btn" id="sr-batch-save" hidden>Save the .zip file</button>
+            <button type="button" class="btn" id="sr-batch-make" hidden>Save .zip</button>
           </p>
           <p id="sr-batch-problem" class="actions-note" role="alert"></p>
+          <p class="hint" id="sr-learner-tip-line">Sharing by web link instead? Add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
         </div>
       </details>
 
@@ -343,7 +339,7 @@
           <button type="button" class="btn btn-small" id="sr-save-flashcards">Flashcards to print</button>
           <button type="button" class="btn btn-small" id="sr-save-ccc">Cover, copy, compare sheet to print</button>
           <button type="button" class="btn btn-small" id="sr-save-pptx">Slides, one symbol on each (.pptx)</button>
-          <button type="button" class="btn btn-small" id="sr-open-present-export">Open the words in Present and export</button>
+          <button type="button" class="btn btn-small" id="sr-open-present-export">Open the words in Present &amp; print word cards</button>
         </div>
       </details>
     </section>

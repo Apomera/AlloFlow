@@ -240,9 +240,9 @@ function SentenceFramesView(props) {
     type: "button",
     onClick: handleResetScaffolds,
     "data-help-key": "scaffolds_reset",
-    className: "min-h-11 flex items-center gap-1 text-xs font-bold text-rose-700 hover:text-rose-800 bg-white border border-rose-300 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600",
+    className: "min-h-11 flex items-center gap-1 text-xs font-bold text-rose-700 hover:text-rose-800 bg-white border border-rose-300 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none shadow-sm focus-visible:outline-2 focus-visible:outline-rose-600 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-rose-600",
     title: t('scaffolds.clear_all'),
-    "aria-label": t('scaffolds.clear_all')
+    "aria-label": `${t('common.reset') || 'Reset'} — ${t('scaffolds.clear_all') || 'Clear all answers'}`
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     "aria-hidden": "true"
@@ -268,6 +268,7 @@ function SentenceFramesView(props) {
   }), " ", label('scaffolds.get_draft_feedback', 'Get feedback on my draft'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleToggleIsEditingScaffolds,
+    "aria-pressed": isEditingScaffolds,
     "data-help-key": "scaffolds_edit_toggle",
     className: `min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-300 hover:bg-rose-50'}`
   }, isEditingScaffolds ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -359,9 +360,11 @@ function SentenceFramesView(props) {
     placeholder: t('common.placeholder_translation')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     id: `scaffold-prompt-${generatedContent.id}-${idx}`,
+    lang: leveledTextLanguage && leveledTextLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(leveledTextLanguage) : undefined,
     dir: "auto",
     className: "text-lg break-words font-medium text-slate-800 mb-1 font-serif px-2 py-1"
   }, item.text), leveledTextLanguage !== 'English' && item.text_en && /*#__PURE__*/React.createElement("p", {
+    lang: "en",
     className: "text-sm text-slate-600 italic px-2"
   }, item.text_en), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": `${label('scaffolds.student_response', 'Student response')} ${visibleItemNumbers[idx]}`,
@@ -376,7 +379,7 @@ function SentenceFramesView(props) {
     },
     onChange: e => handleStudentInput(generatedContent.id, idx, e.target.value),
     "data-help-key": "scaffolds_student_input",
-    className: "w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-600 focus:border-rose-600 focus:outline-none resize-y bg-slate-50 focus:bg-white transition-all motion-reduce:transition-none font-sans",
+    className: "w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-600 focus:border-rose-600 focus-visible:outline-2 focus-visible:outline-rose-600 focus-visible:outline-offset-2 resize-y bg-slate-50 focus:bg-white transition-all motion-reduce:transition-none font-sans",
     rows: 3,
     placeholder: isDiscussionPrompts ? label('scaffolds.discussion_placeholder', 'Write your response to the question...') : t('scaffolds.sentence_placeholder')
   })), /*#__PURE__*/React.createElement("div", {
@@ -393,6 +396,7 @@ function SentenceFramesView(props) {
     className: "w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none",
     rows: getRows(generatedContent?.data?.text)
   }) : /*#__PURE__*/React.createElement("div", {
+    lang: leveledTextLanguage && leveledTextLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(leveledTextLanguage) : undefined,
     className: "text-lg leading-loose text-slate-800 font-serif px-2 py-1"
   }, scaffoldParagraphParts(generatedContent?.data?.text).map(({
     text: part,
@@ -411,7 +415,7 @@ function SentenceFramesView(props) {
     },
     onChange: e => handleStudentInput(generatedContent.id, responseKey, e.target.value),
     dir: "auto",
-    className: "placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-500 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors motion-reduce:transition-none",
+    className: "placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-500 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-600 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-600 bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors motion-reduce:transition-none",
     placeholder: part.replace(/[\[\]]/g, '')
   }) : /*#__PURE__*/React.createElement("span", {
     key: i
@@ -423,10 +427,11 @@ function SentenceFramesView(props) {
     "aria-label": t('scaffolds.edit_paragraph_translation') || 'Edit paragraph frame translation',
     value: generatedContent?.data?.text_en || '',
     onChange: e => handleScaffoldTextChange('text_en', e.target.value),
-    className: "w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none",
+    className: "w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 resize-none transition-all motion-reduce:transition-none",
     rows: getRows(generatedContent?.data?.text_en || ''),
     placeholder: t('common.placeholder_translation')
   }) : generatedContent?.data?.text_en && /*#__PURE__*/React.createElement("p", {
+    lang: "en",
     className: "text-slate-600 italic leading-relaxed px-2 py-1"
   }, generatedContent?.data?.text_en))), canViewRubric && /*#__PURE__*/React.createElement("div", {
     className: "mt-1 pt-4 border-t border-rose-100 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4"
@@ -485,11 +490,14 @@ function SentenceFramesView(props) {
     "aria-label": t('scaffolds.edit_rubric') || 'Edit rubric',
     value: generatedContent?.data?.rubric,
     onChange: e => handleScaffoldTextChange('rubric', e.target.value),
-    className: "w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600 focus:bg-slate-50 rounded p-2 focus:outline-none resize-y font-medium text-slate-700 transition-all motion-reduce:transition-none font-mono",
+    className: "w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600 focus:bg-slate-50 rounded p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 resize-y font-medium text-slate-700 transition-all motion-reduce:transition-none font-mono",
     rows: getRows(generatedContent?.data?.rubric),
     placeholder: t('scaffolds.rubric_placeholder')
   }) : /*#__PURE__*/React.createElement("div", {
-    className: "rubric-container prose prose-sm max-w-none text-slate-700 leading-relaxed overflow-x-auto"
+    tabIndex: 0,
+    role: "region",
+    "aria-label": t('scaffolds.rubric') || 'Rubric',
+    className: "rubric-container prose prose-sm max-w-none text-slate-700 leading-relaxed overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
   }, renderFormattedText(generatedContent?.data?.rubric))), isTeacherMode && generatedContent?.data?.rubric && /*#__PURE__*/React.createElement("div", {
     className: "mt-6 bg-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -504,7 +512,7 @@ function SentenceFramesView(props) {
     "aria-label": t('dashboard.grading.student_work_input') || 'Paste student work for grading',
     value: studentWorkInput,
     onChange: e => setStudentWorkInput(e.target.value),
-    className: "w-full p-3 text-sm border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 focus:outline-none resize-y h-32 bg-white",
+    className: "w-full p-3 text-sm border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 resize-y h-32 bg-white",
     placeholder: t('dashboard.grading.work_placeholder')
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",

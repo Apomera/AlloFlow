@@ -13,13 +13,19 @@
 <meta name="description" content="Turn a passage into one small file that reads it aloud, one sentence at a time, with the sentence highlighted. The reading voice is an AI voice that runs on this device. The file itself runs without AI. No account.">
 <link rel="icon" type="image/svg+xml" href="packets-mark.svg">
 <link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-make.css">
 <link rel="stylesheet" href="packets-voice.css">
 <link rel="stylesheet" href="packets-read-along.css">
+<link rel="stylesheet" href="packets-read-along-print.css">
 <script src="packets-page.js" defer></script>
 <script src="word_sounds_take_home_loader.js" defer></script>
 <script src="packet_read_along_builder.js" defer></script>
 <script src="syllable_table_en.js" defer></script>
 <script src="packets_voice_engine.js" defer></script>
+<script src="packets_verify_core.js" defer></script>
+<script src="packets_reopen.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets_zip.js" defer></script>
 <script src="packets-read-along.js" defer></script>
 </head>
 <body>
@@ -31,7 +37,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
-    <a class="top-link" href="packets.html">All the pages</a>
+    <a class="top-link" href="packets.html">All Packets pages</a>
   </div>
 <details class="proof">
   <summary class="wrap wrap-narrow">
@@ -46,7 +52,9 @@
       <li>The words are yours. This page does not write, shorten or change the passage.</li>
       <li>Nothing is downloaded until you press Get the voice. Then the page downloads the voice, about 88 MB, one time, from Hugging Face (huggingface.co). Hugging Face can see that your browser asked for the voice. It does not receive your passage.</li>
       <li>The program that runs the voice comes from this site, and the page checks it before running it.</li>
+      <li>If you press Record on a sentence, this page asks for this device's microphone to record your voice inside this tab. Your recording stays on this device, is not stored and is not uploaded.</li>
       <li>The passage and the recordings stay on this page only while it is open. They are not stored and not uploaded. They go only into the file you save.</li>
+      <li>This page loads sixteen files from this site: the page itself, five stylesheets (packets.css, packets-make.css, packets-voice.css, packets-read-along.css, packets-read-along-print.css), ten scripts (packets-page.js, word_sounds_take_home_loader.js, packet_read_along_builder.js, syllable_table_en.js, packets_voice_engine.js, packets_verify_core.js, packets_reopen.js, packets_handoff.js, packets_zip.js, packets-read-along.js) and the tab icon. When you record or use the computer voice, it loads packets_audio_kit.js and lame.min.js from this site to make recordings smaller.</li>
       <li>There are no cookies and nothing to sign in to.</li>
     </ul>
     <p id="can-title">The file you save can:</p>
@@ -84,6 +92,17 @@
     <section class="sheet" aria-labelledby="text-title">
       <p class="kicker">Step 1</p>
       <h2 id="text-title">Your passage</h2>
+      <div id="reopen" class="reopen" hidden>
+        <div class="reopen-row">
+          <button type="button" class="btn btn-text" id="reopen-choose">Open a file I made</button>
+          <span class="hint">Bring back a read-along file to fix a typo or change code names. Unchanged sentences keep their recordings.</span>
+          <input type="file" id="reopen-file" accept=".html,.htm,text/html" aria-label="A read-along file made on this page" hidden>
+        </div>
+        <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
+          <p id="reopen-line" class="reopen-line" role="status"></p>
+          <p class="row"><a id="reopen-page" class="btn btn-small" href="packets.html" hidden>Open that page</a></p>
+        </div>
+      </div>
       <div class="field block">
         <label for="f-title">Title</label>
         <span class="hint" id="title-hint">The student sees it at the top of the file. Left empty, it is "Read along".</span>
@@ -91,7 +110,7 @@
       </div>
       <div class="field block">
         <label for="f-text">The passage</label>
-        <span class="hint" id="text-hint">Up to 6,000 letters and 120 sentences. Each sentence gets its own recording. To choose the breaks yourself, put each sentence on its own line. An empty line starts a new paragraph.</span>
+        <span class="hint" id="text-hint">Up to 6,000 letters and 120 sentences. Each sentence can have its own recording, or you can save a reading file with Syllables and Reading tools without recordings. To choose the breaks yourself, put each sentence on its own line. An empty line starts a new paragraph.</span>
         <textarea id="f-text" rows="8" maxlength="6000" aria-describedby="text-hint text-said"></textarea>
         <span class="hint" id="text-said" role="status"></span>
       </div>
@@ -99,7 +118,8 @@
 
     <section class="sheet" aria-labelledby="voice-title">
       <p class="kicker">Step 2</p>
-      <h2 id="voice-title">The voice</h2>
+      <h2 id="voice-title">The voice (optional)</h2>
+      <p class="sheet-intro">Use a computer voice here, record your own voice in step 3 with this device's microphone, or skip recordings to make a reading file with Reading tools and Syllables.</p>
       <div class="field">
         <label for="f-voice">Which voice</label>
         <select id="f-voice" aria-describedby="voice-hint">
@@ -124,13 +144,13 @@
 
     <section class="sheet" aria-labelledby="make-title">
       <p class="kicker">Step 3</p>
-      <h2 id="make-title">Make the recordings</h2>
-      <p class="sheet-intro">One recording for each sentence. Listen to each one: a computer voice can say a word wrong. Make it again, or change the sentence in step 1.</p>
+      <h2 id="make-title">Make the recordings (optional)</h2>
+      <p class="sheet-intro">One recording for each sentence, using your microphone or the computer voice. Listen to each one: a computer voice can say a word wrong. Make it again, or change the sentence in step 1.</p>
       <p class="row">
         <button type="button" class="btn btn-primary" id="make-all" disabled>Make the recordings</button>
         <button type="button" class="btn" id="stop" hidden>Stop</button>
       </p>
-      <p id="make-said" class="result-sub" role="status">Type a passage in step 1 and get the voice in step 2 first.</p>
+      <p id="make-said" class="result-sub" role="status">Type a passage in step 1 first.</p>
       <p id="make-problem" class="actions-note" role="alert"></p>
       <ol id="line-rows" class="voice-rows ra-rows" aria-label="The sentences and their recordings"></ol>
     </section>
@@ -138,25 +158,53 @@
     <section class="sheet" aria-labelledby="file-title">
       <p class="kicker">Step 4</p>
       <h2 id="file-title">Save the file</h2>
-      <p id="file-said" class="result-line" role="status">The file is ready when the sentences have recordings.</p>
+      <p id="file-said" class="result-line" role="status">Type a passage in step 1 to build the file.</p>
       <p id="file-sub" class="result-sub"></p>
       <p id="file-problem" class="actions-note" role="alert"></p>
+      <p class="ra-print-opt" id="print-syl-wrap" hidden>
+        <label class="radio"><input type="checkbox" id="print-syl"> <span>Show syllable dots on paper</span></label>
+      </p>
       <div class="actions actions-file">
         <a class="btn" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
+        <button type="button" class="btn" id="print" hidden>Print on paper</button>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
       </div>
       <div id="after-save" class="next" tabindex="-1" hidden>
         <h3>Saved. What to do next</h3>
         <ol>
           <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive. From Google Drive or Google Classroom, a student downloads the file first: the preview there does not run it.</li>
-          <li>Each student opens it in a browser and presses Read to me. The file needs no internet and no account.</li>
-          <li>Keep the file if you want the recordings again. This page does not keep them after you close it.</li>
+          <li>Each student opens it in a browser to read or listen. The file needs no internet and no account.</li>
+          <li>Keep the file if you want to change it later with Open a file I made. This page does not keep your passage or recordings after you close it.</li>
         </ol>
         <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
       </div>
+
+      <details class="batch" id="batch">
+        <summary>Put student code names in the file</summary>
+        <div class="batch-body">
+          <p class="hint">Type 1 code name to put it into the file above, or 2 to 40 (one per line) to save one file per student in a .zip. In Google Classroom, where one assignment gives every student the same file, leave this empty and each student types a code name at the start.</p>
+          <div class="field">
+            <label for="f-batch-names">Code names, one on each line</label>
+            <span class="hint" id="batch-names-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
+            <textarea id="f-batch-names" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
+          </div>
+          <p class="row">
+            <button type="button" class="btn btn-small" id="batch-load">Load list from a .txt file</button>
+            <input type="file" id="batch-file" accept=".txt,text/plain" aria-label="A text file of code names" hidden>
+          </p>
+          <p id="batch-said" class="result-sub" role="status"></p>
+          <p class="row batch-row">
+            <button type="button" class="btn" id="batch-make" hidden>Save .zip</button>
+          </p>
+          <p id="batch-problem" class="actions-note" role="alert"></p>
+          <p class="hint" id="learner-tip-line">Sharing by web link instead? Add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
+        </div>
+      </details>
     </section>
   </div>
 </main>
+
+<div id="paper" hidden aria-hidden="true"></div>
 
 <footer class="foot">
   <div class="wrap wrap-narrow foot-row">

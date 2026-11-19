@@ -1985,7 +1985,8 @@
     var h = React.createElement;
     var profile = resolveProfile(ctx.gradeLevel || '7th Grade');
     var theories = availableTheories(profile);
-    var d = (ctx.toolData && ctx.toolData.consciousnessLab) || {};
+    var safeObj = function (v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; };
+    var d = safeObj(safeObj(ctx.toolData).consciousnessLab);
     var activeView = ['learn', 'map', 'compare', 'evidence', 'experiment', 'cases', 'bench', 'check', 'portfolio', 'sources'].indexOf(d.activeView) !== -1 ? d.activeView : 'learn';
     var selectedId = theories.some(function (theory) { return theory.id === d.selectedTheory; }) ? d.selectedTheory : theories[0].id;
     var compareA = theories.some(function (theory) { return theory.id === d.compareA; }) ? d.compareA : theories[0].id;
@@ -1995,8 +1996,8 @@
     function patchState(patch, announcement) {
       if (typeof ctx.setToolData === 'function') {
         ctx.setToolData(function (prev) {
-          var root = prev || {};
-          var current = Object.assign({}, root.consciousnessLab || {});
+          var root = safeObj(prev);
+          var current = Object.assign({}, safeObj(root.consciousnessLab));
           var nextPatch = typeof patch === 'function' ? patch(current) : patch;
           return Object.assign({}, root, { consciousnessLab: Object.assign(current, nextPatch || {}) });
         });
@@ -2110,18 +2111,48 @@
       );
     }
 
+    function renderConsciousnessEmblem() {
+      var ringStroke = contrast ? '#facc15' : '#c4b5fd';
+      var arcStroke = contrast ? '#67e8f9' : '#67e8f9';
+      var coreFill = contrast ? '#facc15' : '#ffffff';
+      return h('svg', {
+        viewBox: '0 0 64 64', width: 52, height: 52, 'aria-hidden': 'true', focusable: 'false',
+        style: { display: 'block', flexShrink: 0 }
+      },
+        h('circle', { cx: 32, cy: 32, r: 27, fill: 'none', stroke: ringStroke, strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.72 }),
+        h('path', { d: 'M14 32 C14 20 22 14 32 14 C42 14 50 20 50 32 C50 44 42 50 32 50 C22 50 14 44 14 32 Z', fill: 'none', stroke: ringStroke, strokeWidth: 2, opacity: 0.9 }),
+        h('path', { d: 'M20 35 C23 23 31 20 38 25 C43 29 44 38 37 42 C30 46 23 42 22 36', fill: 'none', stroke: arcStroke, strokeWidth: 2.4, strokeLinecap: 'round' }),
+        h('line', { x1: 32, y1: 32, x2: 18, y2: 22, stroke: ringStroke, strokeWidth: 1.5, opacity: 0.8 }),
+        h('line', { x1: 32, y1: 32, x2: 47, y2: 21, stroke: arcStroke, strokeWidth: 1.5, opacity: 0.85 }),
+        h('line', { x1: 32, y1: 32, x2: 48, y2: 42, stroke: ringStroke, strokeWidth: 1.5, opacity: 0.8 }),
+        h('line', { x1: 32, y1: 32, x2: 18, y2: 43, stroke: arcStroke, strokeWidth: 1.5, opacity: 0.85 }),
+        h('circle', { cx: 18, cy: 22, r: 3.2, fill: ringStroke }),
+        h('circle', { cx: 47, cy: 21, r: 3.2, fill: arcStroke }),
+        h('circle', { cx: 48, cy: 42, r: 3.2, fill: ringStroke }),
+        h('circle', { cx: 18, cy: 43, r: 3.2, fill: arcStroke }),
+        h('circle', { cx: 32, cy: 32, r: 5.5, fill: coreFill }),
+        h('circle', { cx: 32, cy: 32, r: 9.5, fill: 'none', stroke: coreFill, strokeWidth: 1.4, opacity: 0.55 })
+      );
+    }
+
     function renderHeader() {
+      var headerArtifacts = learningArtifactsFor(d, profile);
+      var headerDone = headerArtifacts.filter(function (a) { return a.done; }).length;
+      var headerCaseCount = caseIdsForProfile(profile).length;
       return h(React.Fragment, null,
         h('a', { href: '#cns-main', className: 'cns-skip' }, 'Skip to Consciousness Theory Lab content'),
         h('header', { className: 'cns-hero', style: { borderColor: C.border } },
-          h('div', { className: 'cns-hero-icon', 'aria-hidden': 'true' }, '\uD83D\uDCAD'),
+          h('div', { className: 'cns-hero-icon', 'aria-hidden': 'true' }, renderConsciousnessEmblem()),
           h('div', { className: 'cns-hero-copy' },
             h('div', { className: 'cns-kicker' }, 'STEM LAB \u00B7 BRAIN, MIND & PHILOSOPHY'),
             h('h1', null, 'Consciousness Theory Lab'),
             h('p', null, 'Compare what theories propose, what evidence shows, and what remains unresolved.'),
             h('div', { className: 'cns-badges' },
               h('span', { className: 'cns-grade-badge', 'data-grade-profile': profile.id }, profile.label),
-              h('span', { className: 'cns-neutral-badge' }, 'Neutral comparison \u00B7 no theory declared the winner')
+              h('span', { className: 'cns-neutral-badge' }, 'Neutral comparison \u00B7 no theory declared the winner'),
+              h('span', { className: 'cns-telemetry-pill' }, theories.length + ' ' + __alloT('stem.consciousness.lenses_label', 'lenses')),
+              h('span', { className: 'cns-telemetry-pill' }, headerCaseCount + ' ' + __alloT('stem.consciousness.cases_label', 'cases')),
+              h('span', { className: 'cns-telemetry-pill' }, headerDone + '/' + headerArtifacts.length + ' ' + __alloT('stem.consciousness.path_steps_label', 'path steps'))
             )
           )
         ),
@@ -2334,11 +2365,78 @@
 
     function renderSignalJourney(selected) {
       var journeyNote = journeyNoteForTheory(selected);
+      var stageNodes = [
+        { id: 'input', x: 74, short: profile.id === 'early' ? 'Signal In' : 'Feedforward', sub: 'Sensory sweep' },
+        { id: 'recurrence', x: 208, short: profile.id === 'early' ? 'Loop Back' : 'Recurrence', sub: 'Local feedback' },
+        { id: 'global', x: 342, short: profile.id === 'early' ? 'Share Wide' : 'Workspace', sub: 'Global broadcast' },
+        { id: 'metacognition', x: 476, short: profile.id === 'early' ? 'Notice Self' : 'Higher-Order', sub: 'Metacognition' },
+        { id: 'integration', x: 610, short: profile.id === 'early' ? 'One Whole' : 'Integration', sub: 'Cause-effect' },
+        { id: 'selfmodel', x: 744, short: profile.id === 'early' ? 'Focus Map' : 'Attention', sub: 'Control model' }
+      ];
+      var svgBg = contrast ? '#000000' : dark ? '#0f172a' : '#f8fafc';
+      var svgNodeFill = contrast ? '#111111' : dark ? '#1e293b' : '#ffffff';
+      var svgStroke = contrast ? '#facc15' : dark ? '#475569' : '#cbd5e1';
+      var svgActiveStroke = C.accent;
+      var svgActiveFill = contrast ? '#262100' : dark ? '#2e1065' : '#ede9fe';
       return h('section', { 'aria-labelledby': 'cns-journey-title' },
         h('div', { className: 'cns-section-heading' }, h('div', null, h('span', { className: 'cns-step' }, 'MODEL, NOT A LITERAL MAP'), h('h2', { id: 'cns-journey-title' }, 'One signal, several proposed turning points'))),
         h('p', { className: 'cns-lead' }, profile.id === 'early'
           ? 'Theories point to different places where a clue might become something you notice.'
           : 'This learning diagram places several proposals on one processing journey. Real neural dynamics overlap; the sequence is an analogy, not an anatomical claim.'),
+        h('div', { className: 'cns-svg-stage', style: { background: svgBg, borderColor: C.border } },
+          h('svg', {
+            viewBox: '0 0 820 154', width: '100%', role: 'img',
+            'aria-label': __alloT('stem.consciousness.signal_pathway_diagram_aria', 'Schematic diagram of six proposed consciousness processing turning points highlighting ' + selected.name),
+            style: { display: 'block', width: '100%', height: 'auto' }
+          },
+            h('rect', { x: 1, y: 1, width: 818, height: 152, rx: 10, fill: svgBg, stroke: 'none' }),
+            // Subtle recurrent feedback loop arc under stage 2
+            h('path', {
+              d: 'M 232 95 C 232 126 184 126 184 95',
+              fill: 'none',
+              stroke: stageMatchesTheory({ id: 'recurrence' }, selected) ? svgActiveStroke : C.science,
+              strokeWidth: stageMatchesTheory({ id: 'recurrence' }, selected) ? 2.6 : 1.6,
+              strokeDasharray: '4 3'
+            }),
+            h('text', { x: 208, y: 136, textAnchor: 'middle', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'local loop'),
+            // Global broadcast fan rays above stage 3
+            h('path', {
+              d: 'M 342 40 L 296 18 M 342 40 L 342 15 M 342 40 L 388 18',
+              fill: 'none',
+              stroke: stageMatchesTheory({ id: 'global' }, selected) ? svgActiveStroke : C.science,
+              strokeWidth: stageMatchesTheory({ id: 'global' }, selected) ? 2.4 : 1.4,
+              strokeLinecap: 'round',
+              opacity: 0.85
+            }),
+            h('text', { x: 342, y: 12, textAnchor: 'middle', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'broadcast'),
+            // Connector lines between consecutive stages
+            stageNodes.slice(0, -1).map(function (node, i) {
+              var next = stageNodes[i + 1];
+              return h('g', { key: 'conn-' + node.id },
+                h('line', { x1: node.x + 48, y1: 70, x2: next.x - 52, y2: 70, stroke: svgStroke, strokeWidth: 2 }),
+                h('polygon', { points: (next.x - 52) + ',65 ' + (next.x - 45) + ',70 ' + (next.x - 52) + ',75', fill: svgStroke })
+              );
+            }),
+            // Stage cards
+            stageNodes.map(function (node, idx) {
+              var match = stageMatchesTheory({ id: node.id }, selected);
+              return h('g', { key: node.id },
+                match && h('rect', { x: node.x - 52, y: 38, width: 104, height: 64, rx: 12, fill: 'none', stroke: svgActiveStroke, strokeWidth: 2.2, opacity: 0.45 }),
+                h('rect', {
+                  x: node.x - 48, y: 42, width: 96, height: 56, rx: 9,
+                  fill: match ? svgActiveFill : svgNodeFill,
+                  stroke: match ? svgActiveStroke : svgStroke,
+                  strokeWidth: match ? 2.2 : 1.3
+                }),
+                h('circle', { cx: node.x - 35, cy: 55, r: 9, fill: match ? svgActiveStroke : (dark ? '#334155' : '#e2e8f0') }),
+                h('text', { x: node.x - 35, y: 59, textAnchor: 'middle', fill: match ? C.accentText : C.text, fontSize: 10.5, fontWeight: 800 }, String(idx + 1)),
+                h('text', { x: node.x + 6, y: 66, textAnchor: 'middle', fill: C.text, fontSize: 11, fontWeight: 800 }, node.short),
+                h('text', { x: node.x, y: 84, textAnchor: 'middle', fill: C.muted, fontSize: 10.5 }, node.sub),
+                match && h('text', { x: node.x, y: 118, textAnchor: 'middle', fill: svgActiveStroke, fontSize: 11, fontWeight: 800 }, selected.short + ' focus')
+              );
+            })
+          )
+        ),
         h('ol', { className: 'cns-journey' }, SIGNAL_STAGES.map(function (stage) {
           var match = stageMatchesTheory(stage, selected);
           return h('li', { key: stage.id, className: match ? 'is-focus' : '', style: { background: match ? C.raised : C.panel, borderColor: match ? C.accent : C.border } },
@@ -2378,6 +2476,31 @@
         h('p', { className: 'cns-lead' }, profile.id === 'early'
           ? 'Pick two ideas. Look for one way they are alike and one way they differ.'
           : 'Select two views and compare explanatory target, mechanism, evidence, and limitations. A shared finding is not automatically discriminating evidence.'),
+        (function () {
+          var availIds = theories.map(function (th) { return th.id; });
+          var comparePresets = [
+            ['gnw', 'rpt', profile.id === 'early' ? 'Sharing vs. Loop-back' : 'GNWT vs RPT (Access vs. Recurrence)'],
+            ['gnw', 'iit', profile.id === 'early' ? 'Sharing vs. Working together' : 'GNWT vs IIT (COGITATE rivals)'],
+            ['rpt', 'hot', profile.id === 'early' ? 'Loop-back vs. Noticing' : 'RPT vs HOT (Sensory vs. Metacognitive)'],
+            ['physicalism', 'dualism', 'Physicalism vs Dualism (Ontology)']
+          ].filter(function (p) { return availIds.indexOf(p[0]) !== -1 && availIds.indexOf(p[1]) !== -1; });
+          if (!comparePresets.length) return null;
+          return h('div', { className: 'cns-preset-strip', role: 'group', 'aria-label': __alloT('stem.consciousness.quick_comparison_pairs', 'Quick comparison pairs') },
+            h('span', { className: 'cns-preset-label' }, __alloT('stem.consciousness.quick_pairs_label', 'Quick pairs:')),
+            comparePresets.map(function (pair) {
+              var active = (compareA === pair[0] && compareB === pair[1]) || (compareA === pair[1] && compareB === pair[0]);
+              return h('button', {
+                key: pair[0] + '-' + pair[1], type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                onClick: function () {
+                  patchState(function (current) {
+                    return { compareA: pair[0], compareB: pair[1], compareCount: (current.compareCount || 0) + 1 };
+                  }, pair[2] + ' loaded for comparison');
+                },
+                style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border }
+              }, pair[2]);
+            })
+          );
+        })(),
         h('div', { className: 'cns-compare-pickers' },
           h('label', null, h('span', null, 'First lens'), h('select', { value: compareA, onChange: function (e) { var value = e.target.value; patchState(function (current) { return { compareA: value, compareB: current.compareB || compareB, compareCount: (current.compareCount || 0) + 1 }; }, 'First comparison lens changed'); } },
             theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theoryTitle(theory, profile)); })
@@ -2436,15 +2559,48 @@
 
     function renderEvidenceLadder() {
       var items = getEvidenceLadderItems();
-      var answers = d.evidenceLadderAnswers || {};
+      var answers = safeObj(d.evidenceLadderAnswers);
       var placed = Object.keys(answers).filter(function (id) { return items.some(function (item) { return item.id === id; }); }).length;
       var correct = items.reduce(function (score, item) { return score + (answers[item.id] === item.rung ? 1 : 0); }, 0);
+      var rungCounts = EVIDENCE_LADDER_LABELS.map(function (lbl) {
+        return items.filter(function (item) { return answers[item.id] === lbl; }).length;
+      });
+      var rungColors = contrast
+        ? ['#86efac', '#67e8f9', '#facc15', '#f9a8d4']
+        : dark
+          ? ['#10b981', '#38bdf8', '#f59e0b', '#a78bfa']
+          : ['#047857', '#0369a1', '#b45309', '#6d28d9'];
+      var ladderSvgBg = contrast ? '#000000' : dark ? '#0f172a' : '#ffffff';
       return h('section', { className: 'cns-ladder', 'aria-labelledby': 'cns-ladder-title', style: { borderColor: C.border, background: C.raised } },
         h('div', { className: 'cns-section-heading' },
           h('div', null, h('span', { className: 'cns-step' }, 'EVIDENCE LADDER'), h('h3', { id: 'cns-ladder-title' }, 'How settled is the claim?')),
           h('span', { className: 'cns-score', role: 'status', 'aria-live': 'polite' }, correct + ' correct · ' + placed + '/' + items.length + ' placed')
         ),
         h('p', { className: 'cns-ladder-intro' }, profile.id === 'early' ? 'Now put each idea on a rung. “Unknown” means we do not have enough evidence yet.' : 'Now place each claim by the current state of evidence. A rung describes confidence in this precise claim, not the worth of an entire theory.'),
+        h('div', { className: 'cns-svg-stage', style: { background: ladderSvgBg, borderColor: C.border, marginBottom: '12px' } },
+          h('svg', {
+            viewBox: '0 0 680 78', width: '100%', role: 'img',
+            'aria-label': __alloT('stem.consciousness.evidence_ladder_scale_aria', 'Four-rung epistemic confidence scale from Established to Unknown showing claims currently placed'),
+            style: { display: 'block', width: '100%', height: 'auto' }
+          },
+            h('rect', { x: 1, y: 1, width: 678, height: 76, rx: 9, fill: ladderSvgBg }),
+            h('line', { x1: 42, y1: 30, x2: 638, y2: 30, stroke: C.border, strokeWidth: 3, strokeLinecap: 'round' }),
+            EVIDENCE_LADDER_LABELS.map(function (lbl, idx) {
+              var cx = 92 + idx * 165;
+              var cnt = rungCounts[idx];
+              var col = rungColors[idx];
+              return h('g', { key: lbl },
+                h('rect', { x: cx - 68, y: 10, width: 136, height: 42, rx: 8, fill: cnt > 0 ? (dark || contrast ? '#111827' : '#f8fafc') : ladderSvgBg, stroke: cnt > 0 ? col : C.border, strokeWidth: cnt > 0 ? 2 : 1.2 }),
+                h('circle', { cx: cx - 50, cy: 31, r: 9, fill: col }),
+                h('text', { x: cx - 50, y: 35, textAnchor: 'middle', fill: contrast ? '#000000' : '#ffffff', fontSize: 10.5, fontWeight: 900 }, String(idx + 1)),
+                h('text', { x: cx + 8, y: 27, textAnchor: 'middle', fill: C.text, fontSize: 11.5, fontWeight: 800 }, lbl),
+                h('text', { x: cx + 8, y: 44, textAnchor: 'middle', fill: C.muted, fontSize: 10.5 }, cnt + ' ' + (cnt === 1 ? 'placed' : 'placed'))
+              );
+            }),
+            h('text', { x: 30, y: 69, textAnchor: 'start', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'More settled'),
+            h('text', { x: 650, y: 69, textAnchor: 'end', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'Open / unresolved')
+          )
+        ),
         h('ol', { className: 'cns-ladder-key', 'aria-label': __alloT('stem.consciousness.evidence_ladder_from_most_settled_to_unresol','Evidence ladder from most settled to unresolved') }, EVIDENCE_LADDER_LABELS.map(function (label, index) {
           var gloss = LADDER_GLOSSES[profile.id] ? LADDER_GLOSSES[profile.id][label] : null;
           return h('li', { key: label }, h('span', { 'aria-hidden': 'true' }, index + 1),
@@ -3240,6 +3396,80 @@
         ['Integration index (toy)', 'integration']
       ];
 
+      function renderIgnitionDynamicsChart() {
+        var ticks = Array.isArray(run.ticks) ? run.ticks : [];
+        if (!ticks.length) return null;
+        var W = 740, H = 196;
+        var padL = 44, padR = 22, padT = 22, padB = 34;
+        var plotW = W - padL - padR;
+        var plotH = H - padT - padB;
+        var count = Math.max(2, ticks.length);
+        var xFor = function (idx) { return padL + (idx / (count - 1)) * plotW; };
+        var yFor = function (val) { return padT + (1 - Math.max(0, Math.min(1, val || 0))) * plotH; };
+        var chartBg = contrast ? '#000000' : dark ? '#0f172a' : '#ffffff';
+        var gridCol = contrast ? '#525252' : dark ? '#334155' : '#e2e8f0';
+        var seriesColors = contrast
+          ? { sensory: '#67e8f9', recurrent: '#86efac', workspace: '#facc15', monitor: '#f9a8d4', output: '#ffffff' }
+          : dark
+            ? { sensory: '#38bdf8', recurrent: '#34d399', workspace: '#c084fc', monitor: '#fbbf24', output: '#fb7185' }
+            : { sensory: '#0284c7', recurrent: '#059669', workspace: '#7c3aed', monitor: '#d97706', output: '#e11d48' };
+        var activeSeries = simple
+          ? [['sensory', 'First signals'], ['workspace', 'Sharing'], ['output', 'Report/action']]
+          : [['sensory', 'Sensory'], ['recurrent', 'Recurrence'], ['workspace', cfg.substrate === 'model' ? 'J-lens' : 'Workspace'], ['monitor', 'Monitor'], ['output', 'Output']];
+        var threshY = yFor(SIM_IGNITION_THRESHOLD);
+        var cursorX = xFor(stepIndex);
+        return h('div', { className: 'cns-svg-stage', style: { background: chartBg, borderColor: C.border, marginTop: '14px' } },
+          h('div', { className: 'cns-chart-header' },
+            h('strong', { style: { color: C.text, fontSize: '12px' } }, simple ? 'Activity over time (14 steps)' : 'Temporal ignition & stage dynamics (' + ticks.length + ' steps)'),
+            h('span', { style: { color: C.muted, fontSize: '11px', fontWeight: 700 } },
+              run.markers.ignited ? 'Ignited at step ' + (run.markers.ignitionTick + 1) : 'Sub-threshold (no ignition)')
+          ),
+          h('svg', {
+            viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
+            'aria-label': __alloT('stem.consciousness.temporal_ignition_chart_aria', 'Time-series chart of stage activity across ' + ticks.length + ' steps showing the 50 percent ignition threshold'),
+            style: { display: 'block', width: '100%', height: 'auto' }
+          },
+            h('rect', { x: 0, y: 0, width: W, height: H, rx: 8, fill: chartBg }),
+            [0, 0.25, 0.5, 0.75, 1].map(function (v) {
+              var y = yFor(v);
+              return h('g', { key: 'y-' + v },
+                h('line', { x1: padL, y1: y, x2: W - padR, y2: y, stroke: gridCol, strokeWidth: v === 0.5 ? 1.5 : 1, strokeDasharray: v === 0.5 ? '6 4' : undefined }),
+                h('text', { x: padL - 7, y: y + 4, textAnchor: 'end', fill: C.muted, fontSize: 10.5 }, Math.round(v * 100) + '%')
+              );
+            }),
+            h('text', { x: W - padR - 4, y: threshY - 5, textAnchor: 'end', fill: C.warn, fontSize: 10.5, fontWeight: 800 }, 'Ignition threshold (50%)'),
+            !simple && h('line', { x1: cursorX, y1: padT, x2: cursorX, y2: H - padB, stroke: C.accent, strokeWidth: 1.5, strokeDasharray: '3 3', opacity: 0.75 }),
+            run.markers.ignited && run.markers.ignitionTick != null && h('circle', {
+              cx: xFor(run.markers.ignitionTick),
+              cy: yFor((ticks[run.markers.ignitionTick] || {}).workspace),
+              r: 6, fill: seriesColors.workspace, stroke: chartBg, strokeWidth: 2
+            }),
+            activeSeries.map(function (entry) {
+              var key = entry[0];
+              var pts = ticks.map(function (tk, i) { return xFor(i).toFixed(1) + ',' + yFor(tk[key]).toFixed(1); }).join(' ');
+              var isWorkspace = key === 'workspace';
+              return h('polyline', {
+                key: key, points: pts, fill: 'none',
+                stroke: seriesColors[key], strokeWidth: isWorkspace ? 3 : 2,
+                strokeLinejoin: 'round', strokeLinecap: 'round',
+                opacity: isWorkspace ? 1 : 0.88
+              });
+            }),
+            [0, 3, 6, 9, 13].filter(function (i) { return i < ticks.length; }).map(function (i) {
+              return h('text', { key: 'x-' + i, x: xFor(i), y: H - 12, textAnchor: 'middle', fill: C.muted, fontSize: 10.5 }, 'Step ' + (i + 1));
+            })
+          ),
+          h('div', { className: 'cns-chart-legend' },
+            activeSeries.map(function (entry) {
+              return h('span', { key: entry[0], className: 'cns-chart-legend-item', style: { color: C.text } },
+                h('span', { className: 'cns-net-swatch', 'aria-hidden': 'true', style: { background: seriesColors[entry[0]] } }),
+                entry[1]
+              );
+            })
+          )
+        );
+      }
+
       return panel(h(React.Fragment, null,
         h('div', { className: 'cns-section-heading' },
           h('div', null, h('span', { className: 'cns-step' }, 'TOY MODEL · NOT A BRAIN, NOT A MODEL'), h('h2', null, 'Workspace Bench')),
@@ -3303,6 +3533,7 @@
               ? 'Ignition: the ' + (cfg.substrate === 'model' ? 'verbalizable subspace' : 'global stage') + ' crossed this toy’s threshold at step ' + (run.markers.ignitionTick + 1) + '.'
               : 'No ignition: the ' + (cfg.substrate === 'model' ? 'verbalizable subspace' : 'global stage') + ' peaked at ' + simPercent(run.markers.workspace) + ', under this toy’s threshold.')),
           stageBars(run, visibleStages),
+          renderIgnitionDynamicsChart(),
           renderNetwork(),
           h('p', { className: 'cns-sim-confound' }, h('strong', null, simple ? 'What to notice: ' : 'Read-out discipline: '), simConfoundNote(run, simple))
         ),
@@ -3567,6 +3798,63 @@
           : 'Outputs below are qualitative deductions from simplified theory commitments. They are not empirical data, effect-size estimates, clinical guidance, or evidence that a theory is true.'),
         h('section', { className: 'cns-experiment-design', 'aria-labelledby': 'cns-experiment-design-title', style: { background: C.raised, borderColor: C.border } },
           h('div', { className: 'cns-section-heading' }, h('div', null, h('span', { className: 'cns-step' }, 'STEP 1'), h('h3', { id: 'cns-experiment-design-title' }, 'Set the experimental conditions')), h('span', { className: 'cns-score', role: 'status', 'aria-live': 'polite' }, scenario)),
+          (function () {
+            var expBg = contrast ? '#000000' : dark ? '#0f172a' : '#ffffff';
+            var delayFrac = (settings.maskDelay - 20) / 160;
+            var targetX = 56, targetW = 72;
+            var gapW = Math.round(52 + delayFrac * 208);
+            var maskX = targetX + targetW + gapW;
+            var maskW = 86;
+            var probeX = Math.min(615, maskX + maskW + 34);
+            var probeW = 104;
+            var isFocused = settings.attention === 'focused';
+            var isReport = settings.report !== 'no-report';
+            return h('div', { className: 'cns-svg-stage', style: { background: expBg, borderColor: C.border, margin: '10px 0 12px' } },
+              h('svg', {
+                viewBox: '0 0 740 116', width: '100%', role: 'img',
+                'aria-label': __alloT('stem.consciousness.masking_timeline_aria', 'Visual timeline of the masking trial showing target flash, ' + settings.maskDelay + ' ms delay, backward mask, attention condition, and measurement probe'),
+                style: { display: 'block', width: '100%', height: 'auto' }
+              },
+                h('rect', { x: 0, y: 0, width: 740, height: 116, rx: 8, fill: expBg }),
+                // Baseline time axis
+                h('line', { x1: 28, y1: 86, x2: 712, y2: 86, stroke: C.border, strokeWidth: 2 }),
+                h('polygon', { points: '712,81 722,86 712,91', fill: C.border }),
+                h('text', { x: 28, y: 105, fill: C.muted, fontSize: 10.5, fontWeight: 700 }, '0 ms'),
+                h('text', { x: 716, y: 105, textAnchor: 'end', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'Trial timeline \u2192'),
+                // Attention indicator band across target
+                h('rect', {
+                  x: targetX - 8, y: 12, width: targetW + 16, height: 22, rx: 11,
+                  fill: isFocused ? (contrast ? '#111111' : dark ? '#312e81' : '#ede9fe') : 'none',
+                  stroke: isFocused ? C.accent : C.warn,
+                  strokeWidth: 1.4,
+                  strokeDasharray: isFocused ? undefined : '4 3'
+                }),
+                h('text', { x: targetX + targetW / 2, y: 27, textAnchor: 'middle', fill: isFocused ? C.accent : C.warn, fontSize: 10.5, fontWeight: 800 },
+                  isFocused ? 'Focused attn' : 'Divided attn'),
+                // Target flash block
+                h('rect', { x: targetX, y: 42, width: targetW, height: 38, rx: 7, fill: C.science, opacity: contrast ? 1 : 0.9 }),
+                h('text', { x: targetX + targetW / 2, y: 65, textAnchor: 'middle', fill: contrast ? '#000000' : '#ffffff', fontSize: 11.5, fontWeight: 900 }, 'Target'),
+                // Delay bracket
+                h('line', { x1: targetX + targetW + 4, y1: 61, x2: maskX - 4, y2: 61, stroke: C.accent, strokeWidth: 2, strokeDasharray: '4 3' }),
+                h('text', { x: targetX + targetW + gapW / 2, y: 53, textAnchor: 'middle', fill: C.text, fontSize: 11, fontWeight: 800 }, settings.maskDelay + ' ms SOA'),
+                // Backward mask block
+                h('rect', { x: maskX, y: 42, width: maskW, height: 38, rx: 7, fill: C.philosophy, opacity: contrast ? 1 : 0.9 }),
+                h('text', { x: maskX + maskW / 2, y: 65, textAnchor: 'middle', fill: contrast ? '#000000' : '#ffffff', fontSize: 11.5, fontWeight: 900 }, 'Mask'),
+                // Measurement probe block
+                h('rect', {
+                  x: probeX, y: 42, width: probeW, height: 38, rx: 7,
+                  fill: isReport ? C.accent : (dark || contrast ? '#111827' : '#f1f5f9'),
+                  stroke: isReport ? C.accent : C.good,
+                  strokeWidth: 1.8,
+                  strokeDasharray: isReport ? undefined : '4 3'
+                }),
+                h('text', {
+                  x: probeX + probeW / 2, y: 65, textAnchor: 'middle',
+                  fill: isReport ? C.accentText : C.good, fontSize: 11, fontWeight: 800
+                }, isReport ? 'Direct report' : 'No-report proxy')
+              )
+            );
+          })(),
           h('ol', { className: 'cns-experiment-flow', 'aria-label': __alloT('stem.consciousness.masking_experiment_sequence','Masking experiment sequence') },
             h('li', null, h('strong', null, '1. Target'), h('span', null, profile.id === 'early' ? 'A small picture flashes.' : 'A near-threshold visual target appears briefly.')),
             h('li', null, h('strong', null, '2. Delay'), h('span', null, settings.maskDelay + ' milliseconds')),
@@ -3795,10 +4083,22 @@
       '.consciousness-lab button:focus-visible,.consciousness-lab select:focus-visible,.consciousness-lab textarea:focus-visible,.consciousness-lab a:focus-visible{outline:3px solid var(--cns-focus);outline-offset:3px}',
       '.cns-skip{position:absolute;left:-9999px;top:8px;z-index:20;padding:10px 14px;border-radius:8px;background:#fff;color:#111;font-weight:800}',
       '.cns-skip:focus{left:12px}',
-      '.cns-hero{display:flex;gap:16px;align-items:center;padding:22px;border:1px solid;border-radius:18px;background:linear-gradient(135deg,#1e1b4b,#4c1d95 55%,#155e75);color:#fff;box-shadow:0 16px 35px rgba(30,27,75,.22)}',
-      '.cns-hero-icon{display:grid;place-items:center;width:68px;height:68px;flex:0 0 68px;border:1px solid rgba(255,255,255,.45);border-radius:18px;background:rgba(255,255,255,.14);font-size:38px}',
-      '.cns-hero-copy{min-width:0}.cns-kicker{font-size:11px;font-weight:900;letter-spacing:.14em;opacity:.88}.cns-hero h1{margin:2px 0 4px;font-size:clamp(26px,4vw,42px);line-height:1.1}.cns-hero p{margin:0;max-width:780px;font-size:15px;opacity:.92}',
-      '.cns-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.cns-grade-badge,.cns-neutral-badge{display:inline-flex;align-items:center;min-height:28px;padding:4px 10px;border:1px solid rgba(255,255,255,.38);border-radius:999px;background:rgba(255,255,255,.14);font-size:11px;font-weight:800}',
+      '.cns-hero{display:flex;gap:18px;align-items:center;padding:24px;border:1px solid;border-radius:18px;background:radial-gradient(circle at 86% 18%,rgba(103,232,249,.22),transparent 42%),linear-gradient(135deg,#1e1b4b,#4c1d95 54%,#155e75);color:#fff;box-shadow:0 16px 36px rgba(30,27,75,.24)}',
+      '.cns-hero-icon{display:grid;place-items:center;width:72px;height:72px;flex:0 0 72px;border:1px solid rgba(255,255,255,.38);border-radius:18px;background:rgba(15,23,42,.36);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}',
+      '.cns-hero-copy{min-width:0;flex:1}.cns-kicker{font-size:11px;font-weight:900;letter-spacing:.14em;opacity:.9}.cns-hero h1{margin:2px 0 4px;font-size:clamp(26px,4vw,42px);line-height:1.1}.cns-hero p{margin:0;max-width:780px;font-size:15px;opacity:.94}',
+      '.cns-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.cns-grade-badge,.cns-neutral-badge,.cns-telemetry-pill{display:inline-flex;align-items:center;min-height:28px;padding:4px 10px;border:1px solid rgba(255,255,255,.38);border-radius:999px;background:rgba(255,255,255,.14);font-size:11px;font-weight:800}.cns-telemetry-pill{background:rgba(15,23,42,.38);border-color:rgba(196,181,253,.45)}',
+      '.cns-svg-stage{padding:10px 12px;border:1px solid;border-radius:12px;margin:0 0 14px;overflow:hidden}',
+      '.cns-chart-header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}',
+      '.cns-chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed var(--cns-border)}',
+      '.cns-chart-legend-item{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:750}',
+      '.cns-preset-strip{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 12px}',
+      '.cns-preset-label{font-size:11px;font-weight:850;color:var(--cns-muted)}',
+      '.cns-preset-strip button{padding:6px 11px;min-height:36px;border:1px solid;border-radius:999px;font-size:11px;font-weight:800}',
+      '.theme-contrast .cns-hero{background:#000!important;color:#fff!important;border-color:#facc15!important;box-shadow:none!important}',
+      '.theme-contrast .cns-hero-icon{background:#000!important;border-color:#facc15!important}',
+      '.theme-contrast .cns-grade-badge,.theme-contrast .cns-neutral-badge,.theme-contrast .cns-telemetry-pill{background:#000!important;color:#facc15!important;border-color:#facc15!important}',
+      '.theme-contrast .cns-compare-table thead th{background:#000!important;color:#facc15!important;border-color:#facc15!important}',
+      '.theme-contrast .cns-target-number,.theme-contrast .cns-sort-number,.theme-contrast .cns-ladder-key li>span,.theme-contrast .cns-map-lane-heading span{background:#facc15!important;color:#000!important}',
       '.cns-grade-note{margin-top:12px;padding:10px 14px;border:1px solid;border-radius:11px;font-size:12px}',
       '.cns-tabs{display:flex;gap:8px;overflow-x:auto;padding:14px 2px 10px;scrollbar-width:thin}.cns-tabs button{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;padding:8px 13px;border:1px solid;border-radius:10px;font-size:12px;font-weight:850}',
       '.cns-view{padding:clamp(16px,3vw,28px);border:1px solid;border-radius:16px;box-shadow:0 8px 26px rgba(15,23,42,.08)}',

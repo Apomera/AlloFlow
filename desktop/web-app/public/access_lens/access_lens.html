@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: mediastream:; connect-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <title>AlloFlow Access Lens Camera</title>
 <!--
   Access Lens companion window.
@@ -45,14 +46,17 @@
   .ok { font-size: 13px; color: #bbf7d0; background: #052e16; border: 1px solid #16a34a; border-radius: 10px; padding: 10px 12px; max-width: 720px; }
   .hidden { display: none !important; }
   [aria-live] { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
+  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to camera controls</a>
 <header>
   <h1><span aria-hidden="true">📷 </span>AlloFlow Access Lens Camera</h1>
   <p class="sub">Take a photo here and it appears back in AlloFlow automatically. This window makes nothing but the one photo you choose leave your device screen.</p>
 </header>
-<main>
+<main id="main" tabindex="-1">
   <div class="privacy"><span aria-hidden="true">🔒 </span><strong>Privacy:</strong> this page saves nothing and uploads nothing. Only the photo you press <em>Use this photo</em> on is handed back to AlloFlow. Please point the camera at things, not at people.</div>
   <p class="note" id="keysNote">Keyboard: when the camera view has focus, press Space or Enter to snap a photo.</p>
 
@@ -101,7 +105,6 @@
         || host === 'alloflow.app' || host.endsWith('.alloflow.app')
         || host === 'alloflow.com' || host.endsWith('.alloflow.com')
         || host === 'alloflow.example' || host.endsWith('.alloflow.example')
-        || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(host)
         || host.endsWith('.usercontent.goog')
         || host.endsWith('.idx.google.com');
     } catch (_) {

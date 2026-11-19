@@ -76,7 +76,7 @@
     if (!value || typeof value !== 'object' || Array.isArray(value)) return output;
     Object.keys(value).forEach(function (id) {
       var normalizedId = safeId(id);
-      if (!normalizedId) return;
+      if (!normalizedId || normalizedId === '__proto__' || normalizedId === 'constructor' || normalizedId === 'prototype') return;
       var removedAt = value[id];
       output[normalizedId] = typeof removedAt === 'string' && removedAt
         ? removedAt.slice(0, 80)
@@ -323,19 +323,35 @@
     }
   };
 
+  RecoveryVaultController.prototype._destroyDek = function (dek) {
+    if (!dek) return;
+    try {
+      var cryptoApi = this._crypto();
+      if (cryptoApi && typeof cryptoApi.destroyVaultKey === 'function') cryptoApi.destroyVaultKey(dek);
+    } catch (_) {}
+  };
+
   RecoveryVaultController.prototype._beginKeyOperation = function () {
     this._keyGeneration += 1;
     return this._keyGeneration;
   };
 
   RecoveryVaultController.prototype._setKeyIfCurrent = function (dek, generation) {
-    if (generation !== this._keyGeneration) return false;
+    if (generation !== this._keyGeneration) {
+      if (dek && dek !== this._dek) this._destroyDek(dek);
+      return false;
+    }
+    if (this._dek && this._dek !== dek) this._destroyDek(this._dek);
     this._dek = dek;
     return true;
   };
 
   RecoveryVaultController.prototype._clearKeyIfCurrent = function (generation) {
-    if (generation === this._keyGeneration) this._dek = null;
+    if (generation === this._keyGeneration) {
+      var prev = this._dek;
+      this._dek = null;
+      this._destroyDek(prev);
+    }
   };
 
   RecoveryVaultController.prototype.getSessionGeneration = function () {
@@ -383,51 +399,56 @@
     var cryptoApi = this._crypto();
     var plain = normalizePlainStore(plainStore);
     var dek = await cryptoApi.createVaultKey();
-    var wrappedKey = await cryptoApi.wrapVaultKey(dek, password, this.cryptoOptions);
-    var recoveryCode = null;
-    var recoveryWrappedKey = null;
-    if (options.createRecoveryKey === true) {
-      requireRecoveryCryptoApi(cryptoApi);
-      recoveryCode = options.recoveryCode
-        ? cryptoApi.normalizeRecoveryCode(options.recoveryCode)
-        : cryptoApi.generateRecoveryCode();
-      recoveryWrappedKey = await cryptoApi.wrapVaultKey(dek, recoveryCode, this.cryptoOptions);
-    }
-    var keyCheck = await cryptoApi.encryptRecord(KEY_CHECK_VALUE, dek, KEY_CHECK_AAD);
-    var records = [];
-
-    for (var i = 0; i < plain.snapshots.length; i += 1) {
-      var source = clone(plain.snapshots[i]);
-      var metadata = snapshotMetadata(source);
-      source.id = metadata.id;
-      source.savedAt = metadata.savedAt;
-      source.pinned = metadata.pinned;
-      var payload = await cryptoApi.encryptRecord(source, dek, recordAad(metadata.id));
-      metadata.approximateBytes = encryptedPayloadBytes(payload);
-      var verified = await cryptoApi.decryptRecord(payload, dek, recordAad(metadata.id));
-      if (!jsonEqual(verified, source)) {
-        fail('VAULT_MIGRATION_VERIFY_FAILED', 'An encrypted workspace failed verification before migration.');
+    try {
+      var wrappedKey = await cryptoApi.wrapVaultKey(dek, password, this.cryptoOptions);
+      var recoveryCode = null;
+      var recoveryWrappedKey = null;
+      if (options.createRecoveryKey === true) {
+        requireRecoveryCryptoApi(cryptoApi);
+        recoveryCode = options.recoveryCode
+          ? cryptoApi.normalizeRecoveryCode(options.recoveryCode)
+          : cryptoApi.generateRecoveryCode();
+        recoveryWrappedKey = await cryptoApi.wrapVaultKey(dek, recoveryCode, this.cryptoOptions);
       }
-      records.push(Object.assign({}, metadata, { payload: payload }));
-    }
+      var keyCheck = await cryptoApi.encryptRecord(KEY_CHECK_VALUE, dek, KEY_CHECK_AAD);
+      var records = [];
 
-    var vault = {
-      version: VAULT_VERSION,
-      kind: VAULT_KIND,
-      protection: 'password',
-      wrappedKey: wrappedKey,
-      keyCheck: keyCheck,
-      retentionPolicy: plain.retentionPolicy,
-      effectiveRetentionPolicy: plain.effectiveRetentionPolicy,
-      legacyMigrationComplete: plain.legacyMigrationComplete,
-      removedSnapshotIds: sanitizeRemovedIds(plain.removedSnapshotIds),
-      records: records
-    };
-    if (recoveryWrappedKey) vault.recoveryWrappedKey = recoveryWrappedKey;
-    vault = applyVaultRetention(vault, this.now().getTime());
-    validateVaultStore(vault);
-    await this._verifyKey(vault, dek);
-    return { vault: vault, dek: dek, recoveryCode: recoveryCode };
+      for (var i = 0; i < plain.snapshots.length; i += 1) {
+        var source = clone(plain.snapshots[i]);
+        var metadata = snapshotMetadata(source);
+        source.id = metadata.id;
+        source.savedAt = metadata.savedAt;
+        source.pinned = metadata.pinned;
+        var payload = await cryptoApi.encryptRecord(source, dek, recordAad(metadata.id));
+        metadata.approximateBytes = encryptedPayloadBytes(payload);
+        var verified = await cryptoApi.decryptRecord(payload, dek, recordAad(metadata.id));
+        if (!jsonEqual(verified, source)) {
+          fail('VAULT_MIGRATION_VERIFY_FAILED', 'An encrypted workspace failed verification before migration.');
+        }
+        records.push(Object.assign({}, metadata, { payload: payload }));
+      }
+
+      var vault = {
+        version: VAULT_VERSION,
+        kind: VAULT_KIND,
+        protection: 'password',
+        wrappedKey: wrappedKey,
+        keyCheck: keyCheck,
+        retentionPolicy: plain.retentionPolicy,
+        effectiveRetentionPolicy: plain.effectiveRetentionPolicy,
+        legacyMigrationComplete: plain.legacyMigrationComplete,
+        removedSnapshotIds: sanitizeRemovedIds(plain.removedSnapshotIds),
+        records: records
+      };
+      if (recoveryWrappedKey) vault.recoveryWrappedKey = recoveryWrappedKey;
+      vault = applyVaultRetention(vault, this.now().getTime());
+      validateVaultStore(vault);
+      await this._verifyKey(vault, dek);
+      return { vault: vault, dek: dek, recoveryCode: recoveryCode };
+    } catch (error) {
+      this._destroyDek(dek);
+      throw error;
+    }
   };
 
   RecoveryVaultController.prototype.getStatus = async function () {
@@ -469,14 +490,20 @@
         return { enabled: true, alreadyEnabled: true };
       }
       var built = await this._buildVault(normalizePlainStore(head.store), password, options);
-      if (await this._cas(head.revision, built.vault)) {
-        this._setKeyIfCurrent(built.dek, generation);
-        return {
-          enabled: true,
-          migratedSnapshots: built.vault.records.length,
-          recoveryEnabled: Boolean(built.vault.recoveryWrappedKey),
-          recoveryCode: built.recoveryCode
-        };
+      var committed = false;
+      try {
+        if (await this._cas(head.revision, built.vault)) {
+          committed = true;
+          this._setKeyIfCurrent(built.dek, generation);
+          return {
+            enabled: true,
+            migratedSnapshots: built.vault.records.length,
+            recoveryEnabled: Boolean(built.vault.recoveryWrappedKey),
+            recoveryCode: built.recoveryCode
+          };
+        }
+      } finally {
+        if (!committed) this._destroyDek(built.dek);
       }
     }
     fail('VAULT_CONFLICT', 'The recovery store changed repeatedly while protection was being enabled.');
@@ -493,6 +520,7 @@
       dek = await this._crypto().unwrapVaultKey(store.wrappedKey, password);
       await this._verifyKey(store, dek);
     } catch (error) {
+      this._destroyDek(dek);
       this._clearKeyIfCurrent(generation);
       if (error && error.code === 'VAULT_PASSWORD_OR_CORRUPT') throw error;
       fail('VAULT_PASSWORD_OR_CORRUPT', 'The password is incorrect or the recovery vault is damaged.', error);
@@ -505,7 +533,9 @@
 
   RecoveryVaultController.prototype.lock = function () {
     this._beginKeyOperation();
+    var prev = this._dek;
     this._dek = null;
+    this._destroyDek(prev);
     return { locked: true };
   };
 
@@ -537,26 +567,38 @@
       if (!store.recoveryWrappedKey) {
         fail('VAULT_RECOVERY_NOT_ENABLED', 'No recovery key was created for this recovery vault.');
       }
-      var dek;
+      var dek = null;
+      var wrappedKey;
       try {
-        dek = await cryptoApi.unwrapVaultKey(store.recoveryWrappedKey, normalizedCode);
-        await this._verifyKey(store, dek);
-      } catch (error) {
-        this._clearKeyIfCurrent(generation);
-        fail('VAULT_RECOVERY_KEY_OR_CORRUPT', 'The recovery key is incorrect or the recovery vault is damaged.', error);
+        try {
+          dek = await cryptoApi.unwrapVaultKey(store.recoveryWrappedKey, normalizedCode);
+          await this._verifyKey(store, dek);
+        } catch (error) {
+          this._clearKeyIfCurrent(generation);
+          fail('VAULT_RECOVERY_KEY_OR_CORRUPT', 'The recovery key is incorrect or the recovery vault is damaged.', error);
+        }
+        wrappedKey = await cryptoApi.wrapVaultKey(dek, newPassword, this.cryptoOptions);
+      } finally {
+        this._destroyDek(dek);
       }
-      var wrappedKey = await cryptoApi.wrapVaultKey(dek, newPassword, this.cryptoOptions);
-      var verifiedDek;
+      var verifiedDek = null;
       try {
         verifiedDek = await cryptoApi.unwrapVaultKey(wrappedKey, newPassword);
         await this._verifyKey(store, verifiedDek);
       } catch (error) {
+        this._destroyDek(verifiedDek);
         fail('VAULT_REKEY_VERIFY_FAILED', 'The recovered password wrapper failed verification; no change was saved.', error);
       }
       var next = Object.assign({}, store, { wrappedKey: wrappedKey });
-      if (await this._cas(head.revision, next)) {
-        this._setKeyIfCurrent(verifiedDek, generation);
-        return { recovered: true, recoveryKeyRotated: false };
+      var recoveredCommitted = false;
+      try {
+        if (await this._cas(head.revision, next)) {
+          recoveredCommitted = true;
+          this._setKeyIfCurrent(verifiedDek, generation);
+          return { recovered: true, recoveryKeyRotated: false };
+        }
+      } finally {
+        if (!recoveredCommitted) this._destroyDek(verifiedDek);
       }
     }
     this._clearKeyIfCurrent(generation);
@@ -575,11 +617,14 @@
         ? cryptoApi.normalizeRecoveryCode(confirmedRecoveryCode)
         : cryptoApi.generateRecoveryCode();
       var recoveryWrappedKey = await cryptoApi.wrapVaultKey(dek, recoveryCode, this.cryptoOptions);
+      var verifiedDek = null;
       try {
-        var verifiedDek = await cryptoApi.unwrapVaultKey(recoveryWrappedKey, recoveryCode);
+        verifiedDek = await cryptoApi.unwrapVaultKey(recoveryWrappedKey, recoveryCode);
         await this._verifyKey(store, verifiedDek);
       } catch (error) {
         fail('VAULT_RECOVERY_ROTATE_VERIFY_FAILED', 'The new recovery key failed verification; no change was saved.', error);
+      } finally {
+        this._destroyDek(verifiedDek);
       }
       var next = Object.assign({}, store, { recoveryWrappedKey: recoveryWrappedKey });
       if (await this._cas(head.revision, next)) {
@@ -597,11 +642,12 @@
       var head = await this._read();
       if (!isVaultStore(head.store)) fail('VAULT_NOT_ENABLED', 'Password protection is not enabled for saved work.');
       var store = validateVaultStore(head.store);
-      var dek;
+      var dek = null;
       try {
         dek = await this._crypto().unwrapVaultKey(store.wrappedKey, password);
         await this._verifyKey(store, dek);
       } catch (error) {
+        this._destroyDek(dek);
         fail('VAULT_PASSWORD_OR_CORRUPT', 'The password is incorrect or the recovery vault is damaged.', error);
       }
       if (!store.recoveryWrappedKey) {
@@ -610,9 +656,15 @@
       }
       var next = Object.assign({}, store);
       delete next.recoveryWrappedKey;
-      if (await this._cas(head.revision, next)) {
-        this._setKeyIfCurrent(dek, generation);
-        return { removed: true };
+      var removedCommitted = false;
+      try {
+        if (await this._cas(head.revision, next)) {
+          removedCommitted = true;
+          this._setKeyIfCurrent(dek, generation);
+          return { removed: true };
+        }
+      } finally {
+        if (!removedCommitted) this._destroyDek(dek);
       }
     }
     fail('VAULT_CONFLICT', 'The recovery store changed repeatedly while the recovery key was being removed.');
@@ -762,7 +814,9 @@
 
   RecoveryVaultController.prototype.deleteSnapshot = async function (id) {
     var normalizedId = safeId(id);
-    if (!normalizedId) fail('VAULT_SNAPSHOT_INVALID', 'A workspace identifier is required.');
+    if (!normalizedId || normalizedId === '__proto__' || normalizedId === 'constructor' || normalizedId === 'prototype') {
+      fail('VAULT_SNAPSHOT_INVALID', 'A workspace identifier is required.');
+    }
     for (var attempt = 0; attempt < this.maxCasRetries; attempt += 1) {
       var head = await this._read();
       var removedAt = this.now().toISOString();
@@ -771,8 +825,8 @@
         var vault = validateVaultStore(head.store);
         next = Object.assign({}, vault, {
           legacyMigrationComplete: true,
-          removedSnapshotIds: Object.assign({}, vault.removedSnapshotIds || {}, (function () {
-            var value = {}; value[normalizedId] = removedAt; return value;
+          removedSnapshotIds: Object.assign({}, sanitizeRemovedIds(vault.removedSnapshotIds), (function () {
+            var value = Object.create(null); value[normalizedId] = removedAt; return value;
           })()),
           records: vault.records.filter(function (record) { return record.id !== normalizedId; })
         });
@@ -780,8 +834,8 @@
         var plain = normalizePlainStore(head.store);
         next = Object.assign({}, plain, {
           legacyMigrationComplete: true,
-          removedSnapshotIds: Object.assign({}, plain.removedSnapshotIds || {}, (function () {
-            var value = {}; value[normalizedId] = removedAt; return value;
+          removedSnapshotIds: Object.assign({}, sanitizeRemovedIds(plain.removedSnapshotIds), (function () {
+            var value = Object.create(null); value[normalizedId] = removedAt; return value;
           })()),
           snapshots: plain.snapshots.filter(function (item) { return safeId(item && item.id) !== normalizedId; })
         });
@@ -823,16 +877,23 @@
         fail('VAULT_PASSWORD_OR_CORRUPT', 'The current password is incorrect or the recovery vault is damaged.', error);
       }
       var next = Object.assign({}, store, { wrappedKey: wrapped });
-      var nextDek;
+      var nextDek = null;
       try {
         nextDek = await cryptoApi.unwrapVaultKey(wrapped, newPassword);
         await this._verifyKey(next, nextDek);
       } catch (error) {
+        this._destroyDek(nextDek);
         fail('VAULT_REKEY_VERIFY_FAILED', 'The new password wrapper failed verification; no change was saved.', error);
       }
-      if (await this._cas(head.revision, next)) {
-        this._setKeyIfCurrent(nextDek, generation);
-        return { changed: true };
+      var changeCommitted = false;
+      try {
+        if (await this._cas(head.revision, next)) {
+          changeCommitted = true;
+          this._setKeyIfCurrent(nextDek, generation);
+          return { changed: true };
+        }
+      } finally {
+        if (!changeCommitted) this._destroyDek(nextDek);
       }
     }
     fail('VAULT_CONFLICT', 'The recovery store changed repeatedly while the password was being changed.');
@@ -848,29 +909,34 @@
       }
       var store = validateVaultStore(head.store);
       var dek = null;
+      var ownsDek = false;
       if (password) {
-        try { dek = await this._crypto().unwrapVaultKey(store.wrappedKey, password); }
+        try { dek = await this._crypto().unwrapVaultKey(store.wrappedKey, password); ownsDek = true; }
         catch (error) { fail('VAULT_PASSWORD_OR_CORRUPT', 'The password is incorrect or the recovery vault is damaged.', error); }
       } else {
         dek = this._dek;
       }
       if (!dek) fail('VAULT_PASSWORD_REQUIRED', 'Unlock the vault or enter its password before disabling protection.');
-      await this._verifyKey(store, dek);
-      var snapshots = [];
-      for (var i = 0; i < store.records.length; i += 1) {
-        snapshots.push(await this._decryptRecord(store, store.records[i], dek));
-      }
-      var plain = {
-        version: 1,
-        retentionPolicy: store.retentionPolicy,
-        effectiveRetentionPolicy: store.effectiveRetentionPolicy,
-        legacyMigrationComplete: store.legacyMigrationComplete === true,
-        removedSnapshotIds: sanitizeRemovedIds(store.removedSnapshotIds),
-        snapshots: snapshots
-      };
-      if (await this._cas(head.revision, plain)) {
-        this._clearKeyIfCurrent(generation);
-        return { disabled: true, restoredSnapshots: snapshots.length };
+      try {
+        await this._verifyKey(store, dek);
+        var snapshots = [];
+        for (var i = 0; i < store.records.length; i += 1) {
+          snapshots.push(await this._decryptRecord(store, store.records[i], dek));
+        }
+        var plain = {
+          version: 1,
+          retentionPolicy: store.retentionPolicy,
+          effectiveRetentionPolicy: store.effectiveRetentionPolicy,
+          legacyMigrationComplete: store.legacyMigrationComplete === true,
+          removedSnapshotIds: sanitizeRemovedIds(store.removedSnapshotIds),
+          snapshots: snapshots
+        };
+        if (await this._cas(head.revision, plain)) {
+          this._clearKeyIfCurrent(generation);
+          return { disabled: true, restoredSnapshots: snapshots.length };
+        }
+      } finally {
+        if (ownsDek && dek && dek !== this._dek) this._destroyDek(dek);
       }
     }
     fail('VAULT_CONFLICT', 'The recovery store changed repeatedly while protection was being disabled.');
@@ -899,43 +965,56 @@
     if (!password) fail('VAULT_PASSWORD_REQUIRED', 'The backup password is required before import.');
     var imported = clone(backup.vault);
     validateVaultStore(imported);
-    var dek;
+    var dek = null;
+    var importedCommitted = false;
     var importedWrapper = options.useRecoveryKey === true ? imported.recoveryWrappedKey : imported.wrappedKey;
     if (!importedWrapper) {
       fail('VAULT_RECOVERY_NOT_CONFIGURED', 'This backup does not contain a recovery-key wrapper.');
     }
     try {
-      dek = await this._crypto().unwrapVaultKey(importedWrapper, password);
-      await this._verifyKey(imported, dek);
-      if (options.useRecoveryKey === true) {
-        if (!options.newPassword) fail('VAULT_PASSWORD_REQUIRED', 'Choose a new password when restoring a backup with its recovery key.');
-        imported.wrappedKey = await this._crypto().wrapVaultKey(dek, options.newPassword, this.cryptoOptions);
-        var verifiedDek = await this._crypto().unwrapVaultKey(imported.wrappedKey, options.newPassword);
-        await this._verifyKey(imported, verifiedDek);
-        dek = verifiedDek;
+      try {
+        dek = await this._crypto().unwrapVaultKey(importedWrapper, password);
+        await this._verifyKey(imported, dek);
+        if (options.useRecoveryKey === true) {
+          if (!options.newPassword) fail('VAULT_PASSWORD_REQUIRED', 'Choose a new password when restoring a backup with its recovery key.');
+          imported.wrappedKey = await this._crypto().wrapVaultKey(dek, options.newPassword, this.cryptoOptions);
+          var verifiedDek = await this._crypto().unwrapVaultKey(imported.wrappedKey, options.newPassword);
+          try {
+            await this._verifyKey(imported, verifiedDek);
+          } catch (verifyErr) {
+            this._destroyDek(verifiedDek);
+            throw verifyErr;
+          }
+          var oldRecoveryDek = dek;
+          dek = verifiedDek;
+          if (oldRecoveryDek && oldRecoveryDek !== dek) this._destroyDek(oldRecoveryDek);
+        }
+        for (var i = 0; i < imported.records.length; i += 1) {
+          await this._decryptRecord(imported, imported.records[i], dek);
+        }
+      } catch (error) {
+        if (error && error.code && /^VAULT_/.test(error.code)) throw error;
+        fail(options.useRecoveryKey === true ? 'VAULT_RECOVERY_KEY_OR_CORRUPT' : 'VAULT_PASSWORD_OR_CORRUPT',
+          options.useRecoveryKey === true
+            ? 'The backup recovery key is incorrect or the backup is damaged.'
+            : 'The backup password is incorrect or the backup is damaged.', error);
       }
-      for (var i = 0; i < imported.records.length; i += 1) {
-        await this._decryptRecord(imported, imported.records[i], dek);
+      var head = await this._read();
+      var currentCount = isVaultStore(head.store)
+        ? validateVaultStore(head.store).records.length
+        : normalizePlainStore(head.store).snapshots.length;
+      if (currentCount > 0 && options.replace !== true) {
+        fail('VAULT_IMPORT_REPLACE_REQUIRED', 'Import would replace saved work; explicit replace confirmation is required.');
       }
-    } catch (error) {
-      if (error && error.code && /^VAULT_/.test(error.code)) throw error;
-      fail(options.useRecoveryKey === true ? 'VAULT_RECOVERY_KEY_OR_CORRUPT' : 'VAULT_PASSWORD_OR_CORRUPT',
-        options.useRecoveryKey === true
-          ? 'The backup recovery key is incorrect or the backup is damaged.'
-          : 'The backup password is incorrect or the backup is damaged.', error);
+      if (!(await this._cas(head.revision, imported))) {
+        fail('VAULT_CONFLICT', 'Saved work changed before the encrypted backup could be imported.');
+      }
+      importedCommitted = true;
+      this._setKeyIfCurrent(dek, generation);
+      return { imported: true, snapshotCount: imported.records.length };
+    } finally {
+      if (!importedCommitted) this._destroyDek(dek);
     }
-    var head = await this._read();
-    var currentCount = isVaultStore(head.store)
-      ? validateVaultStore(head.store).records.length
-      : normalizePlainStore(head.store).snapshots.length;
-    if (currentCount > 0 && options.replace !== true) {
-      fail('VAULT_IMPORT_REPLACE_REQUIRED', 'Import would replace saved work; explicit replace confirmation is required.');
-    }
-    if (!(await this._cas(head.revision, imported))) {
-      fail('VAULT_CONFLICT', 'Saved work changed before the encrypted backup could be imported.');
-    }
-    this._setKeyIfCurrent(dek, generation);
-    return { imported: true, snapshotCount: imported.records.length };
   };
 
   RecoveryVaultController.prototype.eraseAll = async function () {

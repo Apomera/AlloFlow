@@ -547,6 +547,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       var React = ctx.React;
       var h = React.createElement;
       var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark && !isContrast;
       var onHostInk = (isContrast || ctx.isDark) ? ' text-white' : '';
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
@@ -585,7 +586,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       return (function() {
 
         /* ── State ── */
-        var d = labToolData.decomposer || {};
+        var _isPlainObj = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+        var _safeNum = function(v, fb) { return (typeof v === 'number' && isFinite(v)) ? v : (fb || 0); };
+        var d = (labToolData && _isPlainObj(labToolData.decomposer)) ? labToolData.decomposer : {};
         var motionPaused = d.motionPaused === true || (d.motionPaused !== false
           && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -973,11 +976,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         // is assigned further down and `var` hoists the declaration, not the value.
         var TAB_IDS = ['decompHunt', 'explore', 'quiz', 'reactions', 'scenes', 'states', 'tutor', 'visualize'];
         var tab = (TAB_IDS.indexOf(d.tab) !== -1 && (d.tab !== 'tutor' || callGemini)) ? d.tab : 'explore';
-        var quizMode = d.quizMode || false;
-        var quizQ = d.quizQ || null;
-        var quizScore = d.quizScore || 0;
-        var quizStreak = d.quizStreak || 0;
-        var bestStreak = d.bestStreak || 0;
+        var quizMode = d.quizMode === true;
+        var quizQ = _isPlainObj(d.quizQ) ? d.quizQ : null;
+        var quizScore = _safeNum(d.quizScore, 0);
+        var quizStreak = _safeNum(d.quizStreak, 0);
+        var bestStreak = _safeNum(d.bestStreak, 0);
+        var researchPoints = _safeNum(d.researchPoints, 0);
         // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
         var badges = Array.isArray(d.badges) ? d.badges : [];
         var aiMessages = Array.isArray(d.aiMessages) ? d.aiMessages : [];
@@ -1009,24 +1013,24 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var band = getGradeBand(ctx);
 
         // Scene state
-        var activeScene = d.activeScene || null;
-        var foundObjects = d.foundObjects || {};
-        var scenesVisited = d.scenesVisited || {};
-        var selectedSceneObj = d.selectedSceneObj || null;
-        var sceneHoverId = d.sceneHoverId || null;
-        var huntTarget = d.huntTarget || null;
-        var huntWrongGuess = d.huntWrongGuess || null;
-        var huntScore = d.huntScore || 0;
-        var huntStreak = d.huntStreak || 0;
+        var activeScene = (typeof d.activeScene === 'string' && d.activeScene) ? d.activeScene : null;
+        var foundObjects = _isPlainObj(d.foundObjects) ? d.foundObjects : {};
+        var scenesVisited = _isPlainObj(d.scenesVisited) ? d.scenesVisited : {};
+        var selectedSceneObj = (typeof d.selectedSceneObj === 'string' && d.selectedSceneObj) ? d.selectedSceneObj : null;
+        var sceneHoverId = (typeof d.sceneHoverId === 'string' && d.sceneHoverId) ? d.sceneHoverId : null;
+        var huntTarget = (typeof d.huntTarget === 'string' && d.huntTarget) ? d.huntTarget : null;
+        var huntWrongGuess = (typeof d.huntWrongGuess === 'string' && d.huntWrongGuess) ? d.huntWrongGuess : null;
+        var huntScore = _safeNum(d.huntScore, 0);
+        var huntStreak = _safeNum(d.huntStreak, 0);
 
         // Reaction Lab state
         var reactantA = typeof d.reactantA === 'string' ? d.reactantA : null;
         var reactantB = typeof d.reactantB === 'string' ? d.reactantB : null;
-        var activeReaction = d.activeReaction || null;
-        var reactionsDiscovered = d.reactionsDiscovered || {};
+        var activeReaction = _isPlainObj(d.activeReaction) ? d.activeReaction : null;
+        var reactionsDiscovered = _isPlainObj(d.reactionsDiscovered) ? d.reactionsDiscovered : {};
 
         // Fun fact state
-        var factIdx = d._factIdx || 0;
+        var factIdx = Math.max(0, Math.floor(_safeNum(d._factIdx, 0)));
 
 
         /* ═══════════════════════════════════════════════════
@@ -1669,7 +1673,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
            Main UI Render
            ═══════════════════════════════════════════════════ */
         var huntObjectGridStyles = '.decomposer-scene-objects{position:relative;inset:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,max(4em,calc((100% - 24px)/3))),1fr));gap:12px;padding:12px;box-sizing:border-box}.decomposer-scene-objects [data-decomposer-object]{position:relative!important;left:auto!important;top:auto!important;transform:none!important;min-width:0;width:100%;padding:4px}.decomposer-scene-objects .decomposer-scene-object-label{max-width:none!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}.decomposer-scene-objects [data-decomposer-object]>.absolute{display:none}';
-        return h('div', { className: 'max-w-3xl mx-auto animate-in fade-in duration-200', 'data-decomposer-active-tab': tab },
+        return h('div', {
+          className: 'max-w-3xl mx-auto animate-in fade-in duration-200',
+          'data-decomposer-active-tab': tab,
+          style: isDark ? { backgroundColor: '#0f172a', padding: '12px', borderRadius: '16px' } : undefined
+        },
           h('style', null,
             '[data-decomposer-active-tab=scenes]{container-type:inline-size;container-name:decomposer-hunt}' +
             '[data-decomposer-active-tab=scenes] :is(h3,h4,h5,p,span,button){line-height:1.5}' +
@@ -1718,22 +1726,129 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             '@container decomposer-hunt (max-width:40em){' + huntObjectGridStyles + '}' +
             '@media(forced-colors:active){.decomposer-scene-dismiss{background:ButtonFace;color:ButtonText;border-color:ButtonText}.decomposer-scene-dismiss:focus-visible,[data-decomposer-object]:focus-visible{outline-color:Highlight}[data-decomposer-active-tab=scenes] :is(.text-indigo-400,.text-indigo-500,.text-red-400,.text-red-500,.text-emerald-600,.text-cyan-600,.text-amber-600){color:CanvasText}[data-decomposer-active-tab=scenes] [data-decomposer-object] .decomposer-scene-object-label{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.theme-contrast [data-decomposer-active-tab=scenes] .decomposer-scene-card,.theme-contrast [data-decomposer-active-tab=scenes] .decomposer-scene-card :is(div,section,span,p,h4){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}'),
 
-          /* ── Header ── */
-          h('div', { className: 'flex flex-wrap items-center gap-3 mb-3' },
-            h('button', {
-              onClick: function() { setStemLabTool(null); },
-              className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]',
-              'aria-label': __alloT('stem.decomposer.a11y_back_to_tools', 'Back to tools')
-            }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-            h('h3', { className: 'text-lg font-bold text-slate-800 tracking-tight' + onHostInk }, '\u2697\uFE0F Material Decomposer'),
-            h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[0.6875rem] font-bold rounded-full' },
-              totalAtoms + ' ATOMS'
-            ),
-            (d.researchPoints || 0) > 0 && h('span', { className: 'px-2 py-0.5 bg-sky-100 text-sky-700 text-[0.6875rem] font-bold rounded-full' },
-              '⭐ ' + d.researchPoints + ' RP'
-            ),
-            badges.length > 0 && h('span', { className: 'px-2 py-0.5 bg-purple-100 text-purple-700 text-[0.6875rem] font-bold rounded-full' },
-              '\uD83C\uDFC5 ' + badges.length + '/' + BADGES.length
+          /* ── Chemistry Workbench Hero Header ── */
+          h('div', {
+            'data-decomposer-hero': 'true',
+            className: 'rounded-2xl p-3.5 sm:p-4 mb-3 shadow-md',
+            style: {
+              backgroundColor: isContrast ? '#000000' : (isDark ? '#1e1b4b' : '#78350f'),
+              backgroundImage: isContrast
+                ? 'none'
+                : (isDark
+                    ? 'linear-gradient(135deg, #0f172a 0%, #312e81 52%, #78350f 100%)'
+                    : 'linear-gradient(135deg, #78350f 0%, #b45309 55%, #9a3412 100%)'),
+              border: isContrast ? '2px solid #ffff00' : '1px solid rgba(251,191,36,0.38)',
+              color: isContrast ? '#ffff00' : '#ffffff'
+            }
+          },
+            h('div', { className: 'flex flex-wrap items-center gap-3' },
+              h('button', {
+                onClick: function() { setStemLabTool(null); },
+                className: 'transition-colors p-2 rounded-xl active:scale-[0.97]',
+                style: {
+                  backgroundColor: isContrast ? '#000000' : 'rgba(255,255,255,0.16)',
+                  border: isContrast ? '1px solid #ffff00' : '1px solid rgba(255,255,255,0.28)',
+                  color: isContrast ? '#ffff00' : '#ffffff',
+                  minWidth: 36, minHeight: 36
+                },
+                'aria-label': __alloT('stem.decomposer.a11y_back_to_tools', 'Back to tools')
+              }, h(ArrowLeft, { size: 18, style: { color: isContrast ? '#ffff00' : '#ffffff' } })),
+              /* Bespoke Orbital & Molecular Lattice SVG Emblem */
+              h('svg', {
+                width: 44, height: 44, viewBox: '0 0 44 44',
+                'aria-hidden': 'true',
+                style: { flexShrink: 0, display: 'block' }
+              },
+                h('rect', {
+                  x: 1, y: 1, width: 42, height: 42, rx: 12,
+                  fill: isContrast ? '#000000' : 'rgba(15,23,42,0.42)',
+                  stroke: isContrast ? '#ffff00' : 'rgba(253,224,71,0.5)',
+                  strokeWidth: 1.5
+                }),
+                h('ellipse', {
+                  cx: 22, cy: 22, rx: 15, ry: 6.5,
+                  transform: 'rotate(-30 22 22)',
+                  fill: 'none',
+                  stroke: isContrast ? '#ffff00' : '#fde68a',
+                  strokeWidth: 1.5,
+                  strokeOpacity: isContrast ? 1 : 0.85
+                }),
+                h('ellipse', {
+                  cx: 22, cy: 22, rx: 15, ry: 6.5,
+                  transform: 'rotate(30 22 22)',
+                  fill: 'none',
+                  stroke: isContrast ? '#00ff00' : '#38bdf8',
+                  strokeWidth: 1.5,
+                  strokeOpacity: isContrast ? 1 : 0.85
+                }),
+                h('circle', { cx: 22, cy: 22, r: 4.5, fill: isContrast ? '#ffff00' : '#fbbf24', stroke: isContrast ? '#000000' : '#78350f', strokeWidth: 1.2 }),
+                h('circle', { cx: 34, cy: 15, r: 2.6, fill: isContrast ? '#00ff00' : '#38bdf8' }),
+                h('circle', { cx: 10, cy: 29, r: 2.6, fill: isContrast ? '#ffff00' : '#f97316' }),
+                h('circle', { cx: 33, cy: 29, r: 2.4, fill: isContrast ? '#ffffff' : '#a7f3d0' })
+              ),
+              h('div', { style: { flex: '1 1 180px', minWidth: 0 } },
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('span', {
+                    className: 'text-[0.6875rem] font-black uppercase tracking-wider px-2 py-0.5 rounded-md',
+                    style: {
+                      backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.45)',
+                      color: isContrast ? '#ffff00' : '#fde68a',
+                      border: isContrast ? '1px solid #ffff00' : '1px solid rgba(253,224,71,0.4)'
+                    }
+                  }, __alloT('stem.decomposer.subject_badge', 'CHEMISTRY LAB')),
+                  h('span', {
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full font-mono',
+                    style: {
+                      backgroundColor: isContrast ? '#000000' : 'rgba(255,255,255,0.16)',
+                      color: isContrast ? '#ffff00' : '#ffffff',
+                      border: isContrast ? '1px solid #ffff00' : '1px solid rgba(255,255,255,0.28)'
+                    }
+                  }, sel.emoji + ' ' + sel.formula)
+                ),
+                h('h3', {
+                  className: 'text-lg font-black tracking-tight mt-0.5',
+                  style: { color: isContrast ? '#ffff00' : '#ffffff', margin: '2px 0 0' }
+                }, '\u2697\uFE0F Material Decomposer'),
+                h('p', {
+                  className: 'text-xs mt-0.5',
+                  style: { color: isContrast ? '#ffffff' : '#fef3c7', margin: '2px 0 0' }
+                }, __alloT('stem.decomposer.hero_subtitle', 'Atomic Breakdown \u00B7 Molecular Bonds \u00B7 Phase & Reaction Bench'))
+              ),
+              /* Live Telemetry Pills */
+              h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                h('span', {
+                  className: 'px-2.5 py-1 text-[0.6875rem] font-bold rounded-full',
+                  style: {
+                    backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.48)',
+                    color: isContrast ? '#ffff00' : '#fde68a',
+                    border: isContrast ? '1px solid #ffff00' : '1px solid rgba(251,191,36,0.45)'
+                  }
+                }, totalAtoms + ' ATOMS'),
+                h('span', {
+                  className: 'px-2.5 py-1 text-[0.6875rem] font-bold rounded-full',
+                  style: {
+                    backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.48)',
+                    color: isContrast ? '#ffff00' : '#a7f3d0',
+                    border: isContrast ? '1px solid #ffff00' : '1px solid rgba(52,211,153,0.45)'
+                  }
+                }, '\u2696 ' + sel.molarMass),
+                researchPoints > 0 && h('span', {
+                  className: 'px-2.5 py-1 text-[0.6875rem] font-bold rounded-full',
+                  style: {
+                    backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.48)',
+                    color: isContrast ? '#ffff00' : '#bae6fd',
+                    border: isContrast ? '1px solid #ffff00' : '1px solid rgba(56,189,248,0.45)'
+                  }
+                }, '\u2B50 ' + researchPoints + ' RP'),
+                badges.length > 0 && h('span', {
+                  className: 'px-2.5 py-1 text-[0.6875rem] font-bold rounded-full',
+                  style: {
+                    backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.48)',
+                    color: isContrast ? '#ffff00' : '#e9d5ff',
+                    border: isContrast ? '1px solid #ffff00' : '1px solid rgba(192,132,252,0.45)'
+                  }
+                }, '\uD83C\uDFC5 ' + badges.length + '/' + BADGES.length)
+              )
             )
           ),
 
@@ -1757,10 +1872,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 className: 'text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700'
               }, completedChallenges.length + '/' + DECOMPOSER_CHALLENGES.length + ' challenges')
             ),
-            h('div', { className: 'w-full rounded-full h-2.5 bg-sky-100/50', style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+            h('div', { className: 'w-full rounded-full bg-sky-100/50', style: { height: '10px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)', overflow: 'hidden' } },
               h('div', {
-                className: 'bg-gradient-to-r from-sky-400 to-indigo-500 h-2.5 rounded-full transition-all duration-500',
-                style: { width: Math.min(100, (completedChallenges.length / DECOMPOSER_CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(14,165,233,0.3)' }
+                className: 'bg-gradient-to-r from-sky-400 to-indigo-500 rounded-full transition-all duration-500',
+                style: { height: '10px', width: Math.min(100, (completedChallenges.length / DECOMPOSER_CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(14,165,233,0.3)' }
               })
             ),
             h('div', { className: 'flex flex-wrap gap-2 mt-1', 'aria-hidden': 'true' },
@@ -1807,7 +1922,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               states:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF21\uFE0F', title: 'States \u2014 phase changes', hint: 'Solid \u2192 liquid \u2192 gas (and back). Phase change requires energy in or out without changing temperature \u2014 the latent heat trap.' },
               visualize:  { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '\uD83C\uDFA8', title: 'Atoms \u2014 zoom in',         hint: 'Watch the atomic-scale view of the same reaction you saw at the human scale. Bonds break (energy out), bonds form (energy in). Net change = enthalpy.' },
               quiz:       { accent: '#10b981', soft: 'rgba(16,185,129,0.10)',  icon: '\uD83E\uDDE0', title: 'Quiz \u2014 concepts in context', hint: 'Multi-choice items on bonding, redox, phase changes, half-life. Each question pairs back to the explore + reactions modes.' },
-              tutor:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\uD83E\uDD16', title: 'AI tutor',                      hint: 'Ask the tutor about the active material or reaction. It knows what is on screen and tailors answers to your grade band.' }
+              tutor:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\uD83E\uDD16', title: 'AI tutor',                      hint: 'Ask the tutor about the active material or reaction. It knows what is on screen and tailors answers to your grade band.' },
+              decompHunt: { accent: '#65a30d', soft: 'rgba(101,163,13,0.12)',  icon: '\u23F1\uFE0F', title: 'Decompose \u2014 breakdown rates', hint: 'Measure how temperature and moisture change biological decomposition timelines across everyday materials.' }
             };
             var meta = TAB_META[tab] || TAB_META.explore;
             return h('div', {
@@ -1815,17 +1931,17 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               style: {
                 padding: '12px 14px',
                 borderRadius: 12,
-                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-                backgroundColor: isContrast ? '#000' : '#fff',
-                border: '1px solid ' + meta.accent + '55',
-                borderLeft: '4px solid ' + meta.accent,
+                backgroundImage: isContrast ? 'none' : ('linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)'),
+                backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff'),
+                border: isContrast ? '2px solid #ffff00' : ('1px solid ' + meta.accent + '55'),
+                borderLeft: '4px solid ' + (isContrast ? '#ffff00' : meta.accent),
                 display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
               }
             },
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
-                h('h3', { style: { color: '#334155', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                h('h3', { style: { color: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#1e293b'), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569'), fontSize: 11.5, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );
           })(),
@@ -1859,6 +1975,55 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
              ═══════════════════════════════════════════════════ */
           tab === 'explore' && h('div', null,
 
+            /* Quick Guided Chemistry Investigation Presets */
+            h('div', {
+              className: 'rounded-xl border p-2.5 mb-3 flex flex-wrap items-center gap-1.5',
+              style: {
+                backgroundColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#fffbeb'),
+                borderColor: isContrast ? '#ffff00' : (isDark ? '#334155' : '#fde68a')
+              }
+            },
+              h('span', {
+                className: 'text-[0.6875rem] font-extrabold uppercase tracking-wider mr-1',
+                style: { color: isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#92400e') }
+              }, '\u2728 ' + __alloT('stem.decomposer.guided_presets', 'Quick Investigate:')),
+              [
+                { name: 'Water', tag: 'Polar Covalent', icon: '\uD83D\uDCA7' },
+                { name: 'Table Salt', tag: 'Ionic Lattice', icon: '\uD83E\uDDC2' },
+                { name: 'Diamond', tag: 'Carbon Crystal', icon: '\uD83D\uDC8E' },
+                { name: 'Sugar (Glucose)', tag: 'Organic Bio-Fuel', icon: '\uD83C\uDF6C' }
+              ].filter(function(p) {
+                return MATERIALS.some(function(m) { return m.name === p.name; });
+              }).map(function(p) {
+                var activePreset = sel.name === p.name;
+                return h('button', {
+                  key: p.name,
+                  type: 'button',
+                  'data-decomposer-preset': p.name,
+                  'aria-pressed': activePreset,
+                  onClick: function() {
+                    SOUNDS.selectMaterial();
+                    var updates = { selected: p.name, decomposed: false };
+                    if (d.compareMode) {
+                      var partner = comparisonMaterial(sel.name, d.compareTo);
+                      updates.compareTo = comparisonMaterial(p.name, partner.name === p.name ? sel.name : partner.name).name;
+                    }
+                    updMulti(updates);
+                  },
+                  className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold transition-all',
+                  style: {
+                    backgroundColor: activePreset
+                      ? (isContrast ? '#ffff00' : '#b45309')
+                      : (isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff')),
+                    color: activePreset
+                      ? (isContrast ? '#000000' : '#ffffff')
+                      : (isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#78350f')),
+                    border: '1px solid ' + (isContrast ? '#ffff00' : (activePreset ? '#92400e' : (isDark ? '#475569' : '#fcd34d')))
+                  }
+                }, p.icon + ' ' + p.tag);
+              })
+            ),
+
             /* Material info card */
             h('div', { className: 'bg-gradient-to-br from-slate-50 to-amber-50 rounded-xl border-2 border-amber-200 p-4 mb-3' },
 
@@ -1877,6 +2042,195 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   )
                 )
               ),
+
+              /* Interactive Molecular Architecture & Mass Spectrum SVG Stage */
+              (function() {
+                var svgBg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#1e293b');
+                var svgPanel = isContrast ? '#000000' : '#0f172a';
+                var svgStroke = isContrast ? '#ffff00' : '#334155';
+                var svgInk = isContrast ? '#ffff00' : '#f8fafc';
+                var svgSub = isContrast ? '#ffffff' : '#cbd5e1';
+                var totalMassNum = sel.elements.reduce(function(acc, el) {
+                  var m = parseFloat(el.mass);
+                  return acc + (isFinite(m) ? el.count * m : 0);
+                }, 0) || parseFloat(sel.molarMass) || 1;
+                var isIonic = String(sel.bondType || '').toLowerCase().indexOf('ionic') !== -1;
+                var nEl = sel.elements.length;
+                var cx = 148, cy = 88;
+                var nodes = [];
+                if (!decomposed) {
+                  if (nEl === 1) {
+                    var cnt = Math.min(sel.elements[0].count, 4);
+                    if (cnt === 1) {
+                      nodes.push({ el: sel.elements[0], x: cx, y: cy, r: 24, primary: true });
+                    } else {
+                      var rad = cnt === 2 ? 42 : 46;
+                      for (var k = 0; k < cnt; k++) {
+                        var ang = (k / cnt) * Math.PI * 2 - Math.PI / 2;
+                        nodes.push({ el: sel.elements[0], x: Math.round(cx + Math.cos(ang) * rad), y: Math.round(cy + Math.sin(ang) * rad * 0.78), r: 19, primary: k === 0 });
+                      }
+                    }
+                  } else {
+                    nodes.push({ el: sel.elements[0], x: cx, y: cy, r: 23, primary: true });
+                    var others = sel.elements.slice(1);
+                    for (var j = 0; j < others.length; j++) {
+                      var angle = ((j + 0.5) / others.length) * Math.PI * 2 - Math.PI / 2;
+                      var rx = others.length === 1 ? 66 : 74;
+                      var ry = others.length === 1 ? 0 : 44;
+                      nodes.push({ el: others[j], x: Math.round(cx + Math.cos(angle) * rx), y: Math.round(cy + Math.sin(angle) * ry), r: 20, primary: false });
+                    }
+                  }
+                } else {
+                  var spacing = nEl === 1 ? 0 : Math.min(82, Math.floor(220 / Math.max(1, nEl - 1)));
+                  var startX = cx - ((nEl - 1) * spacing) / 2;
+                  for (var sIdx = 0; sIdx < nEl; sIdx++) {
+                    nodes.push({ el: sel.elements[sIdx], x: Math.round(startX + sIdx * spacing), y: cy, r: 21, primary: false });
+                  }
+                }
+                var massX = 308;
+                var barW = 192;
+                var curBarX = massX;
+                return h('div', {
+                  className: 'rounded-xl overflow-hidden mb-3',
+                  style: {
+                    backgroundColor: svgBg,
+                    border: isContrast ? '2px solid #ffff00' : '1px solid #334155'
+                  }
+                },
+                  h('svg', {
+                    viewBox: '0 0 520 176',
+                    role: 'img',
+                    'aria-label': __alloT('stem.decomposer.molecular_diagram_aria', '{name} ({formula}) molecular schematic showing {state} elements and proportional mass breakdown')
+                      .replace('{name}', sel.name).replace('{formula}', sel.formula).replace('{state}', decomposed ? 'separated' : 'bonded'),
+                    style: { width: '100%', height: 'auto', display: 'block' }
+                  },
+                    /* Outer lab stage backdrop */
+                    h('rect', { x: 0, y: 0, width: 520, height: 176, fill: svgBg }),
+                    /* Left molecular viewport frame */
+                    h('rect', { x: 10, y: 10, width: 278, height: 156, rx: 10, fill: svgPanel, stroke: svgStroke, strokeWidth: 1.2 }),
+                    /* Subtle blueprint crosshair lines */
+                    h('line', { x1: 20, y1: 88, x2: 278, y2: 88, stroke: svgStroke, strokeWidth: 0.7, strokeDasharray: '3 4', opacity: isContrast ? 0.5 : 0.65 }),
+                    h('line', { x1: 148, y1: 24, x2: 148, y2: 152, stroke: svgStroke, strokeWidth: 0.7, strokeDasharray: '3 4', opacity: isContrast ? 0.5 : 0.65 }),
+                    /* Status header inside viewport */
+                    h('text', { x: 20, y: 27, fill: isContrast ? '#ffff00' : (decomposed ? '#fca5a5' : '#86efac'), fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' },
+                      decomposed ? '\u26A1 DECOMPOSED WELLS' : '\u269B BONDED SCHEMATIC'),
+                    h('text', { x: 278, y: 27, textAnchor: 'end', fill: svgSub, fontSize: 10.5, fontWeight: 700, fontFamily: 'monospace' }, sel.formula),
+                    /* Bond lines or separated trace lines */
+                    nodes.length > 1 && nodes.slice(1).map(function(nd, idx) {
+                      var anchor = decomposed ? nodes[idx] : nodes[0];
+                      return h('line', {
+                        key: 'bond-' + idx,
+                        x1: anchor.x, y1: anchor.y, x2: nd.x, y2: nd.y,
+                        stroke: isContrast ? '#ffff00' : (decomposed ? '#f87171' : (isIonic ? '#38bdf8' : '#fbbf24')),
+                        strokeWidth: decomposed ? 1.8 : 3,
+                        strokeDasharray: (decomposed || isIonic) ? '5 4' : undefined,
+                        strokeLinecap: 'round'
+                      });
+                    }),
+                    /* Containment wells (decomposed) or atom spheres */
+                    nodes.map(function(nd, idx) {
+                      var fillCol = isContrast ? '#000000' : nd.el.color;
+                      var inkCol = isContrast ? '#ffff00' : readableInk(nd.el.color);
+                      return h('g', { key: 'node-' + idx },
+                        decomposed && h('circle', {
+                          cx: nd.x, cy: nd.y, r: nd.r + 7,
+                          fill: 'none',
+                          stroke: isContrast ? '#00ff00' : '#fbbf24',
+                          strokeWidth: 1.4,
+                          strokeDasharray: '4 3'
+                        }),
+                        h('circle', {
+                          cx: nd.x, cy: nd.y, r: nd.r,
+                          fill: fillCol,
+                          stroke: isContrast ? '#ffff00' : '#ffffff',
+                          strokeWidth: 2
+                        }),
+                        !isContrast && h('circle', {
+                          cx: nd.x - nd.r * 0.28, cy: nd.y - nd.r * 0.28, r: nd.r * 0.24,
+                          fill: '#ffffff', fillOpacity: 0.28
+                        }),
+                        h('text', {
+                          x: nd.x, y: nd.y + 4,
+                          textAnchor: 'middle',
+                          fill: inkCol,
+                          fontSize: 13,
+                          fontWeight: 900,
+                          fontFamily: 'system-ui, sans-serif'
+                        }, nd.el.sym),
+                        nd.el.count > 1 && h('g', null,
+                          h('rect', {
+                            x: nd.x + nd.r - 12, y: nd.y - nd.r - 4,
+                            width: 22, height: 15, rx: 7.5,
+                            fill: isContrast ? '#ffff00' : '#f59e0b',
+                            stroke: isContrast ? '#000000' : '#0f172a',
+                            strokeWidth: 1
+                          }),
+                          h('text', {
+                            x: nd.x + nd.r - 1, y: nd.y - nd.r + 7,
+                            textAnchor: 'middle',
+                            fill: '#000000',
+                            fontSize: 10,
+                            fontWeight: 900,
+                            fontFamily: 'system-ui, sans-serif'
+                          }, '\u00D7' + nd.el.count)
+                        ),
+                        decomposed && h('text', {
+                          x: nd.x, y: nd.y + nd.r + 20,
+                          textAnchor: 'middle',
+                          fill: svgSub,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          fontFamily: 'system-ui, sans-serif'
+                        }, 'Z=' + nd.el.num)
+                      );
+                    }),
+                    /* Viewport bottom footer */
+                    h('text', { x: 20, y: 156, fill: svgSub, fontSize: 10.5, fontWeight: 700, fontFamily: 'system-ui, sans-serif' },
+                      sel.bondType + ' \u00B7 ' + sel.state),
+                    h('text', { x: 278, y: 156, textAnchor: 'end', fill: isContrast ? '#00ff00' : '#fde68a', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' },
+                      totalAtoms + ' ' + (totalAtoms === 1 ? 'atom' : 'atoms')),
+
+                    /* Right Mass Spectrum Telemetry Panel */
+                    h('rect', { x: 298, y: 10, width: 212, height: 156, rx: 10, fill: svgPanel, stroke: svgStroke, strokeWidth: 1.2 }),
+                    h('text', { x: massX, y: 28, fill: svgInk, fontSize: 11, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'MASS SPECTRUM'),
+                    h('text', { x: 500, y: 28, textAnchor: 'end', fill: isContrast ? '#00ff00' : '#6ee7b7', fontSize: 10.5, fontWeight: 800, fontFamily: 'monospace' }, sel.molarMass),
+                    /* Stacked proportional mass bar */
+                    h('rect', { x: massX, y: 38, width: barW, height: 14, rx: 4, fill: isContrast ? '#000000' : '#1e293b', stroke: svgStroke, strokeWidth: 1 }),
+                    sel.elements.map(function(el, idx) {
+                      var m = parseFloat(el.mass);
+                      var frac = isFinite(m) ? ((el.count * m) / totalMassNum) : (1 / sel.elements.length);
+                      var segW = idx === sel.elements.length - 1 ? Math.max(4, massX + barW - curBarX) : Math.max(4, Math.round(frac * barW));
+                      var rxPos = curBarX;
+                      curBarX += segW;
+                      return h('rect', {
+                        key: 'seg-' + el.sym,
+                        x: rxPos, y: 39, width: Math.max(2, segW - 1), height: 12,
+                        fill: isContrast ? (idx % 2 === 0 ? '#ffff00' : '#00ff00') : el.color
+                      });
+                    }),
+                    /* Element breakdown legend rows (up to 3 rows cleanly spaced) */
+                    sel.elements.slice(0, 3).map(function(el, idx) {
+                      var m = parseFloat(el.mass);
+                      var pct = Math.round(((isFinite(m) ? el.count * m : 0) / totalMassNum) * 100);
+                      var rowY = 74 + idx * 28;
+                      return h('g', { key: 'leg-' + el.sym },
+                        h('rect', {
+                          x: massX, y: rowY - 10, width: 12, height: 12, rx: 3,
+                          fill: isContrast ? (idx % 2 === 0 ? '#ffff00' : '#00ff00') : el.color,
+                          stroke: isContrast ? '#ffff00' : 'none', strokeWidth: 1
+                        }),
+                        h('text', { x: massX + 18, y: rowY, fill: svgInk, fontSize: 11, fontWeight: 800, fontFamily: 'system-ui, sans-serif' },
+                          el.sym + ' \u00B7 ' + el.name),
+                        h('text', { x: 500, y: rowY, textAnchor: 'end', fill: svgSub, fontSize: 10.5, fontWeight: 700, fontFamily: 'monospace' },
+                          '\u00D7' + el.count + ' (' + pct + '%)')
+                      );
+                    }),
+                    /* Footer note inside right panel */
+                    h('text', { x: massX, y: 156, fill: svgSub, fontSize: 10, fontWeight: 600, fontFamily: 'system-ui, sans-serif' },
+                      sel.elements.length + ' unique ' + (sel.elements.length === 1 ? 'element' : 'elements') + ' \u00B7 Click below to split')
+                  )
+                );
+              })(),
 
               /* Decompose / reassemble button */
               h('button', { onClick: function() {
@@ -1957,10 +2311,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     )
                   ),
                   /* Atom count bar */
-                  h('div', { className: 'h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1' },
+                  h('div', { className: 'bg-slate-100 rounded-full overflow-hidden mt-1', style: { height: '6px' } },
                     h('div', {
-                      className: 'h-full rounded-full transition-all duration-700',
-                      style: { width: Math.round(el.count / totalAtoms * 100) + '%', background: el.color }
+                      className: 'rounded-full transition-all duration-700',
+                      style: { height: '6px', width: Math.round(el.count / totalAtoms * 100) + '%', background: el.color }
                     })
                   ),
                   h('p', { className: 'text-[0.6875rem] text-slate-600 mt-1' },
@@ -2030,10 +2384,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                           className: 'px-1 rounded flex items-center justify-center text-white text-[0.6875rem] font-bold',
                               style: { background: el.color, color: readableInk(el.color), minWidth: 24, minHeight: 24, flexShrink: 0 }
                             }, el.sym),
-                            h('div', { className: 'flex-1 h-2 bg-slate-100 rounded-full overflow-hidden' },
+                            h('div', { className: 'flex-1 bg-slate-100 rounded-full overflow-hidden', style: { height: '8px' } },
                               h('div', {
-                                className: 'h-full rounded-full',
-                                style: { width: Math.round(el.count / tc * 100) + '%', background: el.color }
+                                className: 'rounded-full',
+                                style: { height: '8px', width: Math.round(el.count / tc * 100) + '%', background: el.color }
                               })
                             ),
                             h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 text-right' },
@@ -2139,10 +2493,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     h('span', { className: 'font-bold text-slate-700' }, el.count + ' \u00D7 ' + el.sym),
                     h('span', { className: 'text-slate-600' }, el.count + ' \u00D7 ' + el.mass),
                     h('span', { className: 'font-bold text-slate-700' }, '= ' + contribution),
-                    h('div', { className: 'h-1.5 bg-slate-100 rounded-full overflow-hidden', style: { flex: '1 1 4em' } },
+                    h('div', { className: 'bg-slate-100 rounded-full overflow-hidden', style: { flex: '1 1 4em', height: '6px' } },
                       h('div', {
-                        className: 'h-full rounded-full',
-                        style: { width: percent + '%', background: el.color }
+                        className: 'rounded-full',
+                        style: { height: '6px', width: percent + '%', background: el.color }
                       })
                     ),
                     h('span', { className: 'text-slate-600 font-bold text-right' }, percent + '%')

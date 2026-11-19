@@ -36,8 +36,14 @@ function _promptIsFocusable(dialog, element) {
     }
     ancestor = ancestor.parentElement;
   }
-  const style = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-  return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+  if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+    for (let cur = element; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+      const style = window.getComputedStyle(cur);
+      if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+      if (cur === dialog) break;
+    }
+  }
+  return true;
 }
 
 function _promptIsolateSiblings(dialog) {
@@ -219,9 +225,9 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
 
   const handleDialogKeyDown = React.useCallback((e) => {
     if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
-    // Choice cards use native button activation: Enter on Cancel or Close must
-    // not confirm the selected reading through this dialog-level shortcut.
-    if (choiceMode && e.target?.closest?.('button')) return;
+    // Buttons (Cancel, Close, Submit, Choice cards) use native button activation:
+    // Enter on Cancel or Close must never submit the prompt through this shortcut.
+    if (e.target?.closest?.('button')) return;
     if (e.key === 'Enter' && !promptDialog.multiline) { e.preventDefault(); handleSubmit(); }
     else if (e.key === 'Enter' && promptDialog.multiline && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSubmit(); }
   }, [handleSubmit, promptDialog.multiline, choiceMode]);
@@ -262,7 +268,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
         aria-labelledby="alloflow-prompt-title"
         aria-describedby="alloflow-prompt-description"
         onKeyDown={handleDialogKeyDown}
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 border-slate-200"
+        className="allo-docsuite bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 border-slate-200"
       >
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">

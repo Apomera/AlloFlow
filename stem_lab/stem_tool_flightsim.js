@@ -37,6 +37,29 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// SkySchool cockpit workbench polish, quick departures & High-Contrast parity
+(function() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-flightsim-workbench-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-flightsim-workbench-css';
+  st.textContent = [
+    '.fs-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(56,189,248,.16);border:1px solid rgba(125,211,252,.45);color:#e0f2fe;margin-bottom:4px}',
+    '.fs-telemetry-pills{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}',
+    '.fs-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(2,6,23,.58);border:1px solid rgba(125,211,252,.35);color:#e0f2fe}',
+    '.fs-telemetry-pill strong{color:#fde68a;font-weight:900}',
+    '.fs-forces-strip{margin:8px 0 10px;padding:7px 9px;border-radius:10px;background:rgba(2,6,23,.52);border:1px solid rgba(125,211,252,.25)}',
+    '.fs-starter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 clamp(12px,4%,24px) 12px;padding:8px 10px;border-radius:12px;background:rgba(7,22,43,.86);border:1px solid rgba(56,189,248,.34);color:#e2e8f0}',
+    '.fs-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#7dd3fc;margin-right:2px}',
+    '.fs-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#0f172a;border:1px solid rgba(125,211,252,.42);color:#f8fafc;cursor:pointer}',
+    '.fs-starter-chip:hover{background:#0369a1;border-color:#bae6fd;color:#ffffff}',
+    '.theme-contrast #skyschool-menu,.theme-contrast [data-flightsim-briefing],.theme-contrast .fs-forces-strip,.theme-contrast .fs-starter-bar{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+    '.theme-contrast .fs-hero-badge,.theme-contrast .fs-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+    '.theme-contrast .fs-telemetry-pill strong,.theme-contrast .fs-starter-label{color:#00ff00!important}',
+    '.theme-contrast .fs-starter-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}'
+  ].join('');
+  document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_flightsim.js — SkySchool: Educational Flight Simulator
 // Teaches aerodynamics, flight mechanics, navigation, and geography
@@ -4002,7 +4025,18 @@ function getFlightLightningPulse(time) {
   // About 10 MB of this geography ships in stem_data_skyschool_geo.js, which the
   // STEM loader fetches first (stemModuleDependencies) under a content-hash URL,
   // so an unchanged copy stays cached across deploys.
-  var FLIGHT_GEO = window.__alloSkySchoolGeo || loadFlightGeographySync();
+  var FLIGHT_GEO;
+  try {
+    FLIGHT_GEO = window.__alloSkySchoolGeo || loadFlightGeographySync();
+  } catch (_flightGeoErr) {
+    FLIGHT_GEO = {
+      FLIGHT_ELEVATION_DATA: { width: 1, height: 1, resolutionDegrees: 180, rows: [] },
+      FLIGHT_LAKE_LEVEL_DATA: { width: 1, height: 1, resolutionDegrees: 180, rows: [] },
+      FLIGHT_CITY_DISTRICTS: [],
+      LAND_MASK_RLE: [],
+      _loadError: String(_flightGeoErr && _flightGeoErr.message || _flightGeoErr)
+    };
+  }
   var FLIGHT_ELEVATION_DATA = FLIGHT_GEO.FLIGHT_ELEVATION_DATA;
   var FLIGHT_LAKE_LEVEL_DATA = FLIGHT_GEO.FLIGHT_LAKE_LEVEL_DATA;
 
@@ -16086,7 +16120,8 @@ function getFlightCityLayout(city) {
       var useEffect = React.useEffect;
       var useRef = React.useRef;
       var useCallback = React.useCallback;
-      var d = (ctx.toolData && ctx.toolData['flightSim']) || {};
+      var _rawFs = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData['flightSim'] : null;
+      var d = (_rawFs && typeof _rawFs === 'object' && !Array.isArray(_rawFs)) ? _rawFs : {};
       // Live ref to `d` for the animation loop. The main render-loop
       // useEffect closure-captures `d` at mount time and reads many
       // properties off it (d.thirdPerson, d.autopilot, d.showForces,
@@ -16099,8 +16134,8 @@ function getFlightCityLayout(city) {
       dataRef.current = d;
       // Each quiz attempt gets its own option order (the attempt number is already saved).
       setFlightQuizSeed(flightQuizSeedOf(d));
-      var upd = function(key, val) { ctx.update('flightSim', key, val); };
-      var updMulti = function(obj) { ctx.updateMulti('flightSim', obj); };
+      var upd = function(key, val) { if (typeof ctx.update === 'function') ctx.update('flightSim', key, val); };
+      var updMulti = function(obj) { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('flightSim', obj); };
       var addToast = ctx.addToast;
       var celebrateFlightWin = function(message, xpPoints, reason) {
         if (typeof addToast === 'function') addToast(message, 'success');
@@ -17391,7 +17426,7 @@ function getFlightCityLayout(city) {
             var _ens = function(cb){
               if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
               var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-              var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+              if(window._isDesktopBundledApp===true){cb();return;} var _sri=["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.integrity=_sri[i]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
             };
             _ens(function(){
               try {
@@ -32716,11 +32751,36 @@ function getFlightCityLayout(city) {
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', gap: '14px', alignItems: 'stretch' } },
                 h('div', { style: { minWidth: 0, overflowWrap: 'anywhere' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
-                    h('div', { style: { width: '42px', height: '42px', flexShrink: 0, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,165,233,0.16)', border: '1px solid rgba(125,211,252,0.24)', fontSize: '24px' } }, '\u2708\uFE0F'),
+                    h('svg', { width: 46, height: 46, viewBox: '0 0 64 64', style: { flexShrink: 0 }, 'aria-hidden': 'true', focusable: 'false' },
+                      h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: ctx.isContrast ? '#000000' : '#082f49', stroke: ctx.isContrast ? '#00ff00' : 'rgba(125,211,252,0.55)', strokeWidth: 1.8 }),
+                      h('circle', { cx: 32, cy: 32, r: 21, fill: ctx.isContrast ? '#000000' : '#0369a1', stroke: ctx.isContrast ? '#ffff00' : '#7dd3fc', strokeWidth: 1.6 }),
+                      h('path', { d: 'M11 32 A21 21 0 0 0 53 32 Z', fill: ctx.isContrast ? '#000000' : '#78350f', opacity: ctx.isContrast ? 1 : 0.8 }),
+                      h('line', { x1: 12, y1: 32, x2: 52, y2: 32, stroke: '#ffffff', strokeWidth: 1.6 }),
+                      h('path', { d: 'M20 32 L28 32 L32 36 L36 32 L44 32', fill: 'none', stroke: ctx.isContrast ? '#00ff00' : '#fbbf24', strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                    ),
                     h('div', { style: { minWidth: 0 } },
+                      h('span', { className: 'fs-hero-badge' }, __alloT('stem.flightsim.hero_badge', 'Aerodynamics · Flight Mechanics & Nav')),
                       h('h2', { id: 'skyschool-briefing-title', tabIndex: -1, style: { margin: 0, fontSize: '24px', lineHeight: 1.05, fontWeight: 900, color: '#f8fafc' } }, __alloT('stem.flightsim.skyschool_cockpit_briefing', 'SkySchool Cockpit Briefing')),
                       h('div', { style: { fontSize: '12px', color: '#bae6fd', marginTop: '4px' } }, __alloT('stem.flightsim.learn_to_fly_learn_the_world', 'Learn to fly. Learn the world.')),
                       h('div', { 'data-flight-not-training': 'menu', style: { fontSize: '12px', color: '#cbd5e1', marginTop: '4px' } }, __alloT('stem.flightsim.not_flight_training', 'A learning simulator: not flight training, and not permission to fly an aircraft or drone.'))
+                    )
+                  ),
+                  h('div', { className: 'fs-telemetry-pills', 'aria-label': __alloT('stem.flightsim.route_telemetry_aria', 'Active flight plan telemetry') },
+                    h('span', { className: 'fs-telemetry-pill' }, __alloT('stem.flightsim.pill_hdg', 'HDG'), ' ', h('strong', null, String(hdg).padStart(3, '0') + '°')),
+                    h('span', { className: 'fs-telemetry-pill' }, __alloT('stem.flightsim.pill_cruise', 'Cruise'), ' ', h('strong', null, cruiseKts + ' kt')),
+                    estMin > 0 && h('span', { className: 'fs-telemetry-pill' }, __alloT('stem.flightsim.pill_ete', 'ETE'), ' ', h('strong', null, estMin + ' min'))
+                  ),
+                  h('div', { className: 'fs-forces-strip' },
+                    h('svg', { viewBox: '0 0 460 58', width: '100%', height: 'auto', role: 'img', 'aria-label': __alloT('stem.flightsim.forces_diagram_aria', 'Four forces of flight diagram showing lift opposing weight and thrust opposing drag'), style: { display: 'block', maxHeight: 62 } },
+                      h('line', { x1: 230, y1: 29, x2: 230, y2: 10, stroke: ctx.isContrast ? '#00ff00' : '#38bdf8', strokeWidth: 2.2 }),
+                      h('line', { x1: 230, y1: 29, x2: 230, y2: 48, stroke: ctx.isContrast ? '#ffff00' : '#f87171', strokeWidth: 2.2 }),
+                      h('line', { x1: 230, y1: 29, x2: 320, y2: 29, stroke: ctx.isContrast ? '#00ff00' : '#34d399', strokeWidth: 2.2 }),
+                      h('line', { x1: 230, y1: 29, x2: 140, y2: 29, stroke: ctx.isContrast ? '#ffff00' : '#fb923c', strokeWidth: 2.2 }),
+                      h('ellipse', { cx: 230, cy: 29, rx: 18, ry: 5.5, fill: ctx.isContrast ? '#ffffff' : '#e2e8f0' }),
+                      h('text', { x: 244, y: 15, fill: ctx.isContrast ? '#00ff00' : '#7dd3fc', fontSize: 10, fontWeight: 800 }, __alloT('stem.flightsim.force_lift', 'LIFT ↑')),
+                      h('text', { x: 244, y: 52, fill: ctx.isContrast ? '#ffff00' : '#fca5a5', fontSize: 10, fontWeight: 800 }, __alloT('stem.flightsim.force_weight', 'WEIGHT ↓')),
+                      h('text', { x: 326, y: 33, fill: ctx.isContrast ? '#00ff00' : '#6ee7b7', fontSize: 10, fontWeight: 800 }, __alloT('stem.flightsim.force_thrust', 'THRUST →')),
+                      h('text', { x: 134, y: 33, textAnchor: 'end', fill: ctx.isContrast ? '#ffff00' : '#fdba74', fontSize: 10, fontWeight: 800 }, __alloT('stem.flightsim.force_drag', '← DRAG'))
                     )
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '6px', marginBottom: '10px' } },
@@ -32759,6 +32819,11 @@ function getFlightCityLayout(city) {
                       style: secondaryStyle,
                       'aria-label': __alloT('stem.flightsim.open_pre_flight_checklist', 'Open pre-flight checklist')
                     }, __alloT('stem.flightsim.pre_flight', 'Pre-Flight')),
+                    h('button', {
+                      onClick: function() { upd('view', 'calculator'); },
+                      style: secondaryStyle,
+                      'aria-label': __alloT('stem.flightsim.open_flight_calculator', 'Open flight calculator')
+                    }, __alloT('stem.flightsim.calculator_btn', 'Calculator')),
                     (d.lastDebrief || normalizeFlightPracticeHistory(d.flightPracticeHistory).length > 0) && h('button', {
                       onClick: openFlightJournal,
                       style: secondaryStyle

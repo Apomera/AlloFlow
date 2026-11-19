@@ -143,8 +143,11 @@ img {
 }
 
 .nav-logo {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    min-width: 24px;
+    min-height: 32px;
+    padding: 4px 2px;
     gap: 8px;
     font-family: 'Outfit';
     font-weight: 900;
@@ -163,6 +166,14 @@ img {
     font-size: 0.875rem;
     font-weight: 600;
     color: #475569;
+}
+
+.nav-links a {
+    display: inline-flex;
+    align-items: center;
+    min-width: 24px;
+    min-height: 32px;
+    padding: 4px 2px;
 }
 
 .nav-links a:hover {
@@ -203,7 +214,7 @@ main li a:not(.btn-primary):not(.btn-secondary) {
 }
 
 .nav-links .sponsor-btn {
-    color: #db2777;
+    color: #be185d;
     background: #fdf2f8;
     padding: 6px 14px;
     border-radius: 999px;

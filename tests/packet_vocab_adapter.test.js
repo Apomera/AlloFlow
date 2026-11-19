@@ -111,13 +111,17 @@ describe('the three vocabulary activities in the engine', () => {
     const names = (a) => Object.keys(a.labels).map((k) => k.slice(a.id.length + 1));
     // 2026-11-13: 'blank', the word a screen reader hears for ___ (tests/packets_math_vocab_fixes_2026_11_13b.test.js).
     for (const id of IDS) expect(names(TH.CHECK_ADAPTERS[id]), id).toEqual(['intro', 'directions', 'question', 'read', 'read_choice', 'hear', 'correct', 'retry', 'missed', 'practice_wrong', 'blank']);
+    // Shared vocab renderer (takeHomeVocab) holds offline speechSynthesis (v.localService === true) once per vocab file,
+    // never in non-vocab files; each adapter delegates via ctx.vocabChoice with zero global references.
+    const sharedVocab = TH._vocabChoice.toString();
+    expect(sharedVocab).not.toMatch(/\b(?:document|window|localStorage|sessionStorage|globalThis)\b/);
+    expect(audit(sharedVocab)).toEqual(['speech engine']);
+    expect(sharedVocab).toContain('v.localService === true');
+    new Function('return (' + sharedVocab + ');')();
     for (const id of IDS) {
       const a = TH.CHECK_ADAPTERS[id];
-      // What is copied into a file stands alone: the speech engine is reached through ctx.root, never a global.
       expect(a.render.toString() + a.score.toString()).not.toMatch(/\b(?:document|window|localStorage|sessionStorage|globalThis)\b/);
-      expect(audit(a.render.toString() + a.score.toString() + JSON.stringify(a.labels)), id).toEqual(['speech engine']);
-      // Only a voice that runs on the device.
-      expect(a.render.toString()).toContain('v.localService === true');
+      expect(audit(a.render.toString() + a.score.toString() + JSON.stringify(a.labels)), id).toEqual([]);
       new Function('return (' + a.render.toString() + ');')();
       const words = Object.values(a.labels).join('\n');
       expect(NOT_SAID.exec(words), id).toBeNull();
@@ -328,18 +332,54 @@ describe('a practice file', () => {
     expect(csv.body.split('\r\n')[1]).toContain('"' + first.id + '","vocab_word","Meaning to word","1","' + first.word + '"');
   });
 
-  it('shows no Read aloud button where the device has no speech engine, or only voices that need the internet', () => {
+  it('shows no Read aloud button where the device has no speech engine, or only voices that need the internet, and explains calmly in Reading tools', () => {
     for (const voices of [null, [{ lang: 'en-US', localService: false, name: 'Online' }], [{ lang: 'fr-FR', localService: true, name: 'French' }]]) {
       const t = play(made.html, { voices });
       t.start();
       expect([...t.d.querySelectorAll('[data-read-aloud]')].every((b) => b.hidden), JSON.stringify(voices)).toBe(true);
       expect(t.spoken).toEqual([]);
+      const note = t.q('[data-tools-no-voice]');
+      expect(note && note.hidden).toBe(false);
+      expect(note.textContent).toBe('This device has no built-in reading voice.');
     }
     const off = make({ readAloud: false });
     const t = play(off.html);
     t.start();
     expect([...t.d.querySelectorAll('[data-read-aloud]')].every((b) => b.hidden)).toBe(true);
+    expect(t.q('[data-tools-no-voice]').hidden).toBe(true);
     expect(off.manifest.speech).toEqual({ engine: 'none', note: 'Read aloud is off in this file.' });
+  });
+
+  it('retries getVoices() once after first user gesture (Chrome/iPadOS lazy voices) and applies Voice speed 0.78 to utterances', () => {
+    let loaded = false;
+    const rates = [];
+    const dom = new JSDOM(made.html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://packet.test/vocab.html', beforeParse(w) {
+      w.Audio = class { play() { return Promise.resolve(); } pause() {} };
+      w.speechSynthesis = {
+        getVoices: () => (loaded ? [{ lang: 'en-US', localService: true, name: 'Late local' }] : []),
+        cancel() {},
+        speak(u) { if (u.text) rates.push(u.rate); },
+        addEventListener() {},
+      };
+      w.SpeechSynthesisUtterance = function (text) { this.text = text; this.rate = 1; };
+    } });
+    opened.push(dom.window);
+    const d = dom.window.document;
+    d.getElementById('learner-name').value = 'Fox1';
+    [...d.querySelectorAll('#app button')].find((b) => b.textContent === 'Start').click();
+    // Voices started empty: buttons hidden and Reading tools shows calm no-voice note.
+    expect(d.querySelector('[data-read-aloud="question"]').hidden).toBe(true);
+    expect(d.querySelector('[data-tools-no-voice]').hidden).toBe(false);
+    // Simulate Chrome/iPadOS populating local voices after first user gesture.
+    loaded = true;
+    d.dispatchEvent(new dom.window.Event('pointerdown', { bubbles: true }));
+    expect(d.querySelector('[data-read-aloud="question"]').hidden).toBe(false);
+    expect(d.querySelector('[data-tools-no-voice]').hidden).toBe(true);
+    // Normal rate (0.9) vs Voice speed: Slower (0.78).
+    d.querySelector('[data-read-aloud="question"]').click();
+    d.querySelector('[data-tool="speed-1"]').click();
+    d.querySelector('[data-read-aloud="question"]').click();
+    expect(rates).toEqual([0.9, 0.78]);
   });
 
   it('a file for one student carries the code name in its manifest only, and opens with it filled in', () => {

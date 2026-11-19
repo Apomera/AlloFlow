@@ -1701,7 +1701,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
                   const limit = summary?.maxPerPerson || 1;
                   return (
                     <div key={slot.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-2 py-1.5">
-                      <span className={`text-xs font-bold ${gone ? 'text-slate-400' : 'text-slate-800'}`}>
+                      <span className={`text-xs font-bold ${gone ? 'text-slate-600 line-through' : 'text-slate-800'}`}>
                         {slot.label}
                         <span className="ml-2 text-[10px] font-black uppercase tracking-wide">
                           {gone ? 'Full' : slot.remaining + ' of ' + slot.capacity + ' left'}

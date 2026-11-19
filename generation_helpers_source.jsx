@@ -1855,8 +1855,19 @@ const generateMathAssessment = async (blocks, options = {}) => {
       reviewRequired, status: sections.every(section => section.status === 'ready') ? 'ready' : 'partial' } } };
 };
 
+const _ghAiTextUsable = (fn) => {
+  if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+  if (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true)) return false;
+  try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable('text', fn)); } catch (_) { return false; }
+  return true;
+};
+
 const handleGenerateMath = async (inputOverride = null, switchView = true, modeOverride = null, deps) => {
   const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setGenerationStage, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, flyToElement } = deps;
+  if (!_ghAiTextUsable(callGemini)) {
+    if (typeof addToast === 'function') addToast(_safeMathGenerationTranslation(t, 'errors.ai_unavailable', 'AI is currently unavailable.'), 'error');
+    return;
+  }
   // Resolved once from the host-threaded policy. Falls back to the historical
   // rule (gloss into English when the content is not English) if an older host
   // has not threaded the resolver yet, so a stale CDN never silently changes
@@ -2043,17 +2054,18 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           console.debug('[MATH] Sending prompt to Gemini, mode:', effectiveMode, 'subject:', mathSubject);
           const result = await callGemini(prompt, true);
           if (!isCurrentMathGeneration()) return;
-          console.debug('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
+          console.debug('[MATH] Raw Gemini result length:', typeof result === 'string' ? result.length : 0, 'first 200 chars:', typeof result === 'string' ? result.substring(0, 200) : '');
           let rawContent;
           let cleaned;
           try {
+              if (typeof result !== 'string') throw new Error('Expected string AI response');
               cleaned = cleanJson(result);
               rawContent = safeJsonParse(result);
               if (!rawContent) {
                 try { rawContent = JSON.parse(cleaned); } catch (_) {}
               }
               if (!rawContent) {
-                const jsonMatch = result.match(/[\[{][\s\S]*[\]}]/);
+                const jsonMatch = typeof result === 'string' ? result.match(/[\[{][\s\S]*[\]}]/) : null;
                 if (jsonMatch) {
                   const extracted = jsonMatch[0];
                   if (typeof window !== 'undefined' && window.jsonrepair) {
@@ -4004,6 +4016,9 @@ const handleComplexityAdjustment = async (deps) => {
                 Return ONLY JSON matching the input structure exactly.
             `;
         }
+        if (!prepared && !_ghAiTextUsable(callGemini)) {
+            throw new Error('AI is currently unavailable.');
+        }
         let result = prepared ? prepared.data : (!jsonMode && generatedContent.type === 'simplified')
             ? await generateBilingualText(prompt, effectiveLanguage, callGemini, {
                 ..._xlate,
@@ -4072,12 +4087,21 @@ const handleComplexityAdjustment = async (deps) => {
         if (prepared) {
             updatedData = generatedContent.type === 'simplified' ? result : prepared.data;
         } else if (jsonMode) {
+            if (typeof result !== 'string') throw new Error('Expected string AI JSON response');
             const parsed = JSON.parse(cleanJson(result));
             if (generatedContent.type === 'quiz') {
+                if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.questions)) {
+                    throw new Error('Invalid quiz response shape');
+                }
                 updatedData = { ...generatedContent?.data, questions: parsed.questions };
             } else if (generatedContent.type === 'glossary') {
+                if (!Array.isArray(parsed)) {
+                    throw new Error('Invalid glossary response shape');
+                }
                 updatedData = parsed.map((item, index) => {
-                    const originalItem = generatedContent?.data.find(o => o.term === item.term) || generatedContent?.data[index];
+                    const originalItem = Array.isArray(generatedContent?.data)
+                        ? (generatedContent.data.find(o => o && item && o.term === item.term) || generatedContent.data[index])
+                        : null;
                     return {
                         ...item,
                         image: originalItem?.image,
@@ -4085,9 +4109,13 @@ const handleComplexityAdjustment = async (deps) => {
                     };
                 });
             } else {
+                if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                    throw new Error('Invalid JSON object response shape');
+                }
                 updatedData = { ...generatedContent?.data, ...parsed };
             }
         } else {
+            if (typeof result !== 'string') throw new Error('Expected string AI text response');
             updatedData = result;
         }
         const changeLabel = prepared && prepared.changeLabel ? prepared.changeLabel : generatedContent.type === 'sentence-frames'

@@ -174,7 +174,52 @@ function assertSourceBytes(extraction, sourceFiles, { requirePlaywright = false 
   return { checkedFiles };
 }
 
+function assertSafeMcpbEntries(bundle) {
+  const tarCmd = process.platform === 'win32' ? path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe') : 'tar';
+  const listAttempts = process.platform === 'win32'
+    ? [[tarCmd, ['-tf', path.basename(bundle)], { cwd: path.dirname(bundle) }]]
+    : [['unzip', ['-Z1', bundle], {}], ['tar', ['-tf', bundle], {}]];
+  let listed = null;
+  let usedTar = process.platform === 'win32';
+  for (const [cmd, args, extra] of listAttempts) {
+    const res = spawnSync(cmd, args, { encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024, ...extra });
+    if (!res.error && res.status === 0) {
+      listed = res;
+      usedTar = (cmd === tarCmd || cmd === 'tar');
+      break;
+    }
+  }
+  if (!listed) {
+    throw new Error('Could not inspect MCPB archive entries before extraction.');
+  }
+  const entries = String(listed.stdout || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (entries.length > 5000) throw new Error('MCPB archive exceeds entry limit.');
+  for (const entry of entries) {
+    const norm = entry.replace(/\\/g, '/');
+    if (norm.startsWith('/') || /^[A-Za-z]:/.test(norm) || norm.includes('\0') || norm.split('/').some(seg => seg === '..')) {
+      throw new Error('MCPB archive contains an unsafe entry path: ' + entry);
+    }
+  }
+  const verbose = usedTar
+    ? spawnSync(tarCmd, ['-tvf', process.platform === 'win32' ? path.basename(bundle) : bundle], {
+        encoding: 'utf8',
+        windowsHide: true,
+        ...(process.platform === 'win32' ? { cwd: path.dirname(bundle) } : {}),
+        maxBuffer: 8 * 1024 * 1024,
+      })
+    : spawnSync('unzip', ['-Zl', bundle], { encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
+  if (verbose.error || verbose.status !== 0) {
+    throw new Error('Could not inspect MCPB archive entry modes before extraction.');
+  }
+  for (const line of String(verbose.stdout || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean)) {
+    if (/^[lhcbps]/i.test(line) || /\s->\s/.test(line)) {
+      throw new Error('MCPB archive contains a disallowed symlink or special entry.');
+    }
+  }
+}
+
 function extractArchive(bundle, destination) {
+  assertSafeMcpbEntries(bundle);
   // (2026-08-16) Windows repair — BOTH prior rungs were broken here and had never worked:
   //   - tar.exe is bsdtar, which parses "C:\..." as a REMOTE host:path ("tar: Cannot connect
   //     to C: resolve failed"). Run it from the bundle's directory with a colon-free archive
@@ -249,8 +294,17 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
       assertSourceParity(manifest);
       assertSourceBytes(extraction, undefined, options);
     }
-    const entry = path.join(extraction, manifest.server.entry_point);
-    if (!fs.existsSync(entry)) throw new Error('Artifact server entry point is missing: ' + manifest.server.entry_point);
+    if (!manifest.server || typeof manifest.server.entry_point !== 'string' || !manifest.server.entry_point.trim()) {
+      throw new Error('Artifact manifest is missing server.entry_point');
+    }
+    const realExtraction = fs.realpathSync(extraction);
+    const candidateEntry = path.resolve(realExtraction, manifest.server.entry_point);
+    if (!fs.existsSync(candidateEntry)) throw new Error('Artifact server entry point is missing: ' + manifest.server.entry_point);
+    const entry = fs.realpathSync(candidateEntry);
+    const relEntry = path.relative(realExtraction, entry);
+    if (!relEntry || relEntry === '..' || relEntry.startsWith('..' + path.sep) || path.isAbsolute(relEntry) || !fs.lstatSync(entry).isFile()) {
+      throw new Error('Artifact server entry point escapes extraction directory: ' + manifest.server.entry_point);
+    }
     const env = {
       ...process.env,
       ALLOFLOW_MCP_ASSETS_DIR: path.join(extraction, 'assets'),

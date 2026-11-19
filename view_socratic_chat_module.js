@@ -148,7 +148,7 @@ function SocraticChat({
       "aria-labelledby": titleId,
       "aria-describedby": descId,
       onKeyDown: (e) => {
-        if (e.key === "Escape" && typeof handleSetShowSocraticChatToFalse === "function") {
+        if (e.key === "Escape" && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || isComposingRef.current) && typeof handleSetShowSocraticChatToFalse === "function") {
           e.stopPropagation();
           handleSetShowSocraticChatToFalse();
         }

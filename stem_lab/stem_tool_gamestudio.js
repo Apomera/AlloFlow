@@ -51,6 +51,22 @@ window.StemLab = window.StemLab || {
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"gameStudio\"] [style*=\"gradient(\"][style*=\"rgb(255, 241, 242)\"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}";
     document.head.appendChild(st);
   })();
+  // Studio workbench visual polish + reduced-motion + contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || document.getElementById('allo-gamestudio-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-gamestudio-studio-css';
+    st.textContent = [
+      '#allo-game-studio .gs-panel { box-shadow: 0 6px 18px -10px rgba(136,19,55,0.18); transition: border-color 0.15s ease, box-shadow 0.15s ease; }',
+      '#allo-game-studio .gs-card-hover { transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease; }',
+      '#allo-game-studio .gs-card-hover:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -10px rgba(136,19,55,0.28); }',
+      '#allo-game-studio button:focus-visible, #allo-game-studio select:focus-visible, #allo-game-studio input:focus-visible, #allo-game-studio textarea:focus-visible { outline: 3px solid #be123c !important; outline-offset: 2px !important; }',
+      '.theme-contrast #allo-game-studio .gs-hero, .theme-contrast #allo-game-studio .gs-panel, .theme-contrast #allo-game-studio .gs-bezel { background: #000000 !important; color: #ffffff !important; border-color: #fbbf24 !important; box-shadow: none !important; }',
+      '.theme-contrast #allo-game-studio button:focus-visible { outline-color: #ffff00 !important; }',
+      '@media (prefers-reduced-motion: reduce) { #allo-game-studio .gs-card-hover, #allo-game-studio .gs-panel { transition: none !important; transform: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
 
   // ── Audio (auto-injected) ──
@@ -838,70 +854,131 @@ window.StemLab = window.StemLab || {
         // ============================================================
         // RENDER
         // ============================================================
+        var lessonsDoneCount = Object.keys(learnCompleted).length;
+        var challengesDoneCount = Object.keys(challengeCompleted).length;
+        var tileCount = Object.keys(tiles).length;
+        var activeBrushInfo = TILE_MAP[selectedTile] || TILE_MAP.grass;
+        var goGsTab = function(id) {
+          upd({ tab: id, playMessage: null });
+          try { var el = document.getElementById('gs-tab-' + id); if (el) el.focus(); } catch (_) {}
+        };
+        var onGsTabKey = function(e) {
+          var ids = TABS.map(function(x) { return x.id; });
+          var idx = ids.indexOf(gsTab), next = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = ids[(idx + 1) % ids.length];
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = ids[(idx - 1 + ids.length) % ids.length];
+          else if (e.key === 'Home') next = ids[0];
+          else if (e.key === 'End') next = ids[ids.length - 1];
+          if (next) { e.preventDefault(); goGsTab(next); }
+        };
 
-        return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-300' },
+        return h('div', { id: 'allo-game-studio', className: 'max-w-4xl mx-auto animate-in fade-in duration-300' },
 
-          // ---- HEADER ----
-          h('div', { className: 'mb-4 p-4 rounded-2xl border-2 border-rose-200', style: { background: _bg } },
-            h('div', { className: 'flex items-center gap-3' },
-              h('span', { style: { fontSize: '28px' } }, '\uD83C\uDFAE'),
-              h('div', { className: 'flex-1' },
-                h('h2', { className: 'text-lg font-black text-rose-900' }, __alloT('stem.gamestudio.game_design_studio', 'Game Design Studio')),
-                h('p', { className: 'text-xs text-rose-800' }, __alloT('stem.gamestudio.build_playable_2d_games_learn_game_des', 'Build playable 2D games \u2022 Learn game design \u2022 Earn XP'))
+          // ---- STUDIO WORKBENCH HEADER ----
+          h('div', { className: 'gs-hero gs-panel mb-4 p-4 rounded-2xl border-2 border-rose-300', style: { background: _bg } },
+            h('div', { className: 'flex flex-wrap items-center gap-3' },
+              // Bespoke pixel-gamepad emblem SVG
+              h('div', { className: 'w-12 h-12 rounded-xl bg-rose-700 flex items-center justify-center shadow-sm shrink-0', 'aria-hidden': 'true' },
+                h('svg', { viewBox: '0 0 32 32', width: 28, height: 28, focusable: 'false' },
+                  h('rect', { x: 3, y: 9, width: 26, height: 14, rx: 6, fill: '#fff1f2' }),
+                  h('rect', { x: 8, y: 14, width: 6, height: 2, rx: 1, fill: '#be123c' }),
+                  h('rect', { x: 10, y: 12, width: 2, height: 6, rx: 1, fill: '#be123c' }),
+                  h('circle', { cx: 21, cy: 14, r: 1.6, fill: '#be123c' }),
+                  h('circle', { cx: 24, cy: 17, r: 1.6, fill: '#7c3aed' })
+                )
               ),
-              h('div', { className: 'text-right' },
-                h('div', { className: 'text-[0.6875rem] font-bold text-rose-700' }, __alloT('stem.gamestudio.tiles_placed', 'TILES PLACED')),
-                h('div', { className: 'text-lg font-black text-rose-700' }, Object.keys(tiles).length)
+              h('div', { className: 'flex-1 min-w-[200px]' },
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('h2', { className: 'text-lg md:text-xl font-black text-rose-950 m-0' }, __alloT('stem.gamestudio.game_design_studio', 'Game Design Studio')),
+                  h('span', { className: 'text-[0.6875rem] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white text-rose-800 border border-rose-300' }, __alloT('stem.gamestudio.engine_badge', '2D Game Engine · Tech'))
+                ),
+                h('p', { className: 'text-xs text-rose-900 mt-0.5 mb-0' }, __alloT('stem.gamestudio.build_playable_2d_games_learn_game_des', 'Build playable 2D games \u2022 Learn game design \u2022 Earn XP'))
+              ),
+              // Live workbench metric pills
+              h('div', { className: 'flex flex-wrap gap-1.5 items-center' },
+                h('div', { className: 'px-2.5 py-1 rounded-xl bg-white border border-rose-300 text-center' },
+                  h('div', { className: 'text-[0.625rem] font-bold text-rose-800 uppercase tracking-wide' }, __alloT('stem.gamestudio.tiles_placed', 'TILES PLACED')),
+                  h('div', { className: 'text-sm font-black text-rose-950 leading-tight' }, tileCount)
+                ),
+                h('div', { className: 'px-2.5 py-1 rounded-xl bg-white border border-indigo-300 text-center' },
+                  h('div', { className: 'text-[0.625rem] font-bold text-indigo-800 uppercase tracking-wide' }, __alloT('stem.gamestudio.lessons_pill', 'LESSONS')),
+                  h('div', { className: 'text-sm font-black text-indigo-950 leading-tight' }, lessonsDoneCount + '/' + LESSONS.length)
+                ),
+                h('div', { className: 'px-2.5 py-1 rounded-xl bg-white border border-amber-300 text-center' },
+                  h('div', { className: 'text-[0.625rem] font-bold text-amber-800 uppercase tracking-wide' }, __alloT('stem.gamestudio.quests_pill', 'CHALLENGES')),
+                  h('div', { className: 'text-sm font-black text-amber-950 leading-tight' }, challengesDoneCount + '/' + CHALLENGES.length)
+                )
               )
             )
           ),
 
-          // ---- TAB BAR ----
-          h('div', { className: 'flex gap-1 mb-4 p-1 bg-rose-50 rounded-xl border border-rose-200 overflow-x-auto' },
+          // ---- TAB BAR (WAI-ARIA tablist with roving tabindex & arrow keys) ----
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.gamestudio.sections_label', 'Game Design Studio workspaces'), className: 'flex flex-wrap gap-1 mb-4 p-1.5 bg-rose-50 rounded-xl border border-rose-300' },
             TABS.map(function(tab) {
               var isActive = gsTab === tab.id;
-              return h('button', { key: tab.id,
-                'aria-pressed': isActive,
-                onClick: function() { upd({ tab: tab.id, playMessage: null }); },
-                className: 'flex-1 py-2 px-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ' +
-                  (isActive ? 'bg-white text-rose-800 shadow-md border border-rose-600' : 'text-rose-700 hover:text-rose-900 hover:bg-rose-100')
+              return h('button', { key: tab.id, id: 'gs-tab-' + tab.id, type: 'button',
+                role: 'tab', 'aria-selected': isActive ? 'true' : 'false', 'aria-controls': 'gs-tabpanel', tabIndex: isActive ? 0 : -1,
+                onClick: function() { goGsTab(tab.id); },
+                onKeyDown: onGsTabKey,
+                className: 'flex-1 min-w-[78px] py-2 px-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ' +
+                  (isActive ? 'bg-white text-rose-900 shadow-sm border border-rose-600' : 'text-rose-800 hover:text-rose-950 hover:bg-rose-100 border border-transparent')
               }, tab.icon + ' ' + tab.label);
             })
           ),
 
+          h('div', { role: 'tabpanel', id: 'gs-tabpanel', 'aria-labelledby': 'gs-tab-' + gsTab },
 
           // ============================================================
           // MAP EDITOR TAB
           // ============================================================
           gsTab === 'map' && h('div', { className: 'space-y-4' },
 
+            // Quick-start starter level chips (one click to jump into a playable world)
+            h('div', { className: 'gs-panel p-2.5 rounded-xl border border-rose-200 bg-rose-50/70 flex flex-wrap items-center gap-2' },
+              h('span', { className: 'text-xs font-extrabold text-rose-900' }, '⚡ ' + __alloT('stem.gamestudio.quick_load', 'Quick-Load Level:')),
+              STARTERS.map(function(st) {
+                return h('button', { key: st.name, type: 'button',
+                  onClick: function() { upd({ projectName: st.name, gameType: st.type, gridW: 16, gridH: 12, tiles: Object.assign({}, st.tiles) }); if (addToast) addToast('🎮 Loaded "' + st.name + '"!', 'success'); },
+                  className: 'px-2.5 py-1 rounded-full text-xs font-bold bg-white text-rose-900 border border-rose-300 hover:border-rose-600 hover:bg-rose-100 transition-colors cursor-pointer'
+                }, st.icon + ' ' + st.name);
+              }),
+              tileCount > 0 && h('button', { type: 'button',
+                onClick: function() { upd({ tiles: {} }); },
+                className: 'ml-auto px-2.5 py-1 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-400 hover:bg-slate-100 cursor-pointer'
+              }, '🧹 ' + __alloT('stem.gamestudio.clear_map', 'Clear Map'))
+            ),
+
             // Grid + game type controls
-            h('div', { className: 'flex flex-wrap gap-3 items-center' },
-              h('label', { className: 'text-xs font-bold text-rose-700' }, 'Grid:'),
-              h('select', {
-                value: gridW + 'x' + gridH,
-                onChange: function(e) {
-                  var p = e.target.value.split('x');
-                  upd({ gridW: parseInt(p[0]), gridH: parseInt(p[1]), tiles: {} });
+            h('div', { className: 'gs-panel p-3 rounded-xl border border-rose-200 bg-white flex flex-wrap gap-3 items-center' },
+              h('div', { className: 'flex items-center gap-1.5' },
+                h('label', { className: 'text-xs font-bold text-rose-800' }, 'Grid:'),
+                h('select', {
+                  value: gridW + 'x' + gridH,
+                  onChange: function(e) {
+                    var p = e.target.value.split('x');
+                    upd({ gridW: parseInt(p[0]), gridH: parseInt(p[1]), tiles: {} });
+                  },
+                  'aria-label': __alloT('stem.gamestudio.grid_size', 'Grid size'),
+                  className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white text-slate-900 font-bold'
                 },
-                'aria-label': __alloT('stem.gamestudio.grid_size', 'Grid size'),
-                className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white'
-              },
-                ['8x6','12x8','16x12','20x15','24x18'].map(function(s) { return h('option', { key: s, value: s }, s); })
+                  ['8x6','12x8','16x12','20x15','24x18'].map(function(s) { return h('option', { key: s, value: s }, s); })
+                )
               ),
-              h('label', { className: 'text-xs font-bold text-rose-700 ml-3' }, 'Type:'),
-              h('select', {
-                value: gameType,
-                onChange: function(e) { upd({ gameType: e.target.value }); },
-                'aria-label': __alloT('stem.gamestudio.game_type', 'Game type'),
-                className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white'
-              },
-                h('option', { value: 'topdown' }, __alloT('stem.gamestudio.top_down', '\uD83D\uDD3D Top-Down')),
-                h('option', { value: 'platformer' }, __alloT('stem.gamestudio.platformer', '\uD83C\uDFC3 Platformer')),
-                h('option', { value: 'puzzle' }, __alloT('stem.gamestudio.puzzle', '\uD83E\uDDE9 Puzzle'))
+              h('div', { className: 'flex items-center gap-1.5' },
+                h('label', { className: 'text-xs font-bold text-rose-800' }, 'Type:'),
+                h('select', {
+                  value: gameType,
+                  onChange: function(e) { upd({ gameType: e.target.value }); },
+                  'aria-label': __alloT('stem.gamestudio.game_type', 'Game type'),
+                  className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white text-slate-900 font-bold'
+                },
+                  h('option', { value: 'topdown' }, __alloT('stem.gamestudio.top_down', '\uD83D\uDD3D Top-Down')),
+                  h('option', { value: 'platformer' }, __alloT('stem.gamestudio.platformer', '\uD83C\uDFC3 Platformer')),
+                  h('option', { value: 'puzzle' }, __alloT('stem.gamestudio.puzzle', '\uD83E\uDDE9 Puzzle'))
+                )
               ),
               // Danger overlay toggle
-              h('label', { className: 'flex items-center gap-1.5 ml-auto text-xs font-bold text-orange-700 cursor-pointer' },
+              h('label', { className: 'flex items-center gap-1.5 ml-auto text-xs font-bold text-orange-800 cursor-pointer px-2.5 py-1 rounded-lg bg-orange-50 border border-orange-300' },
                 h('input', { type: 'checkbox', checked: showDanger, onChange: function() { upd({ showDanger: !showDanger }); } }),
                 __alloT('stem.gamestudio.danger_map', '\u26A0\uFE0F Danger Map')
               ),
@@ -926,7 +1003,7 @@ window.StemLab = window.StemLab || {
                 'aria-busy': aiLoading,
                 'aria-label': aiLoading ? __alloT('stem.gamestudio.a11y_generating_game_asset', 'Generating game asset') : __alloT('stem.gamestudio.a11y_ai_generate_game_asset', 'AI generate game asset'),
                 className: 'px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' +
-                  (aiLoading ? 'bg-gray-400' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md')
+                  (aiLoading ? 'bg-gray-500' : 'bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-800 hover:to-pink-800 shadow-sm')
               }, aiLoading ? '\u23F3 Generating...' : '\u2728 AI Generate')
             ),
 
@@ -936,34 +1013,38 @@ window.StemLab = window.StemLab || {
                 onChange: function(e) { upd({ aiPrompt: e.target.value }); },
                 placeholder: __alloT('stem.gamestudio.theme_forest_maze_ice_castle_dungeon', 'Theme: forest maze, ice castle, dungeon...'),
                 'aria-label': __alloT('stem.gamestudio.ai_map_generation_theme', 'AI map generation theme'),
-                className: 'flex-1 text-xs border border-rose-600 rounded-lg px-2 py-1.5'
+                className: 'flex-1 text-xs border border-rose-600 rounded-lg px-2.5 py-2 bg-white text-slate-900'
               }),
-              aiResult && h('span', { className: 'text-xs font-bold self-center ' + (aiResult.charAt(0) === '\u2705' ? 'text-green-600' : 'text-red-500') }, aiResult)
+              aiResult && h('span', { className: 'text-xs font-bold self-center ' + (aiResult.charAt(0) === '\u2705' ? 'text-green-700' : 'text-red-700') }, aiResult)
             ),
 
             // Tile palette + brush tools
-            h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
-              h('div', { className: 'flex items-center gap-2 mb-2' },
-                h('span', { className: 'text-xs font-bold text-rose-700' }, __alloT('stem.gamestudio.tiles', 'Tiles')),
+            h('div', { className: 'gs-panel p-3.5 rounded-xl border border-rose-200 bg-white' },
+              h('div', { className: 'flex flex-wrap items-center gap-2 mb-2.5' },
+                h('span', { className: 'text-xs font-extrabold text-rose-900 uppercase tracking-wide' }, __alloT('stem.gamestudio.tiles', 'Tiles')),
+                h('span', { className: 'inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-900 border border-rose-300' },
+                  h('span', { style: { display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: activeBrushInfo.color, border: '1px solid rgba(15,23,42,0.3)' } }),
+                  (activeBrushInfo.emoji ? activeBrushInfo.emoji + ' ' : '') + activeBrushInfo.label + ' · ' + brushTool
+                ),
                 h('div', { className: 'flex gap-1 ml-auto' },
                   [{ id: 'brush', icon: '\u270F\uFE0F', label: __alloT('stem.gamestudio.map_tool_brush', 'Map tool: Brush') }, { id: 'fill', icon: '\uD83E\uDEA3', label: __alloT('stem.gamestudio.map_tool_fill', 'Map tool: Fill') }, { id: 'eraser', icon: '\uD83E\uDDF9', label: __alloT('stem.gamestudio.map_tool_eraser', 'Map tool: Eraser') }, { id: 'eyedropper', icon: '\uD83D\uDCA7', label: __alloT('stem.gamestudio.map_tool_eyedropper', 'Map tool: Pick a tile from the map') }].map(function(bt) {
                     return h('button', { key: bt.id,
                       'aria-pressed': brushTool === bt.id,
                       onClick: function() { upd({ brushTool: bt.id }); },
-                      className: 'px-2 py-1 rounded text-sm transition-all ' + (brushTool === bt.id ? 'bg-rose-200 shadow-inner' : 'hover:bg-rose-50'),
+                      className: 'px-2.5 py-1.5 rounded-lg text-sm border transition-all cursor-pointer ' + (brushTool === bt.id ? 'bg-rose-100 border-rose-600 shadow-inner' : 'border-slate-200 hover:bg-rose-50'),
                       'aria-label': bt.label,
                       title: bt.label
                     }, bt.icon);
                   })
                 )
               ),
-              h('div', { className: 'flex flex-wrap gap-1' },
+              h('div', { className: 'flex flex-wrap gap-1.5' },
                 TILE_PALETTE.map(function(t) {
                   return h('button', { key: t.id,
                     'aria-pressed': selectedTile === t.id,
                     onClick: function() { upd({ selectedTile: t.id, brushTool: 'brush' }); },
-                    className: 'w-8 h-8 rounded border-2 flex items-center justify-center text-sm transition-all ' +
-                      (selectedTile === t.id ? 'border-rose-500 shadow-md scale-110' : 'border-gray-200 hover:border-rose-600'),
+                    className: 'w-9 h-9 rounded-lg border-2 flex items-center justify-center text-sm transition-all cursor-pointer ' +
+                      (selectedTile === t.id ? 'border-rose-700 ring-2 ring-rose-300 shadow-sm scale-105' : 'border-slate-300 hover:border-rose-600'),
                     style: { background: t.color },
                     title: t.label
                   }, t.emoji || '');
@@ -971,19 +1052,23 @@ window.StemLab = window.StemLab || {
               )
             ),
 
-            // Tile grid
+            // Tile grid viewport frame
             h('div', {
-              className: 'rounded-xl border-2 border-rose-200 bg-white p-2 overflow-auto',
-              style: { maxHeight: '420px' }
+              className: 'gs-panel rounded-2xl border-2 border-rose-300 bg-slate-900 p-3 overflow-auto',
+              style: { maxHeight: '440px' }
             },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[0.6875rem] font-bold text-slate-300 mb-2' },
+                h('span', null, '🗺️ ' + projectName + ' (' + gridW + '×' + gridH + ')'),
+                showDanger && h('span', { className: 'text-amber-300' }, '⚠️ Danger heat shows nearby lava, spikes & enemies')
+              ),
               h('div', {
                 role: 'group',
                 'aria-label': __alloT('stem.gamestudio.tile_grid_label', 'Level map. Arrow keys move between tiles; Enter or Space uses the current tool.'),
                 style: {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(' + gridW + ', 1fr)',
-                  gap: '1px', background: '#e2e8f0', border: '1px solid var(--allo-stem-border, #cbd5e1)',
-                  maxWidth: Math.min(gridW * 28, 700) + 'px'
+                  gap: '1px', background: '#334155', border: '2px solid #475569', borderRadius: '8px', overflow: 'hidden',
+                  maxWidth: Math.min(gridW * 30, 720) + 'px', margin: '0 auto'
                 }
               },
                 Array.from({ length: gridW * gridH }, function(_, i) {
@@ -992,7 +1077,7 @@ window.StemLab = window.StemLab || {
                   var tId = tiles[k] || 'empty';
                   var tInfo = TILE_MAP[tId] || TILE_MAP.empty;
                   var danger = showDanger ? dangerAt(tiles, x, y) : 0;
-                  var dangerOverlay = danger > 0 ? 'rgba(239,68,68,' + Math.min(0.6, danger * 0.15) + ')' : null;
+                  var dangerOverlay = danger > 0 ? 'rgba(239,68,68,' + Math.min(0.65, danger * 0.16) + ')' : null;
                   var paintTile = function() {
                     if (brushTool === 'eyedropper') { upd({ selectedTile: tId, brushTool: 'brush' }); }
                     else if (brushTool === 'eraser') { var nt = Object.assign({}, tiles); delete nt[k]; upd({ tiles: nt }); }
@@ -1020,23 +1105,27 @@ window.StemLab = window.StemLab || {
                       width: '100%', aspectRatio: '1',
                       background: dangerOverlay || tInfo.color,
                       cursor: 'crosshair', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: Math.min(24, Math.floor(600 / gridW)) + 'px',
+                      fontSize: Math.min(22, Math.floor(560 / gridW)) + 'px',
                       userSelect: 'none', minWidth: '12px', minHeight: '12px'
                     }
-                  }, (showDanger && danger > 0 && tId === 'empty') ? h('span', { style: { fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.9)' } }, danger) : (tInfo.emoji || ''));
+                  }, (showDanger && danger > 0 && tId === 'empty') ? h('span', { style: { fontSize: '11px', fontWeight: 900, color: '#ffffff' } }, danger) : (tInfo.emoji || ''));
                 })
               )
             ),
 
-            // Stats bar
-            h('div', { className: 'flex flex-wrap gap-3 text-[0.6875rem] text-rose-700 font-bold' },
-              h('span', null, '\uD83D\uDD0D ' + gridW + '\u00D7' + gridH + ' = ' + (gridW * gridH) + ' tiles'),
-              h('span', null, '\uD83E\uDDD1 Players: ' + countTile(tiles, 'player')),
-              h('span', null, '\uD83D\uDC7E Enemies: ' + countTile(tiles, 'enemy')),
-              h('span', null, '\uD83E\uDE99 Coins: ' + countTile(tiles, 'coin')),
-              h('span', null, '\uD83D\uDD11 Keys: ' + countTile(tiles, 'key')),
-              h('span', null, '\uD83D\uDEAA Doors: ' + countTile(tiles, 'door')),
-              h('span', null, '\uD83D\uDEA9 Flags: ' + countTile(tiles, 'flag'))
+            // Stats bar (pill chips)
+            h('div', { className: 'flex flex-wrap gap-2 text-xs text-rose-900 font-bold' },
+              [
+                '\uD83D\uDD0D ' + gridW + '\u00D7' + gridH + ' = ' + (gridW * gridH),
+                '\uD83E\uDDD1 Players: ' + countTile(tiles, 'player'),
+                '\uD83D\uDC7E Enemies: ' + countTile(tiles, 'enemy'),
+                '\uD83E\uDE99 Coins: ' + countTile(tiles, 'coin'),
+                '\uD83D\uDD11 Keys: ' + countTile(tiles, 'key'),
+                '\uD83D\uDEAA Doors: ' + countTile(tiles, 'door'),
+                '\uD83D\uDEA9 Flags: ' + countTile(tiles, 'flag')
+              ].map(function(stat, si) {
+                return h('span', { key: si, className: 'px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200' }, stat);
+              })
             )
           ),
 
@@ -1066,16 +1155,16 @@ window.StemLab = window.StemLab || {
             ),
 
             // Canvas + tools
-            h('div', { className: 'flex gap-4 flex-wrap' },
-              // 16x16 pixel canvas
-              h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
+            h('div', { className: 'flex gap-4 flex-wrap items-start' },
+              // 16x16 pixel canvas + Live Multi-Scale SVG Preview
+              h('div', { className: 'gs-panel p-3.5 rounded-xl border border-rose-200 bg-white space-y-3', style: { maxWidth: '100%' } },
                 h('div', {
                   role: 'group',
                   'aria-label': __alloT('stem.gamestudio.sprite_grid_label', 'Sprite pixels, 16 by 16. Arrow keys move between pixels; Enter or Space uses the current tool.'),
                   style: {
                     display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)',
-                    gap: '1px', background: '#e2e8f0', width: '320px', height: '320px',
-                    border: '2px solid #94a3b8', borderRadius: '8px', overflow: 'hidden'
+                    gap: '1px', background: '#cbd5e1', width: 'min(320px, 100%)', aspectRatio: '1',
+                    border: '2px solid #64748b', borderRadius: '10px', overflow: 'hidden'
                   }
                 },
                   Array.from({ length: 256 }, function(_, i) {
@@ -1107,7 +1196,25 @@ window.StemLab = window.StemLab || {
                       style: { background: px || (((sx + sy) % 2 === 0) ? '#f1f5f9' : '#e2e8f0'), cursor: 'crosshair' }
                     });
                   })
-                )
+                ),
+                // Live multi-scale SVG preview strip (light & dark tile preview)
+                (function() {
+                  var rects = Object.keys(spritePixels).map(function(pk) {
+                    var xy = pk.split(',');
+                    return h('rect', { key: pk, x: parseInt(xy[0], 10), y: parseInt(xy[1], 10), width: 1, height: 1, fill: spritePixels[pk] });
+                  });
+                  return h('div', { className: 'flex items-center justify-between gap-2 pt-2 border-t border-slate-200 flex-wrap' },
+                    h('span', { className: 'text-xs font-bold text-slate-700' }, '👁️ ' + __alloT('stem.gamestudio.live_preview', 'Live Sprite Preview')),
+                    h('div', { className: 'flex items-center gap-2' },
+                      h('div', { className: 'p-1.5 rounded-lg border border-slate-300 bg-slate-50 flex items-center justify-center', title: __alloT('stem.gamestudio.preview_2x_light', '2× light preview') },
+                        h('svg', { viewBox: '0 0 16 16', width: 32, height: 32, style: { shapeRendering: 'crispEdges', display: 'block' }, 'aria-hidden': 'true' }, rects)
+                      ),
+                      h('div', { className: 'p-1.5 rounded-lg border border-slate-600 bg-slate-900 flex items-center justify-center', title: __alloT('stem.gamestudio.preview_3x_dark', '3× dark arcade preview') },
+                        h('svg', { viewBox: '0 0 16 16', width: 48, height: 48, style: { shapeRendering: 'crispEdges', display: 'block' }, 'aria-hidden': 'true' }, rects)
+                      )
+                    )
+                  );
+                })()
               ),
 
               // Tools panel
@@ -1337,16 +1444,19 @@ window.StemLab = window.StemLab || {
           // ============================================================
           gsTab === 'play' && h('div', { className: 'space-y-4' },
 
-            // HUD
-            h('div', { className: 'flex items-center gap-3 p-3 rounded-xl border border-rose-200 bg-white flex-wrap' },
-              h('span', { className: 'text-xs font-bold text-amber-600' }, '\uD83E\uDE99 ' + playScore),
-              h('span', { className: 'text-xs font-bold text-red-500' },
+            // Arcade Console HUD Bezel
+            h('div', { className: 'gs-bezel gs-panel flex items-center gap-2.5 p-3 rounded-2xl border-2 border-slate-700 bg-slate-900 text-white flex-wrap' },
+              h('span', { className: 'inline-flex items-center gap-1.5 text-xs font-black px-2.5 py-1 rounded-full ' + (playWon ? 'bg-emerald-700 text-white' : playDead ? 'bg-rose-700 text-white' : isPlaying ? 'bg-emerald-800 text-emerald-100' : 'bg-slate-700 text-slate-200') },
+                playWon ? '🏆 VICTORY' : playDead ? '💀 GAME OVER' : isPlaying ? '● LIVE' : '⏸ READY'
+              ),
+              h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-amber-300' }, '\uD83E\uDE99 ' + playScore),
+              h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-rose-300' },
                 '\u2764\uFE0F ' + Array.from({ length: Math.max(0, Math.min(playLives, 10)) }, function() { return '\u2665'; }).join('')
               ),
-              playKeys > 0 && h('span', { className: 'text-xs font-bold text-yellow-600' }, '\uD83D\uDD11 \u00D7' + playKeys),
-              h('span', { className: 'text-xs font-bold text-slate-600' }, '\uD83D\uDC63 Moves: ' + playMoves),
-              playCoinsCollected > 0 && h('span', { className: 'text-xs font-bold text-amber-500' }, '\uD83E\uDE99 ' + playCoinsCollected + ' collected'),
-              h('span', { className: 'text-xs font-bold text-slate-600 ml-auto' },
+              playKeys > 0 && h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-yellow-300' }, '\uD83D\uDD11 \u00D7' + playKeys),
+              h('span', { className: 'text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-slate-200' }, '\uD83D\uDC63 Moves: ' + playMoves),
+              playCoinsCollected > 0 && h('span', { className: 'text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-amber-200' }, '\uD83E\uDE99 ' + playCoinsCollected + ' collected'),
+              h('span', { className: 'text-xs font-bold text-slate-200 ml-auto' },
                 gameType === 'topdown' ? '\uD83D\uDD3D Top-Down' : gameType === 'platformer' ? '\uD83C\uDFC3 Platformer' : '\uD83E\uDDE9 Puzzle'
               )
             ),
@@ -1479,23 +1589,36 @@ window.StemLab = window.StemLab || {
           // ============================================================
           gsTab === 'learn' && h('div', { className: 'space-y-4' },
 
-            // Header
-            h('div', { className: 'p-4 rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50' },
-              h('div', { className: 'flex items-center gap-3' },
-                h('span', { style: { fontSize: '28px' } }, '\uD83C\uDF93'),
-                h('div', { className: 'flex-1' },
-                  h('h3', { className: 'text-sm font-black text-indigo-900' }, __alloT('stem.gamestudio.game_design_academy', 'Game Design Academy')),
-                  h('p', { className: 'text-xs text-indigo-600' }, __alloT('stem.gamestudio.learn_the_fundamentals_of_game_design_', 'Learn the fundamentals of game design through interactive lessons'))
+            // Header + Inline SVG Game Loop Schematic
+            h('div', { className: 'gs-panel p-4 rounded-2xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 space-y-3' },
+              h('div', { className: 'flex flex-wrap items-center gap-3' },
+                h('span', { style: { fontSize: '28px' }, 'aria-hidden': 'true' }, '\uD83C\uDF93'),
+                h('div', { className: 'flex-1 min-w-[180px]' },
+                  h('h3', { className: 'text-sm font-black text-indigo-950' }, __alloT('stem.gamestudio.game_design_academy', 'Game Design Academy')),
+                  h('p', { className: 'text-xs text-indigo-800' }, __alloT('stem.gamestudio.learn_the_fundamentals_of_game_design_', 'Learn the fundamentals of game design through interactive lessons'))
                 ),
                 h('div', { className: 'text-right' },
-                  h('div', { className: 'text-lg font-black text-indigo-700' }, Object.keys(learnCompleted).length + '/' + LESSONS.length),
-                  h('div', { className: 'text-[0.6875rem] font-bold text-indigo-400' }, 'COMPLETED')
+                  h('div', { className: 'text-lg font-black text-indigo-800' }, Object.keys(learnCompleted).length + '/' + LESSONS.length),
+                  h('div', { className: 'text-[0.6875rem] font-bold text-indigo-700' }, 'COMPLETED')
                 )
               ),
+              // Visual Game Loop SVG (Input -> Update -> Render)
+              h('svg', { viewBox: '0 0 360 44', className: 'w-full max-w-md mx-auto block', role: 'img', 'aria-label': __alloT('stem.gamestudio.game_loop_diagram_aria', 'Game loop diagram: Input feeds Update, which feeds Render, looping at 60 frames per second') },
+                h('rect', { x: 6, y: 8, width: 94, height: 28, rx: 8, fill: '#ffffff', stroke: '#4f46e5', strokeWidth: 1.5 }),
+                h('text', { x: 53, y: 26, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#312e81' }, '1. INPUT'),
+                h('path', { d: 'M102 22 L128 22', stroke: '#4f46e5', strokeWidth: 2, strokeLinecap: 'round' }),
+                h('polygon', { points: '125,18 133,22 125,26', fill: '#4f46e5' }),
+                h('rect', { x: 134, y: 8, width: 94, height: 28, rx: 8, fill: '#ffffff', stroke: '#7c3aed', strokeWidth: 1.5 }),
+                h('text', { x: 181, y: 26, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#4c1d95' }, '2. UPDATE'),
+                h('path', { d: 'M230 22 L256 22', stroke: '#7c3aed', strokeWidth: 2, strokeLinecap: 'round' }),
+                h('polygon', { points: '253,18 261,22 253,26', fill: '#7c3aed' }),
+                h('rect', { x: 262, y: 8, width: 92, height: 28, rx: 8, fill: '#ffffff', stroke: '#be123c', strokeWidth: 1.5 }),
+                h('text', { x: 308, y: 26, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#881337' }, '3. RENDER')
+              ),
               // Progress bar
-              h('div', { className: 'mt-3 h-2 rounded-full bg-indigo-200 overflow-hidden' },
+              h('div', { className: 'h-2.5 rounded-full bg-indigo-200 overflow-hidden' },
                 h('div', {
-                  className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all',
+                  className: 'h-full rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 transition-all',
                   style: { width: (Object.keys(learnCompleted).length / LESSONS.length * 100) + '%' }
                 })
               )
@@ -1613,7 +1736,7 @@ window.StemLab = window.StemLab || {
                       ),
                       h('p', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' }, __alloT('stem.gamestudio.' + (lesson.id) + '_desc', lesson.desc))
                     ),
-                    h('span', { className: 'text-xs font-bold ' + (isComplete ? 'text-green-500' : 'text-indigo-400') }, 'Lesson ' + (li + 1))
+                    h('span', { className: 'text-xs font-bold ' + (isComplete ? 'text-green-700' : 'text-indigo-700') }, 'Lesson ' + (li + 1))
                   )
                 );
               })
@@ -1627,17 +1750,23 @@ window.StemLab = window.StemLab || {
           gsTab === 'challenges' && h('div', { className: 'space-y-4' },
 
             // Header
-            h('div', { className: 'p-4 rounded-xl border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50' },
+            h('div', { className: 'gs-panel p-4 rounded-2xl border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50' },
               h('div', { className: 'flex items-center gap-3' },
-                h('span', { style: { fontSize: '28px' } }, '\uD83C\uDFC6'),
+                h('span', { style: { fontSize: '28px' }, 'aria-hidden': 'true' }, '\uD83C\uDFC6'),
                 h('div', { className: 'flex-1' },
-                  h('h3', { className: 'text-sm font-black text-amber-900' }, __alloT('stem.gamestudio.design_challenges', 'Design Challenges')),
-                  h('p', { className: 'text-xs text-amber-600' }, __alloT('stem.gamestudio.apply_your_game_design_skills_build_le', 'Apply your game design skills! Build levels that meet specific objectives.'))
+                  h('h3', { className: 'text-sm font-black text-amber-950' }, __alloT('stem.gamestudio.design_challenges', 'Design Challenges')),
+                  h('p', { className: 'text-xs text-amber-900' }, __alloT('stem.gamestudio.apply_your_game_design_skills_build_le', 'Apply your game design skills! Build levels that meet specific objectives.'))
                 ),
                 h('div', { className: 'text-right' },
-                  h('div', { className: 'text-lg font-black text-amber-700' }, Object.keys(challengeCompleted).length + '/' + CHALLENGES.length),
-                  h('div', { className: 'text-[0.6875rem] font-bold text-amber-400' }, 'COMPLETED')
+                  h('div', { className: 'text-lg font-black text-amber-900' }, Object.keys(challengeCompleted).length + '/' + CHALLENGES.length),
+                  h('div', { className: 'text-[0.6875rem] font-bold text-amber-800' }, 'COMPLETED')
                 )
+              ),
+              h('div', { className: 'mt-3 h-2.5 rounded-full bg-amber-200 overflow-hidden' },
+                h('div', {
+                  className: 'h-full rounded-full bg-gradient-to-r from-amber-600 to-orange-600 transition-all',
+                  style: { width: (Object.keys(challengeCompleted).length / CHALLENGES.length * 100) + '%' }
+                })
               )
             ),
 
@@ -1737,7 +1866,7 @@ window.StemLab = window.StemLab || {
                   var url = URL.createObjectURL(blob);
                   var a = document.createElement('a');
                   a.href = url; a.download = (projectName || 'game').replace(/[^a-zA-Z0-9]/g, '_') + '.allogame';
-                  a.click(); URL.revokeObjectURL(url);
+                  a.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                   if (addToast) addToast('\uD83D\uDCE4 Game exported!', 'success');
                   if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 5, 'export game');
                 },
@@ -1751,10 +1880,11 @@ window.StemLab = window.StemLab || {
                   inp.type = 'file'; inp.accept = '.allogame,.json';
                   inp.onchange = function(e) {
                     var file = e.target.files[0]; if (!file) return;
+                    if (file.size > 5 * 1024 * 1024) { if (addToast) addToast('\u274C File exceeds the 5 MB limit', 'error'); return; }
                     var reader = new FileReader();
                     reader.onload = function(ev) {
                       try {
-                        var data = JSON.parse(ev.target.result);
+                        var data = JSON.parse(ev.target.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
                         upd({
                           projectName: data.name || 'Imported Game',
                           gridW: data.gridW || 16, gridH: data.gridH || 12,
@@ -1777,8 +1907,10 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() {
                   var gd = { version: 2, name: projectName, gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, sprites: sprites, events: events };
                   var code = btoa(unescape(encodeURIComponent(JSON.stringify(gd))));
-                  (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(code).then(function() {
+                  Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(code)).then(function() {
                     if (addToast) addToast('\uD83D\uDCCB Share code copied!', 'success');
+                  }, function() {
+                    if (addToast) addToast('Copy failed', 'error');
                   });
                 },
                 className: 'p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
@@ -1883,49 +2015,70 @@ window.StemLab = window.StemLab || {
               hard:     { label: __alloT('stem.gamestudio.hard', '🟠 Hard'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', deaths: 12, time: '15-45 min' },
               expert:   { label: __alloT('stem.gamestudio.expert', '🔴 Expert'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', deaths: 40, time: '1+ hours' }
             }[state];
-            // Build SVG difficulty curve from 5 progress points
+            // Build SVG difficulty curve from 11 progress points (clamped inside chart bounds)
             var curvePoints = [];
             for (var p = 0; p <= 100; p += 10) {
               var rampedDiff = diffScore * (0.3 + p / 100 * 0.7);
-              curvePoints.push([20 + (p / 100) * 320, 130 - rampedDiff * 14]);
+              var cy = Math.max(22, Math.min(130, 130 - rampedDiff * 14));
+              curvePoints.push([36 + (p / 100) * 304, cy]);
             }
             var pathStr = 'M ' + curvePoints.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join(' L ');
+            var areaStr = pathStr + ' L 340,130 L 36,130 Z';
             return h('div', { className: 'space-y-3' },
-              h('div', { className: 'p-4 rounded-xl bg-white border border-rose-300 shadow-sm space-y-3' },
-                h('h3', { className: 'text-sm font-black text-rose-700' }, __alloT('stem.gamestudio.difficulty_curve_tuner_discovery', '📈 Difficulty curve tuner — discovery')),
+              h('div', { className: 'gs-panel p-4 rounded-2xl bg-white border-2 border-rose-200 space-y-3' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                  h('h3', { className: 'text-sm font-black text-rose-900 m-0' }, __alloT('stem.gamestudio.difficulty_curve_tuner_discovery', '📈 Difficulty curve tuner — discovery')),
+                  // Quick preset profiles
+                  h('div', { className: 'flex flex-wrap gap-1.5' },
+                    [
+                      { id: 'cozy', label: '🌱 Cozy', v: { enemies: 2, patrolSpeed: 20, hazards: 10, coins: 85, health: 160 } },
+                      { id: 'balanced', label: '⚖️ Balanced', v: { enemies: 6, patrolSpeed: 50, hazards: 35, coins: 50, health: 100 } },
+                      { id: 'gauntlet', label: '🔥 Boss Gauntlet', v: { enemies: 16, patrolSpeed: 85, hazards: 80, coins: 20, health: 50 } }
+                    ].map(function(pr) {
+                      return h('button', { key: pr.id, type: 'button', onClick: function() { setIQ(pr.v); },
+                        className: 'px-2.5 py-1 rounded-full text-[0.6875rem] font-bold bg-rose-50 text-rose-900 border border-rose-300 hover:bg-rose-100 cursor-pointer'
+                      }, pr.label);
+                    })
+                  )
+                ),
                 h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.gamestudio.five_sliders_for_level_parameters_widg', 'Five sliders for level parameters. Widget classifies overall difficulty into 5 discrete tiers and renders the difficulty progression curve. No score on your tuning — the inquiry is in finding what shapes the curve.')),
                 // Discrete state marker
-                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('div', { className: 'p-3.5 rounded-xl text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-lg font-black', style: { color: sm.color } }, sm.label),
-                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, '~' + sm.deaths + ' deaths typical, completion time ' + sm.time),
-                  h('div', { className: 'text-[0.625rem] text-slate-600 mt-1 font-mono' }, 'Composite difficulty score = ' + diffScore.toFixed(2))
+                  h('div', { className: 'text-xs text-slate-800 font-semibold mt-1' }, '~' + sm.deaths + ' deaths typical · completion time ' + sm.time),
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1 font-mono' }, 'Composite difficulty score = ' + diffScore.toFixed(2))
                 ),
-                // SVG difficulty curve visualization
-                h('div', { className: 'p-2 rounded border border-slate-200 bg-slate-50' },
-                  h('svg', { role: 'img', 'aria-label': __alloT('stem.gamestudio.curve_img', 'Difficulty curve chart'), viewBox: '0 0 360 150', className: 'w-full h-32' },
-                    // Axes
-                    h('line', { x1: 20, y1: 130, x2: 340, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
-                    h('line', { x1: 20, y1: 20, x2: 20, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
+                // SVG difficulty curve visualization (wide viewBox with clean right-side labels inside bounds)
+                h('div', { className: 'p-3 rounded-xl border border-slate-300 bg-slate-50' },
+                  h('svg', { role: 'img', 'aria-label': __alloT('stem.gamestudio.curve_img', 'Difficulty curve chart'), viewBox: '0 0 400 156', className: 'w-full h-auto block', style: { maxHeight: '200px' } },
                     // Tier reference bands (very easy / easy / med / hard / expert)
-                    h('rect', { x: 20, y: 116, width: 320, height: 14, fill: '#ecfdf5', opacity: 0.6 }),
-                    h('rect', { x: 20, y: 95, width: 320, height: 21, fill: '#ecfeff', opacity: 0.6 }),
-                    h('rect', { x: 20, y: 74, width: 320, height: 21, fill: '#fffbeb', opacity: 0.6 }),
-                    h('rect', { x: 20, y: 53, width: 320, height: 21, fill: '#fff7ed', opacity: 0.6 }),
-                    h('rect', { x: 20, y: 20, width: 320, height: 33, fill: '#fef2f2', opacity: 0.6 }),
-                    // Difficulty curve
-                    h('path', { d: pathStr, stroke: sm.color, strokeWidth: 2.5, fill: 'none' }),
+                    h('rect', { x: 36, y: 116, width: 304, height: 14, fill: '#dcfce7', opacity: 0.75 }),
+                    h('rect', { x: 36, y: 95, width: 304, height: 21, fill: '#cffafe', opacity: 0.75 }),
+                    h('rect', { x: 36, y: 74, width: 304, height: 21, fill: '#fef3c7', opacity: 0.75 }),
+                    h('rect', { x: 36, y: 53, width: 304, height: 21, fill: '#ffedd5', opacity: 0.75 }),
+                    h('rect', { x: 36, y: 20, width: 304, height: 33, fill: '#fee2e2', opacity: 0.75 }),
+                    // Horizontal grid rules
+                    [53, 74, 95, 116].map(function(gy) {
+                      return h('line', { key: 'g' + gy, x1: 36, y1: gy, x2: 340, y2: gy, stroke: '#cbd5e1', strokeWidth: 0.8, strokeDasharray: '3 3' });
+                    }),
+                    // Axes
+                    h('line', { x1: 36, y1: 130, x2: 340, y2: 130, stroke: '#64748b', strokeWidth: 1.5 }),
+                    h('line', { x1: 36, y1: 20, x2: 36, y2: 130, stroke: '#64748b', strokeWidth: 1.5 }),
+                    // Area under curve + smooth stroke
+                    h('path', { d: areaStr, fill: sm.color, opacity: 0.16 }),
+                    h('path', { d: pathStr, stroke: sm.color, strokeWidth: 3, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
                     // Curve point markers
                     curvePoints.filter(function(_, i) { return i % 2 === 0; }).map(function(pt, i) {
-                      return h('circle', { key: 'cp' + i, cx: pt[0], cy: pt[1], r: 3, fill: sm.color });
+                      return h('circle', { key: 'cp' + i, cx: pt[0], cy: pt[1], r: 3.5, fill: '#ffffff', stroke: sm.color, strokeWidth: 2 });
                     }),
-                    // Labels
-                    h('text', { x: 175, y: 145, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, __alloT('stem.gamestudio.game_progress_0_100', 'Game progress 0% → 100%')),
-                    h('text', { x: 10, y: 75, textAnchor: 'middle', fontSize: 10, fill: '#475569', transform: 'rotate(-90 10 75)' }, __alloT('stem.gamestudio.difficulty', 'Difficulty')),
-                    h('text', { x: 348, y: 25, fontSize: 9, fill: '#b91c1c' }, __alloT('stem.gamestudio.expert_2', 'Expert')),
-                    h('text', { x: 348, y: 88, fontSize: 9, fill: '#d97706' }, __alloT('stem.gamestudio.medium_2', 'Medium')),
-                    h('text', { x: 348, y: 128, fontSize: 9, fill: '#059669' }, __alloT('stem.gamestudio.easy_2', 'Easy'))
+                    // Labels (strictly within 0..400 x 0..156 bounds)
+                    h('text', { x: 188, y: 149, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155' }, __alloT('stem.gamestudio.game_progress_0_100', 'Game progress 0% → 100%')),
+                    h('text', { x: 14, y: 76, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155', transform: 'rotate(-90 14 76)' }, __alloT('stem.gamestudio.difficulty', 'Difficulty')),
+                    h('text', { x: 346, y: 39, fontSize: 9, fontWeight: 700, fill: '#991b1b' }, __alloT('stem.gamestudio.expert_2', 'Expert')),
+                    h('text', { x: 346, y: 88, fontSize: 9, fontWeight: 700, fill: '#92400e' }, __alloT('stem.gamestudio.medium_2', 'Medium')),
+                    h('text', { x: 346, y: 126, fontSize: 9, fontWeight: 700, fill: '#065f46' }, __alloT('stem.gamestudio.easy_2', 'Easy'))
                   ),
-                  h('div', { className: 'text-[0.625rem] text-slate-600 text-center italic mt-1' },
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 text-center italic mt-1' },
                     __alloT('stem.gamestudio.curve_shows_difficulty_ramping_over_ga', 'Curve shows difficulty ramping over game progress. Compare different parameter combinations.'))
                 ),
                 // Sliders
@@ -1993,7 +2146,8 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.gamestudio.design_note_discrete_5_tier_difficulty', 'Design note: discrete 5-tier difficulty marker; SVG curve shows shape not score; no "right" tuning revealed — by design.'))
               )
             );
-          })(),
+          })()
+          ), // end tabpanel
 
           // ---- BACK BUTTON ----
           h('div', { className: 'mt-6 text-center' },

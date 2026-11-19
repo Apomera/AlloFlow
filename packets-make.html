@@ -143,21 +143,9 @@
               <option value="medium">Medium</option>
               <option value="all">All</option>
             </select>
-            <span class="hint" id="choice-level-hint">How many answers to choose from.</span>
-            <details class="why" id="choice-level-why">
-              <summary>What each level does</summary>
-              <ul>
-                <li>Easy: 3 choices in Find Sounds, Blend Sounds and Rhyme Time; Find Sounds asks the first sound; Sound Counting shows the count with two numbers either side; Break it Down shows the word's sounds and one more.</li>
-                <li>Medium: 4 choices in Find Sounds and Rhyme Time, 6 in Blend Sounds; Find Sounds asks the first or last sound; Sound Counting shows 1 to 8.</li>
-                <li>All: every choice, any sound, and 1 to 11 or more.</li>
-              </ul>
-            </details>
+            <span class="hint" id="choice-level-hint">How many answers to choose from: Easy (fewer), Medium (usual), or All. Details are under About these levels in step 2.</span>
           </div>
         </div>
-      </details>
-      <details class="why aside-note" id="not-offered" hidden>
-        <summary id="not-offered-summary">Activities not in this version</summary>
-        <p id="not-offered-text"></p>
       </details>
       <div class="actions">
         <p id="activity-count" class="count-line" role="status"></p>
@@ -189,13 +177,17 @@
             <span class="hint" id="stage-hint">Each level keeps to the letter patterns taught up to it.</span>
             <span class="hint" id="stage-k-note" hidden>sh, ch and th start at Level 3. Choose 'Any level' to use them earlier.</span>
             <span class="hint" id="stage-spell-note" hidden>For spelling, choose a level: your students then spell only patterns they have been taught.</span>
-            <details class="why" id="stage-why" hidden>
-              <summary>Why<span class="sr-only"> this level has these words</span></summary>
-              <p id="stage-why-text"></p>
-            </details>
-            <details class="why stage-key" id="stage-key" hidden>
-              <summary>Grade for each level</summary>
+            <details class="why stage-key" id="about-levels">
+              <summary>About these levels</summary>
+              <p id="stage-why-text" hidden></p>
               <div id="stage-key-body"></div>
+              <p class="stage-key-head">Answer choices (Step 1)</p>
+              <ul class="stage-key-list">
+                <li>Easy: 3 choices in Find Sounds, Blend Sounds and Rhyme Time; Find Sounds asks the first sound; Sound Counting shows the count with two numbers either side; Break it Down shows the word's sounds and one more; Sight &amp; Spell shows a smaller letter bank and word length.</li>
+                <li>Medium: 4 choices in Find Sounds and Rhyme Time, 6 in Blend Sounds; Find Sounds asks the first or last sound; Sound Counting shows 1 to 8.</li>
+                <li>All: every choice, any sound, and 1 to 11 or more.</li>
+              </ul>
+              <p id="not-offered-text" class="hint" hidden></p>
             </details>
           </div>
         </div>
@@ -406,10 +398,6 @@
           <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. If your school uses AlloFlow, its Class Analytics reads these results files too.</li>
         </ol>
         <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
-        <details class="why" id="learner-tip">
-          <summary>Fill in a student's code name for them</summary>
-          <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
-        </details>
       </div>
 
       <div id="summary-more" class="summary summary-more" hidden>
@@ -469,16 +457,6 @@
             </div>
             <p id="order-said" class="sr-only" role="status"></p>
           </div>
-
-          <details class="why code-box" id="code-box">
-            <summary>Put a student's code name in the file</summary>
-            <div class="field">
-              <label for="f-code-name">Student's code name</label>
-              <span class="hint" id="code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
-              <input type="text" id="f-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="code-name-hint code-name-said">
-              <span class="hint" id="code-name-said" role="status"></span>
-            </div>
-          </details>
         </div>
       </details>
 
@@ -487,35 +465,38 @@
         <p class="hint">The same words as cards to print, or on a screen for the whole class.</p>
         <p class="row paper-row">
           <button type="button" class="btn btn-small" id="print-cards" hidden>Print word cards</button>
-          <a class="btn btn-small" id="open-present-export" href="packets-present-export.html#from-word-sounds" target="_blank" rel="noopener">Present or export slides <span class="sr-only">(opens in a new tab)</span></a>
+          <a class="btn btn-small" id="open-present-export" href="packets-present-export.html#from-word-sounds" target="_blank" rel="noopener">Present &amp; print word cards <span class="sr-only">(opens in a new tab)</span></a>
         </p>
       </div>
 
       <details class="batch" id="batch">
-        <summary>Make one for each student</summary>
+        <summary>Put student code names in the file</summary>
         <div class="batch-body">
-          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name. In Google Classroom, where one assignment gives every student the same file, the single file above is simpler: each student types a code name at the start.</p>
+          <p class="hint">Type 1 code name to put it into the file above, or 2 to 40 (one per line) to save one file per student in a .zip. In Google Classroom, where one assignment gives every student the same file, leave this empty and each student types a code name at the start.</p>
           <div class="field">
             <label for="f-batch-names">Code names, one on each line</label>
             <span class="hint" id="batch-names-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
-            <textarea id="f-batch-names" rows="6" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
+            <textarea id="f-batch-names" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
           </div>
-          <details class="why" id="batch-more">
-            <summary>More choices</summary>
+          <p class="row">
+            <button type="button" class="btn btn-small" id="batch-load">Load list from a .txt file</button>
+            <input type="file" id="batch-file" accept=".txt,text/plain" aria-label="A text file of code names" hidden>
+          </p>
+          <div id="batch-rotate-wrap" class="block" hidden>
             <label class="radio"><input type="checkbox" id="f-batch-rotate" aria-describedby="batch-rotate-hint"> <span>Give students versions A, B and C in turn</span></label>
             <span class="hint" id="batch-rotate-hint">The first student gets A, the second B, the third C, then A again. Students who sit together then have different files.</span>
-          </details>
+          </div>
           <p id="batch-said" class="result-sub" role="status"></p>
           <p class="row batch-row">
-            <button type="button" class="btn" id="batch-make">Make the files</button>
+            <button type="button" class="btn" id="batch-make" hidden>Save .zip</button>
             <button type="button" class="btn" id="batch-stop" hidden>Stop</button>
-            <button type="button" class="btn" id="batch-save" hidden>Save the .zip file</button>
           </p>
           <div id="batch-making" class="making" hidden>
             <p id="batch-line" class="making-line"></p>
             <progress id="batch-bar" max="100" value="0" aria-labelledby="batch-line"></progress>
           </div>
           <p id="batch-problem" class="actions-note" role="alert"></p>
+          <p class="hint" id="learner-tip-line">Sharing by web link instead? Add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
         </div>
       </details>
     </section>

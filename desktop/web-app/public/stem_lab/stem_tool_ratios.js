@@ -2698,9 +2698,9 @@
       var React = ctx.React;
       if (!React || typeof React.createElement !== 'function') return null;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
-      var d = labToolData._ratioLab || {};
+      var d = (labToolData._ratioLab && typeof labToolData._ratioLab === 'object' && !Array.isArray(labToolData._ratioLab)) ? labToolData._ratioLab : {};
       var strictUnits = strictUnitsForGrade(ctx.gradeLevel, ctx.gradeBand);
       var isTeacher = ctx.isTeacherMode === true;
       var teacher = normalizeTeacher(d.teacher);
@@ -2725,7 +2725,8 @@
       var accentText = isContrast ? '#000000' : (isDark ? '#111827' : '#ffffff');
       var success = isContrast ? '#00ff66' : (isDark ? '#6ee7b7' : '#047857');
       var warning = isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#a16207');
-      var cardStyle = { background: panel, border: '1px solid ' + border };
+      var cardShadow = isContrast ? 'none' : (isDark ? '0 4px 18px rgba(2,6,23,0.34)' : '0 2px 12px rgba(67,56,202,0.07)');
+      var cardStyle = { background: panel, border: '1px solid ' + border, boxShadow: cardShadow };
       var inputStyle = { background: isDark || isContrast ? '#0b1220' : '#ffffff', color: text, border: '1px solid ' + border };
 
       function update(patch) {
@@ -3056,15 +3057,16 @@
         if (endY > maxY) { endY = maxY; endX = x0 + (maxY - y0) / slope; }
         var titleId = idBase + '-title', descId = idBase + '-desc';
         return h('figure', { className: 'space-y-2', 'data-ratio-mini-graph': idBase },
-          h('svg', { viewBox: '0 0 300 220', role: 'img', 'aria-labelledby': titleId + ' ' + descId, style: { width: '100%', maxWidth: 360, display: 'block' } },
+          h('svg', { viewBox: '0 0 300 220', role: 'img', 'aria-labelledby': titleId + ' ' + descId, style: { width: '100%', maxWidth: 360, display: 'block', borderRadius: 10 } },
             h('title', { id: titleId }, t('stem.ratios.mini_graph_title', 'Graph of the relationship')),
             h('desc', { id: descId }, fill(t('stem.ratios.mini_graph_desc', 'A straight line through the points {points}. The x-axis shows {x} and the y-axis shows {y}.'), { points: pointsText, x: spec.xLabel, y: spec.yLabel })),
+            h('rect', { x: 46, y: 24, width: 244, height: 156, rx: 4, fill: soft, opacity: isContrast ? 1 : 0.7, 'aria-hidden': 'true' }),
             ticks.map(function(f, index) {
               return h('g', { key: index, 'aria-hidden': 'true' },
                 h('line', { x1: sx(f * maxX), y1: 30, x2: sx(f * maxX), y2: 180, stroke: border, strokeWidth: 1, strokeDasharray: '3 4' }),
                 h('line', { x1: 46, y1: sy(f * maxY), x2: 286, y2: sy(f * maxY), stroke: border, strokeWidth: 1, strokeDasharray: '3 4' }),
-                h('text', { x: sx(f * maxX), y: 196, textAnchor: 'middle', fill: muted, fontSize: 9 }, formatSignificantNumber(f * maxX, 3)),
-                h('text', { x: 40, y: sy(f * maxY) + 3, textAnchor: 'end', fill: muted, fontSize: 9 }, formatSignificantNumber(f * maxY, 3)));
+                h('text', { x: sx(f * maxX), y: 196, textAnchor: 'middle', fill: muted, fontSize: 10 }, formatSignificantNumber(f * maxX, 3)),
+                h('text', { x: 40, y: sy(f * maxY) + 3, textAnchor: 'end', fill: muted, fontSize: 10 }, formatSignificantNumber(f * maxY, 3)));
             }),
             h('line', { x1: 46, y1: 180, x2: 290, y2: 180, stroke: text, strokeWidth: 2, 'aria-hidden': 'true' }),
             h('line', { x1: 46, y1: 180, x2: 46, y2: 24, stroke: text, strokeWidth: 2, 'aria-hidden': 'true' }),
@@ -3119,6 +3121,24 @@
           h('div', { className: 'grid lg:grid-cols-[minmax(230px,0.8fr)_minmax(300px,1.2fr)] gap-4' },
             h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
               h('h3', { className: 'font-bold' }, t('stem.ratios.build_an_equivalent_ratio_family', "Build an equivalent-ratio family")),
+              h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                h('span', { className: 'text-xs font-extrabold uppercase tracking-wider', style: { color: muted } }, t('stem.ratios.starter_ratios', 'Quick ratios:')),
+                [{ a: 2, b: 3, f: 4 }, { a: 3, b: 5, f: 4 }, { a: 4, b: 7, f: 3 }, { a: 12, b: 18, f: 2 }, { a: 5, b: 8, f: 3 }].map(function(pr) {
+                  var tag = pr.a + ':' + pr.b;
+                  var active = first === pr.a && second === pr.b && selectedFactor === pr.f;
+                  return h('button', {
+                    key: tag, type: 'button', 'aria-pressed': active,
+                    onClick: function() {
+                      update(function(cur) {
+                        var drafts = Object.assign({}, cur.numericDrafts || {});
+                        delete drafts.ratioA; delete drafts.ratioB; delete drafts.ratioFactor;
+                        return { ratioA: pr.a, ratioB: pr.b, ratioFactor: pr.f, numericDrafts: drafts };
+                      });
+                    },
+                    className: 'rounded-full px-3 py-1.5 text-xs font-extrabold',
+                    style: { minHeight: 44, background: active ? accentStrong : soft, color: active ? accentText : text, border: '1px solid ' + (active ? accentStrong : border), fontVariantNumeric: 'tabular-nums' }
+                  }, tag);
+                })),
               h('div', { className: 'grid grid-cols-2 gap-3' },
                 numericField(t('stem.ratios.first_quantity', "First quantity"), first, 'ratioA', { min: 1, max: 100, integer: true }),
                 numericField(t('stem.ratios.second_quantity', "Second quantity"), second, 'ratioB', { min: 1, max: 100, integer: true })
@@ -5083,28 +5103,60 @@
       var missionLinkStep = currentMission.steps.filter(function(s) { return s.problem && s.problem.link && s.problem.link.tool === 'unitConvert' && missionSolvedNow[s.id]; })[0];
       var cardUnitLink = unitLink || (missionLinkStep ? missionLinkStep.problem.link : null);
 
-      return h('div', { className: 'p-3 sm:p-5 space-y-4', style: { color: text, background: isContrast ? '#000000' : (isDark ? '#0c1322' : '#f8fafc') } },
-        h('header', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-3' },
-          h('div', { className: 'flex items-start gap-3' },
+      var ratioEmblem = h('svg', {
+        width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true',
+        style: { flexShrink: 0, display: 'block' }
+      },
+        h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 10, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.44)', stroke: isContrast ? '#ffff00' : 'rgba(199,210,254,0.48)', strokeWidth: 1.5 }),
+        h('line', { x1: 8, y1: 15, x2: 34, y2: 15, stroke: isContrast ? '#ffff00' : '#a5b4fc', strokeWidth: 2, strokeLinecap: 'round' }),
+        h('line', { x1: 8, y1: 27, x2: 34, y2: 27, stroke: isContrast ? '#00ff66' : '#34d399', strokeWidth: 2, strokeLinecap: 'round' }),
+        h('line', { x1: 14, y1: 12, x2: 14, y2: 30, stroke: isContrast ? '#ffffff' : 'rgba(255,255,255,0.55)', strokeWidth: 1.2, strokeDasharray: '2 2' }),
+        h('line', { x1: 26, y1: 12, x2: 26, y2: 30, stroke: isContrast ? '#ffffff' : 'rgba(255,255,255,0.55)', strokeWidth: 1.2, strokeDasharray: '2 2' }),
+        h('circle', { cx: 14, cy: 15, r: 3, fill: isContrast ? '#ffff00' : '#818cf8' }),
+        h('circle', { cx: 26, cy: 15, r: 3, fill: isContrast ? '#ffff00' : '#c7d2fe' }),
+        h('circle', { cx: 14, cy: 27, r: 3, fill: isContrast ? '#00ff66' : '#34d399' }),
+        h('circle', { cx: 26, cy: 27, r: 3, fill: isContrast ? '#00ff66' : '#6ee7b7' })
+      );
+      var heroPillStyle = isContrast
+        ? { background: '#000000', color: '#ffff00', border: '1px solid #ffff00', fontVariantNumeric: 'tabular-nums' }
+        : { background: 'rgba(15,23,42,0.44)', color: '#eef2ff', border: '1px solid rgba(199,210,254,0.34)', fontVariantNumeric: 'tabular-nums' };
+
+      return h('div', { className: 'p-3 sm:p-5 space-y-4', style: { color: text, background: isContrast ? '#000000' : (isDark ? '#0c1322' : '#f8fafc'), minWidth: 0 } },
+        h('header', {
+          className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl p-4',
+          style: {
+            background: isContrast ? '#000000' : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 52%, #4338ca 100%)',
+            border: isContrast ? '2px solid #ffff00' : '1px solid rgba(165,180,252,0.3)',
+            boxShadow: isContrast ? 'none' : '0 8px 26px rgba(49,46,129,0.26)',
+            minWidth: 0
+          }
+        },
+          h('div', { className: 'flex items-start gap-3', style: { minWidth: 0, flex: '1 1 200px' } },
             h('button', {
               type: 'button',
               onClick: function() {
                 // Only the tool closes: the Lab has one tab ('explore'), and 'tools' blanked it.
                 if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null);
               },
-              className: 'rounded-lg px-3 py-2 text-sm font-bold shrink-0',
-              style: { background: soft, color: text, border: '1px solid ' + border, minHeight: 44 },
+              className: 'rounded-xl px-3 py-2 text-sm font-bold shrink-0',
+              style: isContrast
+                ? { background: '#000000', color: '#ffff00', border: '1px solid #ffff00', minHeight: 44 }
+                : { background: 'rgba(15,23,42,0.46)', color: '#ffffff', border: '1px solid rgba(199,210,254,0.38)', minHeight: 44 },
               'aria-label': t('stem.ratios.back_to_stem_tools', "Back to STEM tools")
             }, t('stem.ratios.back', "← Back")),
-            h('div', null,
-              h('h2', { className: 'text-xl sm:text-2xl font-black' }, t('stem.ratios.ratios_rates_proportions_lab', "📊 Ratios, Rates & Proportions Lab")),
-              h('p', { className: 'text-sm mt-1', style: { color: muted } }, t('stem.ratios.move_between_representations_and_expla', "Move between representations and explain the multiplicative relationship."))
+            ratioEmblem,
+            h('div', { style: { minWidth: 0 } },
+              h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-1' },
+                h('span', { className: 'rounded-full px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wider', style: heroPillStyle }, t('stem.ratios.subject_badge', 'Mathematics · Proportions')),
+                h('span', { className: 'rounded-full px-2.5 py-0.5 text-xs font-bold', style: heroPillStyle }, bandLabel(band))),
+              h('h2', { className: 'text-xl sm:text-2xl font-black tracking-tight', style: { color: isContrast ? '#ffff00' : '#ffffff', overflowWrap: 'anywhere' } }, t('stem.ratios.ratios_rates_proportions_lab', "📊 Ratios, Rates & Proportions Lab")),
+              h('p', { className: 'text-xs sm:text-sm mt-1', style: { color: isContrast ? '#ffffff' : '#e0e7ff' } }, t('stem.ratios.move_between_representations_and_expla', "Move between representations and explain the multiplicative relationship."))
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-2 text-xs', role: 'group', 'aria-label': t('stem.ratios.lab_progress', "Lab progress") },
-            h('span', { className: "rounded-full px-3 py-1.5 font-bold", style: { background: soft, border: '1px solid ' + border } }, fill(t('stem.ratios.progress_modes', '{n}/5 modes'), { n: visitedCount(d) })),
-            h('span', { className: "rounded-full px-3 py-1.5 font-bold", style: { background: soft, border: '1px solid ' + border } }, fill(t('stem.ratios.progress_solved', '{n} solved'), { n: solvedCount(d) })),
-            h('span', { className: "rounded-full px-3 py-1.5 font-bold", style: { background: soft, border: '1px solid ' + border } }, fill(t('stem.ratios.progress_practice', '{n} practice solved'), { n: practiceSolvedCount }))
+          h('div', { className: 'flex flex-wrap gap-2 text-xs', role: 'group', 'aria-label': t('stem.ratios.lab_progress', "Lab progress"), style: { minWidth: 0 } },
+            h('span', { className: "rounded-full px-3 py-1.5 font-bold", style: heroPillStyle }, fill(t('stem.ratios.progress_modes', '{n}/5 modes'), { n: visitedCount(d) })),
+            h('span', { className: "rounded-full px-3 py-1.5 font-bold", style: Object.assign({}, heroPillStyle, isContrast ? { color: '#00ff66', borderColor: '#00ff66' } : { color: '#a7f3d0', borderColor: 'rgba(110,231,183,0.45)' }) }, fill(t('stem.ratios.progress_solved', '{n} solved'), { n: solvedCount(d) })),
+            h('span', { className: "rounded-full px-3 py-1.5 font-bold", style: Object.assign({}, heroPillStyle, isContrast ? { color: '#ffff00', borderColor: '#ffff00' } : { color: '#fde68a', borderColor: 'rgba(253,230,138,0.45)' }) }, fill(t('stem.ratios.progress_practice', '{n} practice solved'), { n: practiceSolvedCount }))
           )
         ),
 
@@ -5113,7 +5165,7 @@
         renderViewTabs(),
 
         h('div', { id: 'ratio-view-panel', role: 'tabpanel', 'aria-labelledby': 'ratio-view-tab-' + labView, className: 'space-y-4', 'data-ratio-view': labView },
-        labView === 'practice' && h('nav', { className: 'rounded-xl p-2', style: cardStyle, 'aria-label': t('stem.ratios.ratio_lab_learning_modes', "Ratio Lab learning modes") },
+        labView === 'practice' && h('nav', { className: 'rounded-2xl p-2', style: cardStyle, 'aria-label': t('stem.ratios.ratio_lab_learning_modes', "Ratio Lab learning modes") },
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2', role: 'tablist', 'aria-label': t('stem.ratios.learning_mode', "Learning mode") }, modeOrder.map(function(id) { return MODES_L.filter(function(item) { return item.id === id; })[0]; }).map(function(item, index) {
             var selected = item.id === mode;
             var locked = !!teacher.lockMode && !selected;
@@ -5128,8 +5180,8 @@
               tabIndex: selected ? 0 : -1,
               onKeyDown: function(event) { moveMode(event, index); },
               onClick: function() { chooseMode(item.id); },
-              className: 'rounded-lg px-2 py-3 text-xs font-bold min-h-[54px]',
-              style: { background: selected ? accentStrong : soft, color: selected ? accentText : text, border: '1px solid ' + (selected ? accentStrong : border), opacity: locked ? 0.6 : 1 }
+              className: 'rounded-xl px-2 py-3 text-xs font-bold min-h-[54px] transition',
+              style: { background: selected ? accentStrong : soft, color: selected ? accentText : text, border: '1px solid ' + (selected ? accentStrong : border), opacity: locked ? 0.6 : 1, boxShadow: selected && !isContrast ? '0 3px 10px rgba(67,56,202,0.22)' : 'none', minWidth: 0 }
             }, h('span', { className: 'block text-base mb-1', 'aria-hidden': 'true' }, item.icon), item.short);
           }))
         ),
@@ -5140,18 +5192,21 @@
           'aria-labelledby': 'ratio-tab-' + mode,
           className: 'space-y-4'
         },
-          h('div', { className: 'flex flex-wrap items-baseline gap-x-3 gap-y-1' },
-            h('h2', { className: 'text-lg font-black', style: { color: accent } }, modeInfo.title),
-            h('p', { className: 'text-sm', style: { color: muted } }, modeInfo.desc)
+          h('div', { className: 'flex flex-wrap items-center gap-3 rounded-xl p-3', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + accent }) },
+            h('span', { 'aria-hidden': 'true', className: 'inline-flex items-center justify-center rounded-xl text-xl shrink-0', style: { width: 40, height: 40, background: soft, border: '1px solid ' + border } }, modeInfo.icon),
+            h('div', { style: { minWidth: 0, flex: '1 1 180px' } },
+              h('h2', { className: 'text-lg font-black', style: { color: accent } }, modeInfo.title),
+              h('p', { className: 'text-sm', style: { color: muted } }, modeInfo.desc)
+            )
           ),
           teacher.lockMode && h('p', { className: 'text-sm font-semibold', role: 'note', 'data-ratio-mode-locked': true }, t('stem.ratios.mode_locked_note', 'Your teacher has set the mode for this lesson.')),
-          h('details', { key: mode, className: 'rounded-xl border p-3', 'data-ratio-exploration': true, style: { borderColor: border } },
+          h('details', { key: mode, className: 'rounded-xl border p-3', 'data-ratio-exploration': true, style: Object.assign({}, cardStyle, { borderColor: border }) },
             h('summary', { className: 'cursor-pointer text-sm font-bold', style: { minHeight: 24 } }, t('stem.ratios.free_exploration', 'Free exploration — choose your own quantities')),
             h('p', { className: 'text-sm my-2' }, t('stem.ratios.independent_workspace_v2', 'This workspace is separate from the problem below. Build the problem itself in “Model this problem”.')),
             renderModeContent()
           ),
 
-          h('section', { id: 'ratio-challenge-section', className: 'rounded-2xl p-4 sm:p-5 space-y-4', 'aria-labelledby': 'ratio-challenge-heading', style: { background: isContrast ? '#000000' : (isDark ? '#191d36' : '#eef2ff'), border: '2px solid ' + accent, scrollMarginTop: 12 } },
+          h('section', { id: 'ratio-challenge-section', className: 'rounded-2xl p-4 sm:p-5 space-y-4', 'aria-labelledby': 'ratio-challenge-heading', style: { background: isContrast ? '#000000' : (isDark ? '#191d36' : '#eef2ff'), border: '2px solid ' + accent, scrollMarginTop: 12, boxShadow: cardShadow } },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
               h('div', null,
                 h('h2', { id: 'ratio-challenge-heading', tabIndex: -1, className: 'font-black' }, t('stem.ratios.try_problem', "🎯 Try a problem")),

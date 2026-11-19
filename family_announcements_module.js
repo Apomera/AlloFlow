@@ -76,7 +76,7 @@ function _famannAiUsable(kind, fn) {
     if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return Boolean(window.__alloAiUsable(kind, fn));
   } catch (_) {
   }
-  return typeof fn === "function" && !fn._alloQrBlocked && (typeof window === "undefined" || window.__alloStudentAiDisabled !== true);
+  return typeof fn === "function" && !fn._alloQrBlocked && (typeof window === "undefined" || window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true);
 }
 function _famannSanitizeUntrusted(value) {
   return String(value == null ? "" : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, "");

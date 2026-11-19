@@ -588,7 +588,7 @@ function siteHeader(offline) {
   return [
     '  <header class="site-header">',
     '    <div class="site-header__inner">',
-    '      <a class="brand" href="index.html" aria-label="AlloFlow Teacher Guide home">',
+    '      <a class="brand" href="index.html">',
     '        <span class="brand__mark" aria-hidden="true">A</span>',
     '        <span>AlloFlow Teacher Guide</span>',
     '      </a>',
@@ -672,7 +672,7 @@ function htmlDocument(options) {
     '  <a class="skip-link" href="#main-content">Skip to main content</a>',
     siteHeader(Boolean(options.offline)),
     '  <div class="page-shell">',
-    '    <aside class="sidebar">',
+    '    <aside class="sidebar" aria-label="Guide chapters">',
     chapterNavigation(options.chapters, options.activeSlug || '', Boolean(options.offline)),
     '    </aside>',
     options.main,

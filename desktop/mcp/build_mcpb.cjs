@@ -46,7 +46,7 @@ const MCPB_CLI_VERSION = '2.1.2';
 
 // zip_writer.cjs is required by the driver at load time — omitting it makes the packaged server
 // fail to start, not merely lose a feature.
-const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'accessible_html_edit.cjs', 'scan_reading_corrections.cjs', 'pdf_annotations.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_worker.cjs', 'remediation_ace_browser.cjs', 'connector_version.cjs', 'README_REMEDIATION.md'];
+const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'remediation_chromium_pdf.cjs', 'zip_writer.cjs', 'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'accessible_html_edit.cjs', 'scan_reading_corrections.cjs', 'pdf_annotations.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_worker.cjs', 'remediation_ace_browser.cjs', 'connector_version.cjs', 'README_REMEDIATION.md'];
 // The driver resolves this beside itself and verifies every byte against vendor/manifest.json.
 // Omitting it produces a bundle that starts but fails as soon as a browser-backed tool runs.
 const SERVER_DIRS = ['vendor'];
@@ -172,6 +172,7 @@ function buildManifest() {
         args: ['${__dirname}/server/alloflow-remediation-mcp-stdio.cjs'],
         env: {
           GEMINI_API_KEY: '${user_config.gemini_api_key}',
+          ALLOFLOW_MCP_ALLOWED_ROOTS: '${user_config.allowed_roots}',
           ALLOFLOW_MCP_ASSETS_DIR: '${__dirname}/assets',
           ALLOFLOW_MCP_SKILLS_DIR: '${__dirname}/skills',
           ALLOFLOW_MCP_NO_KEY_FILES: '1',
@@ -179,6 +180,12 @@ function buildManifest() {
       },
     },
     user_config: {
+      allowed_roots: {
+        type: 'directory',
+        title: 'Allowed document folder',
+        description: 'Recommended: restrict AlloFlow file reads and writes to a single documents folder so prompt injection in an audited file cannot reach unrelated files.',
+        required: false,
+      },
       gemini_api_key: {
         type: 'string',
         title: 'Gemini API key',

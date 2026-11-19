@@ -1029,14 +1029,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       '.stewardship-inquiry{margin-bottom:14px;border:1px solid #334155;border-radius:14px;background:rgba(15,23,42,.78);overflow:hidden;}',
       '.stewardship-inquiry summary{min-height:48px;padding:13px 15px;cursor:pointer;color:#e9d5ff;font-size:12px;font-weight:900;}',
       '.stewardship-inquiry-body{padding:0 13px 13px;}',
+      '.stewardship-hero-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:rgba(134,239,172,.14);border:1px solid rgba(134,239,172,.42);color:#bbf7d0;font-size:11px;font-weight:800;letter-spacing:.04em;margin-bottom:6px;}',
+      '.stewardship-constellation{margin-bottom:16px;padding:14px 16px;border-radius:14px;background:linear-gradient(135deg,rgba(15,23,42,.92),rgba(20,83,45,.22));border:1px solid rgba(134,239,172,.32);box-shadow:0 10px 26px rgba(2,6,23,.24);}',
+      '.stewardship-card-elevated{border:1px solid rgba(148,163,184,.24);box-shadow:0 6px 18px rgba(2,6,23,.26);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;}',
+      '.stewardship-card-elevated:hover{transform:translateY(-1px);border-color:rgba(134,239,172,.5);box-shadow:0 10px 24px rgba(2,6,23,.36);}',
+      '.stewardship-family-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}',
+      '.stewardship-family-tab{min-height:36px!important;min-width:auto!important;padding:6px 11px;border-radius:999px;border:1px solid #475569;background:rgba(15,23,42,.82);color:#cbd5e1;font-size:12px;font-weight:700;cursor:pointer;}',
+      '.stewardship-family-tab[aria-selected="true"]{background:#166534;border-color:#86efac;color:#ffffff;font-weight:800;}',
+      '.stewardship-preset-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px;}',
+      '.stewardship-preset-chip{min-height:34px!important;min-width:auto!important;padding:5px 10px;border-radius:999px;border:1px solid #475569;background:rgba(15,23,42,.85);color:#e2e8f0;font-size:11px;font-weight:700;cursor:pointer;}',
+      '.stewardship-preset-chip:hover{border-color:#86efac;color:#ffffff;}',
       '@media(max-width:760px){.stewardship-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.stewardship-command-top{flex-direction:column;}.stewardship-tour{white-space:normal;}}',
       '@media(max-width:520px){.stewardship-menu-shell{padding:8px 0;border-radius:14px;}.stewardship-command{padding:14px;border-radius:16px;}.stewardship-command-title{flex-direction:column;}.stewardship-primary{width:100%;}.stewardship-actions{align-items:stretch;}.stewardship-action-note{width:100%;}}',
-      '@media(prefers-reduced-motion:reduce){.stewardship-primary{transition:none;}.stewardship-primary:hover{transform:none;}}',
+      '@media(prefers-reduced-motion:reduce){.stewardship-primary,.stewardship-card-elevated{transition:none;}.stewardship-primary:hover,.stewardship-card-elevated:hover{transform:none;}}',
       "\n[data-stewardship-view]{min-width:0;overflow-wrap:anywhere;line-height:1.6;--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#a8b8cc;--allo-stem-border:#64748b}\n[data-stewardship-view] *,[data-stewardship-view] *:before,[data-stewardship-view] *:after{box-sizing:border-box}\n[data-stewardship-view] :is(button,summary){min-height:44px;min-width:44px}\n[data-stewardship-view] button{white-space:normal;line-height:1.5}\n[data-stewardship-view] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-heading]:focus{outline:3px solid #fde68a;outline-offset:3px}\n[data-stewardship-heading]{scroll-margin-block:18px}\n[data-stewardship-view] [aria-pressed=true]{border-width:3px!important}\n[data-stewardship-inquiry] input[type=range]{min-height:32px;accent-color:#facc15}\n[data-stewardship-inquiry] textarea{font-size:16px!important;line-height:1.6;min-height:100px}\n[data-stewardship-inquiry] label{font-size:13px!important;line-height:1.6}\n[data-stewardship-inquiry] [data-stewardship-inquiry-log]{font-size:12px!important;line-height:1.6!important;max-height:200px!important}\n[data-stewardship-inquiry-log] ol{margin:0;padding:0 0 0 22px}[data-stewardship-inquiry-log] li{padding:6px 2px}\n[data-stewardship-inquiry] p{opacity:1!important;font-size:13px!important;line-height:1.6!important}\n[data-stewardship-inquiry-questions]{font-size:13px!important;line-height:1.6!important}\n[data-stewardship-view^=report]{--allo-stem-text:#0f172a;--allo-stem-text-soft:#475569;--allo-stem-border:#94a3b8;color:#0f172a}\n[data-stewardship-view^=report] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-view^=report] [data-stewardship-heading]:focus{outline-color:#9a5800}\n[data-stewardship-view] [data-stewardship-primary-action]{background:#166534!important;color:#fff!important;border:1px solid #86efac!important}\n@media(max-width:600px){.stewardship-inquiry-parameters{grid-template-columns:minmax(0,1fr)!important}.stewardship-comparison-grid{grid-template-columns:minmax(0,1fr)!important}[data-stewardship-view] div[style*=\"display: flex\"]{flex-wrap:wrap}[data-stewardship-view] div[style*=\"min-width\"]{min-width:0!important}[data-stewardship-view] div[style*=\"display: grid\"]>*{min-width:0}[data-stewardship-view^=report]>div{padding:14px!important}.stewardship-metric-value{white-space:normal;overflow:visible}.stewardship-metric-label{font-size:11px}}\n@media(forced-colors:active){[data-stewardship-view] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-heading]:focus{outline-color:Highlight}[data-stewardship-view] [aria-pressed=true]{border-color:Highlight!important}[data-stewardship-view] svg text{fill:CanvasText}[data-stewardship-view] [data-stewardship-primary-action]{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}\n",
       "\n[data-stewardship-view] .stewardship-inquiry>summary:focus-visible,[data-stewardship-view] .stewardship-scenario-data>summary:focus-visible{outline-offset:-5px!important}\n.stewardship-scenario-data{margin:14px 0;border:1px solid var(--allo-stem-border,#64748b);border-radius:12px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data>summary{padding:12px 14px;cursor:pointer;font-size:14px;font-weight:700;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data p{margin:4px 14px 12px;font-size:13px;line-height:1.6;color:var(--allo-stem-text-soft,#a8b8cc)}\n.stewardship-scenario-data-scroll{margin:0 12px 12px;max-height:none;overflow:auto;scroll-margin-block:16px;border:1px solid var(--allo-stem-border,#64748b);border-radius:8px}\n[data-stewardship-view] .stewardship-scenario-data-scroll:focus-visible{outline-offset:-4px!important}\n.stewardship-scenario-data-table{width:100%;min-width:620px;border-collapse:collapse;table-layout:auto;font-size:13px;line-height:1.6;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table caption{text-align:left;padding:12px;font-size:14px;font-weight:700;background:var(--allo-stem-panel,#1e293b);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table :is(th,td){padding:10px 12px;vertical-align:top;text-align:left;border-bottom:1px solid var(--allo-stem-border,#64748b);overflow-wrap:normal}\n.stewardship-scenario-data-table td{white-space:nowrap}.stewardship-scenario-data-table th{font-weight:700}.stewardship-scenario-data-detail{display:block;font-size:12px;font-weight:400;line-height:1.5;color:var(--allo-stem-text-soft,#a8b8cc);margin-top:3px}.stewardship-scenario-data-table thead{background:var(--allo-stem-panel,#1e293b)}\n.stewardship-scenario-data-table tbody tr:nth-child(even){background:rgba(148,163,184,.06)}\n@media(max-width:600px){[data-stewardship-view] [data-stewardship-report-header]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start!important}[data-stewardship-report-header]>.no-print{grid-column:1/-1}}.theme-contrast [data-stewardship-report-header] [data-stewardship-heading=report]{margin-bottom:14px!important}.theme-contrast [data-stewardship-view]{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00}\n.theme-contrast [data-stewardship-inquiry-outcome],.theme-contrast [data-stewardship-report-metadata]{background:#000!important;color:#ffff00!important;border:1px solid #ffff00!important}\n.theme-contrast [data-stewardship-view] [data-stewardship-primary-action]{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast .stewardship-scenario-data :is(table,caption,th,td){background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast [data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:#ffff00}\n@media(forced-colors:active){.stewardship-scenario-data,.stewardship-scenario-data-scroll,.stewardship-scenario-data-table :is(th,td){border-color:CanvasText}.stewardship-scenario-data-table,.stewardship-scenario-data-table caption,.stewardship-scenario-data-table thead{background:Canvas;color:CanvasText}[data-stewardship-system-map] circle{fill:Canvas;stroke:CanvasText}[data-stewardship-system-map] line{stroke:CanvasText;opacity:1}[data-stewardship-inquiry-chart] rect{fill:Canvas;stroke:CanvasText}[data-stewardship-inquiry-chart] rect:nth-of-type(2){fill:Highlight;opacity:1}[data-stewardship-inquiry-chart] rect:nth-of-type(3){fill:Canvas}[data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:CanvasText!important}}\n",
       "@media(max-width:600px){[data-stewardship-view] [data-stewardship-scenario-header]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start!important}[data-stewardship-scenario-header]>span{justify-self:end}[data-stewardship-scenario-header]>div{grid-column:1/-1}}@media(forced-colors:active){[data-stewardship-view] [data-stewardship-inquiry-chart]{background:Canvas!important}[data-stewardship-view] .stewardship-scenario-data :is(table,caption,th,td){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}",
       ".stewardship-model-explanation{margin:0 0 14px;border:1px solid var(--allo-stem-border,#64748b);border-radius:10px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0)}.stewardship-model-explanation>summary{padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer}[data-stewardship-view] .stewardship-model-explanation>summary:focus-visible{outline-offset:-5px!important}.stewardship-model-body{padding:0 12px 12px}.stewardship-model-body table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.6;margin-bottom:12px}.stewardship-model-body caption{text-align:left;font-weight:700;padding:8px 0}.stewardship-model-body :is(th,td){padding:8px 6px;text-align:left;vertical-align:top;border-bottom:1px solid var(--allo-stem-border,#64748b)}.stewardship-model-body td{white-space:nowrap;font-variant-numeric:tabular-nums}.stewardship-model-body th[scope=row]{font-weight:400}.stewardship-model-body [data-stewardship-model-displayed]{font-weight:700}.stewardship-model-body p{margin:8px 0}.theme-contrast .stewardship-model-explanation :is(table,caption,th,td){background:#000!important;color:#ffff00!important;border-color:#ffff00!important}@media(forced-colors:active){[data-stewardship-view] .stewardship-model-explanation :is(table,caption,th,td){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}",
-      '.theme-contrast .stewardship-command,.theme-contrast .stewardship-inquiry{box-shadow:none;border-width:2px;}'
+      '.theme-contrast .stewardship-command,.theme-contrast .stewardship-inquiry,.theme-contrast .stewardship-constellation,.theme-contrast .stewardship-card-elevated{box-shadow:none!important;border-width:2px!important;background:#000000!important;border-color:#ffff00!important;}',
+      '.theme-contrast .stewardship-family-tab,.theme-contrast .stewardship-preset-chip,.theme-contrast .stewardship-hero-badge{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;}',
+      '.theme-contrast .stewardship-family-tab[aria-selected="true"]{background:#ffff00!important;color:#000000!important;border-color:#ffff00!important;}',
+      '.theme-contrast [data-stewardship-constellation-svg] text{fill:#ffff00!important;}'
     ].join('\n');
     if (document.head) document.head.appendChild(stewardshipStyle);
   }
@@ -1070,7 +1083,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       var announceToSR = ctx.announceToSR;
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
-      var hub = labToolData.stewardshipHub || {};
+      var rawHub = labToolData.stewardshipHub;
+      var hub = (rawHub && typeof rawHub === 'object' && !Array.isArray(rawHub)) ? rawHub : {};
+      var safeScenarioStates = (hub.scenarioStates && typeof hub.scenarioStates === 'object' && !Array.isArray(hub.scenarioStates)) ? hub.scenarioStates : {};
       var stewardshipRootRef = React.useRef(null), stewardshipFocusRequest = React.useRef(null), stewardshipReturnAction = React.useRef(null);
       function stewardshipViewKey(state) {
         if (state.comparing) return 'comparison:' + state.comparing.mode + (state.comparing.mode === 'viewing' ? ':' + state.comparing.a + ':' + state.comparing.b : '');
@@ -1960,9 +1975,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             // the spokes green/red and drop +N/-N deltas on the parts it moved —
             // the cascade made literal. The NEXT choice's effects stay hidden
             // (you still choose from the labels), preserving predict-then-see.
-            h('div', { style: { marginBottom: 14, padding: 10, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+            h('div', { style: { marginBottom: 14, padding: 12, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               (function() {
-                var ents = scenario.entities, N = ents.length, W = 330, Hh = 210, cx = W / 2, cy = Hh / 2, R = Math.min(cx, cy) - 34;
+                var ents = scenario.entities, N = ents.length, W = 460, Hh = 276, cx = W / 2, cy = Hh / 2, R = 92;
                 var evidenceRows = scenarioEvidence(scenario, st).rows;
                 var nodes = ents.map(function(ent, i) {
                   var ang = (i / N) * Math.PI * 2 - Math.PI / 2;
@@ -1970,23 +1985,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                   var inv = scenario.entityInverted && scenario.entityInverted[ent.id];
                   var hv = inv ? (100 - v) : v;
                   var col = hv >= 60 ? '#86efac' : hv >= 30 ? '#fbbf24' : '#fca5a5';
-                  return { ent: ent, x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang), v: Math.round(v), col: col, d: evidenceRows[i].lastChange != null ? evidenceRows[i].lastChange : 0, change: scenarioChangeMeaning(evidenceRows[i].lastChange, !!inv) };
+                  return { ent: ent, x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang), v: Math.round(v), hv: Math.max(0, Math.min(100, hv)), col: col, d: evidenceRows[i].lastChange != null ? evidenceRows[i].lastChange : 0, change: scenarioChangeMeaning(evidenceRows[i].lastChange, !!inv) };
                 });
-                return h('svg', { 'data-stewardship-system-map': 'true', 'aria-describedby': inquiryId + '-scenario-' + scenario.id + '-current-summary', width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 470, display: 'block', margin: '0 auto' }, role: 'img', 'aria-label': 'System map of ' + scenario.label + ': ' + N + ' interconnected parts; your last decision shifted the highlighted ones.' },
+                var ringC = 2 * Math.PI * 20;
+                return h('svg', { 'data-stewardship-system-map': 'true', 'aria-describedby': inquiryId + '-scenario-' + scenario.id + '-current-summary', width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 540, display: 'block', margin: '0 auto' }, role: 'img', 'aria-label': 'System map of ' + scenario.label + ': ' + N + ' interconnected parts; your last decision shifted the highlighted ones.' },
+                  // Subtle ecological telemetry rings (no <line> or <g> so spoke/node indices remain 1:1)
+                  h('circle', { cx: cx, cy: cy, r: 46, fill: 'none', stroke: '#334155', strokeWidth: 1, strokeDasharray: '2 4', opacity: 0.55 }),
+                  h('circle', { cx: cx, cy: cy, r: 92, fill: 'none', stroke: '#334155', strokeWidth: 1, strokeDasharray: '3 5', opacity: 0.45 }),
                   nodes.map(function(nd, i) {
                     var ec = nd.d === 0 ? '#64748b' : nd.change.color;
-                    var ew = nd.d !== 0 ? Math.min(5, 1 + Math.abs(nd.d) / 6) : 1;
-                    return h('line', { key: 'e' + i, 'data-stewardship-map-change': nd.ent.id, 'data-change-direction': nd.change.state, x1: cx, y1: cy, x2: nd.x, y2: nd.y, stroke: ec, strokeWidth: ew, strokeDasharray: nd.change.state === 'worsening' ? '4 3' : undefined, opacity: nd.d !== 0 ? 0.85 : 0.5 });
+                    var ew = nd.d !== 0 ? Math.min(5, 1.5 + Math.abs(nd.d) / 5.5) : 1.25;
+                    return h('line', { key: 'e' + i, 'data-stewardship-map-change': nd.ent.id, 'data-change-direction': nd.change.state, x1: cx, y1: cy, x2: nd.x, y2: nd.y, stroke: ec, strokeWidth: ew, strokeDasharray: nd.change.state === 'worsening' ? '4 3' : undefined, opacity: nd.d !== 0 ? 0.92 : 0.55 });
                   }),
-                  h('circle', { cx: cx, cy: cy, r: 16, fill: 'rgba(15,23,42,0.95)', stroke: scenario.color, strokeWidth: 2 }),
-                  h('text', { x: cx, y: cy + 6, textAnchor: 'middle', fontSize: 15 }, scenario.icon),
+                  h('circle', { cx: cx, cy: cy, r: 23, fill: '#0b1220', stroke: scenario.color, strokeWidth: 2.5 }),
+                  h('circle', { cx: cx, cy: cy, r: 28, fill: 'none', stroke: stewardshipAccent(scenario.color), strokeWidth: 1, opacity: 0.45 }),
+                  h('text', { x: cx, y: cy + 6, textAnchor: 'middle', fontSize: 18 }, scenario.icon),
                   nodes.map(function(nd, i) {
+                    var lbl = nd.ent.name.length > 16 ? nd.ent.name.slice(0, 15) + '…' : nd.ent.name;
+                    var arcLen = (nd.hv / 100) * ringC;
+                    var deltaX = nd.x > cx + 24 ? nd.x - 24 : nd.x + 24;
+                    var deltaAnchor = nd.x > cx + 24 ? 'end' : 'start';
                     return h('g', { key: 'n' + i },
-                      h('text', { x: nd.x, y: nd.y - 20, textAnchor: 'middle', fontSize: 7.5, fontWeight: 600, fill: '#cbd5e1' }, nd.ent.name.length > 14 ? nd.ent.name.slice(0, 13) + '…' : nd.ent.name),
-                      h('circle', { cx: nd.x, cy: nd.y, r: 16, fill: 'rgba(15,23,42,0.95)', stroke: nd.col, strokeWidth: 2.5 }),
-                      h('text', { x: nd.x, y: nd.y + 5, textAnchor: 'middle', fontSize: 13 }, nd.ent.icon),
-                      h('text', { x: nd.x, y: nd.y + 27, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: nd.col }, '' + nd.v),
-                      nd.d !== 0 ? h('text', { x: nd.x + 17, y: nd.y - 9, textAnchor: 'start', fontSize: 9.5, fontWeight: 800, fill: nd.change.color }, (nd.d > 0 ? '+' : '') + nd.d) : null
+                      h('circle', { cx: nd.x, cy: nd.y, r: 20, fill: '#0b1220', stroke: '#1e293b', strokeWidth: 3.5 }),
+                      h('circle', { cx: nd.x, cy: nd.y, r: 20, fill: 'none', stroke: nd.col, strokeWidth: 3.5, strokeDasharray: arcLen.toFixed(1) + ' ' + ringC.toFixed(1), transform: 'rotate(-90 ' + nd.x.toFixed(1) + ' ' + nd.y.toFixed(1) + ')' }),
+                      h('text', { x: nd.x, y: nd.y + 5, textAnchor: 'middle', fontSize: 15 }, nd.ent.icon),
+                      h('text', { x: nd.x, y: nd.y - 25, textAnchor: 'middle', fontSize: 10.5, fontWeight: 700, fill: '#e2e8f0' }, lbl),
+                      h('text', { x: nd.x, y: nd.y + 33, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: nd.col }, '' + nd.v),
+                      nd.d !== 0 ? h('text', { x: deltaX, y: nd.y - 11, textAnchor: deltaAnchor, fontSize: 11, fontWeight: 800, fill: nd.change.color }, (nd.d > 0 ? '+' : '') + nd.d) : null
                     );
                   })
                 );
@@ -2236,6 +2261,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           h('strong', { className: 'stewardship-metric-value' }, value));
       }
 
+      // Bespoke Ecological Watershed & Compass SVG Emblem
+      function renderStewardshipEmblem() {
+        return h('svg', {
+          width: 48, height: 48, viewBox: '0 0 48 48', role: 'img',
+          'aria-label': __alloT('stem.stewardship.emblem_alt', 'Environmental Stewardship ecological compass emblem'),
+          style: { flexShrink: 0, display: 'block' }
+        },
+          h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: '#0b1912', stroke: '#86efac', strokeWidth: 1.5 }),
+          h('circle', { cx: 24, cy: 24, r: 16, fill: 'none', stroke: '#86efac', strokeWidth: 1.2, strokeDasharray: '3 3', opacity: 0.7 }),
+          h('path', { d: 'M10 31 L18 19 L25 26 L31 17 L38 31 Z', fill: '#166534', stroke: '#86efac', strokeWidth: 1.2, strokeLinejoin: 'round' }),
+          h('path', { d: 'M12 34 Q18 30 24 34 T36 34', fill: 'none', stroke: '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
+          h('circle', { cx: 24, cy: 13, r: 3, fill: '#fbbf24' })
+        );
+      }
+
+      // 5-Family Ecological Constellation Matrix SVG (Maine Anchors <-> Cross-Region Cases)
+      var pairedFamilies = getPairedFamilies(snapshots, scenarioSnaps);
+      var FAMILY_ORDER = ['fire', 'conservation', 'outbreak', 'watershed', 'climate'];
+      var validFamilyFilter = (hub.familyFilter === 'all' || FAMILY_ORDER.indexOf(hub.familyFilter) >= 0) ? hub.familyFilter : 'all';
+
+      function renderFamilyConstellationSvg() {
+        var W = 680, H = 166;
+        var colW = W / 5;
+        return h('svg', {
+          'data-stewardship-constellation-svg': 'true',
+          viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
+          'aria-label': __alloT('stem.stewardship.constellation_aria', 'Five stewardship mechanic families linking Maine anchor campaigns with ten cross-region scenarios'),
+          style: { display: 'block', height: 'auto' }
+        },
+          h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 12, fill: '#08111d', stroke: '#1e3a2f', strokeWidth: 1.2 }),
+          FAMILY_ORDER.map(function(famId, i) {
+            var meta = FAMILY_COLORS[famId] || { primary: '#15803d', accent: '#86efac', label: famId };
+            var cx = colW * i + colW / 2;
+            var anchorSnap = snapshots.find(function(s) { return CAMPAIGN_FAMILY[s.campaign.id] === famId; });
+            var anchorDone = anchorSnap && anchorSnap.state.status === 'complete';
+            var anchorActive = anchorSnap && anchorSnap.state.status === 'inProgress';
+            var famScens = scenarioSnaps.filter(function(s) { return s.scenario.family === famId; });
+            var isPaired = pairedFamilies.indexOf(famId) >= 0;
+            var isFocused = validFamilyFilter === famId;
+            var shortFam = famId === 'conservation' ? 'Wildlife' : famId === 'watershed' ? 'Watershed' : famId === 'outbreak' ? 'Public Health' : famId === 'climate' ? 'Climate' : 'Fire';
+            return h('g', { key: famId },
+              isFocused ? h('rect', { x: colW * i + 6, y: 6, width: colW - 12, height: H - 12, rx: 10, fill: 'rgba(134,239,172,0.08)', stroke: '#86efac', strokeWidth: 1.2 }) : null,
+              // Family heading
+              h('text', { x: cx, y: 24, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: meta.accent }, shortFam.toUpperCase()),
+              // Connecting lines from Maine Anchor (y=56) to Cross-Region nodes (y=114)
+              famScens.map(function(scSnap, si) {
+                var tx = cx + (si === 0 ? -28 : 28);
+                var scDone = scSnap.state.status === 'complete';
+                var bothDone = anchorDone && scDone;
+                return h('line', {
+                  key: 'l' + si, x1: cx, y1: 66, x2: tx, y2: 106,
+                  stroke: bothDone ? '#c084fc' : (scDone || anchorDone ? meta.accent : '#334155'),
+                  strokeWidth: bothDone ? 2.4 : 1.4,
+                  strokeDasharray: bothDone ? undefined : '3 3'
+                });
+              }),
+              // Maine Anchor node
+              h('circle', {
+                cx: cx, cy: 56, r: 14,
+                fill: anchorDone ? '#14532d' : '#0f172a',
+                stroke: anchorDone ? '#86efac' : (anchorActive ? '#fbbf24' : '#475569'),
+                strokeWidth: anchorDone || anchorActive ? 2.4 : 1.5
+              }),
+              h('text', { x: cx, y: 61, textAnchor: 'middle', fontSize: 13 }, anchorSnap ? anchorSnap.campaign.icon : '🌲'),
+              // Cross-Region scenario nodes
+              famScens.map(function(scSnap, si) {
+                var tx = cx + (si === 0 ? -28 : 28);
+                var scDone = scSnap.state.status === 'complete';
+                var scActive = scSnap.state.status === 'inProgress';
+                return h('g', { key: 's' + si },
+                  h('circle', {
+                    cx: tx, cy: 114, r: 12,
+                    fill: scDone ? '#3b0764' : '#0f172a',
+                    stroke: scDone ? '#d8b4fe' : (scActive ? '#fbbf24' : '#475569'),
+                    strokeWidth: scDone || scActive ? 2.2 : 1.4
+                  }),
+                  h('text', { x: tx, y: 118, textAnchor: 'middle', fontSize: 11 }, scSnap.scenario.icon)
+                );
+              }),
+              // Pairing status footer
+              h('text', { x: cx, y: 148, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isPaired ? '#d8b4fe' : '#94a3b8' },
+                isPaired ? '✓ ' + __alloT('stem.stewardship.paired_short', 'Paired') : (anchorDone ? __alloT('stem.stewardship.maine_done_short', 'Maine ✓') : __alloT('stem.stewardship.unpaired_short', '1+2 cases')))
+            );
+          })
+        );
+      }
+
       return h('main', { ref: stewardshipRootRef, 'data-stewardship-view': stewardshipView, className: 'stewardship-menu-shell', 'data-stewardship-mission': 'true',
         // Dark self-contained shell: this tool's color palette assumes a dark
         // navy background (greens like #86efac, slates like #94a3b8 / #cbd5e1
@@ -2248,7 +2360,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           h('div', { className: 'stewardship-command-top' },
             h('div', { className: 'stewardship-command-title' },
               ArrowLeft ? h('button', { type: 'button', className: 'stewardship-back', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_4', 'Back') + ': ' + __alloT('stem.stewardship.steam_lab_destination', 'STEAM Lab') }, __alloT('stem.stewardship.back_4', 'Back')) : null,
-              h('div', null,
+              renderStewardshipEmblem(),
+              h('div', { style: { minWidth: 0 } },
+                h('div', { className: 'stewardship-hero-badge' }, __alloT('stem.stewardship.subject_badge', 'Environmental Science · Systems Stewardship Studio') + ' · ' + pairedFamilies.length + '/5 ' + __alloT('stem.stewardship.families_paired', 'Families Paired')),
                 h('p', { className: 'stewardship-eyebrow' }, __alloT('stem.stewardship.mission_label', 'Systems stewardship mission')),
                 h('h2', { tabIndex: -1, 'data-stewardship-heading': 'hub', className: 'stewardship-title' }, __alloT('stem.stewardship.environmental_stewardship_campaigns', 'Environmental Stewardship Campaigns')),
                 h('p', { className: 'stewardship-subtitle' }, __alloT('stem.stewardship.mission_blurb', 'Compare how ecological feedback, community trust, time horizons, and local authority shape fifteen campaigns across eleven regions.')))),
@@ -2262,6 +2376,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('button', { type: 'button', className: 'stewardship-primary', onClick: function() { launchCampaign(recommendedCampaign); } },
               recommendedStatus === 'inProgress' ? __alloT('stem.stewardship.continue_recommended', 'Continue recommended campaign') : __alloT('stem.stewardship.start_recommended', 'Start recommended campaign')),
             h('span', { className: 'stewardship-action-note' }, recommendedCampaign.icon + ' ' + recommendedCampaign.label + ' - ' + recommendedCampaign.mechanic))
+        ),
+
+        // ── Visual Centerpiece: 5-Family Ecological Constellation Matrix ──
+        h('section', { className: 'stewardship-constellation', 'aria-label': __alloT('stem.stewardship.constellation_section', 'Mechanic family pairing map') },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+            h('div', { style: { minWidth: 0 } },
+              h('div', { style: { fontSize: 12, fontWeight: 900, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.stewardship.constellation_title', '🌐 Cross-Region Mechanic Family Map')),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, __alloT('stem.stewardship.constellation_sub', 'Top ring: Maine Anchor simulation. Bottom pair: global case studies sharing the same ecological & social feedback rule.'))
+            ),
+            h('span', { style: { fontSize: 11, fontWeight: 800, color: '#d8b4fe', padding: '4px 10px', borderRadius: 999, background: 'rgba(168,85,247,0.16)', border: '1px solid rgba(168,85,247,0.45)' } },
+              pairedFamilies.length + ' / 5 ' + __alloT('stem.stewardship.paired_unlocked', 'Pairings Unlocked'))
+          ),
+          renderFamilyConstellationSvg()
         ),
 
         // ══ STEWARDSHIP INQUIRY widget (H7b'') ══
@@ -2298,14 +2425,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.stewardship.pick_a_hypothetical_project_setting_pr', 'Pick a project setting, then observe how investment, time, community, and intervention complexity affect the modeled trajectory. The result updates live; record a hypothesis or pattern. This slider is intervention complexity, not biodiversity; higher biodiversity generally increases resilience.')),
             h('div', { id: inquiryId + '-outcome', 'data-stewardship-inquiry-outcome': 'true', role: 'status', 'aria-atomic': 'true', style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('svg', { 'data-stewardship-inquiry-chart': 'true', width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': __alloT('stem.stewardship.trajectory_chart', 'Stewardship trajectory chart showing projected success odds and ROI proxy.'), 'aria-describedby': inquiryId + '-outcome', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
-              h('rect', { x: 30, y: 30, width: 260, height: 60, fill: '#0f172a', stroke: '#1e293b' }),
-              h('rect', { x: 30, y: 30, width: (successOdds * 260).toFixed(1), height: 60, fill: sm.color, opacity: 0.7 }),
-              h('rect', { x: 98, y: 46, width: 124, height: 28, rx: 5, fill: '#0a0a1a' }),
-              h('text', { x: 160, y: 65, fill: '#fff', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, 'success ' + (successOdds * 100).toFixed(0) + '%'),
-              h('text', { x: 30, y: 24, fill: '#94a3b8', fontSize: 9 }, 'failing'),
-              h('text', { x: 290, y: 24, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, 'flourishing'),
-              h('text', { x: 160, y: 105, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'ROI proxy: ' + roi.toFixed(2))
+            h('svg', { 'data-stewardship-inquiry-chart': 'true', width: '100%', height: 132, viewBox: '0 0 380 132', role: 'img', 'aria-label': __alloT('stem.stewardship.trajectory_chart', 'Stewardship trajectory chart showing projected success odds and ROI proxy.'), 'aria-describedby': inquiryId + '-outcome', style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 10, border: '1px solid #1e293b' } },
+              h('rect', { x: 30, y: 30, width: 320, height: 60, fill: '#0f172a', stroke: '#334155' }),
+              h('rect', { x: 30, y: 30, width: (successOdds * 320).toFixed(1), height: 60, fill: sm.color, opacity: 0.75 }),
+              h('rect', { x: 122, y: 45, width: 136, height: 30, rx: 6, fill: '#0a0a1a', stroke: sm.color, strokeWidth: 1 }),
+              [0.15, 0.35, 0.55, 0.75].map(function(th, ti) {
+                var tx = 30 + th * 320;
+                return h('line', { key: ti, x1: tx.toFixed(1), y1: 30, x2: tx.toFixed(1), y2: 90, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.55 });
+              }),
+              h('text', { x: 190, y: 65, fill: '#ffffff', fontSize: 12.5, fontWeight: 800, textAnchor: 'middle' }, 'success ' + (successOdds * 100).toFixed(0) + '%'),
+              h('text', { x: 30, y: 21, fill: '#cbd5e1', fontSize: 10.5, fontWeight: 700 }, __alloT('stem.stewardship.axis_failing', '0% Failing')),
+              h('text', { x: 350, y: 21, fill: '#cbd5e1', fontSize: 10.5, fontWeight: 700, textAnchor: 'end' }, __alloT('stem.stewardship.axis_flourishing', '100% Flourishing')),
+              h('text', { x: 190, y: 114, fill: '#cbd5e1', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'ROI proxy: ' + roi.toFixed(2) + ' · ' + sm.label)
+            ),
+            h('div', { className: 'stewardship-preset-row', role: 'group', 'aria-label': __alloT('stem.stewardship.inquiry_presets', 'Starter inquiry profiles') },
+              h('span', { style: { fontSize: 11, fontWeight: 800, color: '#cbd5e1' } }, __alloT('stem.stewardship.try_profile', 'Starter profiles:')),
+              [
+                { label: __alloT('stem.stewardship.preset_community', 'Community-Led'), v: { investment: 40, timeHorizon: 25, communityBuyin: 9, interventionComplexity: 3 } },
+                { label: __alloT('stem.stewardship.preset_grant', 'Big Grant / Short Term'), v: { investment: 450, timeHorizon: 2, communityBuyin: 2, interventionComplexity: 7 } },
+                { label: __alloT('stem.stewardship.preset_balanced', 'Long-Term Balanced'), v: { investment: 120, timeHorizon: 30, communityBuyin: 8, interventionComplexity: 5 } },
+                { label: __alloT('stem.stewardship.preset_complex', 'High Uncertainty'), v: { investment: 80, timeHorizon: 8, communityBuyin: 4, interventionComplexity: 10 } }
+              ].map(function(pr, pi) {
+                return h('button', {
+                  key: pi, type: 'button', className: 'stewardship-preset-chip',
+                  onClick: function() { setIQ(pr.v); }
+                }, pr.label);
+              })
             ),
             h('details', { id: inquiryId + '-model', className: 'stewardship-model-explanation', 'data-stewardship-inquiry-model': 'true' },
               h('summary', null, __alloT('stem.stewardship.how_model_calculated', 'How this model is calculated')),
@@ -2542,8 +2687,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             var campaignPeriod = campaignPeriodLabel(c);
             var campaignAction = s.status === 'inProgress' ? __alloT('stem.stewardship.continue_campaign_action', 'Continue →') : s.status === 'complete' ? __alloT('stem.stewardship.replay_campaign_action', 'Replay →') : __alloT('stem.stewardship.launch_campaign_action', 'Launch →');
             return h('div', {
-              key: c.id, 'data-stewardship-campaign': c.id,
-              style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 14, borderLeft: '3px solid ' + c.color, display: 'flex', flexDirection: 'column', gap: 10 }
+              key: c.id, 'data-stewardship-campaign': c.id, className: 'stewardship-card-elevated',
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 14, borderLeft: '4px solid ' + c.color, display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 28 } }, c.icon),
@@ -2598,22 +2743,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         ),
 
         // ─────────── Cross-region scenarios catalog ───────────
-        h('div', { style: { marginBottom: 8, padding: '8px 12px', borderRadius: 8, background: 'rgba(168,85,247,0.06)', borderLeft: '3px solid #a855f7' } },
+        h('div', { style: { marginBottom: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(168,85,247,0.08)', borderLeft: '4px solid #a855f7' } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.cross_region_scenarios', '🌐 Cross-region scenarios')),
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, lineHeight: 1.5 } }, __alloT('stem.stewardship.ten_self_contained_4_decision_scenario', 'Ten self-contained 4-decision scenarios from other parts of the world. Each takes 5–10 minutes and uses the same universal mechanic as the Maine anchor — different country, different cultures, different stakes. Every mechanic family has at least two cross-region scenarios so you can compare within the same mechanic across two regions, and compare those against the Maine anchor in a three-way analysis.'))
         ),
 
+        // WAI-ARIA tablist filter by mechanic family
+        h('div', {
+          className: 'stewardship-family-tabs',
+          role: 'tablist',
+          'aria-label': __alloT('stem.stewardship.filter_by_family', 'Filter cross-region scenarios by mechanic family')
+        },
+          [{ id: 'all', label: __alloT('stem.stewardship.family_all', 'All families') + ' (' + scenarioSnaps.length + ')' }].concat(
+            FAMILY_ORDER.map(function(famId) {
+              var cnt = scenarioSnaps.filter(function(s) { return s.scenario.family === famId; }).length;
+              return { id: famId, label: (FAMILY_COLORS[famId] ? FAMILY_COLORS[famId].label : famId) + ' (' + cnt + ')' };
+            })
+          ).map(function(tab) {
+            var active = validFamilyFilter === tab.id;
+            return h('button', {
+              key: tab.id, type: 'button', role: 'tab', 'aria-selected': active,
+              className: 'stewardship-family-tab',
+              onClick: function() { setHub({ familyFilter: tab.id }); }
+            }, tab.label);
+          })
+        ),
+
         // Scenarios catalog grid
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))', gap: 12, marginBottom: 16 } },
-          scenarioSnaps.map(function(snap) {
+          scenarioSnaps.filter(function(snap) { return validFamilyFilter === 'all' || snap.scenario.family === validFamilyFilter; }).map(function(snap) {
             var sc = snap.scenario;
             var state = snap.state;
             var scenarioAction = state.status === 'inProgress' ? __alloT('stem.stewardship.continue_scenario_action', 'Continue →') : state.status === 'complete' ? __alloT('stem.stewardship.review_scenario_action', 'Review →') : __alloT('stem.stewardship.begin_scenario_action', 'Begin →');
             var familyMeta = FAMILY_COLORS[sc.family] || { primary: '#86efac', mechanic: '' };
             var pct = (state.step && sc.decisions.length) ? Math.round((state.step / sc.decisions.length) * 100) : 0;
             return h('div', {
-              key: sc.id,
-              style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 14, borderLeft: '3px solid ' + sc.color, display: 'flex', flexDirection: 'column', gap: 10 }
+              key: sc.id, className: 'stewardship-card-elevated',
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 14, borderLeft: '4px solid ' + sc.color, display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 28 } }, sc.icon),

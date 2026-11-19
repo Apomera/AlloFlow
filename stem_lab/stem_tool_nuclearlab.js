@@ -2058,6 +2058,27 @@
     .ns-first-compare{padding:4px;border:1px solid #719cbd66;background:#081c2e;border-radius:12px;gap:4px}.ns-first-compare .ns-choice{min-width:104px;background:transparent;color:#edf5ff;border-color:transparent;box-shadow:none}.ns-first-compare .ns-choice[aria-pressed=true]{background:#65e2ce;color:#052c29;border-color:#65e2ce}.ns-first .ns-case-chart-row>strong{font-size:20px;font-variant-numeric:tabular-nums;letter-spacing:-.03em}.ns-first .ns-case-track{height:22px;border-radius:5px;position:relative}.ns-first-scale-cuts{position:absolute;inset:0;pointer-events:none}.ns-first-scale-cuts>span{position:absolute;top:0;bottom:0;border-inline-start:1px solid #081c2e99}.ns-first .ns-case-scale{margin-top:9px}.ns-first [data-ns-first-prediction-result]{padding:9px 11px;border:1px solid #719cbd66;border-radius:9px;background:#081c2e;text-align:left}.ns-first [data-ns-first-prediction-result=matched]{border-inline-start:3px solid #65e2ce}
     @container(max-width:600px){.ns-first-header{padding-top:0;padding-bottom:8px;margin-bottom:12px}.ns-first-header p{margin-bottom:12px}.ns-first-stage{border-radius:16px}.ns-first .ns-readout{padding:8px 12px}.ns-first-compare .ns-choice{padding:8px 6px}.ns-first-progress li{padding:8px 9px}.ns-first-progress li[data-state=current]{padding:7px 8px}.ns-first[data-ns-first-discovery=predict] .ns-choices .ns-choice{padding:8px;gap:6px}}
     @media(forced-colors:active){.ns-first-header,.ns-first-progress li,.ns-first-stage,.ns-first-stage .ns-scene,.ns-first .ns-readout,.ns-first-compare,.ns-first [data-ns-first-prediction-result]{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none}.ns-first-progress li[data-state=current]>span{background:Highlight;color:HighlightText}.ns-first .ns-scene-top>span,.ns-first .ns-scene-top>span:last-child{background:Canvas;color:CanvasText;border-color:CanvasText}.ns-first .ns-readout strong,.ns-first .ns-readout span{color:CanvasText}.ns-first-source-unit,.ns-first-detector-unit{filter:none}.ns-first .ns-beam [data-ns-first-apparatus] rect{fill:Canvas;stroke:CanvasText}.ns-first-guess{color:CanvasText}.ns-first-compare .ns-choice{background:Canvas;color:CanvasText;border-color:CanvasText}.ns-first-compare .ns-choice[aria-pressed=true]{background:Highlight;color:HighlightText;border-color:Highlight;forced-color-adjust:none}.ns-first-scale-cuts>span{border-color:CanvasText}.ns-first [data-ns-first-prediction-result=matched]{border-inline-start-color:Highlight}.ns-first .ns-primary,.ns-first .ns-choice:hover{box-shadow:none}}
+    .nk-studio-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;margin-bottom:16px;border-radius:16px;background:linear-gradient(125deg,#0f172a 0%,#1e1b4b 54%,#0c3245 100%);border:1px solid rgba(101,226,206,.38);box-shadow:0 14px 30px rgba(8,18,34,.28);color:#f1f5f9}
+    .nk-studio-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:rgba(101,226,206,.16);border:1px solid rgba(101,226,206,.45);color:#99f6e4}
+    .nk-studio-title{font-size:18px;font-weight:900;letter-spacing:-.02em;color:#ffffff;margin:4px 0 2px}
+    .nk-studio-sub{font-size:12px;color:#cbd5e1;margin:0}
+    .nk-telemetry-row{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+    .nk-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,23,42,.66);border:1px solid rgba(148,163,184,.36);color:#e2e8f0;white-space:nowrap}
+    .nk-telemetry-pill strong{color:#65e2ce;font-weight:900}
+    .nk-quick-bar{display:flex;flex-wrap:wrap;align-items:center;gap:7px;width:100%;padding-top:10px;border-top:1px solid rgba(148,163,184,.22)}
+    .nk-quick-label{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#a5f3fc;margin-right:2px}
+    .nk-quick-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(101,226,206,.38);color:#f8fafc;cursor:pointer;min-height:36px!important;transition:background-color .15s,border-color .15s}
+    .nk-quick-chip:hover{background:rgba(101,226,206,.22);border-color:#65e2ce;color:#ffffff}
+    .ns-nav{padding:6px;border-radius:14px;background:var(--ns-panel);border:1px solid var(--ns-line);box-shadow:0 4px 14px rgba(8,18,34,.08)}
+    .ns-controls,.ns-notebook,.ns-chooser{box-shadow:0 6px 18px rgba(8,18,34,.08)}
+    .ns-scene{box-shadow:inset 0 1px 0 rgba(208,227,245,.16),0 12px 26px rgba(8,18,34,.22)}
+    .theme-contrast .nk-workspace{background:#000000!important;color:#ffffff!important;border:2px solid #ffffff!important}
+    .theme-contrast .nk-studio-banner{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}
+    .theme-contrast .nk-studio-badge,.theme-contrast .nk-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}
+    .theme-contrast .nk-telemetry-pill strong,.theme-contrast .nk-quick-label{color:#ffff00!important}
+    .theme-contrast .nk-quick-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}
+    .theme-contrast .nk-workspace :is(.ns-nav,.ns-controls,.ns-notebook,.ns-chooser,.ns-scene,.ns-progress,.ns-mission,.ns-feedback){background:#000000!important;color:#ffffff!important;border-color:#ffffff!important;box-shadow:none!important}
+    .theme-contrast .nk-workspace :is(button,input,textarea,a,summary):focus-visible{outline:3px solid #ffff00!important;outline-offset:3px!important}
   `;
 
   function NuclearStarterExperiment(props) {
@@ -2561,24 +2582,71 @@
 
   function NuclearLabWorkspace(props) {
     var ctx = props.ctx, React = ctx.React, h = React.createElement, nt = nkStudioTranslate(ctx);
-    var d = ctx.toolData && ctx.toolData._nuclearLab || {};
+    var rawD = ctx.toolData && ctx.toolData._nuclearLab;
+    var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
     var mode = d.nkView === 'reference' || (!d.nkView && ['safe', 'me', 'safety', 'works', 'know'].indexOf(d.nkPath) >= 0) ? 'reference' : d.nkView === 'reactor' ? 'reactor' : d.nkView === 'investigate' ? 'investigate' : d.nkView === 'nucleus' ? 'nucleus' : 'studio';
     var contentRef = React.useRef(null), pendingFocus = React.useRef(false);
     React.useEffect(function () { if (pendingFocus.current && contentRef.current) { contentRef.current.focus(); pendingFocus.current = false; } }, [mode]);
     function changeView(next) {
       if (next === mode) return;
       pendingFocus.current = true;
-      ctx.setToolData(function (prev) { return Object.assign({}, prev, { _nuclearLab: Object.assign({}, prev && prev._nuclearLab, { nkView: next, nkPath: null, nkOpen: false }) }); });
+      ctx.setToolData(function (prev) {
+        var cur = prev && prev._nuclearLab;
+        cur = (cur && typeof cur === 'object' && !Array.isArray(cur)) ? cur : {};
+        return Object.assign({}, prev, { _nuclearLab: Object.assign({}, cur, { nkView: next, nkPath: null, nkOpen: false }) });
+      });
     }
     function saveStudio(update, nextView) {
       ctx.setToolData(function (prev) {
-        var current = prev && prev._nuclearLab || {}, studio = current.nkStudio;
+        var curRaw = prev && prev._nuclearLab;
+        var current = (curRaw && typeof curRaw === 'object' && !Array.isArray(curRaw)) ? curRaw : {};
+        var studio = current.nkStudio;
         if (!studio || typeof studio !== 'object' || Array.isArray(studio)) studio = {};
         return Object.assign({}, prev, { _nuclearLab: Object.assign({}, current, { nkStudio: update(studio), nkView: nextView || mode }) });
       });
     }
+    var studioRaw = d.nkStudio && typeof d.nkStudio === 'object' && !Array.isArray(d.nkStudio) ? d.nkStudio : {};
+    var completedCount = Array.isArray(studioRaw.completed) ? studioRaw.completed.filter(function (id, i, all) { return all.indexOf(id) === i; }).length : 0;
+    var evMasteredCount = Array.isArray(d.evidenceMastered) ? d.evidenceMastered.filter(function (id, i, all) { return all.indexOf(id) === i; }).length : 0;
+    var activeIsoId = typeof d.isoId === 'string' ? d.isoId : 'c14';
+    var activeIsoObj = ISOTOPES.filter(function (x) { return x.id === activeIsoId; })[0] || ISOTOPES[6];
+    var nkEmblemSvg = h('svg', { width: 48, height: 48, viewBox: '0 0 64 64', style: { flexShrink: 0 }, 'aria-hidden': 'true', focusable: 'false' },
+      h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 16, fill: 'rgba(15,23,42,0.72)', stroke: 'rgba(101,226,206,0.55)', strokeWidth: 1.5 }),
+      h('ellipse', { cx: 32, cy: 32, rx: 22, ry: 9, fill: 'none', stroke: '#65e2ce', strokeWidth: 1.8, transform: 'rotate(-28 32 32)' }),
+      h('ellipse', { cx: 32, cy: 32, rx: 22, ry: 9, fill: 'none', stroke: '#a78bfa', strokeWidth: 1.8, transform: 'rotate(28 32 32)' }),
+      h('ellipse', { cx: 32, cy: 32, rx: 22, ry: 9, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.6, transform: 'rotate(90 32 32)' }),
+      h('circle', { cx: 32, cy: 32, r: 5.5, fill: '#65e2ce', stroke: '#f0fdfa', strokeWidth: 1.4 }),
+      h('circle', { cx: 50, cy: 23, r: 2.6, fill: '#fbbf24' }),
+      h('circle', { cx: 14, cy: 41, r: 2.6, fill: '#c4b5fd' })
+    );
+    function openStudioMission(missionId) {
+      pendingFocus.current = true;
+      saveStudio(function (current) { return Object.assign({}, current, { mission: missionId, firstDiscovery: 'explore' }); }, 'studio');
+    }
     return h('div', { className: 'nk-workspace', 'data-nuclear-lab': mode === 'studio' ? 'true' : undefined, 'data-ns-large': !!d.nkLargeText, 'data-ns-reduced': !!d.nkReduceMotion, 'data-theme': ctx.theme === 'light' ? 'light' : 'dark', style: { containerType: 'inline-size' } },
       h('style', null, NK_STUDIO_CSS),
+      h('div', { className: 'nk-studio-banner' },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 260px' } },
+          nkEmblemSvg,
+          h('div', { style: { minWidth: 0 } },
+            h('span', { className: 'nk-studio-badge' }, __alloT('stem.nuclearlab.banner_badge', 'Physics · Nuclear & Radiation Instrumentation')),
+            h('p', { className: 'nk-studio-title' }, __alloT('stem.nuclearlab.banner_title', 'Nuclear & Radiation Workbench')),
+            h('p', { className: 'nk-studio-sub' }, __alloT('stem.nuclearlab.banner_sub', 'Source-cited half-life decay, attenuation physics, counting statistics, and reactor control.'))
+          )
+        ),
+        h('div', { className: 'nk-telemetry-row', role: 'group', 'aria-label': __alloT('stem.nuclearlab.banner_telemetry', 'Lab status readouts') },
+          h('span', { className: 'nk-telemetry-pill' }, __alloT('stem.nuclearlab.pill_discoveries', 'Discoveries'), ' ', h('strong', null, completedCount + '/6')),
+          h('span', { className: 'nk-telemetry-pill' }, __alloT('stem.nuclearlab.pill_evidence', 'Evidence'), ' ', h('strong', null, evMasteredCount + '/' + EVIDENCE_CLAIMS.length)),
+          h('span', { className: 'nk-telemetry-pill' }, __alloT('stem.nuclearlab.pill_isotope', 'Isotope'), ' ', h('strong', null, activeIsoObj.name))
+        ),
+        h('div', { className: 'nk-quick-bar', role: 'group', 'aria-label': __alloT('stem.nuclearlab.banner_presets', 'Quick lab benches') },
+          h('span', { className: 'nk-quick-label' }, __alloT('stem.nuclearlab.quick_label', 'Quick launch:')),
+          h('button', { type: 'button', className: 'nk-quick-chip', onClick: function () { openStudioMission('decay'); } }, '⏳ ' + __alloT('stem.nuclearlab.quick_decay', 'Decay bench')),
+          h('button', { type: 'button', className: 'nk-quick-chip', onClick: function () { openStudioMission('shield'); } }, '🛡️ ' + __alloT('stem.nuclearlab.quick_shield', 'Shielding bench')),
+          h('button', { type: 'button', className: 'nk-quick-chip', onClick: function () { changeView('reactor'); } }, '🎛️ ' + __alloT('stem.nuclearlab.quick_reactor', 'Reactor room')),
+          h('button', { type: 'button', className: 'nk-quick-chip', onClick: function () { changeView('reference'); } }, '📚 ' + __alloT('stem.nuclearlab.quick_reference', 'Reference guide'))
+        )
+      ),
       h('nav', { className: 'ns-nav', 'aria-label': nt('workspace_views', 'Nuclear Lab views') },
         [{ id: 'studio', label: nt('studio_view', 'Experiment studio') }, { id: 'reference', label: nt('reference_view', 'All topics & routes') }, { id: 'reactor', label: nt('reactor_view', 'Reactor control room') }].map(function (view) {
           return h('button', { key: view.id, type: 'button', 'aria-pressed': mode === view.id || (mode === 'investigate' || mode === 'nucleus') && view.id === 'studio', onClick: function () { changeView(view.id); } }, view.label);
@@ -2769,7 +2837,8 @@
       var stNkDoseSpeech = React.useState('');
       var nkDoseSpeech = stNkDoseSpeech[0], setNkDoseSpeech = stNkDoseSpeech[1];
 
-      var d = (ctx.toolData && ctx.toolData._nuclearLab) || {};
+      var rawRefD = ctx.toolData && ctx.toolData._nuclearLab;
+      var d = (rawRefD && typeof rawRefD === 'object' && !Array.isArray(rawRefD)) ? rawRefD : {};
       // Reading preferences are needed by both the DOM and the 3D viewer.
       // Resolve them before effects are declared so the viewer dependency list
       // receives the actual value rather than a hoisted, still-undefined var.
@@ -5724,7 +5793,7 @@
           onClick: function () { nkGoTo(nkVisible[0]); }
         }, 'Skip topic controls and start reading') : null,
 
-        h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-2.5', style: { background: 'linear-gradient(115deg, #1a0f2e 0%, #2e1065 46%, #0b1a2e 100%)', borderColor: 'rgba(167,139,250,0.4)' } },
+        h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-3 shadow-lg', style: { background: 'linear-gradient(115deg, #1a0f2e 0%, #2e1065 46%, #0b1a2e 100%)', borderColor: 'rgba(167,139,250,0.48)' } },
           h('div', { className: 'flex flex-wrap items-center gap-3' },
             ArrowLeft ? h('button', {
               type: 'button',
@@ -5733,6 +5802,12 @@
               style: { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(226,232,240,0.18)' },
               'aria-label': t('stem.common.back_to_tools', 'Back to tools')
             }, h(ArrowLeft, { size: 18, className: 'text-slate-100' })) : null,
+            h('svg', { width: 42, height: 42, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+              h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: 'rgba(15,23,42,0.68)', stroke: 'rgba(167,139,250,0.55)', strokeWidth: 1.5 }),
+              h('ellipse', { cx: 32, cy: 32, rx: 21, ry: 8.5, fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.8, transform: 'rotate(-30 32 32)' }),
+              h('ellipse', { cx: 32, cy: 32, rx: 21, ry: 8.5, fill: 'none', stroke: '#65e2ce', strokeWidth: 1.8, transform: 'rotate(30 32 32)' }),
+              h('circle', { cx: 32, cy: 32, r: 5, fill: '#fbbf24', stroke: '#fef3c7', strokeWidth: 1.2 })
+            ),
             h('div', null,
               h('h3', { className: 'text-lg font-black tracking-tight text-white' }, '☢️ Nuclear & Radiation Lab'),
               h('span', { className: 'text-xs', style: { color: 'rgba(196,181,253,0.9)' } }, 'What the numbers actually say — including where they are disputed')
@@ -7834,7 +7909,7 @@
         )
         ),
 
-        h('footer', { className: 'mt-3 rounded-lg border p-3 text-center', style: { borderColor: isDark ? 'rgba(148,163,184,.25)' : 'rgba(100,116,139,.22)' } },
+        h('footer', { role: 'none', className: 'mt-3 rounded-lg border p-3 text-center', style: { borderColor: isDark ? 'rgba(148,163,184,.25)' : 'rgba(100,116,139,.22)' } },
           h('p', { className: 'text-[0.625rem] leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Reviewed ' + NK_REVIEWED + '. Half-lives use NNDC NuDat 3; attenuation uses NIST XCOM at 1 MeV; dose and accident context uses UNSCEAR, ICRP 103 and NCRP 160. Where a figure is disputed, the tool gives the range rather than choosing.'),
           sourceNote(['nudat', 'nist', 'unscear', 'icrp103', 'inworks', 'nrc', 'iter', 'nif', 'nuscale']))

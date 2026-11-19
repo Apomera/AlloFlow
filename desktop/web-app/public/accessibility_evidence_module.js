@@ -189,11 +189,28 @@ function createEvidenceProvenance(input) {
     }
     var capturedAt = _latestProvenanceTimestamp([raw.capturedAt, raw.auditAt, raw.runAt, raw.completedAt, raw.updatedAt, raw.lastReviewedAt]);
     if (capturedAt) timestamps.push(capturedAt);
+    var laneReviewCount = null;
+    if (Array.isArray(raw.issues)) {
+      laneReviewCount = raw.issues.filter(function (issue) { return issue && issue.requiresManualReview === true; }).length;
+    } else if (raw.reviewCount !== undefined) {
+      laneReviewCount = _provenanceCount(raw.reviewCount);
+    } else if (raw.needsReview !== undefined) {
+      laneReviewCount = _provenanceCount(raw.needsReview);
+    } else if (raw.totalIncomplete !== undefined) {
+      laneReviewCount = _provenanceCount(raw.totalIncomplete);
+    } else {
+      var rawPot = _provenanceCount(raw.potentialViolations);
+      var rawMan = _provenanceCount(raw.manualViolations);
+      var rawAgg = _provenanceCount(raw.reviewFindingCount);
+      if (rawAgg !== null || rawPot !== null || rawMan !== null) {
+        laneReviewCount = rawAgg !== null ? Math.max(rawAgg, (rawPot || 0) + (rawMan || 0)) : ((rawPot || 0) + (rawMan || 0));
+      }
+    }
     lanes[lane] = {
-      executed: raw.executed === true || _provenanceFinite(raw.score) || !!raw.runAt || !!raw.completedAt,
+      executed: raw.executed === false ? false : (raw.executed === true || _provenanceFinite(raw.score) || !!raw.runAt || !!raw.completedAt),
       status: String(raw.status || raw.verificationStatus || raw.execution || '') || null,
       findingCount: Array.isArray(raw.issues) ? raw.issues.length : _provenanceCount(raw.findingCount !== undefined ? raw.findingCount : (raw.violationRules !== undefined ? raw.violationRules : (raw.totalViolations !== undefined ? raw.totalViolations : (raw.issueCount !== undefined ? raw.issueCount : raw.failViolations)))),
-      reviewCount: Array.isArray(raw.issues) ? raw.issues.filter(function (issue) { return issue && issue.requiresManualReview === true; }).length : _provenanceCount(raw.reviewCount !== undefined ? raw.reviewCount : (raw.needsReview !== undefined ? raw.needsReview : (raw.totalIncomplete !== undefined ? raw.totalIncomplete : raw.reviewFindingCount))),
+      reviewCount: laneReviewCount,
       engine: String(raw.engine || lane) || lane,
       version: String(raw.version || raw.engineVersion || '') || null,
       capturedAt: capturedAt,
@@ -309,7 +326,7 @@ function compareEvidenceProvenance(previous, current) {
   if (previous.artifactFingerprint !== current.artifactFingerprint) reasons.push('artifact-binding-changed');
   if (previous.rendererRevision !== current.rendererRevision) reasons.push('renderer-changed');
   if (previous.evidenceDigest && current.evidenceDigest && previous.evidenceDigest !== current.evidenceDigest) reasons.push('engine-evidence-changed');
-  if (previous.findingDigest && current.findingDigest && previous.findingDigest !== current.findingDigest) reasons.push('findings-changed');
+  if ((previous.findingDigest || null) !== (current.findingDigest || null)) reasons.push('findings-changed');
   if (!previous.evidenceDigest && current.evidenceDigest) reasons.push('provenance-upgraded');
   var staleReasons = reasons.filter(function (reason) {
     return ['profile-changed', 'artifact-binding-changed', 'renderer-changed', 'engine-evidence-changed', 'findings-changed'].indexOf(reason) >= 0;

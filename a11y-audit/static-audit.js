@@ -10,6 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const staticAuditFileTextCache = new WeakMap();
 
 // ── Configuration ──────────────────────────────────────────────────────────
 
@@ -45,6 +46,8 @@ const SKIP_PATTERNS = [
   // Generated BehaviorLens staging outputs. The canonical shipped module is
   // behavior_lens_module.js; these files are recreated by _bl_* patch scripts.
   /_bl_[^\\/]+\.updated\.js$/,
+  // Pure phoneme/pronunciation lookup dictionaries (minified data arrays, no DOM/UI).
+  /word_sounds_(?:phonemes_en|pronunciations)\.js$/,
 ];
 
 // ── Anti-Pattern Definitions ───────────────────────────────────────────────
@@ -182,6 +185,7 @@ const CHECKS = [
     description: 'Non-semantic element has onClick but no role="button", tabIndex, or onKeyDown',
     // Match onClick on div/span/td/li that don't also have role or tabIndex on same line/nearby
     test(line, lineNum, lines) {
+      if (!line.includes('onClick')) return false;
       // Look for createElement('div'|'span'|'td', { ... onClick
       const divClick = /h\(\s*['"](?:div|span|td|li)['"]\s*,\s*\{[^}]*onClick/;
       const reactDiv = /createElement\(\s*['"](?:div|span|td|li)['"]\s*,\s*\{[^}]*onClick/;
@@ -192,12 +196,14 @@ const CHECKS = [
       if (/onKeyDown\s*[:=]/.test(context) || /onKeyPress\s*[:=]/.test(context)) return false;
       // A modal backdrop can be pointer-only when the dialog provides both an
       // Escape path and a semantic button that performs the same close action.
-      const fileText = lines.join(' ');
-      const isDialogBackdrop = /role\s*:\s*["']presentation["']/.test(context)
-        && /role\s*:\s*["']dialog["']/.test(fileText)
-        && /event\.key\s*===\s*["']Escape["']/.test(fileText)
-        && /createElement\(\s*["']button["']/.test(fileText);
-      if (isDialogBackdrop) return false;
+      if (/role\s*:\s*["']presentation["']/.test(context)) {
+        if (!staticAuditFileTextCache.has(lines)) staticAuditFileTextCache.set(lines, lines.join(' '));
+        const fileText = staticAuditFileTextCache.get(lines);
+        const isDialogBackdrop = /role\s*:\s*["']dialog["']/.test(fileText)
+          && /event\.key\s*===\s*["']Escape["']/.test(fileText)
+          && /createElement\(\s*["']button["']/.test(fileText);
+        if (isDialogBackdrop) return false;
+      }
       // Check for a11yClick which provides all three
       if (/a11yClick/.test(context)) return false;
       return true;
@@ -211,13 +217,17 @@ const CHECKS = [
     severity: 'critical',
     description: 'Focus indicator suppressed via outline:none or outline:"none" without focus:ring or boxShadow replacement',
     test(line, lineNum, lines) {
+      // Fast pre-check avoids O(N^2) regex backtracking on long single-line data arrays.
+      if (!line.includes('outline')) return false;
       // Ignore comment-only lines: embedded remediation guidance and code
       // examples are not live focus styles.
       if (/^\s*(?:\/\/|\/\*|\*)/.test(line)) return false;
       // Remove only complete pointer-focus rules that explicitly preserve
       // :focus-visible. Other outline suppression on the same source line must
       // remain auditable.
-      const auditableLine = line.replace(/[^{}]*:focus:not\(\s*:focus-visible\s*\)[^{]*\{[^{}]*outline\s*:\s*['"]?none['"]?[^{}]*\}/g, '');
+      const auditableLine = line.includes(':focus:not(')
+        ? line.replace(/[^{}]*:focus:not\(\s*:focus-visible\s*\)[^{]*\{[^{}]*outline\s*:\s*['"]?none['"]?[^{}]*\}/g, '')
+        : line;
       const hasOutlineNone = /outline\s*:\s*['"]?none['"]?/.test(auditableLine) || /outline-none/.test(auditableLine);
       if (!hasOutlineNone) return false;
       // Check if same line has focus:ring or focus:border or boxShadow
@@ -517,6 +527,7 @@ const CHECKS = [
     severity: 'major',
     description: 'Button whose visible content is only emoji/symbol without aria-label',
     test(line, lineNum, lines) {
+      if (!line.includes('button')) return false;
       // Look for buttons that end with just an emoji
       const emojiButton = /h\(\s*['"]button['"]\s*,\s*\{[^}]*\}\s*,\s*['"][^\w\s]*['"]\s*\)/.test(line);
       if (!emojiButton) return false;
@@ -588,6 +599,7 @@ const CHECKS = [
     severity: 'major',
     description: 'Draggable interaction with no keyboard-based movement alternative',
     test(line, lineNum, lines) {
+      if (!line.includes('drag') && !line.includes('Drag')) return false;
       // CSS selectors such as [draggable="true"] style touch targets; they do
       // not create a draggable interaction and should not trigger this rule.
       if (/\[\s*draggable\s*=/.test(line) && !/onDragStart|onMouseDown.*drag/i.test(line)) return false;

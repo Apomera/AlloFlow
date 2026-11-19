@@ -1855,7 +1855,7 @@ const createPersonas = (deps) => {
             turnError: null
             }));
             setIsPersonaChatOpen(true);
-            if (!isPersonaFreeResponse) {
+            if (!isPersonaFreeResponse && _personaAiUsable('text', window.callGemini)) {
                 generatePanelFollowUps(initialHistory, updatedA, updatedB);
             }
         } catch (e) {

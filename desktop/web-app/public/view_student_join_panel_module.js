@@ -40,7 +40,7 @@ function getStudentJoinThemeStyles(themeContext = {}) {
       title: "text-slate-100",
       text: "text-slate-300",
       muted: "text-slate-400",
-      input: "bg-slate-950 border-slate-600 text-slate-100 placeholder:text-slate-500 focus-visible:border-indigo-400 focus-visible:ring-indigo-500",
+      input: "bg-slate-950 border-slate-600 text-slate-100 placeholder:text-slate-400 focus-visible:border-indigo-400 focus-visible:ring-indigo-500",
       primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-none focus-visible:ring-indigo-400",
       focusOffset: "focus-visible:ring-offset-slate-900",
       arrow: "bg-indigo-600 text-white"
@@ -111,7 +111,6 @@ function StudentJoinPanel({
       "input",
       {
         id: hostInputId,
-        "aria-label": t("common.enter_join_app_id_input"),
         type: "text",
         value: joinAppIdInput,
         onChange: (e) => setJoinAppIdInput(e.target.value),
@@ -158,7 +157,7 @@ function StudentJoinPanel({
         onClick: handleSetIsJoinPanelExpandedToTrue,
         className: cx("w-full flex items-center justify-between p-2 rounded-2xl transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.hoverPanel, styles.focusOffset)
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 motion-reduce:transform-none transition-transform", styles.icon), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("h3", { id: collapsedTitleId, className: cx("font-bold text-sm", styles.title) }, t("session.join")), /* @__PURE__ */ React.createElement("p", { className: cx("text-[11px]", styles.text) }, t("session.sync_desc")))),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 motion-reduce:transform-none transition-transform", styles.icon), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { id: collapsedTitleId, className: cx("block font-bold text-sm", styles.title) }, t("session.join")), /* @__PURE__ */ React.createElement("span", { className: cx("block text-[11px]", styles.text) }, t("session.sync_desc")))),
       /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity shadow-sm", styles.arrow), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 16 }))
     )
   );

@@ -25,6 +25,28 @@
 
   var ENGINE_KEY = '__alloGeologyEngine';
 
+  // ── Bespoke Geology & Stratigraphy Studio CSS + High-Contrast parity ──
+  (function () {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-geology-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-geology-studio-css';
+    st.textContent = [
+      '.geo-emblem-box { width: 54px; height: 54px; border-radius: 14px; background: linear-gradient(135deg, rgba(245,158,11,0.28), rgba(28,25,23,0.92)); border: 1.5px solid rgba(252,211,77,0.52); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 6px 18px rgba(12,10,9,0.55); }',
+      '.geo-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(252,211,77,0.22); }',
+      '.geo-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(252,211,77,0.34); font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.geo-cycle-strip { margin-top: 12px; padding: 8px 10px; border-radius: 12px; background: rgba(15,23,42,0.68); border: 1px solid rgba(252,211,77,0.24); }',
+      '.geo-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(252,211,77,0.22); }',
+      '.geo-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 7px 12px; border-radius: 10px; border: 1px solid rgba(252,211,77,0.36); font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.geo-starter-chip:hover:not(:disabled) { border-color: #fde68a; }',
+      '[data-geology-command="true"] button:focus-visible { outline: 2px solid #fde68a; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="geologyExplorer"] [data-geology-command="true"] { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-emblem-box, .theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-telemetry-pill, .theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-cycle-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // ── Geology model (colours are illustrative, not photographic) ──────────────
   var ROCKS = {
     soil:      { name: 'Soil / Regolith',   type: 'Surface',             color: 0x6b4f2a, formation: 'Weathered rock + organic matter at the very surface.',                            minerals: 'Clay, quartz grains, organics', age: 'Youngest — forming today.' },
@@ -3800,10 +3822,17 @@
         controls.enableDamping = true; controls.dampingFactor = 0.08; controls.target.copy(TARGET); controls.minDistance = 8; controls.maxDistance = 60;
         controls.update();
         controls.enabled = !fp.active;   // if orbit loads while FP is on, keep it suspended until exit
-      } else if (!orbitTried) {
+      } else if (!orbitTried && window._isDesktopBundledApp !== true) {
         // host may have set _threeLoaded without OrbitControls (stem_lab_module.js:1492) — load it ourselves
         orbitTried = true;
-        try { var s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'; document.head.appendChild(s); } catch (e) {}
+        try {
+          var s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
+          s.integrity = 'sha384-wagZhIFgY4hD+7awjQjR4e2E294y6J2HSnd8eTNc15ZubTeQeVRZwhQJ+W6hnBsf';
+          s.crossOrigin = 'anonymous';
+          s.referrerPolicy = 'no-referrer';
+          document.head.appendChild(s);
+        } catch (e) {}
       }
     }
     ensureControls();
@@ -9020,7 +9049,8 @@ function updateCoreRig3d(dt3d) {
       // Contrast uses the dark structural branch, then the host's high-contrast
       // overrides replace utility colors with black, white, and amber.
       var isDark = !!ctx.isDark || isContrast;
-      var d = (ctx.toolData && ctx.toolData.geologyExplorer) || {};
+      var _rawGeo = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData.geologyExplorer : null;
+      var d = (_rawGeo && typeof _rawGeo === 'object' && !Array.isArray(_rawGeo)) ? _rawGeo : {};
       var ttsAvailable = typeof ctx.callTTS === 'function' || !!(window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function');
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast || function () {};
@@ -12656,6 +12686,7 @@ function updateCoreRig3d(dt3d) {
             : t('stem.geology.ui.use_mission_checklist', 'Use the mission checklist to collect one more piece of evidence.');
       var inInvestigation = mode !== 'explore';
       var inAssessment = mode === 'assess';
+      var geoLocked = !!(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked || (ctx.teacherMode && ctx.teacherMode.locked)));
       var GEOLOGY_SCENE_ORDER = Object.keys(SCENES);
       var geologySceneTabKeyDown = function(e, index) {
         var nextIndex = -1;
@@ -12688,14 +12719,28 @@ function updateCoreRig3d(dt3d) {
         h('section', { 'data-geology-command': 'true', className: 'overflow-hidden rounded-2xl border border-amber-300/40 bg-gradient-to-br from-slate-950 via-stone-900 to-violet-950 text-white shadow-xl' },
           h('div', { className: 'p-4 sm:p-5' },
             h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
-              h('div', { className: 'min-w-0' },
-                h('div', { className: 'flex items-center gap-2' },
-                  setStemLabTool ? h('button', { onClick: function () { setStemLabTool(null); }, 'aria-label': t('stem.back', 'Back to tools'), className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-amber-300' }, ArrowLeft ? h(ArrowLeft, { size: 18 }) : '←') : null,
-                  h('span', { className: 'rounded-full bg-amber-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-amber-100 ring-1 ring-amber-200/30' }, t('stem.geology.mission.' + scene + '.eyebrow', sceneMission.eyebrow))
+              h('div', { className: 'min-w-0 flex-1' },
+                h('div', { className: 'flex items-start gap-3' },
+                  setStemLabTool ? h('button', { type: 'button', onClick: function () { setStemLabTool(null); }, 'aria-label': t('stem.back', 'Back to tools'), className: 'min-h-11 min-w-11 shrink-0 inline-flex items-center justify-center rounded-lg border border-white/20 bg-slate-900 p-2 text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-300' }, ArrowLeft ? h(ArrowLeft, { size: 18 }) : '←') : null,
+                  h('div', { className: 'geo-emblem-box', 'aria-hidden': 'true' },
+                    h('svg', { viewBox: '0 0 46 46', width: 36, height: 36, fill: 'none' },
+                      h('path', { d: 'M5 17 Q15 13 23 17 T41 16 L41 24 Q31 27 23 24 T5 25 Z', fill: '#d9b27a', opacity: 0.9 }),
+                      h('path', { d: 'M5 25 Q15 22 23 25 T41 24 L41 32 Q31 35 23 32 T5 33 Z', fill: '#94a3b8', opacity: 0.85 }),
+                      h('path', { d: 'M5 33 Q15 30 23 33 T41 32 L41 40 L5 40 Z', fill: '#64748b', opacity: 0.9 }),
+                      h('path', { d: 'M24 40 L27 22 L31 12 L34 22 L32 40 Z', fill: '#f97316', stroke: '#fde68a', strokeWidth: 1.2 }),
+                      h('polygon', { points: '13,6 18,12 13,15 8,12', fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1 })
+                    )
+                  ),
+                  h('div', { className: 'min-w-0 flex-1' },
+                    h('div', { className: 'flex flex-wrap items-center gap-2' },
+                      h('span', { className: 'rounded-full border border-amber-300/40 bg-amber-950 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-amber-100' }, t('stem.geology.title', 'Geology Explorer')),
+                      h('span', { className: 'rounded-full bg-amber-950 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-amber-100 ring-1 ring-amber-200/30' }, t('stem.geology.mission.' + scene + '.eyebrow', sceneMission.eyebrow))
+                    ),
+                    h('h2', { className: 'mt-1.5 text-xl font-black tracking-tight text-white sm:text-2xl' }, '⛰️ ' + t('stem.geology.title', 'Geology Explorer')),
+                    h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-stone-200' }, t('stem.geology.mission.' + scene + '.subtitle', sceneMission.subtitle))
+                  )
                 ),
-                h('h2', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '⛰️ ' + t('stem.geology.title', 'Geology Explorer')),
-                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-stone-200' }, t('stem.geology.mission.' + scene + '.subtitle', sceneMission.subtitle)),
-                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-slate-900 p-3' },
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-amber-200' }, t('stem.geology.next_move', 'Recommended next move')),
                   h('p', { className: 'mt-1 text-sm font-semibold text-white' }, fieldNext)
                 )
@@ -12706,12 +12751,59 @@ function updateCoreRig3d(dt3d) {
                   { label: t('stem.geology.metric.materials', 'Materials'), value: String(identifiedCount) },
                   { label: t('stem.geology.metric.evidence', 'Evidence'), value: String(fieldEvidence) }
                 ].map(function (metric) {
-                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-slate-900 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
                     h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-stone-300' }, metric.label)
                   );
                 })
               )
+            ),
+            // Live non-spoiler telemetry strip
+            h('div', { className: 'geo-telemetry-strip' },
+              h('span', { className: 'geo-telemetry-pill bg-slate-950 text-amber-100' }, '\uD83C\uDF0D ' + GEOLOGY_SCENE_ORDER.length + ' ' + t('stem.geology.metric.world', 'World')),
+              h('span', { className: 'geo-telemetry-pill bg-slate-950 text-sky-100' }, '\uD83E\uDDED ' + t('stem.geology.mode.' + mode, mode === 'investigate' ? 'Investigate' : mode === 'assess' ? 'Assess' : 'Explore')),
+              h('span', { className: 'geo-telemetry-pill bg-slate-950 text-emerald-100' }, '\uD83E\uDEA8 ' + identifiedCount + ' ' + t('stem.geology.metric.materials', 'Materials')),
+              sceneFindCatalog.length > 0 && h('span', { className: 'geo-telemetry-pill bg-slate-950 text-violet-100' }, '\uD83D\uDC8E ' + sceneFindsFound + '/' + sceneFindCatalog.length)
+            ),
+            // Stratigraphic & Rock-Cycle Inquiry Schematic (inline SVG, >=10.5px labels, reactive stage highlight)
+            h('div', { className: 'geo-cycle-strip' },
+              h('svg', {
+                viewBox: '0 0 580 60', role: 'img',
+                'aria-label': t('stem.geology.a11y.geology_field_investigation_pathway', 'Geology field investigation pathway'),
+                style: { width: '100%', maxHeight: 62, height: 'auto', display: 'block' }
+              },
+                h('line', { x1: 174, y1: 30, x2: 208, y2: 30, stroke: '#fbbf24', strokeWidth: 2 }),
+                h('line', { x1: 372, y1: 30, x2: 406, y2: 30, stroke: '#a78bfa', strokeWidth: 2 }),
+                h('rect', { x: 8, y: 8, width: 166, height: 44, rx: 10, fill: mode === 'explore' ? 'rgba(245,158,11,0.3)' : 'rgba(28,25,23,0.72)', stroke: mode === 'explore' ? '#fbbf24' : '#57534e', strokeWidth: mode === 'explore' ? 2 : 1.3 }),
+                h('text', { x: 91, y: 26, textAnchor: 'middle', fill: '#ffffff', fontSize: 11.5, fontWeight: 800 }, '1. ' + t('stem.geology.ui.observe', 'Observe')),
+                h('text', { x: 91, y: 42, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, '3D Voxels · Cross-Section'),
+                h('rect', { x: 208, y: 8, width: 164, height: 44, rx: 10, fill: mode === 'investigate' ? 'rgba(56,189,248,0.28)' : 'rgba(28,25,23,0.72)', stroke: mode === 'investigate' ? '#38bdf8' : '#57534e', strokeWidth: mode === 'investigate' ? 2 : 1.3 }),
+                h('text', { x: 290, y: 26, textAnchor: 'middle', fill: '#ffffff', fontSize: 11.5, fontWeight: 800 }, '2. ' + t('stem.geology.ui.compare', 'Compare')),
+                h('text', { x: 290, y: 42, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'Cores · Fossils · Decay'),
+                h('rect', { x: 406, y: 8, width: 166, height: 44, rx: 10, fill: mode === 'assess' ? 'rgba(167,139,250,0.32)' : 'rgba(28,25,23,0.72)', stroke: mode === 'assess' ? '#a78bfa' : '#57534e', strokeWidth: mode === 'assess' ? 2 : 1.3 }),
+                h('text', { x: 489, y: 26, textAnchor: 'middle', fill: '#ffffff', fontSize: 11.5, fontWeight: 800 }, '3. ' + t('stem.geology.ui.reconstruct', 'Reconstruct')),
+                h('text', { x: 489, y: 42, textAnchor: 'middle', fill: '#ddd6fe', fontSize: 10.5 }, 'Compare · Sequence · Claim')
+              )
+            ),
+            // One-click Geological World Starters (44px touch targets, hidden during assess/quiz/lock)
+            (!inAssessment && !quizOn && !geoLocked) && h('div', { className: 'geo-starter-bar', role: 'group', 'aria-label': t('stem.geology.scene', 'Scene') },
+              h('span', { className: 'text-[10.5px] font-black uppercase tracking-wider text-amber-200' }, t('stem.geology.scene', 'Scene') + ':'),
+              [
+                { id: 'crust', icon: '🪨' },
+                { id: 'geode', icon: '💎' },
+                { id: 'deepEarth', icon: '🌋' },
+                { id: 'subduction', icon: '🌊' },
+                { id: 'ridge', icon: '⛰️' },
+                { id: 'collision', icon: '🏔️' }
+              ].filter(function (st) { return !!SCENES[st.id]; }).map(function (st) {
+                var activeStarter = scene === st.id;
+                return h('button', {
+                  key: 'geo-st-' + st.id, type: 'button',
+                  className: 'geo-starter-chip ' + (activeStarter ? 'bg-amber-400 text-slate-950' : 'bg-slate-900 text-amber-50 hover:bg-slate-800'),
+                  'data-active': activeStarter ? 'true' : 'false',
+                  onClick: function () { switchScene(st.id); }
+                }, h('span', { 'aria-hidden': 'true' }, st.icon), h('span', null, SCENES[st.id].label));
+              })
             ),
             h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': t('stem.geology.a11y.geology_field_investigation_pathway', 'Geology field investigation pathway') },
               [
@@ -12719,7 +12811,7 @@ function updateCoreRig3d(dt3d) {
                 { n: '2', title: t('stem.geology.ui.compare', 'Compare'), detail: t('stem.geology.ui.path_compare', 'Connect layers, depth, and processes.') },
                 { n: '3', title: t('stem.geology.ui.reconstruct', 'Reconstruct'), detail: t('stem.geology.ui.path_reconstruct', 'Use evidence to explain its history.') }
               ].map(function (step) {
-                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-slate-900 p-2.5' },
                   h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-300 font-black text-slate-950' }, step.n),
                   h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-stone-300' }, step.detail))
                 );

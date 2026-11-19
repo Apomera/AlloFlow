@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+<meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Features | AlloFlow</title>
     <meta name="robots" content="noindex, follow">
@@ -14,28 +15,29 @@
 </head>
 
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
-            <a href="index.html" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
+            <a href="index.html" class="nav-logo"><i data-lucide="layers" aria-hidden="true" style="width:28px;height:28px"></i>
                 AlloFlow</a>
             <div class="nav-links">
                 <a href="index.html">Home</a>
-                <a href="features.html" style="color:var(--indigo)">Features</a>
+                <a href="features.html" aria-current="page" style="color:var(--indigo)">Features</a>
                 <a href="library.html">Library</a>
                 <a href="index.html#pricing">Pricing</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer" class="cta-btn"><i data-lucide="github" aria-hidden="true"
                         style="width:16px;height:16px"></i> Get Code</a>
             </div>
-            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
-                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+            <button type="button" class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+                aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
     <div id="mobileNav" class="mobile-nav">
-        <button class="close-btn" onclick="this.parentElement.classList.remove('open')">&times;</button>
-        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a
-            href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+        <button type="button" class="close-btn" onclick="this.parentElement.classList.remove('open')" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a><a href="features.html" aria-current="page">Features</a><a href="library.html">Library</a><a
+            href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
 
     <!-- Page Header -->
@@ -43,12 +45,12 @@
         style="background:linear-gradient(135deg,#eef2ff,#faf5ff);padding-top:100px;padding-bottom:40px;text-align:center;border-bottom:1px solid #e0e7ff">
         <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px">The Complete <span class="gradient-text">UDL
                 Toolkit</span></h1>
-        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto">90+ interactive tools organized by CAST's
+        <p style="font-size:1.05rem;color:#475569;max-width:600px;margin:0 auto">90+ interactive tools organized by CAST's
             Universal Design for Learning framework.</p>
     </header>
 
     <!-- Jump Navigation -->
-    <div class="jump-nav">
+    <nav class="jump-nav" aria-label="Feature categories">
         <div class="jump-nav-inner">
             <a href="#engagement" class="jump-pill">Engagement</a>
             <a href="#representation" class="jump-pill">Representation</a>
@@ -59,9 +61,9 @@
             <a href="#stem" class="jump-pill">STEM & Productivity</a>
             <a href="#accessibility" class="jump-pill">Accessibility</a>
         </div>
-    </div>
+    </nav>
 
-    <main>
+    <main id="main-content" tabindex="-1">
         <!-- Engagement -->
         <section id="engagement" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
             <div class="section-inner">
@@ -79,29 +81,29 @@
                             interactive RPG with combat, choices, inventory tracking, and dynamic story paths. Also
                             supports
                             interactive social-emotional role-play scenarios for SEL practice.</p>
-                        <p style="font-size:0.75rem;color:#64748b">3D Dice Physics, Storybook Export, Inventory System,
+                        <p style="font-size:0.75rem;color:#475569">3D Dice Physics, Storybook Export, Inventory System,
                             XP
                             Progression, Boss Battles, Character Portraits</p>
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ca8a04">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#a16207">
                             <i data-lucide="swords" style="width:16px;height:16px"></i> Multiplayer & Bosses
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Boss Battle Mode: the class
                             cooperatively fights a "Monster" by answering questions.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Live Pulse, Democracy Mode for voting on story paths
+                        <p style="font-size:0.75rem;color:#475569">Live Pulse, Democracy Mode for voting on story paths
                         </p>
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ea580c">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#c2410c">
                             <i data-lucide="gamepad-2" style="width:16px;height:16px"></i> Interactive Games
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Instantly generates games from
                             lesson
                             vocabulary and content.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Review Game, Bingo, Memory Match, Crossword, Word
+                        <p style="font-size:0.75rem;color:#475569">Review Game, Bingo, Memory Match, Crossword, Word
                             Concept Sort</p>
                     </div>
                     <div class="card">
@@ -111,7 +113,7 @@
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Simulate interviews with historical
                             figures, fictional characters, or experts.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Dynamic Rapport System reacts to student empathy</p>
+                        <p style="font-size:0.75rem;color:#475569">Dynamic Rapport System reacts to student empathy</p>
                     </div>
                     <div class="card">
                         <div
@@ -121,18 +123,18 @@
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Teams solve 6 puzzle types to finish
                             a
                             themed challenge.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Clue chains, lives & hints, streak bonuses, Final
+                        <p style="font-size:0.75rem;color:#475569">Clue chains, lives & hints, streak bonuses, Final
                             Door
                             synthesis</p>
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0e7490">
                             <i data-lucide="trophy" style="width:16px;height:16px"></i> Team Showdown
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Real-time competitive quiz with live
                             leaderboards and team scoring.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Firebase-powered broadcast teacher controls</p>
+                        <p style="font-size:0.75rem;color:#475569">Firebase-powered broadcast teacher controls</p>
                     </div>
                 </div>
             </div>
@@ -148,12 +150,12 @@
                 <div class="grid-3">
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#16a34a">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#15803d">
                             <i data-lucide="book-open" style="width:16px;height:16px"></i> Leveled Text
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Rewrites text for K-12 levels with
                             Immersive Reader support.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Line Focus, Dyslexia Fonts, Grammar Highlights,
+                        <p style="font-size:0.75rem;color:#475569">Line Focus, Dyslexia Fonts, Grammar Highlights,
                             Syntax
                             Scramble, Cloze, Bilingual Views</p>
                     </div>
@@ -165,7 +167,7 @@
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Generates Timelines, Venn Diagrams,
                             Mind
                             Maps, Cause & Effect, Flow Charts.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Image editing and eraser controls for instant
+                        <p style="font-size:0.75rem;color:#475569">Image editing and eraser controls for instant
                             fill-in-the-blank
                             worksheets</p>
                     </div>
@@ -176,7 +178,7 @@
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Auto-identifies Tier 2/3 vocabulary.
                             Supports any language via Gemini.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Context-aware definitions, translations, printable
+                        <p style="font-size:0.75rem;color:#475569">Context-aware definitions, translations, printable
                             flashcards</p>
                     </div>
                     <div class="card">
@@ -196,12 +198,12 @@
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Complete phonemic awareness suite
                             aligned with Orton-Gillingham and Science of Reading — 7 interactive activities with
                             pre-recorded audio.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Break It Down, Blend Sounds, Find Sounds, Rhyme Time,
+                        <p style="font-size:0.75rem;color:#475569">Break It Down, Blend Sounds, Find Sounds, Rhyme Time,
                             Sound Sort, Word Families, Letter Tracing — with XP rewards and session mastery tracking</p>
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#047857">
                             <i data-lucide="pencil" style="width:16px;height:16px"></i> Letter Tracing
                         </div>
                         <p style="font-size:0.8rem;color:#475569">Interactive letter formation with animated hand guides
@@ -222,7 +224,7 @@
                 <div class="grid-3">
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0d9488">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0f766e">
                             <i data-lucide="check-square" style="width:16px;height:16px"></i> Exit Ticket (Quiz)
                         </div>
                         <p style="font-size:0.8rem;color:#475569">Generates MCQs, exports to Canvas QTI. DOK Tuning and
@@ -255,7 +257,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ea580c">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#c2410c">
                             <i data-lucide="table" style="width:16px;height:16px"></i> Rubric Builder
                         </div>
                         <p style="font-size:0.8rem;color:#475569">Generates detailed grading rubrics aligned to learning
@@ -289,7 +291,7 @@
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Extract educational content from
                             anywhere.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Built-in OCR for PDFs and Images, Whisper for
+                        <p style="font-size:0.75rem;color:#475569">Built-in OCR for PDFs and Images, Whisper for
                             Audio/Video
                             transcription, and clean URL importing.</p>
                     </div>
@@ -301,7 +303,7 @@
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Prevents hallucinations through
                             active
                             search.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Multi-stage Google Search integration with citations
+                        <p style="font-size:0.75rem;color:#475569">Multi-stage Google Search integration with citations
                             to
                             ensure factual accuracy in generated curriculum.</p>
                     </div>
@@ -313,7 +315,7 @@
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Generate massive, comprehensive
                             units.
                         </p>
-                        <p style="font-size:0.75rem;color:#64748b">Bypasses standard context windows with automatic
+                        <p style="font-size:0.75rem;color:#475569">Bypasses standard context windows with automatic
                             outlining and sequential writing for 1000+ words.</p>
                     </div>
                     <div class="card">
@@ -324,7 +326,7 @@
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Expert mode for character
                             simulations.
                         </p>
-                        <p style="font-size:0.75rem;color:#64748b">Generates complex educational character scripts,
+                        <p style="font-size:0.75rem;color:#475569">Generates complex educational character scripts,
                             historical debates, and scenario-based roleplays.</p>
                     </div>
                     <div class="card">
@@ -334,7 +336,7 @@
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Automate your entire prep period.
                         </p>
-                        <p style="font-size:0.75rem;color:#64748b">One-click batch generation of multiple differentiated
+                        <p style="font-size:0.75rem;color:#475569">One-click batch generation of multiple differentiated
                             resources simultaneously.</p>
                     </div>
                     <div class="card">
@@ -343,28 +345,28 @@
                             <i data-lucide="bot" style="width:16px;height:16px"></i> The Gemini Bridge
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Auto-generate sandbox prompts.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Bridges students straight into Gemini Canvas to run
+                        <p style="font-size:0.75rem;color:#475569">Bridges students straight into Gemini Canvas to run
                             Python, React, and p5.js coding sandboxes.</p>
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0e7490">
                             <i data-lucide="help-circle" style="width:16px;height:16px"></i> FAQ Generator
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Anticipates common student questions
                             and misconceptions.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Generates Q&A sets with comprehension, analysis, and
+                        <p style="font-size:0.75rem;color:#475569">Generates Q&A sets with comprehension, analysis, and
                             clarification questions at target grade level.</p>
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#16a34a">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#15803d">
                             <i data-lucide="lightbulb" style="width:16px;height:16px"></i> Activity Brainstorm
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">AI generates hands-on activity
                             ideas.
                         </p>
-                        <p style="font-size:0.75rem;color:#64748b">Includes materials, timing, differentiation, and
+                        <p style="font-size:0.75rem;color:#475569">Includes materials, timing, differentiation, and
                             standards connections. Perfect for PBL and learning stations.</p>
                     </div>
                     <div class="card">
@@ -375,7 +377,7 @@
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Three interactive text modes plus
                             RSVP
                             (Rapid Serial Visual Presentation) for speed reading.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Read Mode (karaoke TTS), Define Mode (click any word
+                        <p style="font-size:0.75rem;color:#475569">Read Mode (karaoke TTS), Define Mode (click any word
                             for
                             instant definition), Explain Mode (contextual breakdowns), Part-of-Speech tagging,
                             adjustable
@@ -399,7 +401,7 @@
                             <i data-lucide="bar-chart-2" style="width:16px;height:16px"></i> Teacher Dashboard
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Comprehensive class insights.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Track misconceptions, view longitudinal XP
+                        <p style="font-size:0.75rem;color:#475569">Track misconceptions, view longitudinal XP
                             progression,
                             and export CSV Gradebooks.</p>
                     </div>
@@ -410,7 +412,7 @@
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Focus on growth, not just grades.
                         </p>
-                        <p style="font-size:0.75rem;color:#64748b">Multi-draft revision loops where students receive
+                        <p style="font-size:0.75rem;color:#475569">Multi-draft revision loops where students receive
                             targeted feedback and modify work until mastery.</p>
                     </div>
                     <div class="card">
@@ -420,7 +422,7 @@
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Verify curriculum rigor instantly.
                         </p>
-                        <p style="font-size:0.75rem;color:#64748b">Deep standards audits with gap analysis against CCSS,
+                        <p style="font-size:0.75rem;color:#475569">Deep standards audits with gap analysis against CCSS,
                             NGSS, and TEKS frameworks.</p>
                     </div>
                 </div>
@@ -428,7 +430,7 @@
         </section>
 
         <!-- Content Intake & Integrations -->
-        <section id="intake" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+        <section id="integrations" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
             <div class="section-inner">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
                     <div style="width:6px;height:32px;background:#f97316;border-radius:4px"></div>
@@ -464,7 +466,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669;font-size:0.85rem">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#047857;font-size:0.85rem">
                             <i data-lucide="scan" style="width:16px;height:16px"></i> OCR & Media Transcription
                         </div>
                         <p style="font-size:0.75rem;color:#475569">Upload images, photos of textbook pages, PDFs, or
@@ -474,18 +476,18 @@
 
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2;font-size:0.85rem">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0e7490;font-size:0.85rem">
                             <i data-lucide="trending-up" style="width:16px;height:16px"></i> RTI / MTSS Monitoring
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Oral Reading Fluency probes with
                             WCPM
                             calculation, color-coded accuracy heat maps, and tier progress monitoring.</p>
-                        <p style="font-size:0.75rem;color:#64748b">Benchmark probe banks, teacher &amp; parent-friendly
+                        <p style="font-size:0.75rem;color:#475569">Benchmark probe banks, teacher &amp; parent-friendly
                             reports.</p>
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ca8a04;font-size:0.85rem">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#a16207;font-size:0.85rem">
                             <i data-lucide="package" style="width:16px;height:16px"></i> Full Resource Pack
                         </div>
                         <p style="font-size:0.75rem;color:#475569">One-click batch creation of multiple resources
@@ -530,7 +532,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669;font-size:0.85rem">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#047857;font-size:0.85rem">
                             <i data-lucide="layout-grid" style="width:16px;height:16px"></i> UDL Alignment
                         </div>
                         <p style="font-size:0.75rem;color:#475569">All generative outputs are explicitly mapped to
@@ -585,7 +587,7 @@
                 <div class="grid-3">
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#3b82f6;font-size:0.85rem">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#1d4ed8;font-size:0.85rem">
                             <i data-lucide="shield-check" style="width:16px;height:16px"></i> Google Education
                             Infrastructure
                         </div>
@@ -606,7 +608,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#f59e0b;font-size:0.85rem">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#b45309;font-size:0.85rem">
                             <i data-lucide="share-2" style="width:16px;height:16px"></i> Frictionless Sharing
                         </div>
                         <p style="font-size:0.75rem;color:#475569">Distribute interactive lessons to students or
@@ -615,7 +617,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#10b981;font-size:0.85rem">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#047857;font-size:0.85rem">
                             <i data-lucide="hard-drive" style="width:16px;height:16px"></i> Local-First Student Data
                         </div>
                         <p style="font-size:0.75rem;color:#475569">Student progress is tracked on-device, never
@@ -685,7 +687,7 @@
                         </div>
                         <div>
                             <h4 style="font-size:0.85rem;font-weight:700">Dyslexia Support</h4>
-                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">OpenDyslexic font & Bionic Reading
+                            <p style="font-size:0.75rem;color:#475569;margin-top:2px">OpenDyslexic font & Bionic Reading
                             </p>
                         </div>
                     </div>
@@ -696,7 +698,7 @@
                         </div>
                         <div>
                             <h4 style="font-size:0.85rem;font-weight:700">Global Localization</h4>
-                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Translate the full UI into any
+                            <p style="font-size:0.75rem;color:#475569;margin-top:2px">Translate the full UI into any
                                 language</p>
                         </div>
                     </div>
@@ -707,7 +709,7 @@
                         </div>
                         <div>
                             <h4 style="font-size:0.85rem;font-weight:700">Dictation</h4>
-                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Speech-to-text in every input
+                            <p style="font-size:0.75rem;color:#475569;margin-top:2px">Speech-to-text in every input
                                 field
                             </p>
                         </div>
@@ -719,7 +721,7 @@
                         </div>
                         <div>
                             <h4 style="font-size:0.85rem;font-weight:700">Reading Ruler</h4>
-                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Mouse-following focus bar</p>
+                            <p style="font-size:0.75rem;color:#475569;margin-top:2px">Mouse-following focus bar</p>
                         </div>
                     </div>
                     <div style="display:flex;gap:12px;align-items:flex-start">
@@ -729,7 +731,7 @@
                         </div>
                         <div>
                             <h4 style="font-size:0.85rem;font-weight:700">Text-to-Speech</h4>
-                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Click any word to hear it read
+                            <p style="font-size:0.75rem;color:#475569;margin-top:2px">Click any word to hear it read
                                 aloud
                             </p>
                         </div>
@@ -741,7 +743,7 @@
                         </div>
                         <div>
                             <h4 style="font-size:0.85rem;font-weight:700">Color Overlays</h4>
-                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Blue, Peach, Yellow tint overlays
+                            <p style="font-size:0.75rem;color:#475569;margin-top:2px">Blue, Peach, Yellow tint overlays
                             </p>
                         </div>
                     </div>
@@ -752,7 +754,7 @@
                         </div>
                         <div>
                             <h4 style="font-size:0.85rem;font-weight:700">Keyboard Nav</h4>
-                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">All games playable via Tab/Arrow
+                            <p style="font-size:0.75rem;color:#475569;margin-top:2px">All games playable via Tab/Arrow
                                 keys
                             </p>
                         </div>
@@ -764,7 +766,7 @@
                         </div>
                         <div>
                             <h4 style="font-size:0.85rem;font-weight:700">High Contrast</h4>
-                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Dark Mode & Black/Yellow mode</p>
+                            <p style="font-size:0.75rem;color:#475569;margin-top:2px">Dark Mode & Black/Yellow mode</p>
                         </div>
                     </div>
                 </div>
@@ -780,7 +782,7 @@
             <p>An open-source project for educators. Not affiliated with Google.</p>
             <div class="footer-links"><a href="index.html">Home</a><a href="features.html">Features</a><a
                     href="library.html">Library</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a
-                    href="https://www.youtube.com/@AlloFlow" target="_blank">YouTube</a></div>
+                    href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a></div>
         </div>
     </footer>
 
@@ -790,11 +792,11 @@
     </button>
 
     <!-- Sticky CTA Bar -->
-    <div id="stickyCta" class="sticky-cta">
+    <div id="stickyCta" class="sticky-cta" role="region" aria-label="Try AlloFlow">
         <div
             style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
             <p style="font-size:0.85rem;font-weight:600;color:#e2e8f0;margin:0">Ready to try AlloFlow? <span
-                    style="color:#64748b;font-weight:400">90+ interactive tools, $0 cost.</span></p>
+                    style="color:#cbd5e1;font-weight:400">90+ interactive tools, $0 cost.</span></p>
             <div style="display:flex;gap:10px;align-items:center">
                 <a href="index.html" style="font-size:0.8rem;color:#a5b4fc;text-decoration:none;font-weight:600">←
                     Back
@@ -808,7 +810,7 @@
     </div>
 
     <script>
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
         }, { threshold: 0.1 });

@@ -5,3 +5,4 @@
 .ra-text::before { counter-increment: ra; content: counter(ra) ". "; color: var(--muted); font-variant-numeric: tabular-nums; }
 .ra-rows .voice-state { flex: 1 1 10rem; align-self: center; }
 .ra-para { margin-top: 0.6rem; }
+.ra-print-opt { margin: 0.5rem 0 0; }

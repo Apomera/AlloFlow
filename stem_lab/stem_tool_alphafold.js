@@ -22,7 +22,7 @@
       var pathname = loc.pathname || '';
       var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
       var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
-      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      var isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled) return new URL(path, loc.href).toString();
       if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
     } catch (_) {}
@@ -47,78 +47,147 @@
     var alphaFoldStyle = document.createElement('style');
     alphaFoldStyle.id = 'alphafold-launcher-css';
     alphaFoldStyle.textContent = [
-      '.af-launcher{width:min(100%,960px);margin:0 auto;display:grid;gap:14px;color:#e2e8f0;}',
+      '.af-launcher{width:min(100%,980px);margin:0 auto;padding:16px;border-radius:20px;display:grid;gap:14px;color:#e2e8f0;background:#07111f;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}',
+      '.af-launcher[data-theme="light"]{background:#f1f7f8;color:#0f172a;border:1px solid #cbd5e1;}',
       '.af-launcher *{box-sizing:border-box;}',
-      '.af-mission{position:relative;overflow:hidden;padding:22px;border:1px solid rgba(45,212,191,.38);border-radius:20px;background:radial-gradient(circle at 92% 8%,rgba(56,189,248,.2),transparent 34%),linear-gradient(135deg,rgba(15,118,110,.3),rgba(2,6,23,.98) 62%) #020617;box-shadow:0 18px 46px rgba(2,6,23,.28);}',
-      '.af-mission-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}',
-      '.af-eyebrow{margin:0 0 7px;color:#5eead4;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;}',
-      '.af-title{margin:0;color:#f8fafc;font-size:clamp(22px,3vw,32px);line-height:1.12;}',
-      '.af-subtitle{max-width:700px;margin:9px 0 0;color:#cbd5e1;font-size:13px;line-height:1.6;}',
-      '.af-status{flex:0 0 auto;padding:8px 11px;border:1px solid rgba(94,234,212,.3);border-radius:999rem;background:rgba(15,23,42,.72);color:#99f6e4;font-size:11px;font-weight:800;white-space:nowrap;}',
-      '.af-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:18px;}',
-      '.af-metric{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(15,23,42,.7);}',
-      '.af-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
-      '.af-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
-      '.af-metric-note{display:block;margin-top:2px;color:#94a3b8;font-size:9px;line-height:1.35;}',
-      '.af-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;}',
-      '.af-confidence-atlas{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(230px,.55fr);gap:10px;margin-top:16px;}',
-      '.af-protein-viz{position:relative;min-height:184px;overflow:hidden;border:1px solid rgba(94,234,212,.22);border-radius:16px;background:radial-gradient(circle at 32% 42%,rgba(14,165,233,.18),transparent 34%),linear-gradient(145deg,rgba(15,23,42,.9),rgba(2,6,23,.96)) #020617;}',
-      '.af-protein-viz svg{display:block;width:100%;height:184px;}',
-      '.af-fold-shadow{fill:none;stroke:#020617;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;opacity:.72;}',
-      '.af-fold-ribbon{fill:none;stroke:url(#af-confidence-gradient);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:url(#af-ribbon-glow);stroke-dasharray:720;stroke-dashoffset:0;animation:afFoldTrace 5.5s ease-in-out infinite alternate;transition:opacity .2s;}',
-      '.af-fold-segment{fill:none;stroke-width:13;stroke-linecap:round;stroke-linejoin:round;filter:url(#af-ribbon-glow);opacity:0;transition:opacity .2s,stroke-width .2s;}',
+      '.af-launcher :is(button,a,textarea,summary):focus-visible{outline:3px solid #22d3ee;outline-offset:2px;}',
+      '.af-mission{position:relative;padding:22px;border:1px solid rgba(45,212,191,.4);border-radius:18px;background:radial-gradient(circle at 92% 8%,rgba(56,189,248,.22),transparent 36%),radial-gradient(circle at 12% 88%,rgba(20,184,166,.16),transparent 34%),linear-gradient(140deg,rgba(15,118,110,.32),rgba(2,6,23,.98) 60%) #020617;color:#e2e8f0;box-shadow:0 18px 44px rgba(2,6,23,.26);}',
+      '.af-mission-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}',
+      '.af-mission-copy{flex:1 1 320px;min-width:0;}',
+      '.af-badge-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}',
+      '.af-eyebrow{margin:0;color:#5eead4;font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;}',
+      '.af-subject-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid rgba(94,234,212,.35);border-radius:999px;background:rgba(15,118,110,.28);color:#ccfbf1;font-size:10px;font-weight:800;letter-spacing:.05em;}',
+      '.af-title{margin:0;color:#f8fafc;font-size:clamp(22px,3vw,32px);line-height:1.12;letter-spacing:-.015em;}',
+      '.af-subtitle{max-width:680px;margin:8px 0 0;color:#cbd5e1;font-size:13px;line-height:1.58;}',
+      '.af-status{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;padding:7px 12px;border:1px solid rgba(94,234,212,.35);border-radius:999px;background:rgba(15,23,42,.82);color:#99f6e4;font-size:11px;font-weight:800;white-space:nowrap;}',
+      '.af-status-dot{width:8px;height:8px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 8px #2dd4bf;flex:0 0 8px;}',
+      '.af-status[data-state="blocked"] .af-status-dot{background:#fbbf24;box-shadow:0 0 8px #fbbf24;}',
+      '.af-stage-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px;padding-bottom:10px;border-bottom:1px solid rgba(148,163,184,.18);}',
+      '.af-preset-strip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;}',
+      '.af-preset-label{color:#94a3b8;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-right:2px;}',
+      '.af-preset-chip{min-height:34px;padding:5px 10px;border:1px solid rgba(148,163,184,.28);border-radius:999px;background:rgba(15,23,42,.72);color:#cbd5e1;font-size:11px;font-weight:750;cursor:pointer;transition:border-color .16s,background .16s,color .16s;}',
+      '.af-preset-chip:hover{border-color:#5eead4;color:#f8fafc;}',
+      '.af-preset-chip[aria-pressed="true"]{border-color:#2dd4bf;background:rgba(20,184,166,.24);color:#f0fdfa;box-shadow:0 0 0 1px rgba(45,212,191,.35);}',
+      '.af-stage-tabs{display:inline-flex;gap:4px;padding:3px;border:1px solid rgba(148,163,184,.24);border-radius:10px;background:rgba(2,6,23,.72);}',
+      '.af-stage-tab{min-height:32px;padding:5px 11px;border:0;border-radius:7px;background:transparent;color:#94a3b8;font-size:11px;font-weight:800;cursor:pointer;transition:background .16s,color .16s;}',
+      '.af-stage-tab:hover{color:#e2e8f0;}',
+      '.af-stage-tab[aria-selected="true"]{background:linear-gradient(135deg,#0f766e,#0369a1);color:#ffffff;}',
+      '.af-confidence-atlas{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(240px,.55fr);gap:12px;margin-top:12px;align-items:stretch;}',
+      '.af-protein-viz{display:flex;flex-direction:column;justify-content:space-between;min-width:0;border:1px solid rgba(94,234,212,.26);border-radius:16px;background:radial-gradient(circle at 30% 42%,rgba(14,165,233,.16),transparent 38%),linear-gradient(150deg,rgba(15,23,42,.92),rgba(2,6,23,.98)) #020617;padding:10px 12px;}',
+      '.af-viz-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px;}',
+      '.af-viz-label{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid rgba(125,211,252,.28);border-radius:999px;background:rgba(2,6,23,.82);color:#bae6fd;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}',
+      '.af-viz-acc{color:#99f6e4;font:800 10px ui-monospace,SFMono-Regular,Menlo,monospace;}',
+      '.af-protein-viz svg{display:block;width:100%;height:auto;max-height:224px;}',
+      '.af-viz-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid rgba(148,163,184,.14);}',
+      '.af-viz-summary{color:#cbd5e1;font-size:11px;line-height:1.4;}',
+      '.af-viz-note{color:#94a3b8;font-size:10px;font-weight:700;}',
+      '.af-fold-shadow{fill:none;stroke:#020617;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;opacity:.75;}',
+      '.af-fold-ribbon{fill:none;stroke:url(#af-confidence-gradient);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:url(#af-ribbon-glow);transition:opacity .2s;}',
+      '.af-fold-segment{fill:none;stroke-width:13;stroke-linecap:round;stroke-linejoin:round;filter:url(#af-ribbon-glow);opacity:.15;transition:opacity .2s,stroke-width .2s;cursor:pointer;}',
       '.af-protein-viz[data-confidence-band]:not([data-confidence-band="all"]) .af-fold-ribbon{opacity:.18;}',
       '.af-fold-segment[data-active="true"]{opacity:1;stroke-width:15;}',
-      '.af-fold-spine{fill:none;stroke:rgba(255,255,255,.72);stroke-width:1.5;stroke-linecap:round;stroke-dasharray:3 7;}',
+      '.af-fold-spine{fill:none;stroke:rgba(255,255,255,.72);stroke-width:1.4;stroke-linecap:round;stroke-dasharray:3 7;pointer-events:none;}',
       '.af-residue-node{stroke:#e0f2fe;stroke-width:1.5;filter:url(#af-ribbon-glow);animation:afResiduePulse 2.8s ease-in-out infinite;}',
       '.af-residue-node:nth-of-type(2n){animation-delay:-1.2s;}',
-      '.af-viz-label{position:absolute;left:12px;top:11px;padding:5px 8px;border:1px solid rgba(125,211,252,.22);border-radius:999px;background:rgba(2,6,23,.72);color:#bae6fd;font-size:8px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;backdrop-filter:blur(8px);}',
-      '.af-viz-note{position:absolute;right:12px;bottom:10px;color:#94a3b8;font-size:8px;font-weight:700;}',
-      '.af-confidence-key{padding:13px;border:1px solid rgba(148,163,184,.2);border-radius:16px;background:rgba(15,23,42,.78);}',
-      '.af-confidence-key h3{margin:0;color:#f8fafc;font-size:12px;}',
-      '.af-confidence-key>p{margin:4px 0 10px;color:#94a3b8;font-size:9px;line-height:1.45;}',
-      '.af-confidence-row{display:grid;width:100%;grid-template-columns:10px 46px 1fr;align-items:center;gap:7px;padding:7px 5px;border:0;border-top:1px solid rgba(148,163,184,.12);background:transparent;text-align:left;cursor:pointer;}',
-      '.af-confidence-row:hover{background:rgba(148,163,184,.08);}',
-      '.af-confidence-row[aria-pressed="true"]{background:rgba(56,189,248,.12);box-shadow:inset 3px 0 0 var(--af-confidence-color,currentColor);}',
-      '.af-confidence-dot{width:9px;height:9px;border-radius:999px;box-shadow:0 0 10px currentColor;}',
-      '.af-confidence-range{color:#e2e8f0;font:800 9px ui-monospace,monospace;}',
-      '.af-confidence-name{color:#cbd5e1;font-size:9px;}',
-      '.af-confidence-reading{min-height:33px;margin-top:8px;color:#bae6fd;font-size:9px;line-height:1.45;}',
-      '.af-confidence-caution{margin-top:8px;padding:8px;border:1px solid rgba(251,191,36,.2);border-radius:9px;background:rgba(120,53,15,.14);color:#fde68a;font-size:8px;line-height:1.45;}',
-      '@keyframes afFoldTrace{0%{stroke-dashoffset:0;opacity:.86}100%{stroke-dashoffset:38;opacity:1}}',
-      '@keyframes afResiduePulse{0%,100%{opacity:.58;transform:scale(.92);transform-origin:center}50%{opacity:1;transform:scale(1.12);transform-origin:center}}',
-      '.af-primary{min-height:46px;padding:11px 17px;border:1px solid rgba(153,246,228,.38);border-radius:12px;background:linear-gradient(135deg,#0f766e,#0369a1);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(8,145,178,.23);transition:transform .18s,box-shadow .18s;}',
-      '.af-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(8,145,178,.3);}',
-      '.af-action-note{color:#cbd5e1;font-size:10px;line-height:1.45;}',
-      '.af-cross-scale{border-color:rgba(34,211,238,.45);background:linear-gradient(145deg,rgba(8,145,178,.14),rgba(15,23,42,.82) 72%) #0f172a;}.af-cross-meta{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.af-cross-chip{padding:5px 8px;border:1px solid rgba(103,232,249,.25);border-radius:999px;background:rgba(8,47,73,.65);color:#cffafe;font-size:9px;font-weight:850}.af-evidence-ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:11px}.af-evidence-step{padding:11px;border:1px solid rgba(103,232,249,.2);border-radius:12px;background:rgba(15,23,42,.8)}.af-evidence-step span{color:#67e8f9;font-size:9px;font-weight:950;text-transform:uppercase}.af-evidence-step h4{margin:6px 0 5px;color:#f8fafc;font-size:11px}.af-evidence-step p{margin:0;color:#cbd5e1;font-size:9px;line-height:1.5}.af-cross-evidence{margin-top:10px;padding:10px;border-left:4px solid #22d3ee;background:rgba(8,47,73,.5);color:#cffafe;font-size:10px;line-height:1.5}.af-claim-grid{display:grid;gap:7px;margin-top:9px}.af-claim-choice{width:100%;padding:9px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#cbd5e1;text-align:left;font-size:10px;font-weight:750;line-height:1.45;cursor:pointer}.af-claim-choice[aria-pressed=true]{border-color:#22d3ee;background:rgba(8,145,178,.18);color:#ecfeff}.af-cross-feedback{margin-top:9px;padding:9px;border-radius:10px;font-size:10px;font-weight:800;line-height:1.45}.af-cross-feedback[data-correct=true]{background:rgba(22,101,52,.35);color:#bbf7d0}.af-cross-feedback[data-correct=false]{background:rgba(154,52,18,.32);color:#fed7aa}.af-secondary{min-height:40px;padding:9px 13px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#e2e8f0;font-size:11px;font-weight:850;cursor:pointer}.af-primary:disabled,.af-secondary:disabled{cursor:not-allowed;opacity:.5;transform:none}.af-evidence-notebook{margin-top:13px;padding:13px;border:1px solid rgba(167,243,208,.3);border-radius:14px;background:rgba(6,78,59,.15)}.af-evidence-notebook h3{font-size:13px}.af-evidence-notebook>p{margin:5px 0 10px;color:#a7f3d0;font-size:9px;line-height:1.5}.af-note-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.af-note-field label{display:block;margin-bottom:5px;color:#d1fae5;font-size:9px;font-weight:900;text-transform:uppercase}.af-note-field textarea{box-sizing:border-box;width:100%;min-height:82px;resize:vertical;border:1px solid #475569;border-radius:10px;background:#020617;color:#e2e8f0;padding:9px;font:inherit;font-size:10px;line-height:1.45}.af-note-field textarea:focus{outline:3px solid #22d3ee;outline-offset:2px}.af-record-checks{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.af-record-check{padding:4px 7px;border-radius:999px;background:#3f3f46;color:#d4d4d8;font-size:8px;font-weight:900}.af-record-check[data-done=true]{background:#14532d;color:#bbf7d0}.af-record-saved{margin-top:9px;padding:8px;border-radius:9px;background:rgba(22,101,52,.38);color:#bbf7d0;font-size:9px;font-weight:850}',
-      '.af-section{padding:16px;border:1px solid #334155;border-radius:16px;background:#0f172a;}',
-      '.af-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:11px;}',
+      '.af-pae-cell{cursor:pointer;transition:opacity .15s,stroke-width .15s;}',
+      '.af-pae-cell:hover{opacity:.88;}',
+      '.af-confidence-key{display:flex;flex-direction:column;justify-content:space-between;min-width:0;padding:13px;border:1px solid rgba(148,163,184,.22);border-radius:16px;background:rgba(15,23,42,.82);}',
+      '.af-confidence-key h3{margin:0;color:#f8fafc;font-size:13px;}',
+      '.af-confidence-key>p{margin:4px 0 9px;color:#cbd5e1;font-size:11px;line-height:1.45;}',
+      '.af-confidence-row{display:grid;width:100%;grid-template-columns:10px 46px minmax(0,1fr) auto;align-items:center;gap:7px;padding:7px 6px;border:0;border-top:1px solid rgba(148,163,184,.14);border-radius:6px;background:transparent;text-align:left;cursor:pointer;transition:background .15s;}',
+      '.af-confidence-row:hover{background:rgba(148,163,184,.1);}',
+      '.af-confidence-row[aria-pressed="true"]{background:rgba(56,189,248,.16);box-shadow:inset 3px 0 0 var(--af-confidence-color,currentColor);}',
+      '.af-confidence-dot{width:9px;height:9px;border-radius:999px;box-shadow:0 0 8px currentColor;}',
+      '.af-confidence-range{color:#f8fafc;font:800 10px ui-monospace,SFMono-Regular,Menlo,monospace;}',
+      '.af-confidence-name{color:#e2e8f0;font-size:11px;font-weight:600;}',
+      '.af-confidence-pct{color:#94a3b8;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;}',
+      '.af-confidence-reading{min-height:40px;margin-top:8px;padding:8px 9px;border-radius:9px;background:rgba(2,6,23,.55);border:1px solid rgba(56,189,248,.22);color:#bae6fd;font-size:11px;line-height:1.45;}',
+      '.af-confidence-caution{margin-top:8px;padding:8px 9px;border:1px solid rgba(251,191,36,.28);border-radius:9px;background:rgba(120,53,15,.22);color:#fde68a;font-size:10px;line-height:1.45;}',
+      '@keyframes afResiduePulse{0%,100%{opacity:.62;transform:scale(.92);transform-origin:center}50%{opacity:1;transform:scale(1.12);transform-origin:center}}',
+      '.af-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:16px;}',
+      '.af-metric{min-width:0;padding:10px 11px;border:1px solid rgba(148,163,184,.2);border-radius:12px;background:rgba(15,23,42,.74);transition:border-color .16s;}',
+      '.af-metric[data-active="true"]{border-color:rgba(45,212,191,.5);background:rgba(15,118,110,.16);}',
+      '.af-metric-label{display:block;color:#94a3b8;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}',
+      '.af-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:16px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+      '.af-metric-note{display:block;margin-top:2px;color:#cbd5e1;font-size:10px;line-height:1.35;}',
+      '.af-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px;}',
+      '.af-primary{min-height:44px;padding:10px 17px;border:1px solid rgba(153,246,228,.45);border-radius:12px;background:linear-gradient(135deg,#0f766e,#0369a1);color:#ffffff;font-size:13px;font-weight:850;cursor:pointer;box-shadow:0 10px 24px rgba(8,145,178,.25);transition:transform .16s,box-shadow .16s;}',
+      '.af-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(8,145,178,.34);}',
+      '.af-sample-launch{min-height:44px;padding:10px 14px;border:1px solid rgba(94,234,212,.38);border-radius:12px;background:rgba(15,23,42,.82);color:#ccfbf1;font-size:12px;font-weight:800;cursor:pointer;transition:border-color .16s,background .16s;}',
+      '.af-sample-launch:hover{border-color:#2dd4bf;background:rgba(15,118,110,.3);}',
+      '.af-action-note{color:#cbd5e1;font-size:11px;line-height:1.45;flex:1 1 220px;min-width:0;}',
+      '.af-cross-scale{border-color:rgba(34,211,238,.45);background:linear-gradient(145deg,rgba(8,145,178,.14),rgba(15,23,42,.88) 72%) #0f172a;color:#e2e8f0;}.af-cross-meta{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.af-cross-chip{padding:5px 9px;border:1px solid rgba(103,232,249,.28);border-radius:999px;background:rgba(8,47,73,.72);color:#cffafe;font-size:10px;font-weight:800}.af-evidence-ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:11px}.af-evidence-step{min-width:0;padding:11px;border:1px solid rgba(103,232,249,.22);border-radius:12px;background:rgba(15,23,42,.84)}.af-evidence-step span{color:#67e8f9;font-size:10px;font-weight:900;text-transform:uppercase}.af-evidence-step h4{margin:6px 0 5px;color:#f8fafc;font-size:12px}.af-evidence-step p{margin:0;color:#cbd5e1;font-size:11px;line-height:1.5}.af-cross-evidence{margin-top:10px;padding:10px 12px;border-left:4px solid #22d3ee;border-radius:0 8px 8px 0;background:rgba(8,47,73,.55);color:#cffafe;font-size:11px;line-height:1.5}.af-claim-grid{display:grid;gap:7px;margin-top:9px}.af-claim-choice{width:100%;padding:10px 12px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#e2e8f0;text-align:left;font-size:11px;font-weight:700;line-height:1.45;cursor:pointer}.af-claim-choice[aria-pressed=true]{border-color:#22d3ee;background:rgba(8,145,178,.22);color:#ecfeff}.af-cross-feedback{margin-top:9px;padding:10px 12px;border-radius:10px;font-size:11px;font-weight:800;line-height:1.45}.af-cross-feedback[data-correct=true]{background:rgba(22,101,52,.38);color:#bbf7d0}.af-cross-feedback[data-correct=false]{background:rgba(154,52,18,.36);color:#fed7aa}.af-secondary{min-height:40px;padding:9px 13px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#e2e8f0;font-size:12px;font-weight:800;cursor:pointer}.af-primary:disabled,.af-secondary:disabled{cursor:not-allowed;opacity:.5;transform:none}.af-evidence-notebook{margin-top:13px;padding:14px;border:1px solid rgba(167,243,208,.32);border-radius:14px;background:rgba(6,78,59,.18)}.af-evidence-notebook h3{font-size:14px;color:#f8fafc;margin:0}.af-evidence-notebook>p{margin:5px 0 10px;color:#a7f3d0;font-size:11px;line-height:1.5}.af-note-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.af-note-field{min-width:0}.af-note-field label{display:block;margin-bottom:5px;color:#d1fae5;font-size:10px;font-weight:850;text-transform:uppercase}.af-note-field textarea{box-sizing:border-box;width:100%;min-height:82px;resize:vertical;border:1px solid #475569;border-radius:10px;background:#020617;color:#e2e8f0;padding:9px;font:inherit;font-size:11px;line-height:1.45}.af-note-field textarea:focus{outline:3px solid #22d3ee;outline-offset:2px}.af-record-checks{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.af-record-check{padding:4px 8px;border-radius:999px;background:#334155;color:#e2e8f0;font-size:10px;font-weight:850}.af-record-check[data-done=true]{background:#14532d;color:#bbf7d0}.af-record-saved{margin-top:9px;padding:9px 11px;border-radius:9px;background:rgba(22,101,52,.4);color:#bbf7d0;font-size:11px;font-weight:800}',
+      '.af-section{padding:16px;border:1px solid #334155;border-radius:16px;background:#0f172a;color:#e2e8f0;}',
+      '.af-launcher[data-theme="light"] .af-section{background:#ffffff;border-color:#cbd5e1;color:#0f172a;box-shadow:0 4px 16px rgba(15,23,42,.05);}',
+      '.af-launcher[data-theme="light"] .af-section.af-cross-scale{background:linear-gradient(145deg,#ecfeff,#f8fafc 72%);border-color:#0891b2;color:#0f172a;}',
+      '.af-launcher[data-theme="light"] .af-section.af-cross-scale .af-eyebrow{color:#0f766e;}',
+      '.af-launcher[data-theme="light"] .af-section.af-cross-scale h3,.af-launcher[data-theme="light"] .af-section.af-cross-scale h4{color:#0f172a;}',
+      '.af-launcher[data-theme="light"] .af-section.af-cross-scale p{color:#334155;}',
+      '.af-launcher[data-theme="light"] .af-cross-chip{background:#e0f2fe;border-color:#7dd3fc;color:#0c4a6e;}',
+      '.af-launcher[data-theme="light"] .af-cross-evidence{background:#ecfeff;color:#164e63;border-left-color:#0891b2;}',
+      '.af-launcher[data-theme="light"] .af-evidence-step{background:#ffffff;border-color:#bae6fd;}',
+      '.af-launcher[data-theme="light"] .af-evidence-step span{color:#0e7490;}',
+      '.af-launcher[data-theme="light"] .af-claim-choice{background:#ffffff;border-color:#cbd5e1;color:#0f172a;}',
+      '.af-launcher[data-theme="light"] .af-claim-choice[aria-pressed=true]{background:#ecfeff;border-color:#0891b2;color:#083344;}',
+      '.af-launcher[data-theme="light"] .af-cross-feedback[data-correct=true]{background:#dcfce7;color:#14532d;}',
+      '.af-launcher[data-theme="light"] .af-cross-feedback[data-correct=false]{background:#ffedd5;color:#7c2d12;}',
+      '.af-launcher[data-theme="light"] .af-evidence-notebook{background:#f0fdf4;border-color:#86efac;}',
+      '.af-launcher[data-theme="light"] .af-evidence-notebook>p{color:#166534;}',
+      '.af-launcher[data-theme="light"] .af-note-field label{color:#14532d;}',
+      '.af-launcher[data-theme="light"] .af-note-field textarea{background:#ffffff;color:#0f172a;border-color:#94a3b8;}',
+      '.af-launcher[data-theme="light"] .af-record-check{background:#e2e8f0;color:#334155;}',
+      '.af-launcher[data-theme="light"] .af-record-check[data-done=true]{background:#dcfce7;color:#14532d;}',
+      '.af-launcher[data-theme="light"] .af-record-saved{background:#dcfce7;color:#14532d;}',
+      '.af-launcher[data-theme="light"] .af-secondary{background:#ffffff;border-color:#94a3b8;color:#0f172a;}',
+      '.af-launcher[data-theme="light"] .af-action-note{color:#334155;}',
+      '.af-launcher[data-theme="light"] .af-mission .af-action-note{color:#cbd5e1;}',
+      '.af-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}',
       '.af-section h3{margin:0;color:#f8fafc;font-size:15px;}',
-      '.af-section-head p{margin:3px 0 0;color:#94a3b8;font-size:11px;}',
-      '.af-route{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;}',
-      '.af-route-card{min-width:0;padding:13px;border:1px solid #334155;border-radius:13px;background:#0f172a;}',
-      '.af-route-card[data-complete="true"]{border-color:rgba(45,212,191,.55);background:linear-gradient(145deg,rgba(13,148,136,.14),#0f172a 70%) #0f172a;}',
-      '.af-route-kicker{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#5eead4;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;}',
+      '.af-launcher[data-theme="light"] .af-section h3{color:#0f172a;}',
+      '.af-section-head p{margin:3px 0 0;color:#94a3b8;font-size:12px;}',
+      '.af-launcher[data-theme="light"] .af-section-head p{color:#475569;}',
+      '.af-route-progress{height:6px;border-radius:999px;background:rgba(148,163,184,.22);margin-bottom:12px;overflow:hidden;}',
+      '.af-route-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#14b8a6,#38bdf8);transition:width .25s ease;}',
+      '.af-route{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}',
+      '.af-route-card{min-width:0;padding:13px;border:1px solid #334155;border-radius:13px;background:#0b1324;}',
+      '.af-launcher[data-theme="light"] .af-route-card{background:#f8fafc;border-color:#cbd5e1;}',
+      '.af-route-card[data-complete="true"]{border-color:rgba(45,212,191,.6);background:linear-gradient(145deg,rgba(13,148,136,.18),#0f172a 70%) #0f172a;}',
+      '.af-launcher[data-theme="light"] .af-route-card[data-complete="true"]{border-color:#0f766e;background:linear-gradient(145deg,#ccfbf1,#ffffff 75%);}',
+      '.af-route-kicker{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#5eead4;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.af-launcher[data-theme="light"] .af-route-kicker{color:#0f766e;}',
       '.af-route-card h4{margin:8px 0 5px;color:#f8fafc;font-size:13px;}',
-      '.af-route-card p{margin:0;color:#94a3b8;font-size:10px;line-height:1.5;}',
-      '.af-route-state{color:#cbd5e1;font-size:9px;}',
+      '.af-launcher[data-theme="light"] .af-route-card h4{color:#0f172a;}',
+      '.af-route-card p{margin:0;color:#cbd5e1;font-size:11px;line-height:1.5;}',
+      '.af-launcher[data-theme="light"] .af-route-card p{color:#334155;}',
+      '.af-route-state{color:#cbd5e1;font-size:10px;font-weight:800;}',
+      '.af-launcher[data-theme="light"] .af-route-state{color:#334155;}',
       '.af-support-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:10px;}',
-      '.af-details,.af-guardrail{border:1px solid #334155;border-radius:14px;background:#0f172a;overflow:hidden;}',
-      '.af-details summary{min-height:48px;padding:14px;cursor:pointer;color:#e2e8f0;font-size:12px;font-weight:900;}',
-      '.af-details ol{margin:0;padding:0 20px 15px 34px;color:#cbd5e1;font-size:11px;line-height:1.55;}',
-      '.af-details li+li{margin-top:5px;}',
-      '.af-guardrail{padding:14px;border-color:rgba(251,191,36,.34);background:linear-gradient(145deg,rgba(120,53,15,.16),#0f172a 72%) #0f172a;}',
-      '.af-guardrail h3{margin:0 0 7px;color:#fde68a;font-size:12px;}',
-      '.af-guardrail p{margin:0;color:#cbd5e1;font-size:10px;line-height:1.55;}',
+      '.af-details,.af-guardrail{border:1px solid #334155;border-radius:14px;background:#0f172a;color:#e2e8f0;}',
+      '.af-launcher[data-theme="light"] .af-details{background:#ffffff;border-color:#cbd5e1;color:#0f172a;}',
+      '.af-details summary{min-height:46px;padding:13px 15px;cursor:pointer;color:#f8fafc;font-size:13px;font-weight:850;}',
+      '.af-launcher[data-theme="light"] .af-details summary{color:#0f172a;}',
+      '.af-details ol{margin:0;padding:0 20px 15px 34px;color:#cbd5e1;font-size:12px;line-height:1.58;}',
+      '.af-launcher[data-theme="light"] .af-details ol{color:#334155;}',
+      '.af-details li+li{margin-top:6px;}',
+      '.af-guardrail{padding:14px 15px;border-color:rgba(251,191,36,.38);background:linear-gradient(145deg,rgba(120,53,15,.22),#0f172a 72%) #0f172a;}',
+      '.af-launcher[data-theme="light"] .af-guardrail{background:linear-gradient(145deg,#fef3c7,#fffbeb 75%);border-color:#d97706;}',
+      '.af-guardrail h3{margin:0 0 7px;color:#fde68a;font-size:13px;}',
+      '.af-launcher[data-theme="light"] .af-guardrail h3{color:#92400e;}',
+      '.af-guardrail p{margin:0;color:#e2e8f0;font-size:11px;line-height:1.55;}',
+      '.af-launcher[data-theme="light"] .af-guardrail p{color:#451a03;}',
       '.af-guardrail p+p{margin-top:7px;}',
-      '.af-alert{padding:11px 13px;border:1px solid rgba(251,191,36,.45);border-radius:12px;background:rgba(120,53,15,.2);color:#fde68a;font-size:11px;line-height:1.5;}',
+      '.af-alert{padding:11px 13px;border:1px solid rgba(251,191,36,.45);border-radius:12px;background:rgba(120,53,15,.25);color:#fde68a;font-size:12px;line-height:1.5;}',
+      '.af-launcher[data-theme="light"] .af-alert{background:#fef3c7;color:#78350f;border-color:#d97706;}',
       '.af-alert a{color:#fef3c7;text-decoration:underline;font-weight:800;}',
-      '.af-credit{margin:0;padding:0 4px;color:#64748b;font-size:9px;line-height:1.5;}',
-      '@media(max-width:760px){.af-confidence-atlas{grid-template-columns:1fr;}.af-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.af-route{grid-template-columns:1fr;}.af-support-grid{grid-template-columns:1fr;}.af-evidence-ladder,.af-note-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
-      '@media(max-width:520px){.af-evidence-ladder,.af-note-grid{grid-template-columns:1fr;}}',
-      '@media(max-width:520px){.af-mission{padding:15px;border-radius:16px;}.af-mission-top{flex-direction:column;}.af-status{white-space:normal;}.af-metrics{grid-template-columns:1fr 1fr;}.af-primary{width:100%;}.af-actions{align-items:stretch;}.af-action-note{width:100%;}}',
-      '@media(prefers-reduced-motion:reduce){.af-primary,.af-fold-ribbon,.af-fold-segment{transition:none;}.af-primary:hover{transform:none;}.af-fold-ribbon,.af-residue-node{animation:none;}}',
-      '.theme-contrast .af-mission,.theme-contrast .af-section,.theme-contrast .af-route-card,.theme-contrast .af-details,.theme-contrast .af-guardrail{box-shadow:none;border-width:2px;}.theme-contrast .af-primary{background:#000;}'
+      '.af-launcher[data-theme="light"] .af-alert a{color:#78350f;}',
+      '.af-credit{margin:0;padding:0 4px;color:#94a3b8;font-size:10px;line-height:1.5;}',
+      '.af-launcher[data-theme="light"] .af-credit{color:#475569;}',
+      '@media(max-width:760px){.af-confidence-atlas{grid-template-columns:1fr;}.af-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.af-route{grid-template-columns:repeat(2,minmax(0,1fr));}.af-support-grid{grid-template-columns:1fr;}.af-evidence-ladder,.af-note-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media(max-width:520px){.af-launcher{padding:11px;}.af-evidence-ladder,.af-note-grid,.af-route{grid-template-columns:1fr;}.af-mission{padding:15px;border-radius:16px;}.af-mission-top{flex-direction:column;}.af-status{white-space:normal;}.af-metrics{grid-template-columns:1fr 1fr;}.af-primary,.af-sample-launch{width:100%;}.af-actions{align-items:stretch;}.af-action-note{width:100%;}}',
+      '@media(prefers-reduced-motion:reduce){.af-primary,.af-fold-ribbon,.af-fold-segment,.af-route-progress-fill{transition:none;}.af-primary:hover{transform:none;}.af-residue-node{animation:none;}}',
+      '.theme-contrast .af-launcher,.theme-contrast .af-mission,.theme-contrast .af-section,.theme-contrast .af-route-card,.theme-contrast .af-details,.theme-contrast .af-guardrail,.theme-contrast .af-protein-viz,.theme-contrast .af-confidence-key,.theme-contrast .af-metric,.theme-contrast .af-stage-tabs,.theme-contrast .af-preset-chip,.theme-contrast .af-status{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;box-shadow:none!important;}',
+      '.theme-contrast .af-primary,.theme-contrast .af-secondary,.theme-contrast .af-sample-launch,.theme-contrast .af-stage-tab[aria-selected="true"]{background:#000000!important;color:#00ff00!important;border:2px solid #00ff00!important;}',
+      '.theme-contrast .af-launcher :is(p,span,h2,h3,h4,strong,li,summary,label){color:#ffff00!important;}'
     ].join('\n');
     if (document.head) document.head.appendChild(alphaFoldStyle);
   }
@@ -296,6 +365,118 @@
       }, [ctx.theme]);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
       var _bandState = React.useState('all'); var confidenceBand = _bandState[0], setConfidenceBand = _bandState[1];
+      var _stageState = React.useState('ribbon'); var stageView = _stageState[0], setStageView = _stageState[1];
+      var _sampleState = React.useState('P69905'); var sampleAcc = _sampleState[0], setSampleAcc = _sampleState[1];
+      var _paeState = React.useState('intra'); var paeRegion = _paeState[0], setPaeRegion = _paeState[1];
+      var afTheme = (ctx.isContrast || ctx.theme === 'contrast') ? 'contrast' : ((ctx.isDark || ctx.theme === 'dark') ? 'dark' : 'light');
+      var SAMPLE_PROTEINS = [
+        {
+          accession: 'P69905',
+          name: t('stem.alphaFold.sample_hba', 'Hemoglobin \u03b1'),
+          length: '142 aa',
+          foldNote: t('stem.alphaFold.sample_hba_note', 'Compact 7-helix globin core with mostly >90 pLDDT confidence.'),
+          pcts: { 'very-high': '82%', confident: '13%', low: '3%', 'very-low': '2%' },
+          path: 'M36 104 C56 36 108 34 134 86 C158 136 206 142 232 82 C256 28 304 28 332 84 C358 136 410 132 438 78 C458 44 494 52 518 76',
+          segs: {
+            'very-high': 'M36 104 C56 36 108 34 134 86 C158 136 206 142 232 82',
+            confident: 'M232 82 C256 28 304 28 332 84',
+            low: 'M332 84 C358 136 410 132 438 78',
+            'very-low': 'M438 78 C458 44 494 52 518 76'
+          },
+          bars: [96, 95, 97, 94, 92, 95, 96, 93, 91, 88, 86, 84, 79, 76, 68, 62, 54, 46],
+          paeBlocks: [
+            [1,1,1,1,2,2,2,3],
+            [1,1,1,1,2,2,2,3],
+            [1,1,1,1,2,2,2,3],
+            [1,1,1,1,2,2,2,3],
+            [2,2,2,2,1,1,1,2],
+            [2,2,2,2,1,1,1,2],
+            [2,2,2,2,1,1,1,2],
+            [3,3,3,3,2,2,2,1]
+          ]
+        },
+        {
+          accession: 'P42212',
+          name: t('stem.alphaFold.sample_gfp', 'GFP Barrel'),
+          length: '238 aa',
+          foldNote: t('stem.alphaFold.sample_gfp_note', 'Rigid 11-strand \u03b2-barrel housing the chromophore, flanked by short flexible ends.'),
+          pcts: { 'very-high': '74%', confident: '18%', low: '5%', 'very-low': '3%' },
+          path: 'M38 118 C64 42 118 42 142 112 C166 150 212 36 246 86 C276 132 314 38 352 92 C386 140 426 48 462 94 C484 122 504 114 520 88',
+          segs: {
+            'very-high': 'M38 118 C64 42 118 42 142 112 C166 150 212 36 246 86',
+            confident: 'M246 86 C276 132 314 38 352 92',
+            low: 'M352 92 C386 140 426 48 462 94',
+            'very-low': 'M462 94 C484 122 504 114 520 88'
+          },
+          bars: [72, 88, 95, 97, 96, 94, 93, 95, 92, 90, 86, 83, 81, 78, 70, 62, 48, 42],
+          paeBlocks: [
+            [1,1,1,1,1,2,3,4],
+            [1,1,1,1,1,2,3,4],
+            [1,1,1,1,1,2,3,4],
+            [1,1,1,1,1,2,3,4],
+            [1,1,1,1,1,2,3,4],
+            [2,2,2,2,2,1,2,3],
+            [3,3,3,3,3,2,1,2],
+            [4,4,4,4,4,3,2,2]
+          ]
+        },
+        {
+          accession: 'P01308',
+          name: t('stem.alphaFold.sample_ins', 'Insulin Precursor'),
+          length: '110 aa',
+          foldNote: t('stem.alphaFold.sample_ins_note', 'Well-folded A/B hormone helices connected by a flexible C-peptide loop.'),
+          pcts: { 'very-high': '48%', confident: '26%', low: '16%', 'very-low': '10%' },
+          path: 'M36 98 C66 36 122 40 148 92 C176 144 226 146 254 88 C282 32 330 28 362 72 C392 114 386 142 434 134 C478 126 488 64 520 56',
+          segs: {
+            'very-high': 'M36 98 C66 36 122 40 148 92',
+            confident: 'M148 92 C176 144 226 146 254 88',
+            low: 'M254 88 C282 32 330 28 362 72',
+            'very-low': 'M362 72 C392 114 386 142 434 134 C478 126 488 64 520 56'
+          },
+          bars: [92, 94, 91, 89, 86, 81, 76, 72, 65, 58, 52, 47, 44, 51, 64, 78, 86, 91],
+          paeBlocks: [
+            [1,1,1,3,4,4,2,2],
+            [1,1,1,3,4,4,2,2],
+            [1,1,1,3,4,4,2,2],
+            [3,3,3,2,3,3,3,3],
+            [4,4,4,3,2,3,4,4],
+            [4,4,4,3,3,2,4,4],
+            [2,2,2,3,4,4,1,1],
+            [2,2,2,3,4,4,1,1]
+          ]
+        },
+        {
+          accession: 'P04637',
+          name: t('stem.alphaFold.sample_p53', 'p53 Suppressor'),
+          length: '393 aa',
+          foldNote: t('stem.alphaFold.sample_p53_note', 'Ordered DNA-binding core flanked by intrinsically disordered low-pLDDT tails.'),
+          pcts: { 'very-high': '41%', confident: '17%', low: '18%', 'very-low': '24%' },
+          path: 'M36 126 C64 138 92 78 134 94 C172 108 198 34 246 76 C284 110 314 36 352 84 C384 124 424 140 460 112 C486 92 504 54 522 46',
+          segs: {
+            'very-high': 'M172 108 C198 34 246 76 284 110',
+            confident: 'M284 110 C314 36 352 84 374 108',
+            low: 'M36 126 C64 138 92 78 134 94 C150 100 160 106 172 108',
+            'very-low': 'M374 108 C404 136 436 132 460 112 C486 92 504 54 522 46'
+          },
+          bars: [38, 42, 46, 54, 62, 86, 94, 96, 95, 93, 88, 76, 61, 48, 41, 36, 34, 39],
+          paeBlocks: [
+            [2,3,4,4,4,4,4,4],
+            [3,2,3,4,4,4,4,4],
+            [4,3,1,1,1,3,4,4],
+            [4,4,1,1,1,3,4,4],
+            [4,4,1,1,1,3,4,4],
+            [4,4,3,3,3,2,3,4],
+            [4,4,4,4,4,3,2,3],
+            [4,4,4,4,4,4,3,2]
+          ]
+        }
+      ];
+      var activeSample = SAMPLE_PROTEINS.filter(function (item) { return item.accession === sampleAcc; })[0] || SAMPLE_PROTEINS[0];
+      var PAE_EXPLANATIONS = {
+        intra: t('stem.alphaFold.pae_intra', 'Dark emerald diagonal blocks (0–5 \u00c5) indicate residues packed closely within one folded domain with high relative-position confidence.'),
+        boundary: t('stem.alphaFold.pae_boundary', 'Medium teal squares (6–15 \u00c5) mark domain boundaries or loops where local contacts are plausible but exact orientation has moderate uncertainty.'),
+        inter: t('stem.alphaFold.pae_inter', 'Pale or dark off-diagonal squares (>20 \u00c5) mean AlphaFold is uncertain how two domains or disordered tails sit relative to one another.')
+      };
       var aiOn = !!(ctx.aiHintsEnabled && typeof ctx.callGemini === 'function');
       var progress = (ctx.toolData && ctx.toolData._alphaFoldExplorer) || {};
       var prefillAccession = String(progress.prefillAccession || '').trim().toUpperCase();
@@ -451,7 +632,8 @@
       }
 
       function metric(label, value, note) {
-        return h('div', { className: 'af-metric', role: 'listitem' },
+        var active = Number(value) > 0;
+        return h('div', { className: 'af-metric', role: 'listitem', 'data-active': active ? 'true' : 'false' },
           h('span', { className: 'af-metric-label' }, label),
           h('strong', { className: 'af-metric-value' }, value),
           h('span', { className: 'af-metric-note' }, note));
@@ -696,11 +878,13 @@
         return function () { window.removeEventListener('message', onMsg); };
       }, [aiOn]);
 
-      function openExplorer() {
+      function openExplorer(accessionOverride) {
+        var targetAcc = (typeof accessionOverride === 'string' && /^[A-Z0-9-]{3,24}$/.test(accessionOverride)) ? accessionOverride : prefillAccession;
+        var launchUrl = ALPHAFOLD_URL + '&lang=' + encodeURIComponent(ctx.lang || 'en') + '&theme=' + encodeURIComponent(ctx.theme || 'dark') + (targetAcc ? '&accession=' + encodeURIComponent(targetAcc) : '');
         var existing = _win.current;
-        if (existing && !existing.closed) { try { if (prefillAccession) existing.location.href = explorerLaunchUrl; existing.focus(); } catch (_) {} return; }
+        if (existing && !existing.closed) { try { if (targetAcc) existing.location.href = launchUrl; existing.focus(); } catch (_) {} return; }
         var w = null;
-        try { w = window.open(explorerLaunchUrl, 'alloflow-alphafold-explorer', 'width=1360,height=900'); } catch (_) { w = null; }
+        try { w = window.open(launchUrl, 'alloflow-alphafold-explorer', 'width=1360,height=900'); } catch (_) { w = null; }
         if (!w) {
           setPopupState('blocked');
           if (announceToSR) announceToSR(t('stem.alphaFold.popup_blocked', 'The AlphaFold Explorer window was blocked. Allow pop-ups for this page, then try again.'));
@@ -807,38 +991,192 @@
             ? t('stem.alphaFold.status_blocked', 'Pop-up needs permission')
             : t('stem.alphaFold.status_ready', 'Ready to investigate');
 
-      return h('main', { className: 'af-launcher', 'data-alphafold-mission': 'true' },
+      var completedRouteSteps = (openedCount > 0 ? 1 : 0) + (lookupCount > 0 ? 1 : 0) + (guidanceCount > 0 ? 1 : 0) + (packetRouteComplete ? 1 : 0);
+      var paeColorScale = { 1: '#059669', 2: '#34d399', 3: '#a7f3d0', 4: '#1e293b' };
+      var paeRegionForLevel = function (lvl) { return lvl === 1 ? 'intra' : (lvl <= 2 ? 'boundary' : 'inter'); };
+      function barColorForScore(score) {
+        if (score >= 90) return '#1d4ed8';
+        if (score >= 70) return '#38bdf8';
+        if (score >= 50) return '#facc15';
+        return '#f97316';
+      }
+
+      return h('main', { className: 'af-launcher', 'data-alphafold-mission': 'true', 'data-theme': afTheme },
         h('header', { className: 'af-mission' },
           h('div', { className: 'af-mission-top' },
-            h('div', null,
-              h('p', { className: 'af-eyebrow' }, t('stem.alphaFold.mission_label', 'Structural biology mission')),
+            h('div', { className: 'af-mission-copy' },
+              h('div', { className: 'af-badge-row' },
+                h('p', { className: 'af-eyebrow' }, t('stem.alphaFold.mission_label', 'Structural biology mission')),
+                h('span', { className: 'af-subject-pill' }, t('stem.alphaFold.subject_badge', 'Protein Folding \u00b7 pLDDT & PAE'))),
               h('h2', { className: 'af-title' }, t('stem.alphaFold.title', 'AlphaFold Explorer')),
               h('p', { className: 'af-subtitle' },
                 t('stem.alphaFold.mission_blurb', 'Explore a public protein prediction, inspect confidence and shape, then build a cautious claim from visible evidence.'))),
-            h('div', { className: 'af-status', role: 'status', 'aria-live': 'polite' }, statusText)),
-          h('div', { className: 'af-confidence-atlas' },
-            h('figure', { className: 'af-protein-viz', role: 'img', 'data-confidence-band': confidenceBand, 'aria-label': t('stem.alphaFold.confidence_preview_aria', 'Illustrative folded protein ribbon colored by AlphaFold pLDDT confidence: deep blue and cyan are higher confidence, while yellow and orange are lower confidence. This is a teaching illustration, not a loaded protein prediction.') },
-              h('span', { className: 'af-viz-label', 'aria-hidden': 'true' }, t('stem.alphaFold.confidence_preview_label', 'Prediction confidence preview')),
-              h('svg', { viewBox: '0 0 520 184', 'aria-hidden': 'true', focusable: 'false' },
-                h('defs', null,
-                  h('linearGradient', { id: 'af-confidence-gradient', x1: '0%', y1: '0%', x2: '100%', y2: '0%' }, h('stop', { offset: '0%', stopColor: '#1d4ed8' }), h('stop', { offset: '33%', stopColor: '#38bdf8' }), h('stop', { offset: '66%', stopColor: '#facc15' }), h('stop', { offset: '100%', stopColor: '#f97316' })),
-                  h('filter', { id: 'af-ribbon-glow', x: '-30%', y: '-30%', width: '160%', height: '160%' }, h('feGaussianBlur', { stdDeviation: '3', result: 'blur' }), h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' })))),
-                h('path', { className: 'af-fold-shadow', d: 'M32 111 C55 45 110 42 135 92 C160 143 214 155 232 99 C250 44 293 28 322 65 C350 101 334 145 380 145 C432 145 423 72 481 62' }),
-                h('path', { className: 'af-fold-ribbon', d: 'M32 111 C55 45 110 42 135 92 C160 143 214 155 232 99 C250 44 293 28 322 65 C350 101 334 145 380 145 C432 145 423 72 481 62' }),
-                h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-high' ? 'true' : 'false', d: 'M32 111 C55 45 110 42 135 92', stroke: '#1d4ed8' }),
-                h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'confident' ? 'true' : 'false', d: 'M135 92 C160 143 214 155 232 99', stroke: '#38bdf8' }),
-                h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'low' ? 'true' : 'false', d: 'M232 99 C250 44 293 28 322 65', stroke: '#facc15' }),
-                h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-low' ? 'true' : 'false', d: 'M322 65 C350 101 334 145 380 145 C432 145 423 72 481 62', stroke: '#f97316' }),
-                h('path', { className: 'af-fold-spine', d: 'M32 111 C55 45 110 42 135 92 C160 143 214 155 232 99 C250 44 293 28 322 65 C350 101 334 145 380 145 C432 145 423 72 481 62' }),
-                h('path', { d: 'M92 58 C76 88 80 119 108 139 M283 39 C310 69 305 105 277 127 M390 145 C371 113 379 82 407 68', fill: 'none', stroke: 'rgba(125,211,252,.34)', strokeWidth: 5, strokeLinecap: 'round' }),
-                [[52,81,'#1d4ed8'],[113,66,'#0ea5e9'],[173,132,'#38bdf8'],[235,91,'#7dd3fc'],[294,43,'#facc15'],[339,94,'#fde047'],[400,140,'#fb923c'],[463,67,'#f97316']].map(function (node, i) { return h('circle', { key: i, className: 'af-residue-node', cx: node[0], cy: node[1], r: i === 3 ? 5 : 4, fill: node[2] }); })),
-              h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.confidence_preview_note', 'Illustrative model | confidence is not correctness'))),
+            h('div', { className: 'af-status', 'data-state': popupState, role: 'status', 'aria-live': 'polite' },
+              h('span', { className: 'af-status-dot', 'aria-hidden': 'true' }),
+              h('span', null, statusText))),
+
+          h('div', { className: 'af-stage-bar' },
+            h('div', { className: 'af-preset-strip', role: 'group', 'aria-label': t('stem.alphaFold.sample_presets_aria', 'Illustrative classroom protein models') },
+              h('span', { className: 'af-preset-label' }, t('stem.alphaFold.sample_presets_label', 'Model preview:')),
+              SAMPLE_PROTEINS.map(function (sample) {
+                var isCur = sample.accession === activeSample.accession;
+                return h('button', {
+                  key: sample.accession,
+                  type: 'button',
+                  className: 'af-preset-chip',
+                  'aria-pressed': isCur ? 'true' : 'false',
+                  onClick: function () {
+                    setSampleAcc(sample.accession);
+                    if (announceToSR) announceToSR(sample.name + ' (' + sample.accession + ') ' + sample.foldNote);
+                  }
+                }, sample.name + ' (' + sample.accession + ')');
+              })),
+            h('div', { className: 'af-stage-tabs', role: 'tablist', 'aria-label': t('stem.alphaFold.stage_view_aria', 'Structural preview view') },
+              h('button', {
+                type: 'button', role: 'tab', id: 'af-stage-tab-ribbon',
+                className: 'af-stage-tab',
+                'aria-selected': stageView === 'ribbon' ? 'true' : 'false',
+                'aria-controls': 'af-stage-panel',
+                onClick: function () { setStageView('ribbon'); }
+              }, t('stem.alphaFold.tab_ribbon', 'pLDDT Ribbon')),
+              h('button', {
+                type: 'button', role: 'tab', id: 'af-stage-tab-pae',
+                className: 'af-stage-tab',
+                'aria-selected': stageView === 'pae' ? 'true' : 'false',
+                'aria-controls': 'af-stage-panel',
+                onClick: function () { setStageView('pae'); }
+              }, t('stem.alphaFold.tab_pae', 'PAE Error Matrix')))),
+
+          h('div', { className: 'af-confidence-atlas', id: 'af-stage-panel', role: 'tabpanel', 'aria-labelledby': stageView === 'pae' ? 'af-stage-tab-pae' : 'af-stage-tab-ribbon' },
+            stageView === 'ribbon'
+              ? h('figure', { className: 'af-protein-viz', role: 'img', 'data-confidence-band': confidenceBand, 'aria-label': t('stem.alphaFold.confidence_preview_aria', 'Illustrative folded protein ribbon colored by AlphaFold pLDDT confidence: deep blue and cyan are higher confidence, while yellow and orange are lower confidence. This is a teaching illustration, not a loaded protein prediction.') },
+                  h('div', { className: 'af-viz-head' },
+                    h('span', { className: 'af-viz-label', 'aria-hidden': 'true' }, t('stem.alphaFold.confidence_preview_label', 'Prediction confidence preview')),
+                    h('span', { className: 'af-viz-acc' }, activeSample.name + ' \u00b7 ' + activeSample.accession + ' \u00b7 ' + activeSample.length)),
+                  h('svg', { viewBox: '0 0 560 210', 'aria-hidden': 'true', focusable: 'false' },
+                    h('defs', null,
+                      h('linearGradient', { id: 'af-confidence-gradient', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                        h('stop', { offset: '0%', stopColor: '#1d4ed8' }),
+                        h('stop', { offset: '36%', stopColor: '#38bdf8' }),
+                        h('stop', { offset: '70%', stopColor: '#facc15' }),
+                        h('stop', { offset: '100%', stopColor: '#f97316' })),
+                      h('filter', { id: 'af-ribbon-glow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
+                        h('feGaussianBlur', { stdDeviation: '2.6', result: 'blur' }),
+                        h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' })))),
+                    // Subtle coordinate grid
+                    [40, 80, 120].map(function (gy) {
+                      return h('line', { key: 'gy-' + gy, x1: 22, y1: gy, x2: 538, y2: gy, stroke: 'rgba(148,163,184,0.12)', strokeWidth: 1, strokeDasharray: '4 4' });
+                    }),
+                    [110, 220, 330, 440].map(function (gx) {
+                      return h('line', { key: 'gx-' + gx, x1: gx, y1: 18, x2: gx, y2: 146, stroke: 'rgba(148,163,184,0.1)', strokeWidth: 1, strokeDasharray: '4 4' });
+                    }),
+                    // Terminal callouts safely inset inside viewBox
+                    h('rect', { x: 20, y: 16, width: 52, height: 18, rx: 9, fill: 'rgba(29,78,216,0.35)', stroke: 'rgba(96,165,250,0.6)', strokeWidth: 1 }),
+                    h('text', { x: 46, y: 28, textAnchor: 'middle', fill: '#dbeafe', fontSize: 9, fontWeight: 'bold' }, 'N-term'),
+                    h('rect', { x: 488, y: 16, width: 52, height: 18, rx: 9, fill: 'rgba(249,115,22,0.32)', stroke: 'rgba(251,146,60,0.6)', strokeWidth: 1 }),
+                    h('text', { x: 514, y: 28, textAnchor: 'middle', fill: '#ffedd5', fontSize: 9, fontWeight: 'bold' }, 'C-term'),
+                    // Fold shadow, core ribbon, interactive segments, spine
+                    h('path', { className: 'af-fold-shadow', d: activeSample.path }),
+                    h('path', { className: 'af-fold-ribbon', d: activeSample.path }),
+                    h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-high' ? 'true' : 'false', d: activeSample.segs['very-high'], stroke: '#1d4ed8', onClick: function () { selectConfidenceBand('very-high'); } }),
+                    h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'confident' ? 'true' : 'false', d: activeSample.segs.confident, stroke: '#38bdf8', onClick: function () { selectConfidenceBand('confident'); } }),
+                    h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'low' ? 'true' : 'false', d: activeSample.segs.low, stroke: '#facc15', onClick: function () { selectConfidenceBand('low'); } }),
+                    h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-low' ? 'true' : 'false', d: activeSample.segs['very-low'], stroke: '#f97316', onClick: function () { selectConfidenceBand('very-low'); } }),
+                    h('path', { className: 'af-fold-spine', d: activeSample.path }),
+                    [[62,68,'#1d4ed8'],[134,86,'#0ea5e9'],[196,120,'#38bdf8'],[254,84,'#7dd3fc'],[322,68,'#facc15'],[378,118,'#fde047'],[448,96,'#fb923c'],[508,68,'#f97316']].map(function (node, i) {
+                      return h('circle', { key: i, className: 'af-residue-node', cx: node[0], cy: node[1], r: i === 3 ? 5 : 4, fill: node[2] });
+                    }),
+                    // Per-residue pLDDT sparkline profile bar at bottom
+                    h('line', { x1: 58, y1: 158, x2: 536, y2: 158, stroke: 'rgba(148,163,184,0.28)', strokeWidth: 1 }),
+                    h('text', { x: 24, y: 184, fill: '#94a3b8', fontSize: 9, fontWeight: 'bold' }, 'pLDDT'),
+                    activeSample.bars.map(function (score, idx) {
+                      var bx = 62 + idx * 26;
+                      var bh = Math.max(4, Math.round((score / 100) * 32));
+                      var bandMatch = (confidenceBand === 'all') ||
+                        (confidenceBand === 'very-high' && score >= 90) ||
+                        (confidenceBand === 'confident' && score >= 70 && score < 90) ||
+                        (confidenceBand === 'low' && score >= 50 && score < 70) ||
+                        (confidenceBand === 'very-low' && score < 50);
+                      return h('rect', {
+                        key: 'b-' + idx,
+                        x: bx, y: 196 - bh, width: 20, height: bh, rx: 2,
+                        fill: barColorForScore(score),
+                        opacity: bandMatch ? 0.92 : 0.2
+                      });
+                    }),
+                    h('text', { x: 62, y: 207, fill: '#94a3b8', fontSize: 8 }, 'Res 1'),
+                    h('text', { x: 528, y: 207, textAnchor: 'end', fill: '#94a3b8', fontSize: 8 }, activeSample.length)),
+                  h('div', { className: 'af-viz-foot' },
+                    h('span', { className: 'af-viz-summary' }, activeSample.foldNote),
+                    h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.confidence_preview_note', 'Illustrative model | confidence is not correctness'))))
+              : h('figure', { className: 'af-protein-viz', role: 'img', 'aria-label': t('stem.alphaFold.pae_preview_aria', 'Illustrative Predicted Aligned Error heatmap showing intra-domain low error in dark green along the diagonal and higher inter-domain error off-diagonal.') },
+                  h('div', { className: 'af-viz-head' },
+                    h('span', { className: 'af-viz-label', 'aria-hidden': 'true' }, t('stem.alphaFold.pae_preview_label', 'Predicted Aligned Error (PAE)')),
+                    h('span', { className: 'af-viz-acc' }, activeSample.name + ' \u00b7 ' + activeSample.accession)),
+                  h('svg', { viewBox: '0 0 560 210', 'aria-hidden': 'true', focusable: 'false' },
+                    // 8x8 PAE matrix on the left
+                    h('text', { x: 158, y: 20, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 'bold' }, 'Scored Residue'),
+                    h('text', { x: 30, y: 112, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 'bold', transform: 'rotate(-90 30 112)' }, 'Aligned Residue'),
+                    activeSample.paeBlocks.map(function (row, rIdx) {
+                      return row.map(function (lvl, cIdx) {
+                        var reg = paeRegionForLevel(lvl);
+                        var activeCell = paeRegion === reg;
+                        return h('rect', {
+                          key: rIdx + '-' + cIdx,
+                          className: 'af-pae-cell',
+                          x: 78 + cIdx * 20,
+                          y: 30 + rIdx * 20,
+                          width: 19,
+                          height: 19,
+                          rx: 2,
+                          fill: paeColorScale[lvl] || '#1e293b',
+                          stroke: activeCell ? '#f8fafc' : 'rgba(15,23,42,0.55)',
+                          strokeWidth: activeCell ? 1.4 : 0.7,
+                          onClick: function () { setPaeRegion(reg); }
+                        });
+                      });
+                    }),
+                    // Right side: PAE scale legend & domain guide
+                    h('text', { x: 268, y: 42, fill: '#f8fafc', fontSize: 12, fontWeight: 'bold' }, 'Expected position error (\u00c5)'),
+                    h('rect', { x: 268, y: 54, width: 22, height: 14, rx: 3, fill: '#059669' }),
+                    h('text', { x: 298, y: 65, fill: '#e2e8f0', fontSize: 10 }, '0\u20135 \u00c5  Tightly packed domain'),
+                    h('rect', { x: 268, y: 76, width: 22, height: 14, rx: 3, fill: '#34d399' }),
+                    h('text', { x: 298, y: 87, fill: '#e2e8f0', fontSize: 10 }, '6\u201312 \u00c5  Moderate local packing'),
+                    h('rect', { x: 268, y: 98, width: 22, height: 14, rx: 3, fill: '#a7f3d0' }),
+                    h('text', { x: 298, y: 109, fill: '#e2e8f0', fontSize: 10 }, '13\u201320 \u00c5  Flexible boundary'),
+                    h('rect', { x: 268, y: 120, width: 22, height: 14, rx: 3, fill: '#1e293b', stroke: '#64748b', strokeWidth: 1 }),
+                    h('text', { x: 298, y: 131, fill: '#e2e8f0', fontSize: 10 }, '>22 \u00c5  Uncertain relative position'),
+                    h('rect', { x: 268, y: 148, width: 266, height: 42, rx: 8, fill: 'rgba(15,118,110,0.22)', stroke: 'rgba(94,234,212,0.38)', strokeWidth: 1 }),
+                    h('text', { x: 280, y: 165, fill: '#99f6e4', fontSize: 10, fontWeight: 'bold' }, 'Click any matrix square to inspect:'),
+                    h('text', { x: 280, y: 181, fill: '#cbd5e1', fontSize: 9.5 }, 'Diagonal = within domain | Off-diagonal = between domains')),
+                  h('div', { className: 'af-viz-foot' },
+                    h('span', { className: 'af-viz-summary' }, PAE_EXPLANATIONS[paeRegion]),
+                    h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.pae_note', 'Low PAE = reliable relative domain geometry')))),
+
             h('aside', { className: 'af-confidence-key', 'aria-labelledby': 'af-confidence-heading' },
-              h('h3', { id: 'af-confidence-heading' }, t('stem.alphaFold.confidence_title', 'Read the confidence colors')),
-              h('p', null, t('stem.alphaFold.confidence_intro', 'pLDDT estimates local model confidence for each residue.')),
-              confidenceBands.map(function (band) { return h('button', { key: band.id, type: 'button', className: 'af-confidence-row', style: { '--af-confidence-color': band.color }, 'aria-pressed': confidenceBand === band.id ? 'true' : 'false', onClick: function () { selectConfidenceBand(band.id); } }, h('span', { className: 'af-confidence-dot', style: { color: band.color, backgroundColor: band.color }, 'aria-hidden': 'true' }), h('span', { className: 'af-confidence-range' }, band.range), h('span', { className: 'af-confidence-name' }, band.name)); }),
-              h('div', { className: 'af-confidence-reading', role: 'status', 'aria-live': 'polite' }, selectedBand ? selectedBand.detail : t('stem.alphaFold.confidence_overview_detail', 'Select a confidence band to isolate that part of the illustrative fold and learn how cautiously to interpret it.')),
-              h('div', { className: 'af-confidence-caution' }, t('stem.alphaFold.confidence_caution', 'High confidence supports the local fold. It does not prove function, binding, or biological relevance.')))),          h('div', { className: 'af-metrics', role: 'list', 'aria-label': t('stem.alphaFold.progress_label', 'AlphaFold investigation progress') },
+              h('div', null,
+                h('h3', { id: 'af-confidence-heading' }, t('stem.alphaFold.confidence_title', 'Read the confidence colors')),
+                h('p', null, t('stem.alphaFold.confidence_intro', 'pLDDT estimates local model confidence for each residue.')),
+                confidenceBands.map(function (band) {
+                  return h('button', {
+                    key: band.id, type: 'button', className: 'af-confidence-row',
+                    style: { '--af-confidence-color': band.color },
+                    'aria-pressed': confidenceBand === band.id ? 'true' : 'false',
+                    onClick: function () { setStageView('ribbon'); selectConfidenceBand(band.id); }
+                  },
+                    h('span', { className: 'af-confidence-dot', style: { color: band.color, backgroundColor: band.color }, 'aria-hidden': 'true' }),
+                    h('span', { className: 'af-confidence-range' }, band.range),
+                    h('span', { className: 'af-confidence-name' }, band.name),
+                    h('span', { className: 'af-confidence-pct' }, activeSample.pcts[band.id] || ''));
+                })),
+              h('div', null,
+                h('div', { className: 'af-confidence-reading', role: 'status', 'aria-live': 'polite' },
+                  stageView === 'pae'
+                    ? PAE_EXPLANATIONS[paeRegion]
+                    : (selectedBand ? selectedBand.detail : t('stem.alphaFold.confidence_overview_detail', 'Select a confidence band to isolate that part of the illustrative fold and learn how cautiously to interpret it.'))),
+                h('div', { className: 'af-confidence-caution' }, t('stem.alphaFold.confidence_caution', 'High confidence supports the local fold. It does not prove function, binding, or biological relevance.'))))),
+
+          h('div', { className: 'af-metrics', role: 'list', 'aria-label': t('stem.alphaFold.progress_label', 'AlphaFold investigation progress') },
             metric(t('stem.alphaFold.metric_launches', 'Explorer launches'), String(openedCount), t('stem.alphaFold.metric_launches_note', 'companion-window sessions')),
             metric(t('stem.alphaFold.metric_structures', 'Public structures'), String(lookupCount), t('stem.alphaFold.metric_structures_note', 'database lookups')),
             metric(t('stem.alphaFold.metric_prepared', 'Inputs prepared'), String(preparedCount), t('stem.alphaFold.metric_prepared_note', 'safe classroom samples')),
@@ -847,10 +1185,15 @@
           h('div', { className: 'af-actions' },
             h('button', {
               type: 'button',
-              onClick: openExplorer,
+              onClick: function () { openExplorer(); },
               className: 'af-primary',
               'aria-label': t('stem.alphaFold.open_title', 'Open AlphaFold Explorer in a new window')
             }, prefillAccession ? t('stem.alphaFold.open_prefilled_prefix', 'Open') + ' ' + (prefillLabel || prefillAccession) + ' ' + t('stem.alphaFold.open_prefilled_suffix', 'in AlphaFold Explorer') : (popupState === 'open' ? t('stem.alphaFold.refocus', 'Return to AlphaFold Explorer') : t('stem.alphaFold.open', 'Open AlphaFold Explorer'))),
+            !prefillAccession && h('button', {
+              type: 'button',
+              onClick: function () { openExplorer(activeSample.accession); },
+              className: 'af-sample-launch'
+            }, t('stem.alphaFold.launch_sample_prefix', 'Inspect') + ' ' + activeSample.name + ' (' + activeSample.accession + ') \u2192'),
             h('span', { className: 'af-action-note' },
               prefillAccession ? t('stem.alphaFold.handoff_ready_prefix', 'Cell Atlas handoff ready:') + ' ' + (prefillLabel || t('stem.alphaFold.public_protein', 'public protein')) + ' (' + prefillAccession + '). ' + t('stem.alphaFold.handoff_ready_suffix', 'The public accession will load automatically.') : t('stem.alphaFold.action_note', 'Opens a companion window. Keep AlloFlow open for progress and optional guidance.')))),
 
@@ -869,7 +1212,9 @@
             h('div', null,
               h('h3', { id: 'af-route-heading' }, t('stem.alphaFold.route_title', 'Your investigation route')),
               h('p', null, t('stem.alphaFold.route_subtitle', 'Move from model viewing to evidence-based explanation.'))),
-            h('span', { className: 'af-route-state' }, (openedCount > 0 ? 1 : 0) + (lookupCount > 0 ? 1 : 0) + (guidanceCount > 0 ? 1 : 0) + (packetRouteComplete ? 1 : 0) + ' / 4')),
+            h('span', { className: 'af-route-state' }, completedRouteSteps + ' / 4')),
+          h('div', { className: 'af-route-progress', 'aria-hidden': 'true' },
+            h('div', { className: 'af-route-progress-fill', style: { width: (completedRouteSteps * 25) + '%' } })),
           h('div', { className: 'af-route' },
             routeCard('01', t('stem.alphaFold.route_launch', 'Launch safely'), t('stem.alphaFold.route_launch_body', 'Use a public, synthetic, or teacher-approved sample—never personal genetic data.'), openedCount > 0, t('stem.alphaFold.route_launch_state', 'Start here')),
             routeCard('02', t('stem.alphaFold.route_inspect', 'Inspect the model'), t('stem.alphaFold.route_inspect_body', 'Compare folds, domains, surfaces, pLDDT confidence, and PAE uncertainty.'), lookupCount > 0, t('stem.alphaFold.route_inspect_state', 'Observe next')),

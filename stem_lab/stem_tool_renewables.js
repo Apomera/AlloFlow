@@ -3849,7 +3849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       parts.push('<h2>Comparison table</h2>');
       parts.push('<table><thead><tr>');
       ['Source', 'CF', 'LCOE $/MWh', 'Land', 'Water', 'CO₂ g/kWh', 'Dispatch'].forEach(function(c) {
-        parts.push('<th>' + esc(c) + '</th>');
+        parts.push('<th scope="col">' + esc(c) + '</th>');
       });
       parts.push('</tr></thead><tbody>');
       COMPARE_TABLE.forEach(function(r) {
@@ -3915,7 +3915,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     // NGSS alignment
     if (selected.ngss) {
       parts.push('<h2>NGSS alignment (lesson planning)</h2>');
-      parts.push('<table><thead><tr><th>Module</th><th>Standards</th></tr></thead><tbody>');
+      parts.push('<table><thead><tr><th scope="col">Module</th><th scope="col">Standards</th></tr></thead><tbody>');
       NGSS_ALIGNMENT.forEach(function(r) {
         parts.push('<tr><td>' + esc(r.source) + '</td><td>' + esc(r.standards) + '</td></tr>');
       });
@@ -7176,7 +7176,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       var file=event.target.files&&event.target.files[0];if(!file)return;var token=++generation.current;props.onPause();data[1](null);error[1]('');choice[1](0);filename[1](file.name);busy[1](true);event.target.value='';
       try{
         if(file.size>8*1024*1024)throw new Error('Choose a JSON export smaller than 8 MB.');
-        var text=await file.text();if(token!==generation.current)return;var payload;try{payload=JSON.parse(text);}catch(parseError){throw new Error('This file is not valid JSON.');}
+        var text=await file.text();if(token!==generation.current)return;var payload;try{payload=JSON.parse(text,function(k,v){return(k==='__proto__'||k==='constructor'||k==='prototype')?undefined:v;});}catch(parseError){throw new Error('This file is not valid JSON.');}
         var result=rnEnergyImportReadings(payload);if(token===generation.current)data[1](result);
       }catch(reason){if(token===generation.current)error[1](reason&&reason.message||'The file could not be read. Choose another JSON export.');}
       finally{if(token===generation.current)busy[1](false);}
@@ -12841,6 +12841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var html = buildPrintPackHtml(printSel);
           // Open in a new tab; if blocked (popup blocker), fall back to a data URL.
           var win = window.open('', '_blank');
+          try { if (win) win.opener = null; } catch (_) {}
           if (win && win.document) {
             win.document.open();
             win.document.write(html);
@@ -12850,9 +12851,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           } else {
             // Popup blocker fallback: copy to clipboard.
             try {
-              if (navigator.clipboard && navigator.clipboard.writeText) {
-                (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(html);
-                addToast('Pop-up blocked — HTML copied to clipboard. Paste into a doc + print.');
+              if ((window.StemLab && window.StemLab.writeClipboard) || (navigator.clipboard && navigator.clipboard.writeText)) {
+                Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(html)).then(function() {
+                  addToast('Pop-up blocked — HTML copied to clipboard. Paste into a doc + print.');
+                }, function() {
+                  addToast('Pop-up blocked. Allow pop-ups for this site to use Print Pack.');
+                });
               } else {
                 addToast('Pop-up blocked. Allow pop-ups for this site to use Print Pack.');
               }

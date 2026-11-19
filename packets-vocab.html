@@ -15,8 +15,10 @@
 <script src="packets-page.js" defer></script>
 <script src="word_sounds_take_home_loader.js" defer></script>
 <script src="packets_verify_core.js" defer></script>
+<script src="packets_reopen.js" defer></script>
 <script src="packets_zip.js" defer></script>
 <script src="packets_handoff.js" defer></script>
+<script src="packets_my_words.js" defer></script>
 <script src="packets_vocab_bank_en.js" defer></script>
 <script src="word_sounds_symbols_en.js" defer></script>
 <script src="word_picture_matcher.js" defer></script>
@@ -50,7 +52,7 @@
       <li>A word that is not in the word list can be looked up online, but not on this page: Look it up online opens a page of its own, which asks before it sends that one word to a free online dictionary.</li>
       <li>There are no cookies and nothing to sign in to.</li>
       <li>Like any website, the server that sends these files can see that your browser asked for them. That includes which of the small recording files were asked for, but not which words. It receives nothing else.</li>
-      <li>On this device the page keeps your last choices and your changes to the questions. The buttons that remove them are under About this page, at the bottom.</li>
+      <li>On this device the page keeps your last choices and your changes to the questions. Pictures you add are resized on this device and kept in the browser's shared My words database on this device (never uploaded). The buttons that remove your choices and question edits are under About this page, at the bottom.</li>
     </ul>
     <p id="can-title">A file made here can:</p>
     <ul aria-labelledby="can-title">
@@ -86,6 +88,7 @@
       <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
         <p id="reopen-line" class="reopen-line"></p>
         <ul id="reopen-list"></ul>
+        <p class="row"><a id="reopen-page" class="btn btn-small" href="packets.html" hidden>Open that page</a></p>
       </div>
     </div>
 
@@ -133,6 +136,7 @@
     <section id="step-2" class="sheet" aria-labelledby="step-2-title" hidden>
       <p class="kicker">Step 2 of 3</p>
       <h2 id="step-2-title" tabindex="-1">Check the questions</h2>
+      <p id="rehearse-note" class="note" role="status" hidden></p>
       <p class="sheet-intro">Each word has its right answer and 3 wrong answers. They are used as they are unless you change them. Change a meaning when your unit means another one, and swap a wrong answer that could also be right.</p>
       <p class="hint" id="legend"><span class="v-mark">AI-checked</span> This meaning was checked with AI help when the word list was prepared, not by a person. <span class="v-mark v-mark-not">not checked</span> No one has checked this meaning. Read these first.</p>
       <p id="rows-line" class="result-line" role="status"></p>
@@ -175,7 +179,7 @@
 
       <div class="actions actions-file">
         <button type="button" class="btn" id="back-3">Back</button>
-        <a class="btn" id="open-present-export" href="packets-present-export.html#from-vocab" target="_blank" rel="noopener">Present or print word cards <span class="sr-only">(opens in a new tab)</span></a>
+        <a class="btn" id="open-present-export" href="packets-present-export.html#from-vocab" target="_blank" rel="noopener">Present &amp; print word cards <span class="sr-only">(opens in a new tab)</span></a>
         <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
       </div>
@@ -189,10 +193,6 @@
         </ol>
         <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
         <p id="after-code" hidden>The answers screen inside the file opens with your teacher code. This page has not kept the code.</p>
-        <details class="why" id="learner-tip">
-          <summary>Fill in a student's code name for them</summary>
-          <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
-        </details>
       </div>
 
       <fieldset class="block">
@@ -207,8 +207,8 @@
           <span class="hint" id="diagrams-hint">Adds built-in diagrams for science, math, geography and reading words when the everyday picture set has none.</span>
         </div>
         <div class="block">
-          <p class="hint" id="custom-pic-hint">Add or replace a picture for any word in your list with an image from this device (PNG, JPEG or SVG, under 300 KB).</p>
-          <input type="file" id="f-custom-pic" accept="image/png,image/jpeg,image/svg+xml" hidden aria-label="Choose a picture from this device">
+          <p class="hint" id="custom-pic-hint">Add or replace a picture for any word in your list with an image from this device (PNG, JPEG, GIF, WebP or SVG — resized on this device). Pictures are shared with My words on this device.</p>
+          <input type="file" id="f-custom-pic" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" hidden aria-label="Choose a picture from this device">
           <p id="custom-pic-said" class="hint" role="status"></p>
           <div id="custom-pic-rows" class="v-rows"></div>
         </div>
@@ -247,20 +247,12 @@
           <span class="hint" id="code-why">Without a code, the screen at the end shows only the score. With a code, it also shows each answer. It is a lock on the screen, not secret writing.</span>
           <span class="hint" id="code-hint">4 or more characters. This page does not keep the code, so write it down.</span>
           <input type="password" id="f-code" maxlength="64" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="code-why code-hint code-line">
+          <div class="loosen">
+            <button type="button" class="btn btn-small" id="code-show" aria-pressed="false" aria-controls="f-code" aria-label="Show the teacher code">Show</button>
+          </div>
           <span class="hint" id="code-line" role="status"></span>
         </div>
       </div>
-
-
-      <details class="why code-box" id="code-name-box">
-        <summary>Put a student's code name in the file</summary>
-        <div class="field">
-          <label for="f-code-name">Student's code name</label>
-          <span class="hint" id="code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
-          <input type="text" id="f-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="code-name-hint code-name-said">
-          <span class="hint" id="code-name-said" role="status"></span>
-        </div>
-      </details>
 
       <details class="why code-box" id="more">
         <summary>More choices</summary>
@@ -285,20 +277,24 @@
       </div>
 
       <details class="batch" id="batch">
-        <summary>Make one for each student</summary>
+        <summary>Put student code names in the file</summary>
         <div class="batch-body">
-          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name. In Google Classroom, where one assignment gives every student the same file, the single file above is simpler: each student types a code name at the start.</p>
+          <p class="hint">Type 1 code name to put it into the file above, or 2 to 40 (one per line) to save one file per student in a .zip. In Google Classroom, where one assignment gives every student the same file, leave this empty and each student types a code name at the start.</p>
           <div class="field">
             <label for="f-batch-names">Code names, one on each line</label>
             <span class="hint" id="batch-names-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
-            <textarea id="f-batch-names" rows="6" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
+            <textarea id="f-batch-names" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
           </div>
+          <p class="row">
+            <button type="button" class="btn btn-small" id="batch-load">Load list from a .txt file</button>
+            <input type="file" id="batch-file" accept=".txt,text/plain" aria-label="A text file of code names" hidden>
+          </p>
           <p id="batch-said" class="result-sub" role="status"></p>
           <p class="row batch-row">
-            <button type="button" class="btn" id="batch-make">Make the files</button>
-            <button type="button" class="btn" id="batch-save" hidden>Save the .zip file</button>
+            <button type="button" class="btn" id="batch-make" hidden>Save .zip</button>
           </p>
           <p id="batch-problem" class="actions-note" role="alert"></p>
+          <p class="hint" id="learner-tip-line">Sharing by web link instead? Add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
         </div>
       </details>
     </section>
@@ -317,7 +313,7 @@
         <h2 id="sources-title">Where the meanings come from</h2>
         <ul id="sources">
           <li>The meanings come from open dictionaries. They were shortened and cleaned up by a program when the word list was prepared, ahead of time. A file names its sources and their licenses under About this file.</li>
-          <li>Some meanings were checked and corrected with AI help when the word list was prepared, not by a person. They show the word checked. Read the others first, and read every question before you give the file to students.</li>
+          <li>Some meanings were checked and corrected with AI help when the word list was prepared, not by a person. They show AI-checked. Read the others first, and read every question before you give the file to students.</li>
           <li>The recordings of words were made ahead of time with an AI voice (Kokoro). They come from the same store of recordings as Word Sounds practice.</li>
           <li>The wrong answers are meanings of other words: related words from the word list, or the other words of your list. Fill the blank uses only words from your list, because related words often fit the sentence too.</li>
         </ul>

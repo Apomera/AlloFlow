@@ -3043,7 +3043,7 @@ var wsActivityExampleText = function (id) {
         const aiAvailable = typeof window !== 'undefined' && typeof window.callGeminiAudio === 'function'
             && (typeof window.__alloAiUsable === 'function'
                 ? !!window.__alloAiUsable('audio', window.callGeminiAudio)
-                : (!window.callGeminiAudio._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled));
+                : (!window.callGeminiAudio._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked));
         const allKeys = Object.keys(PHONEME_PACK_GROUPS).reduce((acc, g) => acc.concat(PHONEME_PACK_GROUPS[g]), []);
         const recordedCount = allKeys.filter((k) => clips[k]).length;
         const setKind = (k) => setPack((prev) => Object.assign({}, prev, { kind: k }));
@@ -3286,15 +3286,20 @@ var wsActivityExampleText = function (id) {
         const importPack = (ev) => {
             const file = ev.target.files && ev.target.files[0];
             if (!file) return;
+            if (typeof file.size === 'number' && file.size > 25 * 1024 * 1024) {
+                setStatus(T('word_sounds.voice_pack_msg_read_fail', 'Could not read that file.'));
+                ev.target.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const data = JSON.parse(e.target.result);
+                    const data = JSON.parse(e.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
                     const incoming = (data && (data.phonemes || data.clips)) || null;
                     if (!incoming || typeof incoming !== 'object') { setStatus(T('word_sounds.voice_pack_msg_not_pack', 'That file is not a phoneme pack.')); return; }
-                    // Keep only string clip values (audio data URIs) — guard against a
-                    // tampered/corrupt file injecting objects or non-string junk.
-                    const sanitizeClips = (o) => { const out = {}; if (o && typeof o === 'object') Object.keys(o).forEach((k) => { if (typeof o[k] === 'string' && o[k]) out[k] = o[k]; }); return out; };
+                    // Keep only string clip values (audio data URIs) - guard against a
+                    // tampered/corrupt file injecting objects, prototype keys, or non-string junk.
+                    const sanitizeClips = (o) => { const out = Object.create(null); if (o && typeof o === 'object') Object.keys(o).forEach((k) => { if (k === '__proto__' || k === 'constructor' || k === 'prototype') return; if (typeof o[k] === 'string' && o[k]) out[k] = o[k]; }); return Object.assign({}, out); };
                     const safeClips = sanitizeClips(incoming);
                     const safeInstr = sanitizeClips(data && data.instr);
                     const id = genPhonemePackId();
@@ -3746,7 +3751,7 @@ var wsActivityExampleText = function (id) {
         let text = {};
         const _packTextUsable = aiUsable && ((typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function')
             ? window.__alloAiUsable('text', callGemini)
-            : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true)));
+            : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true))));
         if ((needs.sentence || needs.story) && _packTextUsable) {
             const safeWord = String(word || '').replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '');
             const safeGrade = String(gradeLevel || 'Early Readers (K-2)').replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '');
@@ -3773,7 +3778,7 @@ var wsActivityExampleText = function (id) {
         let image = null;
         const _packImagenUsable = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function')
             ? window.__alloAiUsable('images', callImagen)
-            : (typeof callImagen === 'function' && !callImagen._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true));
+            : (typeof callImagen === 'function' && !callImagen._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
         if (_packImagenUsable && wantPicture) {
             try {
                 const safeWordImg = String(word || '').replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '');
@@ -5138,7 +5143,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const generate = async () => {
             const _topicAiUsable = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function')
                 ? window.__alloAiUsable('text', callGemini)
-                : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true));
+                : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
             if (!enabled || !_topicAiUsable || !topic.trim() || !mounted.current || pending.current) return;
             const operation = { controller: new AbortController(), contextKey };
             pending.current = operation;
@@ -5537,7 +5542,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const [syllableRange, setSyllableRange] = useSetupState('syllableRange', () => ({ min: 1, max: 4 }));
         const [aiTopic, setAiTopic] = useSetupState('aiTopic', () => '');
         const goalAiUsable = !!isTeacherMode && !isProbeMode && sessionType !== 'assessment' && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
-            ? !!window.__alloAiUsable('text', callGemini) : typeof callGemini === 'function');
+            ? !!window.__alloAiUsable('text', callGemini) : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true))));
         const [goalText, setGoalText] = useSetupState('goalText', () => '');
         const planner = useWordSoundsPlanner({ store: setupDraft, enabled: goalAiUsable, language: wordSoundsLanguage, gradeLevel, callGemini, warnLog });
         const [goalApplied, setGoalApplied] = React.useState('');
@@ -6027,7 +6032,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         // ---- The plan on screen ----
         // Starting points are data in the core. Until the teacher chooses, the plan is the one
         // suggested for the selected words; nothing is written to the draft for a suggestion.
-        const planAiHere = (kind, fn) => typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable(kind, fn) : typeof fn === 'function';
+        const planAiHere = (kind, fn) => typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
+            ? !!window.__alloAiUsable(kind, fn)
+            : (typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
         const planEnv = {
             language: wordSoundsLanguage,
             pictures: planAiHere('images', callImagen) || preloadedWords.some(item => item && item.image),
@@ -6196,14 +6203,14 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             && (!!preparedSessionConfig.fixedForm || (Array.isArray(preparedSessionConfig.itemIds) && preparedSessionConfig.itemIds.length > 0)
                 || preloadedWords.some(item => item && (item.itemId != null || item.probeItemId != null)));
         const aiSyllableUsable = !!isTeacherMode && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
-            ? !!window.__alloAiUsable('text', callGemini) : typeof callGemini === 'function');
+            ? !!window.__alloAiUsable('text', callGemini) : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true))));
         const aiSyllableWanted = aiSyllableUsable && syllableDictionaryState !== 'loading'
             ? unreviewedSyllableCountWords.filter(word => { const r = syllableCountFor(word); return !r.counts.length && !r.suggestedCount; }) : [];
         const aiSyllableWantedKey = aiSyllableWanted.join('\n');
         React.useEffect(() => {
             const prefix = WS_CORE.packAudioLanguageKey(wordSoundsLanguage) + '|';
             const ask = aiSyllableWanted.filter(word => !aiSyllableAsked.current.has(prefix + WS_CORE.packAudioKey(word))).slice(0, 40);
-            const syllableAiAllowed = Boolean(aiSyllableUsable) && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? window.__alloAiUsable('text', callGemini) : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && (typeof window === 'undefined' || (!window.__alloStudentAiDisabled && !window._alloQrBlocked))));
+            const syllableAiAllowed = Boolean(aiSyllableUsable) && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? window.__alloAiUsable('text', callGemini) : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && (typeof window === 'undefined' || (!window.__alloStudentAiDisabled && !window._alloQrBlocked && !window.__alloAiSecretsLocked))));
             if (!ask.length || !syllableAiAllowed) return;
             const controller = new AbortController();
             const forget = () => ask.forEach(word => aiSyllableAsked.current.delete(prefix + WS_CORE.packAudioKey(word)));
@@ -7018,7 +7025,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                      const prompt = packIsEnglish ? _procPrompt_english : _procPrompt_nonEnglish;
                      const _hsGeminiUsable = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function')
                          ? window.__alloAiUsable('text', callGemini)
-                         : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true));
+                         : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
                      const result = _hsGeminiUsable
                          ? await awaitGeneration(callGemini(prompt + "\nRHYME CHOICES: Create a distinct distractor set for this target word; do not reuse the example distractors. Use familiar words of similar syllable count and difficulty, with a mix of similar beginning sounds and different vowel/end sounds. Every distractor must be a genuine non-rhyme of both the target and rhymeWord, including alternate spellings. Preserve one correct rhyme only.", true, false, null, null, signal))
                          : null;
@@ -7027,7 +7034,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                      let imageUrl = null;
                      const _hsImagenUsable = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function')
                          ? window.__alloAiUsable('images', callImagen)
-                         : (typeof callImagen === 'function' && !callImagen._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true));
+                         : (typeof callImagen === 'function' && !callImagen._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
                      if (_hsImagenUsable) {
                         try {
                             const safeImgTheme = String(effectiveImageTheme || '').replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '');
@@ -7237,7 +7244,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  ...(item.activityItems?.sentence_match?.sequence || []),
                  ...(item.activityItems?.sentence_match?.extras || []),
              ]).map(normalizePackKey).filter(Boolean))];
-             const _wsImagenOk = typeof callImagen === 'function' && !callImagen._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && (typeof window === 'undefined' || typeof window.__alloAiUsable !== 'function' || window.__alloAiUsable('images', callImagen));
+             const _wsImagenOk = typeof callImagen === 'function' && !callImagen._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) && (typeof window === 'undefined' || typeof window.__alloAiUsable !== 'function' || window.__alloAiUsable('images', callImagen));
              const stripImgTags = (v) => String(v || '').replace(/<\/?UNTRUSTED_[A-Z0-9_-]*>/gi, '');
              const safeImgTheme = stripImgTags(effectiveImageTheme);
              if (_wsImagenOk) {
@@ -7674,7 +7681,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              // older hosts while carrying assessment identity and visible setup
              // choices to current hosts.
              // Say what the run could not make, on this screen, for when the teacher comes back from Review.
-             const picturesWanted = !isAssessment && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('images', callImagen) : typeof callImagen === 'function');
+             const picturesWanted = !isAssessment && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('images', callImagen) : (typeof callImagen === 'function' && !callImagen._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true))));
              const runSummary = {
                  words: WS_CORE.lessonOwnItems(processed).length,
                  audioReady: WS_CORE.lessonOwnItems(processed).filter(item => wordsWithAudioPlan.has(item)).length,
@@ -7837,7 +7844,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             : teacherSpokenCountWords.length ? tf('word_sounds.start_teacher_led', 'Start teacher-led activity')
             : sessionType === 'assessment' ? tf('word_sounds.start', 'Start Activity') : tf('word_sounds.prepare_lesson_button', 'Prepare lesson');
         // AI the setup can use here. The planner card uses the same check for text.
-        const aiHere = (kind, fn) => typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable(kind, fn) : typeof fn === 'function';
+        const aiHere = (kind, fn) => typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
+            ? !!window.__alloAiUsable(kind, fn)
+            : (typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
         const textAiHere = aiHere('text', callGemini), imageAiHere = aiHere('images', callImagen);
         const isAssessmentSetup = sessionType === 'assessment';
         return (

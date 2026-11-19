@@ -4699,14 +4699,35 @@
         // ════════════════════════════════════════
         return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200' },
 
-          // ── Header ──
-          h('div', { className: 'flex items-center gap-3 mb-3 flex-wrap' },
+          // ── Header — Bespoke Chemistry Workbench Bar ──
+          h('div', {
+            className: 'flex items-center gap-3 mb-3 flex-wrap rounded-2xl border px-3.5 py-2.5 shadow-sm ' + (ctx.isContrast ? 'border-white' : 'border-lime-200 bg-white'),
+            style: ctx.isContrast ? { background: '#000000' } : undefined
+          },
             h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'min-h-[40px] min-w-[40px] transition-colors p-1.5 hover:bg-slate-100 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2', 'aria-label': __alloT('stem.chembalance.back_to_tools', 'Back to tools') },
               h(ArrowLeft, { size: 18, className: 'text-slate-600' })
             ),
-            h('h3', { className: 'text-lg font-bold text-slate-800' + (ctx.isContrast ? ' text-white' : '') }, __alloT('stem.chembalance.chemistry_lab', '\u2697\uFE0F Chemistry Lab')),
-            h('span', { className: 'px-2 py-0.5 bg-lime-100 text-lime-700 text-[0.6875rem] font-bold rounded-full' }, __alloT('stem.chembalance.chem_v3', 'CHEM v3')),
-            streak > 0 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full animate-in zoom-in' }, '\uD83D\uDD25 ' + streak),
+            React.createElement('svg', { viewBox: '0 0 64 64', width: 40, height: 40, 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0, borderRadius: 10 } },
+              React.createElement('rect', { x: 1, y: 1, width: 62, height: 62, rx: 12, fill: ctx.isContrast ? '#000000' : '#0f172a', stroke: ctx.isContrast ? '#fde047' : '#84cc16', strokeWidth: 2 }),
+              // Erlenmeyer flask silhouette
+              React.createElement('path', { d: 'M25 14 H39 M27 14 V25 L16 46 C14.5 49 16.5 52 20 52 H44 C47.5 52 49.5 49 48 46 L37 25 V14', fill: 'none', stroke: ctx.isContrast ? '#ffffff' : '#e2e8f0', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              // Liquid reaction fill
+              React.createElement('path', { d: 'M21 38 H43 L47 46 C48 48.5 46.5 50.5 44 50.5 H20 C17.5 50.5 16 48.5 17 46 Z', fill: ctx.isContrast ? '#fde047' : '#22c55e', opacity: ctx.isContrast ? 0.9 : 0.72 }),
+              // Molecular orbital bubbles rising
+              React.createElement('circle', { cx: 28, cy: 43, r: 2.6, fill: ctx.isContrast ? '#000000' : '#ecfccb' }),
+              React.createElement('circle', { cx: 36, cy: 45, r: 2, fill: ctx.isContrast ? '#000000' : '#38bdf8' }),
+              React.createElement('circle', { cx: 32, cy: 31, r: 2.4, fill: ctx.isContrast ? '#fde047' : '#38bdf8' }),
+              React.createElement('ellipse', { cx: 32, cy: 20, rx: 14, ry: 5, fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#38bdf8', strokeWidth: 1.2, opacity: 0.7 })
+            ),
+            h('div', { className: 'min-w-0' },
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('h3', { className: 'text-lg font-bold text-slate-800' + (ctx.isContrast ? ' text-white' : '') }, __alloT('stem.chembalance.chemistry_lab', '\u2697\uFE0F Chemistry Lab')),
+                h('span', { className: 'px-2 py-0.5 bg-lime-100 text-lime-800 text-[0.625rem] font-black uppercase tracking-wider rounded-full border border-lime-300' }, __alloT('stem.chembalance.subject_badge', 'Science · Chemistry')),
+                h('span', { className: 'px-2 py-0.5 bg-lime-100 text-lime-700 text-[0.6875rem] font-bold rounded-full' }, __alloT('stem.chembalance.chem_v3', 'CHEM v3')),
+                h('span', { className: 'px-2 py-0.5 bg-cyan-50 text-cyan-800 border border-cyan-200 text-[0.6875rem] font-bold rounded-full' }, ext.solvedPresetIds.length + ' ' + __alloT('stem.chembalance.header_solved', 'solved')),
+                streak > 0 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full animate-in zoom-in' }, '\uD83D\uDD25 ' + streak)
+              )
+            ),
             h('button', { type: 'button', onClick: function() { upd('_showBadges', !d._showBadges); }, 'aria-expanded': !!d._showBadges, 'aria-controls': 'chem-badges-panel',
               className: 'ml-auto min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2 ' + (d._showBadges ? 'bg-amber-100 text-amber-800 border-amber-700' : 'bg-slate-50 text-slate-700 border-slate-400')
             }, '\uD83C\uDFC5 ' + ext.badges.length + '/' + Object.keys(CHEM_BADGES).length),
@@ -5016,24 +5037,61 @@
                   h('div', {
                     role: 'img',
                     'aria-label': __alloT('stem.chembalance.reaction_bench_visual', 'Reaction bench showing reactants, a reaction arrow, and products'),
-                    className: 'rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white overflow-hidden'
+                    className: 'rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white overflow-hidden flex flex-col justify-between'
                   },
-                    h('div', { className: 'text-xs font-bold text-cyan-200 uppercase tracking-wide mb-3' }, __alloT('stem.chembalance.reaction_flow', 'Reaction flow')),
-                    h('div', { className: 'flex items-center justify-between gap-2' },
-                      h('div', { className: 'rounded-xl border border-cyan-300 bg-cyan-400/15 p-3 text-center flex-1' },
-                        h('div', { className: 'text-2xl font-black text-cyan-100' }, 'H2 + O2'),
-                        h('div', { className: 'text-xs text-cyan-200 mt-1' }, __alloT('stem.chembalance.reactants', 'Reactants'))
+                    h('div', null,
+                      h('div', { className: 'flex items-center justify-between gap-2 mb-3' },
+                        h('span', { className: 'text-xs font-bold text-cyan-200 uppercase tracking-wide' }, __alloT('stem.chembalance.reaction_flow', 'Reaction flow')),
+                        h('span', { className: 'text-[0.6875rem] font-bold text-lime-300' }, __alloT('stem.chembalance.atoms_conserved_tag', '4 H + 2 O conserved'))
                       ),
-                      h('div', { className: 'text-2xl font-black text-amber-200', 'aria-hidden': 'true' }, '\u2192'),
-                      h('div', { className: 'rounded-xl border border-emerald-300 bg-emerald-400/15 p-3 text-center flex-1' },
-                        h('div', { className: 'text-2xl font-black text-emerald-100' }, 'H2O'),
-                        h('div', { className: 'text-xs text-emerald-200 mt-1' }, __alloT('stem.chembalance.products', 'Products'))
+                      React.createElement('svg', { viewBox: '0 0 360 112', width: '100%', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', height: 'auto', marginBottom: 10 } },
+                        React.createElement('rect', { x: 2, y: 4, width: 150, height: 104, rx: 12, fill: 'rgba(34,211,238,0.1)', stroke: '#22d3ee', strokeWidth: 1.5 }),
+                        // 2 H2 molecules
+                        React.createElement('line', { x1: 28, y1: 36, x2: 50, y2: 36, stroke: '#94a3b8', strokeWidth: 3 }),
+                        React.createElement('circle', { cx: 28, cy: 36, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
+                        React.createElement('circle', { cx: 50, cy: 36, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
+                        React.createElement('text', { x: 28, y: 40, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
+                        React.createElement('text', { x: 50, y: 40, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
+                        React.createElement('line', { x1: 28, y1: 68, x2: 50, y2: 68, stroke: '#94a3b8', strokeWidth: 3 }),
+                        React.createElement('circle', { cx: 28, cy: 68, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
+                        React.createElement('circle', { cx: 50, cy: 68, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
+                        React.createElement('text', { x: 28, y: 72, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
+                        React.createElement('text', { x: 50, y: 72, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
+                        React.createElement('text', { x: 76, y: 57, textAnchor: 'middle', fill: '#cbd5e1', style: { fontSize: '15px', fontWeight: 900 } }, '+'),
+                        // 1 O2 molecule
+                        React.createElement('line', { x1: 102, y1: 49, x2: 128, y2: 49, stroke: '#cbd5e1', strokeWidth: 2 }),
+                        React.createElement('line', { x1: 102, y1: 55, x2: 128, y2: 55, stroke: '#cbd5e1', strokeWidth: 2 }),
+                        React.createElement('circle', { cx: 102, cy: 52, r: 12, fill: '#f87171', stroke: '#fee2e2', strokeWidth: 1.4 }),
+                        React.createElement('circle', { cx: 128, cy: 52, r: 12, fill: '#f87171', stroke: '#fee2e2', strokeWidth: 1.4 }),
+                        React.createElement('text', { x: 102, y: 56, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
+                        React.createElement('text', { x: 128, y: 56, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
+                        React.createElement('text', { x: 77, y: 98, textAnchor: 'middle', fill: '#bae6fd', style: { fontSize: '11px', fontWeight: 800 } }, '2 H\u2082 + O\u2082'),
+                        // Reaction Arrow
+                        React.createElement('path', { d: 'M160 54 H196 M189 47 L197 54 L189 61', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                        // Products box
+                        React.createElement('rect', { x: 206, y: 4, width: 152, height: 104, rx: 12, fill: 'rgba(52,211,153,0.1)', stroke: '#34d399', strokeWidth: 1.5 }),
+                        // 2 H2O molecules
+                        [246, 316].map(function (ox, wi) {
+                          return React.createElement('g', { key: 'h2o-' + wi },
+                            React.createElement('line', { x1: ox, y1: 42, x2: ox - 16, y2: 64, stroke: '#cbd5e1', strokeWidth: 2.5 }),
+                            React.createElement('line', { x1: ox, y1: 42, x2: ox + 16, y2: 64, stroke: '#cbd5e1', strokeWidth: 2.5 }),
+                            React.createElement('circle', { cx: ox, cy: 42, r: 12, fill: '#f87171', stroke: '#fee2e2', strokeWidth: 1.4 }),
+                            React.createElement('circle', { cx: ox - 16, cy: 64, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
+                            React.createElement('circle', { cx: ox + 16, cy: 64, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
+                            React.createElement('text', { x: ox, y: 46, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
+                            React.createElement('text', { x: ox - 16, y: 68, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
+                            React.createElement('text', { x: ox + 16, y: 68, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H')
+                          );
+                        }),
+                        React.createElement('text', { x: 282, y: 98, textAnchor: 'middle', fill: '#a7f3d0', style: { fontSize: '11px', fontWeight: 800 } }, '2 H\u2082O')
                       )
                     ),
-                    h('div', { className: 'mt-3 h-2 rounded-full bg-slate-800 overflow-hidden' },
-                      h('div', { className: 'h-full rounded-full', style: { width: '67%', background: 'linear-gradient(90deg, #22d3ee, #84cc16, #f59e0b)' } })
-                    ),
-                    h('div', { className: 'mt-2 text-xs text-slate-300' }, __alloT('stem.chembalance.bench_hint', 'Choose Core Labs to open the interactive balancer.'))
+                    h('div', null,
+                      h('div', { className: 'h-2 rounded-full bg-slate-800 overflow-hidden' },
+                        h('div', { className: 'h-full rounded-full', style: { width: '100%', background: 'linear-gradient(90deg, #22d3ee, #84cc16, #34d399)' } })
+                      ),
+                      h('div', { className: 'mt-2 text-xs text-slate-300' }, __alloT('stem.chembalance.bench_hint', 'Choose Core Labs to open the interactive balancer.'))
+                    )
                   )
                 )
               );
@@ -5071,16 +5129,16 @@
                 margin: '0 0 12px',
                 padding: '12px 14px',
                 borderRadius: 12,
-                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-                border: '1px solid ' + meta.accent + '55',
-                borderLeft: '4px solid ' + meta.accent,
+                background: ctx.isContrast ? '#000000' : (ctx.isDark ? 'rgba(15,23,42,0.88)' : ('linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)')),
+                border: '1px solid ' + (ctx.isContrast ? '#ffffff' : (ctx.isDark ? 'rgba(148,163,184,0.35)' : (meta.accent + '55'))),
+                borderLeft: '4px solid ' + (ctx.isContrast ? '#fde047' : (ctx.isDark ? '#a3e635' : meta.accent)),
                 display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
               }
             },
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('h3', { id: 'chem-workspace-title', tabIndex: -1, style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.3 }, className: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2' }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 13, lineHeight: 1.45 } }, meta.hint)
+                h('h3', { id: 'chem-workspace-title', tabIndex: -1, style: { color: ctx.isContrast ? '#fde047' : (ctx.isDark ? '#bef264' : meta.accent), fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.3 }, className: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2' }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: ctx.isContrast ? '#ffffff' : 'var(--allo-stem-text-soft, #475569)', fontSize: 13, lineHeight: 1.45 } }, meta.hint)
               )
             );
           })(),
@@ -5278,6 +5336,44 @@
                       ? __alloT('stem.chembalance.mass_conserved', '✓ Mass is conserved — every atom that goes in comes out (Lavoisier, 1789).')
                       : (__alloT('stem.chembalance.mass_not_conserved', 'Not balanced yet: as written, the equation would create or destroy') + ' ' + massDiff.toFixed(2) + ' g. ' + __alloT('stem.chembalance.mass_never_lost', 'Real reactions never create or destroy mass — fix the coefficients.')))
                 ),
+                // Live Per-Element Atom Balance Bar Comparison (Reactants vs Products)
+                (function () {
+                  var elems = Array.from(new Set(Object.keys(leftAtoms).concat(Object.keys(rightAtoms))));
+                  if (!elems.length) return null;
+                  var maxCnt = 1;
+                  elems.forEach(function (el) { maxCnt = Math.max(maxCnt, leftAtoms[el] || 0, rightAtoms[el] || 0); });
+                  var rowH = 26, topPad = 20, svgH = topPad + elems.length * rowH + 6, midX = 210, maxBar = 132;
+                  var barSummary = elems.map(function (el) {
+                    var lc = leftAtoms[el] || 0, rc = rightAtoms[el] || 0;
+                    return el + ': ' + lc + ' vs ' + rc + (lc === rc ? ' (matched)' : ' (unmatched)');
+                  }).join('; ');
+                  return h('div', { className: 'mt-2.5 pt-2.5 border-t border-slate-200' },
+                    React.createElement('svg', {
+                      viewBox: '0 0 420 ' + svgH, width: '100%', role: 'img',
+                      'aria-label': __alloT('stem.chembalance.element_bars_aria', 'Per-element atom balance comparison between reactants and products') + '. ' + barSummary,
+                      style: { display: 'block', width: '100%', maxWidth: '460px', height: 'auto', margin: '0 auto' }
+                    },
+                      React.createElement('text', { x: midX - 24, y: 13, textAnchor: 'end', fill: ctx.isContrast ? '#ffffff' : '#0369a1', style: { fontSize: '10.5px', fontWeight: 800 } }, __alloT('stem.chembalance.reactants', 'Reactants')),
+                      React.createElement('text', { x: midX + 24, y: 13, textAnchor: 'start', fill: ctx.isContrast ? '#fde047' : '#047857', style: { fontSize: '10.5px', fontWeight: 800 } }, __alloT('stem.chembalance.products', 'Products')),
+                      React.createElement('line', { x1: midX, y1: 16, x2: midX, y2: svgH - 4, stroke: ctx.isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 1.2, strokeDasharray: '3 3' }),
+                      elems.map(function (el, idx) {
+                        var lc = leftAtoms[el] || 0, rc = rightAtoms[el] || 0, eq = lc === rc;
+                        var y = topPad + idx * rowH;
+                        var lw = Math.max(4, (lc / maxCnt) * maxBar), rw = Math.max(4, (rc / maxCnt) * maxBar);
+                        var leftFill = ctx.isContrast ? '#ffffff' : (eq ? '#0284c7' : '#f59e0b');
+                        var rightFill = ctx.isContrast ? '#fde047' : (eq ? '#059669' : '#f59e0b');
+                        return React.createElement('g', { key: 'eb-' + el },
+                          React.createElement('rect', { x: midX - 22 - lw, y: y + 4, width: lw, height: 14, rx: 4, fill: leftFill }),
+                          React.createElement('text', { x: midX - 27 - lw, y: y + 15, textAnchor: 'end', fill: ctx.isContrast ? '#ffffff' : '#334155', style: { fontSize: '10.5px', fontWeight: 800 } }, String(lc)),
+                          React.createElement('rect', { x: midX - 18, y: y + 2, width: 36, height: 18, rx: 5, fill: eq ? (ctx.isContrast ? '#fde047' : '#dcfce7') : (ctx.isContrast ? '#000000' : '#fef3c7'), stroke: eq ? (ctx.isContrast ? '#ffffff' : '#16a34a') : (ctx.isContrast ? '#fde047' : '#d97706'), strokeWidth: 1.2 }),
+                          React.createElement('text', { x: midX, y: y + 15, textAnchor: 'middle', fill: eq ? (ctx.isContrast ? '#000000' : '#14532d') : (ctx.isContrast ? '#fde047' : '#92400e'), style: { fontSize: '10.5px', fontWeight: 900 } }, el),
+                          React.createElement('rect', { x: midX + 22, y: y + 4, width: rw, height: 14, rx: 4, fill: rightFill }),
+                          React.createElement('text', { x: midX + 27 + rw, y: y + 15, textAnchor: 'start', fill: ctx.isContrast ? '#ffffff' : '#334155', style: { fontSize: '10.5px', fontWeight: 800 } }, String(rc))
+                        );
+                      })
+                    )
+                  );
+                })(),
                 h('details', { className: 'mt-2 text-xs text-slate-700' },
                   h('summary', { className: 'cursor-pointer font-bold text-indigo-700' }, __alloT('stem.chembalance.subscript_why_summary', 'Why can’t I just change the small numbers?')),
                   h('p', { className: 'mt-1 leading-relaxed' }, __alloT('stem.chembalance.subscript_why_body', 'A subscript is part of what the substance IS: H₂O is water, H₂O₂ is hydrogen peroxide — a bleach. Change a subscript and you have changed the chemical, not balanced it. A coefficient only says how many copies of that molecule take part, so coefficients are the only numbers balancing is allowed to touch.'))

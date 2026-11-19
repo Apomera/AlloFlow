@@ -282,8 +282,24 @@ function csTextStats(text) {
 function csJoinBatch(rows, key) {
   return (Array.isArray(rows) ? rows : []).map((r) => `${r.codename}: ${r[key || "comment"]}`).join("\n\n");
 }
+function csSafeDriveUrl(url) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "https:") return "";
+    const host = parsed.hostname.toLowerCase();
+    if (host !== "docs.google.com" && host !== "drive.google.com") return "";
+    return parsed.href;
+  } catch (_) {
+    return "";
+  }
+}
 function csBatchTable(rows, language) {
-  const clean = (s) => String(s == null ? "" : s).replace(/[\t\r\n]+/g, " ").trim();
+  const clean = (s) => {
+    const t = String(s == null ? "" : s).replace(/[\t\r\n]+/g, " ").trim();
+    return /^[=+\-@|]/.test(t) ? "'" + t : t;
+  };
   const list = Array.isArray(rows) ? rows : [];
   if (!language) return ["Codename	Comment", ...list.map((r) => clean(r.codename) + "	" + clean(r.comment))].join("\n");
   return [`Codename	Comment	Comment (${language})`, ...list.map((r) => clean(r.codename) + "	" + clean(r.comment) + "	" + (csRowTranslation(r, language) ? clean(r.tr.text) : ""))].join("\n");
@@ -498,12 +514,13 @@ function csSummarizeDashboardStudent(student, commentTexts) {
   };
 }
 function csReadTeacherComments(rawJson) {
-  const out = {};
+  const out = /* @__PURE__ */ Object.create(null);
   try {
     const entries = JSON.parse(rawJson || "[]");
     (Array.isArray(entries) ? entries : []).forEach((entry) => {
       if (!Array.isArray(entry) || typeof entry[0] !== "string") return;
       const studentId = entry[0].split(":")[0];
+      if (!studentId || studentId === "__proto__" || studentId === "constructor" || studentId === "prototype") return;
       (Array.isArray(entry[1]) ? entry[1] : []).forEach((c) => {
         if (c && typeof c.text === "string" && c.text.trim()) (out[studentId] = out[studentId] || []).push(c.text.trim());
       });
@@ -603,7 +620,7 @@ function CommunicationsStudioPanel(props) {
   const [templateId, setTemplateId] = React.useState(CS_TEMPLATES[0].id);
   const [fields, setFields] = React.useState({});
   const [tone, setTone] = React.useState(CS_TONES.includes(prefs.tone) ? prefs.tone : CS_TONES[0]);
-  const [language, setLanguage] = React.useState(typeof prefs.language === "string" ? prefs.language : "");
+  const [language, setLanguage] = React.useState(typeof prefs.language === "string" && CS_LANGUAGES.includes(prefs.language) ? prefs.language : "");
   const [disclosure, setDisclosure] = React.useState(prefs.disclosure !== false);
   const [charLimit, setCharLimit] = React.useState(Number(prefs.charLimit) > 0 ? Math.floor(Number(prefs.charLimit)) : 0);
   const [busy, setBusy] = React.useState("");
@@ -1075,7 +1092,7 @@ ${out.text}`);
       const name = `${template.label} ${csLocalDate()}.html`;
       const out = outgoingTranslation();
       const reply = await dd.deliverCall(config, { a: "deliver", name, mime: "text/html", text: csDraftToHtml(template.label, draft, out ? out.text : "", { language: out ? out.language : "", disclosure }), convert: "doc" });
-      setDriveLink(reply.url || "");
+      setDriveLink(csSafeDriveUrl(reply && reply.url));
       markExported();
       toast(tr("comms.sent_to_drive", "Sent to your Drive as a Google Doc."), "success");
     } catch (error) {

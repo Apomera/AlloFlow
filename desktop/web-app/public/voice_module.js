@@ -288,7 +288,7 @@
     }
     // Older hosts do not expose readiness separately. Preserve compatibility:
     // the bridge itself remains the best available capability signal there.
-    var bridged = typeof opts.callGeminiAudio === 'function' && !opts.callGeminiAudio._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    var bridged = typeof opts.callGeminiAudio === 'function' && !opts.callGeminiAudio._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
     return { available: bridged, reason: bridged ? 'bridge-only' : 'missing-audio-bridge' };
   }
 
@@ -974,7 +974,7 @@
   function _voiceAiUsable(kind, fn) {
     if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
     if (typeof window !== 'undefined') {
-      if (window.__alloStudentAiDisabled === true) return false;
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
       if (typeof window.__alloAiUsable === 'function') {
         try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
       }
@@ -1000,12 +1000,19 @@
       return context.decodeAudioData(encoded).then(function (decoded) {
         try { context.close(); } catch (_) {}
         return downsamplePcm(decoded.getChannelData(0), decoded.sampleRate, 16000);
+      }, function (err) {
+        try { context.close(); } catch (_) {}
+        throw err;
       });
     });
   }
 
   function createWhisperWorkerPipeline(modelId, onProgress) {
     return new Promise(function (resolve, reject) {
+      if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+        reject(new Error('Remote transformers.js CDN is disabled in Desktop mode'));
+        return;
+      }
       if (typeof Worker !== 'function' || typeof Blob !== 'function' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
         reject(new Error('Background workers are unavailable.'));
         return;
@@ -1061,6 +1068,11 @@
         var error = new Error((event && event.message) || 'The background worker failed.');
         if (!booted) { closeWorker(); reject(error); return; }
         failAll(error);
+        try { worker.terminate(); } catch (_) {}
+        try { URL.revokeObjectURL(scriptUrl); } catch (_) {}
+        if (typeof whisperPipeline !== 'undefined' && whisperPipeline && whisperPipeline.dispose === closeWorker) {
+          whisperPipeline = null;
+        }
       };
       worker.onmessage = function (event) {
         var m = event.data;
@@ -1092,6 +1104,9 @@
   function loadWhisperModel(tier, opts) {
     tier = tier || 'tiny';
     opts = opts || {};
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      return Promise.reject(new Error('Remote transformers.js CDN is disabled in Desktop mode'));
+    }
     if (isIosCanvasVoiceSurface()) {
       var iosCanvasError = new Error('On-device Whisper is paused inside Gemini Canvas on iPhone or iPad to prevent the Canvas from restarting.');
       iosCanvasError.name = 'NotSupportedError';

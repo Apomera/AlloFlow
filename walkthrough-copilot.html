@@ -152,16 +152,21 @@
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .note { font-size: .84rem; color: var(--muted); }
     footer { margin: 2rem 0 0; padding-top: .9rem; border-top: 1px solid var(--rule); font-size: .8rem; color: var(--muted); }
+    .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 999; background: #1e293b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+    .skip-link:focus { left: 12px; outline: 3px solid #facc15; outline-offset: 2px; }
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to main content</a>
   <div class="wrap">
     <header>
       <h1>Walkthrough Copilot</h1>
       <p class="lede">Turn shorthand walkthrough notes into evidence-based coaching feedback you write and approve.</p>
     </header>
-    <div id="app"></div>
+    <main id="main" tabindex="-1">
+      <div id="app"></div>
+    </main>
     <p id="live" class="sr" role="status" aria-live="polite"></p>
     <footer id="foot"></footer>
   </div>

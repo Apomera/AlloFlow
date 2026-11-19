@@ -1,0 +1,21 @@
+# BuildKit .dockerignore paired with docker/Dockerfile (context: repository root)
+# Prevents local secrets, keys, VCS metadata, and desktop build caches from entering the image build context.
+.git/
+.github/
+.env
+.env.*
+!.env.example
+desktop/web-app/.env
+desktop/web-app/.env.*
+!desktop/web-app/.env.example
+desktop/.local/
+desktop/app-build/
+desktop/web-app/build/
+desktop/web-app/node_modules/
+node_modules/
+*.pem
+*.key
+*.p12
+*.pfx
+.git-token*
+Claude Token*

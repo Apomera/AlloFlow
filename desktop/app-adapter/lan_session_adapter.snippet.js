@@ -90,7 +90,20 @@ async function _alloLanFetch(pathname, init) {
   const headers = Object.assign({}, (init && init.headers) || {});
   if (cfg.token) headers.Authorization = 'Bearer ' + cfg.token;
   if (init && init.body) headers['Content-Type'] = 'application/json';
-  return fetch(cfg.base + pathname, Object.assign({}, init, { headers }));
+  const callerSignal = init && init.signal;
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const cancel = controller ? () => controller.abort() : null;
+  if (controller && callerSignal) {
+    if (callerSignal.aborted) controller.abort();
+    else callerSignal.addEventListener('abort', cancel, { once: true });
+  }
+  const timeout = controller ? setTimeout(cancel, 20000) : null;
+  try {
+    return await fetch(cfg.base + pathname, Object.assign({}, init, { headers }, controller ? { signal: controller.signal } : {}));
+  } finally {
+    if (timeout !== null) clearTimeout(timeout);
+    if (callerSignal && cancel) { try { callerSignal.removeEventListener('abort', cancel); } catch (_) {} }
+  }
 }
 async function _alloLanOrganizerRequest(code, method = 'GET', body = null, signal) {
   const cfg = _alloLanConfig();

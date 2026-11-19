@@ -84,6 +84,46 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Number Line Studio workbench polish, 44px preset chips & Light/Dark/Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-numberline-workbench-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-numberline-workbench-css';
+    st.textContent = [
+      '.nl-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:12px 15px;border:1px solid rgba(56,189,248,.42);background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 56%,#0f766e 100%);box-shadow:0 14px 30px rgba(15,23,42,.22);color:#ffffff}',
+      '.nl-hero-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}',
+      '.nl-hero-id{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 220px}',
+      '.nl-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(125,211,252,.18);border:1px solid rgba(186,230,253,.45);color:#e0f2fe}',
+      '.nl-hero-pills{display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+      '.nl-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(15,23,42,.56);border:1px solid rgba(147,197,253,.42);color:#e0f2fe}',
+      '.nl-telemetry-pill strong{color:#fde68a;font-weight:900}',
+      '.nl-preset-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe}',
+      '.nl-preset-chip{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#ffffff;border:1px solid #3b82f6;color:#1d4ed8;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
+      '.nl-preset-chip:hover{background:#dbeafe;border-color:#1d4ed8;color:#1e3a8a}',
+      '.nl-preset-chip[aria-pressed="true"]{background:#1d4ed8;border-color:#1e3a8a;color:#ffffff}',
+      '.nl-stage-card{box-shadow:0 10px 24px rgba(30,58,138,.09);border-radius:16px}',
+      '.nl-stage-telemetry{width:100%;margin-top:8px;padding:8px 10px;border-radius:10px;background:#f8fafc;border:1px solid #cbd5e1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#334155}',
+      '.nl-stage-telemetry strong{color:#0f172a;font-weight:900}',
+      '.theme-dark .allo-fd-bg,.theme-dark .allo-nl-bg-explore,.theme-dark .allo-nl-bg-challenges,.theme-dark .allo-nl-bg-skipcount{background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%)!important}',
+      '.theme-dark .nl-preset-bar{background:rgba(15,23,42,.82);border-color:rgba(96,165,250,.45)}',
+      '.theme-dark .nl-preset-chip{background:#1e293b;border-color:rgba(96,165,250,.55);color:#bfdbfe}',
+      '.theme-dark .nl-preset-chip:hover{background:#1e3a8a;border-color:#93c5fd;color:#ffffff}',
+      '.theme-dark .nl-preset-chip[aria-pressed="true"]{background:#2563eb;border-color:#bfdbfe;color:#ffffff}',
+      '.theme-dark .nl-stage-telemetry{background:#0f172a;border-color:#334155;color:#cbd5e1}',
+      '.theme-dark .nl-stage-telemetry strong{color:#f8fafc}',
+      '[data-numberline-root] button:focus-visible,[data-numberline-root] input:focus-visible,[data-numberline-root] select:focus-visible{outline:3px solid #2563eb;outline-offset:2px}',
+      '.theme-contrast .nl-hero-deck{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .nl-hero-badge,.theme-contrast .nl-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .nl-telemetry-pill strong{color:#00ff00!important}',
+      '.theme-contrast .nl-preset-bar,.theme-contrast .nl-stage-telemetry{background:#000000!important;border:2px solid #ffffff!important;color:#ffffff!important}',
+      '.theme-contrast .nl-stage-telemetry strong{color:#ffff00!important}',
+      '.theme-contrast .nl-preset-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .nl-preset-chip[aria-pressed="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast [data-numberline-root] button:focus-visible,.theme-contrast [data-numberline-root] input:focus-visible,.theme-contrast [data-numberline-root] select:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   // Quest-hook labels read the translator of the last render (labels are
   // getters, so a language change shows on the next read).
   var __nlLastT = null;
@@ -1519,13 +1559,16 @@ window.StemLab = window.StemLab || {
           var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
 
           // ── State via labToolData ──
-          var ld = ctx.toolData || {};
-          var _n = ld._numberline || {};
+          var ld = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+          var _rawNl = ld._numberline;
+          var _n = (_rawNl && typeof _rawNl === 'object' && !Array.isArray(_rawNl)) ? _rawNl : {};
           var upd = function(obj) {
             if (typeof ctx.setToolData === 'function') {
               ctx.setToolData(function(prev) {
-                var nl = Object.assign({}, (prev && prev._numberline) || {}, obj);
-                return Object.assign({}, prev, { _numberline: nl });
+                var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+                var prevNl = (basePrev._numberline && typeof basePrev._numberline === 'object' && !Array.isArray(basePrev._numberline)) ? basePrev._numberline : {};
+                var nl = Object.assign({}, prevNl, obj);
+                return Object.assign({}, basePrev, { _numberline: nl });
               });
             }
           };
@@ -1589,15 +1632,15 @@ window.StemLab = window.StemLab || {
               return current.min === nextMin && current.max === nextMax ? current : { min: nextMin, max: nextMax };
             });
           }, [range.min, range.max]);
-          var markers = _n.markers || [];
-          var challenge = _n.challenge || null;
-          var answer = _n.answer || '';
+          var markers = Array.isArray(_n.markers) ? _n.markers : [];
+          var challenge = (_n.challenge && typeof _n.challenge === 'object' && !Array.isArray(_n.challenge)) ? _n.challenge : null;
+          var answer = typeof _n.answer === 'string' ? _n.answer : '';
           var feedback = _n.feedback || null;
-          var difficulty = _n.difficulty || 'easy';
-          var score = _n.score || { correct: 0, total: 0 };
-          var streak = _n.streak || 0;
-          var bestStreak = _n.bestStreak || 0;
-          var badges = _n.badges || {};
+          var difficulty = typeof _n.difficulty === 'string' ? _n.difficulty : 'easy';
+          var score = (_n.score && typeof _n.score === 'object' && !Array.isArray(_n.score)) ? { correct: Number(_n.score.correct) || 0, total: Number(_n.score.total) || 0 } : { correct: 0, total: 0 };
+          var streak = Number(_n.streak) || 0;
+          var bestStreak = Number(_n.bestStreak) || 0;
+          var badges = (_n.badges && typeof _n.badges === 'object' && !Array.isArray(_n.badges)) ? _n.badges : {};
 
           // ── Colour palette for every SVG (light / dark via ctx.isDark). Each SVG
           // paints its own background so contrast never depends on the host card.
@@ -2232,7 +2275,7 @@ window.StemLab = window.StemLab || {
             var lineDesc = descParts.join(' ');
 
             // Explore probe: the existing slider pattern (tap, drag, arrows, Page, Home/End).
-            var svgProps = { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full', style: narrow ? {} : { minWidth: 600 }, role: 'img', 'aria-label': lineDesc };
+            var svgProps = { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full', style: { minWidth: 0, maxWidth: '100%' }, role: 'img', 'aria-label': lineDesc };
             var probeEl = null;
             if (probe) {
               var pSnap = tk.minor || tk.major || 1;
@@ -2507,9 +2550,9 @@ window.StemLab = window.StemLab || {
                 id: 'numberline-range-error', role: 'status', 'aria-live': 'polite',
                 className: 'text-xs font-bold text-red-700'
               }, rangeDraftMessage),
-              // Quick range presets
-              h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': t('stem.numberline.presets_group', 'Range presets') },
-                h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 self-center', 'aria-hidden': 'true' }, t('stem.numberline.presets', 'Presets:')),
+              // Quick range presets (44px touch targets, K-2 safe)
+              h('div', { className: 'nl-preset-bar', role: 'group', 'aria-label': t('stem.numberline.presets_group', 'Range presets') },
+                h('span', { className: 'text-xs font-extrabold text-blue-900 mr-1', 'aria-hidden': 'true' }, t('stem.numberline.presets', 'Presets:')),
                 (young ? [[0, 10], [0, 20]] : [[0, 1], [0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]]).map(function(pr) {
                   return h('button', { key: pr.join('-'), type: 'button',
                     'aria-pressed': range.min === pr[0] && range.max === pr[1],
@@ -2518,14 +2561,19 @@ window.StemLab = window.StemLab || {
                       setRangeDrafts({ min: String(pr[0]), max: String(pr[1]) });
                       upd({ range: { min: pr[0], max: pr[1] } });
                     },
-                    style: { minHeight: 32 },
-                    className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-blue-50 text-blue-700 border border-blue-600 hover:bg-blue-100 transition-all'
+                    className: 'nl-preset-chip'
                   }, NLE.fill(t('stem.numberline.preset_range', '{min} to {max}'), { min: pr[0], max: pr[1] }));
                 })
               ),
-              // Number line
-              h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-3 flex flex-col items-center' },
+              // Number line stage
+              h('div', { className: 'nl-stage-card bg-white rounded-xl border-2 border-blue-200 p-3 flex flex-col items-center' },
                 renderNumberLine(range, null, null, { value: exploreProbe, onSet: function(v, how) { upd({ exploreProbe: v }); if (how === 'pointer') sfxClick(); if (how === 'key') announceToSR(NLE.fill(t('stem.numberline.explore_slider_value', 'Marker at {v}'), { v: dispNum(v) })); } }),
+                h('div', { className: 'nl-stage-telemetry', 'aria-label': t('stem.numberline.stage_telemetry_aria', 'Number line scale summary') },
+                  h('span', null, t('stem.numberline.scale_span', 'Span:'), ' ', h('strong', null, dispNum(range.max - range.min))),
+                  h('span', null, t('stem.numberline.scale_mid', 'Midpoint:'), ' ', h('strong', null, dispNum((range.min + range.max) / 2))),
+                  h('span', null, t('stem.numberline.scale_markers', 'Markers:'), ' ', h('strong', null, String(markers.length))),
+                  exploreProbe != null && h('span', null, t('stem.numberline.scale_probe', 'Pointer:'), ' ', h('strong', null, dispNum(exploreProbe)))
+                ),
                 h('button', { type: 'button', disabled: exploreProbe == null, 'data-nl-probe-add': 'true',
                   onClick: function() {
                     if (exploreProbe == null) return;
@@ -5801,26 +5849,42 @@ window.StemLab = window.StemLab || {
           ];
 
           return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200', 'data-numberline-root': 'true' },
-            // Header
-            h('div', { className: 'flex items-center gap-3 mb-2' },
-              h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.numberline.back', 'Back'), style: { minWidth: 32, minHeight: 32 } },
-                h(ArrowLeft, { size: 18, className: 'text-slate-700' })),
-              h('h3', { className: 'text-lg font-bold text-blue-800' + (ctx.isContrast ? ' text-white' : '') }, t('stem.numberline.number_line', '📏 Number Line')),
-              h('div', { className: 'ml-auto flex items-center gap-3' },
-                streak > 0 && h('span', { className: 'text-xs font-bold text-orange-700' }, NLE.fill(t('stem.numberline.streak_n', 'Streak {n}'), { n: streak })),
-                bestStreak > 0 && h('span', { className: 'text-[0.6875rem] text-slate-700' }, NLE.fill(t('stem.numberline.best_n', 'Best: {n}'), { n: bestStreak })),
-                h('span', { className: 'text-xs font-bold text-blue-700', style: { color: ctx.isContrast ? '#ffff00' : undefined }, 'aria-label': NLE.fill(t('stem.numberline.score_label', 'Score: {c} correct out of {n} checks'), { c: score.correct, n: score.total }) }, score.correct + '/' + score.total),
-                h('button', { type: 'button',
-                  onClick: function() {
-                    var next = !muted;
-                    upd({ muted: next });
-                    if (!next) { setTimeout(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); }
-                    announceToSR(next ? t('stem.numberline.sound_muted', 'Sound muted') : t('stem.numberline.sound_on', 'Sound on'));
-                  },
-                  'aria-label': muted ? t('stem.numberline.unmute', 'Unmute sound effects') : t('stem.numberline.mute', 'Mute sound effects'),
-                  'aria-pressed': muted, style: { minWidth: 32, minHeight: 32 },
-                  className: 'p-1 rounded-md text-base hover:bg-slate-100 transition-colors ' + (muted ? 'text-slate-600' : 'text-blue-700')
-                }, h('span', { 'aria-hidden': 'true' }, muted ? '🔇' : '🔊'))
+            // Header — Bespoke Number Line Studio Hero Deck
+            h('div', { className: 'nl-hero-deck mb-2' },
+              h('div', { className: 'nl-hero-row' },
+                h('div', { className: 'nl-hero-id' },
+                  h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'p-2 rounded-lg transition-colors', 'aria-label': t('stem.numberline.back', 'Back'), style: { minWidth: 40, minHeight: 40, background: ctx.isContrast ? '#000000' : 'rgba(255,255,255,0.12)', border: ctx.isContrast ? '2px solid #00ff00' : '1px solid rgba(255,255,255,0.22)', color: '#ffffff' } },
+                    h(ArrowLeft, { size: 18 })),
+                  h('svg', { width: 42, height: 42, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+                    h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: ctx.isContrast ? '#000000' : '#0f172a', stroke: ctx.isContrast ? '#00ff00' : 'rgba(125,211,252,0.58)', strokeWidth: 1.8 }),
+                    h('line', { x1: 10, y1: 42, x2: 54, y2: 42, stroke: '#ffffff', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                    h('line', { x1: 16, y1: 36, x2: 16, y2: 48, stroke: '#93c5fd', strokeWidth: 2 }),
+                    h('line', { x1: 32, y1: 35, x2: 32, y2: 49, stroke: '#fde68a', strokeWidth: 2.2 }),
+                    h('line', { x1: 48, y1: 36, x2: 48, y2: 48, stroke: '#93c5fd', strokeWidth: 2 }),
+                    h('path', { d: 'M16 36 Q32 14 48 36', fill: 'none', stroke: ctx.isContrast ? '#00ff00' : '#34d399', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                    h('circle', { cx: 48, cy: 42, r: 4, fill: ctx.isContrast ? '#ffff00' : '#fbbf24' })
+                  ),
+                  h('div', { className: 'min-w-0' },
+                    h('span', { className: 'nl-hero-badge' }, t('stem.numberline.hero_badge', 'Number Sense · Magnitude & Jumps')),
+                    h('h3', { className: 'text-lg font-black mt-0.5 text-white' }, t('stem.numberline.number_line', '📏 Number Line'))
+                  )
+                ),
+                h('div', { className: 'nl-hero-pills' },
+                  streak > 0 && h('span', { className: 'nl-telemetry-pill' }, '🔥 ', h('strong', null, NLE.fill(t('stem.numberline.streak_n', 'Streak {n}'), { n: streak }))),
+                  bestStreak > 0 && h('span', { className: 'nl-telemetry-pill' }, NLE.fill(t('stem.numberline.best_n', 'Best: {n}'), { n: bestStreak })),
+                  h('span', { className: 'nl-telemetry-pill', 'aria-label': NLE.fill(t('stem.numberline.score_label', 'Score: {c} correct out of {n} checks'), { c: score.correct, n: score.total }) }, t('stem.numberline.pill_score', 'Score'), ' ', h('strong', null, score.correct + '/' + score.total)),
+                  h('button', { type: 'button',
+                    onClick: function() {
+                      var next = !muted;
+                      upd({ muted: next });
+                      if (!next) { setTimeout(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); }
+                      announceToSR(next ? t('stem.numberline.sound_muted', 'Sound muted') : t('stem.numberline.sound_on', 'Sound on'));
+                    },
+                    'aria-label': muted ? t('stem.numberline.unmute', 'Unmute sound effects') : t('stem.numberline.mute', 'Mute sound effects'),
+                    'aria-pressed': muted, style: { minWidth: 40, minHeight: 40, background: ctx.isContrast ? '#000000' : 'rgba(255,255,255,0.12)', border: ctx.isContrast ? '2px solid #ffff00' : '1px solid rgba(255,255,255,0.22)', color: '#ffffff' },
+                    className: 'p-1.5 rounded-lg text-base transition-colors'
+                  }, h('span', { 'aria-hidden': 'true' }, muted ? '🔇' : '🔊'))
+                )
               )
             ),
 

@@ -90,6 +90,10 @@
     return changed ? { ...item, data: { ...data, cards } } : item;
   }
 
+  function _fsSafeJsonReviver(key, val) {
+    return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : val;
+  }
+
   function stripMemoryAidPracticeEvidence(value, seen) {
     if (!value || typeof value !== 'object' || value instanceof Date) return value;
     const prototype = Object.getPrototypeOf(value);
@@ -99,6 +103,7 @@
     const cleaned = Array.isArray(value) ? [] : {};
     visited.set(value, cleaned);
     Object.entries(value).forEach(([key, nestedValue]) => {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
       if (PRIVATE_MEMORY_AID_EVIDENCE_KEYS.has(key)) return;
       cleaned[key] = stripMemoryAidPracticeEvidence(nestedValue, visited);
     });
@@ -127,6 +132,7 @@
     const cleaned = Array.isArray(value) ? [] : {};
     visited.set(value, cleaned);
     Object.entries(value).forEach(([key, nestedValue]) => {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
       cleaned[key] = sanitizeMemoryAidResourceForBoundary(nestedValue, visited);
     });
     return cleaned;
@@ -880,7 +886,7 @@
               const exactSnapshot = validReadingSnapshot(item);
               if (!exactSnapshot || exactSnapshot.text !== parsedData) {
                   try {
-                      const result = JSON.parse(parsedData);
+                      const result = JSON.parse(parsedData, _fsSafeJsonReviver);
                       const serializedText = item.dataEncoding === 'json-text/v1';
                       if (serializedText) {
                           if (typeof result === 'string') parsedData = result;
@@ -898,7 +904,7 @@
           let parsedGameData = item.gameData;
           if (typeof parsedGameData === 'string') {
               try {
-                  parsedGameData = JSON.parse(parsedGameData);
+                  parsedGameData = JSON.parse(parsedGameData, _fsSafeJsonReviver);
               } catch(e) {
                   if (typeof window.warnLog === 'function') {
                       window.warnLog('Caught error:', e?.message || e);

@@ -37,8 +37,11 @@ module.exports = {
     };
     ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'text-align:center', text: ctx.L.quantity_discrimination_question }));
     ctx.root.appendChild(ctx.el('ul', { class: 'pair' }, [make(item.left), make(item.right)]));
-    // Keys 1 and 2 pick the first and the second number.
+    // Keys 1 and 2 pick the first and the second number; Left/Right arrows move focus without submitting.
     ctx.keys(function (key) {
+      if (ctx.isDone()) return false;
+      if (key === 'ArrowLeft') { if (buttons[0]) buttons[0].focus(); return true; }
+      if (key === 'ArrowRight') { if (buttons[1]) buttons[1].focus(); return true; }
       if (key !== '1' && key !== '2') return false;
       ctx.answer(String(key === '1' ? item.left : item.right));
       return true;

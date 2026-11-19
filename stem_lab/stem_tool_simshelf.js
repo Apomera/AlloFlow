@@ -32,7 +32,7 @@
       var pathname = loc.pathname || '';
       var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
       var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
-      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      var isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled) return new URL(path, loc.href).toString();
       if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
     } catch (_) {}

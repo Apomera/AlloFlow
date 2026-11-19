@@ -95,6 +95,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       '@media (pointer:coarse){.se-shell button,.se-shell summary{min-width:44px}}',
       '@media (max-width:520px){.se-shell .se-destination-grid,.se-shell .se-two-column-grid,.se-shell .se-interior-choice-grid{grid-template-columns:minmax(0,1fr)!important}.se-shell .se-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.se-shell .se-toolbar{align-items:stretch;flex-direction:column}.se-shell .se-toolbar>*{width:100%}.se-shell .se-debrief-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}}',
       '@media (prefers-contrast:more){.se-shell [class*="border-"]{border-color:#94a3b8!important}.se-shell [class*="bg-white/5"]{background-color:#1e293b!important}.se-shell button:disabled{opacity:1!important}.se-shell .se-locked-badge{opacity:1!important}}',
+      '.se-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:16px 18px;border:1px solid rgba(167,139,250,.45);background:radial-gradient(ellipse 680px 260px at 85% 15%,rgba(56,189,248,.18),transparent 65%),linear-gradient(135deg,#090d1e 0%,#1e1b4b 55%,#172554 100%);box-shadow:0 16px 36px -14px rgba(15,23,42,.55),inset 0 1px 0 rgba(255,255,255,.10)}',
+      '.se-telemetry-pill{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:5px 10px;font-size:11px;font-weight:700;border:1px solid rgba(167,139,250,.32);background:rgba(15,23,42,.68);color:#e2e8f0}',
+      '.theme-contrast .se-hero-deck,.theme-contrast .se-orbit-card,.theme-contrast .se-orbit-map{background:#000000!important;background-image:none!important;border:2px solid #ffff00!important;box-shadow:none!important}',
+      '.theme-contrast .se-telemetry-pill{background:#000000!important;border-color:#ffff00!important;color:#ffff00!important}',
       '@media (forced-colors:active){.se-shell button,.se-shell summary,.se-shell textarea,.se-shell input,.se-shell select,.se-shell a[data-se-action]{border:1px solid ButtonText}.se-shell .se-choice-card{forced-color-adjust:auto}.se-shell [data-spaceexplorer-direct-route],.se-shell [data-spaceexplorer-staged-route-visual] polyline,.se-shell .se-motion-trace,.se-shell [data-spaceexplorer-compartment-restraint],.se-shell [data-spaceexplorer-compartment-hazard],.se-shell [data-spaceexplorer-work-anchor],.se-shell [data-spaceexplorer-work-rotation],.se-shell [data-spaceexplorer-work-tether],.se-shell [data-spaceexplorer-work-stabilization],.se-shell [data-spaceexplorer-work-loose-object]{stroke:CanvasText!important}.se-shell [data-spaceexplorer-compartment-visual] text{fill:CanvasText!important}.se-shell [data-spaceexplorer-compartment-visual]{forced-color-adjust:auto}.se-shell [data-spaceexplorer-compartment-visual]:focus{outline-color:Highlight!important}}'
     ].join('');
     document.head.appendChild(_seUx);
@@ -1926,44 +1930,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var setLabToolData = ctx.setToolData;
       var addToast = ctx.addToast;
       var callGemini = ctx.callGemini;
-      var t = ctx.t || function(k) { return k; };
+      var t = function(k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (typeof v === 'string' && v && v !== k) ? v : (fb != null ? fb : k); };
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
       var awardStemXP = ctx.awardXP || function() {};
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
-      var d = labToolData.spaceExplorer || {};
-      var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { spaceExplorer: Object.assign({}, prev.spaceExplorer || {}, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })() )) }); }); };
-      var updAll = function(patch) { setLabToolData(function(prev) { return Object.assign({}, prev, { spaceExplorer: Object.assign({}, prev.spaceExplorer || {}, patch) }); }); };
+      var rawD = labToolData.spaceExplorer;
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
+      var upd = function(key, val) { if (typeof setLabToolData !== 'function') return; setLabToolData(function(prev) { return Object.assign({}, prev, { spaceExplorer: Object.assign({}, prev.spaceExplorer || {}, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })() )) }); }); };
+      var updAll = function(patch) { if (typeof setLabToolData !== 'function') return; setLabToolData(function(prev) { return Object.assign({}, prev, { spaceExplorer: Object.assign({}, prev.spaceExplorer || {}, patch) }); }); };
 
       // ── Persistent progression ──
-      var completedMissions = d.completedMissions || 0;
+      var completedMissions = (typeof d.completedMissions === 'number' && isFinite(d.completedMissions) && d.completedMissions > 0) ? Math.floor(d.completedMissions) : 0;
       var unlockedTech = Array.isArray(d.unlockedTech) ? d.unlockedTech : [];
-      var totalScience = d.totalScience || 0;
-      var highestDifficulty = d.highestDifficulty || 0;
+      var totalScience = (typeof d.totalScience === 'number' && isFinite(d.totalScience) && d.totalScience > 0) ? Math.floor(d.totalScience) : 0;
+      var highestDifficulty = (typeof d.highestDifficulty === 'number' && isFinite(d.highestDifficulty)) ? d.highestDifficulty : 0;
 
       // ── Current mission state ──
-      var missionPhase = d.missionPhase || 'select'; // select | briefing | allocate | explore | event | outcome | debrief
-      var destination = d.destination ? DESTINATIONS.find(function(dd) { return dd.id === d.destination; }) : null;
-      var resources = d.resources || null;
+      var VALID_PHASES = ['select', 'techshop', 'briefing', 'allocate', 'explore', 'event', 'outcome', 'debrief', 'orbitHunt'];
+      var missionPhase = VALID_PHASES.indexOf(d.missionPhase) !== -1 ? d.missionPhase : 'select'; // select | briefing | allocate | explore | event | outcome | debrief | orbitHunt
+      var destination = (typeof d.destination === 'string') ? (DESTINATIONS.find(function(dd) { return dd.id === d.destination; }) || null) : null;
+      var resources = (d.resources && typeof d.resources === 'object' && !Array.isArray(d.resources)) ? d.resources : null;
       var crew = Array.isArray(d.crew) ? d.crew : [];
-      var turn = d.turn || 0;
+      var turn = (typeof d.turn === 'number' && isFinite(d.turn) && d.turn >= 0) ? Math.floor(d.turn) : 0;
       var maxTurns = destination ? Math.max(8, 5 + destination.difficulty * 3) : 10;
-      var missionLog = d.missionLog || [];
-      var activeEvent = d.activeEvent || null;
-      var eventOutcome = d.eventOutcome || null;
+      var missionLog = Array.isArray(d.missionLog) ? d.missionLog : [];
+      var activeEvent = (d.activeEvent && typeof d.activeEvent === 'object' && !Array.isArray(d.activeEvent)) ? d.activeEvent : null;
+      var eventOutcome = (d.eventOutcome && typeof d.eventOutcome === 'object' && !Array.isArray(d.eventOutcome)) ? d.eventOutcome : null;
       var decisionLog = Array.isArray(d.decisionLog) ? d.decisionLog : [];
-      var isGenerating = d.isGenerating || false;
+      var isGenerating = !!d.isGenerating;
       var powerAllocation = normalizeAllocation(d.powerAllocation, unlockedTech);
-      var consultUsed = d.consultUsed || false;
-      var revealedHiddenOption = d.revealedHiddenOption || false;
-      var minigamePending = d.minigamePending || null;
-      var minigameResult = d.minigameResult || null;
-      var missionDossier = d.missionDossier || (destination ? buildMissionDossier(destination, resources, crew, unlockedTech) : null);
-      var missionEvidence = d.missionEvidence || [];
-      var currentDecisionReason = d.currentDecisionReason || '';
+      var consultUsed = !!d.consultUsed;
+      var revealedHiddenOption = !!d.revealedHiddenOption;
+      var minigamePending = (d.minigamePending && typeof d.minigamePending === 'object' && !Array.isArray(d.minigamePending)) ? d.minigamePending : null;
+      var minigameResult = typeof d.minigameResult === 'string' ? d.minigameResult : null;
+      var missionDossier = (d.missionDossier && typeof d.missionDossier === 'object' && !Array.isArray(d.missionDossier)) ? d.missionDossier : (destination ? buildMissionDossier(destination, resources, crew, unlockedTech) : null);
+      var missionEvidence = Array.isArray(d.missionEvidence) ? d.missionEvidence : [];
+      var currentDecisionReason = typeof d.currentDecisionReason === 'string' ? d.currentDecisionReason : '';
       // Keep the bounded protocol log in the render model so forecast, objectives, and debrief stay in sync.
-      var protocolLog = d.protocolLog || [];
-      var missionIntent = d.missionIntent || '';
-      var missionReflection = d.missionReflection || '';
+      var protocolLog = Array.isArray(d.protocolLog) ? d.protocolLog : [];
+      var missionIntent = typeof d.missionIntent === 'string' ? d.missionIntent : '';
+      var missionReflection = typeof d.missionReflection === 'string' ? d.missionReflection : '';
       var missionIntentAssessment = missionDossier ? assessMissionIntent(missionIntent, missionEvidence, missionDossier) : null;
       var missionProtocolBase = missionDossier ? buildMissionProtocol(missionIntent, missionDossier, destination) : null;
       var protocolRevisionDraft = d.protocolRevisionDraft || '';
@@ -3621,17 +3628,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       // ── Destination Select ──
       if (missionPhase === 'select') {
         var badgeCount = Object.keys(earnedBadges).length;
+        var unlockedCount = DESTINATIONS.filter(function(dest) { return dest.unlockAt <= completedMissions; }).length;
+        var destStatsMap = (d.destStats && typeof d.destStats === 'object' && !Array.isArray(d.destStats)) ? d.destStats : {};
+        var orbitMapOrder = ['venus_cloud', 'moon_base', 'mars', 'asteroid', 'io', 'europa', 'enceladus', 'titan', 'proxima'];
         return h('div', { className: 'se-shell space-y-3', role: 'main', 'data-spaceexplorer-ux': 'mission-select', 'aria-label': t('stem.spaceexplorer.space_explorer_mission_select', 'Space Explorer mission select') },
-          h('div', { className: 'rounded-xl border border-purple-500 bg-gradient-to-r from-purple-900 to-indigo-900 p-4 text-center' },
-            h('h2', { className: 'text-lg font-black text-white flex items-center justify-center gap-2' }, t('stem.spaceexplorer.space_explorer', '\uD83C\uDF0C Space Explorer')),
-            h('p', { className: 'text-xs text-purple-100 mt-1' }, t('stem.spaceexplorer.roguelike_missions_across_the_solar_sy', 'Choose a destination, manage your ship, and use real science to bring the crew home.')),
-            completedMissions > 0 && h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-xs text-purple-100', role: 'list', 'aria-label': t('stem.spaceexplorer.mission_statistics', 'Mission statistics') },
-              h('span', { role: 'listitem' }, '\uD83D\uDE80 ' + completedMissions + ' missions'),
-              h('span', { role: 'listitem' }, '\uD83D\uDD2C ' + totalScience + ' science'),
-              h('span', { role: 'listitem' }, '\u26A1 ' + unlockedTech.length + ' tech'),
-              badgeCount > 0 && h('span', { role: 'listitem' }, '\uD83C\uDFC5 ' + badgeCount + '/' + BADGES.length + ' badges')
+          // Deep Space Observatory Hero Workbench Header
+          h('section', { className: 'se-hero-deck', 'data-spaceexplorer-hero': 'true' },
+            h('div', { className: 'flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between' },
+              h('div', { className: 'flex items-start gap-3 min-w-0' },
+                h('span', { className: 'shrink-0 inline-flex items-center justify-center rounded-2xl border border-purple-300/35 bg-white/10 p-1.5', 'aria-hidden': 'true' },
+                  h('svg', { viewBox: '0 0 44 44', width: 38, height: 38, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
+                    h('circle', { cx: 22, cy: 22, r: 20, fill: isContrast ? '#000000' : '#090d1e', stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 1.5 }),
+                    h('ellipse', { cx: 22, cy: 22, rx: 16, ry: 7, transform: 'rotate(-24 22 22)', fill: 'none', stroke: isContrast ? '#ffffff' : '#38bdf8', strokeWidth: 1.8 }),
+                    h('circle', { cx: 22, cy: 22, r: 7.5, fill: isContrast ? '#ffff00' : '#818cf8', stroke: isContrast ? '#000000' : '#e0e7ff', strokeWidth: 1.2 }),
+                    h('circle', { cx: 34, cy: 16, r: 2.6, fill: isContrast ? '#ffff00' : '#34d399' }),
+                    h('circle', { cx: 11, cy: 12, r: 1.2, fill: '#ffffff' }),
+                    h('circle', { cx: 32, cy: 33, r: 1.2, fill: '#fde047' })
+                  )
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
+                    h('span', { className: 'rounded-full px-2.5 py-0.5 text-[0.625rem] font-black uppercase tracking-[0.16em] ' + (isContrast ? 'bg-black text-yellow-300 border border-yellow-300' : 'bg-purple-400/20 text-purple-100 border border-purple-300/30') },
+                      t('stem.spaceexplorer.subject_badge', 'Science · Deep Space Mission Control'))
+                  ),
+                  h('h2', { className: 'text-lg sm:text-xl font-black text-white flex items-center gap-2 tracking-tight' }, t('stem.spaceexplorer.space_explorer', '\uD83C\uDF0C Space Explorer')),
+                  h('p', { className: 'text-xs text-purple-100 mt-1 max-w-2xl' }, t('stem.spaceexplorer.roguelike_missions_across_the_solar_sy', 'Choose a destination, manage your ship, and use real science to bring the crew home.'))
+                )
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2 lg:justify-end shrink-0', role: 'list', 'aria-label': t('stem.spaceexplorer.mission_statistics', 'Mission statistics') },
+                h('span', { role: 'listitem', className: 'se-telemetry-pill' }, '\uD83D\uDE80 ' + completedMissions + ' ' + t('stem.spaceexplorer.stat_missions', 'missions')),
+                h('span', { role: 'listitem', className: 'se-telemetry-pill' }, '\uD83D\uDD2C ' + totalScience + ' ' + t('stem.spaceexplorer.stat_science', 'science')),
+                h('span', { role: 'listitem', className: 'se-telemetry-pill' }, '\u26A1 ' + unlockedTech.length + '/' + TECH_TREE.length + ' ' + t('stem.spaceexplorer.stat_tech', 'tech')),
+                h('span', { role: 'listitem', className: 'se-telemetry-pill' }, '\uD83C\uDF0D ' + unlockedCount + '/' + DESTINATIONS.length + ' ' + t('stem.spaceexplorer.stat_worlds', 'worlds')),
+                badgeCount > 0 && h('span', { role: 'listitem', className: 'se-telemetry-pill' }, '\uD83C\uDFC5 ' + badgeCount + '/' + BADGES.length + ' ' + t('stem.spaceexplorer.stat_badges', 'badges')),
+                h('button', {
+                  type: 'button',
+                  onClick: function() { updAll({ missionPhase: 'orbitHunt' }); },
+                  className: 'rounded-xl border border-cyan-300/60 bg-cyan-950/80 px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-900 transition-colors'
+                }, t('stem.spaceexplorer.open_orbit_lab', '\uD83D\uDEF0\uFE0F Orbital Lab'))
+              )
             ),
-            badgeCount > 0 && h('div', { className: 'flex justify-center gap-2 mt-3 flex-wrap', role: 'list', 'aria-label': t('stem.spaceexplorer.earned_badges', 'Achievement badges') },
+            badgeCount > 0 && h('div', { className: 'flex items-center gap-2 mt-3 pt-2.5 border-t border-white/15 flex-wrap', role: 'list', 'aria-label': t('stem.spaceexplorer.earned_badges', 'Achievement badges') },
               BADGES.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('span', {
@@ -3640,6 +3677,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   'aria-label': b.name + (earned ? ', earned. ' : ', locked. ') + b.desc,
                   className: 'text-base ' + (earned ? '' : 'se-locked-badge')
                 }, b.icon);
+              })
+            )
+          ),
+          // Live Solar System & Exoplanet Telemetry Chart SVG
+          h('div', { className: 'se-orbit-map rounded-xl border border-slate-600 bg-slate-950/90 p-3' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1.5' },
+              h('span', { className: 'text-[0.6875rem] font-black uppercase tracking-wider text-cyan-200' }, t('stem.spaceexplorer.telemetry_chart_title', 'Solar System & Deep Space Flight Map')),
+              h('span', { className: 'text-[0.6875rem] text-slate-300' }, unlockedCount + ' ' + t('stem.spaceexplorer.unlocked_label', 'unlocked') + ' \u00B7 ' + Object.keys(destStatsMap).filter(function(k) { return destStatsMap[k] && destStatsMap[k].wins > 0; }).length + ' ' + t('stem.spaceexplorer.charted_label', 'charted'))
+            ),
+            h('svg', { viewBox: '0 0 640 108', 'aria-hidden': 'true', focusable: 'false', className: 'block w-full h-auto', style: { maxHeight: 112 } },
+              h('rect', { x: 0, y: 0, width: 640, height: 108, rx: 8, fill: isContrast ? '#000000' : '#020617' }),
+              h('circle', { cx: 28, cy: 54, r: 16, fill: isContrast ? '#ffff00' : '#fbbf24' }),
+              h('text', { x: 28, y: 88, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? '#ffff00' : '#fde68a' }, 'Sol'),
+              h('line', { x1: 52, y1: 54, x2: 614, y2: 54, stroke: isContrast ? '#ffffff' : '#334155', strokeWidth: 1.5, strokeDasharray: '4 4' }),
+              orbitMapOrder.map(function(oid, idx) {
+                var destObj = DESTINATIONS.find(function(x) { return x.id === oid; });
+                if (!destObj) return null;
+                var cx = 86 + idx * 64;
+                var lockedW = destObj.unlockAt > completedMissions;
+                var wonW = !!(destStatsMap[oid] && destStatsMap[oid].wins > 0);
+                var shortN = oid === 'venus_cloud' ? 'Venus' : oid === 'moon_base' ? 'Moon' : oid === 'asteroid' ? 'Psyche' : oid === 'proxima' ? 'Proxima' : oid === 'io' ? 'Io' : destObj.name;
+                return h('g', { key: oid },
+                  h('circle', { cx: cx, cy: 54, r: wonW ? 12 : 9, fill: isContrast ? '#000000' : (lockedW ? '#1e293b' : destObj.color), stroke: isContrast ? (lockedW ? '#ffffff' : '#ffff00') : (wonW ? '#4ade80' : lockedW ? '#475569' : '#f8fafc'), strokeWidth: wonW ? 2.5 : 1.5, strokeDasharray: lockedW ? '2 2' : undefined }),
+                  wonW && h('text', { x: cx, y: 58, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrast ? '#ffff00' : '#052e16' }, '\u2713'),
+                  h('text', { x: cx, y: 24, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? '#ffffff' : (lockedW ? '#64748b' : '#cbd5e1') }, destObj.gravity + 'g'),
+                  h('text', { x: cx, y: 88, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? (lockedW ? '#ffffff' : '#ffff00') : (lockedW ? '#64748b' : '#f8fafc') }, shortN)
+                );
               })
             )
           ),
@@ -5050,7 +5114,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
       // === H7b'' inquiry widget: orbital mechanics discovery ===
       if (missionPhase === 'orbitHunt') {
-        var iqOh = d.orbitHunt || { sma: 2, ecc: 0.1, drag: 10, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var rawOh = (d.orbitHunt && typeof d.orbitHunt === 'object' && !Array.isArray(d.orbitHunt)) ? d.orbitHunt : {};
+        var iqOh = {
+          sma: (typeof rawOh.sma === 'number' && isFinite(rawOh.sma)) ? Math.max(0.4, Math.min(10, rawOh.sma)) : 2,
+          ecc: (typeof rawOh.ecc === 'number' && isFinite(rawOh.ecc)) ? Math.max(0, Math.min(0.95, rawOh.ecc)) : 0.1,
+          drag: (typeof rawOh.drag === 'number' && isFinite(rawOh.drag)) ? Math.max(0, Math.min(100, rawOh.drag)) : 10,
+          hypothesis: typeof rawOh.hypothesis === 'string' ? rawOh.hypothesis : '',
+          stuckRevealed: !!rawOh.stuckRevealed,
+          understood: !!rawOh.understood,
+          explanation: typeof rawOh.explanation === 'string' ? rawOh.explanation : '',
+          log: Array.isArray(rawOh.log) ? rawOh.log : []
+        };
         function setOh(patch) { updAll({ orbitHunt: Object.assign({}, iqOh, patch) }); }
         var perihelion = iqOh.sma * (1 - iqOh.ecc);
         var aphelion = iqOh.sma * (1 + iqOh.ecc);
@@ -5060,21 +5134,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         else if (iqOh.ecc > 0.85) ohState = 'escape';
         else ohState = 'stable';
         var sm = {
-          stable: { label: t('stem.spaceexplorer.stable_orbit', '🟢 Stable orbit'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.spaceexplorer.spacecraft_orbits_indefinitely_mission', 'Spacecraft orbits indefinitely. Mission viable.') },
-          decay:  { label: t('stem.spaceexplorer.orbital_decay', '🟠 Orbital decay'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.spaceexplorer.atmospheric_drag_slowly_lowers_orbit', 'Atmospheric drag slowly lowers orbit.') },
-          escape: { label: t('stem.spaceexplorer.escape_trajectory', '🚀 Escape trajectory'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.spaceexplorer.eccentricity_too_high_leaves_system', 'Eccentricity too high — leaves system.') },
-          crash:  { label: t('stem.spaceexplorer.crash_impact', '💥 Crash impact'),  color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.spaceexplorer.perihelion_inside_surface', 'Perihelion inside surface.') }
+          stable: { label: t('stem.spaceexplorer.stable_orbit', '🟢 Stable orbit'), color: isContrast ? '#ffff00' : '#4ade80', bg: isContrast ? '#000000' : 'rgba(5,150,105,0.18)', border: isContrast ? '#ffff00' : '#4ade80', desc: t('stem.spaceexplorer.spacecraft_orbits_indefinitely_mission', 'Spacecraft orbits indefinitely. Mission viable.') },
+          decay:  { label: t('stem.spaceexplorer.orbital_decay', '🟠 Orbital decay'), color: isContrast ? '#ffff00' : '#fbbf24', bg: isContrast ? '#000000' : 'rgba(217,119,6,0.20)', border: isContrast ? '#ffff00' : '#fbbf24', desc: t('stem.spaceexplorer.atmospheric_drag_slowly_lowers_orbit', 'Atmospheric drag slowly lowers orbit.') },
+          escape: { label: t('stem.spaceexplorer.escape_trajectory', '🚀 Escape trajectory'), color: isContrast ? '#ffff00' : '#38bdf8', bg: isContrast ? '#000000' : 'rgba(8,145,178,0.20)', border: isContrast ? '#ffff00' : '#38bdf8', desc: t('stem.spaceexplorer.eccentricity_too_high_leaves_system', 'Eccentricity too high — leaves system.') },
+          crash:  { label: t('stem.spaceexplorer.crash_impact', '💥 Crash impact'),  color: isContrast ? '#ffff00' : '#f87171', bg: isContrast ? '#000000' : 'rgba(220,38,38,0.22)', border: isContrast ? '#ffff00' : '#f87171', desc: t('stem.spaceexplorer.perihelion_inside_surface', 'Perihelion inside surface.') }
         }[ohState];
-        return h('div', { className: 'se-shell p-4 rounded-xl bg-slate-900 border border-purple-400 text-slate-100 space-y-3', role: 'main', 'data-spaceexplorer-ux': 'orbit-discovery' },
-          h('button', { onClick: function() { updAll({ missionPhase: 'select' }); }, className: 'px-2 py-1 rounded bg-purple-700/30 text-[0.6875rem] font-bold text-purple-200 border border-purple-500' }, t('stem.spaceexplorer.back_to_missions', '← Back to missions')),
-          h('h3', { className: 'text-sm font-black text-purple-300' }, t('stem.spaceexplorer.orbital_mechanics_discovery', '🛰️ Orbital mechanics discovery')),
-          h('p', { className: 'text-[0.75rem] text-slate-300 leading-relaxed' }, t('stem.spaceexplorer.adjust_sma_eccentricity_drag_widget_sh', 'Adjust SMA, eccentricity, drag. Widget shows 4 discrete orbital outcomes. No score, no reveal.')),
-          h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
-            h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-            h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc),
-            h('div', { className: 'text-[0.625rem] text-slate-400 mt-1 font-mono' }, 'Periapsis ≈ ' + perihelion.toFixed(2) + ' AU, Apoapsis ≈ ' + aphelion.toFixed(2) + ' AU')
+        // Keplerian ellipse visual parameters in 380x168 viewBox
+        var starX = 118, starY = 84;
+        var aPx = Math.min(130, Math.max(24, 18 + iqOh.sma * 11));
+        var bPx = Math.max(12, aPx * Math.sqrt(Math.max(0.04, 1 - iqOh.ecc * iqOh.ecc)));
+        var cPx = aPx * iqOh.ecc;
+        var ellCX = starX + cPx;
+        var dragR = 14 + (iqOh.drag / 100) * 26;
+        return h('div', { className: 'se-shell se-orbit-card p-4 rounded-xl bg-slate-900 border border-purple-400 text-slate-100 space-y-3', role: 'main', 'data-spaceexplorer-ux': 'orbit-discovery' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+            h('button', { type: 'button', onClick: function() { updAll({ missionPhase: 'select' }); }, className: 'px-3 py-1.5 rounded-lg bg-purple-700/40 text-xs font-bold text-purple-100 border border-purple-400 hover:bg-purple-700/60' }, t('stem.spaceexplorer.back_to_missions', '← Back to missions')),
+            h('span', { className: 'rounded-full px-2.5 py-0.5 text-[0.625rem] font-black uppercase tracking-wider border border-cyan-400/50 bg-cyan-950/60 text-cyan-200' }, t('stem.spaceexplorer.kepler_lab_badge', 'Keplerian Orbit Sandbox'))
           ),
-          h('div', { className: 'grid grid-cols-3 gap-3' },
+          h('h3', { className: 'text-base font-black text-purple-200' }, t('stem.spaceexplorer.orbital_mechanics_discovery', '🛰️ Orbital mechanics discovery')),
+          h('p', { className: 'text-[0.75rem] text-slate-200 leading-relaxed' }, t('stem.spaceexplorer.adjust_sma_eccentricity_drag_widget_sh', 'Adjust SMA, eccentricity, drag. Widget shows 4 discrete orbital outcomes. No score, no reveal.')),
+          h('div', { className: 'p-3 rounded-xl text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+            h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+            h('div', { className: 'text-xs text-slate-100 mt-1' }, sm.desc),
+            h('div', { className: 'text-xs text-slate-200 mt-1 font-mono' }, 'Periapsis \u2248 ' + perihelion.toFixed(2) + ' AU, Apoapsis \u2248 ' + aphelion.toFixed(2) + ' AU')
+          ),
+          // Live Keplerian Orbit Diagram SVG
+          h('div', { className: 'rounded-xl border border-slate-600 bg-slate-950 p-2' },
+            h('svg', { viewBox: '0 0 380 168', 'aria-hidden': 'true', focusable: 'false', className: 'block w-full h-auto', style: { maxHeight: 176 } },
+              h('rect', { x: 0, y: 0, width: 380, height: 168, rx: 8, fill: isContrast ? '#000000' : '#020617' }),
+              h('circle', { cx: starX, cy: starY, r: dragR, fill: isContrast ? 'none' : 'rgba(251,191,36,0.12)', stroke: isContrast ? '#ffffff' : 'rgba(251,191,36,0.45)', strokeWidth: 1.2, strokeDasharray: '3 3' }),
+              h('ellipse', { cx: Math.min(250, ellCX), cy: starY, rx: aPx, ry: bPx, fill: 'none', stroke: sm.color, strokeWidth: 2.5, strokeDasharray: ohState === 'escape' ? '7 4' : ohState === 'decay' ? '4 3' : undefined }),
+              h('circle', { cx: starX, cy: starY, r: 10, fill: isContrast ? '#ffff00' : '#f59e0b', stroke: '#fef08a', strokeWidth: 1.5 }),
+              h('circle', { cx: Math.max(16, Math.min(250, ellCX) - aPx), cy: starY, r: 4, fill: isContrast ? '#ffffff' : '#f472b6' }),
+              h('circle', { cx: Math.min(364, Math.min(250, ellCX) + aPx), cy: starY, r: 4, fill: isContrast ? '#ffff00' : '#38bdf8' }),
+              h('text', { x: 14, y: 156, fontSize: 10, fontWeight: 700, fill: '#cbd5e1' }, 'r_p=' + perihelion.toFixed(2) + ' AU'),
+              h('text', { x: 190, y: 156, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: sm.color }, 'e=' + iqOh.ecc.toFixed(2) + ' · drag ' + iqOh.drag + '%'),
+              h('text', { x: 366, y: 156, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: '#cbd5e1' }, 'r_a=' + aphelion.toFixed(2) + ' AU')
+            )
+          ),
+          // One-click Orbit Presets
+          h('div', { className: 'flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': t('stem.spaceexplorer.orbit_presets_group', 'Orbital presets') },
+            h('span', { className: 'text-xs font-bold text-slate-200' }, t('stem.spaceexplorer.orbit_presets_label', 'Try an orbit:')),
+            [
+              { label: t('stem.spaceexplorer.preset_circular', 'Circular Stable'), sma: 3.0, ecc: 0.05, drag: 5 },
+              { label: t('stem.spaceexplorer.preset_decay', 'Grazing Decay'), sma: 1.2, ecc: 0.35, drag: 75 },
+              { label: t('stem.spaceexplorer.preset_escape', 'Comet Escape'), sma: 5.5, ecc: 0.90, drag: 5 },
+              { label: t('stem.spaceexplorer.preset_crash', 'Deep Plunge'), sma: 1.0, ecc: 0.80, drag: 20 }
+            ].map(function(op) {
+              return h('button', {
+                key: op.label, type: 'button',
+                onClick: function() { setOh({ sma: op.sma, ecc: op.ecc, drag: op.drag }); },
+                className: 'px-2.5 py-1 rounded-full text-xs font-bold border border-purple-400/60 bg-slate-800 text-purple-100 hover:bg-purple-900/60'
+              }, op.label);
+            })
+          ),
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
             [{ k: 'sma', l: 'Semi-major axis (AU)', mn: 0.4, mx: 10, st: 0.1 },
              { k: 'ecc', l: 'Eccentricity', mn: 0, mx: 0.95, st: 0.01 },
              { k: 'drag', l: 'Atm. drag (%)', mn: 0, mx: 100, st: 1 }].map(function(s) {

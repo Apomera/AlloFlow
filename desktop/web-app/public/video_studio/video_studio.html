@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob: mediastream:; font-src 'self' data:; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://huggingface.co https://*.hf.co https://*.huggingface.co; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AlloFlow Video Studio</title>
 <!--
@@ -26,10 +28,16 @@
     --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
     --text: #e2e8f0; --dim: #94a3b8; --accent: #6366f1; --accent2: #818cf8;
     --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; --rec: #ef4444;
+    color-scheme: dark;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+  .skip-link { position: fixed; left: 10px; top: -64px; z-index: 1000; padding: 10px 14px; border-radius: 8px; background: #fff; color: #0f172a; font-weight: 700; text-decoration: none; border: 2px solid #4f46e5; }
+  .skip-link:focus { top: 10px; }
+  :focus-visible { outline: 3px solid #a5b4fc; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+  @media (forced-colors: active) { :root { color-scheme: light dark; } body, header, main, .card, .tabs button, button.quiet, button.action, button.danger, input, select, textarea, .ferpa, .inspector-empty, .finish-step, .edit-map-item { background: Canvas; color: CanvasText; border-color: CanvasText; } :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } }
   header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
   header h1 { font-size: 16px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 12px; }
@@ -62,7 +70,7 @@
   .ferpa { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.45); border-radius: 10px; padding: 9px 12px; font-size: 12.5px; color: #fde68a; margin-bottom: 12px; }
   .stage { position: relative; background: #000; border-radius: 12px; overflow: hidden; min-height: 240px; display: flex; align-items: center; justify-content: center; }
   .stage video, .stage canvas { max-width: 100%; max-height: 56vh; display: block; }
-  .stage .placeholder { color: #475569; font-size: 14px; padding: 60px 20px; text-align: center; }
+  .stage .placeholder { color: #cbd5e1; font-size: 14px; padding: 60px 20px; text-align: center; }
   .recbar { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
   .recdot { width: 12px; height: 12px; border-radius: 50%; background: var(--rec); animation: pulse 1.2s infinite; display: inline-block; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
@@ -77,10 +85,10 @@
   .edit-focus-card .row { margin: 0; }
   .vs-workflow-hidden { display: none !important; }
   .timeline-lanes { display: grid; gap: 6px; margin-top: 10px; }
-  .timeline-lane { display: grid; grid-template-columns: minmax(84px, 110px) 1fr; gap: 8px; align-items: center; min-height: 22px; }
+  .timeline-lane { display: grid; grid-template-columns: minmax(84px, 110px) 1fr; gap: 8px; align-items: center; min-height: 28px; }
   .timeline-lane-label { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
-  .timeline-lane-track { position: relative; height: 18px; background: rgba(15,23,42,0.66); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
-  .timeline-lane-segment { position: absolute; top: 3px; height: 10px; min-width: 3px; border: 0; padding: 0; border-radius: 999px; box-shadow: 0 0 0 1px rgba(255,255,255,0.18) inset; cursor: pointer; }
+  .timeline-lane-track { position: relative; height: 26px; background: rgba(15,23,42,0.66); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .timeline-lane-segment { position: absolute; top: 0; height: 24px; min-width: 24px; border: 0; padding: 0; border-radius: 999px; box-shadow: 0 0 0 1px rgba(255,255,255,0.18) inset; cursor: pointer; }
   .timeline-lane-segment:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
   .timeline-lane-playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: #f8fafc; box-shadow: 0 0 8px rgba(248,250,252,0.65); }
   .edit-nav { margin-top: 8px; justify-content: space-between; }
@@ -276,6 +284,7 @@
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main" style="position:absolute;left:-9999px;top:8px;z-index:9999;background:#1e293b;color:#f8fafc;padding:8px 14px;border-radius:8px;border:2px solid #facc15;font-weight:700;text-decoration:none;" onfocus="this.style.left='8px'" onblur="this.style.left='-9999px'">Skip to Video Studio</a>
 <header>
   <span style="font-size:22px" aria-hidden="true">🎥</span>
   <div>
@@ -286,7 +295,7 @@
 </header>
 <div id="live" class="sr-only" aria-live="polite" role="status"></div>
 
-<main>
+<main id="main" tabindex="-1">
   <div id="recoverBanner" class="banner" hidden>
     <span id="recoverText"></span>
     <button class="quiet" id="recoverBtn">Recover drafts</button>
@@ -304,7 +313,7 @@
     <button id="tabExport" role="tab" aria-selected="false" aria-controls="panelExport">3 · Export</button>
   </div>
 
-  <div class="studio-guide" aria-label="Current video and next step">
+  <div class="studio-guide" role="region" aria-label="Current video and next step">
     <div><h2 id="studioStepTitle">Start with a recording or a file</h2>
       <p id="studioStepHint">Choose a source, then start recording. Or import a video you already have.</p>
       <p class="studio-selection" id="studioSelection" role="status" aria-live="polite" aria-atomic="true">No video selected</p><p id="studioImportFeedback" class="status" role="status" aria-live="polite" aria-atomic="true" hidden></p></div>
@@ -316,7 +325,7 @@
     <div class="ferpa">⚠️ <strong>Before you record:</strong> screen capture shows everything visible. Close gradebooks, rosters, email, and other student data — safest is sharing <em>one tab</em> in the picker. Recording and export stay local by default; optional AI tools later may send reviewed text, prompts, or sampled frame sheets through AlloFlow.</div>
     <div class="card">
       <h2>Start here</h2>
-      <div class="choice-grid" aria-label="Video Studio workflows">
+      <div class="choice-grid" role="group" aria-label="Video Studio workflows">
         <button class="choice-card" id="flowRecord" style="border-left-color:#6366f1">
           <strong>Record a lesson</strong>
           <span>Screen, tab, camera, or camera bubble with a quick privacy check.</span>
@@ -389,7 +398,7 @@
         <input type="file" id="importInput" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv,.allopack" multiple hidden>
         <span class="status" id="importStatus" role="status" aria-live="polite" aria-atomic="true" style="margin-top:0">Select or drop one or more videos or .allopack projects anywhere on this page. Imported videos get the same trim, caption, and export tools as recordings.</span>
       </div>
-      <div id="importSummaryBox" class="restore-summary import-summary-box" hidden aria-live="polite" aria-label="Project restore summary"></div>
+      <div id="importSummaryBox" class="restore-summary import-summary-box" role="status" hidden aria-live="polite" aria-label="Project restore summary"></div>
     </div>
     <div class="card" id="demoAutopilotCard">
       <h2>🤖 Demo Autopilot (beta)</h2>
@@ -434,7 +443,7 @@
           <span class="status" style="margin-top:0">Cards and smooth fades are applied during export. Cursor emphasis is captured live around tutorial targets.</span>
         </div>
       </details>
-      <div class="row" style="margin:0 0 8px" aria-label="Reusable tutorial templates">
+      <div class="row" role="group" style="margin:0 0 8px" aria-label="Reusable tutorial templates">
         <label for="demoTemplateSelect">Tutorial template</label>
         <select id="demoTemplateSelect" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px;min-width:190px">
           <option value="">Saved templates...</option>
@@ -446,14 +455,14 @@
         <button class="quiet" id="demoTemplateDeleteBtn" disabled>Delete template</button>
         <button class="quiet" id="demoTemplateUndoDeleteBtn" hidden disabled>Undo delete</button>
       </div>
-      <div class="row" style="margin:0 0 8px" aria-label="Portable tutorial template library">
+      <div class="row" role="group" style="margin:0 0 8px" aria-label="Portable tutorial template library">
         <button class="quiet" id="demoTemplateExportBtn" disabled>Export selected</button>
         <button class="quiet" id="demoTemplateExportAllBtn" disabled>Export library</button>
         <button class="quiet" id="demoTemplateImportBtn">Import templates…</button>
         <input type="file" id="demoTemplateImportInput" accept="application/json,.json" hidden>
         <span class="status" id="demoTemplateTransferStatus" role="status" aria-live="polite" style="margin-top:0">Portable JSON packs stay local until you choose a file.</span>
       </div>
-      <div id="demoTemplateImportReview" hidden style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0 0 8px" aria-label="Tutorial template import review">
+      <div id="demoTemplateImportReview" role="region" hidden style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0 0 8px" aria-label="Tutorial template import review">
         <div class="row" style="justify-content:space-between">
           <div>
             <strong>Review template import</strong>
@@ -754,14 +763,14 @@
             <input type="file" id="imageOverlayInput" accept="image/*,.png,.jpg,.jpeg,.webp,.gif" hidden>
           </div>
           <div class="row" style="margin-bottom:8px">
-            <input type="text" id="visualPromptInput" placeholder="Imagen card prompt, e.g. simple fraction wall diagram" style="min-width:240px;flex:1">
+            <input type="text" id="visualPromptInput" aria-label="Visual card image prompt" placeholder="Imagen card prompt, e.g. simple fraction wall diagram" style="min-width:240px;flex:1">
             <button class="quiet" id="genVisualCardBtn">Generate visual card</button>
             <button class="quiet" id="frameVisualCardBtn" title="Uses the current video frame as the source for a cleaner still visual card.">From current frame</button>
             <button class="quiet" id="downloadFrameBtn" title="Downloads the exact current video frame as a PNG still image.">Download frame PNG</button>
             <button class="quiet" id="frameOverlayBtn" title="Places the exact current video frame back into the video as a timed image overlay.">Use frame as overlay</button>
           </div>
           <div class="row" style="margin-bottom:8px">
-            <input type="search" id="resourceCueSearch" placeholder="Search resource pack history..." style="min-width:220px;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+            <input type="search" id="resourceCueSearch" aria-label="Search resource pack history" placeholder="Search resource pack history..." style="min-width:220px;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
             <select id="resourceCueFilter" aria-label="Resource cue type" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
               <option value="">All pack cues</option>
               <option value="glossary">Glossary</option>
@@ -817,7 +826,7 @@
             <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer">Pixabay</a>
           </div>
           <div class="row" style="margin-bottom:8px">
-            <input type="search" id="mediaFinderQuery" placeholder="Find safe media, e.g. calm classroom chime" style="min-width:220px;flex:1">
+            <input type="search" id="mediaFinderQuery" aria-label="Search licensed media sources" placeholder="Find safe media, e.g. calm classroom chime" style="min-width:220px;flex:1">
             <select id="mediaFinderSource" aria-label="Media finder source">
               <option value="">All reviewed sources</option>
               <option value="Openverse">Openverse</option>
@@ -830,9 +839,9 @@
           </div>
           <div id="mediaFinderTargets" class="finish-guide" style="margin-bottom:8px"></div>
           <div class="row" style="margin-bottom:8px">
-            <input type="text" id="mediaCreditTitle" placeholder="Media title" style="min-width:150px;flex:1">
-            <input type="text" id="mediaCreditCreator" placeholder="Creator / author" style="min-width:150px;flex:1">
-            <input type="url" id="mediaCreditUrl" placeholder="Source URL" style="min-width:180px;flex:1">
+            <input type="text" id="mediaCreditTitle" aria-label="Media credit title" placeholder="Media title" style="min-width:150px;flex:1">
+            <input type="text" id="mediaCreditCreator" aria-label="Media credit creator or author" placeholder="Creator / author" style="min-width:150px;flex:1">
+            <input type="url" id="mediaCreditUrl" aria-label="Media credit source URL" placeholder="Source URL" style="min-width:180px;flex:1">
           </div>
           <div class="row" style="margin-bottom:8px">
             <select id="mediaCreditSource" aria-label="Media source">
@@ -1315,7 +1324,7 @@
           </select>
         </label>
       </div>
-      <div class="caption-custom-grid" aria-label="Customize captions" style="margin-top:10px">
+      <div class="caption-custom-grid" role="group" aria-label="Customize captions" style="margin-top:10px">
         <label>Size:
           <select id="captionSize">
             <option value="small">small</option>
@@ -1871,7 +1880,8 @@
     }
     if (eocd < 0) return [];
     var count = rd16(eocd + 10);
-    var out = [], p = rd32(eocd + 16);
+    if (count > 200) count = 200;
+    var out = [], p = rd32(eocd + 16), totalExtracted = 0;
     for (var n = 0; n < count; n++) {
       if (p + 46 > u8.length || rd32(p) !== 0x02014b50) break;
       var method = rd16(p + 10), size = rd32(p + 24), nameLen = rd16(p + 28), extraLen = rd16(p + 30), commentLen = rd16(p + 32), lho = rd32(p + 42);
@@ -1879,8 +1889,13 @@
       for (var c2 = 0; c2 < nameLen; c2++) name += String.fromCharCode(u8[p + 46 + c2]);
       if (method === 0 && lho + 30 <= u8.length && rd32(lho) === 0x04034b50) {
         var dataStart = lho + 30 + rd16(lho + 26) + rd16(lho + 28);
-        var data = u8.slice(dataStart, dataStart + size);
-        if (data.length === size && vsCrc32(data) === rd32(p + 16)) out.push({ name: name, data: data });
+        if (size <= u8.length && dataStart + size <= u8.length && totalExtracted + size <= u8.length) {
+          var data = u8.slice(dataStart, dataStart + size);
+          if (data.length === size && vsCrc32(data) === rd32(p + 16)) {
+            totalExtracted += size;
+            out.push({ name: name, data: data });
+          }
+        }
       }
       p += 46 + nameLen + extraLen + commentLen;
     }
@@ -4909,7 +4924,6 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (u.protocol !== 'https:') return false;
       return h === 'alloflow-cdn.pages.dev'
         || h.endsWith('.alloflow-cdn.pages.dev')
-        || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.(?:pages\.dev|web\.app|firebaseapp\.com)$/.test(h)
         || h === 'alloflow.org' || h.endsWith('.alloflow.org')
         || h === 'alloflow.app' || h.endsWith('.alloflow.app')
         || h === 'alloflow.com' || h.endsWith('.alloflow.com')
@@ -6018,13 +6032,23 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // .allopack = STORE-only zip: meta.json + the video + optional captions.vtt.
   // Built by the AlloFlow gallery's "Download bundle" — one shareable file
   // that reopens here with its captions intact.
+  function vsSafeJsonParse(text) {
+    return JSON.parse(String(text || ''), function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
   function importBundleFile(file) {
+    if (!file || Number(file.size) > 512 * 1024 * 1024) {
+      clearImportSummaryPanel();
+      setStatus($('importStatus'), 'Project bundle exceeds the 512 MB safety limit.', 'bad');
+      return Promise.resolve();
+    }
     setStatus($('importStatus'), 'Reading project “' + file.name + '”…');
     return file.arrayBuffer().then(function (buf) {
       var entries = vsReadZip(new Uint8Array(buf));
       var meta = null, video = null, legacyVideoData = null, videoName = '', vttText = null, transcriptEditText = null, transcriptWordText = null, audioEditText = null, visualText = null, chapterText = null, insertText = null, promptText = null, localText = null, scenePlanText = null, mediaCreditText = null, demoRunReportText = null, editorStateText = null, musicText = null, musicData = null, musicName = '', audioMedia = {}, bundleWarnings = [];
       entries.forEach(function (e) {
-        if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = JSON.parse(new TextDecoder().decode(e.data)); } catch (_) {} }
+        if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = vsSafeJsonParse(new TextDecoder().decode(e.data)); } catch (_) {} }
         else if (/(^|\/)project_readme\.txt$/i.test(e.name)) {
           // Older savers wrote the video into this entry after a README shifted
           // the archive order. Recover only recognizable media with an empty
@@ -6074,25 +6098,25 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var type = /\.mp4$|\.m4v$/i.test(videoName) ? 'video/mp4' : /\.mov$/i.test(videoName) ? 'video/quicktime' : /\.mkv$/i.test(videoName) ? 'video/x-matroska' : 'video/webm';
       var captions = vttText ? vsParseVtt(vttText) : [];
       var visualDescriptions = [];
-      if (visualText) { try { var rawVisual = JSON.parse(visualText); visualDescriptions = vsSanitizeVisualDescriptions(rawVisual, bundleDuration).map(function (s, idx) { s.checked = !!((Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx] && (Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx].checked); return s; }); } catch (_) {} }
+      if (visualText) { try { var rawVisual = vsSafeJsonParse(visualText); visualDescriptions = vsSanitizeVisualDescriptions(rawVisual, bundleDuration).map(function (s, idx) { s.checked = !!((Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx] && (Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx].checked); return s; }); } catch (_) {} }
       var chapters = [];
-      if (chapterText) { try { chapters = (JSON.parse(chapterText) || []).filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); }).map(function (c) { return { start: Math.max(0, Number(c.start) || 0), title: String(c.title || '').slice(0, 80) }; }); } catch (_) {} }
+      if (chapterText) { try { chapters = (vsSafeJsonParse(chapterText) || []).filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); }).map(function (c) { return { start: Math.max(0, Number(c.start) || 0), title: String(c.title || '').slice(0, 80) }; }); } catch (_) {} }
       var inserts = [];
-      if (insertText) { try { inserts = vsSanitizeTeachingInserts(JSON.parse(insertText), bundleDuration); } catch (_) {} }
+      if (insertText) { try { inserts = vsSanitizeTeachingInserts(vsSafeJsonParse(insertText), bundleDuration); } catch (_) {} }
       var visualPrompts = [];
-      if (promptText) { try { visualPrompts = (JSON.parse(promptText) || []).filter(function (p) { return p && String(p.prompt || '').trim(); }).map(function (p) { return { id: String(p.id || ('vp' + Date.now().toString(36))).slice(0, 40), start: Math.max(0, Number(p.start) || 0), type: String(p.type || 'image_prompt').slice(0, 40), label: String(p.label || 'Visual support').slice(0, 90), prompt: String(p.prompt || '').slice(0, 600), source: String(p.source || '').slice(0, 40) }; }); } catch (_) {} }
+      if (promptText) { try { visualPrompts = (vsSafeJsonParse(promptText) || []).filter(function (p) { return p && String(p.prompt || '').trim(); }).map(function (p) { return { id: String(p.id || ('vp' + Date.now().toString(36))).slice(0, 40), start: Math.max(0, Number(p.start) || 0), type: String(p.type || 'image_prompt').slice(0, 40), label: String(p.label || 'Visual support').slice(0, 90), prompt: String(p.prompt || '').slice(0, 600), source: String(p.source || '').slice(0, 40) }; }); } catch (_) {} }
       var localizations = [];
-      if (localText) { try { localizations = (JSON.parse(localText) || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, bundleDuration); }); } catch (_) {} }
+      if (localText) { try { localizations = (vsSafeJsonParse(localText) || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, bundleDuration); }); } catch (_) {} }
       var scenePlan = null;
-      if (scenePlanText) { try { scenePlan = JSON.parse(scenePlanText); } catch (_) { scenePlan = null; } }
+      if (scenePlanText) { try { scenePlan = vsSafeJsonParse(scenePlanText); } catch (_) { scenePlan = null; } }
       var demoRunReport = null;
-      if (demoRunReportText) { try { demoRunReport = cleanDemoRunReport(JSON.parse(demoRunReportText)); } catch (_) { demoRunReport = null; } }
+      if (demoRunReportText) { try { demoRunReport = cleanDemoRunReport(vsSafeJsonParse(demoRunReportText)); } catch (_) { demoRunReport = null; } }
       var mediaCredits = [];
-      if (mediaCreditText) { try { mediaCredits = vsSanitizeMediaCredits(JSON.parse(mediaCreditText)); } catch (_) {} }
+      if (mediaCreditText) { try { mediaCredits = vsSanitizeMediaCredits(vsSafeJsonParse(mediaCreditText)); } catch (_) {} }
       var transcriptEdits = [];
-      if (transcriptEditText) { try { transcriptEdits = vsSanitizeTranscriptEdits(JSON.parse(transcriptEditText), bundleDuration); } catch (_) {} }
+      if (transcriptEditText) { try { transcriptEdits = vsSanitizeTranscriptEdits(vsSafeJsonParse(transcriptEditText), bundleDuration); } catch (_) {} }
       var transcriptWords = [];
-      if (transcriptWordText) { try { transcriptWords = vsSanitizeTranscriptWords(JSON.parse(transcriptWordText), bundleDuration); } catch (_) {} }
+      if (transcriptWordText) { try { transcriptWords = vsSanitizeTranscriptWords(vsSafeJsonParse(transcriptWordText), bundleDuration); } catch (_) {} }
       var audioState = null;
       var narration = null;
       var audioClips = [];
@@ -6100,7 +6124,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var missingAudioFiles = [];
       if (audioEditText) {
         try {
-          var audioManifest = vsBuildAudioEditManifest(Object.assign({}, JSON.parse(audioEditText), { duration: bundleDuration }));
+          var audioManifest = vsBuildAudioEditManifest(Object.assign({}, vsSafeJsonParse(audioEditText), { duration: bundleDuration }));
           bundleAudioManifest = audioManifest;
           if (audioManifest.applyToSource) {
             audioState = audioManifest.sourceAudio;
@@ -6120,7 +6144,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var musicBed = null;
       if (musicText && musicData && !(meta && meta.audioEditsApplyToSource === false) && !(bundleAudioManifest && !bundleAudioManifest.applyToSource)) {
         try {
-          var rawMusic = JSON.parse(musicText) || {};
+          var rawMusic = vsSafeJsonParse(musicText) || {};
           var audioType = rawMusic.mimeType || (/\.mp3$/i.test(musicName) ? 'audio/mpeg' : /\.wav$/i.test(musicName) ? 'audio/wav' : /\.ogg$/i.test(musicName) ? 'audio/ogg' : /\.m4a$/i.test(musicName) ? 'audio/mp4' : 'audio/webm');
           rawMusic.blob = new Blob([musicData], { type: audioType });
           rawMusic.mimeType = audioType;
@@ -6131,7 +6155,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var editorState = null;
       if (editorStateText && !(meta && meta.audioEditsApplyToSource === false)) {
         try {
-          editorState = JSON.parse(editorStateText);
+          editorState = vsSafeJsonParse(editorStateText);
           // Validate the schema now; clamp timings only after probing the actual video.
           if (!cleanProjectEditorState(editorState, bundleDuration)) editorState = null;
           if (!editorState) bundleWarnings.push('Editor settings use an unsupported format; video and other supported data were imported.');
@@ -6589,6 +6613,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   async function loadAsr(modelId, onProgress, signal) {
     if (signal && signal.aborted) throw asrAbortError();
     if (_asrPipelines[modelId]) { if (signal && signal.aborted) throw asrAbortError(); return _asrPipelines[modelId]; }
+    if (window._isDesktopBundledApp === true) {
+      throw new Error('Offline desktop mode does not fetch external captioning models from the web.');
+    }
     var lib = await import(TRANSFORMERS_URL);
     var attempts = (navigator.gpu && !_asrForceWasm) ? [{ device: 'webgpu' }, { device: 'wasm', dtype: 'q8' }] : [{ device: 'wasm', dtype: 'q8' }];
     var lastErr = null;
@@ -7346,7 +7373,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var t = currentTake(); var f = $('imageOverlayInput').files[0];
     $('imageOverlayInput').value = '';
     if (!t || !f) return;
-    if (!/^image\//.test(f.type || '')) { setStatus($('insertStatus'), 'Choose an image file for the overlay.', 'warn'); return; }
+    if (!/^image\/(?:png|jpeg|jpg|webp|gif|avif|bmp)$/i.test(f.type || '')) { setStatus($('insertStatus'), 'Choose a PNG, JPEG, WebP, or GIF image file for the overlay.', 'warn'); return; }
+    if (Number(f.size) > 15 * 1024 * 1024) { setStatus($('insertStatus'), 'Overlay image exceeds the 15 MB limit.', 'warn'); return; }
     var reader = new FileReader();
     reader.onload = function () {
       addTeachingInsert('image_overlay', { imageSrc: String(reader.result || ''), text: f.name.replace(/\.[^.]+$/, '').slice(0, 80) || 'Image overlay', source: 'upload' });
@@ -9977,6 +10005,7 @@ function buildContactSheet(t, count, shouldCancel) {
   function importCaptionFile(file) {
     var t = currentTake();
     if (!t) { captionImportFeedback('Import or record a video first, then add its captions.', 'warn'); return; }
+    if (!file || file.size > 5 * 1024 * 1024) { captionImportFeedback('Caption file exceeds the 5 MB safety limit.', 'bad'); return; }
     var request = ++captionImportRequest;
     captionImportReading = true;
     clearCaptionImportReview();
@@ -10009,9 +10038,10 @@ function buildContactSheet(t, count, shouldCancel) {
   function importTranscriptWordsFile(file) {
     var t = currentTake();
     if (!t) { setStatus($('transcriptStatus'), 'Import or record a video first, then add word timings.', 'warn'); return; }
+    if (!file || file.size > 10 * 1024 * 1024) { setStatus($('transcriptStatus'), 'Word timing file exceeds the 10 MB safety limit.', 'bad'); return; }
     file.text().then(function (text) {
       var parsed = null;
-      try { parsed = JSON.parse(text); } catch (_) {
+      try { parsed = JSON.parse(text, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); } catch (_) {
         setStatus($('transcriptStatus'), 'That word timing file is not valid JSON.', 'bad');
         return;
       }
@@ -10835,9 +10865,10 @@ function buildContactSheet(t, count, shouldCancel) {
   }
   function importScenePlanFile(file) {
     if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { setStatus($('sceneStatus'), 'Scene plan exceeds the 10 MB safety limit.', 'bad'); return; }
     file.text().then(function (text) {
       try {
-        var data = JSON.parse(text) || {};
+        var data = JSON.parse(text, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }) || {};
         loadScenePlanObject(data, 'Scene plan');
       } catch (e) {
         setStatus($('sceneStatus'), 'Could not load that scene plan - ' + (e && e.message || e), 'bad');
@@ -13058,7 +13089,8 @@ function buildContactSheet(t, count, shouldCancel) {
   }
   function parseDemoTemplatePack(text) {
     var raw = null;
-    try { raw = JSON.parse(String(text || '')); }
+    if (String(text || '').length > 5 * 1024 * 1024) throw new Error('Tutorial template pack exceeds the 5 MB safety limit.');
+    try { raw = JSON.parse(String(text || ''), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); }
     catch (_) { throw new Error('That file is not valid JSON.'); }
     if (!raw || raw.type !== DEMO_TEMPLATE_PACK_TYPE) throw new Error('That file is not an AlloFlow tutorial template pack.');
     if (Number(raw.version) !== DEMO_TEMPLATE_PACK_VERSION) throw new Error('This tutorial template pack version is not supported.');

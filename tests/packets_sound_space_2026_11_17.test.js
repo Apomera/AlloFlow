@@ -77,7 +77,7 @@ describe('take-home practice file', () => {
     const c = open(CHECK);
     c.q('[data-tools-open]').click();
     expect(c.q('[data-tool-group="sounds"]').hidden).toBe(true);
-    expect(read('word_sounds_take_home_loader.js')).toContain("sounds: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return b.activity === 'blending'; }) }) : null;");
+    expect(read('word_sounds_take_home_loader.js')).toContain("sounds: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return /^(blending|syllable_blending|segmentation)$/.test(b.activity); }) }) : null;");
   });
 
   it('the sounds of a word are played with the chosen pause: Some 500 ms, More 800 ms, Less 250 ms', async () => {

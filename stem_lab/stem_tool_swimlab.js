@@ -115,7 +115,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       '@media(max-width:820px){.swimlab-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.swimlab-essential-grid,.swimlab-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media(max-width:560px){.swimlab-menu-shell{padding:0;}.swimlab-command{padding:14px;border-radius:16px;}.swimlab-command-top{flex-direction:column;}.swimlab-status{white-space:normal;}.swimlab-essential-grid,.swimlab-catalog-grid{grid-template-columns:1fr;}.swimlab-primary{width:100%;}.swimlab-actions{align-items:stretch;}.swimlab-action-note{width:100%;}.swimlab-menu-tile{min-height:100px;}}',
       '@media(prefers-reduced-motion:reduce){.swimlab-primary,.swimlab-menu-tile{transition:none;}.swimlab-primary:hover,.swimlab-menu-tile:hover{transform:none;}}',
-      '.theme-contrast .swimlab-command,.theme-contrast .swimlab-section,.theme-contrast .swimlab-catalog,.theme-contrast .swimlab-badges{box-shadow:none;border-width:2px;}.theme-contrast .swimlab-primary{background:#000;}'
+      '.theme-contrast .swimlab-menu-shell{background:#000!important;color:#fff!important;border:2px solid #ffff00!important;}',
+      '.theme-contrast .swimlab-command,.theme-contrast .swimlab-section,.theme-contrast .swimlab-catalog,.theme-contrast .swimlab-badges,.theme-contrast .swimlab-metric,.theme-contrast .swimlab-status,.theme-contrast .swimlab-quote{background:#000!important;background-image:none!important;color:#fff!important;border-color:#ffff00!important;box-shadow:none!important;border-width:2px!important;}',
+      '.theme-contrast .swimlab-eyebrow,.theme-contrast .swimlab-title,.theme-contrast .swimlab-metric-label,.theme-contrast .swimlab-action-note,.theme-contrast .swimlab-section-head h3,.theme-contrast .swimlab-catalog summary,.theme-contrast .swimlab-catalog-section h3{color:#ffff00!important;}',
+      '.theme-contrast .swimlab-subtitle,.theme-contrast .swimlab-metric-value,.theme-contrast .swimlab-section-head p,.theme-contrast .swimlab-catalog-section p{color:#fff!important;}',
+      '.theme-contrast .swimlab-primary{background:#000!important;background-image:none!important;color:#ffff00!important;border:2px solid #ffff00!important;box-shadow:none!important;}',
+      '.theme-contrast .swimlab-preset-btn{background:#000!important;color:#ffff00!important;border:1.5px solid #ffff00!important;}'
     ].join('\n');
     if (document.head) document.head.appendChild(swimReadinessStyle);
   }
@@ -174,7 +179,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       var useRef = React.useRef;
 
       // State persistence via ctx.toolData (system-managed; survives reload).
-      var d = (ctx.toolData && ctx.toolData['swimLab']) || {};
+      var _isPlainObj = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+      var d = (ctx.toolData && _isPlainObj(ctx.toolData['swimLab'])) ? ctx.toolData['swimLab'] : {};
       var upd = function(key, val) { ctx.update('swimLab', key, val); };
       var updMulti = function(obj) {
         if (ctx.updateMulti) ctx.updateMulti('swimLab', obj);
@@ -184,7 +190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       // Student AI-off: null unless text AI is usable, so "Ask the Lifeguard" hides.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
 
@@ -194,11 +200,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       // ── State schema ──
       // No entry consent gate. Modules with heavier content (cold water, ice, autism)
       // surface their own inline content notes. Default view is the menu.
-      var view = (d.view === 'askLifeguard' && !callGemini) ? 'menu' : (d.view || 'menu');
+      var view = (d.view === 'askLifeguard' && !callGemini) ? 'menu' : (typeof d.view === 'string' && d.view ? d.view : 'menu');
       var consentAccepted = true;  // retained as a no-op flag for compatibility with old saved state
-      var modulesVisited = d.modulesVisited || {};
-      var quizResults = d.quizResults || {};
-      var badges = d.badges || {};
+      var modulesVisited = _isPlainObj(d.modulesVisited) ? d.modulesVisited : {};
+      var quizResults = _isPlainObj(d.quizResults) ? d.quizResults : {};
+      var badges = _isPlainObj(d.badges) ? d.badges : {};
       // A saved file is input: a non-object or a bad idx crashed the cumulative quiz.
       var bigQuizState = (d.bigQuizState && typeof d.bigQuizState === 'object' && Number.isInteger(d.bigQuizState.idx) && d.bigQuizState.idx >= 0)
         ? d.bigQuizState : { idx: 0, score: 0, answered: false, lastChoice: null, picks: {} };
@@ -512,10 +518,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         return h('main', { className: 'swimlab-menu-shell', 'data-swimlab-readiness': 'true' },
           h('header', { className: 'swimlab-command' },
             h('div', { className: 'swimlab-command-top' },
-              h('div', null,
-                h('p', { className: 'swimlab-eyebrow' }, __alloT('stem.swimlab.readiness_label', 'Water safety readiness')),
-                h('h2', { className: 'swimlab-title' }, __alloT('stem.swimlab.swimlab', 'SwimLab')),
-                h('p', { className: 'swimlab-subtitle' }, __alloT('stem.swimlab.readiness_blurb', 'Learn the physiology, physics, and decisions behind safer swimming, cold-water survival, and bystander rescue.'))),
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14, flex: '1 1 280px', minWidth: 0 } },
+                /* Bespoke Aquatic Safety & Hydrodynamics Rescue Emblem SVG */
+                h('svg', {
+                  width: 52, height: 52, viewBox: '0 0 52 52',
+                  'aria-hidden': 'true',
+                  style: { flexShrink: 0, display: 'block', marginTop: 2 }
+                },
+                  h('rect', {
+                    x: 1, y: 1, width: 50, height: 50, rx: 14,
+                    fill: isContrast ? '#000000' : 'rgba(2,6,23,0.58)',
+                    stroke: isContrast ? '#ffff00' : 'rgba(125,211,252,0.55)',
+                    strokeWidth: 1.5
+                  }),
+                  /* Rescue Lifebuoy Ring */
+                  h('circle', {
+                    cx: 26, cy: 23, r: 12,
+                    fill: 'none',
+                    stroke: isContrast ? '#ffff00' : '#f8fafc',
+                    strokeWidth: 4.5
+                  }),
+                  /* 4 High-Vis Safety Quadrants */
+                  h('line', { x1: 26, y1: 8.5, x2: 26, y2: 13.5, stroke: isContrast ? '#00ffff' : '#f97316', strokeWidth: 4.5, strokeLinecap: 'butt' }),
+                  h('line', { x1: 26, y1: 32.5, x2: 26, y2: 37.5, stroke: isContrast ? '#00ffff' : '#f97316', strokeWidth: 4.5, strokeLinecap: 'butt' }),
+                  h('line', { x1: 11.5, y1: 23, x2: 16.5, y2: 23, stroke: isContrast ? '#00ffff' : '#f97316', strokeWidth: 4.5, strokeLinecap: 'butt' }),
+                  h('line', { x1: 35.5, y1: 23, x2: 40.5, y2: 23, stroke: isContrast ? '#00ffff' : '#f97316', strokeWidth: 4.5, strokeLinecap: 'butt' }),
+                  /* Buoyancy Up-Vector inside ring */
+                  h('path', {
+                    d: 'M26 28 L26 19 M22.5 22 L26 18 L29.5 22',
+                    fill: 'none',
+                    stroke: isContrast ? '#00ff66' : '#38bdf8',
+                    strokeWidth: 2,
+                    strokeLinecap: 'round',
+                    strokeLinejoin: 'round'
+                  }),
+                  /* Hydrodynamic Wave Streamlines */
+                  h('path', {
+                    d: 'M8 42 Q17 38 26 42 T44 42',
+                    fill: 'none',
+                    stroke: isContrast ? '#00ffff' : '#38bdf8',
+                    strokeWidth: 2,
+                    strokeLinecap: 'round'
+                  })
+                ),
+                h('div', { style: { minWidth: 0 } },
+                  h('p', { className: 'swimlab-eyebrow' }, __alloT('stem.swimlab.readiness_label', 'Water safety & hydrodynamics studio')),
+                  h('h2', { className: 'swimlab-title' }, __alloT('stem.swimlab.swimlab', 'SwimLab')),
+                  h('p', { className: 'swimlab-subtitle' }, __alloT('stem.swimlab.readiness_blurb', 'Learn the physiology, physics, and decisions behind safer swimming, cold-water survival, and bystander rescue.'))
+                )
+              ),
               h('div', { className: 'swimlab-status', role: 'status' }, __alloT('stem.swimlab.education_status', 'Education only - in an emergency, call 911'))),
             h('div', { className: 'swimlab-metrics', role: 'list', 'aria-label': __alloT('stem.swimlab.progress_label', 'SwimLab progress') },
               metric(__alloT('stem.swimlab.safety_essentials', 'Safety essentials'), safetyCompleted + ' / ' + safetyTiles.length),
@@ -525,7 +576,112 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             h('div', { className: 'swimlab-actions' },
               h('button', { type: 'button', className: 'swimlab-primary', onClick: function() { openTile(nextTile); } },
                 safetyCompleted < safetyTiles.length ? __alloT('stem.swimlab.continue_essentials', 'Continue safety essentials') : __alloT('stem.swimlab.continue_learning', 'Continue learning')),
-              h('span', { className: 'swimlab-action-note' }, nextTile ? nextTile.label : __alloT('stem.swimlab.choose_review', 'Choose a module to review')))),
+              h('span', { className: 'swimlab-action-note' }, nextTile ? nextTile.label : __alloT('stem.swimlab.choose_review', 'Choose a module to review'))),
+            /* One-Click Quick Launch Presets */
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 12 } },
+              h('span', { style: { fontSize: 10.5, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: isContrast ? '#ffff00' : '#bae6fd' } },
+                '\u26A1 ' + __alloT('stem.swimlab.quick_launch', 'Quick Labs:')),
+              [
+                { id: 'coldShock', label: '\uD83E\uDD76 1-1-10 Cold Shock' },
+                { id: 'ripCurrents', label: '\uD83C\uDF0A Rip Escape' },
+                { id: 'howSwimming', label: '\uD83C\uDFCA Stroke Physics' },
+                { id: 'strokeHunt', label: '\uD83D\uDCCA Efficiency Lab' }
+              ].map(function(qp) {
+                return h('button', {
+                  key: qp.id,
+                  type: 'button',
+                  className: 'swimlab-preset-btn',
+                  onClick: function() {
+                    upd('view', qp.id);
+                    if (qp.id !== 'strokeHunt') markVisited(qp.id);
+                    wsAnnounce('Opening ' + qp.label);
+                  },
+                  style: {
+                    padding: '5px 10px',
+                    borderRadius: 999,
+                    border: isContrast ? '1.5px solid #ffff00' : '1px solid rgba(125,211,252,0.42)',
+                    backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.72)',
+                    color: isContrast ? '#ffff00' : '#e0f2fe',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }
+                }, qp.label);
+              })
+            )
+          ),
+
+          /* Bespoke 1-1-10 Cold-Water Survival Timeline & Readiness Telemetry Visual Stage */
+          (function() {
+            var readinessPct = educationalTiles.length > 0 ? Math.round((visitedCount / educationalTiles.length) * 100) : 0;
+            var ringR = 32;
+            var ringC = 2 * Math.PI * ringR;
+            var ringOffset = ringC * (1 - readinessPct / 100);
+            return h('section', {
+              className: 'swimlab-section',
+              'aria-label': __alloT('stem.swimlab.visual_timeline_aria', '1-1-10 Cold-Water Survival Timeline and Readiness Gauge'),
+              style: { padding: 14 }
+            },
+              h('svg', {
+                viewBox: '0 0 640 124',
+                role: 'img',
+                'aria-label': __alloT('stem.swimlab.timeline_svg_aria', '1-1-10 cold water survival rule: 1 minute to control breathing, 10 minutes of meaningful movement, 1 hour before hypothermia unconsciousness. Current readiness: {pct} percent.')
+                  .replace('{pct}', String(readinessPct)),
+                style: { width: '100%', height: 'auto', display: 'block' }
+              },
+                /* Backdrop */
+                h('rect', { x: 0, y: 0, width: 640, height: 124, rx: 12, fill: isContrast ? '#000000' : '#081826', stroke: isContrast ? '#ffff00' : '#1e3a5f', strokeWidth: 1.4 }),
+                /* Left: 1-1-10 Cold Water Survival Rule Visual */
+                h('text', { x: 18, y: 24, fill: isContrast ? '#ffff00' : '#7dd3fc', fontSize: 11, fontWeight: 900, fontFamily: 'system-ui, sans-serif', letterSpacing: '0.06em' },
+                  'COLD-WATER 1-1-10 SURVIVAL TIMELINE'),
+                h('text', { x: 432, y: 24, textAnchor: 'end', fill: isContrast ? '#ffffff' : '#94a3b8', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui, sans-serif' },
+                  'Float first \u00B7 Control breath'),
+                /* Timeline track */
+                h('line', { x1: 32, y1: 62, x2: 416, y2: 62, stroke: isContrast ? '#ffff00' : '#334155', strokeWidth: 4, strokeLinecap: 'round' }),
+                h('line', { x1: 32, y1: 62, x2: 158, y2: 62, stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 4, strokeLinecap: 'round' }),
+                h('line', { x1: 158, y1: 62, x2: 296, y2: 62, stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 4, strokeLinecap: 'round' }),
+                h('line', { x1: 296, y1: 62, x2: 416, y2: 62, stroke: isContrast ? '#ff6b6b' : '#ef4444', strokeWidth: 4, strokeLinecap: 'round' }),
+                /* Node 1: 1 MIN */
+                h('circle', { cx: 64, cy: 62, r: 14, fill: isContrast ? '#000000' : '#0369a1', stroke: isContrast ? '#00ffff' : '#7dd3fc', strokeWidth: 2 }),
+                h('text', { x: 64, y: 66, textAnchor: 'middle', fill: '#ffffff', fontSize: 10.5, fontWeight: 900, fontFamily: 'system-ui, sans-serif' }, '1m'),
+                h('text', { x: 64, y: 92, textAnchor: 'middle', fill: isContrast ? '#00ffff' : '#e0f2fe', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'Control Breath'),
+                h('text', { x: 64, y: 107, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#94a3b8', fontSize: 10, fontFamily: 'system-ui, sans-serif' }, 'Gasp reflex passes'),
+                /* Node 2: 10 MIN */
+                h('circle', { cx: 224, cy: 62, r: 14, fill: isContrast ? '#000000' : '#b45309', stroke: isContrast ? '#ffff00' : '#fde68a', strokeWidth: 2 }),
+                h('text', { x: 224, y: 66, textAnchor: 'middle', fill: '#ffffff', fontSize: 10.5, fontWeight: 900, fontFamily: 'system-ui, sans-serif' }, '10m'),
+                h('text', { x: 224, y: 92, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#fef3c7', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'Self-Rescue Window'),
+                h('text', { x: 224, y: 107, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#94a3b8', fontSize: 10, fontFamily: 'system-ui, sans-serif' }, 'Meaningful motion'),
+                /* Node 3: 1 HR */
+                h('circle', { cx: 378, cy: 62, r: 14, fill: isContrast ? '#000000' : '#991b1b', stroke: isContrast ? '#ff6b6b' : '#fca5a5', strokeWidth: 2 }),
+                h('text', { x: 378, y: 66, textAnchor: 'middle', fill: '#ffffff', fontSize: 10.5, fontWeight: 900, fontFamily: 'system-ui, sans-serif' }, '1hr'),
+                h('text', { x: 378, y: 92, textAnchor: 'middle', fill: isContrast ? '#ff6b6b' : '#fecaca', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'HELP + Float'),
+                h('text', { x: 378, y: 107, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#94a3b8', fontSize: 10, fontFamily: 'system-ui, sans-serif' }, 'Conserve core heat'),
+
+                /* Vertical Divider */
+                h('line', { x1: 450, y1: 16, x2: 450, y2: 108, stroke: isContrast ? '#ffff00' : '#1e3a5f', strokeWidth: 1.2 }),
+
+                /* Right: Live Readiness Arc Gauge */
+                h('circle', { cx: 506, cy: 62, r: ringR, fill: 'none', stroke: isContrast ? '#333333' : '#1e293b', strokeWidth: 7 }),
+                h('circle', {
+                  cx: 506, cy: 62, r: ringR, fill: 'none',
+                  stroke: isContrast ? '#00ff66' : '#38bdf8',
+                  strokeWidth: 7,
+                  strokeLinecap: 'round',
+                  strokeDasharray: ringC.toFixed(1),
+                  strokeDashoffset: ringOffset.toFixed(1),
+                  transform: 'rotate(-90 506 62)'
+                }),
+                h('text', { x: 506, y: 66, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#f8fafc', fontSize: 13, fontWeight: 900, fontFamily: 'system-ui, sans-serif' }, readinessPct + '%'),
+                h('text', { x: 552, y: 46, fill: isContrast ? '#ffff00' : '#f8fafc', fontSize: 11.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'Lab Readiness'),
+                h('text', { x: 552, y: 64, fill: isContrast ? '#ffffff' : '#bae6fd', fontSize: 10.5, fontWeight: 700, fontFamily: 'system-ui, sans-serif' },
+                  visitedCount + ' / ' + educationalTiles.length + ' modules'),
+                h('text', { x: 552, y: 80, fill: isContrast ? '#00ff66' : '#86efac', fontSize: 10.5, fontWeight: 700, fontFamily: 'system-ui, sans-serif' },
+                  safetyCompleted + ' / ' + safetyTiles.length + ' essentials'),
+                h('text', { x: 552, y: 96, fill: isContrast ? '#ffff00' : '#fde68a', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui, sans-serif' },
+                  Object.keys(badges).length + ' badges earned')
+              )
+            );
+          })(),
 
           h('section', { className: 'swimlab-section', 'aria-labelledby': 'swimlab-essential-heading' },
             h('div', { className: 'swimlab-section-head' },
@@ -2632,7 +2788,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       else if (view === 'askLifeguard') content = renderAskLifeguard();
       else if (view === 'resources') content = renderResources();
       else if (view === 'strokeHunt') content = (function() {
-        var iq = d.strokeHunt || { rate: 50, length: 50, kick: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var rawIq = _isPlainObj(d.strokeHunt) ? d.strokeHunt : {};
+        var clamp100 = function(v, fb) { var n = (typeof v === 'number' && isFinite(v)) ? v : fb; return Math.max(0, Math.min(100, n)); };
+        var iq = {
+          rate: clamp100(rawIq.rate, 50),
+          length: clamp100(rawIq.length, 50),
+          kick: clamp100(rawIq.kick, 50),
+          hypothesis: typeof rawIq.hypothesis === 'string' ? rawIq.hypothesis : '',
+          stuckRevealed: !!rawIq.stuckRevealed,
+          understood: !!rawIq.understood,
+          explanation: typeof rawIq.explanation === 'string' ? rawIq.explanation : '',
+          log: Array.isArray(rawIq.log) ? rawIq.log : []
+        };
         function setIQ(patch) { upd('strokeHunt', Object.assign({}, iq, patch)); }
         var efficiency = iq.length * 0.5 + iq.kick * 0.3 - Math.abs(iq.rate - 50) * 0.4;
         var state;
@@ -2641,18 +2808,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         else if (efficiency > 10) state = 'recreational';
         else state = 'inefficient';
         var sm = {
-          elite:        { label: __alloT('stem.swimlab.elite_efficiency', '🏊 Elite efficiency'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.swimlab.high_distance_per_stroke_balanced_kick', 'High distance per stroke, balanced kick, optimal rate.') },
-          efficient:    { label: __alloT('stem.swimlab.efficient_stroke', '🟢 Efficient stroke'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.swimlab.good_fundamentals_sustainable_for_dist', 'Good fundamentals. Sustainable for distance.') },
-          recreational: { label: __alloT('stem.swimlab.recreational', '🟡 Recreational'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.swimlab.casual_swimming_tires_sooner', 'Casual swimming. Tires sooner.') },
-          inefficient:  { label: __alloT('stem.swimlab.inefficient_stroke', '🔴 Inefficient stroke'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.swimlab.wasted_energy_suboptimal_length_or_kic', 'Wasted energy. Suboptimal length or kick.') }
+          elite:        { label: __alloT('stem.swimlab.elite_efficiency', '🏊 Elite efficiency'), color: isContrast ? '#00ff66' : '#059669', bg: isContrast ? '#000000' : '#ecfdf5', border: isContrast ? '#00ff66' : '#86efac', desc: __alloT('stem.swimlab.high_distance_per_stroke_balanced_kick', 'High distance per stroke, balanced kick, optimal rate.') },
+          efficient:    { label: __alloT('stem.swimlab.efficient_stroke', '🟢 Efficient stroke'), color: isContrast ? '#00ffff' : '#0891b2', bg: isContrast ? '#000000' : '#ecfeff', border: isContrast ? '#00ffff' : '#67e8f9', desc: __alloT('stem.swimlab.good_fundamentals_sustainable_for_dist', 'Good fundamentals. Sustainable for distance.') },
+          recreational: { label: __alloT('stem.swimlab.recreational', '🟡 Recreational'), color: isContrast ? '#ffff00' : '#b45309', bg: isContrast ? '#000000' : '#fffbeb', border: isContrast ? '#ffff00' : '#fcd34d', desc: __alloT('stem.swimlab.casual_swimming_tires_sooner', 'Casual swimming. Tires sooner.') },
+          inefficient:  { label: __alloT('stem.swimlab.inefficient_stroke', '🔴 Inefficient stroke'), color: isContrast ? '#ff6b6b' : '#dc2626', bg: isContrast ? '#000000' : '#fef2f2', border: isContrast ? '#ff6b6b' : '#fca5a5', desc: __alloT('stem.swimlab.wasted_energy_suboptimal_length_or_kic', 'Wasted energy. Suboptimal length or kick.') }
         }[state];
-        return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
-          h('div', { style: { padding: 16, background: T.bg2 || '#0f172a', borderRadius: 10, color: T.text, border: '1px solid #0891b2' } },
-            h('h3', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, __alloT('stem.swimlab.stroke_efficiency_discovery', '🏊 Stroke efficiency discovery')),
-            h('p', { style: { fontSize: 12, marginBottom: 10 } }, __alloT('stem.swimlab.sliders_for_stroke_rate_length_per_str', 'Sliders for stroke rate, length per stroke, kick intensity. Discrete 4-state efficiency. No score, no reveal.')),
-            h('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
+        return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto', color: T.text } },
+          backBar(__alloT('stem.swimlab.stroke_efficiency_discovery', '🏊 Stroke efficiency discovery')),
+          h('div', { style: { padding: 16, backgroundColor: isContrast ? '#000000' : '#0f172a', borderRadius: 12, color: '#f8fafc', border: isContrast ? '2px solid #ffff00' : '1px solid #0891b2' } },
+            h('h3', { style: { fontSize: 15, fontWeight: 800, color: isContrast ? '#ffff00' : '#67e8f9', margin: '0 0 6px' } }, __alloT('stem.swimlab.stroke_efficiency_discovery', '🏊 Stroke efficiency discovery')),
+            h('p', { style: { fontSize: 12, marginBottom: 10, color: isContrast ? '#ffffff' : '#cbd5e1' } }, __alloT('stem.swimlab.sliders_for_stroke_rate_length_per_str', 'Sliders for stroke rate, length per stroke, kick intensity. Discrete 4-state efficiency. No score, no reveal.')),
+            /* One-click Stroke Profile Presets */
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10, alignItems: 'center' } },
+              h('span', { style: { fontSize: 11, fontWeight: 800, color: isContrast ? '#ffff00' : '#7dd3fc' } }, __alloT('stem.swimlab.presets_label', 'Try a profile:')),
+              [
+                { label: 'Sprint Thrash', rate: 95, length: 25, kick: 40 },
+                { label: 'Steady Distance', rate: 50, length: 75, kick: 50 },
+                { label: 'Long-Glide Elite', rate: 50, length: 95, kick: 70 }
+              ].map(function(pr) {
+                return h('button', {
+                  key: pr.label, type: 'button',
+                  onClick: function() { setIQ({ rate: pr.rate, length: pr.length, kick: pr.kick }); },
+                  style: {
+                    padding: '4px 10px', borderRadius: 999,
+                    backgroundColor: isContrast ? '#000000' : '#1e293b',
+                    color: isContrast ? '#ffff00' : '#e0f2fe',
+                    border: isContrast ? '1px solid #ffff00' : '1px solid #38bdf8',
+                    fontSize: 11, fontWeight: 700, cursor: 'pointer'
+                  }
+                }, pr.label);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', backgroundColor: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
-              h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
+              h('div', { style: { fontSize: 11.5, color: isContrast ? '#ffffff' : '#334155', marginTop: 4 } }, sm.desc)
             ),
             // Efficiency-vs-stroke-rate curve: efficiency = length·0.5 + kick·0.3 − |rate−50|·0.4,
             // a tent peaking at rate ≈ 50. Holding length+kick at the current sliders, sweep rate so
@@ -2660,23 +2849,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             (function() {
               var L = iq.length, K = iq.kick;
               var effAt = function(r) { return L * 0.5 + K * 0.3 - Math.abs(r - 50) * 0.4; };
-              var W = 300, Hc = 110, padL = 26, padR = 10, padT = 14, padB = 22;
+              var W = 360, Hc = 132, padL = 36, padR = 16, padT = 22, padB = 26;
               var maxE = L * 0.5 + K * 0.3, minE = maxE - 20, span = Math.max(1, maxE - minE);
               var px = function(r) { return padL + (r / 100) * (W - padL - padR); };
               var py = function(e) { return padT + (1 - (e - minE) / span) * (Hc - padT - padB); };
               var pts = [];
               for (var r = 0; r <= 100; r += 5) pts.push(px(r).toFixed(1) + ',' + py(effAt(r)).toFixed(1));
               var curE = effAt(iq.rate);
-              return h('svg', { viewBox: '0 0 ' + W + ' ' + Hc, width: '100%', style: { maxWidth: 340, display: 'block', margin: '0 auto 10px', background: '#0b1220', borderRadius: 8, border: '1px solid rgba(8,145,178,0.35)' }, role: 'img', 'aria-label': __alloT('stem.swimlab.efficiency_versus_stroke_rate_with_you', 'Efficiency versus stroke rate. With your current length and kick, efficiency peaks at a moderate stroke rate near 50, not at the fastest rate.') },
-                h('line', { x1: padL, y1: padT, x2: padL, y2: Hc - padB, stroke: '#334155', strokeWidth: 1 }),
-                h('line', { x1: padL, y1: Hc - padB, x2: W - padR, y2: Hc - padB, stroke: '#334155', strokeWidth: 1 }),
-                h('line', { x1: px(50), y1: padT, x2: px(50), y2: Hc - padB, stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }),
-                h('text', { x: px(50), y: padT - 4, fill: '#22c55e', fontSize: 8, textAnchor: 'middle' }, __alloT('stem.swimlab.optimal_rate', 'optimal rate')),
-                h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#67e8f9', strokeWidth: 2 }),
-                h('circle', { cx: px(iq.rate), cy: py(curE), r: 4, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
-                h('text', { x: px(iq.rate), y: py(curE) - 7, fill: '#fbbf24', fontSize: 8, textAnchor: 'middle', fontWeight: 'bold' }, 'you'),
-                h('text', { x: (padL + W - padR) / 2, y: Hc - 5, fill: T.dim, fontSize: 9, textAnchor: 'middle' }, __alloT('stem.swimlab.stroke_rate', 'Stroke rate →')),
-                h('text', { x: 4, y: padT + 4, fill: T.dim, fontSize: 8 }, 'eff')
+              return h('svg', { viewBox: '0 0 ' + W + ' ' + Hc, width: '100%', style: { maxWidth: 420, display: 'block', margin: '0 auto 12px', backgroundColor: isContrast ? '#000000' : '#0b1220', borderRadius: 8, border: isContrast ? '2px solid #ffff00' : '1px solid rgba(8,145,178,0.45)' }, role: 'img', 'aria-label': __alloT('stem.swimlab.efficiency_versus_stroke_rate_with_you', 'Efficiency versus stroke rate. With your current length and kick, efficiency peaks at a moderate stroke rate near 50, not at the fastest rate.') },
+                h('line', { x1: padL, y1: padT, x2: padL, y2: Hc - padB, stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1.2 }),
+                h('line', { x1: padL, y1: Hc - padB, x2: W - padR, y2: Hc - padB, stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1.2 }),
+                h('line', { x1: px(50), y1: padT, x2: px(50), y2: Hc - padB, stroke: isContrast ? '#00ff66' : '#22c55e', strokeWidth: 1.4, strokeDasharray: '4 3', opacity: 0.85 }),
+                h('text', { x: px(50), y: padT - 6, fill: isContrast ? '#00ff66' : '#4ade80', fontSize: 10.5, fontWeight: 800, textAnchor: 'middle', fontFamily: 'system-ui, sans-serif' }, __alloT('stem.swimlab.optimal_rate', 'optimal rate')),
+                h('polyline', { points: pts.join(' '), fill: 'none', stroke: isContrast ? '#00ffff' : '#67e8f9', strokeWidth: 2.5 }),
+                h('circle', { cx: px(iq.rate), cy: py(curE), r: 5, fill: isContrast ? '#ffff00' : '#fbbf24', stroke: '#000000', strokeWidth: 1.5 }),
+                h('text', { x: Math.max(padL + 16, Math.min(W - padR - 16, px(iq.rate))), y: Math.max(padT + 12, py(curE) - 9), fill: isContrast ? '#ffff00' : '#fde68a', fontSize: 10.5, textAnchor: 'middle', fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'you'),
+                h('text', { x: (padL + W - padR) / 2, y: Hc - 7, fill: isContrast ? '#ffffff' : '#cbd5e1', fontSize: 10.5, fontWeight: 700, textAnchor: 'middle', fontFamily: 'system-ui, sans-serif' }, __alloT('stem.swimlab.stroke_rate', 'Stroke rate \u2192')),
+                h('text', { x: 8, y: padT + 10, fill: isContrast ? '#ffffff' : '#cbd5e1', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, 'eff')
               );
             })(),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },

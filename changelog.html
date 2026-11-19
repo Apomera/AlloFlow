@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+  <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AlloFlow Release History &amp; Changelog</title>
 <meta name="robots" content="index, follow">
@@ -180,10 +181,14 @@
     * { transition: none !important; }
     html { scroll-behavior: auto; }
   }
+  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 999; background: #1e1b4b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { left: 12px; outline: 3px solid #facc15; outline-offset: 2px; }
+  @media (forced-colors: active) { h1 { -webkit-text-fill-color: CanvasText; color: CanvasText; background: none; } a:focus-visible, button:focus-visible { outline: 3px solid Highlight; outline-offset: 2px; } }
 </style>
 </head>
 <body>
-  <main class="wrap" id="main">
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <main class="wrap" id="main" tabindex="-1">
     <nav aria-label="AlloFlow pages" style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:24px"><a class="back" style="margin-bottom:0" href="launch.html">&larr; Back to launch</a><a class="back" style="margin-bottom:0" href="about.html">About AlloFlow</a><a class="back" style="margin-bottom:0" href="packets.html">Quick Practice &amp; Checks</a></nav>
     <h1>Changelog</h1>
     <p class="sub">AlloFlow release history, newest first.</p>

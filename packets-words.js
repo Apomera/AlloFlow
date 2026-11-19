@@ -610,16 +610,26 @@
         Promise.resolve(asked).then(function (stream) {
           if (rec.cancelled || state.rec !== rec) { try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {} return; }
           rec.stream = stream;
+          var mime = '';
+          if (typeof root.MediaRecorder.isTypeSupported === 'function') {
+            var mimes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+            for (var mi = 0; mi < mimes.length; mi++) {
+              try { if (root.MediaRecorder.isTypeSupported(mimes[mi])) { mime = mimes[mi]; break; } } catch (_) {}
+            }
+          }
           var recorder;
-          try { recorder = new root.MediaRecorder(stream); } catch (error) { releaseMicrophone(); state.rec = null; said(clipPart, TEXT.cannotRecord); drawClip('record'); return; }
+          try { recorder = mime ? new root.MediaRecorder(stream, { mimeType: mime }) : new root.MediaRecorder(stream); } catch (error) {
+            try { recorder = new root.MediaRecorder(stream); } catch (error2) { releaseMicrophone(); state.rec = null; said(clipPart, TEXT.cannotRecord); drawClip('record'); return; }
+          }
           rec.recorder = recorder;
           recorder.ondataavailable = function (event) { if (event && event.data && event.data.size) rec.chunks.push(event.data); };
           recorder.onstop = function () {
             releaseMicrophone();
             if (rec.cancelled || state.rec !== rec) return;
+            if (!rec.chunks.length) { state.rec = null; said(clipPart, TEXT.nothingHeard); drawClip('record'); return; }
             rec.stage = 'working';
             drawClip();
-            var blob = new root.Blob(rec.chunks, { type: (rec.chunks[0] && rec.chunks[0].type) || recorder.mimeType || 'audio/webm' });
+            var blob = new root.Blob(rec.chunks, { type: (rec.chunks[0] && rec.chunks[0].type) || recorder.mimeType || mime || 'audio/webm' });
             readBlob(blob).then(decodeRecording).then(function (samples) {
               if (state.rec !== rec) return;
               var spoken = trimSilence(samples, RATE);

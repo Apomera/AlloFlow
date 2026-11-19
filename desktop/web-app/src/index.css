@@ -43,6 +43,15 @@ select:not([multiple]):not([size]):not(.appearance-none) {
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
 }
 @media (forced-colors: active) {
+    :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+        outline: 3px solid Highlight !important;
+        outline-offset: 2px !important;
+    }
+    .bg-clip-text.text-transparent {
+        color: CanvasText !important;
+        -webkit-text-fill-color: CanvasText !important;
+        background-image: none !important;
+    }
     select:not([multiple]):not([size]):not(.appearance-none) {
         appearance: auto;
         -webkit-appearance: auto;

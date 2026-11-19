@@ -57,8 +57,58 @@
       '@keyframes wheelFireFlame{50%{transform:scaleY(.9) translateY(2px);opacity:.75}}',
       '@keyframes wheelFireFlow{to{stroke-dashoffset:-40}}',
       '@keyframes wheelFireHeat{50%{opacity:.68}}',
-      '@container(max-width:760px){.wheel-fire-main{grid-template-columns:1fr}.wheel-fire-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.wheel-fire-stage-line{grid-template-columns:repeat(3,minmax(0,1fr))}}',
+      '@container(max-width:760px){.wheel-fire-main{grid-template-columns:1fr}.wheel-fire-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.wheel-fire-stage-line{grid-template-columns:repeat(3,minmax(0,1fr))}.wf-hero-deck{padding:14px!important}}',
       '@media(max-width:480px){.wheel-fire-stats{grid-template-columns:1fr}}',
+      '.wf-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:18px 20px;background:linear-gradient(135deg,#2a160f 0%,#4e2517 54%,#6b321b 100%);border:1px solid rgba(251,191,36,.36);box-shadow:0 16px 34px rgba(42,22,15,.28);color:#fff7ed}',
+      '.wf-hero-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.42);color:#fde68a}',
+      '.wf-telemetry-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,10,8,.46);border:1px solid rgba(253,230,138,.28);color:#fef3c7;white-space:nowrap}',
+      '.wf-telemetry-pill strong{color:#fbbf24;font-weight:900}',
+      '.wf-preset-bar{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(253,230,138,.2)}',
+      '.wf-preset-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,247,237,.12);border:1px solid rgba(253,230,138,.36);color:#fff7ed;cursor:pointer;transition:background-color .15s,border-color .15s,transform .12s;min-height:34px}',
+      '.wf-preset-chip:hover{background:rgba(251,191,36,.24);border-color:#fbbf24;color:#ffffff}',
+      '.wf-mini-profile{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;background:rgba(15,10,8,.42);border:1px solid rgba(253,230,138,.26);min-width:0}',
+      '.wf-nav-bar{box-shadow:0 4px 14px rgba(42,22,15,.08)}',
+      '.wf-stage-card{border-radius:16px;padding:8px;background:linear-gradient(180deg,rgba(41,37,36,.06),rgba(120,53,15,.04));border:1px solid rgba(180,83,9,.22);box-shadow:0 10px 26px rgba(42,22,15,.08)}',
+      '.wheel-fire-shell[data-wf-theme="dark"],.dark .wheel-fire-shell{background:linear-gradient(135deg,#141110 0%,#1c1614 55%,#181412 100%)!important;color:#f5f5f4!important;border:1px solid #44403c}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .wf-hero-deck,.dark .wheel-fire-shell .wf-hero-deck{background:linear-gradient(135deg,#1c100b 0%,#36190f 55%,#4c2314 100%)!important;border-color:rgba(251,191,36,.42)!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-white,.dark .wheel-fire-shell .bg-white{background-color:#1c1917!important;color:#f5f5f4!important;border-color:#44403c!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-slate-50,.dark .wheel-fire-shell .bg-slate-50,.wheel-fire-shell[data-wf-theme="dark"] .bg-slate-100,.dark .wheel-fire-shell .bg-slate-100,.wheel-fire-shell[data-wf-theme="dark"] .bg-stone-50,.dark .wheel-fire-shell .bg-stone-50,.wheel-fire-shell[data-wf-theme="dark"] .bg-stone-100,.dark .wheel-fire-shell .bg-stone-100{background-color:#292524!important;color:#e7e5e4!important;border-color:#44403c!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-amber-50,.dark .wheel-fire-shell .bg-amber-50,.wheel-fire-shell[data-wf-theme="dark"] .bg-amber-100,.dark .wheel-fire-shell .bg-amber-100,.wheel-fire-shell[data-wf-theme="dark"] .bg-orange-50,.dark .wheel-fire-shell .bg-orange-50,.wheel-fire-shell[data-wf-theme="dark"] .bg-orange-100,.dark .wheel-fire-shell .bg-orange-100,.wheel-fire-shell[data-wf-theme="dark"] .bg-yellow-50,.dark .wheel-fire-shell .bg-yellow-50{background-color:#2c1d12!important;color:#fef3c7!important;border-color:#92400e!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-green-50,.dark .wheel-fire-shell .bg-green-50,.wheel-fire-shell[data-wf-theme="dark"] .bg-lime-50,.dark .wheel-fire-shell .bg-lime-50{background-color:#0f291e!important;color:#d1fae5!important;border-color:#166534!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-teal-50,.dark .wheel-fire-shell .bg-teal-50{background-color:#0f2726!important;color:#ccfbf1!important;border-color:#115e59!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-cyan-50,.dark .wheel-fire-shell .bg-cyan-50{background-color:#0c2330!important;color:#cffafe!important;border-color:#155e75!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-sky-50,.dark .wheel-fire-shell .bg-sky-50{background-color:#0e2234!important;color:#e0f2fe!important;border-color:#075985!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-blue-50,.dark .wheel-fire-shell .bg-blue-50,.wheel-fire-shell[data-wf-theme="dark"] .bg-blue-100,.dark .wheel-fire-shell .bg-blue-100{background-color:#12203a!important;color:#dbeafe!important;border-color:#1e40af!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-indigo-50,.dark .wheel-fire-shell .bg-indigo-50,.wheel-fire-shell[data-wf-theme="dark"] .bg-indigo-100,.dark .wheel-fire-shell .bg-indigo-100{background-color:#1c1b3a!important;color:#e0e7ff!important;border-color:#3730a3!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-violet-50,.dark .wheel-fire-shell .bg-violet-50,.wheel-fire-shell[data-wf-theme="dark"] .bg-violet-100,.dark .wheel-fire-shell .bg-violet-100{background-color:#22183a!important;color:#ede9fe!important;border-color:#5b21b6!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-fuchsia-50,.dark .wheel-fire-shell .bg-fuchsia-50{background-color:#2e1432!important;color:#fae8ff!important;border-color:#86198f!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-emerald-50,.dark .wheel-fire-shell .bg-emerald-50{background-color:#0d281f!important;color:#d1fae5!important;border-color:#065f46!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .bg-rose-50,.dark .wheel-fire-shell .bg-rose-50,.wheel-fire-shell[data-wf-theme="dark"] .bg-red-50,.dark .wheel-fire-shell .bg-red-50{background-color:#32141a!important;color:#ffe4e6!important;border-color:#9f1239!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-slate-900,.dark .wheel-fire-shell .text-slate-900,.wheel-fire-shell[data-wf-theme="dark"] .text-stone-800,.dark .wheel-fire-shell .text-stone-800{color:#f5f5f4!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-slate-700,.dark .wheel-fire-shell .text-slate-700,.wheel-fire-shell[data-wf-theme="dark"] .text-stone-700,.dark .wheel-fire-shell .text-stone-700{color:#e7e5e4!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-slate-600,.dark .wheel-fire-shell .text-slate-600,.wheel-fire-shell[data-wf-theme="dark"] .text-slate-500,.dark .wheel-fire-shell .text-slate-500,.wheel-fire-shell[data-wf-theme="dark"] .text-stone-600,.dark .wheel-fire-shell .text-stone-600{color:#d6d3d1!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-amber-950,.dark .wheel-fire-shell .text-amber-950,.wheel-fire-shell[data-wf-theme="dark"] .text-amber-900,.dark .wheel-fire-shell .text-amber-900,.wheel-fire-shell[data-wf-theme="dark"] .text-amber-800,.dark .wheel-fire-shell .text-amber-800,.wheel-fire-shell[data-wf-theme="dark"] .text-orange-950,.dark .wheel-fire-shell .text-orange-950,.wheel-fire-shell[data-wf-theme="dark"] .text-orange-900,.dark .wheel-fire-shell .text-orange-900,.wheel-fire-shell[data-wf-theme="dark"] .text-orange-800,.dark .wheel-fire-shell .text-orange-800{color:#fde68a!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-teal-950,.dark .wheel-fire-shell .text-teal-950,.wheel-fire-shell[data-wf-theme="dark"] .text-teal-900,.dark .wheel-fire-shell .text-teal-900{color:#99f6e4!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-cyan-950,.dark .wheel-fire-shell .text-cyan-950,.wheel-fire-shell[data-wf-theme="dark"] .text-cyan-900,.dark .wheel-fire-shell .text-cyan-900{color:#a5f3fc!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-sky-950,.dark .wheel-fire-shell .text-sky-950,.wheel-fire-shell[data-wf-theme="dark"] .text-sky-900,.dark .wheel-fire-shell .text-sky-900{color:#bae6fd!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-blue-950,.dark .wheel-fire-shell .text-blue-950,.wheel-fire-shell[data-wf-theme="dark"] .text-blue-900,.dark .wheel-fire-shell .text-blue-900{color:#bfdbfe!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-indigo-950,.dark .wheel-fire-shell .text-indigo-950,.wheel-fire-shell[data-wf-theme="dark"] .text-indigo-900,.dark .wheel-fire-shell .text-indigo-900{color:#c7d2fe!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-violet-950,.dark .wheel-fire-shell .text-violet-950,.wheel-fire-shell[data-wf-theme="dark"] .text-violet-900,.dark .wheel-fire-shell .text-violet-900{color:#ddd6fe!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-fuchsia-950,.dark .wheel-fire-shell .text-fuchsia-950,.wheel-fire-shell[data-wf-theme="dark"] .text-fuchsia-900,.dark .wheel-fire-shell .text-fuchsia-900{color:#f5d0fe!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-emerald-950,.dark .wheel-fire-shell .text-emerald-950,.wheel-fire-shell[data-wf-theme="dark"] .text-emerald-900,.dark .wheel-fire-shell .text-emerald-900,.wheel-fire-shell[data-wf-theme="dark"] .text-emerald-800,.dark .wheel-fire-shell .text-emerald-800{color:#a7f3d0!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-rose-950,.dark .wheel-fire-shell .text-rose-950,.wheel-fire-shell[data-wf-theme="dark"] .text-rose-900,.dark .wheel-fire-shell .text-rose-900,.wheel-fire-shell[data-wf-theme="dark"] .text-red-950,.dark .wheel-fire-shell .text-red-950,.wheel-fire-shell[data-wf-theme="dark"] .text-red-900,.dark .wheel-fire-shell .text-red-900,.wheel-fire-shell[data-wf-theme="dark"] .text-red-800,.dark .wheel-fire-shell .text-red-800{color:#fecdd3!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] input,.dark .wheel-fire-shell input,.wheel-fire-shell[data-wf-theme="dark"] select,.dark .wheel-fire-shell select,.wheel-fire-shell[data-wf-theme="dark"] textarea,.dark .wheel-fire-shell textarea{background-color:#292524!important;color:#f5f5f4!important;border-color:#78716c!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .wf-stage-card,.dark .wheel-fire-shell .wf-stage-card{background:#1c1917!important;border-color:#57534e!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"],.theme-contrast .wheel-fire-shell{background:#000000!important;color:#ffffff!important;border:2px solid #ffffff!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] .wf-hero-deck,.theme-contrast .wheel-fire-shell .wf-hero-deck{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] .wf-hero-badge,.theme-contrast .wheel-fire-shell .wf-hero-badge,.wheel-fire-shell[data-wf-theme="contrast"] .wf-telemetry-pill,.theme-contrast .wheel-fire-shell .wf-telemetry-pill,.wheel-fire-shell[data-wf-theme="contrast"] .wf-mini-profile,.theme-contrast .wheel-fire-shell .wf-mini-profile{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] .wf-preset-chip,.theme-contrast .wheel-fire-shell .wf-preset-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] [class*="bg-"],.theme-contrast .wheel-fire-shell [class*="bg-"]{background-color:#000000!important;color:#ffffff!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] [class*="text-"],.theme-contrast .wheel-fire-shell [class*="text-"]{color:#ffffff!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] button,.theme-contrast .wheel-fire-shell button,.wheel-fire-shell[data-wf-theme="contrast"] input,.theme-contrast .wheel-fire-shell input,.wheel-fire-shell[data-wf-theme="contrast"] select,.theme-contrast .wheel-fire-shell select,.wheel-fire-shell[data-wf-theme="contrast"] textarea,.theme-contrast .wheel-fire-shell textarea{background:#000000!important;color:#ffffff!important;border:2px solid #ffffff!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] button[aria-selected="true"],.theme-contrast .wheel-fire-shell button[aria-selected="true"],.wheel-fire-shell[data-wf-theme="contrast"] button[aria-pressed="true"],.theme-contrast .wheel-fire-shell button[aria-pressed="true"]{background:#000000!important;color:#ffff00!important;border:2px solid #ffff00!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] a,.theme-contrast .wheel-fire-shell a,.wheel-fire-shell[data-wf-theme="contrast"] output,.theme-contrast .wheel-fire-shell output{color:#ffff00!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] *:focus-visible,.theme-contrast .wheel-fire-shell *:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}',
       '@media(prefers-reduced-motion:reduce){.wheel-fire-shell *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}',
       '@media(forced-colors:active){.wheel-fire-shell button,.wheel-fire-shell input,.wheel-fire-shell select,.wheel-fire-shell textarea,.wheel-fire-shell svg,.wheel-fire-shell section{border:1px solid ButtonText!important;background:Canvas!important;color:CanvasText!important;box-shadow:none!important}.wheel-fire-shell *:focus-visible{outline:3px solid Highlight!important}}'
     ].join('');
@@ -3199,7 +3249,11 @@
       __alloWheelCtx = ctx;
       var React = ctx.React || window.React;
       var h = React.createElement;
-      var data = (ctx.toolData && ctx.toolData.wheelAndFire) || {};
+      var rawData = ctx && ctx.toolData && ctx.toolData.wheelAndFire;
+      var data = (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) ? rawData : {};
+      var isContrast = !!(ctx && ctx.isContrast) || (typeof document !== 'undefined' && document.documentElement && document.documentElement.classList.contains('theme-contrast'));
+      var isDark = !!(ctx && (ctx.isDark || ctx.theme === 'dark')) || (typeof document !== 'undefined' && document.documentElement && document.documentElement.classList.contains('dark'));
+      var wfTheme = isContrast ? 'contrast' : (isDark ? 'dark' : 'light');
       var experienceMode = ['guided', 'studio', 'research'].indexOf(data.experienceMode) >= 0 ? data.experienceMode : 'studio';
       var vessel = normalizeVessel(data.vessel, data.clayBody || 'stoneware');
       var view = data.view || 'shape';
@@ -3946,7 +4000,8 @@
         }
         return h('section', { id: 'wheel-fire-panel-shape', role: 'tabpanel', 'aria-labelledby': 'wheel-fire-tab-shape', className: 'space-y-3' },
           h('div', { className: 'wheel-fire-main' },
-            h('div', { className: 'space-y-2' }, vesselSvg(),
+            h('div', { className: 'space-y-2 min-w-0' },
+              h('div', { className: 'wf-stage-card' }, vesselSvg()),
               h('p', { id: 'wheel-fire-vessel-help', className: 'text-[0.6875rem] text-slate-600 text-center' },
                 h('span', { className: 'block font-bold text-slate-700' }, 'Center applies once to the whole form. Add coil applies once at the rim. Trim/Scrape stays in the highlighted lower zone. Open adds a cavity-floor ruler. Other local tools apply where you press or drag, once per newly entered ring.'),
                 selectedGestureMode === 'single-global'
@@ -5965,15 +6020,96 @@
         );
       }
 
-      return h('div', { className: 'wheel-fire-shell space-y-3 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-stone-100 p-3 sm:p-4', 'data-wheel-fire-lab': 'true', 'data-experience-mode': experienceMode },
-        h('header', { className: 'rounded-2xl bg-[#3d251d] text-amber-50 p-4 shadow-lg' },
+      var activeBodyProfile = materialProfile(vessel);
+      var heroEmblemSvg = h('svg', { width: 56, height: 56, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+        h('defs', null,
+          h('linearGradient', { id: 'wf-emblem-clay', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#f59e0b' }),
+            h('stop', { offset: '55%', stopColor: '#c2410c' }),
+            h('stop', { offset: '100%', stopColor: '#7c2d12' })
+          )
+        ),
+        h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 16, fill: isContrast ? '#000000' : 'rgba(15,10,8,0.48)', stroke: isContrast ? '#00ff00' : 'rgba(251,191,36,0.55)', strokeWidth: 1.5 }),
+        h('ellipse', { cx: 32, cy: 50, rx: 20, ry: 5, fill: 'none', stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 2, strokeDasharray: '6 3' }),
+        h('path', { d: 'M24 47 C19 41 18 30 22 23 C24 19 25 16 24 13 L40 13 C39 16 40 19 42 23 C46 30 45 41 40 47 Z', fill: isContrast ? '#000000' : 'url(#wf-emblem-clay)', stroke: isContrast ? '#ffffff' : '#fde68a', strokeWidth: 2 }),
+        h('ellipse', { cx: 32, cy: 13, rx: 8, ry: 2.4, fill: isContrast ? '#000000' : '#451a03', stroke: isContrast ? '#ffff00' : '#fde68a', strokeWidth: 1.4 }),
+        h('path', { d: 'M14 26 Q11 21 15 16 M50 26 Q53 21 49 16', fill: 'none', stroke: isContrast ? '#00ff00' : '#fb923c', strokeWidth: 2, strokeLinecap: 'round' })
+      );
+      var miniVesselSilhouetteSvg = (function () {
+        var ptsL = [], ptsR = [];
+        var maxR = 12.5;
+        for (var mi = 0; mi < RING_COUNT; mi += 3) {
+          var frac = mi / (RING_COUNT - 1);
+          var py = +(42 - frac * 34).toFixed(1);
+          var rx = +(vessel.radii[mi] / maxR * 17).toFixed(1);
+          ptsL.push((24 - rx).toFixed(1) + ',' + py);
+          ptsR.unshift((24 + rx).toFixed(1) + ',' + py);
+        }
+        var dPath = 'M' + ptsL.concat(ptsR).join(' L') + ' Z';
+        return h('svg', { width: 48, height: 48, viewBox: '0 0 48 48', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+          h('rect', { x: 1, y: 1, width: 46, height: 46, rx: 10, fill: isContrast ? '#000000' : 'rgba(0,0,0,0.34)', stroke: isContrast ? '#ffff00' : 'rgba(253,230,138,0.28)', strokeWidth: 1 }),
+          h('line', { x1: 6, y1: 42, x2: 42, y2: 42, stroke: isContrast ? '#00ff00' : '#a8a29e', strokeWidth: 1.5 }),
+          h('path', { d: dPath, fill: isContrast ? '#000000' : (vessel.surfaceColor || activeBodyProfile.color), stroke: isContrast ? '#ffffff' : '#fde68a', strokeWidth: 1.5 })
+        );
+      })();
+      var STUDIO_PRESETS = [
+        { id: 'tea-bowl', label: __alloT('stem.wheelandfire.preset_tea_bowl', 'Wheel Tea Bowl'), icon: '🍵', apply: function () {
+          var next = makeVessel('stoneware', 'bowl');
+          commitVessel(next, 'Loaded wheel-thrown stoneware tea bowl starter.', { view: 'shape', method: 'wheel', activeTool: 'pull', clayBody: 'stoneware', rpm: 56, pressure: 42, handSupport: 65, coilMoisture: next.moisture * 100 });
+        }},
+        { id: 'tall-cyl', label: __alloT('stem.wheelandfire.preset_tall_cyl', 'Porcelain Cylinder'), icon: '🏺', apply: function () {
+          var next = makeVessel('porcelain', 'cylinder');
+          commitVessel(next, 'Loaded porcelain cylinder starter.', { view: 'shape', method: 'wheel', activeTool: 'center', clayBody: 'porcelain', rpm: 64, pressure: 38, handSupport: 72, coilMoisture: next.moisture * 100 });
+        }},
+        { id: 'coil-jar', label: __alloT('stem.wheelandfire.preset_coil_jar', 'Handbuilt Coil Jar'), icon: '〰', apply: function () {
+          var next = makeVessel('tempered', 'jar');
+          commitVessel(next, 'Loaded tempered clay coil-jar starter.', { view: 'shape', method: 'coil', activeTool: 'add-coil', clayBody: 'tempered', rpm: 0, pressure: 46, handSupport: 68, coilMoisture: next.moisture * 100 });
+        }},
+        { id: 'kiln-ready', label: __alloT('stem.wheelandfire.preset_kiln_ready', 'Bisque Kiln Trial'), icon: '🔥', apply: function () {
+          var next = makeVessel('earthenware', 'bowl');
+          next = dryVessel(dryVessel(next, { humidity: 48, dryingRate: 38 }), { humidity: 48, dryingRate: 38 });
+          commitVessel(next, 'Loaded bone-dry earthenware bowl ready for bisque firing.', { view: 'kiln', method: 'wheel', clayBody: 'earthenware', kilnType: 'electric', kilnTemp: 980, ramp: 100, soak: 15, coilMoisture: next.moisture * 100 });
+        }}
+      ];
+
+      return h('div', { className: 'wheel-fire-shell space-y-3 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-stone-100 p-3 sm:p-4', 'data-wheel-fire-lab': 'true', 'data-experience-mode': experienceMode, 'data-wf-theme': wfTheme },
+        h('header', { className: 'wf-hero-deck' },
           h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
-            h('div', null, h('h1', { className: 'text-2xl font-black' }, '🏺 Wheel & Fire'), h('p', { className: 'font-bold text-amber-200' }, 'Pottery Lab · material science, cultural context, and creative practice')),
-            h('div', { className: 'rounded-xl bg-black/25 border border-amber-200/30 px-3 py-2 text-xs' }, h('strong', null, materialProfile(vessel).name), ' · ', stageLabel(vessel.stage), ' · ', stats.status)
+            h('div', { className: 'flex items-start gap-3 min-w-0 flex-1' },
+              heroEmblemSvg,
+              h('div', { className: 'min-w-0' },
+                h('span', { className: 'wf-hero-badge' }, __alloT('stem.wheelandfire.hero_badge', 'Ceramics · Material Science & Cultural Craft')),
+                h('h1', { className: 'text-2xl font-black mt-1 tracking-tight' }, '🏺 Wheel & Fire'),
+                h('p', { className: 'font-bold text-amber-200 text-sm' }, 'Pottery Lab · material science, cultural context, and creative practice')
+              )
+            ),
+            h('div', { className: 'wf-mini-profile' },
+              miniVesselSilhouetteSvg,
+              h('div', { className: 'text-xs leading-snug' },
+                h('div', { className: 'font-black text-amber-100' }, activeBodyProfile.name),
+                h('div', { className: 'text-amber-200 font-semibold' }, stageLabel(vessel.stage) + ' · ' + stats.status),
+                h('div', { className: 'text-[11px] text-amber-100/80' }, vessel.heightCm.toFixed(1) + ' cm · ' + Math.round(stats.capacityMl) + ' mL')
+              )
+            )
+          ),
+          h('div', { className: 'flex flex-wrap items-center gap-2 mt-3', role: 'group', 'aria-label': __alloT('stem.wheelandfire.a11y_live_telemetry', 'Live pottery telemetry') },
+            h('span', { className: 'wf-telemetry-pill' }, __alloT('stem.wheelandfire.pill_stability', 'Stability'), ' ', h('strong', null, Math.round(stats.stability) + '%')),
+            h('span', { className: 'wf-telemetry-pill' }, __alloT('stem.wheelandfire.pill_min_wall', 'Min wall'), ' ', h('strong', null, stats.minWallCm.toFixed(2) + ' cm')),
+            h('span', { className: 'wf-telemetry-pill' }, __alloT('stem.wheelandfire.pill_moisture', 'Moisture'), ' ', h('strong', null, Math.round(vessel.moisture * 100) + '%')),
+            h('span', { className: 'wf-telemetry-pill' }, __alloT('stem.wheelandfire.pill_maturity', 'Maturity'), ' ', h('strong', null, activeBodyProfile.maturity + '°C')),
+            method === 'wheel'
+              ? h('span', { className: 'wf-telemetry-pill' }, __alloT('stem.wheelandfire.pill_wheel', 'Wheel'), ' ', h('strong', null, Math.round(rpm) + ' RPM'))
+              : h('span', { className: 'wf-telemetry-pill' }, __alloT('stem.wheelandfire.pill_coils', 'Seams'), ' ', h('strong', null, coilJointProfile.jointCount + ' tracked'))
+          ),
+          h('div', { className: 'wf-preset-bar', role: 'group', 'aria-label': __alloT('stem.wheelandfire.a11y_studio_presets', 'Quick studio presets') },
+            h('span', { className: 'text-[11px] font-extrabold uppercase tracking-wider text-amber-200 mr-1' }, __alloT('stem.wheelandfire.presets_label', 'Starter studies:')),
+            STUDIO_PRESETS.map(function (preset) {
+              return h('button', { key: preset.id, type: 'button', onClick: preset.apply, className: 'wf-preset-chip' }, preset.icon + ' ' + preset.label);
+            })
           ),
           h('div', { className: 'mt-3' }, stageStrip())
         ),
-        h('nav', { role: 'tablist', 'aria-label': __alloT('stem.wheelandfire.a11y_wheel_and_fire_sections', 'Wheel and Fire sections'), 'aria-orientation': 'horizontal', className: 'flex flex-wrap gap-2 rounded-xl border border-amber-600 bg-white p-2' },
+        h('nav', { role: 'tablist', 'aria-label': __alloT('stem.wheelandfire.a11y_wheel_and_fire_sections', 'Wheel and Fire sections'), 'aria-orientation': 'horizontal', className: 'wf-nav-bar flex flex-wrap gap-2 rounded-xl border border-amber-600 bg-white p-2' },
           tabButton('shape', 'Shape', '🏺'),
           tabButton('science', 'Clay science', '⚖️'),
           tabButton('traditions', 'Ways of making', '🌍'),

@@ -148,7 +148,7 @@ async function narrate(o) {
   const log=o.onLog || (()=>{}); const mode=o.mode || 'accessible';
   if(!['accessible','natural'].includes(mode)) throw Error('Narration mode must be accessible or natural');
   if(o.signal?.aborted)throw Error('Narration cancelled');
-  const source=fs.readFileSync(o.filePath,'utf8'),sourceHash=hash(source);
+  const sourceBytes=fs.readFileSync(o.filePath),sourceHash=hash(sourceBytes);
   const runtimeHash=narrationRuntimeHash(o.assetsRoot);
   const fingerprint=o.outputDir?completionFingerprint(o,sourceHash,runtimeHash):null;
   const completionFile=fingerprint?path.join(o.stateDir,'narration-completions',fingerprint+'.json'):null;
@@ -223,13 +223,14 @@ async function narrate(o) {
       o.onProgress?.({total:plan.segments.length,completed:completed.length,mode,language:route.language,provider:route.provider});
       log('narration: '+completed.length+'/'+plan.segments.length+(reused?' (reused)':''));
     }
-    if(hash(fs.readFileSync(o.filePath,'utf8'))!==sourceHash)throw Error('Source changed during narration; restart using the current document');
+    if(hash(fs.readFileSync(o.filePath))!==sourceHash)throw Error('Source changed during narration; restart using the current document');
     // Claim collision-safe output names only after every section is complete.
     const title=path.basename(o.filePath).replace(/\.html?$/i,'');
     const wavOut=o.claimPath(title+'-'+mode+'-audio.wav');
     // claimPath reserves a placeholder, whereas mergeWavs requires an exclusive create.
     const temp=wavOut+'.'+crypto.randomUUID()+'.tmp';
-    const duration=mergeWavs(completed,temp);fs.renameSync(temp,wavOut);
+    let duration;
+    try{duration=mergeWavs(completed,temp);fs.renameSync(temp,wavOut);}catch(err){try{fs.unlinkSync(temp);}catch(_){}throw err;}
     const mp3Out=o.claimPath(title+'-'+mode+'-audio.mp3');
     const mp3Temp=mp3Out+'.'+crypto.randomUUID()+'.tmp';
     try{const fd=fs.openSync(mp3Temp,'wx',0o600);try{for(const f of mp3s)fs.writeSync(fd,fs.readFileSync(f));fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.renameSync(mp3Temp,mp3Out);}catch(err){try{fs.unlinkSync(mp3Temp);}catch(_){}throw err;}
@@ -241,14 +242,40 @@ async function narrate(o) {
     if(o.epub!==false) {
       const pkg=await page.evaluate(({plan,durations})=>{
         const A=window.AlloModules;const N=A.DocumentNarrationExports;
-        const pkg=A.AltFormatExports.epub(plan.html,{title:plan.title});
+        const pkg=A.AltFormatExports.epub(plan.html,{title:plan.title,externalizeImages:false});
+        const moCss='<style type="text/css">.-epub-media-overlay-active{background-color:#ffea80;color:#111;}</style>';
         // The OPF declares this active class; EPUB readers require its stylesheet.
-        pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace('</head>', () => '<style type="text/css">.-epub-media-overlay-active{background-color:#ffea80;color:#111;}</style></head>');
-        pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace(/<body[^>]*>[\s\S]*<\/body>/, () => '<body>'+plan.bodyHtml+'</body>');
+        if(/<\/head>/i.test(pkg.files['OEBPS/content.xhtml'])){
+          pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace(/<\/head>/i, () => moCss+'</head>');
+        }else if(/<head\s*\/>/i.test(pkg.files['OEBPS/content.xhtml'])){
+          pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace(/<head\s*\/>/i, () => '<head>'+moCss+'</head>');
+        }
+        // Clean plan.bodyHtml for XHTML/EPUB3 while preserving every narration segment id,
+        // then sync nav.xhtml links against the exact heading ids present in content.xhtml.
+        const bodyDoc=new DOMParser().parseFromString('<!doctype html><html><body>'+plan.bodyHtml+'</body></html>','text/html');
+        bodyDoc.querySelectorAll('script,annotation,annotation-xml,button,select,input,textarea').forEach(el=>el.remove());
+        bodyDoc.querySelectorAll('svg').forEach(svg=>{
+          if((!svg.namespaceURI||svg.namespaceURI==='http://www.w3.org/1999/xhtml')&&!svg.getAttribute('xmlns'))svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+        });
+        const usedIds=new Set(Array.from(bodyDoc.querySelectorAll('[id]')).map(el=>el.getAttribute('id')).filter(Boolean));
+        let secSeq=0;
+        bodyDoc.querySelectorAll('h1,h2,h3').forEach(h=>{
+          if(!h.getAttribute('id')){let cand;do{cand='sec-'+(++secSeq);}while(usedIds.has(cand));h.setAttribute('id',cand);usedIds.add(cand);}
+        });
+        const cleanBody=Array.from(bodyDoc.body.childNodes).map(n=>new XMLSerializer().serializeToString(n)).join('').replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g,'').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g,'');
+        pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace(/<body[^>]*>[\s\S]*<\/body>/, () => '<body>'+cleanBody+'</body>');
+        const escXml=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+        const heads=Array.from(bodyDoc.querySelectorAll('h1[id],h2[id],h3[id]'));
+        const navItems=heads.length?heads.map(h=>'<li><a href="content.xhtml#'+escXml(h.getAttribute('id'))+'">'+(escXml((h.textContent||'').replace(/\s+/g,' ').trim())||'Section')+'</a></li>').join('\n'):'<li><a href="content.xhtml">Document</a></li>';
+        const isRtl=/\bdir\s*=\s*['"]?rtl\b/i.test(plan.html)||/^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(String(plan.lang||''));
+        pkg.files['OEBPS/nav.xhtml']='<?xml version="1.0" encoding="UTF-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="'+escXml(plan.lang)+'" xml:lang="'+escXml(plan.lang)+'"'+(isRtl?' dir="rtl"':'')+'>\n<head><title lang="en" dir="ltr">Navigation</title></head>\n<body><nav epub:type="toc" role="doc-toc"><h1 lang="en" dir="ltr">Table of Contents</h1><ol>'+navItems+'</ol></nav></body>\n</html>';
         const present=plan.segments.map(()=>true);
         pkg.files['OEBPS/content.smil']=N.smil(plan.segments,durations,'mp3',present);
-        const props=[];if(/<svg\b/i.test(plan.bodyHtml))props.push('svg');if(/<math\b/i.test(plan.bodyHtml))props.push('mathml');
-        pkg.files['OEBPS/content.opf']=N.opf(plan.title,plan.lang,plan.segments,durations.reduce((a,b)=>a+b,0),null,'mp3','audio/mpeg',present,props);
+        const props=[];
+        if(/<svg\b/i.test(cleanBody))props.push('svg');
+        if(/<math\b/i.test(cleanBody))props.push('mathml');
+        if(/<(?:img|audio|video|source|object|iframe)\b[^>]*(?:src|data)\s*=\s*["']?(?:https?:)?\/\//i.test(cleanBody))props.push('remote-resources');
+        pkg.files['OEBPS/content.opf']=N.opf(plan.title,plan.lang,plan.segments,durations.reduce((a,b)=>a+b,0),null,'mp3','audio/mpeg',present,props,{rtl:isRtl});
         const check={...pkg.files};for(let i=0;i<plan.segments.length;i++)check['OEBPS/audio/seg'+(i+1)+'.mp3']=true;
         const errors=A.AltFormatExports.validateEpub(check).issues.filter(x=>x.severity==='error');if(errors.length)throw Error('Read-along EPUB structural check failed: '+JSON.stringify(errors));
         return pkg.files;
@@ -264,6 +291,6 @@ async function narrate(o) {
     files.narrationReport=o.claimPath(title+'-'+mode+'-narration.json');
     result.artifacts=Object.entries(files).filter(([role])=>role!=='narrationReport').map(([role,file])=>({role,path:file,sizeBytes:fs.statSync(file).size,sha256:hashFile(file)}));
     atomic(files.narrationReport,JSON.stringify(result,null,2));if(completionFile)saveCompletion(completionFile,fingerprint,result);return result;
-  } finally {clearTimeout(wallTimer);o.signal?.removeEventListener('abort',abort);await context.close();}
+  } finally {clearTimeout(wallTimer);o.signal?.removeEventListener('abort',abort);await context.close().catch(()=>{});}
 }
 module.exports={narrate,preflight,clipCachePath,readClipCache,narrationRuntimeHash,completionFingerprint,loadCompletion,saveCompletion,normalizeClip,ASSETS,wavInfo,mergeWavs,voiceCatalog:Planner.voiceCatalog,normalizeLanguage:Planner.normalizeLanguage,accessibleLanguages:Object.keys(Planner.LABELS)};

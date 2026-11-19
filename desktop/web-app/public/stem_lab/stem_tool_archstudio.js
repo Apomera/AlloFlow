@@ -30,7 +30,7 @@ function __alloAST(k, fb) {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-archstudio-hc-extra-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-archstudio-hc-extra-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}.theme-contrast #arch-studio-region .arch-subject-pill{background:#000!important;border-color:#ffff00!important;color:#ffff00!important}.theme-contrast #arch-studio-region .arch-studio-stat{background:#000!important;border-color:#fff!important}.theme-contrast #arch-studio-region .arch-studio-coach{background:#000!important;border-top-color:#fff!important;border-left-color:#ffff00!important;color:#fff!important}.theme-contrast #arch-studio-region .arch-elevation-telemetry{background:#000!important;border-color:#00ffff!important}";
     document.head.appendChild(st);
   })();
   (function() {
@@ -3031,7 +3031,7 @@ function __alloAST(k, fb) {
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
     var React = ctx.React;
     var el = React.createElement;
-    var d = (ctx.toolData && ctx.toolData.archStudio) || {};
+    var d = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData) && ctx.toolData.archStudio && typeof ctx.toolData.archStudio === 'object' && !Array.isArray(ctx.toolData.archStudio)) ? ctx.toolData.archStudio : {};
     var upd = function (key, val) {
       if (d.sidebarCollapsed === true && ARCH_SIDEBAR_PANELS.some(function (name) {
         return key && typeof key === 'object' ? key[name] === true : key === name && val === true;
@@ -4770,7 +4770,7 @@ function __alloAST(k, fb) {
       if (!bundle) { if (blocks.length && ctx.addToast) ctx.addToast('\u26A0\uFE0F 3D engine is not ready for STL export', 'error'); return; }
       var blob = new Blob([bundle.buffer], { type: 'application/octet-stream' }), url = URL.createObjectURL(blob);
       var a = document.createElement('a'); a.href = url; a.download = 'architecture_studio_' + Date.now() + '.stl'; a.click();
-      URL.revokeObjectURL(url);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
       if (ctx.addToast) ctx.addToast('\uD83C\uDFD7\uFE0F Exported as STL!', 'success');
     };
     // Continue in Print Lab: hand the same STL over locally, the way Geometry
@@ -7061,11 +7061,36 @@ function __alloAST(k, fb) {
         el('div', { className: 'arch-studio-title-row', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, minWidth: 0, overflowX: 'visible', padding: '1px 1px 2px' } },
           el('div', { className: 'arch-studio-brand' },
           el('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, style: { flex: '0 0 auto', background: 'rgba(71,85,105,.42)', border: '1px solid rgba(100,116,139,.45)', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '\u2190 Back'),
-          el('span', { 'aria-hidden': 'true', style: { flex: '0 0 auto', display: 'grid', placeItems: 'center', width: 30, height: 30, borderRadius: 9, fontSize: 18, background: styleMode === 'bricks' ? 'rgba(239,68,68,.13)' : 'rgba(56,189,248,.12)', border: '1px solid ' + (styleMode === 'bricks' ? 'rgba(248,113,113,.35)' : 'rgba(56,189,248,.35)') } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
-          el('div', { style: { minWidth: 0, whiteSpace: 'nowrap' } },
-            el('div', { style: { fontWeight: 800, fontSize: 15, color: '#f8fafc', letterSpacing: .1 } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
+          el('span', { 'aria-hidden': 'true', style: { flex: '0 0 auto', display: 'grid', placeItems: 'center', width: 36, height: 36, borderRadius: 10, background: styleMode === 'bricks' ? 'rgba(239,68,68,.14)' : 'rgba(14,116,144,.22)', border: '1px solid ' + (styleMode === 'bricks' ? 'rgba(248,113,113,.45)' : 'rgba(56,189,248,.45)') } },
+            el('svg', { width: 28, height: 28, viewBox: '0 0 28 28', 'aria-hidden': 'true', focusable: 'false' },
+              el('polygon', { points: '14,3 24,8.5 24,19.5 14,25 4,19.5 4,8.5', fill: styleMode === 'bricks' ? '#450a0a' : '#082f49', stroke: styleMode === 'bricks' ? '#f87171' : '#38bdf8', strokeWidth: 1.4 }),
+              el('polyline', { points: '4,8.5 14,14 24,8.5', fill: 'none', stroke: styleMode === 'bricks' ? '#fca5a5' : '#7dd3fc', strokeWidth: 1.2 }),
+              el('line', { x1: 14, y1: 14, x2: 14, y2: 25, stroke: styleMode === 'bricks' ? '#fca5a5' : '#7dd3fc', strokeWidth: 1.2 }),
+              el('path', { d: 'M8.5,19 L14,8.5 L19.5,19', fill: 'none', stroke: '#fde047', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              el('circle', { cx: 14, cy: 8.5, r: 1.6, fill: '#fde047' })
+            )
+          ),
+          el('div', { style: { minWidth: 0 } },
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+              el('div', { style: { fontWeight: 800, fontSize: 15, color: '#f8fafc', letterSpacing: .1 } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
+              el('span', { className: 'arch-subject-pill', style: { fontSize: 10, fontWeight: 800, letterSpacing: .4, textTransform: 'uppercase', padding: '2px 7px', borderRadius: 999, background: 'rgba(14,116,144,.28)', border: '1px solid rgba(56,189,248,.42)', color: '#bae6fd' } }, t('stem.archstudio.subject_badge', 'Engineering · Design'))
+            ),
             el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 1 } }, totalBlocks + ' blocks \u2022 ' + (blocks.length ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : 'ready to design'))
-          )
+          ),
+          (function () {
+            var stabColor = analysis.stability >= 70 ? '#4ade80' : analysis.stability >= 40 ? '#fbbf24' : '#f87171';
+            var hBars = Math.max(1, Math.min(4, buildH || 0));
+            return el('div', { className: 'arch-elevation-telemetry', 'aria-hidden': 'true', style: { flex: '0 0 auto', display: 'inline-flex', alignItems: 'center', padding: '2px 6px', borderRadius: 9, background: 'rgba(2,6,23,.52)', border: '1px solid rgba(71,85,105,.55)' } },
+              el('svg', { width: 78, height: 28, viewBox: '0 0 78 28', 'aria-hidden': 'true', focusable: 'false' },
+                el('rect', { x: 4, y: 20, width: 6, height: 5, rx: 1, fill: blocks.length ? '#38bdf8' : '#334155' }),
+                el('rect', { x: 12, y: 20 - hBars * 3, width: 6, height: 5 + hBars * 3, rx: 1, fill: blocks.length ? '#818cf8' : '#334155' }),
+                el('rect', { x: 20, y: 17, width: 6, height: 8, rx: 1, fill: blocks.length ? '#2dd4bf' : '#334155' }),
+                el('line', { x1: 2, y1: 25.5, x2: 28, y2: 25.5, stroke: '#475569', strokeWidth: 1 }),
+                el('text', { x: 54, y: 12, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui,sans-serif' }, 'STAB'),
+                el('text', { x: 54, y: 24, textAnchor: 'middle', fill: stabColor, fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace,monospace' }, analysis.stability + '%')
+              )
+            );
+          })()
           ),
           el('nav', { className: 'arch-studio-workspaces', 'aria-label': uxText('workspaces') },
           el('button', { id: 'arch-design-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDesign && !showDrawings, 'aria-controls': showDesign && !showDrawings ? 'arch-design-panel' : undefined,
@@ -7841,10 +7866,14 @@ function __alloAST(k, fb) {
               { label: t('stem.archstudio.surface', 'Surface'), value: surfaceArea + 'u\u00B2', icon: '\uD83D\uDCC0' },
               { label: t('stem.archstudio.challenges', 'Challenges'), value: completedCount + '/10', icon: '\uD83C\uDFC6' }
             ].filter(Boolean).map(function (stat) {
-              var statColor = stat.label === t('stem.archstudio.stability', 'Stability') ? (analysis.stability >= 70 ? '#86efac' : analysis.stability >= 40 ? '#fde68a' : '#fca5a5') : stat.label === t('stem.archstudio.cost', 'Cost') && overBudget ? '#fca5a5' : '#f8fafc';
-              return el('div', { className: 'arch-studio-stat', key: stat.label, style: { textAlign: 'center' } },
+              var isStab = stat.label === t('stem.archstudio.stability', 'Stability');
+              var statColor = isStab ? (analysis.stability >= 70 ? '#86efac' : analysis.stability >= 40 ? '#fde68a' : '#fca5a5') : stat.label === t('stem.archstudio.cost', 'Cost') && overBudget ? '#fca5a5' : '#f8fafc';
+              return el('div', { className: 'arch-studio-stat', key: stat.label, style: { textAlign: 'center', padding: '4px 6px', borderRadius: 8, background: 'rgba(15,23,42,.58)', border: '1px solid rgba(71,85,105,.52)' } },
                 el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
-                el('div', { style: { marginTop: 1, fontSize: 13, fontWeight: 800, color: statColor } }, stat.value)
+                el('div', { style: { marginTop: 1, fontSize: 13, fontWeight: 800, color: statColor } }, stat.value),
+                isStab && el('div', { 'aria-hidden': 'true', style: { marginTop: 3, height: 3, borderRadius: 999, background: 'rgba(71,85,105,.55)', overflow: 'hidden' } },
+                  el('div', { style: { width: Math.max(4, Math.min(100, analysis.stability)) + '%', height: '100%', background: statColor, borderRadius: 999 } })
+                )
               );
             })
           )
@@ -7852,8 +7881,12 @@ function __alloAST(k, fb) {
       ),
 
       // ── Coach panel ──
-      el('div', { className: 'arch-studio-coach', role: 'status', style: { padding: '9px 14px', background: 'linear-gradient(90deg,rgba(30,41,59,.98),rgba(15,23,42,.98))', borderTop: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid rgba(56,189,248,.55)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, flexShrink: 0 } },
-        coachTip
+      el('div', { className: 'arch-studio-coach', role: 'status', style: { display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', background: 'linear-gradient(90deg,rgba(30,41,59,.98),rgba(15,23,42,.98))', borderTop: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid rgba(56,189,248,.65)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, flexShrink: 0 } },
+        el('svg', { width: 16, height: 16, viewBox: '0 0 16 16', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } },
+          el('path', { d: 'M2,14 L2,2 L14,14 Z', fill: 'none', stroke: '#38bdf8', strokeWidth: 1.5, strokeLinejoin: 'round' }),
+          el('path', { d: 'M4.5,11.5 L4.5,7.5 L8.5,11.5 Z', fill: 'rgba(56,189,248,.25)' })
+        ),
+        el('span', { style: { minWidth: 0 } }, coachTip)
       ),
 
       // === H7b'' inquiry widget: gravity-rigidity discovery ===

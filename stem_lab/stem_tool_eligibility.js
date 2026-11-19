@@ -46,7 +46,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
       var host = loc.hostname || '', pathname = loc.pathname || '';
       var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
       var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
-      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      var isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled) return new URL(path, loc.href).toString();
       if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
     } catch (_) {}
@@ -59,10 +59,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
   function loadIdea() {
     if (_idea) return Promise.resolve(_idea);
     if (_ideaPending) return _ideaPending;
-    _ideaPending = fetch(corpusUrl('law_corpus/idea-part-b.json'), { cache: 'no-cache' })
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function() { ctrl.abort(); }, 12000) : null;
+    var clearT = function() { if (timer !== null) { clearTimeout(timer); timer = null; } };
+    _ideaPending = fetch(corpusUrl('law_corpus/idea-part-b.json'), ctrl ? { cache: 'no-cache', signal: ctrl.signal } : { cache: 'no-cache' })
       .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function(j) { _idea = j; return j; })
-      .catch(function(e) { _ideaPending = null; _ideaErr = String(e.message || e); throw e; });
+      .then(function(j) { clearT(); _idea = j; return j; })
+      .catch(function(e) { clearT(); _ideaPending = null; _ideaErr = String(e.message || e); throw e; });
     return _ideaPending;
   }
   function section(num) {
@@ -982,8 +985,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
           'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         )).filter(function(element) {
           if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
-          var style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-          return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+          if (typeof window.getComputedStyle === 'function') {
+            for (var node = element; node && node !== dialog; node = node.parentElement) {
+              var style = window.getComputedStyle(node);
+              if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+            }
+          }
+          return true;
         });
       }
       var first = focusable()[0];
@@ -991,6 +999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
       function onKeyDown(event) {
         if (!isTopTrap()) return;
         if (event.key === 'Escape') {
+          if (event.isComposing || event.keyCode === 229) return;
           event.preventDefault(); event.stopPropagation();
           if (typeof closeRef.current === 'function') closeRef.current();
           return;
@@ -999,7 +1008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
         var items = focusable();
         if (!items.length) { event.preventDefault(); dialog.focus(); return; }
         var firstItem = items[0], lastItem = items[items.length - 1];
-        if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+        if (!dialog.contains(document.activeElement) || document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
         else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
         else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
       }

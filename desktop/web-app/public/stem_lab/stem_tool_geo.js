@@ -140,7 +140,11 @@ window.StemLab = window.StemLab || {
 
       // ── Tool body (geoQuiz) ──
       return (function() {
-var d = labToolData || {};
+var _geoPlainObj = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+var _geoNum = function(v, fb) { return (typeof v === 'number' && isFinite(v)) ? v : (fb || 0); };
+var isContrast = !!ctx.isContrast;
+var isDark = !!ctx.isDark && !isContrast;
+var d = _geoPlainObj(labToolData) ? labToolData : {};
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -172,16 +176,21 @@ var d = labToolData || {};
             window._geoLibsLoaded = new Promise(function(res) {
 
               if (window.L) { window._geoLibsReady = true; res(); return; }
+              if (window._isDesktopBundledApp === true) { res(); return; }
 
               var css = document.createElement('link');
 
               css.rel = 'stylesheet'; css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+              css.integrity = 'sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H';
+              css.crossOrigin = 'anonymous'; css.referrerPolicy = 'no-referrer';
 
               document.head.appendChild(css);
 
               var sc = document.createElement('script');
 
               sc.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+              sc.integrity = 'sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH';
+              sc.crossOrigin = 'anonymous'; sc.referrerPolicy = 'no-referrer';
 
               sc.onload = function() { window._geoLibsReady = true; res(); };
 
@@ -202,10 +211,13 @@ var d = labToolData || {};
             window._globeLibLoaded = new Promise(function(res) {
 
               if (window._GlobeGLConstructor) { res(); return; }
+              if (window._isDesktopBundledApp === true) { res(); return; }
 
               var sc = document.createElement('script');
 
               sc.src = 'https://unpkg.com/globe.gl@2.27.2/dist/globe.gl.min.js';
+              sc.integrity = 'sha384-F9OHjeWeuxp9JN/3Cc7QfqhpL4d2MXpYRH6eym5Id1g6450ZI+BcXgMoqMPQhjxs';
+              sc.crossOrigin = 'anonymous'; sc.referrerPolicy = 'no-referrer';
 
               sc.onload = function() { if (typeof window.Globe === 'function' && !window.Globe.$$typeof) window._GlobeGLConstructor = window.Globe; res(); };
 
@@ -790,56 +802,56 @@ var d = labToolData || {};
 
           // ── State ──
 
-          var geoTab = d.geoTab || 'findCountry';
+          var geoTab = typeof d.geoTab === 'string' && d.geoTab ? d.geoTab : 'findCountry';
 
-          var geoScore = d.geoScore || 0;
+          var geoScore = _geoNum(d.geoScore, 0);
 
-          var geoStreak = d.geoStreak || 0;
+          var geoStreak = _geoNum(d.geoStreak, 0);
 
-          var geoTarget = d.geoTarget || null;
+          var geoTarget = _geoPlainObj(d.geoTarget) ? d.geoTarget : null;
 
-          var geoAnswered = d.geoAnswered || [];
+          var geoAnswered = Array.isArray(d.geoAnswered) ? d.geoAnswered : [];
 
-          var geoDifficulty = d.geoDifficulty || 'medium';
+          var geoDifficulty = ['easy', 'medium', 'hard'].indexOf(d.geoDifficulty) !== -1 ? d.geoDifficulty : 'medium';
 
-          var geoRegion = d.geoRegionFilter || 'world';
+          var geoRegion = typeof d.geoRegionFilter === 'string' && d.geoRegionFilter ? d.geoRegionFilter : 'world';
 
-          var geoFeedback = d.geoFeedback || null;
+          var geoFeedback = _geoPlainObj(d.geoFeedback) ? d.geoFeedback : null;
 
-          var geoRound = d.geoRound || 0;
+          var geoRound = _geoNum(d.geoRound, 0);
 
-          var geoLandmarkIdx = d.geoLandmarkIdx || 0;
+          var geoLandmarkIdx = Math.max(0, Math.floor(_geoNum(d.geoLandmarkIdx, 0)));
 
           // Distance challenge state
-          var geoDistA = d.geoDistA || null;
-          var geoDistB = d.geoDistB || null;
-          var geoDistGuess = d.geoDistGuess || '';
-          var geoDistFeedback = d.geoDistFeedback || null;
-          var geoDistCorrect = d.geoDistCorrect || 0;
+          var geoDistA = _geoPlainObj(d.geoDistA) ? d.geoDistA : null;
+          var geoDistB = _geoPlainObj(d.geoDistB) ? d.geoDistB : null;
+          var geoDistGuess = typeof d.geoDistGuess === 'string' ? d.geoDistGuess : '';
+          var geoDistFeedback = _geoPlainObj(d.geoDistFeedback) ? d.geoDistFeedback : null;
+          var geoDistCorrect = _geoNum(d.geoDistCorrect, 0);
 
           // Badge state
-          var geoBadges = d.geoBadges || {};
+          var geoBadges = _geoPlainObj(d.geoBadges) ? d.geoBadges : {};
 
           // Spaced-repetition state: countries the student got wrong and should re-see.
           // In normal mode, these are weighted 40% more likely to appear in pickTarget.
           // In review mode (toggled via header pill), they appear EXCLUSIVELY.
-          var geoMissed = d.geoMissed || [];
+          var geoMissed = Array.isArray(d.geoMissed) ? d.geoMissed : [];
           var geoReviewMode = !!d.geoReviewMode;
 
           // Landmark quiz state ('browse' = passive viewer, 'quiz' = 4-choice country quiz)
-          var geoLandmarkMode = d.geoLandmarkMode || 'browse';
-          var geoLandmarkChoices = d.geoLandmarkChoices || null;
-          var geoLandmarkQuizFb = d.geoLandmarkQuizFb || null;
+          var geoLandmarkMode = (d.geoLandmarkMode === 'quiz' || d.geoLandmarkMode === 'browse') ? d.geoLandmarkMode : 'browse';
+          var geoLandmarkChoices = Array.isArray(d.geoLandmarkChoices) ? d.geoLandmarkChoices : null;
+          var geoLandmarkQuizFb = _geoPlainObj(d.geoLandmarkQuizFb) ? d.geoLandmarkQuizFb : null;
 
           // Capitals easy-mode choices (stable per target so the 4 buttons don't
           // re-shuffle on every render — previously a misclick hazard).
-          var geoCapitalsChoices = d.geoCapitalsChoices || null;
+          var geoCapitalsChoices = Array.isArray(d.geoCapitalsChoices) ? d.geoCapitalsChoices : null;
 
           // Per-continent accuracy stats for the session. Shape:
           //   { 'Africa': { c: 3, w: 1 }, 'Asia': { c: 5, w: 2 }, ... }
           // Recorded from all country-based quizzes (Find Country, Capitals,
           // Continents, Landmark Quiz) via recordContinentStat() below.
-          var geoSessionStats = d.geoSessionStats || {};
+          var geoSessionStats = _geoPlainObj(d.geoSessionStats) ? d.geoSessionStats : {};
           var geoStatsOpen = !!d.geoStatsOpen;
 
           // Globe View: currently-selected country for the info card below the globe.
@@ -1495,11 +1507,11 @@ var d = labToolData || {};
 
             var globe = window._GlobeGLConstructor()(container)
 
-              .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+              .globeImageUrl('https://unpkg.com/three-globe@2.45.6/example/img/earth-blue-marble.jpg')
 
-              .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+              .bumpImageUrl('https://unpkg.com/three-globe@2.45.6/example/img/earth-topology.png')
 
-              .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+              .backgroundImageUrl('https://unpkg.com/three-globe@2.45.6/example/img/night-sky.png')
 
               .showAtmosphere(true)
 
@@ -1589,7 +1601,7 @@ var d = labToolData || {};
             // Restore night mode if the student had it on (textures are the open-source
             // three-globe set: Blue Marble day / city-lights night, both NASA-derived)
             if (d.geoGlobeNight) {
-              globe.globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg');
+              globe.globeImageUrl('https://unpkg.com/three-globe@2.45.6/example/img/earth-night.jpg');
             }
 
             var geoPrefersRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1611,7 +1623,7 @@ var d = labToolData || {};
               try {
                 var T = window.THREE;
                 if (!T || typeof globe.scene !== 'function' || typeof globe.getGlobeRadius !== 'function') return;
-                new T.TextureLoader().load('https://unpkg.com/three-globe/example/img/earth-clouds.png', function(cloudTex) {
+                new T.TextureLoader().load('https://unpkg.com/three-globe@2.45.6/example/img/earth-clouds.png', function(cloudTex) {
                   try {
                     var cloudMesh = new T.Mesh(
                       new T.SphereGeometry(globe.getGlobeRadius() * 1.01, 64, 64),
@@ -1940,15 +1952,48 @@ var d = labToolData || {};
             // overflow-hidden cut the difficulty picker off with no way to scroll to
             // it. Wrapping drops the controls under the title instead; a no-op on any
             // screen wide enough for one line.
-            React.createElement('div', { className: 'bg-gradient-to-r from-teal-700 to-cyan-700 text-white p-3 flex flex-wrap items-center justify-between gap-y-2' },
+            React.createElement('div', {
+              className: 'text-white p-3.5 flex flex-wrap items-center justify-between gap-y-2',
+              style: {
+                backgroundColor: isContrast ? '#000000' : '#0f766e',
+                backgroundImage: isContrast ? 'none' : 'linear-gradient(135deg, #0f766e 0%, #0e7490 55%, #1d4ed8 100%)',
+                borderBottom: isContrast ? '2px solid #ffff00' : '1px solid rgba(103,232,249,0.35)'
+              }
+            },
 
-              React.createElement('div', { className: 'flex items-center gap-2' },
+              React.createElement('div', { className: 'flex items-center gap-2.5' },
 
-                React.createElement('span', { className: 'text-xl' }, '\uD83C\uDF0D'),
+                /* Bespoke Cartographic Globe & Compass Rose Emblem SVG */
+                React.createElement('svg', {
+                  width: 40, height: 40, viewBox: '0 0 40 40',
+                  'aria-hidden': 'true',
+                  style: { flexShrink: 0, display: 'block' }
+                },
+                  React.createElement('rect', {
+                    x: 1, y: 1, width: 38, height: 38, rx: 10,
+                    fill: isContrast ? '#000000' : 'rgba(15,23,42,0.45)',
+                    stroke: isContrast ? '#ffff00' : 'rgba(165,243,252,0.55)',
+                    strokeWidth: 1.4
+                  }),
+                  React.createElement('circle', { cx: 20, cy: 20, r: 12, fill: 'none', stroke: isContrast ? '#ffff00' : '#67e8f9', strokeWidth: 1.6 }),
+                  React.createElement('ellipse', { cx: 20, cy: 20, rx: 6, ry: 12, fill: 'none', stroke: isContrast ? '#00ff00' : '#a5f3fc', strokeWidth: 1.2 }),
+                  React.createElement('line', { x1: 8, y1: 20, x2: 32, y2: 20, stroke: isContrast ? '#ffff00' : '#a5f3fc', strokeWidth: 1.2 }),
+                  React.createElement('path', { d: 'M11 14 Q20 17 29 14 M11 26 Q20 23 29 26', fill: 'none', stroke: isContrast ? '#ffffff' : '#67e8f9', strokeWidth: 1 }),
+                  /* Gold Compass Needle */
+                  React.createElement('polygon', { points: '20,9 22.5,20 20,18 17.5,20', fill: isContrast ? '#ffff00' : '#fbbf24' })
+                ),
 
-                React.createElement('span', { className: 'font-bold text-sm' }, __alloT('stem.geo.geography_explorer', 'Geography Explorer')),
-
-                React.createElement('span', { className: 'text-xs bg-black/20 rounded-full px-2 py-0.5' }, filteredCountries.length + ' countries')
+                React.createElement('div', { style: { minWidth: 0 } },
+                  React.createElement('div', { className: 'flex flex-wrap items-center gap-2' },
+                    React.createElement('span', { className: 'font-black text-sm tracking-tight', style: { color: isContrast ? '#ffff00' : '#ffffff' } }, __alloT('stem.geo.geography_explorer', 'Geography Explorer')),
+                    React.createElement('span', {
+                      className: 'text-[0.6875rem] font-bold rounded-full px-2 py-0.5',
+                      style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.42)', color: isContrast ? '#ffff00' : '#cffafe', border: isContrast ? '1px solid #ffff00' : '1px solid rgba(165,243,252,0.35)' }
+                    }, filteredCountries.length + ' countries')
+                  ),
+                  React.createElement('p', { className: 'text-[0.6875rem] mt-0.5', style: { color: isContrast ? '#ffffff' : '#cffafe', margin: '1px 0 0' } },
+                    __alloT('stem.geo.atlas_tagline', 'Cartographic Atlas \u00B7 Capitals & Landmarks \u00B7 3D Globe'))
+                )
 
               ),
 
@@ -2049,6 +2094,70 @@ var d = labToolData || {};
             ),
 
 
+
+            // ── Mastery Telemetry & Quick-Region Preset Strip ──
+            (function() {
+              var nextGoal = geoCurrentLevel.next || countries.length;
+              var pct = Math.min(100, Math.round((geoAnswered.length / Math.max(1, nextGoal)) * 100));
+              return React.createElement('div', {
+                className: 'px-3 py-2 border-b flex flex-wrap items-center justify-between gap-2',
+                style: {
+                  backgroundColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f0fdfa'),
+                  borderColor: isContrast ? '#ffff00' : (isDark ? '#1e293b' : '#ccfbf1')
+                }
+              },
+                React.createElement('div', { className: 'flex items-center gap-2', style: { flex: '1 1 200px', minWidth: 0 } },
+                  React.createElement('span', {
+                    className: 'text-[0.6875rem] font-extrabold uppercase tracking-wider',
+                    style: { color: isContrast ? '#ffff00' : (isDark ? '#5eead4' : '#0f766e'), whiteSpace: 'nowrap' }
+                  }, geoCurrentLevel.icon + ' ' + geoCurrentLevel.name),
+                  React.createElement('div', {
+                    style: {
+                      flex: '1 1 80px', maxWidth: 160, height: '8px', borderRadius: 999,
+                      backgroundColor: isContrast ? '#111111' : (isDark ? '#1e293b' : '#ccfbf1'),
+                      border: isContrast ? '1px solid #ffff00' : 'none', overflow: 'hidden'
+                    }
+                  },
+                    React.createElement('div', {
+                      style: {
+                        height: '8px', width: pct + '%', borderRadius: 999,
+                        backgroundColor: isContrast ? '#00ff00' : '#0d9488'
+                      }
+                    })
+                  ),
+                  React.createElement('span', {
+                    className: 'text-[0.6875rem] font-bold font-mono',
+                    style: { color: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#334155'), whiteSpace: 'nowrap' }
+                  }, geoAnswered.length + '/' + nextGoal + ' mastered')
+                ),
+                React.createElement('div', { className: 'flex flex-wrap items-center gap-1' },
+                  [
+                    { id: 'world', label: '\uD83C\uDF0D World' },
+                    { id: 'europe', label: 'Europe' },
+                    { id: 'asia', label: 'Asia' },
+                    { id: 'africa', label: 'Africa' },
+                    { id: 'n_america', label: 'N. America' }
+                  ].map(function(rg) {
+                    var activeRg = geoRegion === rg.id;
+                    return React.createElement('button', {
+                      key: rg.id, type: 'button',
+                      'aria-pressed': activeRg,
+                      onClick: function() { upd('geoRegionFilter', rg.id); upd('geoTarget', null); upd('geoFeedback', null); },
+                      className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-bold transition-colors',
+                      style: {
+                        backgroundColor: activeRg
+                          ? (isContrast ? '#ffff00' : '#0f766e')
+                          : (isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff')),
+                        color: activeRg
+                          ? (isContrast ? '#000000' : '#ffffff')
+                          : (isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#0f766e')),
+                        border: '1px solid ' + (isContrast ? '#ffff00' : (activeRg ? '#0f766e' : (isDark ? '#334155' : '#99f6e4')))
+                      }
+                    }, rg.label);
+                  })
+                )
+              );
+            })(),
 
             // ── Tab bar ──
 
@@ -2948,8 +3057,8 @@ var d = labToolData || {};
                     upd('geoGlobeNight', night);
                     if (globeRef.current) {
                       globeRef.current.globeImageUrl(night
-                        ? '//unpkg.com/three-globe/example/img/earth-night.jpg'
-                        : '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+                        ? 'https://unpkg.com/three-globe@2.45.6/example/img/earth-night.jpg'
+                        : 'https://unpkg.com/three-globe@2.45.6/example/img/earth-blue-marble.jpg');
                     }
                     if (typeof announceToSR === 'function') announceToSR(night ? 'Night view: city lights show where people live.' : 'Day view: NASA Blue Marble satellite imagery.');
                   },
@@ -3330,8 +3439,12 @@ var d = labToolData || {};
                         var m = geoMiniMap(el, { labels: false, minZoom: 1 });
                         var aLL = capitalLatLng(geoDistA), bLL = capitalLatLng(geoDistB);
                         // Markers on the CAPITALS (teal for A, cyan for B — match the cards)
-                        window.L.circleMarker(aLL, { radius: 10, color: '#14b8a6', weight: 3, fillColor: '#14b8a6', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistA.capital, { permanent: true, direction: 'top', className: 'geo-dist-label' });
-                        window.L.circleMarker(bLL, { radius: 10, color: '#06b6d4', weight: 3, fillColor: '#06b6d4', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistB.capital, { permanent: true, direction: 'top', className: 'geo-dist-label' });
+                        // Point the westernmost capital's label right and the easternmost left (inward),
+                        // vertically centered on each dot so long capital names never clip left/right/top/bottom.
+                        var aDir = aLL[1] <= bLL[1] ? 'right' : 'left';
+                        var bDir = bLL[1] < aLL[1] ? 'right' : 'left';
+                        window.L.circleMarker(aLL, { radius: 10, color: '#14b8a6', weight: 3, fillColor: '#14b8a6', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistA.capital, { permanent: true, direction: aDir, className: 'geo-dist-label' });
+                        window.L.circleMarker(bLL, { radius: 10, color: '#06b6d4', weight: 3, fillColor: '#06b6d4', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistB.capital, { permanent: true, direction: bDir, className: 'geo-dist-label' });
                         // Great-circle arc, split where it crosses the antimeridian so a
                         // Tokyo–Washington route does not draw a line across the whole map.
                         var arc = greatCircleLatLngs(aLL[0], aLL[1], bLL[0], bLL[1], 64);
@@ -3356,8 +3469,8 @@ var d = labToolData || {};
                             })
                           }).addTo(m);
                         }
-                        // Fit bounds around the arc with padding
-                        m.fitBounds(group.getBounds(), { padding: [35, 35], maxZoom: 5 });
+                        // Fit bounds around the arc with generous padding so permanent capital tooltips clear all edges
+                        m.fitBounds(group.getBounds(), { paddingTopLeft: [96, 54], paddingBottomRight: [96, 48], maxZoom: 5 });
                         dmRef.current = m;
                         dmRef.pairKey = pairKey;
                         dmRef.answered = answered;
@@ -3698,7 +3811,8 @@ var d = labToolData || {};
       // the SECOND registerTool in this file and the layout gate used to read only
       // the first, so these sites had never been rendered by it.
       var isContrast = !!ctx.isContrast;
-      var onHostInk = isContrast ? ' text-white' : '';
+      var isDark = !!ctx.isDark && !isContrast;
+      var onHostInk = (isContrast || isDark) ? ' text-white' : '';
       const React = ctx.React;
       const gpT = ctx.t || function(key, fallback) { return fallback; };
       const labToolData = ctx.toolData;
@@ -3714,15 +3828,16 @@ var d = labToolData || {};
       const stemBeep = ctx.beep;
 
       return (function() {
-        const gp = (labToolData && labToolData.geometryProver) || {};
+        const _gpPlainObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
+        const gp = (labToolData && _gpPlainObj(labToolData.geometryProver)) ? labToolData.geometryProver : {};
         const gpUpd = (key, val) => setLabToolData(prev => ({
           ...prev, geometryProver: { ...(prev.geometryProver || {}), [key]: val }
         }));
 
-        const gpTab = gp.tab || 'build';
-        const gpMode = gp.mode || 'freeform';
-        const gpPoints = gp.points || [];
-        const gpSegments = gp.segments || [];
+        const gpTab = ['build', 'discover', 'challenge'].indexOf(gp.tab) !== -1 ? gp.tab : 'build';
+        const gpMode = typeof gp.mode === 'string' && gp.mode ? gp.mode : 'freeform';
+        const gpPoints = Array.isArray(gp.points) ? gp.points.filter(p => p && typeof p.x === 'number' && isFinite(p.x) && typeof p.y === 'number' && isFinite(p.y)) : [];
+        const gpSegments = Array.isArray(gp.segments) ? gp.segments.filter(s => s && typeof s.from === 'number' && typeof s.to === 'number' && s.from >= 0 && s.to >= 0 && s.from < gpPoints.length && s.to < gpPoints.length) : [];
         const gpDragging = gp.dragging;
         const gpConnecting = gp.connecting;
         const gpChallenge = gp.challenge || null;
@@ -3829,7 +3944,7 @@ var d = labToolData || {};
         // Mode presets — batch update to avoid stale-closure issues
         const loadTriangle = () => setLabToolData(prev => ({ ...prev, geometryProver: { ...(prev.geometryProver||{}), points:[{x:150,y:320},{x:350,y:320},{x:250,y:100}], segments:[{from:0,to:1},{from:1,to:2},{from:2,to:0}], mode:'triangle', connecting:null, feedback:null, challenge:null }}));
         const loadRightTriangle = () => setLabToolData(prev => ({ ...prev, geometryProver: { ...(prev.geometryProver||{}), points:[{x:150,y:340},{x:150,y:120},{x:380,y:340}], segments:[{from:0,to:1},{from:0,to:2},{from:1,to:2}], mode:'right', connecting:null, feedback:null, challenge:null }}));
-        const loadParallel = () => setLabToolData(prev => ({ ...prev, geometryProver: { ...(prev.geometryProver||{}), points:[{x:80,y:140},{x:420,y:140},{x:80,y:300},{x:420,y:300},{x:190,y:50},{x:310,y:380}], segments:[{from:0,to:1},{from:2,to:3},{from:4,to:5}], mode:'parallel', connecting:null, feedback:null, challenge:null }}));
+        const loadParallel = () => setLabToolData(prev => ({ ...prev, geometryProver: { ...(prev.geometryProver||{}), points:[{x:80,y:140},{x:420,y:140},{x:80,y:300},{x:420,y:300},{x:190,y:50},{x:310,y:350}], segments:[{from:0,to:1},{from:2,to:3},{from:4,to:5}], mode:'parallel', connecting:null, feedback:null, challenge:null }}));
         const loadBisector = () => setLabToolData(prev => ({ ...prev, geometryProver: { ...(prev.geometryProver||{}), points:[{x:250,y:330},{x:400,y:180},{x:100,y:180},{x:250,y:100}], segments:[{from:0,to:1},{from:0,to:2},{from:0,to:3}], mode:'bisector', connecting:null, feedback:null, challenge:null }}));
 
         // Challenge system (5 types)
@@ -4432,15 +4547,104 @@ var d = labToolData || {};
           gpUpd('tab',nextId);
           requestAnimationFrame(()=>{const nextTab=document.getElementById('geometry-prover-tab-'+nextId);if(nextTab)nextTab.focus();});
         };
-        return React.createElement('div',{className:'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200'},
+        return React.createElement('div',{
+          className:'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200',
+          style: isDark ? { backgroundColor:'#0f172a', padding:'12px', borderRadius:'16px', color:'#f8fafc' } : undefined
+        },
           React.createElement('style',null,'.gp-controls button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere}.gp-controls legend{float:none;padding:0}'),
-          // Header
-          React.createElement('div',{className:'flex items-center gap-3'},
-            React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':__alloT('stem.geo.a11y_back', 'Back')},React.createElement(ArrowLeft,{size:18,className:'text-slate-600'})),
-            React.createElement('h3',{className:'text-lg font-bold text-violet-800' + onHostInk},'📐 Geometry Prover'),
-            React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
-              React.createElement('div',{className:'text-xs font-bold text-emerald-700'},exploreScore.correct+'/'+exploreScore.total),
-              React.createElement('button',{onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },className:'text-[0.6875rem] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5'},'📸 Snapshot')
+          // Euclidean Geometry Studio Hero Header
+          React.createElement('div',{
+            className:'rounded-2xl p-3.5 sm:p-4 shadow-md',
+            style:{
+              backgroundColor: isContrast ? '#000000' : '#4c1d95',
+              backgroundImage: isContrast ? 'none' : 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 52%, #312e81 100%)',
+              border: isContrast ? '2px solid #ffff00' : '1px solid rgba(196,181,253,0.42)',
+              color: isContrast ? '#ffff00' : '#ffffff'
+            }
+          },
+            React.createElement('div',{className:'flex flex-wrap items-center gap-3'},
+              React.createElement('button',{
+                onClick:()=>setStemLabTool(null),
+                className:'p-2 rounded-xl transition-colors',
+                style:{
+                  backgroundColor: isContrast ? '#000000' : 'rgba(255,255,255,0.16)',
+                  border: isContrast ? '1px solid #ffff00' : '1px solid rgba(255,255,255,0.28)',
+                  color: isContrast ? '#ffff00' : '#ffffff',
+                  minWidth:36, minHeight:36
+                },
+                'aria-label':__alloT('stem.geo.a11y_back', 'Back')
+              },React.createElement(ArrowLeft,{size:18,style:{color:isContrast?'#ffff00':'#ffffff'}})),
+              /* Bespoke Euclidean Right-Triangle & Protractor SVG Emblem */
+              React.createElement('svg',{
+                width:44, height:44, viewBox:'0 0 44 44',
+                'aria-hidden':'true',
+                style:{flexShrink:0,display:'block'}
+              },
+                React.createElement('rect',{
+                  x:1, y:1, width:42, height:42, rx:12,
+                  fill: isContrast ? '#000000' : 'rgba(15,23,42,0.48)',
+                  stroke: isContrast ? '#ffff00' : 'rgba(221,214,254,0.55)',
+                  strokeWidth:1.5
+                }),
+                /* Right triangle */
+                React.createElement('polygon',{
+                  points:'11,33 34,33 11,11',
+                  fill: isContrast ? 'none' : 'rgba(167,139,250,0.2)',
+                  stroke: isContrast ? '#ffff00' : '#e9d5ff',
+                  strokeWidth:2, strokeLinejoin:'round'
+                }),
+                /* Right angle square */
+                React.createElement('rect',{
+                  x:11, y:26, width:7, height:7, fill:'none',
+                  stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth:1.8
+                }),
+                /* Angle arc at bottom-right vertex */
+                React.createElement('path',{
+                  d:'M 25 33 A 9 9 0 0 1 28 27',
+                  fill:'none', stroke: isContrast ? '#00ff00' : '#fbbf24', strokeWidth:1.8
+                }),
+                /* Vertex nodes */
+                React.createElement('circle',{cx:11,cy:33,r:2.6,fill:isContrast?'#ffff00':'#ffffff'}),
+                React.createElement('circle',{cx:34,cy:33,r:2.6,fill:isContrast?'#ffff00':'#fbbf24'}),
+                React.createElement('circle',{cx:11,cy:11,r:2.6,fill:isContrast?'#00ff00':'#34d399'})
+              ),
+              React.createElement('div',{style:{flex:'1 1 180px',minWidth:0}},
+                React.createElement('div',{className:'flex flex-wrap items-center gap-2'},
+                  React.createElement('span',{
+                    className:'text-[0.6875rem] font-black uppercase tracking-wider px-2 py-0.5 rounded-md',
+                    style:{
+                      backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.48)',
+                      color: isContrast ? '#ffff00' : '#ddd6fe',
+                      border: isContrast ? '1px solid #ffff00' : '1px solid rgba(196,181,253,0.4)'
+                    }
+                  },__alloT('stem.geo.euclidean_badge','EUCLIDEAN STUDIO')),
+                  React.createElement('span',{
+                    className:'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full',
+                    style:{
+                      backgroundColor: isContrast ? '#000000' : 'rgba(255,255,255,0.16)',
+                      color: isContrast ? '#00ff00' : '#a7f3d0',
+                      border: isContrast ? '1px solid #00ff00' : '1px solid rgba(167,243,208,0.4)'
+                    }
+                  },exploreScore.correct+'/'+exploreScore.total+' solved')
+                ),
+                React.createElement('h3',{className:'text-lg font-black tracking-tight mt-0.5',style:{color:isContrast?'#ffff00':'#ffffff',margin:'2px 0 0'}},'📐 Geometry Prover'),
+                React.createElement('p',{className:'text-xs mt-0.5',style:{color:isContrast?'#ffffff':'#e9d5ff',margin:'2px 0 0'}},__alloT('stem.geo.prover_tagline','Construct Figures \u00B7 Measure Angles \u00B7 Prove Theorems'))
+              ),
+              React.createElement('div',{className:'flex flex-wrap items-center gap-1.5'},
+                React.createElement('span',{
+                  className:'text-[0.6875rem] font-bold rounded-full px-2.5 py-1 font-mono',
+                  style:{backgroundColor:isContrast?'#000000':'rgba(15,23,42,0.52)',color:isContrast?'#ffff00':'#ede9fe',border:isContrast?'1px solid #ffff00':'1px solid rgba(196,181,253,0.4)'}
+                },gpPoints.length+' pts \u00B7 '+gpSegments.length+' segs'),
+                React.createElement('span',{
+                  className:'text-[0.6875rem] font-bold rounded-full px-2.5 py-1',
+                  style:{backgroundColor:isContrast?'#000000':'rgba(15,23,42,0.52)',color:isContrast?'#00ff00':'#fde68a',border:isContrast?'1px solid #00ff00':'1px solid rgba(251,191,36,0.45)'}
+                },theorems.length+(theorems.length===1?' theorem':' theorems')),
+                React.createElement('button',{
+                  onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },
+                  className:'text-[0.6875rem] font-bold rounded-full px-2.5 py-1 transition-colors',
+                  style:{backgroundColor:isContrast?'#000000':'rgba(255,255,255,0.18)',color:isContrast?'#ffff00':'#ffffff',border:isContrast?'1px solid #ffff00':'1px solid rgba(255,255,255,0.35)'}
+                },'📸 Snapshot')
+              )
             )
           ),
           // Tab bar
@@ -4457,6 +4661,34 @@ var d = labToolData || {};
             React.createElement('span',{className:'text-xs font-semibold text-violet-700 flex-1'},helperText),
             React.createElement('span',{className:'text-[0.6875rem] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full'},gpMode)
           ),
+          // Live Euclidean Invariant & Angle Telemetry SVG Strip
+          (()=>{
+            const primaryThm = theorems.length > 0 ? theorems[0] : null;
+            const anglePreview = allAngles.slice(0, 3).map(a => '\u2220' + labelFor(a.vertex) + '=' + a.angle.toFixed(0) + '\u00B0').join('  ');
+            return React.createElement('div',{
+              className:'rounded-xl overflow-hidden',
+              style:{
+                backgroundColor: isContrast ? '#000000' : '#1e1b4b',
+                border: isContrast ? '2px solid #ffff00' : '1px solid rgba(167,139,250,0.45)'
+              }
+            },
+              React.createElement('svg',{
+                viewBox:'0 0 520 56',
+                role:'img',
+                'aria-label': __alloT('stem.geo.prover_telemetry_aria','Geometry telemetry: {pts} points, {segs} segments, {thms} theorems detected.').replace('{pts}',String(gpPoints.length)).replace('{segs}',String(gpSegments.length)).replace('{thms}',String(theorems.length)),
+                style:{width:'100%',height:'auto',display:'block'}
+              },
+                React.createElement('rect',{x:0,y:0,width:520,height:56,fill:isContrast?'#000000':'#1e1b4b'}),
+                React.createElement('circle',{cx:20,cy:28,r:6,fill:primaryThm?(isContrast?'#00ff00':'#34d399'):(isContrast?'#ffff00':'#a78bfa')}),
+                React.createElement('text',{x:36,y:24,fill:isContrast?'#ffff00':'#f5f3ff',fontSize:11,fontWeight:800,fontFamily:'system-ui, sans-serif'},
+                  primaryThm ? (primaryThm.label + ' \u2014 ' + primaryThm.desc) : 'LIVE INVARIANT MONITOR \u2014 Place 3+ vertices & connect segments'),
+                React.createElement('text',{x:36,y:42,fill:isContrast?'#ffffff':'#c4b5fd',fontSize:10.5,fontWeight:700,fontFamily:'ui-monospace, monospace'},
+                  anglePreview || (gpPoints.length + ' vertices \u00B7 ' + gpSegments.length + ' segments \u00B7 ' + allAngles.length + ' measured angles')),
+                React.createElement('text',{x:508,y:32,textAnchor:'end',fill:primaryThm?(isContrast?'#00ff00':'#6ee7b7'):(isContrast?'#ffff00':'#ddd6fe'),fontSize:11,fontWeight:900,fontFamily:'ui-monospace, monospace'},
+                  theorems.length > 0 ? ('\u2713 ' + theorems.length + ' ACTIVE') : 'READY')
+              )
+            );
+          })(),
           // BUILD TAB
           gpTab==='build'&&React.createElement('div',{id:'geometry-prover-panel',role:'tabpanel','aria-labelledby':'geometry-prover-tab-build',tabIndex:0,className:'space-y-3'},
             React.createElement('fieldset',{'data-prover-controls':'start',className:'gp-controls flex gap-2 flex-wrap',style:{minWidth:0,border:0,padding:0,margin:'0 0 12px'}},

@@ -8,12 +8,28 @@ const artifacts = resolve(process.env.ALLO_PROGRESS_ARTIFACTS || 'reports/deep-c
 const bank = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
 const manifest = JSON.parse(readFileSync('app/asset-manifest.json', 'utf8'));
 const css = readFileSync(resolve('app', manifest.files['main.css'].replace(/^\//, '')), 'utf8');
-let browser, page;
+let browser, context, page;
 beforeAll(async () => { browser = await chromium.launch({ headless: true }); mkdirSync(artifacts, { recursive: true }); }, 120000);
-afterEach(async () => { await page?.close(); page = null; });
-afterAll(async () => { await browser?.close(); });
+afterEach(async () => {
+  if (page) {
+    await page.evaluate(() => {
+      try {
+        const root = document.getElementById('root');
+        if (root && window.ReactDOM && typeof window.ReactDOM.unmountComponentAtNode === 'function') {
+          window.ReactDOM.unmountComponentAtNode(root);
+        }
+      } catch (_) {}
+    }).catch(() => {});
+  }
+  await page?.close().catch(() => {});
+  page = null;
+  await context?.close().catch(() => {});
+  context = null;
+}, 30000);
+afterAll(async () => { await browser?.close(); }, 60000);
 async function mount(props = {}, { width = 1280, locale = 'en', theme = 'light' } = {}) {
-  page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: 'reduce', serviceWorkers: 'block' });
+  context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce', serviceWorkers: 'block' });
+  page = await context.newPage();
   const errors = []; page.on('pageerror', error => errors.push(String(error)));
   await page.setContent('<!doctype html><html><head><title>Progress check</title></head><body><h1 class="sr-only">AlloFlow</h1><main aria-label="Learning progress" id="root"></main></body></html>');
   await page.addStyleTag({ content: css });

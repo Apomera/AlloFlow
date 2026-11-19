@@ -4831,7 +4831,9 @@ function guidedHistoryEntries(){
   return Array.isArray(guidedRecord.history) ? guidedRecord.history.filter(entry => entry && typeof entry === 'object') : [];
 }
 function csvCell(value){
-  return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
+  var s = String(value == null ? '' : value);
+  if (typeof value !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s) && !Number.isFinite(Number(s))) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
 }
 function guidedCsvNumber(value, digits){
   const number = Number(value);
@@ -7162,7 +7164,13 @@ function guidedPeakZone(tele){
   if(!tele || !Array.isArray(tele.trace) || !tele.trace.length || !track || !Array.isArray(track.y)) return 'track';
   const peak = tele.trace.reduce((best, point) => point.g > best.g ? point : best, tele.trace[0]);
   const y = trackAt(peak.s).y;
-  const lo = Math.min(...track.y), hi = Math.max(...track.y);
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < track.y.length; i++) {
+    const val = track.y[i];
+    if (val < lo) lo = val;
+    if (val > hi) hi = val;
+  }
+  if (!Number.isFinite(lo) || !Number.isFinite(hi)) return 'track';
   const ratio = (y - lo) / Math.max(1, hi - lo);
   return ratio < 0.35 ? 'valley' : ratio > 0.68 ? 'hill' : 'turn';
 }
@@ -11305,25 +11313,46 @@ return { destroy: __clabDestroy };
           try { btn.focus(); } catch (e) {}
         });
         var note = document.createElement('div');
-        note.style.cssText = 'padding:28px;text-align:center;color:#9fb0c1;font-family:Segoe UI,system-ui,sans-serif;font-size:14px';
+        note.setAttribute('role', 'status');
+        note.style.cssText = 'padding:28px;text-align:center;color:#cbd5e1;font-family:Segoe UI,system-ui,sans-serif;font-size:14px';
         note.textContent = '🎢 Building the midway…';
         el.appendChild(note);
-        loadThreeAnd(function (THREE) {
-          if (!el.isConnected) return;
-          if (!THREE) { note.textContent = 'The 3-D engine failed to load — check your connection and reopen the tool.'; return; }
-          try {
-            note.remove();
-            el.innerHTML = CLAB_HTML;
-            var eng = bootCoasterLab(el, THREE, bridge);
-            el._clabCleanup = eng && eng.destroy;
-          } catch (err) {
-            try { if (typeof el._clabCleanup === 'function') el._clabCleanup(); } catch (_cleanupErr) {}
-            el._clabCleanup = null;
-            el.innerHTML = '';
-            el.appendChild(note);
-            note.textContent = 'Coaster Lab could not start here: ' + ((err && err.message) || err);
-          }
-        });
+        function showBootError(msg) {
+          el.innerHTML = '';
+          var errBox = document.createElement('div');
+          errBox.setAttribute('role', 'alert');
+          errBox.style.cssText = 'padding:28px;text-align:center;color:#f8fafc;font-family:Segoe UI,system-ui,sans-serif;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:12px';
+          var errP = document.createElement('p');
+          errP.style.margin = '0';
+          errP.textContent = msg;
+          var retryBtn = document.createElement('button');
+          retryBtn.type = 'button';
+          retryBtn.textContent = __alloT('common.retry', 'Try again');
+          retryBtn.style.cssText = 'min-height:44px;padding:0 18px;border:0;border-radius:8px;background:#f2a63c;color:#0f151c;font-size:14px;font-weight:700;cursor:pointer';
+          retryBtn.addEventListener('click', function () { startCoasterBoot(); });
+          errBox.appendChild(errP);
+          errBox.appendChild(retryBtn);
+          el.appendChild(errBox);
+        }
+        function startCoasterBoot() {
+          el.innerHTML = '';
+          el.appendChild(note);
+          loadThreeAnd(function (THREE) {
+            if (!el.isConnected) return;
+            if (!THREE) { showBootError('The 3-D engine failed to load — check your connection and try again.'); return; }
+            try {
+              note.remove();
+              el.innerHTML = CLAB_HTML;
+              var eng = bootCoasterLab(el, THREE, bridge);
+              el._clabCleanup = eng && eng.destroy;
+            } catch (err) {
+              try { if (typeof el._clabCleanup === 'function') el._clabCleanup(); } catch (_cleanupErr) {}
+              el._clabCleanup = null;
+              showBootError('Coaster Lab could not start here: ' + ((err && err.message) || err));
+            }
+          });
+        }
+        startCoasterBoot();
       }
 
       return h('div', {

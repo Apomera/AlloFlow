@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AlloFlow Zoom Gallery</title>
 <!--
@@ -58,12 +59,6 @@
   }
   window.applyAlloFlowTheme = applyAlloFlowTheme;
   applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
-  window.addEventListener('message', function (event) {
-    if (window.opener && event.source !== window.opener) return;
-    var data = event && event.data;
-    if (!data || data.type !== 'alloflow-theme-change') return;
-    applyAlloFlowTheme(data.theme);
-  });
 })();
 </script>
 <style>
@@ -171,10 +166,14 @@
   .zoomread { position: absolute; top: 48px; right: 8px; z-index: 6; font-size: 0.6875rem; color: var(--chip-fg); background: var(--chip); border: 1px solid var(--chip-line); border-radius: 8px; padding: 3px 8px; }
   .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--chip-fg); font-size: 0.8125rem; z-index: 3; text-align: center; padding: 20px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: var(--accent2); color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { left: 12px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <header>
   <h1 data-s="win_title">🔍 Zoom Gallery</h1>
   <span class="sub" data-s="win_sub">OpenSeadragon deep zoom (BSD-3) · Smithsonian Open Access (CC0) + NASA (public domain) + AlloFlow Notice-Wonder coach</span>
@@ -202,7 +201,7 @@
     </div>
     <div class="privacy" data-s="privacy">Your notes stay on this device — they are sent back to your AlloFlow window so they survive closing this one, and nothing is graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.</div>
   </aside>
-  <main class="stage" aria-label="Deep-zoom image viewer" data-s-aria="stage_aria">
+  <main id="main-content" tabindex="-1" class="stage" aria-label="Deep-zoom image viewer" data-s-aria="stage_aria">
     <div class="backbar" id="backbar" style="display:none">
       <button id="backBtn" type="button" data-s="back_gallery">← Gallery</button>
       <button id="pinBtn" type="button" aria-pressed="false" data-s="pin_drop">📍 Drop a pin</button>
@@ -234,7 +233,7 @@
 </div>
 <div class="sr-only" id="srLive" aria-live="polite"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/openseadragon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/openseadragon.min.js" integrity="sha384-Vh4b5HGyvDGMp6lVeYZe1zCqqyhS8oLTUC4SKIWmOuYH7nEuWiGIpSACopwLu9UD" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 (function () {
   'use strict';
@@ -568,9 +567,14 @@
   }
   window.addEventListener('message', function (event) {
     if (!isTrustedOpenerMessage(event)) return;
+    if (verifiedOpenerOrigin && event.origin !== verifiedOpenerOrigin) return;
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
-    verifiedOpenerOrigin = event.origin;
+    if (!verifiedOpenerOrigin) verifiedOpenerOrigin = event.origin;
+    if (data.type === 'alloflow-theme-change') {
+      if (typeof window.applyAlloFlowTheme === 'function') window.applyAlloFlowTheme(data.theme);
+      return;
+    }
     if (data.type === 'alloczoom-ready') {
       openerOk = true; aiAvailable = Boolean(data.ai); ttsAvailable = Boolean(data.tts);
       if (data.notes && typeof data.notes === 'object') {

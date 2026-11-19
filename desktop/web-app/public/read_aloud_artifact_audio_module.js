@@ -104,15 +104,39 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
         if (!url) {
             throw artifactAudioError('tts-audio-missing', 'Text-to-speech did not return audio bytes or a playable URL.');
         }
-        const response = await fetchAudio(url, signal ? { signal } : undefined);
-        if (!response || response.ok === false || typeof response.blob !== 'function') {
-            throw artifactAudioError(
-                'tts-audio-fetch-failed',
-                'The generated narration could not be copied into the artifact.',
-                response && response.status
-            );
+        const useTimeout = !/^(?:blob|data):/i.test(url) && typeof AbortController !== 'undefined';
+        let controller = null;
+        let timeoutId = null;
+        let onAbort = null;
+        if (useTimeout) {
+            controller = new AbortController();
+            if (signal) {
+                if (signal.aborted) {
+                    controller.abort();
+                } else {
+                    onAbort = () => controller.abort();
+                    signal.addEventListener('abort', onAbort, { once: true });
+                }
+            }
+            timeoutId = setTimeout(() => controller.abort(), 30000);
         }
-        return { blob: await response.blob() };
+        try {
+            const fetchInit = controller ? { signal: controller.signal } : (signal ? { signal } : undefined);
+            const response = await fetchAudio(url, fetchInit);
+            if (!response || response.ok === false || typeof response.blob !== 'function') {
+                throw artifactAudioError(
+                    'tts-audio-fetch-failed',
+                    'The generated narration could not be copied into the artifact.',
+                    response && response.status
+                );
+            }
+            return { blob: await response.blob() };
+        } finally {
+            if (timeoutId !== null) clearTimeout(timeoutId);
+            if (signal && onAbort) {
+                try { signal.removeEventListener('abort', onAbort); } catch (_) {}
+            }
+        }
     }
 
     function normalizeSegments(input, defaults) {

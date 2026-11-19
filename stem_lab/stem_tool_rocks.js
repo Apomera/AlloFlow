@@ -2762,7 +2762,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       // top-right corner, as many to a row as the zone is wide.
       var cols = Math.max(1, Math.floor((z[2] - 2) / 20));
       var px = z[0] + 2 + (n % cols) * 20, py = z[1] + z[3] - 22 - Math.floor(n / cols) * 20;
-      kids.push(h('svg', { key: 'pin' + p[0], x: px, y: py, width: 20, height: 20, overflow: 'visible', 'data-rk-env-pin': p[0] }, p[3]));
+      kids.push(h('svg', { key: 'pin' + p[0], x: px, y: py, width: 20, height: 20, overflow: 'visible', 'aria-hidden': 'true', focusable: 'false', 'data-rk-env-pin': p[0] }, p[3]));
     });
     return h('svg', { viewBox: '0 0 480 250', width: '100%', role: 'group', 'aria-label': __alloT('stem.rocks.env_scene_aria', 'A landscape with nine places where rocks form.'), style: { display: 'block', borderRadius: 10 } }, kids);
   }
@@ -6857,7 +6857,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       // Mystery Rock takes its field-note path (rebinds callGemini below).
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var rkAiText = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var ArrowLeft = ctx.icons.ArrowLeft;
@@ -10156,6 +10156,7 @@ const d = labToolData.rocks || {};
                     });
                   };
                   var startCooling = function() {
+                    if (window.__alloRkCoolInt) { clearInterval(window.__alloRkCoolInt); window.__alloRkCoolInt = null; }
                     updMulti({ coolingProgress: 0, coolingAnimActive: true });
                     sfxRockMelt();
                     var reduceMotion = false;
@@ -10173,11 +10174,13 @@ const d = labToolData.rocks || {};
                       upd("coolingProgress", p);
                       if (p >= 100) {
                         clearInterval(interval);
+                        if (window.__alloRkCoolInt === interval) window.__alloRkCoolInt = null;
                         upd("coolingAnimActive", false);
                         markCoolingDone();
                         sfxRockCool();
                       }
                     }, 50);
+                    window.__alloRkCoolInt = interval;
                   };
                   var coolModel = rkCoolingModel(coolingSpeed, selRock);
                   var coolCounts = rkCoolingCounts(coolModel, animProgress / 100);
@@ -11714,6 +11717,7 @@ const d = labToolData.rocks || {};
                     ].find(function(t) { return t.id === d.scratchTool; });
 
                     var runTest = function() {
+                      if (window.__alloRkScratchInt) { clearInterval(window.__alloRkScratchInt); window.__alloRkScratchInt = null; }
                       updMulti(Object.assign(rkLabReset(), { scratchAnimProgress: 1, scratchResult: null }));
                       var p = 0;
                       var interval = setInterval(function() {
@@ -11721,6 +11725,7 @@ const d = labToolData.rocks || {};
                         upd("scratchAnimProgress", p);
                         if (p >= 100) {
                           clearInterval(interval);
+                          if (window.__alloRkScratchInt === interval) window.__alloRkScratchInt = null;
                           var scratchOutcome = rkScratchOutcome(toolData.h, selMineral.hardness);
                           var text = "";
                           if (scratchOutcome === 'scratched') {
@@ -11736,6 +11741,7 @@ const d = labToolData.rocks || {};
                           upd("scratchResult", text);
                         }
                       }, 50);
+                      window.__alloRkScratchInt = interval;
                     };
 
                     var animProgress = rkLabFresh ? (d.scratchAnimProgress || 0) : 0;
@@ -15662,6 +15668,10 @@ const d = labToolData.rocks || {};
 
           )
       })();
+    },
+    cleanup: function() {
+      if (window.__alloRkCoolInt) { clearInterval(window.__alloRkCoolInt); window.__alloRkCoolInt = null; }
+      if (window.__alloRkScratchInt) { clearInterval(window.__alloRkScratchInt); window.__alloRkScratchInt = null; }
     }
   });
 
@@ -18495,6 +18505,10 @@ const d = labToolData.rockCycle || {};
 
           );
       })();
+    },
+    cleanup: function() {
+      if (window.__alloRkCoolInt) { clearInterval(window.__alloRkCoolInt); window.__alloRkCoolInt = null; }
+      if (window.__alloRkScratchInt) { clearInterval(window.__alloRkScratchInt); window.__alloRkScratchInt = null; }
     }
   });
 

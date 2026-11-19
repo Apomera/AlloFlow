@@ -175,13 +175,46 @@ function buildMotionPrompt(image, options) {
   ].join('\n');
 }
 
-function parseDraftReply(raw, expectedCount) {
-  const text = typeof raw === 'string' ? raw : _atString(raw && raw.text, 200000);
+function _atParseJsonArrayReply(raw) {
+  const text = (typeof raw === 'string' ? raw : _atString(raw && raw.text, 200000))
+    .replace(/```(?:json)?\s*([\s\S]*?)```/gi, '$1');
   const a = text.indexOf('[');
   const b = text.lastIndexOf(']');
   if (a < 0 || b <= a) return null;
-  let parsed;
-  try { parsed = JSON.parse(text.slice(a, b + 1)); } catch (_) { return null; }
+  try {
+    const direct = JSON.parse(text.slice(a, b + 1));
+    if (Array.isArray(direct)) return direct;
+  } catch (_) {}
+  for (let start = 0; start < text.length; start++) {
+    if (text[start] !== '[') continue;
+    let depth = 0, inStr = false, esc = false;
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === '\\') esc = true;
+        else if (ch === '"') inStr = false;
+      } else if (ch === '"') {
+        inStr = true;
+      } else if (ch === '[') {
+        depth++;
+      } else if (ch === ']') {
+        depth--;
+        if (depth === 0) {
+          try {
+            const candidate = JSON.parse(text.slice(start, i + 1));
+            if (Array.isArray(candidate) && candidate.some(entry => entry && typeof entry === 'object' && !Array.isArray(entry))) return candidate;
+          } catch (_) {}
+          break;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function parseDraftReply(raw, expectedCount) {
+  const parsed = _atParseJsonArrayReply(raw);
   if (!Array.isArray(parsed)) return null;
   const byIndex = new Map();
   parsed.forEach((entry, position) => {
@@ -320,8 +353,8 @@ function _oiPlainText(html, max) {
   const raw = _atString(html, 20000)
     .replace(/<[^>]*>/g, ' ')
     .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+|#39);/gi, (whole, name) => {
-      if (/^#x/i.test(name)) return String.fromCodePoint(parseInt(name.slice(2), 16) || 32);
-      if (/^#\d/.test(name)) return String.fromCodePoint(parseInt(name.slice(1), 10) || 32);
+      if (/^#x/i.test(name)) { const cp = parseInt(name.slice(2), 16); return Number.isFinite(cp) && cp >= 0 && cp <= 0x10FFFF ? String.fromCodePoint(cp) : ' '; }
+      if (/^#\d/.test(name)) { const cp = parseInt(name.slice(1), 10); return Number.isFinite(cp) && cp >= 0 && cp <= 0x10FFFF ? String.fromCodePoint(cp) : ' '; }
       return Object.prototype.hasOwnProperty.call(_oiEntities, name.toLowerCase()) ? _oiEntities[name.toLowerCase()] : whole;
     })
     .replace(/\s+/g, ' ').trim();
@@ -472,12 +505,7 @@ function buildScreenPrompt(count, query, options) {
 // renumbered or duplicated reply would pair a verdict with the wrong picture,
 // so it is refused whole (null) and never trusted image by image.
 function parseScreenReply(raw, expectedCount) {
-  const text = typeof raw === 'string' ? raw : _atString(raw && raw.text, 200000);
-  const a = text.indexOf('[');
-  const b = text.lastIndexOf(']');
-  if (a < 0 || b <= a) return null;
-  let parsed;
-  try { parsed = JSON.parse(text.slice(a, b + 1)); } catch (_) { return null; }
+  const parsed = _atParseJsonArrayReply(raw);
   if (!Array.isArray(parsed) || parsed.length !== expectedCount) return null;
   const byIndex = new Map();
   for (const entry of parsed) {
@@ -652,22 +680,26 @@ async function bakeCreditBand(dataUrl, creditLine, options) {
   const width = symbol ? 640 : Math.min(960, naturalWidth);
   const artHeight = symbol ? 640 : Math.round(naturalHeight * (width / naturalWidth));
   const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('The picture could not be opened.');
-  ctx.font = '13px sans-serif';
-  const credit = creditBandLines(ctx, width, opts.attribution, creditLine);
-  canvas.width = width;
-  canvas.height = artHeight + (credit.length ? 10 + credit.length * 17 : 0);
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  if (symbol) {
-    const scale = Math.min(608 / naturalWidth, 608 / naturalHeight);
-    ctx.drawImage(img, (640 - naturalWidth * scale) / 2, (640 - naturalHeight * scale) / 2, naturalWidth * scale, naturalHeight * scale);
-  } else {
-    ctx.drawImage(img, 0, 0, width, artHeight);
+  try {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('The picture could not be opened.');
+    ctx.font = '13px sans-serif';
+    const credit = creditBandLines(ctx, width, opts.attribution, creditLine);
+    canvas.width = width;
+    canvas.height = artHeight + (credit.length ? 10 + credit.length * 17 : 0);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (symbol) {
+      const scale = Math.min(608 / naturalWidth, 608 / naturalHeight);
+      ctx.drawImage(img, (640 - naturalWidth * scale) / 2, (640 - naturalHeight * scale) / 2, naturalWidth * scale, naturalHeight * scale);
+    } else {
+      ctx.drawImage(img, 0, 0, width, artHeight);
+    }
+    ctx.fillStyle = '#334155'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+    credit.forEach((text, i) => ctx.fillText(text, width / 2, artHeight + 20 + i * 17, width - 8));
+    return { dataUrl: canvas.toDataURL(symbol ? 'image/png' : 'image/jpeg', 0.9), bandHeight: canvas.height - artHeight };
+  } finally {
+    try { canvas.width = 0; canvas.height = 0; } catch (_) {}
   }
-  ctx.fillStyle = '#334155'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-  credit.forEach((text, i) => ctx.fillText(text, width / 2, artHeight + 20 + i * 17, width - 8));
-  return { dataUrl: canvas.toDataURL(symbol ? 'image/png' : 'image/jpeg', 0.9), bandHeight: canvas.height - artHeight };
 }
 // A copy without the bottom `pixels` rows (the credit band drawn above).
 async function cropImageBottom(dataUrl, pixels) {
@@ -682,11 +714,15 @@ async function cropImageBottom(dataUrl, pixels) {
   const band = Math.max(0, Math.round(Number(pixels) || 0));
   if (!img.naturalWidth || img.naturalHeight - band < 1) throw new Error('The picture could not be opened.');
   const canvas = document.createElement('canvas');
-  canvas.width = img.naturalWidth; canvas.height = img.naturalHeight - band;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('The picture could not be opened.');
-  ctx.drawImage(img, 0, 0);
-  return /^data:image\/png/i.test(src) ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.9);
+  try {
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight - band;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('The picture could not be opened.');
+    ctx.drawImage(img, 0, 0);
+    return /^data:image\/png/i.test(src) ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.9);
+  } finally {
+    try { canvas.width = 0; canvas.height = 0; } catch (_) {}
+  }
 }
 
 // A small inline copy for places that store pictures inside the lesson itself
@@ -710,13 +746,17 @@ async function shrinkImageDataUrl(dataUrl, maxSide, options) {
     ? Math.min(1, side / naturalWidth, (side * 2) / naturalHeight)
     : Math.min(1, side / Math.max(naturalWidth, naturalHeight));
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(naturalWidth * scale));
-  canvas.height = Math.max(1, Math.round(naturalHeight * scale));
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('The picture could not be opened.');
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  return opts.kind === 'symbol' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.8);
+  try {
+    canvas.width = Math.max(1, Math.round(naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(naturalHeight * scale));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('The picture could not be opened.');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return opts.kind === 'symbol' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.8);
+  } finally {
+    try { canvas.width = 0; canvas.height = 0; } catch (_) {}
+  }
 }
 
 // ISO 639-1 (or a language name) -> the ISO 639-3 code Global Symbols expects.
@@ -924,8 +964,11 @@ function ImageAltField(props) {
   const sourceKey = normalizeAltSource(source);
   const sourceMeta = sourceKey ? ALT_SOURCES[sourceKey] : null;
   const toneClass = { sky: 'bg-sky-100 text-sky-900', amber: 'bg-amber-100 text-amber-950', emerald: 'bg-emerald-100 text-emerald-900', red: 'bg-red-100 text-red-900' };
-  const helpId = (id || 'alt') + '-help';
-  const qualityId = (id || 'alt') + '-quality';
+  const fallbackIdRef = React.useRef('');
+  if (!fallbackIdRef.current) fallbackIdRef.current = 'alt-' + Math.random().toString(36).slice(2, 9);
+  const fieldId = id || fallbackIdRef.current;
+  const helpId = fieldId + '-help';
+  const qualityId = fieldId + '-quality';
   const aiLocked = typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true);
   const hostDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
   const regenerateAiBlocked = aiLocked || (hostDoor && hostDoor.disabled);
@@ -933,7 +976,9 @@ function ImageAltField(props) {
   return (
     <div className="rounded-xl border border-slate-300 bg-white p-3" data-alt-source={sourceKey || undefined}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <label htmlFor={id} className="text-xs font-black text-slate-800">{label || tr('field_label', 'Image description')}</label>
+        {decorative
+          ? <span className="text-xs font-black text-slate-800">{label || tr('field_label', 'Image description')}</span>
+          : <label htmlFor={fieldId} className="text-xs font-black text-slate-800">{label || tr('field_label', 'Image description')}</label>}
         {sourceMeta && <span className={'rounded-full px-2 py-0.5 text-[11px] font-bold ' + (toneClass[sourceMeta.tone] || toneClass.sky)}>{tr('provenance_' + sourceKey, sourceMeta.label)}</span>}
       </div>
       <label className="mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs font-bold text-slate-700">
@@ -941,7 +986,7 @@ function ImageAltField(props) {
         {tr('decorative_label', 'Decorative (screen readers skip it)')}
       </label>
       {!decorative && (
-        <textarea id={id} value={text} disabled={disabled} maxLength={800} rows={2} aria-describedby={helpId + ' ' + qualityId}
+        <textarea id={fieldId} value={text} disabled={disabled} maxLength={800} rows={2} aria-describedby={helpId + ' ' + qualityId}
           onChange={(event) => { if (typeof onChange === 'function') onChange(event.target.value); }}
           className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" />
       )}

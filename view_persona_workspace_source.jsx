@@ -41,6 +41,12 @@ function PersonaWorkspaceView({
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest('details:not([open])');
       if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let cur = el; cur && cur !== dialog; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+        }
+      }
       return true;
     });
   };
@@ -264,6 +270,7 @@ function PersonaWorkspaceView({
                         )}
                         {isTeacherMode && personaTeacherEditor && (
                             <div
+                                role="presentation"
                                 className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
                                 onMouseDown={(event) => { if (event.target === event.currentTarget) setPersonaTeacherEditor(null); }}
                             >
@@ -298,7 +305,7 @@ function PersonaWorkspaceView({
                                             }
                                         }
                                     }}
-                                    className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-indigo-200 bg-white shadow-2xl"
+                                    className="allo-docsuite max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-indigo-200 bg-white shadow-2xl"
                                 >
                                     <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
                                         <div>

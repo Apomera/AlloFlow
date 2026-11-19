@@ -143,11 +143,15 @@
     var host = (options && options.root) || root;
     if (host && host.JSZip) return host.JSZip;
     if (!host || !host.document) throw new Error('EPUB import needs the local ZIP parser, which is unavailable in this environment.');
+    if (host && host._isDesktopBundledApp === true) {
+      throw new Error('EPUB import needs the local ZIP parser, which is unavailable offline.');
+    }
     if (_jsZipPromise) return _jsZipPromise;
     _jsZipPromise = new Promise(function (resolve, reject) {
       var script = host.document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-      script.async = true; script.crossOrigin = 'anonymous';
+      script.integrity = 'sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG';
+      script.async = true; script.crossOrigin = 'anonymous'; script.referrerPolicy = 'no-referrer';
       script.onload = function () { host.JSZip ? resolve(host.JSZip) : reject(new Error('ZIP parser did not initialize.')); };
       script.onerror = function () { _jsZipPromise = null; reject(new Error('Could not load the local EPUB parser. Check the network or content-security policy.')); };
       host.document.head.appendChild(script);
@@ -159,20 +163,56 @@
     var JSZip = await ensureJsZip(options || {});
     var zip = await JSZip.loadAsync(bytes);
     var names = Object.keys(zip.files || {});
+    if (names.length > 2000) throw new Error('This EPUB contains too many archive entries.');
     var expanded = names.reduce(function (sum, name) {
       var entry = zip.files[name];
       return sum + Math.max(0, Number(entry && entry._data && entry._data.uncompressedSize) || 0);
     }, 0);
     if (expanded > MAX_EPUB_UNCOMPRESSED_BYTES) throw new Error('This EPUB expands beyond Lumen’s 60 MB safety limit.');
+    var actualDecodedBytes = 0;
+    var readBoundedEntryText = async function (entry, singleMaxBytes) {
+      var cap = Math.min(singleMaxBytes || MAX_EPUB_UNCOMPRESSED_BYTES, Math.max(0, MAX_EPUB_UNCOMPRESSED_BYTES - actualDecodedBytes));
+      if (typeof entry.internalStream === 'function') {
+        var chunks = [];
+        var entryBytes = 0;
+        await new Promise(function (resolve, reject) {
+          var failed = false;
+          var stream = entry.internalStream('uint8array');
+          stream.on('data', function (chunk) {
+            if (failed) return;
+            var u8 = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk || 0);
+            entryBytes += u8.byteLength;
+            actualDecodedBytes += u8.byteLength;
+            if (entryBytes > cap || actualDecodedBytes > MAX_EPUB_UNCOMPRESSED_BYTES) {
+              failed = true;
+              try { if (typeof stream.pause === 'function') stream.pause(); } catch (_) {}
+              reject(new Error('This EPUB expands beyond Lumen’s 60 MB safety limit.'));
+              return;
+            }
+            chunks.push(u8);
+          }).on('error', function (err) { if (!failed) { failed = true; reject(err); } })
+            .on('end', function () { if (!failed) resolve(); })
+            .resume();
+        });
+        var merged = new Uint8Array(entryBytes);
+        var offset = 0;
+        for (var ci = 0; ci < chunks.length; ci += 1) { merged.set(chunks[ci], offset); offset += chunks[ci].byteLength; }
+        return new TextDecoder('utf-8', { fatal: false }).decode(merged);
+      }
+      var text = await entry.async('string');
+      actualDecodedBytes += text.length;
+      if (actualDecodedBytes > MAX_EPUB_UNCOMPRESSED_BYTES) throw new Error('This EPUB expands beyond Lumen’s 60 MB safety limit.');
+      return text;
+    };
     var container = zip.file('META-INF/container.xml');
     if (!container) throw new Error('This EPUB is missing its package manifest.');
-    var containerXml = await container.async('string');
+    var containerXml = await readBoundedEntryText(container, 1024 * 1024);
     var rootMatch = containerXml.match(/full-path\s*=\s*["']([^"']+)["']/i);
     if (!rootMatch) throw new Error('This EPUB does not identify a readable package document.');
     var opfPath = normalizeZipPath(rootMatch[1]);
     var opfFile = zip.file(opfPath);
     if (!opfFile) throw new Error('This EPUB package document could not be read.');
-    var opf = await opfFile.async('string'), manifest = {}, itemMatch;
+    var opf = await readBoundedEntryText(opfFile, 4 * 1024 * 1024), manifest = Object.create(null), itemMatch;
     var itemRe = /<item\b([^>]+)>/gi;
     while ((itemMatch = itemRe.exec(opf))) {
       var attrs = itemMatch[1], id = (attrs.match(/\bid\s*=\s*["']([^"']+)["']/i) || [])[1], href = (attrs.match(/\bhref\s*=\s*["']([^"']+)["']/i) || [])[1];
@@ -187,7 +227,7 @@
     for (var i = 0; i < spine.length && i < 150; i++) {
       var chapter = zip.file(spine[i]);
       if (!chapter) continue;
-      var html = await chapter.async('string');
+      var html = await readBoundedEntryText(chapter, 8 * 1024 * 1024);
       var titleMatch = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i) || html.match(/<h[1-3]\b[^>]*>([\s\S]*?)<\/h[1-3]>/i);
       var title = titleMatch ? clean(htmlEntityDecode(titleMatch[1].replace(/<[^>]+>/g, ' '))) : '';
       var text = htmlToReadableText(html);

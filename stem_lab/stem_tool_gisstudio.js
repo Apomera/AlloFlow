@@ -22,6 +22,37 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     document.head.appendChild(st);
   })();
   // end contrast theme fixes
+
+  // Bespoke GIS Mapping Studio workbench polish + Light/Dark/High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-gisstudio-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-gisstudio-studio-css';
+    st.textContent = [
+      '.gis-hero-deck { max-width: 1180px; margin: 0 auto 16px; background: linear-gradient(135deg, #071e2b 0%, #0d3240 52%, #0c2638 100%); border: 1px solid rgba(94,234,212,0.34); border-radius: 18px; padding: 18px 20px; box-shadow: 0 16px 36px -22px rgba(2,18,28,0.85); min-width: 0; }',
+      '.gis-hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; min-width: 0; }',
+      '.gis-hero-identity { display: flex; align-items: flex-start; gap: 14px; flex: 1 1 320px; min-width: 0; }',
+      '.gis-emblem-box { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, rgba(20,184,166,0.28), rgba(7,30,43,0.92)); border: 1.5px solid rgba(94,234,212,0.55); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 6px 18px rgba(4,24,36,0.55); }',
+      '.gis-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(20,184,166,0.2); border: 1px solid rgba(94,234,212,0.48); color: #99f6e4; font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.gis-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(94,234,212,0.22); }',
+      '.gis-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(6,24,36,0.72); border: 1px solid rgba(94,234,212,0.34); color: #e6fffb; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.gis-pipeline-strip { margin-top: 12px; padding: 8px 10px; border-radius: 12px; background: rgba(6,22,34,0.68); border: 1px solid rgba(94,234,212,0.26); }',
+      '.gis-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(94,234,212,0.22); }',
+      '.gis-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #99f6e4; }',
+      '.gis-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(6,24,36,0.78); border: 1px solid rgba(94,234,212,0.36); color: #e6fffb; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.gis-starter-chip:hover:not(:disabled) { background: rgba(20,184,166,0.28); border-color: #5eead4; color: #ffffff; }',
+      '.gis-starter-chip[data-active="true"] { background: #0f766e; border-color: #5eead4; color: #ffffff; }',
+      '.gis-nav-btn { min-height: 44px; transition: background 140ms ease, border-color 140ms ease; }',
+      '.gis-nav-btn:hover:not(:disabled) { border-color: #5eead4 !important; background: #133548 !important; }',
+      '.gis-hero-deck button:focus-visible, [data-gis-studio="true"] button:focus-visible, [data-gis-studio="true"] select:focus-visible, [data-gis-studio="true"] input:focus-visible { outline: 2px solid #5eead4; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-emblem-box, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-subject-badge, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-telemetry-pill, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-pipeline-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-starter-chip, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-nav-btn { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-starter-chip[data-active="true"], .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-nav-btn[aria-current="page"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   window.StemLab = window.StemLab || {
     _registry: {}, _order: [],
     registerTool: function (id, config) {
@@ -3758,11 +3789,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       return window._geoLibsLoaded.then(function () { return window.L && window.L.map ? window.L : null; });
     }
     if (window.__alloGISLeaflet) return window.__alloGISLeaflet;
+    if (window._isDesktopBundledApp === true) return Promise.resolve(null);
     window.__alloGISLeaflet = new Promise(function (resolve) {
       if (!document.querySelector('link[data-gis-leaflet]')) {
         var link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        link.integrity = 'sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H';
+        link.crossOrigin = 'anonymous';
+        link.referrerPolicy = 'no-referrer';
         link.setAttribute('data-gis-leaflet', 'true');
         document.head.appendChild(link);
       }
@@ -3770,6 +3805,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       if (!script) {
         script = document.createElement('script');
         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.integrity = 'sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH';
+        script.crossOrigin = 'anonymous';
+        script.referrerPolicy = 'no-referrer';
         script.setAttribute('data-gis-leaflet', 'true');
         document.head.appendChild(script);
       }
@@ -3953,7 +3991,26 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       __alloGisCtx = ctx;
       var React = ctx.React, h = React.createElement;
       var setToolData = ctx.setToolData || function () {};
-      var announce = ctx.announceToSR || function () {};
+      var announce = function (msg) {
+        if (!msg) return;
+        if (typeof ctx.announceToSR === 'function') { try { ctx.announceToSR(msg); return; } catch (_) {} }
+        try {
+          if (typeof document === 'undefined' || !document.body) return;
+          var lr = document.getElementById('allo-live-gisstudio');
+          if (!lr) {
+            lr = document.createElement('div');
+            lr.id = 'allo-live-gisstudio';
+            lr.setAttribute('role', 'status');
+            lr.setAttribute('aria-live', 'polite');
+            lr.setAttribute('aria-atomic', 'true');
+            lr.className = 'sr-only';
+            lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+            document.body.appendChild(lr);
+          }
+          lr.textContent = '';
+          setTimeout(function () { try { lr.textContent = String(msg); } catch (_) {} }, 30);
+        } catch (_) {}
+      };
       var callGemini = ctx.callGemini;
       var t = typeof ctx.t === 'function' ? ctx.t : function (_key, fallback) { return fallback; };
       var localeInfo = resolveGISLocale({
@@ -4157,11 +4214,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       }
 
       function Studio() {
-        var initial = ctx.toolData || {};
-        var s1 = React.useState(initial.gisTab || 'map'), tab = s1[0], setTab = s1[1];
-        var s2 = React.useState(initial.gisMetric || 'density'), metric = s2[0], setMetric = s2[1];
+        var rawTd = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+        var initial = rawTd;
+        var safeStr = function (v, fb) { return (typeof v === 'string' && v.trim()) ? v : fb; };
+        var s1 = React.useState(safeStr(initial.gisTab, 'map')), tab = s1[0], setTab = s1[1];
+        var s2 = React.useState(safeStr(initial.gisMetric, 'density')), metric = s2[0], setMetric = s2[1];
         var s3 = React.useState('sample'), source = s3[0], setSource = s3[1];
-        var regionPackState = React.useState(initial.gisRegionPack || 'maine'), regionPackId = regionPackState[0], setRegionPackId = regionPackState[1];
+        var regionPackState = React.useState(safeStr(initial.gisRegionPack, 'maine')), regionPackId = regionPackState[0], setRegionPackId = regionPackState[1];
         var customRegionPacksState = React.useState(function () { return normalizeGISRegionPackList(initial.gisCustomRegionPacks); }), customRegionPacks = customRegionPacksState[0], setCustomRegionPacks = customRegionPacksState[1];
         var packFormState = React.useState({ label: '', scope: '', metricLabel: '', metricUnit: '', represented: '', gaps: '', note: '' }), packForm = packFormState[0], setPackForm = packFormState[1];
         var packErrorState = React.useState(''), packError = packErrorState[0], setPackError = packErrorState[1];
@@ -4324,7 +4383,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
           return ac;
         }
-        function announceAudioUnavailable() {
+        function notifyAudioUnavailable() {
           announce(__alloT('stem.gisstudio.sr_audio_is_unavailable_use_the_value_column_in_the', 'Audio is unavailable. Use the value column in the table.'));
         }
         // Reduced motion: the app setting (ctx.reduceMotion) or the OS preference.
@@ -5480,17 +5539,22 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             return;
           }
           var url = 'https://gis.maine.gov/mapservices/rest/services/mnap/Maine_Ecoregions/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=geojson';
-          Promise.resolve(window.fetch(url)).then(function (response) {
+          var gisCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          var gisTimer = gisCtrl ? setTimeout(function () { gisCtrl.abort(); }, 15000) : null;
+          var clearGisTimer = function () { if (gisTimer !== null) { clearTimeout(gisTimer); gisTimer = null; } };
+          Promise.resolve(window.fetch(url, gisCtrl ? { signal: gisCtrl.signal } : undefined)).then(function (response) {
             if (requestId !== geoImportRequestRef.current) return;
             if (!response.ok) throw new Error('The Maine GIS service returned ' + response.status + '.');
             return response.json();
           }).then(function (data) {
+            clearGisTimer();
             if (requestId !== geoImportRequestRef.current || !data) return;
             var text = JSON.stringify(data, null, 2);
             setGeoText(text);
             prepareGeoImport(Object.assign({}, parseGeoJSON(text), { sourceFormat: 'geojson' }), 'Maine GeoLibrary');
             setOfficialBusy(false);
           }).catch(function () {
+            clearGisTimer();
             if (requestId !== geoImportRequestRef.current) return;
             setOfficialBusy(false);
             setGeoError('The live Maine layer is unavailable right now. Use the included practice layer or upload GeoJSON.');
@@ -5790,7 +5854,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function sonifySelection() {
           if (!selectedRecords.length) { announce(__alloT('stem.gisstudio.sr_no_selected_records_are_available_to_sonify', 'No selected records are available to sonify.')); return; }
           var ac = getGISAudioContext();
-          if (!ac) { announceAudioUnavailable(); return; }
+          if (!ac) { notifyAudioUnavailable(); return; }
           selectedRecords.forEach(function (record, index) {
             var p = max === min ? 0.5 : (valueOf(record, metric, imported) - min) / (max - min);
             var oscillator = ac.createOscillator(), gain = ac.createGain(), start = ac.currentTime + index * 0.16;
@@ -6921,7 +6985,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function sonifyTemporalChange() {
           if (!temporalComplete.length) { announce(__alloT('stem.gisstudio.sr_no_complete_changes_are_available_to_sonify', 'No complete changes are available to sonify.')); return; }
           var ac = getGISAudioContext();
-          if (!ac) { announceAudioUnavailable(); return; }
+          if (!ac) { notifyAudioUnavailable(); return; }
           var maxAbs = Math.max.apply(Math, temporalComplete.map(function (row) { return Math.abs(row.change); })) || 1;
           temporalComplete.slice().sort(function (a, b) { return a.change - b.change; }).forEach(function (row, index) {
             var oscillator = ac.createOscillator(), gain = ac.createGain(), start = ac.currentTime + index * 0.18;
@@ -8382,17 +8446,91 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         }
 
         var tabs = [['project', gisText.project], ['composer', gisText.composer], ['remote', gisText.remote], ['story', gisText.story], ['quality', gisText.quality], ['planner', gisText.planner], ['review', gisText.review], ['packet', gisText.packet], ['missions', activeRegionPack.id === 'maine' ? gisText.maineMissions : gisText.missions], ['timeline', gisText.timeline], ['map', gisText.map], ['compare', gisText.compare], ['import', gisText.importData], ['projection', gisText.projection]];
+        var gisLocked = !!(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked || (ctx.teacherMode && ctx.teacherMode.locked)));
+        var gisStage = (tab === 'import' || tab === 'projection' || tab === 'project') ? 'acquire'
+          : (tab === 'map' || tab === 'compare' || tab === 'remote' || tab === 'timeline') ? 'map'
+          : 'analyze';
+        var basemapBadge = offlineMap
+          ? __alloT('stem.gisstudio.telemetry_basemap_offline', 'Offline Schematic')
+          : (basemap === 'satellite' ? __alloT('stem.gisstudio.telemetry_basemap_sat', 'Satellite Imagery') : __alloT('stem.gisstudio.telemetry_basemap_street', 'Street Basemap'));
         return h('div', { 'data-gis-studio': 'true', lang: localeInfo.lang, dir: localeInfo.dir, style: { minHeight: '100%', background: 'linear-gradient(155deg,#06131f,#0b2531 52%,#102332)', color: '#e2e8f0', padding: 16, boxSizing: 'border-box', fontFamily: 'Inter,system-ui,sans-serif' } },
-          h('header', { style: { maxWidth: 1180, margin: '0 auto 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' } },
-            h('div', null,
-              h('p', { style: { margin: 0, color: '#5eead4', fontSize: 11, fontWeight: 900, letterSpacing: '.11em' } }, gisText.kicker),
-              h('h1', { style: { margin: '4px 0 3px', color: '#f0fdfa', fontSize: 26 } }, gisText.title),
-              h('p', { style: { margin: 0, color: '#a7c7d8', fontSize: 12 } }, gisText.tagline),
-              h('button', { type: 'button', onClick: addCurrentViewToStory, style: Object.assign({}, control, { cursor: 'pointer', marginTop: 9 }) }, gisText.addStory)),
-            h('nav', { 'aria-label': gisText.sections, style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+          h('header', { className: 'gis-hero-deck' },
+            h('div', { className: 'gis-hero-top' },
+              h('div', { className: 'gis-hero-identity' },
+                h('div', { className: 'gis-emblem-box', 'aria-hidden': 'true' },
+                  h('svg', { viewBox: '0 0 48 48', width: 38, height: 38, fill: 'none' },
+                    h('circle', { cx: 24, cy: 24, r: 19, stroke: '#5eead4', strokeWidth: 1.6, opacity: 0.9 }),
+                    h('ellipse', { cx: 24, cy: 24, rx: 10, ry: 19, stroke: '#38bdf8', strokeWidth: 1.2, opacity: 0.75 }),
+                    h('line', { x1: 5, y1: 24, x2: 43, y2: 24, stroke: '#38bdf8', strokeWidth: 1.2, opacity: 0.7 }),
+                    h('line', { x1: 8, y1: 15, x2: 40, y2: 15, stroke: '#5eead4', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.55 }),
+                    h('line', { x1: 8, y1: 33, x2: 40, y2: 33, stroke: '#5eead4', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.55 }),
+                    h('polygon', { points: '24,8 27.5,21 24,24 20.5,21', fill: '#5eead4' }),
+                    h('polygon', { points: '24,40 27.5,27 24,24 20.5,27', fill: '#38bdf8', opacity: 0.8 }),
+                    h('circle', { cx: 24, cy: 24, r: 2.5, fill: '#f0fdfa' })
+                  )
+                ),
+                h('div', { style: { minWidth: 0, flex: '1 1 240px' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
+                    h('span', { className: 'gis-subject-badge' }, __alloT('stem.gisstudio.badge_subject', 'Cartography · Spatial Analysis')),
+                    h('span', { style: { color: '#5eead4', fontSize: 11, fontWeight: 800, letterSpacing: '.09em' } }, gisText.kicker)
+                  ),
+                  h('h1', { style: { margin: '2px 0 4px', color: '#f0fdfa', fontSize: 25, lineHeight: 1.2 } }, gisText.title),
+                  h('p', { style: { margin: 0, color: '#cfe8f3', fontSize: 12.5, lineHeight: 1.45 } }, gisText.tagline)
+                )
+              ),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                h('button', { type: 'button', onClick: addCurrentViewToStory, className: 'gis-nav-btn', style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, gisText.addStory)
+              )
+            ),
+            // Live non-spoiler telemetry strip
+            h('div', { className: 'gis-telemetry-strip' },
+              h('span', { className: 'gis-telemetry-pill' }, '\uD83D\uDDFA\uFE0F ' + __alloT('stem.gisstudio.telemetry_region', 'Region: ') + localizedRegionLabel(activeRegionPack)),
+              h('span', { className: 'gis-telemetry-pill' }, '\uD83D\uDCCD ' + records.length + ' ' + __alloT('stem.gisstudio.telemetry_points', 'Locations') + (geoFeatures.length ? (' · ' + geoFeatures.length + ' ' + __alloT('stem.gisstudio.telemetry_polygons', 'Polygons')) : '')),
+              h('span', { className: 'gis-telemetry-pill' }, '\uD83C\uDF10 ' + __alloT('stem.gisstudio.telemetry_projection', 'Projection: ') + projection),
+              h('span', { className: 'gis-telemetry-pill' }, '\uD83D\uDEF0\uFE0F ' + basemapBadge)
+            ),
+            // Spatial Data Workflow Schematic (inline SVG, >=10.5px labels, reactive stage highlight)
+            h('div', { className: 'gis-pipeline-strip' },
+              h('svg', {
+                viewBox: '0 0 580 62', role: 'img',
+                'aria-label': __alloT('stem.gisstudio.a11y_spatial_workflow_diagram', 'GIS spatial analysis workflow: Acquire and project coordinates, map and classify layers across space and time, then analyze patterns and compose evidence reports'),
+                style: { width: '100%', maxHeight: 66, height: 'auto', display: 'block' }
+              },
+                h('line', { x1: 174, y1: 31, x2: 208, y2: 31, stroke: '#5eead4', strokeWidth: 2 }),
+                h('line', { x1: 372, y1: 31, x2: 406, y2: 31, stroke: '#38bdf8', strokeWidth: 2 }),
+                h('rect', { x: 8, y: 9, width: 166, height: 44, rx: 10, fill: gisStage === 'acquire' ? 'rgba(20,184,166,0.34)' : 'rgba(15,48,64,0.6)', stroke: gisStage === 'acquire' ? '#5eead4' : '#3f6b82', strokeWidth: gisStage === 'acquire' ? 2 : 1.3 }),
+                h('text', { x: 91, y: 27, textAnchor: 'middle', fill: '#f0fdfa', fontSize: 11.5, fontWeight: 800 }, '1. Acquire & Project'),
+                h('text', { x: 91, y: 43, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'CRS · CSV · GeoJSON'),
+                h('rect', { x: 208, y: 9, width: 164, height: 44, rx: 10, fill: gisStage === 'map' ? 'rgba(14,165,233,0.32)' : 'rgba(15,48,64,0.6)', stroke: gisStage === 'map' ? '#38bdf8' : '#3f6b82', strokeWidth: gisStage === 'map' ? 2 : 1.3 }),
+                h('text', { x: 290, y: 27, textAnchor: 'middle', fill: '#f0fdfa', fontSize: 11.5, fontWeight: 800 }, '2. Map & Classify'),
+                h('text', { x: 290, y: 43, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'Layers · Compare · Raster'),
+                h('rect', { x: 406, y: 9, width: 166, height: 44, rx: 10, fill: gisStage === 'analyze' ? 'rgba(245,158,11,0.28)' : 'rgba(15,48,64,0.6)', stroke: gisStage === 'analyze' ? '#fbbf24' : '#3f6b82', strokeWidth: gisStage === 'analyze' ? 2 : 1.3 }),
+                h('text', { x: 489, y: 27, textAnchor: 'middle', fill: '#f0fdfa', fontSize: 11.5, fontWeight: 800 }, '3. Analyze & Compose'),
+                h('text', { x: 489, y: 43, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'Missions · Story · Evidence')
+              )
+            ),
+            // One-click GIS starter workflow chips (44px touch targets, hidden when teacher-locked)
+            !gisLocked && h('div', { className: 'gis-starter-bar', role: 'group', 'aria-label': __alloT('stem.gisstudio.quick_starters_label', 'Quick GIS workflow starters') },
+              h('span', { className: 'gis-starter-label' }, __alloT('stem.gisstudio.quick_launch', 'Quick launch:')),
+              [
+                { id: 'map', icon: '🗺️', label: __alloT('stem.gisstudio.starter_map', 'Interactive Map') },
+                { id: 'compare', icon: '⚖️', label: __alloT('stem.gisstudio.starter_compare', 'Compare Maps') },
+                { id: 'remote', icon: '🛰️', label: __alloT('stem.gisstudio.starter_remote', 'Remote Sensing') },
+                { id: 'timeline', icon: '📈', label: __alloT('stem.gisstudio.starter_timeline', 'Time-Series') },
+                { id: 'projection', icon: '🌐', label: __alloT('stem.gisstudio.starter_projection', 'Projection Lab') },
+                { id: 'missions', icon: '🧭', label: __alloT('stem.gisstudio.starter_missions', 'Inquiry Missions') }
+              ].map(function (st) {
+                return h('button', {
+                  key: 'gis-st-' + st.id, type: 'button', className: 'gis-starter-chip',
+                  'data-active': tab === st.id ? 'true' : 'false',
+                  onClick: function () { go(st.id); }
+                }, h('span', { 'aria-hidden': 'true' }, st.icon), h('span', null, st.label));
+              })
+            ),
+            h('nav', { 'aria-label': gisText.sections, style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(94,234,212,0.18)' } },
               tabs.map(function (item) {
                 var active = tab === item[0];
-                return h('button', { key: item[0], type: 'button', onClick: function () { go(item[0]); }, 'aria-current': active ? 'page' : undefined, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#102536', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, item[1]);
+                return h('button', { key: item[0], type: 'button', className: 'gis-nav-btn', onClick: function () { go(item[0]); }, 'aria-current': active ? 'page' : undefined, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#102536', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, item[1]);
               }))),
           h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'project' ? projectView() : tab === 'composer' ? composerView() : tab === 'remote' ? remoteSensingView() : tab === 'story' ? storyMapView() : tab === 'quality' ? qualityReviewView() : tab === 'planner' ? investigationPlannerView() : tab === 'review' ? teacherReviewView() : tab === 'packet' ? investigationPacketView() : tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
           h('footer', { style: { maxWidth: 1180, margin: '14px auto 0', color: '#8ba7b7', fontSize: 10, lineHeight: 1.5 } },

@@ -215,15 +215,16 @@ function normalizeLayout(raw, taken, studentSet) {
   var id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : null;
   if (!id || taken[id]) return null;
   taken[id] = 1;
-  var idsTaken = {};
+  var idsTaken = Object.create(null);
   var seats = (Array.isArray(raw.seats) ? raw.seats : []).map(function (s) { return normalizeSeat(s, idsTaken); }).filter(Boolean).slice(0, 60);
   var furniture = (Array.isArray(raw.furniture) ? raw.furniture : []).map(function (f) { return normalizeFurniture(f, idsTaken); }).filter(Boolean).slice(0, 30);
-  var seatSet = {};
+  var seatSet = Object.create(null);
   seats.forEach(function (s) { seatSet[s.id] = 1; });
   var assignments = {};
   if (raw.assignments && typeof raw.assignments === 'object') {
-    var used = {};
+    var used = Object.create(null);
     Object.keys(raw.assignments).forEach(function (seatId) {
+      if (seatId === '__proto__' || seatId === 'constructor' || seatId === 'prototype') return;
       var name = raw.assignments[seatId];
       if (seatSet[seatId] && typeof name === 'string' && name && studentSet[name] && !used[name]) {
         assignments[seatId] = name;
@@ -722,6 +723,7 @@ function _useSeatingFocusTrap(rootRef, active, onEscape) {
       var topTrap = trapStack && trapStack[trapStack.length - 1];
       if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === 'function' && topTrap.root.contains(root))) return;
       if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof onEscapeRef.current === 'function') onEscapeRef.current();
@@ -781,7 +783,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   var _setLlTick = React.useState(0)[1];
   LL_CUR.lang = uiLang; LL_CUR.cache = _llCacheRef.current;
   React.useEffect(function () {
-    if (uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function' || window.callGemini._alloQrBlocked || window.__alloStudentAiDisabled === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', window.callGemini))) return undefined;
+    if (uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function' || window.callGemini._alloQrBlocked || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', window.callGemini))) return undefined;
     var cache = _llCacheRef.current[uiLang] || {}, attempted = _llAttemptedRef.current[uiLang] || {};
     var missing = Object.keys(STR_REG).filter(function (k) { return !cache[k] && !attempted[k]; });
     if (!missing.length) return undefined;
@@ -1168,9 +1170,9 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   const btn = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none disabled:opacity-40';
 
   return (
-    <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-2 sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-2 sm:p-4" role="presentation" onClick={onClose}>
       <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={tr('Seating Chart')} onClick={e => e.stopPropagation()}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden">
+        className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/70">
           <span className="text-2xl" aria-hidden="true">🪑</span>
@@ -1528,12 +1530,12 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
 
         {/* Confirm dialog */}
         {confirmState && (
-          <div className="fixed inset-0 z-[220] bg-black/40 flex items-center justify-center p-4" onClick={() => setConfirmState(null)}>
-            <div ref={confirmRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-label={confirmState.message} onClick={e => e.stopPropagation()} className="bg-white rounded-xl shadow-2xl p-5 max-w-sm w-full">
+          <div className="fixed inset-0 z-[220] bg-black/40 flex items-center justify-center p-4" role="presentation" onClick={() => setConfirmState(null)}>
+            <div ref={confirmRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-label={confirmState.message} onClick={e => e.stopPropagation()} className="allo-docsuite bg-white rounded-xl shadow-2xl p-5 max-w-sm w-full">
               <p className="text-sm text-slate-700 font-medium">{confirmState.message}</p>
               <div className="flex gap-2 justify-end mt-4">
                 <button type="button" autoFocus data-safe-default="true" onClick={() => setConfirmState(null)} className={btn + ' min-h-11 bg-slate-100 text-slate-700 hover:bg-slate-200'}>{t && t('common.cancel') || tr('Cancel')}</button>
-                <button type="button" onClick={() => { const fn = confirmState.onYes; setConfirmState(null); if (fn) fn(); }} className={btn + ' min-h-11 bg-rose-600 text-white hover:bg-rose-700'}>{tr('Yes, continue')}</button>
+                <button type="button" onClick={() => { const fn = confirmState.onYes; setConfirmState(null); if (fn) fn(); }} className={btn + ' min-h-11 bg-rose-700 text-white hover:bg-rose-800'}>{tr('Yes, continue')}</button>
               </div>
             </div>
           </div>

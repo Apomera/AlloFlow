@@ -123,12 +123,17 @@ async function srFetchPackageFile(file) {
   const path = SR_SOURCE_DIR + file.name;
   const urls = ['/' + path, SR_CDN_BASE + path];
   for (const url of urls) {
+    const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), 12000) : null;
     try {
-      const response = await fetch(url, { credentials: 'omit' });
+      const response = await fetch(url, ctrl ? { credentials: 'omit', signal: ctrl.signal } : { credentials: 'omit' });
       if (!response.ok) continue;
       const source = await response.text();
       if (source && file.signatures.every((token) => source.includes(token))) return source;
     } catch (_) {}
+    finally {
+      if (timer) clearTimeout(timer);
+    }
   }
   return '';
 }

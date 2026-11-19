@@ -34,18 +34,38 @@ function DbqTimer(props) {
     }, 1000);
     return () => clearInterval(interval);
   }, [props.resourceId, deadline]);
+  const [milestoneMsg, setMilestoneMsg] = React.useState('');
+  const lastMilestoneRef = React.useRef(null);
   const remaining = Math.max(0, Math.ceil((deadline - now) / 1000));
   const active = deadline > 0 && remaining > 0;
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
-  return /*#__PURE__*/React.createElement(React.Fragment, null, !deadline && /*#__PURE__*/React.createElement("div", {
+  React.useEffect(() => {
+    if (!active) {
+      lastMilestoneRef.current = null;
+      return;
+    }
+    const hit = remaining === 300 ? '5 minutes remaining' : remaining === 120 ? '2 minutes remaining' : remaining === 60 ? '1 minute remaining' : remaining === 30 ? '30 seconds remaining' : '';
+    if (hit && lastMilestoneRef.current !== hit) {
+      lastMilestoneRef.current = hit;
+      setMilestoneMsg(hit);
+    }
+  }, [active, remaining]);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    className: "sr-only",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, milestoneMsg), !deadline && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1"
   }, [15, 30, 45, 60].map(minutes => /*#__PURE__*/React.createElement("button", {
     key: minutes,
     type: "button",
     onClick: () => props.onDeadlineChange(Date.now() + minutes * 60000),
     className: "px-3 py-1.5 min-h-11 bg-slate-100 text-slate-700 rounded-lg text-[11px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-all motion-reduce:transition-none border border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
-    "aria-label": dbqT(props.t, 'dbq.timer_start_aria', 'Start {n} minute timer', {
+    "aria-label": dbqT(props.t, 'dbq.timer_minutes_short', '{n}m', {
+      n: minutes
+    }) + ' — ' + dbqT(props.t, 'dbq.timer_start_aria', 'Start {n} minute timer', {
       n: minutes
     })
   }, "⏱️ ", dbqT(props.t, 'dbq.timer_minutes_short', '{n}m', {
@@ -53,14 +73,19 @@ function DbqTimer(props) {
   })))), active && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: 'font-mono font-black text-sm px-3 py-1 rounded-lg border-2 ' + (remaining <= 300 ? 'bg-red-50 text-red-700 border-red-300' : remaining <= 600 ? 'bg-amber-50 text-amber-700 border-amber-300' : 'bg-indigo-50 text-indigo-700 border-indigo-300'),
+    className: 'font-mono font-black text-sm px-3 py-1 rounded-lg border-2 ' + (remaining <= 300 ? 'bg-red-50 text-red-700 border-red-300' : remaining <= 600 ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-indigo-50 text-indigo-700 border-indigo-300'),
     role: "timer",
     "aria-live": "off",
     "aria-label": dbqT(props.t, 'dbq.timer_remaining_aria', '{m} minutes {s} seconds remaining', {
       m: mins,
       s: secs
     })
-  }, mins, ":", secs < 10 ? '0' : '', secs), /*#__PURE__*/React.createElement("button", {
+  }, remaining <= 300 ? '⚠ ' : '', mins, ":", secs < 10 ? '0' : '', secs), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => props.onDeadlineChange(deadline + 300000),
+    className: "min-h-11 px-2.5 inline-flex items-center justify-center rounded-lg text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+    "aria-label": dbqT(props.t, 'dbq.timer_add_5m_aria', '+5m — Add 5 minutes to timer')
+  }, "+5m"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => props.onDeadlineChange(null),
     className: "min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-xs text-slate-700 hover:text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
@@ -763,7 +788,7 @@ function DbqView(props) {
                                                 <h3 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${dbqEscapePrintText(doc.title || L('dbq.document_label', 'Document {id}', {
           id: doc.id
         }))}</h3>
-                                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${typeColors[doc.documentType] || '#64748b'}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${dbqEscapePrintText(doc.documentType ? L('dbq.type_' + doc.documentType, doc.documentType) : L('dbq.type_source', 'source'))}</span>
+                                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${Object.prototype.hasOwnProperty.call(typeColors, doc.documentType) ? typeColors[doc.documentType] : '#64748b'}15;color:${Object.prototype.hasOwnProperty.call(typeColors, doc.documentType) ? typeColors[doc.documentType] : '#64748b'};text-transform:uppercase">${dbqEscapePrintText(doc.documentType ? L('dbq.type_' + doc.documentType, doc.documentType) : L('dbq.type_source', 'source'))}</span>
                                             </div>
                                             ${(() => {
           const kindLabel = dbqExcerptLabel(dbqExcerptKind(doc), t);
@@ -810,12 +835,12 @@ function DbqView(props) {
       const rubricSection = rubric.length > 0 ? `<div style="page-break-before:always;margin-top:24px">
                                         <h2 style="font-size:16px;font-weight:800;color:#9a3412;border-left:4px solid #ea580c;padding-left:8px;margin:0 0 12px">📊 ${dbqEscapePrintText(L('dbq.rubric', 'Rubric'))}</h2>
                                         <table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fff7ed;text-align:left;font-weight:700;color:#9a3412">${dbqEscapePrintText(t("ui_common.criteria") || "Criteria")}</th>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fef2f2;text-align:center;color:#991b1b;width:20%">1 — ${dbqEscapePrintText(levelNames[0])}</th>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fefce8;text-align:center;color:#854d0e;width:20%">2 — ${dbqEscapePrintText(levelNames[1])}</th>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#f0fdf4;text-align:center;color:#166534;width:20%">3 — ${dbqEscapePrintText(levelNames[2])}</th>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#eff6ff;text-align:center;color:#1e40af;width:20%">4 — ${dbqEscapePrintText(levelNames[3])}</th>
-                                        </tr></thead><tbody>${rubric.map(row => '<tr><td style="border:1px solid #fed7aa;padding:8px;font-weight:700;color:#1e293b">' + dbqEscapePrintText(row.criteria) + '</td>' + ['1', '2', '3', '4'].map(l => '<td style="border:1px solid #fed7aa;padding:8px;font-size:10px;color:#475569">' + dbqEscapePrintText(row[l]) + '</td>').join('') + '</tr>').join('')}</tbody></table>
+                                            <th scope="col" style="border:1px solid #fed7aa;padding:8px;background:#fff7ed;text-align:left;font-weight:700;color:#9a3412">${dbqEscapePrintText(t("ui_common.criteria") || "Criteria")}</th>
+                                            <th scope="col" style="border:1px solid #fed7aa;padding:8px;background:#fef2f2;text-align:center;color:#991b1b;width:20%">1 — ${dbqEscapePrintText(levelNames[0])}</th>
+                                            <th scope="col" style="border:1px solid #fed7aa;padding:8px;background:#fefce8;text-align:center;color:#854d0e;width:20%">2 — ${dbqEscapePrintText(levelNames[1])}</th>
+                                            <th scope="col" style="border:1px solid #fed7aa;padding:8px;background:#f0fdf4;text-align:center;color:#166534;width:20%">3 — ${dbqEscapePrintText(levelNames[2])}</th>
+                                            <th scope="col" style="border:1px solid #fed7aa;padding:8px;background:#eff6ff;text-align:center;color:#1e40af;width:20%">4 — ${dbqEscapePrintText(levelNames[3])}</th>
+                                        </tr></thead><tbody>${rubric.map(row => '<tr><th scope="row" style="border:1px solid #fed7aa;padding:8px;text-align:left;font-weight:700;color:#1e293b">' + dbqEscapePrintText(row.criteria) + '</th>' + ['1', '2', '3', '4'].map(l => '<td style="border:1px solid #fed7aa;padding:8px;font-size:10px;color:#475569">' + dbqEscapePrintText(row[l]) + '</td>').join('') + '</tr>').join('')}</tbody></table>
                                     </div>` : '';
       const trimmedEssay = String(essayText || '').trim();
       const essayBodyPrintHtml = trimmedEssay ? `<div style="border:1px solid #e2e8f0;border-radius:8px;min-height:200px;padding:12px;font-size:12px;color:#1e293b;white-space:pre-wrap">${dbqEscapePrintText(trimmedEssay)}</div>` : `<div style="border:1px solid #e2e8f0;border-radius:8px;min-height:200px;padding:12px">
@@ -1058,6 +1083,7 @@ function DbqView(props) {
     return /*#__PURE__*/React.createElement("button", {
       key: doc.id,
       type: "button",
+      "aria-pressed": dbqActiveDoc === doc.id,
       onClick: () => {
         setDoc(doc.id);
         setManualQuote('');
@@ -1216,6 +1242,7 @@ function DbqView(props) {
       }
     },
     "data-dbq-listen": true,
+    "aria-pressed": speakingDocId === activeDoc.id,
     className: `min-h-11 text-[11px] font-bold px-3 py-1.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${speakingDocId === activeDoc.id ? 'bg-red-200 hover:bg-red-300 text-red-900' : 'bg-blue-200 hover:bg-blue-300 text-blue-900'}`,
     "aria-label": speakingDocId === activeDoc.id ? t('a11y.stop_reading') || 'Stop reading' : t('a11y.read_aloud') || 'Read aloud'
   }, speakingDocId === activeDoc.id ? '⏹️ ' + L('dbq.stop', 'Stop') : '🔊 ' + L('dbq.listen', 'Listen')), !dbqAiHidden && /*#__PURE__*/React.createElement("button", {

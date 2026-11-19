@@ -3,6 +3,8 @@ services:
     # FOSS-only Grist Core image. Review and intentionally update this pin.
     image: gristlabs/grist-oss:1.7.13
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "127.0.0.1:8484:8484"
     environment:

@@ -26,11 +26,33 @@
 
 const MTSS_DATASETS_KEY = "allo_mtss_datasets_v1";
 const MTSS_GROUPS_KEY = "allo_mtss_groups_v1";
+function mtssVaultBackend() {
+  try {
+    const sw = typeof window !== "undefined" && window.AlloModules && window.AlloModules.SensitiveWorkspace;
+    if (!sw || typeof sw.getStatus !== "function") return { mode: "local", storage: localStorage };
+    const phase = sw.getStatus()?.phase;
+    if (phase === "ready") {
+      const sess = typeof sw.getSession === "function" ? sw.getSession("mtss-triage") : null;
+      if (sess && sess.storage) return { mode: "vault", storage: sess.storage };
+    }
+    if (phase === "locked" || phase === "setup" || phase === "locking") return { mode: "locked", storage: null };
+  } catch (_) {
+  }
+  return { mode: "local", storage: localStorage };
+}
 function mtssLoad(key, fallback) {
   try {
-    const raw = localStorage.getItem(key);
+    const b = mtssVaultBackend();
+    if (b.mode === "locked") return fallback;
+    let raw = b.mode === "vault" ? b.storage.getItem(key) : localStorage.getItem(key);
+    if (!raw && b.mode === "vault") {
+      try {
+        raw = localStorage.getItem(key);
+      } catch (_) {
+      }
+    }
     if (!raw) return fallback;
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(raw, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
     return parsed == null ? fallback : parsed;
   } catch (_) {
     return fallback;
@@ -38,7 +60,18 @@ function mtssLoad(key, fallback) {
 }
 function mtssStore(key, value) {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    const b = mtssVaultBackend();
+    if (b.mode === "locked") return;
+    const serialized = JSON.stringify(value);
+    if (b.mode === "vault") {
+      b.storage.setItem(key, serialized);
+      try {
+        localStorage.removeItem(key);
+      } catch (_) {
+      }
+    } else {
+      localStorage.setItem(key, serialized);
+    }
   } catch (_) {
   }
 }
@@ -148,7 +181,7 @@ function mtssProgress(datasetA, datasetB) {
   const boardA = mtssBoard(datasetA);
   const boardB = mtssBoard(datasetB);
   const byCode = (board) => {
-    const map = {};
+    const map = /* @__PURE__ */ Object.create(null);
     [1, 2, 3].forEach((tier) => board.tiers[tier].forEach((r) => {
       map[r.code] = r;
     }));
@@ -358,8 +391,14 @@ function MtssTriagePanel(props) {
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest("details:not([open])");
       if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
-      const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
-      return !st || st.display !== "none" && st.visibility !== "hidden";
+      if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+        for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === "none" || st.visibility === "hidden")) return false;
+          if (cur === dialog) break;
+        }
+      }
+      return true;
     });
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();

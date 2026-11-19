@@ -54,6 +54,8 @@
     return { list: out, license: license, url: url };
   }
 
+  // Strictly in-memory tab state: consent is never persisted across visits or tabs.
+  var allowed = false, queue = [], savedWords = [];
   var found = null, asked = '';
   function draw(result, word) {
     var host = $('meanings');
@@ -78,29 +80,58 @@
     $('found').hidden = false;
     $('found-title').focus();
   }
+  var LOOKUP_MS = 10000;
+  var activeStop = null;
+  var lookRun = 0;
+  function abortActive() {
+    if (activeStop) { try { activeStop.abort(); } catch (_) {} activeStop = null; }
+  }
   function look() {
     var word = wordOf($('word').value);
     setText('use-line', '');
-    if (!$('online-on').checked) { setText('look-line', 'Turn on Allow this page to look up words online first. Nothing has been sent.'); return; }
+    allowed = !!$('online-on').checked;
+    if (!allowed) { setText('look-line', 'Turn on Allow this page to look up words online first. Nothing has been sent.'); return; }
     if (!word) { setText('look-line', 'Type a word: letters, and at most 40 characters.'); return; }
     if (typeof window.fetch !== 'function') { setText('look-line', 'This browser cannot look words up.'); return; }
+    if (window._isDesktopBundledApp === true || window.__ALLOFLOW_DESKTOP_OFFLINE__ === true) { setText('look-line', 'Online word lookup is disabled in offline Desktop mode.'); return; }
+    if (window.navigator && window.navigator.onLine === false) { setText('look-line', 'This device is offline. Connect to the internet, then try again.'); return; }
+    abortActive();
+    var run = ++lookRun;
     asked = word;
     $('found').hidden = true;
     setText('look-line', 'Looking up ' + word + '.');
-    window.fetch(API + encodeURIComponent(word.toLowerCase()), { credentials: 'omit', referrerPolicy: 'no-referrer' }).then(function (reply) {
+    var control = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+    activeStop = control;
+    var timedOut = false;
+    var timer = window.setTimeout(function () { timedOut = true; if (control) { try { control.abort(); } catch (_) {} } }, LOOKUP_MS);
+    var opts = { credentials: 'omit', referrerPolicy: 'no-referrer' };
+    if (control) opts.signal = control.signal;
+    var finish = function () {
+      window.clearTimeout(timer);
+      if (activeStop === control) activeStop = null;
+    };
+    window.fetch(API + encodeURIComponent(word.toLowerCase()), opts).then(function (reply) {
       if (reply.status === 404) return null;
-      if (!reply.ok) throw new Error('answered ' + reply.status);
+      if (!reply.ok) { var err = new Error('answered ' + reply.status); err.status = reply.status; throw err; }
       return reply.json();
     }).then(function (rows) {
-      if (asked !== word) return;
+      finish();
+      if (run !== lookRun || asked !== word) return;
       var result = rows ? meaningsOf(rows, word) : { list: [] };
       if (!result.list.length) { found = null; setText('look-line', 'The dictionary has no meaning for ' + word + '. Type its meaning yourself in the vocabulary maker.'); return; }
       found = { word: word, result: result };
       setText('look-line', 'Found ' + result.list.length + (result.list.length === 1 ? ' meaning.' : ' meanings.'));
       draw(result, word);
-    }, function () {
-      if (asked !== word) return;
-      setText('look-line', 'The dictionary did not answer. Check the connection, then try again.');
+    }, function (err) {
+      finish();
+      if (run !== lookRun || asked !== word) return;
+      if (err && err.status === 429) {
+        setText('look-line', 'The dictionary has had too many searches from this network for now. Try again later.');
+      } else if (timedOut) {
+        setText('look-line', 'The dictionary took too long to answer. Check the connection, then try again.');
+      } else {
+        setText('look-line', 'The dictionary did not answer. Check the connection, then try again.');
+      }
     });
   }
   function use() {
@@ -121,15 +152,51 @@
     w.at = Date.now();
     edits.words[key] = w;
     try { window.localStorage.setItem(EDITS_KEY, JSON.stringify(edits)); } catch (_) { $('not-keeping').hidden = false; setText('use-line', 'This browser could not keep it.'); return; }
-    setText('use-line', 'Saved for ' + found.word + '. Go back to the vocabulary maker: the word shows this meaning, marked from the internet, not checked.');
+    if (savedWords.indexOf(key) < 0) savedWords.push(key);
+    queue = queue.filter(function (item) { return keyOf(item) !== key; });
+    var nextWord = queue.length ? queue.shift() : '';
+    var savedNote = savedWords.length > 1 ? ' (' + savedWords.length + ' saved this visit)' : '';
+    var savedWord = found.word;
+    found = null;
+    $('found').hidden = true;
+    var doneText = nextWord
+      ? 'Saved for ' + savedWord + savedNote + '. Next word ready above: ' + nextWord + '. Press Look it up, or go back to the vocabulary maker.'
+      : 'Saved for ' + savedWord + savedNote + '. Type another word above to look it up on this tab, or go back to the vocabulary maker.';
+    $('word').value = nextWord || '';
+    setText('use-line', doneText);
+    setText('look-line', doneText);
+    try { $('word').focus(); } catch (_) {}
   }
   function start() {
-    var hashed = /(?:^#|&)word=([^&]*)/.exec(String(window.location.hash || ''));
-    if (hashed) { try { $('word').value = wordOf(decodeURIComponent(hashed[1])); } catch (_) {} }
+    var hash = String(window.location.hash || '');
+    var hashed = /(?:^#|&)word=([^&]*)/.exec(hash);
+    var firstKey = '';
+    if (hashed) {
+      try {
+        var first = wordOf(decodeURIComponent(hashed[1]));
+        $('word').value = first;
+        firstKey = keyOf(first);
+      } catch (_) {}
+    }
+    var more = /(?:^#|&)more=([^&]*)/.exec(hash);
+    if (more) {
+      try {
+        var seen = {};
+        if (firstKey) seen[firstKey] = true;
+        decodeURIComponent(more[1]).split(',').forEach(function (part) {
+          var w = wordOf(part), k = keyOf(w);
+          if (w && k && !seen[k]) { seen[k] = true; queue.push(w); }
+        });
+      } catch (_) {}
+    }
     try { window.localStorage.getItem(EDITS_KEY); } catch (_) { $('not-keeping').hidden = false; }
     $('look').addEventListener('click', look);
-    $('word').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); look(); } });
-    $('online-on').addEventListener('change', function () { setText('look-line', this.checked ? 'On for this visit. Press Look it up to send the word.' : 'Off. Nothing is sent.'); });
+    $('word').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.repeat && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); look(); } });
+    $('online-on').addEventListener('change', function () {
+      allowed = !!this.checked;
+      if (!allowed) { abortActive(); lookRun++; }
+      setText('look-line', allowed ? 'On for this visit. Press Look it up to send the word.' : 'Off. Nothing is sent.');
+    });
     $('use').addEventListener('click', use);
   }
   start();

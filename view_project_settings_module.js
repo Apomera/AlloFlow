@@ -43,6 +43,9 @@
   });
   var state = _state[0];
   var setState = _state[1];
+  var _copyMsg = React.useState('');
+  var copyMsg = _copyMsg[0];
+  var setCopyMsg = _copyMsg[1];
   React.useEffect(function () {
     if (!url) return undefined;
     var cancelled = false;
@@ -90,9 +93,16 @@
   }, [url]);
   if (!url) return null;
   var copyPortalLink = function () {
+    var notify = function (ok) {
+      setCopyMsg(ok ? t('project_settings.portal_link_copied') || 'Portal link copied.' : t('project_settings.portal_link_copy_failed') || 'Could not copy portal link.');
+    };
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url);
+        Promise.resolve(navigator.clipboard.writeText(url)).then(function () {
+          notify(true);
+        }, function () {
+          notify(false);
+        });
         return;
       }
       var input = document.createElement('textarea');
@@ -102,9 +112,12 @@
       input.style.opacity = '0';
       document.body.appendChild(input);
       input.select();
-      document.execCommand('copy');
+      var ok = document.execCommand('copy');
       input.remove();
-    } catch (_) {}
+      notify(ok !== false);
+    } catch (_) {
+      notify(false);
+    }
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "mt-4 grid gap-4 rounded-2xl border border-violet-200 bg-violet-50/60 p-4 sm:grid-cols-[auto,1fr] sm:items-center"
@@ -131,11 +144,18 @@
   }, "Scanning opens the same authenticated district portal. Google sign-in and server-side assignments still control access; the QR code does not grant permission by itself."), state.error && /*#__PURE__*/React.createElement("p", {
     role: "alert",
     className: "mt-2 text-xs font-bold text-rose-700"
-  }, state.error), /*#__PURE__*/React.createElement("button", {
+  }, state.error), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: copyPortalLink,
-    className: "mt-3 min-h-11 rounded-xl border border-violet-300 bg-white px-3 py-2 text-xs font-black text-violet-800 hover:bg-violet-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
-  }, "Copy portal link")));
+    className: "min-h-11 rounded-xl border border-violet-300 bg-white px-3 py-2 text-xs font-black text-violet-800 hover:bg-violet-100 transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-violet-700 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
+  }, "Copy portal link"), /*#__PURE__*/React.createElement("span", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "text-xs font-bold text-violet-900"
+  }, copyMsg))));
 }
 function ProjectSettingsDialogFocusManager(props) {
   var React = window.React;
@@ -160,6 +180,10 @@ function ProjectSettingsDialogFocusManager(props) {
           if (ancestor.tagName === 'DETAILS' && !ancestor.open) {
             var summary = ancestor.querySelector(':scope > summary');
             if (!summary || !summary.contains(element)) return false;
+          }
+          if (typeof window.getComputedStyle === 'function') {
+            var aStyle = window.getComputedStyle(ancestor);
+            if (aStyle && (aStyle.display === 'none' || aStyle.visibility === 'hidden')) return false;
           }
           ancestor = ancestor.parentElement;
         }
@@ -241,13 +265,22 @@ function ProjectSettingsView(props) {
   } catch (_) {}
   var rewardsPortalUrl = props.rewardsPortalUrl || locallySavedRewardsUrl;
   var isRewardsPortalConnected = props.isRewardsPortalConnected === true || Boolean(rewardsPortalUrl);
+  var notifyWarning = function (msg) {
+    if (typeof props.addToast === 'function') {
+      try {
+        props.addToast(msg, 'warning');
+        return;
+      } catch (_) {}
+    }
+    try {
+      window.alert(msg);
+    } catch (_) {}
+  };
   var onSaveRewardsPortalUrl = props.onSaveRewardsPortalUrl || function (value) {
     var raw = String(value || '').trim();
     var normalized = raw ? normalizeRewardsPortalUrl(raw) : '';
     if (raw && !normalized) {
-      try {
-        window.alert('Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec.');
-      } catch (_) {}
+      notifyWarning('Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec.');
       return {
         ok: false,
         error: 'Invalid Apps Script deployment URL.'
@@ -270,9 +303,7 @@ function ProjectSettingsView(props) {
   var onOpenSchoolRewards = props.onOpenSchoolRewards || function () {
     var url = normalizeRewardsPortalUrl(rewardsPortalUrl || locallySavedRewardsUrl);
     if (!url) {
-      try {
-        window.alert('Connect the school or district School Rewards portal below first.');
-      } catch (_) {}
+      notifyWarning('Connect the school or district School Rewards portal below first.');
       return;
     }
     try {
@@ -378,7 +409,7 @@ function ProjectSettingsView(props) {
   };
   var presetMatches = function (name) {
     var preset = presets[name];
-    var settingKeys = ['hideStudentAiFeatures', 'allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse', 'workStoryEnabled'];
+    var settingKeys = ['hideStudentAiFeatures', 'allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse'];
     var permissionKeys = Object.keys(preset.adventurePermissions);
     return settingKeys.every(function (key) {
       return studentProjectSettings[key] === preset[key];
@@ -530,13 +561,21 @@ function ProjectSettingsView(props) {
     className: "mt-3 grid gap-3 sm:grid-cols-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "sm:col-span-2"
-  }, renderFeatureToggle('proj-hide-student-ai', 'hideStudentAiFeatures', tx('project_settings.hide_student_ai', 'Hide student AI tools'), tx('project_settings.hide_student_ai_desc', 'Remove student-facing AI controls from this project. Teacher authoring tools remain available.'), false)), /*#__PURE__*/React.createElement("div", {
-    className: "sm:col-span-2"
-  }, renderFeatureToggle('proj-work-story', 'workStoryEnabled', tx('project_settings.work_story', 'Include a Work Story with student submissions'), tx('project_settings.work_story_desc', 'Students see a plain-language record of how their work came together and choose whether to send it. You see time, revision pattern and which AlloFlow supports were used, never a score, and never what they typed.'), false)), /*#__PURE__*/React.createElement("div", {
-    className: "sm:col-span-2"
-  }, renderFeatureToggle('proj-allow-student-byok-ai', 'allowStudentByokAi', tx('project_settings.allow_student_byok_ai_adults', 'Allow adult students (18+) to connect their own AI provider'), tx('project_settings.allow_student_byok_ai_adults_desc', 'QR and Class Mailbox links stay AI-off by default. Google Gemini API terms require users to be 18 or older, and other providers set their own conditions for minors, so AlloFlow limits this to adult education and college classes. Students must verify their own session-only key; your API key is never shared.'), false)), studentProjectSettings.allowStudentByokAi === true && /*#__PURE__*/React.createElement("div", {
-    className: "sm:col-span-2"
-  }, renderFeatureToggle('proj-student-byok-adults-confirmed', 'studentByokAdultsConfirmed', tx('project_settings.student_byok_adults_confirmed', 'I confirm every student using this project is 18 or older'), tx('project_settings.student_byok_adults_confirmed_desc', 'Required. Until this is checked, student links stay AI-off.'), false)), renderFeatureToggle('proj-dictation', 'allowDictation', t('project_settings.enable_dictation'), t('project_settings.dictation_desc'), true), renderFeatureToggle('proj-socratic', 'allowSocraticTutor', t('project_settings.enable_socratic'), t('project_settings.socratic_desc'), true), renderFeatureToggle('proj-free-response', 'allowFreeResponse', t('project_settings.enable_free_response'), t('project_settings.free_response_desc'), true), renderFeatureToggle('proj-persona-free', 'allowPersonaFreeResponse', t('project_settings.enable_persona_free'), t('project_settings.persona_free_desc'), true))), /*#__PURE__*/React.createElement("details", {
+  }, renderFeatureToggle('proj-hide-student-ai', 'hideStudentAiFeatures', tx('project_settings.hide_student_ai', 'Hide student AI tools'), tx('project_settings.hide_student_ai_desc', 'Remove student-facing AI controls from this project. Teacher authoring tools remain available.'), false)), renderFeatureToggle('proj-dictation', 'allowDictation', t('project_settings.enable_dictation'), t('project_settings.dictation_desc'), true), renderFeatureToggle('proj-socratic', 'allowSocraticTutor', t('project_settings.enable_socratic'), t('project_settings.socratic_desc'), true), renderFeatureToggle('proj-free-response', 'allowFreeResponse', t('project_settings.enable_free_response'), t('project_settings.free_response_desc'), true), renderFeatureToggle('proj-persona-free', 'allowPersonaFreeResponse', t('project_settings.enable_persona_free'), t('project_settings.persona_free_desc'), true), /*#__PURE__*/React.createElement("details", {
+    open: studentProjectSettings.workStoryEnabled === true || studentProjectSettings.allowStudentByokAi === true ? true : undefined,
+    className: "sm:col-span-2 group rounded-xl border border-slate-200 bg-slate-50"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "min-h-11 flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600"
+  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+    className: "block text-sm font-black text-slate-900"
+  }, "Work Story & adult BYOK AI options"), /*#__PURE__*/React.createElement("span", {
+    className: "mt-0.5 block text-xs text-slate-600"
+  }, "Optional submission process record and adult-education (18+) personal AI key access.")), /*#__PURE__*/React.createElement("span", {
+    className: "text-lg font-bold text-indigo-600 transition-transform motion-reduce:transition-none group-open:rotate-45",
+    "aria-hidden": "true"
+  }, "+")), /*#__PURE__*/React.createElement("div", {
+    className: "grid gap-3 border-t border-slate-200 p-3"
+  }, /*#__PURE__*/React.createElement("div", null, renderFeatureToggle('proj-work-story', 'workStoryEnabled', tx('project_settings.work_story', 'Include a Work Story with student submissions'), tx('project_settings.work_story_desc', 'Students see a plain-language record of how their work came together and choose whether to send it. You see time, revision pattern and which AlloFlow supports were used, never a score, and never what they typed.'), false)), /*#__PURE__*/React.createElement("div", null, renderFeatureToggle('proj-allow-student-byok-ai', 'allowStudentByokAi', tx('project_settings.allow_student_byok_ai_adults', 'Allow adult students (18+) to connect their own AI provider'), tx('project_settings.allow_student_byok_ai_adults_desc', 'QR and Class Mailbox links stay AI-off by default. Google Gemini API terms require users to be 18 or older, and other providers set their own conditions for minors, so AlloFlow limits this to adult education and college classes. Students must verify their own session-only key; your API key is never shared.'), false)), studentProjectSettings.allowStudentByokAi === true && /*#__PURE__*/React.createElement("div", null, renderFeatureToggle('proj-student-byok-adults-confirmed', 'studentByokAdultsConfirmed', tx('project_settings.student_byok_adults_confirmed', 'I confirm every student using this project is 18 or older'), tx('project_settings.student_byok_adults_confirmed_desc', 'Required. Until this is checked, student links stay AI-off.'), false)))))), /*#__PURE__*/React.createElement("details", {
     className: "group rounded-xl border border-slate-200 bg-slate-50"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "min-h-11 flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600"
@@ -750,7 +789,7 @@ function ProjectSettingsView(props) {
   }, /*#__PURE__*/React.createElement("a", {
     href: "https://alloflow-cdn.pages.dev/educator-evaluation-manual",
     target: "_blank",
-    rel: "noreferrer",
+    rel: "noopener noreferrer",
     className: "min-h-11 inline-flex items-center rounded text-indigo-700 underline hover:text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, "Read the user manual"), /*#__PURE__*/React.createElement("span", {
     className: "ml-1 font-normal text-slate-600"
@@ -841,7 +880,7 @@ function ProjectSettingsView(props) {
     className: "flex flex-none items-center justify-between gap-4 border-t border-slate-200 bg-slate-50 px-5 py-3 sm:px-6"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
-  }, tx('project_settings.saved_with_project', 'Changes apply immediately and are saved with student projects.')), /*#__PURE__*/React.createElement("button", {
+  }, tx('project_settings.saved_with_project', 'Changes apply immediately and are saved with student projects.'), !isParentMode && !isIndependentMode ? ' School connections stay on this device.' : ''), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "settings_close_btn",
     onClick: handleSetIsProjectSettingsOpenToFalse,

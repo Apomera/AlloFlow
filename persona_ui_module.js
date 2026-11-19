@@ -321,7 +321,8 @@ const InteractiveBlueprintCard = React.memo(({
     return rawPlan.map((item, idx) => {
       const type = typeof item === 'string' ? item : item && (item.tool || item.type || item.toolId || item.resourceType || item.id);
       if (!type) return null;
-      const directive = typeof item === 'string' ? cfg.toolDirectives?.[type] || "" : item.directive || item.instructions || item.customInstructions || cfg.toolDirectives?.[type] || "";
+      const toolDirective = cfg.toolDirectives && Object.prototype.hasOwnProperty.call(cfg.toolDirectives, type) && typeof cfg.toolDirectives[type] === 'string' ? cfg.toolDirectives[type] : "";
+      const directive = typeof item === 'string' ? toolDirective : item.directive || item.instructions || item.customInstructions || toolDirective;
       return {
         id: typeof item === 'object' && item.uiId || `step-${idx}-${type}`,
         type,
@@ -609,7 +610,7 @@ const InteractiveBlueprintCard = React.memo(({
   const embeddedGlossaryLanguages = items.some(item => item && item.type === 'glossary') ? Array.from(new Set(Array.isArray(blueprintSettings.selectedLanguages) ? blueprintSettings.selectedLanguages.filter(Boolean) : [])) : [];
   const sourceSelection = run && run.sourceSelection || config?.sourcePolicy || null;
   const staleSettingNames = run && Array.isArray(run.staleSettings) ? run.staleSettings : [];
-  const readableSettingName = field => ({
+  const _settingNameMap = {
     gradeLevel: 'grade',
     language: 'primary language',
     selectedLanguages: 'output languages',
@@ -625,7 +626,8 @@ const InteractiveBlueprintCard = React.memo(({
     textFormat: 'text format',
     imageGenerationStyle: 'image style',
     imageAspectRatio: 'image aspect ratio'
-  })[field] || String(field || '').replace(/([A-Z])/g, ' $1').trim();
+  };
+  const readableSettingName = field => Object.prototype.hasOwnProperty.call(_settingNameMap, field) ? _settingNameMap[field] : String(field || '').replace(/([A-Z])/g, ' $1').trim();
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "blueprint_card_panel",
     className: "bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-sm w-full min-w-0 max-w-2xl"
@@ -889,9 +891,9 @@ const InteractiveBlueprintCard = React.memo(({
     // never by position, because normalizePlanItems reorders the
     // plan (analysis first, lesson-plan last) and a positional
     // lookup would label the wrong rows.
-    const _rowRun = run && run.rows && run.rows[item.id] || null;
+    const _rowRun = run && run.rows && Object.prototype.hasOwnProperty.call(run.rows, item.id) && run.rows[item.id] || null;
     const _status = _rowRun && _rowRun.status;
-    const _statusStyle = {
+    const _statusMap = {
       planned: {
         label: t('blueprint.status_planned') || 'Planned',
         cls: 'bg-slate-100 text-slate-600 border-slate-200'
@@ -916,7 +918,8 @@ const InteractiveBlueprintCard = React.memo(({
         label: t('blueprint.status_interrupted') || 'Interrupted',
         cls: 'bg-amber-50 text-amber-800 border-amber-200'
       }
-    }[_status] || null;
+    };
+    const _statusStyle = typeof _status === 'string' && Object.prototype.hasOwnProperty.call(_statusMap, _status) ? _statusMap[_status] : null;
     // Raw provider text can include credentials, prompt excerpts,
     // or student context. Keep it in the credential-redacted local
     // Error Reporter; this shared classifier is the only text the
@@ -1150,6 +1153,7 @@ const InteractiveBlueprintCard = React.memo(({
       }, isSuccessful ? t('blueprint.status_landed') || 'Done' : isMissingArtifact ? t('blueprint.resource_missing') || 'Resource gone' : variant && variant.status === 'interrupted' ? t('blueprint.status_interrupted') || 'Interrupted' : t('blueprint.status_failed') || 'Failed'), /*#__PURE__*/React.createElement("span", null, audience), isSuccessful && typeof onPreviewStep === 'function' && /*#__PURE__*/React.createElement("button", {
         type: "button",
         "data-testid": "bp-preview-variant-btn",
+        "aria-label": `${t('blueprint.preview_step') || 'Preview this resource'}: ${getToolLabel(item.type)} (${audience})`,
         onClick: () => {
           const selection = _previewSelection(variant);
           onPreviewStep(item.id, selection.resourceId, selection);

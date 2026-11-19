@@ -67,8 +67,71 @@ const corsHeaders = {
 function jsonResponse(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store, private', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', ...corsHeaders, ...extraHeaders },
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store, private',
+      'Referrer-Policy': 'no-referrer',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+      ...corsHeaders,
+      ...extraHeaders,
+    },
   });
+}
+
+function adminJsonResponse(body, status = 200, extraHeaders = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store, private',
+      'Referrer-Policy': 'no-referrer',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+      'Cross-Origin-Resource-Policy': 'same-origin',
+      ...extraHeaders,
+    },
+  });
+}
+
+async function readBoundedResponseText(resp, maxBytes) {
+  const declared = Number(resp && resp.headers && typeof resp.headers.get === 'function' ? resp.headers.get('content-length') : NaN);
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    try { await resp.body?.cancel?.(); } catch (_) {}
+    throw new Error('response-too-large');
+  }
+  if (!resp || !resp.body || typeof resp.body.getReader !== 'function') {
+    const text = await resp.text();
+    if (new TextEncoder().encode(text).byteLength > maxBytes) throw new Error('response-too-large');
+    return text;
+  }
+  const reader = resp.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = value instanceof Uint8Array ? value : new Uint8Array(value);
+      total += chunk.byteLength;
+      if (total > maxBytes) {
+        try { await reader.cancel(); } catch (_) {}
+        throw new Error('response-too-large');
+      }
+      chunks.push(chunk);
+    }
+  } finally {
+    try { reader.releaseLock(); } catch (_) {}
+  }
+  const combined = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder('utf-8').decode(combined);
 }
 
 function slugify(s) {
@@ -77,15 +140,6 @@ function slugify(s) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 48) || 'untitled';
-}
-
-// Constant-time string compare for admin tokens (avoids a length/prefix timing oracle).
-function timingSafeEq(a, b) {
-  a = String(a || ''); b = String(b || '');
-  if (a.length !== b.length) return false;
-  let r = 0;
-  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return r === 0;
 }
 
 // Hash both values before comparing issuer authorization tokens. This keeps the
@@ -212,8 +266,13 @@ async function turnstileRefusal(request, env, payload) {
   try {
     const form = new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token, remoteip: submitClientIp(request) });
     const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form, redirect: 'error', signal: AbortSignal.timeout(8000) });
-    const data = await resp.json();
-    if (!resp.ok || !data || data.success !== true) return { status: 403, error: 'turnstile-failed' };
+    if (!resp.ok) {
+      try { await resp.body?.cancel?.(); } catch (_) {}
+      return { status: 403, error: 'turnstile-failed' };
+    }
+    const rawVerify = await readBoundedResponseText(resp, 64 * 1024);
+    const data = JSON.parse(rawVerify);
+    if (!data || data.success !== true) return { status: 403, error: 'turnstile-failed' };
   } catch (_) {
     return { status: 403, error: 'turnstile-unavailable' };
   }
@@ -231,7 +290,9 @@ async function preparePublicIntake(request, env) {
   const body = await readBugBody(request);
   if (body.status) return jsonResponse({ ok: false, error: body.error }, body.status);
   let payload;
-  try { payload = JSON.parse(body.text); } catch (_) { return jsonResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
+  try {
+    payload = JSON.parse(body.text, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
+  } catch (_) { return jsonResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
   return protectPublicPayload(request, env, payload);
 }
 
@@ -828,6 +889,10 @@ function bugResponse(body, status = 200) {
   return jsonResponse(body, status, BUG_RESPONSE_HEADERS);
 }
 
+function adminBugResponse(body, status = 200) {
+  return adminJsonResponse(body, status, BUG_RESPONSE_HEADERS);
+}
+
 function handleBugInbox() {
   const nonce = crypto.randomUUID().replace(/-/g, '');
   return new Response(renderBugInbox(nonce), {
@@ -904,39 +969,47 @@ async function adminAuthRateKey(request, scope) {
   return `adminfail:${scope}:${ipHash}`;
 }
 
+function adminRateKv(env) {
+  if (env.SUBMIT_RATE && typeof env.SUBMIT_RATE.get === 'function' && typeof env.SUBMIT_RATE.put === 'function') return env.SUBMIT_RATE;
+  if (env.SEARCH_RATE && typeof env.SEARCH_RATE.get === 'function' && typeof env.SEARCH_RATE.put === 'function') return env.SEARCH_RATE;
+  return null;
+}
+
 async function checkAdminAuthRateLimit(request, env, scope) {
-  if (!env.SUBMIT_RATE || typeof env.SUBMIT_RATE.get !== 'function' || typeof env.SUBMIT_RATE.put !== 'function') return false;
+  const kv = adminRateKv(env);
+  if (!kv) return false;
   try {
     const key = await adminAuthRateKey(request, scope);
-    const raw = await env.SUBMIT_RATE.get(key);
+    const raw = await kv.get(key);
     return (Number(raw) || 0) >= ADMIN_AUTH_MAX_FAILS;
   } catch (_) {
-    return false;
+    return true;
   }
 }
 
 async function recordAdminAuthFailure(request, env, scope) {
-  if (!env.SUBMIT_RATE || typeof env.SUBMIT_RATE.get !== 'function' || typeof env.SUBMIT_RATE.put !== 'function') return;
+  const kv = adminRateKv(env);
+  if (!kv) return;
   try {
     const key = await adminAuthRateKey(request, scope);
-    const count = (Number(await env.SUBMIT_RATE.get(key)) || 0) + 1;
-    await env.SUBMIT_RATE.put(key, String(count), { expirationTtl: ADMIN_AUTH_WINDOW_SECONDS });
+    const count = (Number(await kv.get(key)) || 0) + 1;
+    await kv.put(key, String(count), { expirationTtl: ADMIN_AUTH_WINDOW_SECONDS });
   } catch (_) { /* best-effort throttle */ }
 }
 
 async function authorizeBugAdmin(request, env) {
   // A dedicated bug token never enables the unrelated PD/plugin readers.
   const expectedToken = env.BUG_REPORTS_ADMIN_TOKEN || env.ADMIN_TOKEN;
-  if (!expectedToken) return bugResponse({ ok: false, error: 'Developer inbox access is not configured.' }, 501);
+  if (!expectedToken) return adminBugResponse({ ok: false, error: 'Developer inbox access is not configured.' }, 501);
   if (await checkAdminAuthRateLimit(request, env, 'bug')) {
-    return bugResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
+    return adminBugResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
   }
   const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
   if (!authorization || !(await timingSafeTokenEq(authorization[1], expectedToken))) {
     await recordAdminAuthFailure(request, env, 'bug');
-    return bugResponse({ ok: false, error: 'Unauthorized.' }, 401);
+    return adminBugResponse({ ok: false, error: 'Unauthorized.' }, 401);
   }
-  if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
+  if (!env.BUG_REPORTS) return adminBugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
   return null;
 }
 
@@ -945,7 +1018,7 @@ async function handleBugList(request, env, url) {
   if (refusal) return refusal;
 
   const before = url.searchParams.get('cursor') || '';
-  if (before && !BUG_KEY_PATTERN.test(before)) return bugResponse({ ok: false, error: 'Invalid report cursor.' }, 400);
+  if (before && !BUG_KEY_PATTERN.test(before)) return adminBugResponse({ ok: false, error: 'Invalid report cursor.' }, 400);
   const requestedLimit = Number(url.searchParams.get('limit') || 50);
   const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(Math.floor(requestedLimit), 200)) : 50;
 
@@ -979,28 +1052,28 @@ async function handleBugList(request, env, url) {
       if (!record || typeof record !== 'object' || Array.isArray(record)) throw new Error('Unavailable report');
       reports.push({ ...record, id: key, review: await readBugReview(env.BUG_REPORTS, key, false) });
     }
-    return bugResponse({ ok: true, count: reports.length, reports, cursor: selected.length > limit ? reports[reports.length - 1].id : null });
+    return adminBugResponse({ ok: true, count: reports.length, reports, cursor: selected.length > limit ? reports[reports.length - 1].id : null });
   } catch (_) {
-    return bugResponse({ ok: false, error: 'Could not load reports. Please try again.' }, 502);
+    return adminBugResponse({ ok: false, error: 'Could not load reports. Please try again.' }, 502);
   }
 }
 
 async function handlePdList(request, env, url) {
-  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pdSubmissions (or use `wrangler kv key list`).' }, 501, BUG_RESPONSE_HEADERS);
-  if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500, BUG_RESPONSE_HEADERS);
-  if (await checkAdminAuthRateLimit(request, env, 'admin')) return jsonResponse({ ok: false, error: 'Too many authentication attempts.' }, 429, BUG_RESPONSE_HEADERS);
+  if (!env.ADMIN_TOKEN) return adminBugResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pdSubmissions (or use `wrangler kv key list`).' }, 501);
+  if (!env.PD_SUBMISSIONS) return adminBugResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500);
+  if (await checkAdminAuthRateLimit(request, env, 'admin')) return adminBugResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
   const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
   const token = authorization ? authorization[1] : '';
   if (!token || !(await timingSafeTokenEq(token, env.ADMIN_TOKEN))) {
     await recordAdminAuthFailure(request, env, 'admin');
-    return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401, BUG_RESPONSE_HEADERS);
+    return adminBugResponse({ ok: false, error: 'Unauthorized.' }, 401);
   }
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
   const listed = await env.PD_SUBMISSIONS.list({ prefix: 'pd:', limit });
   const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
   const submissions = [];
   for (const k of keys) { const v = await env.PD_SUBMISSIONS.get(k); if (v) { try { submissions.push({ id: k, ...JSON.parse(v) }); } catch (_) {} } }
-  return jsonResponse({ ok: true, count: submissions.length, submissions }, 200, BUG_RESPONSE_HEADERS);
+  return adminBugResponse({ ok: true, count: submissions.length, submissions }, 200);
 }
 
 // ── Tool Forge plugin submissions → Cloudflare KV (PRIVATE, not GitHub) ──
@@ -1115,14 +1188,14 @@ async function handlePluginSubmit(request, env, intake) {
 }
 
 async function handlePluginList(request, env, url) {
-  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pluginSubmissions (or use `wrangler kv key list`).' }, 501, BUG_RESPONSE_HEADERS);
-  if (!env.PLUGIN_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PLUGIN_SUBMISSIONS KV binding.' }, 500, BUG_RESPONSE_HEADERS);
-  if (await checkAdminAuthRateLimit(request, env, 'admin')) return jsonResponse({ ok: false, error: 'Too many authentication attempts.' }, 429, BUG_RESPONSE_HEADERS);
+  if (!env.ADMIN_TOKEN) return adminBugResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pluginSubmissions (or use `wrangler kv key list`).' }, 501);
+  if (!env.PLUGIN_SUBMISSIONS) return adminBugResponse({ ok: false, error: 'Missing PLUGIN_SUBMISSIONS KV binding.' }, 500);
+  if (await checkAdminAuthRateLimit(request, env, 'admin')) return adminBugResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
   const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
   const token = authorization ? authorization[1] : '';
   if (!token || !(await timingSafeTokenEq(token, env.ADMIN_TOKEN))) {
     await recordAdminAuthFailure(request, env, 'admin');
-    return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401, BUG_RESPONSE_HEADERS);
+    return adminBugResponse({ ok: false, error: 'Unauthorized.' }, 401);
   }
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
   const includeSource = url.searchParams.get('source') === '1'; // omit the (large) source unless explicitly requested
@@ -1133,7 +1206,7 @@ async function handlePluginList(request, env, url) {
     const v = await env.PLUGIN_SUBMISSIONS.get(k);
     if (v) { try { const rec = JSON.parse(v); if (!includeSource) delete rec.source; submissions.push({ id: k, ...rec }); } catch (_) {} }
   }
-  return jsonResponse({ ok: true, count: submissions.length, submissions }, 200, BUG_RESPONSE_HEADERS);
+  return adminBugResponse({ ok: true, count: submissions.length, submissions }, 200);
 }
 
 // PD completion credentials. Secure-by-default reviewed issuance requires BOTH
@@ -1877,15 +1950,19 @@ function sourceMetadataSafeUrl(value) {
       rawHost === 'metadata.google' ||
       rawHost.endsWith('.metadata.google')
     ) return '';
-    // Block IPv6 loopback, unspecified, ULA (fc00::/7), link-local (fe80::/10), IPv4-mapped (::ffff:0:0/96), NAT64 (64:ff9b::/96), Teredo (2001:0::/32).
+    // Block IPv6 loopback, unspecified, discard (100::/64), doc (2001:db8::/32), 6to4 (2002::/16), ULA (fc00::/7), link-local (fe80::/10), site-local (fec0::/10), multicast (ff00::/8), IPv4-mapped (::ffff:0:0/96), NAT64 (64:ff9b::/96), Teredo (2001:0::/32).
     if (rawHost.includes(':')) {
       if (
         rawHost === '::1' ||
         rawHost === '::' ||
         /^(?:0+:){5}0*:[01]$/.test(rawHost) ||
         /^(?:0+:){7}0*1?$/.test(rawHost) ||
-        /^f[cd][0-9a-f]{0,2}:/.test(rawHost) ||
-        /^fe[89ab][0-9a-f]?:/.test(rawHost) ||
+        /^0*100:/.test(rawHost) ||
+        /^2001:0*db8:/i.test(rawHost) ||
+        /^2002:/i.test(rawHost) ||
+        /^f[cd][0-9a-f]{0,2}:/i.test(rawHost) ||
+        /^fe[89abcdef][0-9a-f]?:/i.test(rawHost) ||
+        /^ff[0-9a-f]{0,2}:/i.test(rawHost) ||
         rawHost.startsWith('::ffff:') ||
         rawHost.startsWith('0:0:0:0:0:ffff:') ||
         rawHost.startsWith('64:ff9b:') ||
@@ -1893,6 +1970,12 @@ function sourceMetadataSafeUrl(value) {
       ) return '';
     }
     if (/^(127|10|0)\./.test(rawHost) || /^192\.168\./.test(rawHost) || /^169\.254\./.test(rawHost)) return '';
+    if (/^(?:192\.0\.0\.|192\.0\.2\.|192\.88\.99\.|198\.51\.100\.|203\.0\.113\.)/.test(rawHost)) return '';
+    const ipv4First = rawHost.match(/^(\d{1,3})\.(\d{1,3})\./);
+    if (ipv4First) {
+      const o1 = Number(ipv4First[1]);
+      if (o1 >= 224) return '';
+    }
     const rfc1918 = rawHost.match(/^172\.(\d{1,3})\./);
     if (rfc1918 && Number(rfc1918[1]) >= 16 && Number(rfc1918[1]) <= 31) return '';
     const cgnat = rawHost.match(/^100\.(\d{1,3})\./);
@@ -2065,6 +2148,7 @@ async function fetchSourceMetadataResponse(target) {
     }
     if (upstream.status < 300 || upstream.status >= 400) return { response: upstream, finalUrl: current };
     const location = upstream.headers.get('Location');
+    try { await upstream.body?.cancel(); } catch (_) {}
     let next = '';
     try { next = sourceMetadataSafeUrl(new URL(location || '', current).toString()); } catch (_) { next = ''; }
     if (!next || seen.has(next)) return { error: 'metadata-redirect-invalid' };
@@ -2083,14 +2167,14 @@ async function handleSourceMetadata(request, env, url) {
   const cached = await cache.match(cacheKey);
   if (cached) return jsonResponse({ ...(await cached.json()), cached: true });
 
-  const refusal = await searchBudgetRefusal(request, env);
+  const refusal = await searchBudgetRefusal(request, env, { failClosedOnError: true });
   if (refusal) return jsonResponse({ ok: false, error: refusal }, 429);
 
   const fetched = await fetchSourceMetadataResponse(target);
   if (fetched.error) return jsonResponse({ ok: false, error: fetched.error }, 502);
   const upstream = fetched.response;
   const finalUrl = fetched.finalUrl;
-  if (!upstream.ok) return jsonResponse({ ok: false, error: 'metadata-upstream-error', status: upstream.status }, 502);
+  if (!upstream.ok) return jsonResponse({ ok: false, error: 'metadata-upstream-error' }, 502);
   const contentType = String(upstream.headers.get('Content-Type') || '').toLowerCase();
   if (contentType && !/(html|xhtml|text\/plain)/.test(contentType)) return jsonResponse({ ok: false, error: 'metadata-unsupported-content' }, 415);
   const html = await sourceMetadataText(upstream);
@@ -2103,9 +2187,7 @@ async function handleSourceMetadata(request, env, url) {
 }
 
 async function searchClientKey(request) {
-  const ip = request.headers.get('CF-Connecting-IP')
-    || request.headers.get('X-Forwarded-For')
-    || 'unknown';
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   const cleanIp = String(ip).split(',')[0].trim();
   const data = new TextEncoder().encode('alloflow-search-rate:' + cleanIp);
   const digest = await crypto.subtle.digest('SHA-256', data);
@@ -2119,7 +2201,7 @@ async function searchClientKey(request) {
 // controls, and Serper's own plan ceiling is the hard backstop.
 //
 // Returns null when the request may proceed, or a reason string to refuse with.
-async function searchBudgetRefusal(request, env) {
+async function searchBudgetRefusal(request, env, options = {}) {
   if (!env.SEARCH_RATE) return null; // namespace not bound — fail open; cache still applies
 
   const perMinute = searchLimit(env, 'RATE_PER_MINUTE', SEARCH_DEFAULTS.ratePerMinute);
@@ -2138,7 +2220,7 @@ async function searchBudgetRefusal(request, env) {
     ]);
     minuteCount = Number(m) || 0;
     dayCount = Number(d) || 0;
-  } catch (_) { return null; }
+  } catch (_) { return options.failClosedOnError ? 'rate-limited' : null; }
 
   // Daily budget is checked first: it is the limit that actually protects the
   // credit balance, and it deserves the more specific error.
@@ -2236,19 +2318,22 @@ async function handleSearch(request, env, url) {
       method: 'POST',
       headers: { 'X-API-KEY': env.SERPER_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ q: query, num }),
+      redirect: 'error',
       signal: AbortSignal.timeout(8000),
     });
   } catch (err) {
     return jsonResponse({ ok: false, error: 'search-upstream-unreachable' }, 502);
   }
   if (!upstream.ok) {
-    // Never forward the upstream body — it can echo request details.
+    // Never forward the upstream body - it can echo request details.
+    try { await upstream.body?.cancel?.(); } catch (_) {}
     return jsonResponse({ ok: false, error: 'search-provider-error', status: upstream.status }, 502);
   }
 
   let data;
   try {
-    data = await upstream.json();
+    const rawSearchText = await readBoundedResponseText(upstream, 512 * 1024);
+    data = JSON.parse(rawSearchText);
   } catch (_) {
     return jsonResponse({ ok: false, error: 'search-provider-bad-json' }, 502);
   }
@@ -2308,8 +2393,12 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    const ADMIN_ROUTES = new Set(['/bugs', '/bug-inbox', '/bug-review', '/pdSubmissions', '/pluginSubmissions', '/issuePd']);
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: { ...corsHeaders, ...(['/submitBug', '/bugs', '/bug-inbox', '/bug-review'].includes(url.pathname) ? BUG_RESPONSE_HEADERS : {}) } });
+      if (ADMIN_ROUTES.has(url.pathname)) {
+        return new Response(null, { status: 204, headers: { ...BUG_RESPONSE_HEADERS, 'Cross-Origin-Resource-Policy': 'same-origin' } });
+      }
+      return new Response(null, { status: 204, headers: { ...corsHeaders, ...(url.pathname === '/submitBug' ? BUG_RESPONSE_HEADERS : {}) } });
     }
 
     if (request.method === 'GET' && url.pathname === '/healthz') {
@@ -2347,7 +2436,7 @@ export default {
     }
 
     if (url.pathname === '/bug-review') {
-      return handleBugReview(request, env, { respond: bugResponse, authorize: authorizeBugAdmin });
+      return handleBugReview(request, env, { respond: adminBugResponse, authorize: authorizeBugAdmin });
     }
 
     if (request.method === 'GET' && url.pathname === '/pdSubmissions') {

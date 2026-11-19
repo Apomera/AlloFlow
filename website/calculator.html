@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+<meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cost Savings Calculator | AlloFlow</title>
     <meta name="robots" content="noindex, follow">
@@ -92,12 +93,12 @@
         }
 
         .savings-amount.zero {
-            color: #64748b;
+            color: #cbd5e1;
         }
 
         .savings-subtitle {
             font-size: 0.75rem;
-            color: #64748b;
+            color: #cbd5e1;
             margin-top: 2px;
         }
 
@@ -232,6 +233,7 @@
             transform: scale(1);
         }
 
+        .product-info h2,
         .product-info h3 {
             font-size: 1.1rem;
             font-weight: 800;
@@ -259,7 +261,7 @@
 
         .product-price-note {
             font-size: 0.7rem;
-            color: #94a3b8;
+            color: #475569;
             font-weight: 600;
         }
 
@@ -279,7 +281,7 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: #94a3b8;
+            color: #475569;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -346,7 +348,7 @@
             margin: 0 auto;
             padding: 0 24px 40px;
             font-size: 0.7rem;
-            color: #94a3b8;
+            color: #475569;
             text-align: center;
             line-height: 1.6;
         }
@@ -374,43 +376,45 @@
 </head>
 
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="index.html" class="nav-logo">
-                <i data-lucide="layers" style="width:28px;height:28px"></i>
+                <i data-lucide="layers" aria-hidden="true" style="width:28px;height:28px"></i>
                 AlloFlow
             </a>
             <div class="nav-links">
                 <a href="index.html">Home</a>
                 <a href="features.html">Features</a>
                 <a href="library.html">Library</a>
-                <a href="calculator.html" style="color:var(--indigo)">Savings</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                <a href="calculator.html" aria-current="page" style="color:var(--indigo)">Savings</a>
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer" class="cta-btn"><i data-lucide="github" aria-hidden="true"
                         style="width:16px;height:16px"></i> Get Code</a>
             </div>
-            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
-                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+            <button type="button" class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+                aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
     <div id="mobileNav" class="mobile-nav">
-        <button class="close-btn" onclick="this.parentElement.classList.remove('open')"
-            aria-label="Close">&times;</button>
+        <button type="button" class="close-btn" onclick="this.parentElement.classList.remove('open')"
+            aria-label="Close menu">&times;</button>
         <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a
-            href="calculator.html">Savings</a><a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+            href="calculator.html" aria-current="page">Savings</a><a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
 
+    <main id="main-content" tabindex="-1">
     <!-- Hero -->
     <header class="calc-hero">
         <div
             style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:999px;margin-bottom:20px">
-            <i data-lucide="calculator" style="width:14px;height:14px;color:#a5b4fc"></i>
+            <i data-lucide="calculator" aria-hidden="true" style="width:14px;height:14px;color:#a5b4fc"></i>
             <span
                 style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a5b4fc">Interactive
                 ROI Calculator</span>
         </div>
-        <h1>How Much Could Your<br>School <span
+        <h1>How Much Could Your<br>School <span class="gradient-text"
                 style="background:linear-gradient(135deg,#22c55e,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Save</span>?
         </h1>
         <p>Select the tools your school currently pays for. AlloFlow replaces all of them — for free.</p>
@@ -418,7 +422,7 @@
 
     <!-- Sticky Savings Bar -->
     <div class="savings-bar" id="savingsBar">
-        <div class="savings-inner">
+        <div class="savings-inner" role="status" aria-live="polite">
             <div>
                 <div class="savings-label">Estimated Annual Savings</div>
                 <div class="savings-amount zero" id="savingsAmount">$0</div>
@@ -467,12 +471,13 @@
         <p>AlloFlow gives you all of these capabilities in a single, free, open-source platform — no subscriptions, no
             student accounts, no PII collected.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-            <button onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
+            <button type="button" onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link" aria-hidden="true"
                     style="width:18px;height:18px"></i> <span>Copy Canvas Link</span></button>
-            <a href="features.html" class="btn-secondary"><i data-lucide="sparkles" style="width:18px;height:18px"></i>
+            <a href="features.html" class="btn-secondary"><i data-lucide="sparkles" aria-hidden="true" style="width:18px;height:18px"></i>
                 See All 280+ Features</a>
         </div>
     </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
@@ -492,7 +497,7 @@
     </footer>
 
     <script>
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
         document.getElementById('year').innerText = new Date().getFullYear();
 
         const PRODUCTS = [
@@ -538,7 +543,7 @@
                 id: 'nearpod',
                 name: 'Nearpod (School)',
                 category: 'Interactive Lessons',
-                categoryColor: '#0d9488',
+                categoryColor: '#0f766e',
                 categoryBg: '#f0fdfa',
                 perStudent: 0,
                 perTeacher: 397,
@@ -578,7 +583,7 @@
                 id: 'amira',
                 name: 'Amira Learning',
                 category: 'Oral Reading Fluency',
-                categoryColor: '#dc2626',
+                categoryColor: '#b91c1c',
                 categoryBg: '#fef2f2',
                 perStudent: 20,
                 perTeacher: 0,
@@ -597,7 +602,7 @@
                 id: 'magicschool',
                 name: 'MagicSchool AI (Enterprise)',
                 category: 'AI Content Generation',
-                categoryColor: '#ea580c',
+                categoryColor: '#c2410c',
                 categoryBg: '#fff7ed',
                 perStudent: 4,
                 perTeacher: 0,
@@ -683,22 +688,26 @@
                 selectedProducts.add(id);
             }
             const card = document.querySelector(`[data-product="${id}"]`);
-            if (card) card.classList.toggle('selected', selectedProducts.has(id));
+            if (card) {
+                const isSelected = selectedProducts.has(id);
+                card.classList.toggle('selected', isSelected);
+                card.setAttribute('aria-checked', String(isSelected));
+            }
             updateSavingsDisplay();
         }
 
         function renderProducts() {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = PRODUCTS.map(p => `
-                <div class="product-card" data-product="${p.id}" onclick="toggleProduct('${p.id}')">
+                <div class="product-card" role="checkbox" tabindex="0" aria-checked="false" data-product="${p.id}" onclick="toggleProduct('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleProduct('${p.id}');}">
                     <div class="product-header">
-                        <div class="product-check">
+                        <div class="product-check" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
                         <div class="product-info" style="flex:1">
                             <span class="product-category" style="color:${p.categoryColor};background:${p.categoryBg}">${p.category}</span>
-                            <h3>${p.name}</h3>
-                            <p style="font-size:0.8rem;color:#64748b;line-height:1.5;margin-bottom:12px">${p.whatTheyDo}</p>
+                            <h2>${p.name}</h2>
+                            <p style="font-size:0.8rem;color:#475569;line-height:1.5;margin-bottom:12px">${p.whatTheyDo}</p>
                             <div class="product-price" style="color:${p.categoryColor}" id="cost-${p.id}">${formatCurrency(calculateCost(p))}</div>
                             <div class="product-price-note">${p.priceNote}</div>
                         </div>
@@ -706,7 +715,7 @@
                     <div class="product-body">
                         <div class="parity-section">
                             <div class="parity-title">
-                                <i data-lucide="layers" style="width:12px;height:12px"></i>
+                                <i data-lucide="layers" aria-hidden="true" style="width:12px;height:12px"></i>
                                 What AlloFlow Offers Instead
                             </div>
                             <ul class="parity-list">
@@ -718,7 +727,7 @@
             `).join('');
 
             // Re-init Lucide icons inside cards
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         }
 
         // Select All / Deselect All
@@ -726,7 +735,10 @@
             PRODUCTS.forEach(p => {
                 selectedProducts.add(p.id);
                 const card = document.querySelector(`[data-product="${p.id}"]`);
-                if (card) card.classList.add('selected');
+                if (card) {
+                    card.classList.add('selected');
+                    card.setAttribute('aria-checked', 'true');
+                }
             });
             updateSavingsDisplay();
         }

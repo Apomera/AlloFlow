@@ -55,10 +55,10 @@ describe('(b) one file for each student', () => {
     const box = doc.getElementById('batch');
     expect(box.closest('section').id).toBe('step-3');
     expect(box.hasAttribute('open')).toBe(false);
-    expect(box.querySelector('summary').textContent).toBe('Make one for each student');
+    expect(box.querySelector('summary').textContent).toBe('Put student code names in the file');
     expect(doc.getElementById('batch-names-hint').textContent).toBe('Use code names or first names only, never full names. At most 40 at a time.'); // 2026-11-17: one name rule everywhere
-    expect(doc.getElementById('batch-more').hasAttribute('open')).toBe(false);
-    expect(doc.getElementById('batch-more').contains(doc.getElementById('f-batch-rotate'))).toBe(true);
+    expect(box.contains(doc.getElementById('f-batch-rotate'))).toBe(true);
+    expect(doc.getElementById('batch-more')).toBeNull();
     // Not a second main button: each step keeps one.
     expect(box.querySelectorAll('.btn-primary')).toHaveLength(0);
   });
@@ -71,13 +71,14 @@ describe('(b) one file for each student', () => {
     const kb = (b) => b >= 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1000)) + ' KB';
     expect(page.$('batch-said').textContent).toBe('3 files, about ' + kb(3 * one) + ' in all (' + kb(one) + ' each). All version A. '
       + 'Listed more than once, used once: blueheron7. Not used, because a code name needs a letter or a number: !!!.');
+    expect(page.$('batch-make').textContent).toBe('Save .zip for 3 students');
     // At most 40, and why.
     names(page, Array.from({ length: 45 }, (_, i) => 'Student' + (i + 1)).join('\n'));
     expect(page.$('batch-said').textContent).toContain('40 files, about');
     expect(page.$('batch-said').textContent).toContain('Not used: 5 more code names. At most 40 go in one .zip file, because a larger one is slow to make and to open, most of all on a phone or tablet. Make a second .zip file for the rest.');
     names(page, '');
     page.$('batch-make').click();
-    expect(page.$('batch-problem').textContent).toBe('Type at least one code name first.');
+    expect(page.$('batch-problem').textContent).toBe('Type at least two code names for a .zip file, or press Save the file above for one student.');
     expect(page.files.some((blob) => blob.type === 'application/zip')).toBe(false);
   });
 
@@ -90,13 +91,13 @@ describe('(b) one file for each student', () => {
     page.$('f-batch-rotate').dispatchEvent(new page.w.Event('change', { bubbles: true }));
     expect(page.$('batch-said').textContent).toContain('4 files, about');
     expect(page.$('batch-said').textContent).toContain('Versions A, B and C in turn.');
+    expect(page.$('batch-make').textContent).toBe('Save .zip for 4 students');
+    const dlBefore = page.downloads.length;
     page.$('batch-make').click();
     expect(page.seen('batch-making')).toBe(true);
     expect(page.$('batch-make').disabled).toBe(true);
-    await page.until(() => page.seen('batch-save'), 'the .zip file');
-    expect(page.d.activeElement).toBe(page.$('batch-save'));
-    expect(page.$('batch-said').textContent).toMatch(/^Ready: 4 files in one \.zip file, [\d.]+ (?:MB|KB)\./);
-    page.$('batch-save').click();
+    await page.until(() => page.downloads.length > dlBefore, 'the .zip file downloaded');
+    expect(page.$('batch-said').textContent).toMatch(/^Saved Word-Sounds-CVC-words__4-students\.zip \(4 files, [\d.]+ (?:MB|KB)\)\./);
     expect(page.downloads.at(-1).name).toBe('Word-Sounds-CVC-words__4-students.zip');
     const files = zipKit.readZip(zipOf(page));
     expect(files.map((f) => f.name)).toEqual(['Word-Sounds-CVC-words-version-A__BlueHeron7.html', 'Word-Sounds-CVC-words-version-B__RedFox2.html',
@@ -108,14 +109,14 @@ describe('(b) one file for each student', () => {
     expect(manifestOf(html[0]).packet).toEqual(manifestOf(html[3]).packet);
     expect(manifestOf(html[0]).packet.id).not.toBe(manifestOf(html[1]).packet.id);
 
-    // Now one at a time, as a teacher would make each file: the same bytes and the same name.
+    // Now one at a time, as a teacher would personalize each file via 1 line in #f-batch-names: synchronous patch, exact same bytes and filename.
     const single = async (version, code) => {
       page.$('back-3').click();
       page.choose('version', version);
       page.$('next-2').click();
-      page.set('f-code-name', code);
-      await new Promise((resolve) => setTimeout(resolve, 750));
       await page.ready();
+      names(page, code);
+      expect(page.seen('summary')).toBe(true);
       page.$('save').click();
       return { html: page.built(), name: page.downloads.at(-1).name };
     };
@@ -127,22 +128,65 @@ describe('(b) one file for each student', () => {
     }
   });
 
-  it('a choice that changes puts the .zip file away; Stop stops', async () => {
+  it('a choice that changes clears a saved .zip cleanly; Stop stops; and .txt roster loader fills code names', async () => {
     const page = await openMaker();
     await toStep3(page);
     names(page, 'BlueHeron7\nRedFox2');
+    const dlBefore = page.downloads.length;
     page.$('batch-make').click();
-    await page.until(() => page.seen('batch-save'), 'the .zip file');
+    await page.until(() => page.downloads.length > dlBefore, 'the .zip file downloaded');
     page.set('f-title', 'Another title');
-    expect(page.seen('batch-save')).toBe(false);
-    expect(page.$('batch-problem').textContent).toBe('A choice changed, so the .zip file was put away. Press Make the files again.');
     await new Promise((resolve) => setTimeout(resolve, 750));
     await page.ready();
+    const dlAfterTitle = page.downloads.length;
     page.$('batch-make').click();
     page.$('batch-stop').click();
     expect(page.$('batch-problem').textContent).toBe('Stopped. No .zip file was made.');
     await new Promise((resolve) => setTimeout(resolve, 300));
-    expect(page.seen('batch-save')).toBe(false);
+    expect(page.downloads.length).toBe(dlAfterTitle);
     expect(page.$('batch-make').disabled).toBe(false);
+
+    // Zero-storage .txt roster loader fills #f-batch-names cleanly.
+    const txt = new page.w.File(['Owl4\nPine8\nRiver3\n'], 'roster.txt', { type: 'text/plain' });
+    Object.defineProperty(page.$('batch-file'), 'files', { configurable: true, value: [txt] });
+    page.$('batch-file').dispatchEvent(new page.w.Event('change', { bubbles: true }));
+    await page.until(() => /Owl4/.test(page.$('f-batch-names').value), 'roster loaded');
+    expect(page.$('batch-make').textContent).toBe('Save .zip for 3 students');
+  });
+
+  it('Wave 5B: packets_zip deduplicates colliding entry filenames case-insensitively across all makers', () => {
+    const zip = zipKit.create();
+    zip.add('Practice__J-S.html', 'first');
+    zip.add('Practice__J-S.html', 'second');
+    zip.add('practice__j-s.html', 'third');
+    zip.add('Practice__Bad:Name?.html', 'fourth');
+    const out = zipKit.readZip(Buffer.concat(zip.finish().map((u) => Buffer.from(u))));
+    expect(out.map((f) => f.name)).toEqual([
+      'Practice__J-S.html',
+      'Practice__J-S-2.html',
+      'practice__j-s-3.html',
+      'Practice__Bad-Name-.html',
+    ]);
+    expect(out.map((f) => Buffer.from(f.bytes).toString('utf8'))).toEqual(['first', 'second', 'third', 'fourth']);
+    expect(out.every((f) => f.crcOk)).toBe(true);
+  });
+
+  it('Wave 7B: cleans BOM, numbered/bulleted, and TSV/CSV rosters without mid-name truncation beyond 2400 chars', async () => {
+    const page = await openMaker();
+    await toStep3(page);
+    const lines = ['\uFEFF1. Blue Heron 7\tGroup A\tExtra spreadsheet column text for padding beyond 2400 bytes'];
+    for (let i = 2; i <= 45; i++) {
+      lines.push(`${i}. LearnerCode${String(i).padStart(2, '0')}, Period 3, Extra Spreadsheet Column Padding Notes Text`);
+    }
+    const raw = lines.join('\r\n');
+    expect(raw.length).toBeGreaterThan(2500);
+    const txt = new page.w.File([raw], 'roster.txt', { type: 'text/plain' });
+    Object.defineProperty(page.$('batch-file'), 'files', { configurable: true, value: [txt] });
+    page.$('batch-file').dispatchEvent(new page.w.Event('change', { bubbles: true }));
+    await page.until(() => /Blue Heron 7/.test(page.$('f-batch-names').value), 'large roster loaded');
+    expect(page.$('f-batch-names').value.split('\n')[0]).toBe('Blue Heron 7');
+    expect(page.$('f-batch-names').value.split('\n')[44]).toBe('LearnerCode45');
+    expect(page.$('batch-make').textContent).toBe('Save .zip for 40 students');
+    expect(page.$('batch-said').textContent).toContain('Not used: 5 more code names.');
   });
 });

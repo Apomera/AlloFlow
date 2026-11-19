@@ -2202,6 +2202,14 @@ const sanitizeAdventurePortraitFile = (file, { maxDimension = 1024, quality = 0.
         reject(new Error('No portrait file was selected.'));
         return;
     }
+    if (typeof file.size === 'number' && file.size > 20 * 1024 * 1024) {
+        reject(new Error('The portrait file exceeds the 20 MB limit.'));
+        return;
+    }
+    if (/svg/i.test(String(file.type || '')) || /\.svg$/i.test(String(file.name || ''))) {
+        reject(new Error('SVG portraits are not supported. Please choose a PNG, JPG, or WebP image.'));
+        return;
+    }
     const reader = new FileReader();
     reader.onerror = () => reject(reader.error || new Error('The portrait file could not be read.'));
     reader.onload = () => {

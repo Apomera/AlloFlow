@@ -353,10 +353,12 @@ describe('(c) the maker: "Edit this word", the store, and the file', () => {
     expect(page.says('zayden')).toBe('Not in the sound dictionary. Set its sounds to use it, or check the spelling.');
     expect(page.says('din')).toBe('No recording yet. Record it yourself, or choose another word.');
     expect(page.says('cat')).toBe('Ready. 3 sounds: k, a, t.');
-    // Closed: no panel anywhere, every toggle says so, and "My words" is not on the page while the store is empty.
+    // Closed: no panel anywhere, every toggle says so, and on a fresh storage-capable browser "My words" stays reachable (closed) so "Open a My words file" works while export/clear stay hidden.
     expect(page.d.querySelectorAll('.wp')).toHaveLength(0);
     for (const row of page.$('own-list').children) expect(row.querySelector('.e button').getAttribute('aria-expanded')).toBe('false');
-    expect(page.$('my-words').hidden).toBe(true);
+    expect(page.$('my-words').hidden).toBe(false);
+    expect(page.$('my-words').open).toBe(false);
+    expect(page.$('my-words-export').hidden && page.$('my-words-clear').hidden).toBe(true);
     // Open it for zayden: three parts, the dictionary has nothing, the first guess comes from the letters.
     page.row('zayden').querySelector('.e button').click();
     const panel = page.panel('zayden');
@@ -595,6 +597,30 @@ describe('(c) the maker: "Edit this word", the store, and the file', () => {
     await page.until(() => page.seen('summary') || page.seen('build-problem'), 'the file');
     expect(page.seen('summary')).toBe(true);
     expect(page.$('sum-words').textContent).toBe('2 words: cat, zayden.');
+    page.dom.window.close();
+  });
+
+  it('Wave 5B: cleans pasted numbered, bulleted, and quoted spelling lists without mangling interior invalid tokens', async () => {
+    const page = await openMaker();
+    page.$('next-1').click();
+    page.choose('mode', 'own');
+    page.set('f-own', '1. cat\n2) "dog".\n• sun!\n- \u201cpig\u201d\n* (bed)?\n3. cat123\n4. can\'t\n5. re-do');
+    await page.until(() => page.$('own-list').children.length === 8, 'cleaned pasted list');
+    const rows = Object.fromEntries([...page.$('own-list').children].map((li) => [
+      li.querySelector('.w').textContent,
+      { ok: li.className === 'is-ok', text: li.querySelector('.s').textContent },
+    ]));
+    expect(Object.keys(rows)).toEqual(['cat', 'dog', 'sun', 'pig', 'bed', 'cat123', "can't", 're-do']);
+    for (const w of ['cat', 'dog', 'sun', 'pig', 'bed']) expect(rows[w].ok, w).toBe(true);
+    for (const bad of ['cat123', "can't", 're-do']) expect(rows[bad].ok, bad).toBe(false);
+
+    // Step 2 "Add words" box uses the same cleanup helper.
+    page.choose('mode', 'pick');
+    page.$('pick-list').open = true;
+    page.$('list-clear').click();
+    page.set('f-add', '1. cat\n• "sun".');
+    page.$('add-words').click();
+    expect([...page.$('pick-chips').querySelectorAll('.chip')].map((c) => c.firstChild.textContent)).toEqual(['cat', 'sun']);
     page.dom.window.close();
   });
 });

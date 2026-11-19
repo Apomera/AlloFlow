@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob:; font-src 'self' https://cdn.jsdelivr.net https://alloflow-cdn.pages.dev data:; connect-src 'self' https://cdn.jsdelivr.net https://alloflow-cdn.pages.dev blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AlloFlow Whiteboard</title>
 <!--
@@ -39,10 +41,16 @@
   without needing a bridge of its own.
 -->
 <style>
-  :root { --bg:#0f172a; --panel:#1e293b; --line:#334155; --text:#e2e8f0; --dim:#94a3b8; --accent:#6366f1; --accent2:#4f46e5; }
+  :root { --bg:#0f172a; --panel:#1e293b; --line:#334155; --text:#e2e8f0; --dim:#94a3b8; --accent:#6366f1; --accent2:#4f46e5; color-scheme: dark; }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
   body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+  .skip-link { position: fixed; left: 10px; top: -64px; z-index: 1000; padding: 10px 14px; border-radius: 8px; background: #fff; color: #0f172a; font-weight: 700; text-decoration: none; border: 2px solid #4f46e5; }
+  .skip-link:focus { top: 10px; }
+  :focus-visible, button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #a5b4fc !important; outline-offset: 2px !important; }
+  main { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+  @media (forced-colors: active) { :root { color-scheme: light dark; } header, .aibar, footer.privacy { background: Canvas; color: CanvasText; border-color: CanvasText; } :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } }
   header { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 14px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11px; }
@@ -61,7 +69,7 @@
   .excalidraw { --color-primary: #4f46e5; }
   input.hdr { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; }
   input.hdr::placeholder { color: var(--dim); }
-  input.hdr:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  input.hdr:focus-visible { outline: 3px solid #a5b4fc; outline-offset: 2px; border-color: var(--accent); }
   .nameinput { max-width: 170px; }
   button.hdr:disabled { pointer-events: none; }
   button.hdr[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
@@ -78,13 +86,14 @@
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to whiteboard</a>
 <header>
-  <h1>✏️ AlloFlow Whiteboard</h1>
+  <h1><span aria-hidden="true">✏️ </span>AlloFlow Whiteboard</h1>
   <span class="sub">Excalidraw · draw, diagram, and organize ideas</span>
   <span class="spacer"></span>
   <div class="tpl">
-    <label for="tplSel">📋 Template</label>
-    <select id="tplSel" aria-label="Insert a graphic-organizer template">
+    <label for="tplSel"><span aria-hidden="true">📋 </span>Template</label>
+    <select id="tplSel" title="Insert a graphic-organizer template">
       <option value="">Blank canvas</option>
       <option value="venn">Venn diagram (compare 2)</option>
       <option value="tchart">T-chart (2 columns)</option>
@@ -95,26 +104,27 @@
     </select>
   </div>
   <input id="nameInput" class="hdr nameinput" type="text" maxlength="120" placeholder="Name this sketch" aria-label="Name for this whiteboard resource" />
-  <button class="hdr primary" id="saveBtn" aria-label="Save this drawing into your AlloFlow resource history">📥 Save to AlloFlow</button>
-  <button class="hdr" id="exportBtn" aria-label="Export the drawing as a PNG image to this device">⬇️ Export PNG</button>
+  <button type="button" class="hdr primary" id="saveBtn" aria-label="Save to AlloFlow — Save this drawing into your AlloFlow resource history"><span aria-hidden="true">📥 </span>Save to AlloFlow</button>
+  <button type="button" class="hdr" id="exportBtn" aria-label="Export PNG — Export the drawing as a PNG image to this device"><span aria-hidden="true">⬇️ </span>Export PNG</button>
   <span id="flashmsg" class="flash" role="status" aria-live="polite"></span>
 </header>
-<div class="aibar" id="aibar">
-  <span class="ailabel">✨ AI assist</span>
-  <input id="aiPrompt" class="hdr aiinput" type="text" maxlength="600" placeholder="Describe a diagram or image to add — e.g. “water cycle” or “a friendly robot”…" aria-label="Describe what the AI should draw or generate" />
-  <button class="hdr" id="aiDiagramBtn" aria-label="Generate a labeled diagram from your description">◇ Diagram</button>
-  <button class="hdr" id="aiRecordBtn" aria-label="Generate a diagram and record it being drawn as a video">🎬 Record drawing</button>
-  <button class="hdr" id="aiImageBtn" aria-label="Generate a picture from your description">🖼️ Image</button>
-  <button class="hdr" id="aiEditImgBtn" aria-label="Edit the selected image with AI" aria-disabled="true">✏️ Edit selected image</button>
+<div class="aibar" id="aibar" role="region" aria-label="AI assist">
+  <label for="aiPrompt" class="ailabel"><span aria-hidden="true">✨ </span>AI assist</label>
+  <input id="aiPrompt" class="hdr aiinput" type="text" maxlength="600" placeholder="Describe a diagram or image to add — e.g. “water cycle” or “a friendly robot”…" aria-label="AI assist — Describe what the AI should draw or generate" />
+  <button type="button" class="hdr" id="aiDiagramBtn" aria-label="Diagram — Generate a labeled diagram from your description"><span aria-hidden="true">◇ </span>Diagram</button>
+  <button type="button" class="hdr" id="aiRecordBtn" aria-label="Record drawing — Generate a diagram and record it being drawn as a video"><span aria-hidden="true">🎬 </span>Record drawing</button>
+  <button type="button" class="hdr" id="aiImageBtn" aria-label="Image — Generate a picture from your description"><span aria-hidden="true">🖼️ </span>Image</button>
+  <button type="button" class="hdr" id="aiEditImgBtn" aria-label="Edit selected image — Edit the selected image with AI" aria-disabled="true"><span aria-hidden="true">✏️ </span>Edit selected image</button>
   <span id="aiStatus" class="aistatus" role="status" aria-live="polite"></span>
 </div>
-<div id="excal"><div class="loadmsg" id="loadmsg">Loading the whiteboard…</div></div>
-<div class="privacy">Private by default: your drawing stays in this window. <strong>Export PNG</strong> and Excalidraw’s own Save (top-left, for an editable .excalidraw file or SVG) keep it on this device. <strong>Save to AlloFlow</strong> hands this drawing to your AlloFlow window so it joins your resource history — use that only when you want it saved there. <strong>AI assist</strong> sends your prompt (and, for image edits, the selected image) to Google’s Gemini through AlloFlow. <strong>Record drawing</strong> renders the diagram to an offscreen canvas on this device — it never captures your screen, so nothing else you have open can appear in the video.</div>
+<main id="main" tabindex="-1"><div id="excal"><div class="loadmsg" id="loadmsg" role="status" aria-live="polite">Loading the whiteboard…</div></div></main>
+<footer class="privacy">Private by default: your drawing stays in this window. <strong>Export PNG</strong> and Excalidraw’s own Save (top-left, for an editable .excalidraw file or SVG) keep it on this device. <strong>Save to AlloFlow</strong> hands this drawing to your AlloFlow window so it joins your resource history — use that only when you want it saved there. <strong>AI assist</strong> sends your prompt (and, for image edits, the selected image) to Google’s Gemini through AlloFlow. <strong>Record drawing</strong> renders the diagram to an offscreen canvas on this device — it never captures your screen, so nothing else you have open can appear in the video.</footer>
+<script>(function(){function labelMenu(){var b=document.querySelector('#excal .main-menu-trigger');if(b&&!b.getAttribute('aria-label')&&!b.textContent.trim()){b.setAttribute('aria-label','Whiteboard menu');}}var root=document.getElementById('excal');if(root&&typeof MutationObserver==='function'){new MutationObserver(labelMenu).observe(root,{childList:true,subtree:true});labelMenu();}})();</script>
 
 <script>window.EXCALIDRAW_ASSET_PATH = "https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/";</script>
-<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin></script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" integrity="sha384-tMH8h3BGESGckSAVGZ82T9n90ztNXxvdwvdM6UoR56cYcf+0iGXBliJ29D+wZ/x8" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" integrity="sha384-bm7MnzvK++ykSwVJ2tynSE5TRdN+xL418osEVF2DE/L/gfWHj91J2Sphe582B1Bh" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.js" integrity="sha384-2RnaDBiRrWXqT5k4HtP4X4gh/ukRFg9zn1Sjt+JeYQOUWSYYnN1tKE4FL9QA3Wdl" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <!-- Our own encoder, same origin (relative so it resolves on the CDN and in a
      local checkout alike). Optional: if it fails to load, recording still
      produces the .webm and only the GIF is skipped. -->
@@ -149,7 +159,7 @@
   // residual case is a sandboxed-frame opener, far narrower than any page.
   function isTrustedOpenerOrigin(origin) {
     var o = String(origin || '');
-    if (o === 'null') return true;
+    if (o === 'null') return (typeof declaredHost === 'undefined' || declaredHost === 'null');
     try {
       var u = new URL(o);
       var host = (u.hostname || '').toLowerCase();
@@ -179,7 +189,9 @@
       if (!handshake && !linked) return;
       if (imageSlot) payload = Object.assign({}, payload, { type: payload.type.replace('allocwb-', 'alloasset-'), token: imageSlot });
       var target = (linked && openerOrigin && openerOrigin !== 'null') ? openerOrigin : '*';
-      if (imageSlot) target = slotHost === 'null' ? '*' : slotHost;
+      if (imageSlot) target = (slotHost === 'null' && declaredHost === 'null') ? '*' : (slotHost !== 'null' ? slotHost : '');
+      else if (!handshake && target === '*' && !(linked && openerOrigin === 'null' && declaredHost === 'null')) return;
+      if (!target) return;
       window.opener.postMessage(payload, target);
     } catch (_) {}
   };
@@ -899,7 +911,7 @@
       if (openerOrigin && ev.origin !== openerOrigin) return;   // once learned, pin to the opener's origin
       if (d.type === 'allocwb-ai-image' && d.requestId && aiPending[d.requestId]) {
         var m1 = aiPending[d.requestId].mode; delete aiPending[d.requestId]; setAiBusy(false);
-        if (!d.dataUrl || String(d.dataUrl).indexOf('data:image/') !== 0) { aiStatus('The AI didn’t return an image.', false); return; }
+        if (!d.dataUrl || !/^data:image\/(?:png|jpeg|webp|gif);base64,/i.test(String(d.dataUrl))) { aiStatus('The AI didn’t return an image.', false); return; }
         if (m1 === 'edit-image') replaceSelectedImage(d.dataUrl); else insertGeneratedImage(d.dataUrl);
         return;
       }

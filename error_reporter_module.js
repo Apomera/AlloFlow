@@ -286,47 +286,6 @@
     return output;
   }
 
-  // ── Initial state (rehydrated from this tab's sessionStorage) ──
-  // Rehydration honesty (field-caught 2026-07-06): a report filed from 0.2.4
-  // opened with a wall of 0.2.2-era entries — every timestamp PREDATED the
-  // install — because the buffer persists across app upgrades. Stale entries
-  // make fixed bugs look alive, so on load we drop (a) entries captured by a
-  // DIFFERENT desktop build, and (b) entries matching the ignore list (they
-  // were captured before the pattern was added).
-  var buffer = (function () {
-    try {
-      var stored = JSON.parse((logStore && logStore.getItem(STORAGE_KEY)) || '[]');
-      if (!Array.isArray(stored)) return [];
-      var now = Date.now();
-      return stored.filter(function (entry) {
-        if (!entry || typeof entry !== 'object') return false;
-        if (entry.v && entry.v !== APP_BUILD_TAG) return false;
-        // Age is the only pruning the web gets (see LOAD_ID).
-        var seen = Date.parse(entry.lastTs || entry.ts);
-        if (!(seen > now - MAX_AGE_MS)) return false;
-        // shouldIgnore's pattern list initializes later in this module scope;
-        // a throw here must skip the CHECK, not wipe the whole buffer.
-        try { if (shouldIgnore(entry.message)) return false; } catch (e) {}
-        return true;
-      }).map(function (entry) { return sanitizeDiagnosticValue(entry); });
-    }
-    catch (e) { return []; }
-  })();
-  var prefs = (function () {
-    try { return JSON.parse(localStorage.getItem(STORAGE_PREFS) || '{}'); }
-    catch (e) { return {}; }
-  })();
-  var includeWarns = !!prefs.includeWarns;
-
-  function persistBuffer() {
-    buffer = buffer.map(function (entry) { return sanitizeDiagnosticValue(entry); });
-    try { if (logStore) logStore.setItem(STORAGE_KEY, JSON.stringify(buffer)); } catch (e) {}
-  }
-  function persistPrefs() {
-    try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(prefs)); } catch (e) {}
-  }
-  persistBuffer();
-
   // Patterns the reporter should NOT capture — browser warnings that fire
   // through the same channels as real errors but aren't actionable. Most
   // notable: "ResizeObserver loop completed with undelivered notifications"
@@ -355,6 +314,45 @@
     }
     return false;
   }
+
+  // ── Initial state (rehydrated from this tab's sessionStorage) ──
+  // Rehydration honesty (field-caught 2026-07-06): a report filed from 0.2.4
+  // opened with a wall of 0.2.2-era entries — every timestamp PREDATED the
+  // install — because the buffer persists across app upgrades. Stale entries
+  // make fixed bugs look alive, so on load we drop (a) entries captured by a
+  // DIFFERENT desktop build, and (b) entries matching the ignore list (they
+  // were captured before the pattern was added).
+  var buffer = (function () {
+    try {
+      var stored = JSON.parse((logStore && logStore.getItem(STORAGE_KEY)) || '[]');
+      if (!Array.isArray(stored)) return [];
+      var now = Date.now();
+      return stored.filter(function (entry) {
+        if (!entry || typeof entry !== 'object') return false;
+        if (entry.v && entry.v !== APP_BUILD_TAG) return false;
+        // Age is the only pruning the web gets (see LOAD_ID).
+        var seen = Date.parse(entry.lastTs || entry.ts);
+        if (!(seen > now - MAX_AGE_MS)) return false;
+        try { if (shouldIgnore(entry.message)) return false; } catch (e) {}
+        return true;
+      }).map(function (entry) { return sanitizeDiagnosticValue(entry); });
+    }
+    catch (e) { return []; }
+  })();
+  var prefs = (function () {
+    try { return JSON.parse(localStorage.getItem(STORAGE_PREFS) || '{}'); }
+    catch (e) { return {}; }
+  })();
+  var includeWarns = !!prefs.includeWarns;
+
+  function persistBuffer() {
+    buffer = buffer.map(function (entry) { return sanitizeDiagnosticValue(entry); });
+    try { if (logStore) logStore.setItem(STORAGE_KEY, JSON.stringify(buffer)); } catch (e) {}
+  }
+  function persistPrefs() {
+    try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(prefs)); } catch (e) {}
+  }
+  persistBuffer();
 
   function record(level, message, stack, source, line, column, api) {
     if (shouldIgnore(message)) return;
@@ -1100,7 +1098,15 @@
     if (last) {
       var good = !!last.ok;
       var sample = (last.sample || []).map(function (s) {
-        return '<li style="margin:2px 0;"><a href="' + escapeHtml(s.url) + '" target="_blank" rel="noopener noreferrer" style="color:#0d9488;">' + escapeHtml(s.title) + '</a></li>';
+        var safeHref = '';
+        try {
+          var parsedUrl = new URL(String(s && s.url || ''));
+          if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') safeHref = parsedUrl.href;
+        } catch (_) {}
+        var labelHtml = escapeHtml(s && s.title || safeHref || 'Result');
+        return safeHref
+          ? '<li style="margin:2px 0;"><a href="' + escapeHtml(safeHref) + '" target="_blank" rel="noopener noreferrer" style="color:#0d9488;">' + labelHtml + '</a></li>'
+          : '<li style="margin:2px 0;"><span style="color:#475569;">' + labelHtml + '</span></li>';
       }).join('');
       resultHtml =
         '<div style="margin:0 18px 4px;padding:10px 12px;border-radius:8px;border:1px solid ' + (good ? '#5eead4' : '#fca5a5') + ';background:' + (good ? '#f0fdfa' : '#fef2f2') + ';">' +
@@ -1198,9 +1204,12 @@
     if (!window.speechSynthesis || typeof window.speechSynthesis.getVoices !== 'function') return Promise.resolve(row);
     return new Promise(function (resolve) {
       var finished = false;
+      var voiceTimer = null;
       var finish = function () {
         if (finished) return;
         finished = true;
+        if (voiceTimer) { clearTimeout(voiceTimer); voiceTimer = null; }
+        try { window.speechSynthesis.removeEventListener('voiceschanged', finish); } catch (_) {}
         var count = 0;
         try { count = (window.speechSynthesis.getVoices() || []).length; } catch (_) {}
         row.status = count ? 'ok' : 'warn';
@@ -1209,7 +1218,7 @@
       };
       try { if ((window.speechSynthesis.getVoices() || []).length) { finish(); return; } } catch (_) {}
       try { window.speechSynthesis.addEventListener('voiceschanged', finish); } catch (_) {}
-      setTimeout(finish, 1500);
+      voiceTimer = setTimeout(finish, 1500);
     });
   }
 
@@ -1794,7 +1803,11 @@
     if (closeBtn) closeBtn.focus();
     // ESC closes
     panel.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape') { ev.preventDefault(); closePanel(); }
+      if (ev.key === 'Escape') {
+        if (ev.isComposing || ev.keyCode === 229 || descriptionComposing) return;
+        ev.preventDefault();
+        closePanel();
+      }
       if (ev.key === 'Tab') {
         var controls = Array.prototype.slice.call(panel.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]'))
           .filter(function (node) { return node.tabIndex >= 0 && !node.hidden && !node.closest('[hidden]'); });
@@ -1813,6 +1826,8 @@
     descriptionRefreshPending = false;
     panelPressHeld = false;
     logRefreshPending = false;
+    ['pointerup', 'pointercancel', 'keyup'].forEach(function (type) { document.removeEventListener(type, releasePanelPress, true); });
+    window.removeEventListener('blur', releasePanelPress);
     if (panel) { panel.remove(); panel = null; }
     var target = panelTrigger && panelTrigger.isConnected ? panelTrigger : badge;
     panelTrigger = null;
@@ -2064,13 +2079,11 @@
           ta.select();
           var ok = document.execCommand('copy');
           document.body.removeChild(ta);
-          if (ok) {
-            $('aer-copy').textContent = 'Copied ✓';
-          } else {
-            $('aer-copy').textContent = 'Copy failed';
-          }
+          var copyBtn = $('aer-copy');
+          if (copyBtn) copyBtn.textContent = ok ? 'Copied ✓' : 'Copy failed';
         } catch (_) {
-          $('aer-copy').textContent = 'Copy failed';
+          var copyBtnErr = $('aer-copy');
+          if (copyBtnErr) copyBtnErr.textContent = 'Copy failed';
         }
         setTimeout(function () { if ($('aer-copy')) $('aer-copy').textContent = 'Copy log'; }, 1500);
       }
@@ -2078,7 +2091,8 @@
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(text).then(function () {
-            $('aer-copy').textContent = 'Copied ✓';
+            var copyBtnOk = $('aer-copy');
+            if (copyBtnOk) copyBtnOk.textContent = 'Copied ✓';
             setTimeout(function () { if ($('aer-copy')) $('aer-copy').textContent = 'Copy log'; }, 1500);
           }).catch(function () {
             copyFallback(text);

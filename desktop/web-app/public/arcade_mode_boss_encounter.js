@@ -27,7 +27,7 @@
     try {
       if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
     } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   }
 
   var __alloT = function (key, fallback) {
@@ -1328,7 +1328,7 @@
         ctx.addToast('Pick a topic first (at least 3 characters).');
         return;
       }
-      if (typeof ctx.callImagen !== 'function') {
+      if (!_aiUsable('images', ctx.callImagen)) {
         // Graceful degradation — proceed with no boss image
         publishClassEncounterStart(t, null);
         setPhase('play');
@@ -2214,7 +2214,7 @@
           type: 'text',
           value: topic,
           onChange: function (e) { setTopic(e.target.value); },
-          onKeyDown: function (e) { if (e.key === 'Enter') beginEncounter(); },
+          onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') beginEncounter(); },
           placeholder: 'e.g. photosynthesis, the bill of rights, a character from your story…',
           'aria-label': 'Encounter topic',
           style: {

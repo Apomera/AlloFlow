@@ -146,7 +146,7 @@ const renderJsonToHtml = (blocks) => {
           if (block.text) {
             block.text = block.text
               .replace(/\\n/g, ' ')
-              .replace(/\n?id:\s*[a-z0-9-]+\n?/gi, '')
+              .replace(/(?:^|\n)id:\s*[a-z0-9-]+(?=\n|$)/g, '')
               .replace(/^(description|alt|title|subtitle|caption|type|text|items|headers|rows):\s*/gim, '') // strip leaked JSON field names
               .replace(/^(banner|blockquote|image|hr|ul|ol|p|h[1-6])\s*$/gim, '') // strip bare type names on own line
               .replace(/\n{2,}/g, '\n').trim();
@@ -158,8 +158,8 @@ const renderJsonToHtml = (blocks) => {
           if (block.alt) block.alt = block.alt.replace(/^alt:\s*/i, '').replace(/\\n/g, ' ').trim();
           if (block.caption) block.caption = block.caption.replace(/^caption:\s*/i, '').replace(/\\n/g, ' ').trim();
           // Also clean items arrays (lists)
-          if (block.items) {
-            block.items = block.items.map(item => (item || '').replace(/\\n/g, ' ').replace(/^(items|text):\s*/i, '').trim());
+          if (Array.isArray(block.items)) {
+            block.items = block.items.map(item => String(item == null ? '' : item).replace(/\\n/g, ' ').replace(/^(items|text):\s*/i, '').trim());
           }
           // Extract id from text if not in id field (AI sometimes puts "id: slug" in text)
           if (!block.id && block.text) {
@@ -282,9 +282,13 @@ const renderJsonToHtml = (blocks) => {
               const _tableHtml = `<table${_recon ? ' data-allo-reconstructed="image"' : ''} style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
               // A wide table (8+ columns) scrolls sideways inside a labelled, keyboard-focusable region
               // instead of overflowing the page (a 14-column finance table, 2026-10-25).
-              const _cols = Math.max(hdrs.length, ...rowsArr.map((r) => (Array.isArray(r) ? r.length : 1)), 0);
+              let _cols = hdrs.length;
+              for (let ri = 0; ri < rowsArr.length; ri++) {
+                const rc = Array.isArray(rowsArr[ri]) ? rowsArr[ri].length : 1;
+                if (rc > _cols) _cols = rc;
+              }
               if (_cols < 8) return _tableHtml;
-              const _regionLabel = block.caption ? sanitizeField(block.caption).replace(/"/g, '&quot;').replace(/</g, '&lt;') : 'Wide table';
+              const _regionLabel = block.caption ? sanitizeField(block.caption).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Wide table';
               return `<div role="region" aria-label="${_regionLabel}" tabindex="0" style="overflow-x:auto;max-width:100%">`+_tableHtml+`</div>`;
             }
             case 'definition_list': {
@@ -347,8 +351,8 @@ const renderJsonToHtml = (blocks) => {
                 + `try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}}`;
               const _dragOver = `event.preventDefault();this.style.borderColor='#4f46e5';this.style.background='#eef2ff';`;
               const _dragLeave = `this.style.borderColor='#64748b';this.style.background='#f1f5f9';`;
-              const _dropHandler = `(function(c,ev){ev.preventDefault();c.style.borderColor='#64748b';c.style.background='#f1f5f9';try{var _ok=function(u){return /^(?:data:image\\/(?:png|jpeg|jpg|webp|gif);base64,|blob:|https?:\\/\\/|\\/(?!\\/)|\\.\\/)/i.test(String(u||'').trim());};var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src&&_ok(d.src)){(${_insertFn})(c,d.src,d.alt||'${_imgAltSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){if(_ok(e.target&&e.target.result))(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
-              const _uploadHandler = `(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${_imgId}-container');(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);})(this)`;
+              const _dropHandler = `(function(c,ev){ev.preventDefault();c.style.borderColor='#64748b';c.style.background='#f1f5f9';try{var _ok=function(u){return /^(?:data:image\\/(?:png|jpeg|jpg|webp|gif);base64,|blob:|https?:\\/\\/|\\/(?!\\/)|\\.\\/)/i.test(String(u||'').trim());};var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src&&_ok(d.src)){(${_insertFn})(c,d.src,d.alt||'${_imgAltSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){if((typeof f.size==='number'&&f.size>20*1024*1024)||/svg/i.test(String(f.type||''))||/\\.svg$/i.test(String(f.name||'')))return;var r=new FileReader();r.onload=function(e){if(_ok(e.target&&e.target.result))(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
+              const _uploadHandler = `(function(el){var f=el.files&&el.files[0];if(!f)return;if((typeof f.size==='number'&&f.size>20*1024*1024)||/svg/i.test(String(f.type||''))||/\\.svg$/i.test(String(f.name||''))){el.value='';return;}var _ok=function(u){return /^data:image\\/(?:png|jpeg|jpg|webp|gif);base64,/i.test(String(u||'').trim());};var r=new FileReader();r.onload=function(e){var c=document.getElementById('${_imgId}-container');if(c&&_ok(e.target&&e.target.result))(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);})(this)`;
               // IMPORTANT: the handler string ends up inside onclick="..." so literal double
               // quotes inside msg.textContent would prematurely terminate the HTML attribute
               // and silently break the button. Use curly quotes (\u201C \u201D) around the

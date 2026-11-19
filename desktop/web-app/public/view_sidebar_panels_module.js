@@ -441,13 +441,21 @@ function createPathFork() {
     }, []);
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         event.stopPropagation();
         onCancel();
         return;
       }
       if (event.key !== "Tab" || !boxRef.current) return;
-      const items = [...boxRef.current.querySelectorAll("button, input")].filter((el) => !el.disabled);
+      const items = [...boxRef.current.querySelectorAll("button, input")].filter((el) => {
+        if (el.disabled || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        for (let node = el; node && node !== boxRef.current; node = node.parentElement) {
+          const s = typeof window.getComputedStyle === "function" ? window.getComputedStyle(node) : null;
+          if (s && (s.display === "none" || s.visibility === "hidden")) return false;
+        }
+        return true;
+      });
       if (!items.length) return;
       const first = items[0], last = items[items.length - 1];
       if (event.shiftKey && document.activeElement === first) {
@@ -1052,8 +1060,8 @@ const SIDEBAR_PANEL_UI = Object.freeze({
   settingsSurface: "border-b border-slate-200/80 bg-slate-50/70 p-3.5 flex flex-col gap-3.5",
   settingsGroup: "space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm",
   label: "block mb-1.5 text-[11px] font-semibold leading-4 tracking-wide text-slate-700",
-  control: "w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
-  textarea: "w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
+  control: "w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-500 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
+  textarea: "w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-500 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
   help: "mt-1.5 text-[11px] leading-relaxed text-slate-500",
   checkbox: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50",
   disclosure: "flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 disabled:opacity-70",
@@ -1496,11 +1504,12 @@ function UniversalSettingsPanel(props) {
       addToast(t("standards_finder.toast_attached_seeded") || "Standard attached and topic seeded with this direction.", "success");
       return;
     }
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(brief);
-      addToast(t("standards_finder.toast_attached_copied") || "Standard attached; direction copied \u2014 paste it into your topic or source field.", "success");
-    } catch (e) {
-      addToast(t("standards_finder.toast_attached_manual") || "Standard attached. Copy the direction text manually.", "info");
+    const showCopied = () => addToast(t("standards_finder.toast_attached_copied") || "Standard attached; direction copied \u2014 paste it into your topic or source field.", "success");
+    const showManual = () => addToast(t("standards_finder.toast_attached_manual") || "Standard attached. Copy the direction text manually.", "info");
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      Promise.resolve(navigator.clipboard.writeText(brief)).then(showCopied, showManual);
+    } else {
+      showManual();
     }
   };
   const resolveFromLocalSnapshot = () => {
@@ -1544,8 +1553,8 @@ function UniversalSettingsPanel(props) {
       onClick: () => setIsOpen(!isOpen),
       className: "flex min-h-14 w-full items-center justify-between bg-white px-3.5 py-3 transition-colors motion-reduce:transition-none hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-indigo-500/20"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "text-left min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-900 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Settings2, { size: 16, className: "shrink-0" }), " ", t("universal.title") || "Universal Settings"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700/80 mt-0.5 truncate" }, isOpen ? t("universal.subtitle") || "Apply to most resources you generate" : summaryBits.join(" \xB7 "))),
-    /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, className: `text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
+    /* @__PURE__ */ React.createElement("span", { className: "block text-left min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-900 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Settings2, { size: 16, className: "shrink-0", "aria-hidden": "true" }), " ", t("universal.title") || "Universal Settings"), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-indigo-700/80 mt-0.5 truncate" }, isOpen ? t("universal.subtitle") || "Apply to most resources you generate" : summaryBits.join(" \xB7 "))),
+    /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, "aria-hidden": "true", className: `text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
   ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600" }, t("universal.scope_note") || "These steer what AlloFlow writes for you."), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
     "select",
     {
@@ -1705,8 +1714,8 @@ function UniversalSettingsPanel(props) {
       },
       className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase" }, std.framework)),
-    /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
+    /* @__PURE__ */ React.createElement("span", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase" }, std.framework)),
+    /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
   ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -2096,7 +2105,7 @@ function SimplifiedPanel(props) {
       onChange: (e) => setIncludeCharts(e.target.checked),
       className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCharts", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.data_visuals"))))), /* @__PURE__ */ React.createElement("div", { "data-reading-options": true, className: "space-y-2.5 bg-white p-3.5" }, !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-5 text-slate-600" }, readingOptionText("sidebar.reading_options_add_source", "Add source text to enable these options.")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCharts", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.data_visuals"))))), /* @__PURE__ */ React.createElement("div", { "data-reading-options": true, className: "space-y-2.5 bg-white p-3.5" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2521,6 +2530,11 @@ function DbqPanel(props) {
         const file = e.target.files?.[0];
         const docArea = document.getElementById("dbq-custom-docs");
         if (!file || !docArea || !callGeminiVision) return;
+        if (Number(file.size) > 20 * 1024 * 1024) {
+          addToast && addToast("File is too large for OCR (max 20 MB).", "error");
+          e.target.value = "";
+          return;
+        }
         addToast && addToast(t("toasts.extracting_text_image"), "info");
         try {
           const reader = new FileReader();
@@ -2571,6 +2585,10 @@ function DbqPanel(props) {
             if (imageType) {
               addToast && addToast(t("toasts.extracting_clipboard"), "info");
               const blob = await item.getType(imageType);
+              if (Number(blob.size) > 20 * 1024 * 1024) {
+                addToast && addToast("Clipboard image is too large for OCR (max 20 MB).", "error");
+                return;
+              }
               const reader = new FileReader();
               reader.onload = async () => {
                 try {
@@ -3986,10 +4004,11 @@ function BrainstormPanel(props) {
       className: "w-full text-xs border border-violet-600 rounded p-1.5 focus:ring-2 focus:ring-violet-500 text-violet-800"
     },
     BRIDGE_MODES.map((mode) => /* @__PURE__ */ React.createElement("option", { key: mode.id, value: mode.id }, t(`bridge.modes.${mode.id}_label`)))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-800 mt-1 italic leading-tight" }, t(`bridge.modes.${bridgeSimType}_desc`))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-violet-900" }, t("bridge.iterative_steps")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-white px-1.5 rounded border border-violet-200 text-violet-800 font-bold" }, bridgeStepCount, " ", t("bridge.prompts_count"))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-800 mt-1 italic leading-tight" }, t(`bridge.modes.${bridgeSimType}_desc`))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "brainstorm-step-count", className: "block text-xs font-bold text-violet-900" }, t("bridge.iterative_steps")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-white px-1.5 rounded border border-violet-200 text-violet-800 font-bold" }, bridgeStepCount, " ", t("bridge.prompts_count"))), /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": t("common.range_slider"),
+      id: "brainstorm-step-count",
+      "aria-valuetext": `${bridgeStepCount} ${t("bridge.prompts_count")}`,
       "data-help-key": "brainstorm_step_count",
       type: "range",
       min: "1",
@@ -6091,7 +6110,7 @@ function SourceChangeControl({ t, inputText, sourceRecord, setSourceReplacement 
       "aria-labelledby": "source-change-title",
       "aria-describedby": "source-change-desc",
       onKeyDown: (event) => {
-        if (event.key === "Escape") {
+        if (event.key === "Escape" && !(event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229)) {
           event.preventDefault();
           event.stopPropagation();
           keep();
@@ -6268,7 +6287,7 @@ function SourceInputShellView(props) {
     reader.onload = async (ev) => {
       if (!_projectLoadIsCurrent()) return;
       try {
-        const _savedProject = JSON.parse(ev.target.result);
+        const _savedProject = JSON.parse(ev.target.result, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
         const _crypto = window.AlloModules && window.AlloModules.AlloCrypto;
         const _isLessonProject = Array.isArray(_savedProject) || _savedProject && Array.isArray(_savedProject.history) || !!(_crypto && typeof _crypto.isEncryptedEnvelope === "function" && _crypto.isEncryptedEnvelope(_savedProject));
         if (_isLessonProject) {

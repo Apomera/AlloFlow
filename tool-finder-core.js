@@ -106,7 +106,7 @@
         var actions = createElement('div', 'tool-card-actions');
         var launch = createElement('a', 'tool-launch-link', 'Launch with guidance');
         launch.href = launchHref(tool);
-        launch.setAttribute('aria-label', 'Launch AlloFlow with guidance for ' + tool.name);
+        launch.setAttribute('aria-label', 'Launch with guidance for ' + tool.name);
         actions.appendChild(launch);
         if (tool.detailHref) {
             var details = createElement('a', 'tool-detail-link', 'Related details');
@@ -199,7 +199,6 @@
     function createCompactResult(tool) {
         var link = createElement('a', 'home-tool-result');
         link.href = launchHref(tool);
-        link.setAttribute('aria-label', 'Launch guidance for ' + tool.name);
         var icon = createElement('span', 'home-tool-result-icon', tool.icon || '✨');
         icon.setAttribute('aria-hidden', 'true');
         var copy = createElement('span', 'home-tool-result-copy');

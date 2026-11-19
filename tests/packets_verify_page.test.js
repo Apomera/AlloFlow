@@ -328,15 +328,21 @@ describe('the checks: no choice of activities trips the scan', () => {
     for (const set of [loader.ADAPTERS, loader.CHECK_ADAPTERS]) {
       for (const id of Object.keys(set)) {
         const source = String(set[id].render) + '\n' + String(set[id].score || '') + '\n' + JSON.stringify(set[id].labels || {});
-        // 2026-11-12: a vocabulary activity (vocab_*) reads aloud with the device's own voice; its files declare it (manifest
-        // speech), which the scan is told here. Without that declaration the speech engine is still not expected.
-        const speech = /^vocab_/.test(id);
-        if (speech) expect(verify.scanSource(source, { closed: true }).filter((f) => f.cls !== EXPECTED).map((f) => f.id), id).toContain('speech');
-        expect(verify.scanSource(source, { closed: true, speech }).filter((f) => f.cls !== EXPECTED).map((f) => f.name + ': ' + f.excerpt), id).toEqual([]);
+        // 2026-11-19: vocabulary adapters share loader._vocabChoice (embedded only in vocab_* files), so individual adapters
+        // carry no speechSynthesis of their own; _vocabChoice itself is scanned below with and without { speech: true }.
+        expect(verify.scanSource(source, { closed: true }).filter((f) => f.cls !== EXPECTED).map((f) => f.name + ': ' + f.excerpt), id).toEqual([]);
         scanned++;
       }
     }
     expect(scanned).toBeGreaterThanOrEqual(23);
+    if (loader._vocabChoice) {
+      const vocabSrc = String(loader._vocabChoice);
+      expect(verify.scanSource(vocabSrc, { closed: true }).filter((f) => f.cls !== EXPECTED).map((f) => f.id)).toContain('speech');
+      expect(verify.scanSource(vocabSrc, { closed: true, speech: true }).filter((f) => f.cls !== EXPECTED).map((f) => f.name + ': ' + f.excerpt)).toEqual([]);
+    }
+    if (loader._keypad) {
+      expect(verify.scanSource(String(loader._keypad), { closed: true }).filter((f) => f.cls !== EXPECTED).map((f) => f.name + ': ' + f.excerpt)).toEqual([]);
+    }
     for (const labels of [loader.DEFAULT_LABELS, loader.CHECK_LABELS, loader.PICTURE_LABELS]) {
       if (labels) expect(verify.scanSource(JSON.stringify(labels), { closed: true }).filter((f) => f.cls !== EXPECTED)).toEqual([]);
     }
@@ -776,9 +782,10 @@ describe('the pages as files', () => {
     expect(script).toContain('var node = doc.createElement(tag);');
     const made = [...script.matchAll(/\bel\(([^,)]*)/g)].map((m) => m[1]);
     expect(made.every((arg) => /^'[a-z0-9]+'$/.test(arg)), made.filter((arg) => !/^'[a-z0-9]+'$/.test(arg)).join(' ')).toBe(true);
-    expect([...new Set(made.map((arg) => arg.slice(1, -1)))].sort()).toEqual(['article', 'button', 'code', 'dd', 'details', 'div', 'dl', 'dt', 'h3', 'h4', 'li', 'p', 'span', 'strong', 'summary', 'table', 'tbody', 'td', 'textarea', 'th', 'thead', 'tr', 'ul']);
-    // What is set on an element: text, a class, and a few fixed attributes. Never a link, a source or a handler.
-    expect([...new Set([...script.matchAll(/setAttribute\('([^']+)'/g)].map((m) => m[1]))].sort()).toEqual(['aria-label', 'aria-labelledby', 'data-copy', 'data-label', 'data-print', 'data-result', 'role']);
+    expect([...new Set(made.map((arg) => arg.slice(1, -1)))].sort()).toEqual(['a', 'article', 'button', 'code', 'dd', 'details', 'div', 'dl', 'dt', 'h3', 'h4', 'li', 'p', 'span', 'strong', 'summary', 'table', 'tbody', 'td', 'textarea', 'th', 'thead', 'tr', 'ul']);
+    // What is set on an element: text, a class, and a few fixed attributes. The only href is the fixed local link to packets-results.html.
+    expect([...new Set([...script.matchAll(/setAttribute\('([^']+)'/g)].map((m) => m[1]))].sort()).toEqual(['aria-label', 'aria-labelledby', 'data-copy', 'data-label', 'data-print', 'data-result', 'href', 'role']);
+    expect([...script.matchAll(/setAttribute\('href',\s*([^)]+)\)/g)].map((m) => m[1])).toEqual(["'packets-results.html'"]);
     expect(script).not.toMatch(/\.(?:href|src|action|srcset|data)\s*=[^=]/);
     expect([...script.matchAll(/\w+\.on[a-z]+(?=\s*=[^=])/g)].map((m) => m[0])).toEqual(['fileReader.onload', 'fileReader.onerror']);
   });
@@ -1000,7 +1007,8 @@ describe('the guide for school IT', () => {
     expect(flow[2]).toBe("The student opens the file in a browser. The student's place, answers and the time on each item are kept in that browser's local storage, on that device. "
       + 'On a phone or tablet the student opens it on Open a practice file or check (packets-open.html). There the file runs walled off in a sandboxed frame, on an origin of its own, '
       + 'so it cannot read anything else this site keeps. It passes that page only two things, by postMessage: its own progress, which the page keeps in the browser\'s storage '
-      + 'for this site, and its results file, which the page saves to the device. Nothing is uploaded, except by the class mailbox kind of file, below.');
+      + 'for this site, and its results file, which the page saves to the device. On phones and tablets that support the device share sheet, Open a practice file or check also offers '
+      + 'a Share results file button that hands the saved file to the device share sheet only when the student presses it. Nothing is uploaded, except by the class mailbox kind of file, below.');
     const openScript = read('packets-open.js');
     expect(openScript).toContain("frame.setAttribute('sandbox', 'allow-scripts allow-downloads');");
     expect(openScript).toContain('if (data.kind === STORE_KIND) keep(data);\n    else if (data.kind === SAVE_KIND) saveFor(data);\n  });');
@@ -1058,7 +1066,7 @@ describe('the guide for school IT', () => {
       + 'how often each help was used (a count for each, such as hearing a word again, and the reading tools: bigger text, contrast, spacing, reading focus and the magnifier), '
       + 'and a note when an item was skipped, ran out of time or was open when the file was opened again. The start and finish times from the device clock, with its offset from UTC, '
       + 'and a random session number. A check also records the seconds the page was hidden, the try number, and whether the page was left for more than 3 seconds, reloaded, '
-      + 'or had its clock set back. Nothing else: no email address, no account, no details of the device or the browser, no location.');
+      + 'or had its clock set back. Listening choices inside a file (voice speed and spoken directions) stay on the device and are not written to the results file. Nothing else: no email address, no account, no details of the device or the browser, no location.');
     const loaderText = read('word_sounds_take_home_loader.js');
     for (const column of ["'session_id'", "'learner'", "'started_local'", "'finished_local'", "'responses'", "'tries'", "'time_ms'", "'supports'", "'flag'"]) expect(loaderText, column).toContain(column);
     for (const piece of ["kv('hidden_s'", "kv('attempt'", 'c.flags.left_the_page = 1', 'c.flags.reloaded = 1', 'c.flags.clock_changed = 1', "rec.flag = 'skipped'", "rec.flag = 'time_up'", "rec.flag = 'resumed'", 'getTimezoneOffset()']) {
@@ -1128,7 +1136,7 @@ describe('the guide for school IT', () => {
     // A teacher's own words (sounds, recording, picture): kept in the browser for this site, never uploaded; the microphone only on Record;
     // and the one page that can reach other sites, with its three services named. Each is true of the code.
     const squash = (value) => value.replace(/\s+/g, ' ').trim();
-    expect(squash(fact['Accounts, cookies, analytics'])).toContain("What a teacher adds to a word on the maker page or on Find a picture (its sounds, a recording, a picture with its credit) is kept in that browser's storage for this site (IndexedDB) until the teacher removes it. It is not uploaded.");
+    expect(squash(fact['Accounts, cookies, analytics'])).toContain("What a teacher adds to a word on the maker page or on Find a picture (its sounds, a recording, a picture with its credit) is kept in that browser's storage for this site (IndexedDB) until the teacher removes it. It is not uploaded. Custom pictures added on the vocabulary and Symbol Runner makers are kept in that same browser storage and are not uploaded.");
     expect(read('packets_my_words.js')).toMatch(/IndexedDB database 'alloflow-packets-my-words'/);
     expect(text('section[aria-labelledby="flow-title"] li')[0]).toContain("What a teacher adds to a word there (its sounds, a recording, a picture) is kept in that browser's storage for this site and goes only into the files the teacher makes. The microphone is used only when the teacher presses Record.");
     expect(squash(fact['What leaves the device, and when'])).toBe('Nothing, unless a person passes on a saved results file. There is one exception: the class mailbox kind of practice file, in the next row. '
@@ -1158,9 +1166,10 @@ describe('the guide for school IT', () => {
     expect(reaches('packets-open.html')).toEqual(['https://script.google.com', 'https://script.googleusercontent.com']);
     expect(fact['The class mailbox kind']).toContain('Such a file can also send from Open a practice file or check (packets-open.html), the page that runs a file on a phone or tablet: that page\'s rule allows the class mailbox for the file it runs. The page itself sends nothing.');
     expect([...new Set(reaches('packets-pictures.html').map((url) => url.replace(/^https:\/\//, '')))].sort()).toEqual(['api.openverse.org', 'commons.wikimedia.org', 'globalsymbols.com', 'thumb.wikimedia.org', 'upload.wikimedia.org']);
-    // The maker asks for the microphone in one script only, and only from the Record button.
+    // The makers ask for the microphone only inside click-gated record() handlers, never on load.
     expect(read('packets-make.js')).not.toMatch(/getUserMedia/);
     expect(read('packets-words.js')).toMatch(/function record\(\) \{[\s\S]*?media\.getUserMedia\(/);
+    expect(read('packets-read-along.js')).toMatch(/function record\([^)]*\) \{[\s\S]*?media\.getUserMedia\(/);
     expect(read('packets-make.js')).toMatch(/var STORE_KEY = 'alloflow-packets-maker\/1';\s+var SOUND_CACHE = /);
     expect(read('packets-results.html')).toContain('Nothing is kept on this device unless you turn on');
   });
@@ -1508,5 +1517,91 @@ describe('the page: files that are not what they seem', () => {
     event.dataTransfer = { types: ['text/plain'], files: [] };
     page.$('main').dispatchEvent(event);
     expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('links "Add up results" to packets-results.html when a results file is dropped', async () => {
+    const page = openPage();
+    await page.drop([page.file(read('tests/fixtures/packets_results/sample_results.csv'), 'results.csv')]);
+    const [report] = page.reports();
+    const link = report.querySelector('.verdict-sub a');
+    expect(link).toBeTruthy();
+    expect([link.textContent, link.getAttribute('href')]).toEqual(['Add up results', 'packets-results.html']);
+    expect(report.querySelector('.verdict-sub').textContent).toBe('This looks like a results file, not a packet. The page named Add up results reads results files.');
+  });
+});
+
+describe('embedded SVG inspection (pure text, zero DOM)', () => {
+  function withImage(baseHtml, uri) {
+    const m = /var lesson=(.*);\nvar labels=/.exec(baseHtml);
+    const lesson = JSON.parse(m[1]);
+    lesson.images = { ...(lesson.images || {}), testPic: uri };
+    const next = baseHtml.slice(0, m.index) + 'var lesson=' + JSON.stringify(lesson).replace(/</g, '\\u003c') + ';\nvar labels=' + baseHtml.slice(m.index + m[0].length);
+    const start = next.indexOf('<script>') + 8;
+    const end = next.indexOf('</script>', start);
+    const script = next.slice(start, end).replace(/\r\n?/g, '\n');
+    const b64 = createHash('sha256').update(script, 'utf8').digest('base64');
+    const hex = createHash('sha256').update(script, 'utf8').digest('hex');
+    return next
+      .replace(/'sha256-[A-Za-z0-9+/=]+'/g, "'sha256-" + b64 + "'")
+      .replace(/"scriptSha256":"[0-9a-f]{64}"/, '"scriptSha256":"' + hex + '"');
+  }
+
+  it('flags a base64 SVG holding <script> inside lesson.images and counts it in pictures', () => {
+    const uri = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>', 'utf8').toString('base64');
+    const report = verify.verifyPacket(withImage(F.check, uri));
+    expect(report.counts.pictures).toBeGreaterThanOrEqual(1);
+    expect(report.counts.notExpected).toBeGreaterThanOrEqual(1);
+    expect(report.findings.some((f) => f.id === 'svg-active' && f.cls === UNEXPECTED)).toBe(true);
+    expect(report.result).toBe('look');
+  });
+
+  it('counts and flags a UTF-8 data:image/svg+xml URI holding an event handler (onload=)', () => {
+    const uri = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"><rect width="10" height="10"/></svg>';
+    const report = verify.verifyPacket(withImage(F.check, uri));
+    expect(report.counts.pictures).toBeGreaterThanOrEqual(1);
+    expect(report.counts.notExpected).toBeGreaterThanOrEqual(1);
+    expect(report.findings.some((f) => f.id === 'svg-active' && /event handler/.test(f.why))).toBe(true);
+  });
+
+  it('passes a clean vendored Mulberry SVG with zero unexpected or look findings', () => {
+    const symbols = require('../word_sounds_symbols_en.js');
+    symbols.add(JSON.parse(read(symbols.shards[0].url)));
+    const firstWord = symbols.words().find((w) => { const g = symbols.get(w); return g && typeof g.svg === 'string' && g.svg.includes('<svg'); });
+    const cleanSvg = firstWord ? symbols.get(firstWord).svg : '';
+    expect(cleanSvg).toBeTruthy();
+    const uri = 'data:image/svg+xml;base64,' + Buffer.from(cleanSvg, 'utf8').toString('base64');
+    const report = verify.verifyPacket(withImage(F.check, uri));
+    expect(report.counts.pictures).toBeGreaterThanOrEqual(1);
+    expect([report.counts.notExpected, report.counts.look]).toEqual([0, 0]);
+    expect(report.result).toBe('closed');
+  });
+
+  it('runs the SVG check in a bare runInNewContext sandbox with no DOM', () => {
+    const uri = 'data:image/svg+xml;base64,' + Buffer.from('<svg><script>alert(1)</script></svg>', 'utf8').toString('base64');
+    const box = { TextEncoder, TextDecoder, module: { exports: {} } };
+    runInNewContext(read(CORE), box);
+    const report = box.module.exports.verifyPacket(withImage(F.check, uri));
+    expect(report.counts.notExpected).toBeGreaterThanOrEqual(1);
+    expect(report.findings.some((f) => f.id === 'svg-active')).toBe(true);
+  });
+
+  it('Wave 4B: recognizes .zip archives and alloflow-packet-results-bundle JSON cleanly with zero storage', async () => {
+    const fakeZip = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x3c, 0x68, 0x74, 0x6d, 0x6c, 0x3e]);
+    expect(verify.readParts(fakeZip).kind).toBe('zip');
+    const zipReport = verify.verifyPacket(fakeZip);
+    expect(zipReport.headline).toBe('');
+    expect(zipReport.why).toContain('.zip folder');
+    expect(zipReport.why).toContain('Add up results');
+
+    const bundleJson = JSON.stringify({ kind: 'alloflow-packet-results-bundle', version: 1, sessions: [] });
+    expect(verify.readParts(bundleJson).kind).toBe('results');
+    const bundleReport = verify.verifyPacket(bundleJson);
+    expect(bundleReport.why).toBe('This looks like a results file, not a packet. The page named Add up results reads results files.');
+
+    const page = openPage();
+    await page.drop([page.file(fakeZip, 'Word-Sounds__25-students.zip')]);
+    const [card] = page.reports();
+    const link = card.querySelector('.verdict-sub a');
+    expect(link && [link.textContent, link.getAttribute('href')]).toEqual(['Add up results', 'packets-results.html']);
   });
 });

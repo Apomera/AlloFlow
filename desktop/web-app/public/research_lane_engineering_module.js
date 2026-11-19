@@ -1274,6 +1274,7 @@
             },
             rows: 2,
             maxLength: 240,
+            "aria-label": t("engineering.loopback_other_label") || "Reason for looping back",
             placeholder: t("engineering.loopback_other_placeholder") || "Briefly: what made you loop back? (\u226510 chars)",
             style: {
               marginTop: "8px",
@@ -1356,7 +1357,7 @@
     } }, /* @__PURE__ */ React.createElement("strong", { style: { marginRight: "4px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6E1}\uFE0F "), t("engineering.blocked_prefix") || "AI helper paused:"), reason);
   }
   function TextareaCard(props) {
-    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, props.label), props.help && /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, props.label, props.help && /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: "4px 0", fontSize: "11px", fontWeight: 400, color: "#475569", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: props.value || "",
@@ -1374,12 +1375,13 @@
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
+          fontWeight: 400,
           fontFamily: "inherit",
           resize: "vertical",
           minHeight: "60px"
         }
       }
-    ));
+    )));
   }
   function ExemplarGate(props) {
     var t = props.t, stageKey = props.stageKey;
@@ -2379,6 +2381,7 @@
         type: "text",
         value: matInput,
         maxLength: 40,
+        "aria-label": t("engineering.material_label") || "Add material",
         onChange: function(e) {
           setMatInput(e.target.value);
         },
@@ -2577,6 +2580,7 @@
           "select",
           {
             value: ce.score || "",
+            "aria-label": (t("engineering.matrix_score_aria") || "Score") + ": " + (cn.name || cn.id) + " \u2014 " + (cr.name || cr.id),
             onChange: function(e) {
               var v = e.target.value === "" ? "" : parseInt(e.target.value, 10);
               onCellChange(cn.id, cr.id, { score: v });
@@ -2601,6 +2605,7 @@
             value: ce.reasonText || "",
             rows: 2,
             maxLength: 400,
+            "aria-label": (t("engineering.matrix_reason_aria") || "Reason for score") + ": " + (cn.name || cn.id) + " \u2014 " + (cr.name || cr.id),
             onChange: function(e) {
               onCellChange(cn.id, cr.id, { reasonText: e.target.value });
             },
@@ -3470,6 +3475,7 @@
         onChange: function(e) {
           setSelected(e.target.value);
         },
+        "aria-label": t("engineering.select_candidate_title") || "Pick the candidate you will test",
         style: {
           width: "100%",
           padding: "8px 10px",
@@ -3501,6 +3507,7 @@
         },
         rows: 2,
         maxLength: 600,
+        "aria-label": t("engineering.dominated_just_label") || "Justification for choosing a Pareto-dominated candidate",
         placeholder: t("engineering.dominated_just_ph") || "e.g. lower scores on temp-hold but Ms. Patel prioritizes set-up time which the matrix under-weighted\u2026",
         style: {
           marginTop: "6px",
@@ -3610,6 +3617,7 @@
           value: p.procedureText || "",
           rows: 2,
           maxLength: 1e3,
+          "aria-label": (t("engineering.protocol_text_aria") || "Measurement procedure") + ": " + (crit ? crit.name : p.id),
           onChange: function(e) {
             updateProtocol(p.id, { procedureText: e.target.value });
           },
@@ -3630,6 +3638,7 @@
           type: "text",
           value: p.instrument || "",
           maxLength: 80,
+          "aria-label": (t("engineering.protocol_instrument_aria") || "Measurement instrument") + ": " + (crit ? crit.name : p.id),
           onChange: function(e) {
             updateProtocol(p.id, { instrument: e.target.value });
           },
@@ -3926,6 +3935,7 @@
           type: "text",
           inputMode: "decimal",
           value: d.measured || "",
+          "aria-label": (t("engineering.measured_value_aria") || "Measured value") + ": " + (c.name || c.id) + (c.unit ? " (" + c.unit + ")" : ""),
           onChange: function(e) {
             setRunDraft(Object.assign({}, runDraft, { [c.id]: Object.assign({}, d, { measured: e.target.value }) }));
           },
@@ -3938,12 +3948,13 @@
             fontSize: "11px"
           }
         }
-      ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: "#64748b" } }, c.unit), /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: "#475569" } }, c.unit), /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "text",
           value: d.observationText || "",
           maxLength: 400,
+          "aria-label": (t("engineering.observation_aria") || "Observation") + ": " + (c.name || c.id),
           onChange: function(e) {
             setRunDraft(Object.assign({}, runDraft, { [c.id]: Object.assign({}, d, { observationText: e.target.value }) }));
           },
@@ -4141,6 +4152,7 @@
         "select",
         {
           value: "",
+          "aria-label": t("engineering.attach_retest_aria") || "Attach a retest run",
           onChange: function(e) {
             if (e.target.value) attachRetest(f, e.target.value);
           },
@@ -4516,6 +4528,7 @@
         type: "text",
         value: addingClaim,
         maxLength: 500,
+        "aria-label": t("engineering.design_claim_label") || "New design claim",
         onChange: function(e) {
           setAddingClaim(e.target.value);
         },

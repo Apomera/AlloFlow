@@ -196,7 +196,7 @@
   var CACHE_MAX = 120;
   var _audioContext = null;
   function audioContext() {
-    if (_audioContext) return _audioContext;
+    if (_audioContext && _audioContext.state !== 'closed') return _audioContext;
     var Ctor = window.AudioContext || window.webkitAudioContext;
     if (!Ctor) return null;
     try { _audioContext = new Ctor(); } catch (e) { return null; }
@@ -209,8 +209,13 @@
     if (_cache.has(key)) return Promise.resolve(_cache.get(key));
     var context = (options && options.audioContext) || audioContext();
     if (!context || typeof fetch !== 'function') return Promise.resolve(null);
-    return fetch(url)
-      .then(function (response) { return response.arrayBuffer(); })
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : null;
+    return fetch(url, ctrl ? { signal: ctrl.signal } : undefined)
+      .then(function (response) {
+        if (!response || !response.ok) throw new Error('HTTP ' + (response ? response.status : 'error'));
+        return response.arrayBuffer();
+      })
       .then(function (buffer) {
         return new Promise(function (resolve, reject) {
           // Callback form: Safari's decodeAudioData promise support lags.
@@ -227,7 +232,8 @@
         while (_cache.size > CACHE_MAX) _cache.delete(_cache.keys().next().value);
         return mapping;
       })
-      .catch(function () { return null; });
+      .catch(function () { return null; })
+      .finally(function () { if (timer) clearTimeout(timer); });
   }
 
   window.AlloModules = window.AlloModules || {};

@@ -117,17 +117,19 @@ function AiBackendSettingsView(props) {
     t
   } = props;
   return /*#__PURE__*/React.createElement("div", {
-    role: "button",
-    tabIndex: 0,
+    role: "presentation",
     onKeyDown: e => {
-      if (e.key === 'Escape') e.currentTarget.click();
+      if (e.key === 'Escape' && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) {
+        e.preventDefault();
+        setShowAIBackendModal(false);
+      }
     },
     className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300",
-    onClick: () => setShowAIBackendModal(false),
-    "aria-label": t('common.close') || 'Close'
+    onClick: () => setShowAIBackendModal(false)
   }, /*#__PURE__*/React.createElement("div", {
     ref: aiBackendModalRef,
-    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto",
+    tabIndex: -1,
+    className: "allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "ai-backend-canvas-title",
@@ -135,17 +137,19 @@ function AiBackendSettingsView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setShowAIBackendModal(false),
-    className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10",
+    className: "absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none z-10",
     "aria-label": t('common.close') || "Close"
   }, /*#__PURE__*/React.createElement(X, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-5 text-violet-900"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-violet-100 p-2 rounded-full"
   }, /*#__PURE__*/React.createElement(Settings, {
     size: 20,
-    className: "text-violet-600"
+    className: "text-violet-600",
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h3", {
     id: "ai-backend-canvas-title",
     className: "font-black text-lg"
@@ -160,6 +164,7 @@ function AiBackendSettingsView(props) {
       return '';
     }
   })() ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "ai-canvas-wolfram",
     className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5"
   }, t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID', " ", /*#__PURE__*/React.createElement("span", {
     className: "normal-case font-normal text-slate-600"
@@ -176,13 +181,16 @@ function AiBackendSettingsView(props) {
       }
     })(),
     onChange: e => {
-      const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-      localStorage.setItem('alloflow_ai_config', JSON.stringify({
-        ...current,
-        wolframAppId: e.target.value
-      }));
+      try {
+        const parsed = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+        const current = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        localStorage.setItem('alloflow_ai_config', JSON.stringify({
+          ...current,
+          wolframAppId: e.target.value
+        }));
+      } catch (_) {}
     },
-    className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
+    className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-1 text-sm font-medium text-slate-700"
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mt-1"
   }, t('canvas_settings.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.')) : null, window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
@@ -272,6 +280,7 @@ function LmsAuditBannerView(props) {
       name = rawName || name;
     }
     return /*#__PURE__*/React.createElement("button", {
+      type: "button",
       key: i,
       onClick: async () => {
         const documentIntakeEpoch = startNewPdfAudit();

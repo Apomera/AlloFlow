@@ -535,6 +535,7 @@
   }
 
   function readBytes(file) {
+    if (file && Number(file.size) > 50 * 1024 * 1024) return Promise.reject(new Error('Files larger than 50 MB cannot be loaded in Print Lab.'));
     if (file && typeof file.arrayBuffer === 'function') return file.arrayBuffer().then(function (buffer) { return new Uint8Array(buffer); });
     return new Promise(function (resolve, reject) {
       try {
@@ -753,25 +754,34 @@
           }
           resize();
           if (typeof ResizeObserver === 'function') { resizeObserver = new ResizeObserver(resize); resizeObserver.observe(canvas); }
-          function draw() {
-            if (!alive || !renderer) return;
-            frame = requestAnimationFrame(draw);
-            if (document.hidden) return;
+          var prefersReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          function renderOnce() {
+            if (!alive || !renderer || document.hidden) return;
             if (controls) controls.update();
             renderer.render(scene, camera);
           }
+          function draw() {
+            if (!alive || !renderer) return;
+            renderOnce();
+            if (!prefersReducedMotion) frame = requestAnimationFrame(draw);
+          }
+          if (prefersReducedMotion && controls && typeof controls.addEventListener === 'function') {
+            controls.addEventListener('change', renderOnce);
+          }
           controllerRef.current = {
-            rotate: function (delta) { if (model) model.rotation.y += delta; },
+            rotate: function (delta) { if (model) model.rotation.y += delta; if (prefersReducedMotion) renderOnce(); },
             zoom: function (factor) {
               if (!camera) return;
               var target = controls ? controls.target : center;
               camera.position.sub(target).multiplyScalar(factor).add(target);
               if (controls) controls.update();
+              if (prefersReducedMotion) renderOnce();
             },
             reset: function () {
               if (model) model.rotation.y = 0;
               fitCamera();
               camera.lookAt(center); if (controls) { controls.target.copy(center); controls.update(); }
+              if (prefersReducedMotion) renderOnce();
             }
           };
           visibilityHandler = function () { if (!document.hidden && renderer) renderer.render(scene, camera); };
@@ -1192,7 +1202,10 @@
     render: function (ctx) {
       __alloPLCtx = ctx;
       var React = ctx.React, h = React.createElement;
-      var stored = (ctx.toolData && ctx.toolData.printLab) || {};
+      var isContrast = !!ctx.isContrast;
+      var _plPlainObj = function (v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+      var _plStr = function (v, fb) { return typeof v === 'string' ? v : (fb || ''); };
+      var stored = (ctx.toolData && _plPlainObj(ctx.toolData.printLab)) ? ctx.toolData.printLab : {};
       var pendingSlotRef = React.useRef(undefined);
       if (pendingSlotRef.current === undefined) pendingSlotRef.current = window.__alloPrintLabPendingHandoff || null;
       // A Geometry World build stays open for the rest of this page session (still
@@ -1337,24 +1350,24 @@
       // Student AI-off: the optional AI modeling assistant renders only when text AI is usable.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var plAiOn = ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini));
       var freshHandoff = pendingHandoff && !keepTypedDetails;
       var sourceReview = revisedPackage || (resumedGeometry && pendingHandoff.packageReview) || null;
       // A note written about a different My Worlds project must not ship with this one.
       var otherProject = unrelatedEditReturn || !!(freshHandoff && pendingHandoff.draftId && stored.gwDraftId && stored.gwDraftId !== pendingHandoff.draftId);
-      var _title = React.useState(revisedPackage ? revisedPackage.title : freshHandoff ? pendingHandoff.title : (stored.title || (pendingHandoff ? pendingHandoff.title : ''))), title = _title[0], setTitle = _title[1];
+      var _title = React.useState(revisedPackage ? _plStr(revisedPackage.title) : freshHandoff ? _plStr(pendingHandoff.title) : (_plStr(stored.title) || (pendingHandoff ? _plStr(pendingHandoff.title) : ''))), title = _title[0], setTitle = _title[1];
       var titleInputRef = React.useRef(null);
-      var _description = React.useState(revisedPackage ? revisedPackage.description : freshHandoff ? pendingHandoff.description : (stored.description || (pendingHandoff ? pendingHandoff.description : ''))), description = _description[0], setDescription = _description[1];
+      var _description = React.useState(revisedPackage ? _plStr(revisedPackage.description) : freshHandoff ? _plStr(pendingHandoff.description) : (_plStr(stored.description) || (pendingHandoff ? _plStr(pendingHandoff.description) : ''))), description = _description[0], setDescription = _description[1];
       var _sourceContext = React.useState(resumedPackage ? editSession.sourceContext : pendingHandoff ? { sourceTool: pendingHandoff.sourceTool, projectId:pendingHandoff.projectId, draftId:pendingHandoff.draftId || '', sourceModel: pendingHandoff.sourceModel, summary: pendingHandoff.summary, packageReview: sourceReview } : null), originalContext = _sourceContext[0], setSourceContext = _sourceContext[1];
       var sourceContext = React.useMemo(function () {
         if (!turnActive || !originalContext) return originalContext;
         return Object.assign({}, originalContext, { summary: Object.assign({}, originalContext.summary, { meshDimensions: appliedTurn.dimensions }) });
       }, [turnActive, appliedTurn, originalContext]);
-      var _note = React.useState(revisedPackage ? revisedPackage.studentNote : otherProject ? '' : (stored.studentNote || '')), studentNote = _note[0], setStudentNote = _note[1];
-      var _aiUse = React.useState(pendingHandoff && !resumedGeometry ? (pendingHandoff.aiUse || 'NONE') : (stored.aiUse || 'NONE')), aiUse = _aiUse[0], setAiUse = _aiUse[1];
-      var _aiDisclosure = React.useState(pendingHandoff && !resumedGeometry ? (pendingHandoff.aiDisclosure || '') : (stored.aiDisclosure || '')), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
+      var _note = React.useState(revisedPackage ? _plStr(revisedPackage.studentNote) : otherProject ? '' : _plStr(stored.studentNote)), studentNote = _note[0], setStudentNote = _note[1];
+      var _aiUse = React.useState(pendingHandoff && !resumedGeometry ? (_plStr(pendingHandoff.aiUse, 'NONE') || 'NONE') : (_plStr(stored.aiUse, 'NONE') || 'NONE')), aiUse = _aiUse[0], setAiUse = _aiUse[1];
+      var _aiDisclosure = React.useState(pendingHandoff && !resumedGeometry ? _plStr(pendingHandoff.aiDisclosure) : _plStr(stored.aiDisclosure)), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
       var _aiDisclosureError = React.useState(''), aiDisclosureError = _aiDisclosureError[0], setAiDisclosureError = _aiDisclosureError[1];
       var aiDisclosureInputRef = React.useRef(null);
       var _profile = React.useState(initialProfile), profile = _profile[0], setProfile = _profile[1];
@@ -1364,7 +1377,7 @@
       var profileInputRefs=React.useRef({}),profileFocusRequested=React.useRef('');
       var profileHasDraft=PRINTER_FIELDS.some(function(field){return profileDraft[field[0]].trim()==='' || Number(profileDraft[field[0]])!==profile[field[0]];});
       React.useLayoutEffect(function(){var key=profileFocusRequested.current,input=profileInputRefs.current[key];if(key && activeTab==='Preflight' && input && input.isConnected){profileFocusRequested.current='';input.focus();}},[activeTab,profileError]);
-      var _material = React.useState(revisedPackage ? revisedPackage.materialId : unrelatedEditReturn ? 'PLA' : stored.materialId || 'PLA'), materialId = _material[0], setMaterialId = _material[1];
+      var _material = React.useState(revisedPackage ? _plStr(revisedPackage.materialId, 'PLA') : unrelatedEditReturn ? 'PLA' : (_plStr(stored.materialId, 'PLA') || 'PLA')), materialId = _material[0], setMaterialId = _material[1];
       var _infill = React.useState(clamp(stored.infillPercent, 0, 100, 20)), infillPercent = _infill[0], setInfillPercent = _infill[1];
       var _support = React.useState(clamp(stored.supportPercent, 0, 200, 10)), supportPercent = _support[0], setSupportPercent = _support[1];
       var _comparison = React.useState({}), slicerComparison = _comparison[0], setSlicerComparison = _comparison[1];
@@ -1377,7 +1390,7 @@
       var _profileReviewed = React.useState(false), profileReviewed = _profileReviewed[0], setProfileReviewed = _profileReviewed[1];
       var _materialReviewed = React.useState(false), materialReviewed = _materialReviewed[0], setMaterialReviewed = _materialReviewed[1];
       var defaultQuoteConfig = { basePoints: 5, setupPoints: 5, pointsPerGram: 2, pointsPerHour: 4, complexityMultiplier: 1, complexityPoints: 0, roundingIncrement: 1, minimumPoints: 10, estimatedMinutes: 0 };
-      var _quoteConfig = React.useState(Object.assign({}, defaultQuoteConfig, stored.quoteConfig || {})), quoteConfig = _quoteConfig[0], setQuoteConfig = _quoteConfig[1];
+      var _quoteConfig = React.useState(Object.assign({}, defaultQuoteConfig, _plPlainObj(stored.quoteConfig) ? stored.quoteConfig : {})), quoteConfig = _quoteConfig[0], setQuoteConfig = _quoteConfig[1];
       var _simulator = React.useState(null), simulatorSnapshot = _simulator[0], setSimulatorSnapshot = _simulator[1];
       var _simJob = React.useState(''), simulatorJobKey = _simJob[0], setSimulatorJobKey = _simJob[1];
       var _schedule = React.useState(null), simulatedSchedule = _schedule[0], setSimulatedSchedule = _schedule[1];
@@ -1396,7 +1409,7 @@
       var downloadRequestRef = React.useRef(null);
       var _downloadFeedback = React.useState(null), downloadFeedback = _downloadFeedback[0], setDownloadFeedback = _downloadFeedback[1];
 
-      var savedSculpts = (ctx.toolData && ctx.toolData.geoSandbox && ctx.toolData.geoSandbox.savedSculpts) || {};
+      var savedSculpts = (ctx.toolData && _plPlainObj(ctx.toolData.geoSandbox) && _plPlainObj(ctx.toolData.geoSandbox.savedSculpts)) ? ctx.toolData.geoSandbox.savedSculpts : {};
       var savedNames = Object.keys(savedSculpts).sort();
       var rewardsPortalUrl = connectedRewardsPortalUrl();
 
@@ -3031,12 +3044,155 @@
       }
 
       var panel = activeTab === 'Design' ? designPanel() : activeTab === 'Preflight' ? preflightPanel() : activeTab === 'Materials' ? materialsPanel() : submitPanel();
-      return h('div', { ref:workflowRootRef, className: 'mx-auto max-w-7xl space-y-4 rounded-3xl bg-slate-950 p-3 text-slate-100 sm:p-5', 'data-print-lab': 'true' },
-        h('style',null,'@media(forced-colors:active){[data-print-lab] button{border:1px solid ButtonText!important}[data-print-lab] button:disabled{border-color:GrayText!important;color:GrayText!important}[data-print-lab] [role=tab][aria-selected=true]{border:2px solid Highlight!important;text-decoration:underline;text-underline-offset:4px}[data-print-lab] :focus-visible{outline:3px solid Highlight!important;outline-offset:3px}}'),
-        h('header', { className: 'rounded-2xl border border-cyan-800 bg-gradient-to-br from-cyan-950 via-slate-900 to-violet-950 p-5' },
-          h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[.18em] text-cyan-300' }, 'Additive manufacturing studio'),
-          h('h1', { className: 'mt-1 text-2xl font-black text-white' }, 'Print Lab'),
-          h('p', { className: 'mt-2 max-w-4xl text-sm leading-6 text-slate-200' }, 'Shape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.')
+      var preflightStatus = report ? report.status : 'PENDING';
+      var preflightBadgeStyle = preflightStatus === 'PASS'
+        ? { backgroundColor: isContrast ? '#000000' : 'rgba(6,78,59,0.72)', color: isContrast ? '#00ff00' : '#a7f3d0', border: isContrast ? '1px solid #00ff00' : '1px solid rgba(52,211,153,0.5)' }
+        : preflightStatus === 'WARN'
+          ? { backgroundColor: isContrast ? '#000000' : 'rgba(120,53,15,0.72)', color: isContrast ? '#ffff00' : '#fde68a', border: isContrast ? '1px solid #ffff00' : '1px solid rgba(251,191,36,0.5)' }
+          : preflightStatus === 'FAIL'
+            ? { backgroundColor: isContrast ? '#000000' : 'rgba(136,19,55,0.72)', color: isContrast ? '#ff6b6b' : '#fecdd3', border: isContrast ? '1px solid #ff6b6b' : '1px solid rgba(251,113,133,0.5)' }
+            : { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.72)', color: isContrast ? '#ffffff' : '#cbd5e1', border: isContrast ? '1px solid #ffff00' : '1px solid rgba(148,163,184,0.4)' };
+      var activeStepIdx = Math.max(0, TABS.indexOf(activeTab));
+      var partCount = recipe && Array.isArray(recipe.parts) ? recipe.parts.length : 0;
+      var dimW = geometryPhysicalSize && typeof geometryPhysicalSize.width === 'number' ? geometryPhysicalSize.width : (report && report.dimensionsMm && typeof report.dimensionsMm.x === 'number' ? report.dimensionsMm.x : null);
+      var dimD = geometryPhysicalSize && typeof geometryPhysicalSize.depth === 'number' ? geometryPhysicalSize.depth : (report && report.dimensionsMm && typeof report.dimensionsMm.z === 'number' ? report.dimensionsMm.z : null);
+      var dimH = geometryPhysicalSize && typeof geometryPhysicalSize.height === 'number' ? geometryPhysicalSize.height : (report && report.dimensionsMm && typeof report.dimensionsMm.y === 'number' ? report.dimensionsMm.y : null);
+      var bedW = Math.max(50, profile.bedWidthMm || 220);
+      var bedD = Math.max(50, profile.bedDepthMm || 220);
+      var bedH = Math.max(50, profile.bedHeightMm || 250);
+      var fitsBed = (dimW == null || dimW <= bedW) && (dimD == null || dimD <= bedD) && (dimH == null || dimH <= bedH);
+      return h('div', { ref:workflowRootRef, className: 'mx-auto max-w-7xl space-y-4 rounded-3xl bg-slate-950 p-3 text-slate-100 sm:p-5', 'data-print-lab': 'true', style: isContrast ? { backgroundColor: '#000000', color: '#ffffff', border: '2px solid #ffff00' } : undefined },
+        h('style',null,
+          '.theme-contrast [data-print-lab],.theme-contrast [data-print-lab] :is(header,nav,section,aside,article,details,fieldset,form,dl){background:#000!important;background-image:none!important;color:#fff!important;border-color:#ff0!important;box-shadow:none!important}' +
+          '.theme-contrast [data-print-lab] :is(h1,h2,h3,summary,legend,dt){color:#ff0!important}' +
+          '.theme-contrast [data-print-lab] button,.theme-contrast [data-print-lab] input,.theme-contrast [data-print-lab] select,.theme-contrast [data-print-lab] textarea{background:#000!important;color:#ff0!important;border:1.5px solid #ff0!important}' +
+          '.theme-contrast [data-print-lab] [role=tab][aria-selected=true],.theme-contrast [data-print-lab] button[aria-pressed=true]{background:#ff0!important;color:#000!important;border:2px solid #ff0!important}' +
+          '@media(forced-colors:active){[data-print-lab] button{border:1px solid ButtonText!important}[data-print-lab] button:disabled{border-color:GrayText!important;color:GrayText!important}[data-print-lab] [role=tab][aria-selected=true]{border:2px solid Highlight!important;text-decoration:underline;text-underline-offset:4px}[data-print-lab] :focus-visible{outline:3px solid Highlight!important;outline-offset:3px}}'),
+        h('header', {
+          className: 'rounded-2xl border border-cyan-800 p-4 sm:p-5',
+          style: {
+            backgroundColor: isContrast ? '#000000' : '#082f49',
+            backgroundImage: isContrast ? 'none' : 'linear-gradient(135deg, #083344 0%, #0f172a 52%, #2e1065 100%)',
+            border: isContrast ? '2px solid #ffff00' : '1px solid rgba(34,211,238,0.42)'
+          }
+        },
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-4' },
+            h('div', { className: 'flex items-start gap-3.5', style: { flex: '1 1 300px', minWidth: 0 } },
+              /* Bespoke 3D Extruder Nozzle & Build Plate Layer-Slice Emblem SVG */
+              h('svg', {
+                width: 50, height: 50, viewBox: '0 0 50 50',
+                'aria-hidden': 'true',
+                style: { flexShrink: 0, display: 'block', marginTop: 2 }
+              },
+                h('rect', {
+                  x: 1, y: 1, width: 48, height: 48, rx: 13,
+                  fill: isContrast ? '#000000' : 'rgba(15,23,42,0.68)',
+                  stroke: isContrast ? '#ffff00' : 'rgba(34,211,238,0.55)',
+                  strokeWidth: 1.5
+                }),
+                /* Hotend Extruder Nozzle */
+                h('rect', { x: 20, y: 7, width: 10, height: 7, rx: 1.5, fill: isContrast ? '#ffff00' : '#f59e0b' }),
+                h('polygon', { points: '21,14 29,14 25,21', fill: isContrast ? '#ffff00' : '#fbbf24' }),
+                /* Deposited Layer Stack */
+                h('rect', { x: 14, y: 23, width: 22, height: 4, rx: 1.5, fill: isContrast ? '#00ffff' : '#22d3ee' }),
+                h('rect', { x: 12, y: 28.5, width: 26, height: 4, rx: 1.5, fill: isContrast ? '#00ffff' : '#38bdf8' }),
+                h('rect', { x: 10, y: 34, width: 30, height: 4, rx: 1.5, fill: isContrast ? '#ffffff' : '#818cf8' }),
+                /* Heated Build Plate */
+                h('line', { x1: 7, y1: 41.5, x2: 43, y2: 41.5, stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 2.5, strokeLinecap: 'round' })
+              ),
+              h('div', { style: { minWidth: 0 } },
+                h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[.18em] text-cyan-300', style: isContrast ? { color: '#ffff00' } : undefined }, __alloT('stem.printlab.studio_eyebrow', 'Additive manufacturing studio')),
+                h('h1', { className: 'mt-1 text-2xl font-black text-white', style: isContrast ? { color: '#ffff00' } : undefined }, 'Print Lab'),
+                h('p', { className: 'mt-1.5 max-w-3xl text-sm leading-6 text-slate-200', style: isContrast ? { color: '#ffffff' } : undefined }, 'Shape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.')
+              )
+            ),
+            /* Live Fabrication Telemetry Pills */
+            h('div', { className: 'flex flex-wrap items-center gap-2', 'aria-label': __alloT('stem.printlab.telemetry_aria', 'Active print workspace telemetry') },
+              h('span', {
+                className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-bold font-mono',
+                style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.72)', color: isContrast ? '#ffff00' : '#67e8f9', border: isContrast ? '1px solid #ffff00' : '1px solid rgba(34,211,238,0.42)' }
+              }, format + (partCount > 0 ? ' \u00B7 ' + partCount + (partCount === 1 ? ' part' : ' parts') : '')),
+              h('span', {
+                className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-bold font-mono',
+                style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.72)', color: isContrast ? '#ffffff' : '#e2e8f0', border: isContrast ? '1px solid #ffff00' : '1px solid rgba(148,163,184,0.4)' }
+              }, bedW + '\u00D7' + bedD + '\u00D7' + bedH + ' mm'),
+              h('span', {
+                className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-bold',
+                style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.72)', color: isContrast ? '#00ffff' : '#ddd6fe', border: isContrast ? '1px solid #00ffff' : '1px solid rgba(167,139,250,0.45)' }
+              }, chosenMaterial.name + ' \u00B7 ' + profile.nozzleMm + 'mm'),
+              h('span', {
+                className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-black uppercase tracking-wider',
+                style: preflightBadgeStyle
+              }, 'Preflight: ' + preflightStatus)
+            )
+          )
+        ),
+        /* Live 4-Stage Fabrication Pipeline & Build-Bed Footprint Telemetry SVG */
+        h('div', {
+          className: 'rounded-2xl border border-slate-700 p-2.5',
+          style: { backgroundColor: isContrast ? '#000000' : '#0f172a', borderColor: isContrast ? '#ffff00' : '#334155' }
+        },
+          h('svg', {
+            viewBox: '0 0 640 94',
+            role: 'img',
+            'aria-label': __alloT('stem.printlab.pipeline_svg_aria', 'Print Lab workflow pipeline currently on step {step} of 4 ({tab}), printer bed {bed} millimeters, preflight status {status}.')
+              .replace('{step}', String(activeStepIdx + 1)).replace('{tab}', activeTab).replace('{bed}', bedW + ' by ' + bedD + ' by ' + bedH).replace('{status}', preflightStatus),
+            style: { width: '100%', height: 'auto', display: 'block' }
+          },
+            h('rect', { x: 0, y: 0, width: 640, height: 94, rx: 10, fill: isContrast ? '#000000' : '#020617', stroke: isContrast ? '#ffff00' : '#1e293b', strokeWidth: 1.2 }),
+            /* Left: 4-Stage Workflow Pipeline */
+            h('text', { x: 16, y: 20, fill: isContrast ? '#ffff00' : '#67e8f9', fontSize: 10.5, fontWeight: 900, fontFamily: 'system-ui, sans-serif', letterSpacing: '0.06em' }, 'FABRICATION PIPELINE'),
+            h('line', { x1: 42, y1: 50, x2: 374, y2: 50, stroke: isContrast ? '#ffff00' : '#334155', strokeWidth: 3 }),
+            activeStepIdx > 0 && h('line', { x1: 42, y1: 50, x2: 42 + activeStepIdx * 110, y2: 50, stroke: isContrast ? '#00ff00' : '#22d3ee', strokeWidth: 3 }),
+            TABS.map(function (stageName, idx) {
+              var sx = 42 + idx * 110;
+              var isCurrent = idx === activeStepIdx;
+              var isDone = idx < activeStepIdx;
+              return h('g', { key: stageName },
+                h('circle', {
+                  cx: sx, cy: 50, r: isCurrent ? 13 : 10,
+                  fill: isCurrent ? (isContrast ? '#ffff00' : '#06b6d4') : (isDone ? (isContrast ? '#00ff00' : '#047857') : (isContrast ? '#000000' : '#1e293b')),
+                  stroke: isContrast ? '#ffff00' : (isCurrent ? '#ecfeff' : '#475569'),
+                  strokeWidth: isCurrent ? 2 : 1.5
+                }),
+                h('text', {
+                  x: sx, y: 54, textAnchor: 'middle',
+                  fill: (isCurrent || isDone) ? '#000000' : (isContrast ? '#ffffff' : '#cbd5e1'),
+                  fontSize: 10.5, fontWeight: 900, fontFamily: 'system-ui, sans-serif'
+                }, isDone ? '\u2713' : String(idx + 1)),
+                h('text', {
+                  x: sx, y: 78, textAnchor: 'middle',
+                  fill: isCurrent ? (isContrast ? '#ffff00' : '#67e8f9') : (isContrast ? '#ffffff' : '#94a3b8'),
+                  fontSize: 10.5, fontWeight: isCurrent ? 900 : 700, fontFamily: 'system-ui, sans-serif'
+                }, stageName)
+              );
+            }),
+            /* Divider */
+            h('line', { x1: 424, y1: 12, x2: 424, y2: 82, stroke: isContrast ? '#ffff00' : '#1e293b', strokeWidth: 1.2 }),
+            /* Right: Build Plate Envelope Schematic */
+            h('text', { x: 438, y: 20, fill: isContrast ? '#ffff00' : '#e2e8f0', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'BUILD PLATE'),
+            h('rect', { x: 438, y: 28, width: 58, height: 54, rx: 4, fill: isContrast ? '#000000' : '#0f172a', stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1.5 }),
+            /* Planning clearance dashed inner box */
+            h('rect', { x: 443, y: 33, width: 48, height: 44, rx: 2, fill: 'none', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.75 }),
+            /* Scaled model footprint (or schematic placeholder) */
+            (function () {
+              var fw = dimW != null ? Math.min(48, Math.max(8, Math.round((dimW / bedW) * 48))) : 24;
+              var fd = dimD != null ? Math.min(44, Math.max(8, Math.round((dimD / bedD) * 44))) : 22;
+              var fx = 467 - Math.round(fw / 2);
+              var fy = 55 - Math.round(fd / 2);
+              return h('rect', {
+                x: fx, y: fy, width: fw, height: fd, rx: 2,
+                fill: isContrast ? (fitsBed ? '#00ff00' : '#ff6b6b') : (fitsBed ? 'rgba(34,211,238,0.42)' : 'rgba(251,113,133,0.5)'),
+                stroke: isContrast ? '#ffff00' : (fitsBed ? '#22d3ee' : '#fb7185'),
+                strokeWidth: 1.5
+              });
+            })(),
+            h('text', { x: 508, y: 40, fill: isContrast ? '#ffffff' : '#f8fafc', fontSize: 10.5, fontWeight: 800, fontFamily: 'monospace' }, bedW + '\u00D7' + bedD + ' mm'),
+            h('text', { x: 508, y: 56, fill: isContrast ? '#00ffff' : '#cbd5e1', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui, sans-serif' },
+              dimW != null ? ('Model: ' + Math.round(dimW) + '\u00D7' + Math.round(dimD || 0) + ' mm') : ('Scale: ' + unitMm + ' mm/u')),
+            h('text', { x: 508, y: 72, fill: isContrast ? (fitsBed ? '#00ff00' : '#ff6b6b') : (fitsBed ? '#6ee7b7' : '#fda4af'), fontSize: 10, fontWeight: 800, fontFamily: 'system-ui, sans-serif' },
+              dimW != null ? (fitsBed ? '\u2713 Inside bed envelope' : '\u26A0 Exceeds bed envelope') : ('Clearance: ' + (profile.planningClearanceMm || 5) + ' mm'))
+          )
         ),
         h('nav', { role: 'tablist', 'aria-label': __alloT('stem.printlab.a11y_print_lab_workflow', 'Print Lab workflow'), className: 'grid grid-cols-2 gap-2 rounded-2xl border border-slate-700 bg-slate-900 p-2 sm:grid-cols-4' }, TABS.map(function (name, index) {
           var lower = name.toLowerCase(), selected = activeTab === name;

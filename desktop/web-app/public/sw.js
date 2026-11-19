@@ -72,8 +72,11 @@ const releaseUnavailable = () => new Response('This approved AlloFlow release is
     headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
 });
 
-const cacheable = response => response && response.ok
+const cacheable = response => response && response.status === 200
+    && (!response.type || response.type === 'basic')
+    && !response.headers.has('Set-Cookie')
     && !/(?:^|,)\s*(?:private|no-store)(?:\s|,|=|$)/i.test(response.headers.get('Cache-Control') || '')
+    && !/\b(?:authorization|cookie)\b/i.test(response.headers.get('Vary') || '')
     && response.headers.get('Vary') !== '*';
 
 async function releaseResponse(assetUrl) {
@@ -153,7 +156,7 @@ self.addEventListener('install', (event) => {
 // A waiting worker activates only after the person explicitly accepts the
 // in-app update prompt. This preserves interruption-free automatic updates
 // while making "Refresh now" deterministic when the timing is appropriate.
-const isTrustedTopWindow = (e) => !e.source || (e.source.frameType === 'top-level' && typeof e.source.url === 'string' && e.source.url.startsWith(self.location.origin + '/'));
+const isTrustedTopWindow = (e) => Boolean(e && e.source && e.source.frameType === 'top-level' && typeof e.source.url === 'string' && e.source.url.startsWith(self.location.origin + '/'));
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'ALLOFLOW_GET_RELEASE') {
         const reply = { type: 'ALLOFLOW_RELEASE', releaseId: RELEASE_ID, releaseBuiltAt: RELEASE_BUILT_AT };
@@ -196,7 +199,11 @@ self.addEventListener('fetch', (event) => {
 
     // Classroom API responses and credential-bearing/private requests must
     // never enter an offline cache or use a cached substitute.
-    if (event.request.headers.has('Authorization') || event.request.cache === 'no-store'
+    if (event.request.headers.has('Authorization')
+        || event.request.headers.has('X-Allo-Lan-Token')
+        || event.request.headers.has('X-Allo-Desktop-Token')
+        || event.request.headers.has('X-Firebase-AppCheck')
+        || event.request.cache === 'no-store'
         || /(?:^|,)\s*no-store(?:\s|,|$)/i.test(event.request.headers.get('Cache-Control') || '')
         || /(?:^|\/)api(?:\/|$)/i.test(url.pathname)) {
         event.respondWith(fetch(event.request, { cache: 'no-store' }));

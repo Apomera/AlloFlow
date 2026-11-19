@@ -6816,6 +6816,31 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"spaceStation\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceStation\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceStation\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
+
+  // Space Station workbench starter strip, telemetry pills & High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-spacestation-workbench-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-spacestation-workbench-css';
+    st.textContent = [
+      '.iss-hero-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}',
+      '.iss-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(15,23,42,.66);border:1px solid rgba(125,211,252,.38);color:#e0f2fe}',
+      '.iss-telemetry-pill strong{color:#fde68a;font-weight:900}',
+      '.iss-starter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;margin-bottom:12px;border-radius:12px;background:#0c192b;border:1px solid rgba(56,189,248,.34);color:#e2e8f0}',
+      '.iss-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#7dd3fc;margin-right:2px}',
+      '.iss-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#13233a;border:1px solid rgba(125,211,252,.42);color:#f8fafc;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
+      '.iss-starter-chip:hover{background:#0369a1;border-color:#bae6fd;color:#ffffff}',
+      '.iss-starter-chip[aria-pressed="true"]{background:#0ea5e9;border-color:#bae6fd;color:#04121f}',
+      '.iss-root button:focus-visible,.iss-root input:focus-visible,.iss-root select:focus-visible{outline:3px solid #38bdf8;outline-offset:2px}',
+      '.theme-contrast .iss-hero,.theme-contrast .iss-starter-bar,.theme-contrast .iss-status-item,.theme-contrast .iss-launch-route{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .iss-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .iss-telemetry-pill strong,.theme-contrast .iss-starter-label,.theme-contrast .iss-status-value{color:#00ff00!important}',
+      '.theme-contrast .iss-starter-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .iss-starter-chip[aria-pressed="true"],.theme-contrast .iss-tab[aria-selected="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .iss-root button:focus-visible,.theme-contrast .iss-root input:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('spaceStation', {
     icon: '🛰️',
     label: 'Space Station',
@@ -6886,9 +6911,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         return { flightRoom: null, hatches: {}, collisions: 0, railGrabs: 0, railPushOffs: 0, looseHits: 0, cargoCatches: 0, cargoSecures: 0, transferAttempts: 0, transferContacts: 0, transferCompletions: 0, transferComplete: false, stowAttempts: 0, stowCatches: 0, stowSecures: 0, stowWarnings: 0, stowComplete: false, stowItems: {}, capillaryAttempts: 0, capillaryUnderfills: 0, capillaryOverflows: 0, capillaryInterruptions: 0, capillaryTransfers: 0, worksiteAttempts: 0, worksiteReactions: 0, worksiteServices: 0, observationAttempts: 0, observationBlurs: 0, observationInterruptions: 0, observationCaptures: 0, observationSecures: 0, routeStep: 0, routeComplete: false };
       }
 
-      if (!labToolData || !labToolData.spaceStation) {
-        setLabToolData(function (prev) {
-          return Object.assign({}, prev, { spaceStation: {
+      var _rawIss = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData.spaceStation : null;
+      if (!_rawIss || typeof _rawIss !== 'object' || Array.isArray(_rawIss)) {
+        if (typeof setLabToolData === 'function') {
+          setLabToolData(function (prev) {
+            var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            return Object.assign({}, basePrev, { spaceStation: {
             tab: 'map', selModule: 'zarya', dayIdx: 0, sysIdx: 0, sysStep: 0,
             interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {},
             interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
@@ -6903,10 +6931,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             seenModules: {}, seenHours: {}, orbitTouched: false, quizBest: 0, mapView: 'overview', mapCutaway: false,
             askInput: '', askAnswer: '', askLoading: false
           } });
-        });
+          });
+        }
         return h('div', { style: { padding: 24, color: '#475569', backgroundColor: '#ffffff', textAlign: 'center' } }, __alloT('stem.spacestation.initializing', '🛰️ Docking with the station…'));
       }
-      var d = labToolData.spaceStation;
+      var d = _rawIss;
       function upd(patch) {
         var startsFreshInteriorShift = patch && patch.interiorShiftComplete === false && Array.isArray(patch.interiorLog) && patch.interiorLog.length === 0
           && patch.interiorDone && Object.keys(patch.interiorDone).length === 0
@@ -10095,11 +10124,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
                 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
               ];
-              var i = 0;
+              if (window._isDesktopBundledApp === true) { cb(); return; }
+var _sri = ["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"];
+var i = 0;
               (function nextScript() {
                 if (i >= urls.length) { cb(); return; }
                 var s = document.createElement('script');
-                s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+                s.src = urls[i]; s.integrity = _sri[i]; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer'; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
                 document.head.appendChild(s);
               })();
             };
@@ -18340,14 +18371,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           function release(event){if(event.currentTarget.hasPointerCapture&&event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}
           function path(run,field){return run.points.map(function(point,index){return(index?'L':'M')+(point.day/30*1000).toFixed(4)+' '+(100-point[field]/3).toFixed(5);}).join(' ');}
           function tank(id,x,y,value,capacity,color){var fill=Math.sqrt(Math.max(0,value/capacity));return h('g',{'data-water-tank':id},
-            h('rect',{x:x-64,y:y-74,width:128,height:148,rx:24,fill:'url(#iss-water-shell)',stroke:focus===id?color:'#51697d',strokeWidth:focus===id?3:1.5}),
+            h('rect',{x:x-64,y:y-74,width:128,height:148,rx:24,ry:24,fill:'url(#iss-water-shell)',stroke:focus===id?color:'#51697d',strokeWidth:focus===id?3:1.5}),
             [-49,49].map(function(offset){return h('line',{key:offset,x1:x+offset,x2:x+offset,y1:y-59,y2:y+59,stroke:'#afc1cf',strokeWidth:5,opacity:.42});}),
             h('ellipse',{cx:x,cy:y,rx:43,ry:58,fill:'#071825',stroke:'#29465d',strokeWidth:2}),
             h('ellipse',{'data-water-bladder':id,cx:x,cy:y,rx:43*fill,ry:58*fill,fill:color,opacity:.5}),
             h('ellipse',{cx:x-8*fill,cy:y-4*fill,rx:27*fill,ry:47*fill,fill:color,opacity:.18}),
             h('path',{d:'M'+(x-30)+' '+(y-44)+' Q'+(x-46)+' '+y+' '+(x-25)+' '+(y+42),fill:'none',stroke:'#e0f2fe',strokeWidth:2,opacity:.3}),
-            h('rect',{x:x-69,y:y-44,width:138,height:9,rx:3,fill:'#6b8193',opacity:.65}),h('rect',{x:x-69,y:y+35,width:138,height:9,rx:3,fill:'#6b8193',opacity:.65}),
-            h('rect',{x:x-14,y:y-80,width:28,height:9,rx:2,fill:color}),
+            h('rect',{x:x-69,y:y-44,width:138,height:9,rx:3,ry:3,fill:'#6b8193',opacity:.65}),h('rect',{x:x-69,y:y+35,width:138,height:9,rx:3,ry:3,fill:'#6b8193',opacity:.65}),
+            h('rect',{x:x-14,y:y-80,width:28,height:9,rx:2,ry:2,fill:color}),
             h('circle',{cx:x,cy:y+85,r:7,fill:'#112739',stroke:color,strokeWidth:2}));}
           function marker(id,amount,active,x1,y1,x2,y2,color){if(!active)return null;return h('g',{'data-water-flow':id},[0,.33,.66].map(function(offset,index){var position=(amount/18+offset)%1;return h('circle',{key:index,cx:x1+(x2-x1)*position,cy:y1+(y2-y1)*position,r:3,fill:color});}));}
           var presets=[['steady','Steady loop',{opsWaterClean:120,opsWaterWaste:25,opsWaterOutage:false,opsWaterDelivery:false}],['outage','Processor outage',{opsWaterClean:80,opsWaterWaste:10,opsWaterOutage:true,opsWaterDelivery:false}],['bridge','Resupply during outage',{opsWaterClean:80,opsWaterWaste:10,opsWaterOutage:true,opsWaterDelivery:true}]];
@@ -20238,7 +20269,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         return h('div', { className: 'iss-arm-speed-timeline' },
           h('div', { className: 'iss-arm-speed-heading' }, h('strong', null, text('title', 'Hand speed over the next 2 minutes')), h('span', null, text('units', 'scene units / s'))),
           h('svg', { viewBox: '0 0 600 150', preserveAspectRatio: 'none', role: 'slider', tabIndex: 0, 'aria-label': text('label', 'Inspect arm preview time on the speed chart'), 'aria-describedby': 'iss-arm-speed-help', 'aria-valuemin': 0, 'aria-valuemax': 120, 'aria-valuenow': 30, 'data-iss-arm-speed-chart': '', onPointerDown: function (event) { call('_issArmSpeedChartDown', event); }, onLostPointerCapture: function (event) { call('_issArmSpeedChartCancel', event); }, onKeyDown: function (event) { call('_issArmSpeedChartKey', event); } },
-            h('rect', { x: 44, y: 20, width: 536, height: 92, rx: 3, fill: '#0b1927' }),
+            h('rect', { x: 44, y: 20, width: 536, height: 92, fill: '#0b1927' }),
             [0, .07, .14].map(function (speed) { var y = 112 - 92 * speed / .14; return h('g', { key: speed }, h('line', { x1: 44, x2: 580, y1: y, y2: y, stroke: '#355266', strokeDasharray: speed ? '3 5' : undefined, vectorEffect: 'non-scaling-stroke' }), h('text', { x: 40, y: y + 4, textAnchor: 'end', fill: '#bacbda', fontSize: 11 }, speed.toFixed(2))); }),
             [0, 30, 60, 90, 120].map(function (seconds) { var x = 44 + 536 * seconds / 120; return h('g', { key: seconds }, h('line', { x1: x, x2: x, y1: 20, y2: 112, stroke: '#355266', strokeOpacity: .5, vectorEffect: 'non-scaling-stroke' }), h('text', { x: x, y: 134, textAnchor: seconds === 0 ? 'start' : seconds === 120 ? 'end' : 'middle', fill: '#bacbda', fontSize: 11 }, seconds + ' s')); }),
             h('polyline', { 'data-iss-arm-speed-path': '', fill: 'none', stroke: '#86efac', strokeWidth: 2, strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
@@ -22358,7 +22389,12 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
           h('div', { className: 'iss-hero-copy' },
             h('div', { className: 'iss-eyebrow' }, h('span', { className: 'iss-live-dot', 'aria-hidden': 'true' }), __alloT('stem.spacestation.hero_kicker', 'Expedition learning console / live simulation')),
             h('h2', { className: 'iss-title', style: { fontSize: 18, fontWeight: 900, color: TEXT, margin: '0 0 5px' } }, '🛰️ ' + __alloT('stem.spacestation.title', 'Space Station — a permanent home off Earth')),
-            h('p', { className: 'iss-subtitle', style: { fontSize: 12, color: SOFT, margin: 0 } }, __alloT('stem.spacestation.subtitle', 'The International Space Station: 420 tonnes of engineering falling around the planet at 7.66 km/s, continuously inhabited for over 25 years.'))),
+            h('p', { className: 'iss-subtitle', style: { fontSize: 12, color: SOFT, margin: 0 } }, __alloT('stem.spacestation.subtitle', 'The International Space Station: 420 tonnes of engineering falling around the planet at 7.66 km/s, continuously inhabited for over 25 years.')),
+            h('div', { className: 'iss-hero-pills', 'aria-label': __alloT('stem.spacestation.hero_pills_aria', 'Station telemetry highlights') },
+              h('span', { className: 'iss-telemetry-pill' }, __alloT('stem.spacestation.pill_inc', 'Inclination'), ' ', h('strong', null, issNum(d.orbitInc, 0, 90, 51.6).toFixed(1) + '°')),
+              h('span', { className: 'iss-telemetry-pill' }, __alloT('stem.spacestation.pill_modules', 'Modules'), ' ', h('strong', null, String(Object.keys(d.seenModules || {}).length) + '/12')),
+              (d.opsRuns || 0) > 0 && h('span', { className: 'iss-telemetry-pill' }, __alloT('stem.spacestation.pill_ops_runs', 'Orbits Sim'), ' ', h('strong', null, String(d.opsRuns)))
+            )),
           h('svg', { className: 'iss-hero-emblem', viewBox: '0 0 180 120', 'aria-hidden': 'true', focusable: 'false' },
             h('circle', { cx: 88, cy: 61, r: 48, fill: '#0c253b', stroke: '#355c76' }),
             h('circle', { cx: 88, cy: 61, r: 33, fill: '#143e57', stroke: '#63a4ba', strokeWidth: 0.6 }),
@@ -22384,9 +22420,35 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
               tabIndex: on ? 0 : -1,
               onClick: function () { selectTab(ti, false); },
               onKeyDown: function (e) { onTabKeyDown(e, ti); },
-              style: { padding: '7px 12px', borderRadius: 9, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: on ? '#0ea5e9' : PANEL, color: on ? '#04121f' : TEXT, border: on ? '2px solid #7dd3fc' : '1px solid #334155' }
+              style: { minHeight: 44, padding: '7px 12px', borderRadius: 9, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: on ? '#0ea5e9' : PANEL, color: on ? '#04121f' : TEXT, border: on ? '2px solid #7dd3fc' : '1px solid #334155' }
             }, h('span', { className: 'iss-tab-icon', 'aria-hidden': 'true' }, t2.icon), t2.label);
           })),
+        // Quick Station Mission Starters (hidden during quiz or active orbit prediction)
+        (tab !== 'quiz' && !(tab === 'orbit' && !orbitAnswerVisible)) && h('div', {
+          className: 'iss-starter-bar',
+          role: 'group',
+          'aria-label': __alloT('stem.spacestation.quick_starters_aria', 'Quick station workflows')
+        },
+          h('span', { className: 'iss-starter-label' }, __alloT('stem.spacestation.quick_starters_label', 'Quick Stations:')),
+          [
+            { id: 'map', label: __alloT('stem.spacestation.starter_map', '🛰️ 3D Station Map') },
+            { id: 'interior', label: __alloT('stem.spacestation.starter_crew', '🧑‍🚀 Microgravity Shift') },
+            { id: 'operations', label: __alloT('stem.spacestation.starter_ops', '⚡ Life Support Ops') },
+            { id: 'orbit', label: __alloT('stem.spacestation.starter_orbit', '🌍 Orbit Lab') },
+            { id: 'missions', label: __alloT('stem.spacestation.starter_dock', '🚀 Docking Sim') }
+          ].map(function (st) {
+            return h('button', {
+              key: 'iss-st-' + st.id,
+              type: 'button',
+              className: 'iss-starter-chip',
+              'aria-pressed': tab === st.id ? 'true' : 'false',
+              onClick: function () {
+                var idx = TABS.findIndex(function (candidate) { return candidate.id === st.id; });
+                if (idx >= 0) selectTab(idx, false);
+              }
+            }, st.label);
+          })
+        ),
         h('div', { className: 'iss-panel', id: 'iss-panel', role: 'tabpanel', 'aria-labelledby': 'iss-tab-' + tab, tabIndex: 0 },
           tab === 'interior' ? renderInterior() :
           tab === 'operations' ? renderOperations() :

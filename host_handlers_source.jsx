@@ -4594,6 +4594,12 @@ const handleCanvasRecoveryImport = (event) => {
       const input = event?.currentTarget || event?.target;
       const file = input?.files?.[0];
       if (!file) return;
+      if (typeof file.size === 'number' && file.size > 50 * 1024 * 1024) {
+          __d.setCanvasRecoveryError('The project file exceeds the 50 MB limit.');
+          __d.setCanvasRecoverySaveStatus('error');
+          if (input) input.value = '';
+          return;
+      }
       const request = { input, file, generation: __d.workspaceReplacementGenerationRef.current };
       __d.canvasRecoveryImportRequestRef.current = request;
       const isCurrent = () => __d.canvasRecoveryImportRequestRef.current === request
@@ -4618,7 +4624,7 @@ const handleCanvasRecoveryImport = (event) => {
           reader.onload = async (loadEvent) => {
               if (!isCurrent()) return;
               try {
-                  const parsed = JSON.parse(String(loadEvent?.target?.result || ''));
+                  const parsed = JSON.parse(String(loadEvent?.target?.result || ''), (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
                   const vaultStack = await __d._alloGetRecoveryVaultStack();
                   if (!isCurrent()) return;
                   if (parsed && parsed.kind === vaultStack.vault.BACKUP_KIND) {
@@ -5702,8 +5708,8 @@ const handleRefineGlossaryImage = async (index, instructionOverride = null) => {
     }
   };
 const handleGenerateWorksheet = async (index) => {
-    const activity = __d.generatedContent?.data[index];
-    if (activity.worksheet) return;
+    const activity = __d.generatedContent?.data?.[index];
+    if (!activity || activity.worksheet) return;
     __d.setIsGeneratingWorksheet(prev => ({...prev, [index]: true}));
     __d._alloStampBrainstormDerivative(index, 'worksheet', { status: 'generating', lastError: null });
     try {
@@ -5749,7 +5755,7 @@ ${__d._alloActivityContext(activity)}
     }
   };
 const handleGenerateWorksheetCover = async (index) => {
-    const activity = __d.generatedContent?.data[index];
+    const activity = __d.generatedContent?.data?.[index];
     if (!activity || !activity.worksheet) return;
     __d.setIsGeneratingWorksheetCover(prev => ({...prev, [index]: true}));
     __d._alloStampBrainstormDerivative(index, 'cover', { status: 'generating', lastError: null });
@@ -6512,7 +6518,7 @@ const handleGenerateTermImage = async (index, term) => {
         const prompt = `Icon style illustration of "${term}" (Context: ${definition}). ${styleInstruction} White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
         let imageUrl = await __d.callImagen(prompt, undefined, undefined, { signal: task.signal });
         if (!task.isCurrent()) return;
-        if (__d.autoRemoveWords) {
+        if (__d.autoRemoveWords && imageUrl) {
              try {
                  if (task.visible()) __d.addToast(__d.t('visuals.actions.auto_remove_toast'), "info");
                  const rawBase64 = imageUrl.split(',')[1];
@@ -6722,6 +6728,10 @@ const handleAnnotationImportFile = (e) => {
     const generation = owner.generation;
     owner.identity = identity;
 
+    if (typeof file.size === 'number' && file.size > 10 * 1024 * 1024) {
+      __d.addToast && __d.addToast(__d.t('toasts.could_not_import') + 'File exceeds the 10 MB safety limit.', 'error');
+      return;
+    }
     const reader = new FileReader();
     owner.readers.add(reader);
     const isCurrent = () => (
@@ -6735,7 +6745,7 @@ const handleAnnotationImportFile = (e) => {
       finishReader();
       if (!isCurrent()) return;
       try {
-        const payload = JSON.parse(ev.target.result);
+        const payload = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
         const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
         if (!_m || !_m.importAnnotations) {
           __d.addToast && __d.addToast(__d.t('toasts.annotation_suite_not_ready_try'), 'error');
@@ -6833,6 +6843,10 @@ const onCorrectAnalysisText = (resourceId, expectedOriginalText, correctedText, 
       const key = String(resourceId);
       const stack = (_analysisSourceUndo.get(key) || []).concat([{ previousText: expectedOriginalText, correctedText, before: resource }]);
       _analysisSourceUndo.set(key, stack.slice(-10));
+      if (_analysisSourceUndo.size > 20) {
+        const oldestKey = _analysisSourceUndo.keys().next().value;
+        if (oldestKey !== undefined) _analysisSourceUndo.delete(oldestKey);
+      }
     }
     return accepted;
   };
@@ -7957,7 +7971,7 @@ const handleImportResearchJSON = (file) => {
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const data = JSON.parse(ev.target.result);
+        const data = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
         if (!data || typeof data !== 'object' || Array.isArray(data)) {
           throw new Error('Invalid research JSON root');
         }
@@ -8615,7 +8629,9 @@ const connectMailbox = async () => {
           const mbHello = await __d._alloMailboxCall(execUrl, { a: 'hello' });
           const pasted = String(__d.mbAdminInput || '').trim();
           let stored = '';
+          let storedUrl = '';
           try { stored = localStorage.getItem(__d.ALLO_MB_ADMIN_KEY) || ''; } catch (_) {}
+          try { storedUrl = __d._alloCleanMailboxUrl(localStorage.getItem(__d.ALLO_MB_URL_KEY) || ''); } catch (_) {}
           let admin = '';
           let freshlyClaimed = false;
           if (pasted) {
@@ -8626,7 +8642,7 @@ const connectMailbox = async () => {
                   return;
               }
               admin = pasted;
-          } else if (stored) {
+          } else if (stored && storedUrl && storedUrl === execUrl) {
               const check = await __d._alloMailboxCall(execUrl, { a: 'auth', admin: stored });
               if (check.admin) admin = stored;
           }
@@ -9135,6 +9151,7 @@ const _ensurePdfLib = () => {
         setTimeout(() => { clearInterval(t); resolve(!!(window.PDFLib && window.PDFLib.PDFDocument)); }, 10000);
       });
     }
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return Promise.resolve(false);
     // Mirror chain (each HTTP-200-verified): locked-down school networks often
     // block a single CDN host — one blocked mirror must not kill tagged-PDF export.
     const urls = [
@@ -9142,12 +9159,16 @@ const _ensurePdfLib = () => {
       'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
       'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
     ];
+    const pdfLibSri = 'sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI';
     return new Promise((resolve) => {
       const tryAt = (i) => {
         if (i >= urls.length) { try { console.warn('[pdf-lib] all ' + urls.length + ' CDN mirrors failed — tagged-PDF export unavailable on this network'); } catch (_) {} resolve(false); return; }
         const s = document.createElement('script');
         s.id = 'pdflib-cdn';
         s.src = urls[i];
+        s.integrity = pdfLibSri;
+        s.crossOrigin = 'anonymous';
+        s.referrerPolicy = 'no-referrer';
         s.async = true;
         s.onload = () => resolve(!!(window.PDFLib && window.PDFLib.PDFDocument));
         s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
@@ -9283,17 +9304,26 @@ const handleApplyRosterGroup = (groupId) => {
 const handleImportProfiles = (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      const MAX_PROFILES_BYTES = 10 * 1024 * 1024;
+      if (typeof file.size === 'number' && file.size > MAX_PROFILES_BYTES) {
+          __d.addToast(__d.t('profiles.import_error'), "error");
+          if (__d.profileInputRef.current) __d.profileInputRef.current.value = '';
+          return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
           try {
-              const loadedProfiles = JSON.parse(event.target.result);
+              const rawText = String(event.target.result || '');
+              if (rawText.length > MAX_PROFILES_BYTES) throw new Error('Profiles file exceeds size limit');
+              const loadedProfiles = JSON.parse(rawText, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
               if (Array.isArray(loadedProfiles)) {
+                  const bounded = loadedProfiles.filter(p => p && typeof p === 'object' && !Array.isArray(p) && p.id != null).slice(0, 500);
                   __d.setProfiles(prev => {
                       const existingIds = new Set(prev.map(p => p.id));
-                      const newProfiles = loadedProfiles.filter(p => !existingIds.has(p.id));
+                      const newProfiles = bounded.filter(p => !existingIds.has(p.id));
                       return [...prev, ...newProfiles];
                   });
-                  __d.addToast(__d.t('profiles.import_success', { count: loadedProfiles.length }), "success");
+                  __d.addToast(__d.t('profiles.import_success', { count: bounded.length }), "success");
               }
           } catch (err) {
               __d.warnLog("Unhandled error:", err);
@@ -10738,7 +10768,8 @@ const handleLessonPlanChange = (field, value, index = null) => {
 const handleQuizOptionClick = (e, option, onAdvance) => {
       e.stopPropagation();
       if (__d.quizSelectedOption) return;
-      const currentItem = __d.generatedContent?.data[__d.flashcardIndex];
+      const currentItem = __d.generatedContent?.data?.[__d.flashcardIndex];
+      if (!currentItem) return;
       const correctAnswer = __d.flashcardCorrectAnswer(currentItem, __d.flashcardMode, __d.flashcardLang);
       const isCorrect = option === correctAnswer;
       __d.setQuizSelectedOption(option);
@@ -11515,13 +11546,18 @@ const ensureReadingLibraryIndex = () => {
     const urls = ['reading_library/index.json', '/reading_library/index.json', 'https://alloflow-cdn.pages.dev/reading_library/index.json'];
     __d.readingLibraryIndexPromiseRef.current = (async () => {
       for (const url of urls) {
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timerId = controller ? setTimeout(() => { try { controller.abort(); } catch (_) {} }, 10000) : null;
         try {
-          const res = await fetch(url, { cache: 'force-cache' });
+          const res = await fetch(url, { cache: 'force-cache', ...(controller ? { signal: controller.signal } : {}) });
           if (!res || !res.ok) continue;
           const data = await res.json();
           if (data && Array.isArray(data.books)) __d.setReadingLibraryIndexForBot(data);
           return data;
         } catch (_) {}
+        finally {
+          if (timerId) clearTimeout(timerId);
+        }
       }
       __d.readingLibraryIndexPromiseRef.current = null;
       return null;
@@ -12698,8 +12734,11 @@ const connectMailboxForSetup = () => {
   };
 const openStudentQrPreview = (url, label = 'student link') => {
       if (!url || typeof window === 'undefined') return false;
+      let parsedUrl;
+      try { parsedUrl = new URL(String(url), window.location.href); } catch (_) { return false; }
+      if (!/^https?:$/i.test(parsedUrl.protocol)) return false;
       let preview = null;
-      try { preview = window.open(url, '_blank'); } catch (_) {}
+      try { preview = window.open(parsedUrl.toString(), '_blank', 'noopener,noreferrer'); } catch (_) {}
       if (preview) {
           try { preview.opener = null; } catch (_) {}
           // The QR dialog and Assignment Center also open student links.
@@ -12870,7 +12909,7 @@ const executeSaveFile = async (interactionOptions) => {
     const request = ++__d.projectSaveRequestRef.current;
     const isCurrent = () => request === __d.projectSaveRequestRef.current && context === __d.projectSaveContextRef.current && context.values[0];
     const cancelled = { ok: false, cancelled: true, reason: 'save-context-changed', narration: 'Save cancelled because the dialog or project changed. Save again to download the current project.' };
-    const stopped = (outcome) => { if (__d.projectSaveContextRef.current?.values[0]) { try { __d.addToast(outcome.narration, 'info'); } catch (_) {} } return outcome; };
+    const stopped = (outcome) => { if (__d.projectSaveContextRef.current?.values?.[0]) { try { __d.addToast(outcome.narration, 'info'); } catch (_) {} } return outcome; };
     if (!context || !isCurrent()) return cancelled;
     __d.projectSaveBusyRef.current = true;
     __d.setIsProjectSaving(true);

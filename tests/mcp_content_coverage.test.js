@@ -184,3 +184,41 @@ it('does not glue the skip link to the first heading of minified HTML (2026-11-0
  // a word that is really gone is still found
  expect(P.assessSourceCoverage({sourceText:src+' It then rises.',outputHtml:minified,method:'text'}).missingTokens).toBeGreaterThan(0);
 });
+it('drops a running title with inline page numbers on pages 2..N when the title appears on the cover page (2026-11-19, CAST UDL brief)',()=>{
+ const title='Building on a Firm Foundation: Supporting Students in UDL Environments';
+ const pages=[
+  {pageNum:1,text:title+'\nNational Center on AEM at CAST'},
+  {pageNum:2,text:'Abstract paragraph on page two.\n'+title+' | 2'},
+  {pageNum:3,text:'Body paragraph on page three.\n'+title+' | 3'},
+  {pageNum:4,text:'Summary paragraph on page four.\n'+title+' | 4'},
+  {pageNum:5,text:'References paragraph on page five.\n'+title+' | 5'},
+ ];
+ const html='<h1>'+title+'</h1><p>National Center on AEM at CAST</p><p>Abstract paragraph on page two.</p><p>Body paragraph on page three.</p><p>Summary paragraph on page four.</p><p>References paragraph on page five.</p>';
+ expect(cov(pages,html)).toMatchObject({status:'matched',missingTokens:0});
+ // If the cover title itself is omitted from HTML, it is still caught as missing.
+ expect(cov(pages,html.replace('<h1>'+title+'</h1>','')).missingTokens).toBeGreaterThanOrEqual(8);
+ // When the running title does NOT appear on page 1, one copy (without "| N") is still required in HTML.
+ const noCover=[
+  {pageNum:1,text:'Intro paragraph on page one.\nAnnual District Report | 1'},
+  {pageNum:2,text:'Budget paragraph on page two.\nAnnual District Report | 2'},
+  {pageNum:3,text:'Closing paragraph on page three.\nAnnual District Report | 3'},
+ ];
+ expect(cov(noCover,'<h1>Annual District Report</h1><p>Intro paragraph on page one.</p><p>Budget paragraph on page two.</p><p>Closing paragraph on page three.</p>')).toMatchObject({status:'matched',missingTokens:0});
+ expect(cov(noCover,'<p>Intro paragraph on page one.</p><p>Budget paragraph on page two.</p><p>Closing paragraph on page three.</p>').missingWords.map(w=>w.word)).toEqual(expect.arrayContaining(['annual','district','report']));
+});
+it('credits bare printed URLs preserved in visible WCAG descriptive <a href> links, while catching dropped or mismatched URLs (2026-11-19, USGS fact sheet)',()=>{
+ const src='Educational resources: http://eros.usgs.gov/educational-activities and http://landsatlook.usgs.gov/ for teachers.';
+ const descriptive='<p>Educational resources: <a href="http://eros.usgs.gov/educational-activities">USGS EROS Educational Activities (eros.usgs.gov/educational-activities)</a> and <a href="https://landsatlook.usgs.gov">USGS LandsatLook Viewer</a> for teachers.</p>';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:descriptive,method:'pdfjs'})).toMatchObject({status:'matched',missingTokens:0});
+ // Dropping the href (plain text only) still flags the missing URL tokens.
+ const noLink='<p>Educational resources: USGS EROS Educational Activities and USGS LandsatLook Viewer for teachers.</p>';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:noLink,method:'pdfjs'}).missingWords.map(w=>w.word)).toContain('http');
+ // A mismatched href or a hidden/empty link cannot credit the printed URL.
+ const wrongHref='<p>Educational resources: <a href="http://wrong.example.org/other">USGS EROS</a> and <a href="http://landsatlook.usgs.gov/" style="display:none">Viewer</a> for teachers.</p>';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:wrongHref,method:'pdfjs'}).missingTokens).toBeGreaterThan(0);
+ const emptyAnchor='<p>Educational resources: <a href="http://eros.usgs.gov/educational-activities"></a> and <a href="http://landsatlook.usgs.gov/">Viewer</a> for teachers.</p>';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:emptyAnchor,method:'pdfjs'}).missingTokens).toBeGreaterThan(0);
+ // Crediting a URL never leaks extra tokens to mask an omitted body word elsewhere.
+ const omittedBody=P.assessSourceCoverage({sourceText:'Educational resources: http://eros.usgs.gov/educational-activities for educational outreach.',outputHtml:'<p>Educational resources: <a href="http://eros.usgs.gov/educational-activities">USGS EROS Resources</a> for outreach.</p>',method:'pdfjs'});
+ expect(omittedBody.missingWords.map(w=>w.word)).toContain('educational');
+});

@@ -110,16 +110,16 @@ jobs:
             services/alloflow-remote-mcp/runner/package-lock.json
       - name: Install pinned shared-engine test dependencies
         working-directory: ${{ github.workspace }}
-        run: npm ci --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install Chromium for the real remediation canary
         working-directory: ${{ github.workspace }}
         run: npx playwright install --with-deps chromium
       - name: Install pinned Worker dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Check Worker dependency security advisories
         run: npm audit --package-lock-only --ignore-scripts --audit-level=high
       - name: Install pinned runner dependencies
-        run: npm ci --prefix runner --no-audit --no-fund
+        run: npm ci --ignore-scripts --prefix runner --no-audit --no-fund
       - name: Materialize manifest-verified EPUBCheck dependencies
         working-directory: ${{ github.workspace }}
         run: node desktop/mcp/fetch_epubcheck.cjs

@@ -3442,10 +3442,9 @@ function _awaitCommandCompletion(completion, timeoutMs, t, command, via) {
   const timer = new Promise((resolve) => { timerId = setTimeout(() => resolve({ __alloTimeout: true }), timeoutMs || 180000); });
   const clearTimer = () => { if (timerId != null) { clearTimeout(timerId); timerId = null; } };
   return Promise.race([completion, timer]).then((result) => {
-    clearTimer();
     if (result && result.__alloTimeout) return { handled: true, ok: true, timedOut: true, narration: t('router.still_working', 'Still working - it will finish in the background.'), commandId: command.id, via };
     return result;
-  });
+  }).finally(clearTimer);
 }
 
 // Run a specific command by id (used by the bot chat AFTER the user confirms a
@@ -4576,10 +4575,16 @@ function createVoiceLoop(getCtx, opts = {}) {
       }
       bargeStream = stream;
       bargeOwnsStream = !!ownsStream;
-      bargeAudioCtx = new Ctx();
-      const analyser = bargeAudioCtx.createAnalyser();
-      analyser.fftSize = 1024;
-      bargeAudioCtx.createMediaStreamSource(stream).connect(analyser);
+      let analyser;
+      try {
+        bargeAudioCtx = new Ctx();
+        analyser = bargeAudioCtx.createAnalyser();
+        analyser.fftSize = 1024;
+        bargeAudioCtx.createMediaStreamSource(stream).connect(analyser);
+      } catch (_) {
+        stopBargeWatch();
+        return;
+      }
       const buf = new Float32Array(analyser.fftSize);
       let last = Date.now();
       const tick = function () {
@@ -5359,12 +5364,23 @@ function createVoiceLoop(getCtx, opts = {}) {
     if (!active) { try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {} return; }
     const AC2 = window.AudioContext || window.webkitAudioContext;
     const ac = new AC2();
+    const cleanupWhisperSetup = () => {
+      try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+      try { ac.close(); } catch (_) {}
+    };
     try { await ac.resume(); } catch (_) {}
-    const src = ac.createMediaStreamSource(stream);
-    const proc = ac.createScriptProcessor(4096, 1, 1);
-    const gain = ac.createGain();
-    gain.gain.value = 0; // processor needs a destination; nothing audible
-    const seg = createVadSegmenter({ sampleRate: ac.sampleRate });
+    if (!active) { cleanupWhisperSetup(); return; }
+    let src, proc, gain, seg;
+    try {
+      src = ac.createMediaStreamSource(stream);
+      proc = ac.createScriptProcessor(4096, 1, 1);
+      gain = ac.createGain();
+      gain.gain.value = 0; // processor needs a destination; nothing audible
+      seg = createVadSegmenter({ sampleRate: ac.sampleRate });
+    } catch (setupErr) {
+      cleanupWhisperSetup();
+      throw setupErr;
+    }
     let busy = false;
     proc.onaudioprocess = (ev) => {
       if (!active || engineName !== "whisper") return;
@@ -6169,7 +6185,7 @@ const AlloCommandPalette = ({ ctx }) => {
     <div className="fixed inset-0 z-[12000] flex items-start justify-center pt-[14vh] px-4" role="presentation" onClick={() => setOpen(false)}>
       <div className="absolute inset-0 bg-slate-900/50" aria-hidden="true"></div>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="allo-palette-title" tabIndex={-1} data-help-ignore="true"
-        className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-indigo-200 overflow-hidden"
+        className="allo-docsuite relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-indigo-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200">
           <h2 id="allo-palette-title" className="sr-only">{t('palette.aria', 'AlloFlow command palette')}</h2>
@@ -6182,7 +6198,7 @@ const AlloCommandPalette = ({ ctx }) => {
             }}
             placeholder={getCommandAudience(ctx) === 'student' ? (t('student.actions_search') || 'Try “read directions”, “check my progress”, or “save my work”…') : t('palette.placeholder', 'Type a command — “bigger text”, “educator hub”, “read this page”…')}
             aria-label={t('palette.input_aria', 'Search commands')} role="combobox" aria-expanded={commandRowCount > 0} aria-autocomplete="list" aria-controls={commandRowCount > 0 ? 'allo-palette-list' : undefined} aria-describedby="allo-palette-status" aria-activedescendant={commandRowCount > 0 && selectedCommandId ? ('allo-cmd-' + selectedCommandId) : undefined}
-            className="min-w-0 flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500" />
+            className="min-w-0 flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500 rounded px-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2" />
           <button type="button" onClick={toggleSelectedFavorite} disabled={!selectedCommand || selectedCommand.available === false} aria-pressed={selectedIsFavorite}
              aria-label={(selectedIsFavorite ? t('palette.remove_selected_favorite', 'Remove selected command from favorites') : t('palette.pin_selected_favorite', 'Pin selected command to favorites')) + (selectedCommand ? ': ' + selectedCommand.label : '')}
              title={selectedIsFavorite ? t('palette.remove_favorite', 'Remove from favorites') : t('palette.pin_favorite', 'Pin to favorites')}
@@ -6306,7 +6322,7 @@ const AlloCommandProgress = ({ ctx }) => {
           <article key={item.progressKey} role="status" aria-live={failed ? 'assertive' : 'polite'} aria-atomic="true"
             className={`rounded-xl border p-3 shadow-xl ${failed ? 'border-rose-300 bg-rose-50 text-rose-950' : cancelled ? 'border-amber-300 bg-amber-50 text-amber-950' : item.status === 'success' ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-indigo-300 bg-white text-slate-900'}`}>
             <div className="flex items-start gap-3">
-              <span className={`mt-0.5 text-lg ${pending ? 'animate-pulse' : ''}`} aria-hidden="true">{pending ? '⏳' : failed ? '⚠️' : cancelled ? '⏹️' : '✅'}</span>
+              <span className={`mt-0.5 text-lg ${pending ? 'animate-pulse motion-reduce:animate-none' : ''}`} aria-hidden="true">{pending ? '⏳' : failed ? '⚠️' : cancelled ? '⏹️' : '✅'}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold">{item.label || item.commandId}</p>
                 <p className="mt-0.5 text-xs leading-5">{item.narration || (pending ? t('cmd.working', 'Working...') : cancelled ? t('cmd.cancelled', 'Cancellation requested.') : t('router.done', 'Done.'))}</p>

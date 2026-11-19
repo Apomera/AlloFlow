@@ -707,13 +707,16 @@
     var artifact = props.artifact;
     if (!artifact) return null;
     useEffect(function () {
-      function onKey(ev) { if (ev.key === 'Escape') props.onClose(); }
+      function onKey(ev) {
+        if (ev.isComposing || ev.keyCode === 229) return;
+        if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); }
+      }
       document.addEventListener('keydown', onKey);
       return function () { document.removeEventListener('keydown', onKey); };
     }, [props.onClose]);
     var tableSummary = (artifact.tables || []).map(function (table) { return (table.title || table.id) + ': ' + (table.rowCount || 0) + ' row(s)'; }).join(' | ');
     return e('div', { className: 'fixed inset-0 z-[320] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4', role: 'presentation', onMouseDown: function (ev) { if (ev.target === ev.currentTarget) props.onClose(); } },
-      e('div', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'a11y-allosheet-title', 'aria-describedby': 'a11y-allosheet-description', tabIndex: -1, onKeyDown: function (ev) { if (ev.key === 'Escape') props.onClose(); }, className: 'bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 w-full max-w-xl max-h-[90vh] overflow-y-auto' },
+      e('div', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'a11y-allosheet-title', 'aria-describedby': 'a11y-allosheet-description', tabIndex: -1, onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return; if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); } }, className: 'bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 w-full max-w-xl max-h-[90vh] overflow-y-auto' },
         e('div', { className: 'p-5 border-b border-slate-200 flex items-start justify-between gap-3' },
           e('div', null,
             e('h2', { id: 'a11y-allosheet-title', className: 'text-lg font-black text-slate-900' }, 'Review audit summaries in AlloSheet'),
@@ -794,7 +797,7 @@
     function openA11yAlloSheet() {
       if (!a11yAlloArtifact || typeof props.onOpenAlloSheet !== 'function') return;
       var result = props.onOpenAlloSheet(a11yAlloArtifact);
-      if (result && typeof result.then === 'function') result.then(function (opened) { if (opened !== false) setIsA11yAlloOpen(false); });
+      if (result && typeof result.then === 'function') result.then(function (opened) { if (opened !== false) setIsA11yAlloOpen(false); }).catch(function () {});
       else if (result !== false) setIsA11yAlloOpen(false);
     }
 
@@ -902,9 +905,10 @@
         addToast && addToast(tr('a11y_lab.review.provenance_export_unavailable', 'No evidence manifest is available for this review.'), 'warning');
         return;
       }
+      var url = null;
       try {
         var blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
-        var url = URL.createObjectURL(blob);
+        url = URL.createObjectURL(blob);
         var link = document.createElement('a');
         var safeId = String(scorecard.artifactId || selectedReviewKey || 'artifact')
           .replace(/[^a-z0-9_-]+/gi, '-')
@@ -915,9 +919,10 @@
         document.body.appendChild(link);
         link.click();
         link.remove();
-        setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+        setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
         addToast && addToast(tr('a11y_lab.review.provenance_exported', 'Evidence manifest downloaded.'), 'success');
       } catch (err) {
+        if (url) { try { URL.revokeObjectURL(url); } catch (_) {} }
         addToast && addToast(tr('a11y_lab.review.provenance_export_error', 'Could not download the evidence manifest: ') + (err && err.message ? err.message : err), 'error');
       }
     }
@@ -987,7 +992,7 @@
           e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.preview.heading_workspace', 'Review saved content accessibility')),
         e('div', { className: 'flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
           e('div', { className: 'flex-1 text-xs text-indigo-900' }, 'Send reduced WCAG audit summaries to AlloSheet for filtering and trend review.'),
-          e('button', { type: 'button', onClick: function () { setIsA11yAlloOpen(true); }, disabled: typeof props.onOpenAlloSheet !== 'function' || typeof props.buildAccessibilityLabAlloSheetEnvelope !== 'function', className: 'px-3 py-2 text-xs font-bold bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500', 'aria-label': 'Review Accessibility Lab summaries in AlloSheet' }, 'Review in AlloSheet')
+          e('button', { type: 'button', onClick: function () { setIsA11yAlloOpen(true); }, disabled: typeof props.onOpenAlloSheet !== 'function' || typeof props.buildAccessibilityLabAlloSheetEnvelope !== 'function', className: 'px-3 py-2 text-xs font-bold bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600', 'aria-label': 'Review in AlloSheet — Accessibility Lab summaries' }, 'Review in AlloSheet')
         ),
         isA11yAlloOpen && e(AccessibilityAlloSheetReviewDialog, { artifact: a11yAlloArtifact, dateRange: a11yDateRange, datasets: a11yDatasets, onChangeDateRange: setA11yDateRange, onChangeDataset: function (key, value) { setA11yDatasets(function (prev) { return Object.assign({}, prev, (function () { var next = {}; next[key] = value; return next; }())); }); }, onClose: function () { setIsA11yAlloOpen(false); }, onTransfer: openA11yAlloSheet }),
           e('p', { className: 'text-sm text-slate-600 mt-1' },
@@ -1737,6 +1742,7 @@
   // deployments that do not yet publish /vendor/axe-core/axe.min.js.
   var AXE_LOCAL_URLS = ['/vendor/axe-core/axe.min.js', 'vendor/axe-core/axe.min.js'];
   var AXE_CDN_URL = 'https://cdn.jsdelivr.net/npm/axe-core@4.12.1/axe.min.js';
+  var AXE_CDN_INTEGRITY = 'sha384-JQegRXq6EhTiWoGPFDmqbJNsDow5BoSsGhnaeDzGp+qyOFCuMZZ24qY2fz3FxZF5';
   var axeLoadPromise = null;
 
   function loadAxeScript(url) {
@@ -1745,7 +1751,10 @@
       script.src = url;
       script.async = true;
       script.setAttribute('data-alloflow-axe-source', url);
-      if (/^https?:/i.test(url)) script.crossOrigin = 'anonymous';
+      if (/^https?:/i.test(url)) {
+        script.crossOrigin = 'anonymous';
+        if (url === AXE_CDN_URL) script.integrity = AXE_CDN_INTEGRITY;
+      }
       script.onload = function () {
         if (window.axe && typeof window.axe.run === 'function') resolve(window.axe);
         else reject(new Error('axe-core loaded but window.axe is missing'));
@@ -1761,7 +1770,8 @@
   function loadAxeCore() {
     if (window.axe && typeof window.axe.run === 'function') return Promise.resolve(window.axe);
     if (axeLoadPromise) return axeLoadPromise;
-    var candidates = AXE_LOCAL_URLS.concat([AXE_CDN_URL]);
+    var allowRemote = !(typeof window !== 'undefined' && window._isDesktopBundledApp === true);
+    var candidates = allowRemote ? AXE_LOCAL_URLS.concat([AXE_CDN_URL]) : AXE_LOCAL_URLS.slice();
     axeLoadPromise = candidates.reduce(function (chain, url) {
       return chain.catch(function () {
         if (window.axe && typeof window.axe.run === 'function') return window.axe;
@@ -1915,12 +1925,18 @@
     var error = error$[0], setError = error$[1];
     var lastRun$ = useState(null);
     var lastRun = lastRun$[0], setLastRun = lastRun$[1];
+    var mountedRef = useRef(true);
+    useEffect(function () {
+      mountedRef.current = true;
+      return function () { mountedRef.current = false; };
+    }, []);
 
     function handleRunAudit() {
       setStatus('loading');
       setError(null);
       loadAxeCore()
         .then(function (axe) {
+          if (!mountedRef.current) return null;
           setStatus('running');
           return axe.run(
             { exclude: [[LAB_EXCLUDE_SELECTOR]] },
@@ -1931,6 +1947,7 @@
           );
         })
         .then(function (axeResult) {
+          if (!mountedRef.current || !axeResult) return;
           setResult(axeResult);
           setLastRun(new Date());
           setStatus('done');
@@ -1947,6 +1964,7 @@
           );
         })
         .catch(function (err) {
+          if (!mountedRef.current) return;
           setError(err && err.message ? err.message : String(err));
           setStatus('error');
           addToast && addToast(tr('a11y_lab.audit.error_toast_prefix', 'Audit failed: ') + (err && err.message ? err.message : tr('a11y_lab.audit.unknown_error', 'unknown error')), 'error');
@@ -1978,7 +1996,7 @@
 
     var grouped = useMemo(function () {
       if (!result || !result.violations) return null;
-      var byImpact = {};
+      var byImpact = Object.create(null);
       IMPACT_ORDER.forEach(function (imp) { byImpact[imp] = []; });
       result.violations.forEach(function (v) {
         var imp = v.impact || 'minor';
@@ -3113,7 +3131,9 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     // Escape closes the lab.
     useEffect(function () {
       function onKey(ev) {
+        if (ev.isComposing || ev.keyCode === 229) return;
         if (ev.key === 'Escape') {
+          if (document.querySelector('[aria-labelledby="a11y-allosheet-title"]')) return;
           ev.stopPropagation();
           props.onClose();
         }
@@ -3173,13 +3193,25 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
           if (el.getAttribute('tabindex') === '-1') return false;
           // Tab buttons use roving tabindex; only the active one is reachable.
           if (el.getAttribute('role') === 'tab' && el.tabIndex !== 0) return false;
+          var cur = el;
+          while (cur && cur !== dialogRef.current) {
+            if (cur.hidden || cur.hasAttribute('inert') || cur.getAttribute('aria-hidden') === 'true') return false;
+            if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+              var st = window.getComputedStyle(cur);
+              if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+            }
+            cur = cur.parentElement;
+          }
           var rect = el.getBoundingClientRect();
           return rect.width > 0 || rect.height > 0;
         });
       if (nodes.length === 0) return;
       var first = nodes[0], last = nodes[nodes.length - 1];
       var activeEl = document.activeElement;
-      if (ev.shiftKey && activeEl === first) {
+      if (nodes.indexOf(activeEl) < 0) {
+        ev.preventDefault();
+        try { (ev.shiftKey ? last : first).focus(); } catch (_) {}
+      } else if (ev.shiftKey && activeEl === first) {
         ev.preventDefault();
         try { last.focus(); } catch (_) {}
       } else if (!ev.shiftKey && activeEl === last) {

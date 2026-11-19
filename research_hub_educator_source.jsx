@@ -450,7 +450,7 @@
       return EmptyTrajectory('Loop-back trajectory', 'No loop-backs yet. Loop-backs are how rigor accumulates — encourage student to revise when evidence demands it.');
     }
     // Distribution by whyChipId
-    var dist = {};
+    var dist = Object.create(null);
     loops.forEach(function (l) {
       var c = l.whyChipId || 'unspecified';
       dist[c] = (dist[c] || 0) + 1;
@@ -478,14 +478,14 @@
     var blocked = hist.filter(function (h) { return h.blocked; }).length;
     var ok = hist.length - blocked;
     // Per-touchpoint distribution
-    var byTp = {};
+    var byTp = Object.create(null);
     hist.forEach(function (h) {
       var k = h.touchpoint || 'unknown';
       byTp[k] = (byTp[k] || { ok: 0, blocked: 0 });
       if (h.blocked) byTp[k].blocked++; else byTp[k].ok++;
     });
     // Top bypass signals
-    var bypassDist = {};
+    var bypassDist = Object.create(null);
     hist.forEach(function (h) {
       (h.bypass_signals || []).forEach(function (b) {
         bypassDist[b] = (bypassDist[b] || 0) + 1;

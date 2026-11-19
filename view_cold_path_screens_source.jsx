@@ -39,7 +39,7 @@ function GeminiBridgeView(props) {
                                 ))}
                             </div>
                             <div className="mt-8 pt-4 border-t border-slate-700 text-xs text-slate-300 flex items-center gap-2 justify-center">
-                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                <span aria-hidden="true" className="w-2 h-2 rounded-full bg-green-500 animate-pulse motion-reduce:animate-none" />
                                 {t('bridge.next_step')}
                             </div>
                         </div>
@@ -255,17 +255,22 @@ function AdventureCastLobbyView(props) {
 // Extracted from AlloFlowANTI.txt (stem-artwork-handoff).
 function StemArtworkHandoffView(props) {
   const { _alloReadVisualSupportCollection, saveStemArtworkAsVisualSupport, setStemArtworkDestination, setStemArtworkHandoff, setStemArtworkLabel, stemArtworkDestination, stemArtworkHandoff, stemArtworkLabel } = props;
+  const t = typeof props.t === 'function' ? props.t : (k) => k;
+  const stemArtworkHandoffRef = React.useRef(null);
+  if (typeof window !== 'undefined' && window.__alloHooks && typeof window.__alloHooks.useFocusTrap === 'function') {
+    window.__alloHooks.useFocusTrap(stemArtworkHandoffRef, true, () => setStemArtworkHandoff(null));
+  }
         const boards = _alloReadVisualSupportCollection('alloSymbolBoards');
         const schedules = _alloReadVisualSupportCollection('alloSchedules');
         return (
-          <div className="fixed inset-0 z-[9200] bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="stem-artwork-handoff-title" onClick={() => setStemArtworkHandoff(null)}>
+          <div ref={stemArtworkHandoffRef} className="fixed inset-0 z-[9200] bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="stem-artwork-handoff-title" onClick={() => setStemArtworkHandoff(null)}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-5" onClick={event => event.stopPropagation()}>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 id="stem-artwork-handoff-title" className="text-xl font-black text-slate-900">Save as a Visual Support</h2>
                   <p className="text-sm text-slate-600 mt-1">Give this Art Studio image a short label so it can be shown and spoken from a board or schedule.</p>
                 </div>
-                <button type="button" onClick={() => setStemArtworkHandoff(null)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Close">×</button>
+                <button type="button" onClick={() => setStemArtworkHandoff(null)} className="min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}>×</button>
               </div>
               <div className="mt-4 grid gap-5 sm:grid-cols-[180px_1fr] items-start">
                 <div className="rounded-xl border border-slate-300 bg-slate-100 p-2">
@@ -275,8 +280,8 @@ function StemArtworkHandoffView(props) {
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="stem-artwork-label" className="block text-sm font-bold text-slate-800">Short label</label>
-                    <input id="stem-artwork-label" type="text" value={stemArtworkLabel} maxLength={80} onChange={event => setStemArtworkLabel(event.target.value)} className="mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900" placeholder="For example, My spiral pattern" autoFocus />
-                    <p className="text-[11px] text-slate-500 mt-1">This is the label students will see and hear.</p>
+                    <input id="stem-artwork-label" type="text" value={stemArtworkLabel} maxLength={80} onChange={event => setStemArtworkLabel(event.target.value)} className="mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900" placeholder={t('visuals.artwork_label_placeholder') || 'For example, My spiral pattern'} autoFocus />
+                    <p className="text-[11px] text-slate-600 mt-1">This is the label students will see and hear.</p>
                   </div>
                   <div>
                     <label htmlFor="stem-artwork-destination" className="block text-sm font-bold text-slate-800">Save to</label>
@@ -308,21 +313,21 @@ function SessionStartOptionsView(props) {
   const sessionStartOptionsRef = React.useRef(null);
   window.__alloHooks.useFocusTrap(sessionStartOptionsRef, true, props.onTrapEscape);
   return (
-<div ref={sessionStartOptionsRef} className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label={t('session.start_dialog_aria') || 'Teach live'} onClick={() => setShowSessionStartOptions(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowSessionStartOptions(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
+<div ref={sessionStartOptionsRef} className="fixed inset-0 bg-black/70 z-[260] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label={t('session.start_dialog_aria') || 'Teach live'} onClick={() => setShowSessionStartOptions(false)}>
+          <div className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative" onClick={e => e.stopPropagation()}>
+            <button type="button" onClick={() => setShowSessionStartOptions(false)} className="absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20} aria-hidden="true"/></button>
             <h2 className="text-xl font-black text-slate-900 mb-1">{t('share_collect.start_live_session') || 'Teach live'}</h2>
             <p className="text-xs text-slate-600 mb-3">{t('share_collect.prepare_the_lesson_flow_if_you') || 'Prepare the lesson flow if you want, then choose how student devices will connect.'}</p>
-            <button onClick={() => { setShowSessionStartOptions(false); setShowLiveLessonPrep(true); }} className="w-full mb-4 text-left rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3 hover:border-cyan-400 hover:bg-cyan-100 transition-colors">
+            <button type="button" onClick={() => { setShowSessionStartOptions(false); setShowLiveLessonPrep(true); }} className="w-full mb-4 text-left rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3 hover:border-cyan-400 hover:bg-cyan-100 transition-colors motion-reduce:transition-none">
               <span className="block text-sm font-black text-cyan-950">{t('share_collect.prepare_live_run') || 'Prepare live lesson'} <span className="text-[10px] uppercase tracking-wide text-cyan-700">optional</span></span>
               <span className="block text-xs text-cyan-800 mt-1">{t('share_collect.attach_private_presenter_cues_and_existing') || 'Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.'}</span>
             </button>
             <div className="space-y-3">
-              <button onClick={() => { setShowSessionStartOptions(false); startClassSession(); }} className="w-full text-left rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4 hover:border-indigo-400 hover:bg-indigo-100 transition-colors">
+              <button type="button" onClick={() => { setShowSessionStartOptions(false); startClassSession(); }} className="w-full text-left rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4 hover:border-indigo-400 hover:bg-indigo-100 transition-colors motion-reduce:transition-none">
                 <span className="block text-sm font-black text-indigo-900">{t('mailbox.standard_live_session') || 'Standard live session'}</span>
                 <span className="block text-xs text-indigo-800 mt-1">{t('mailbox.use_the_configured_firebase_district_or') || 'Use the configured Firebase, district, or local-network session backend.'}</span>
               </button>
-              <button onClick={() => { setShowSessionStartOptions(false); setMbPanelOpen(true); }} className="w-full text-left rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 hover:border-emerald-400 hover:bg-emerald-100 transition-colors">
+              <button type="button" onClick={() => { setShowSessionStartOptions(false); setMbPanelOpen(true); }} className="w-full text-left rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 hover:border-emerald-400 hover:bg-emerald-100 transition-colors motion-reduce:transition-none">
                 <span className="block text-sm font-black text-emerald-900">{t('mailbox.class_mailbox_qr_session') || 'Class Mailbox QR session'}</span>
                 <span className="block text-xs text-emerald-800 mt-1">{t('mailbox.students_scan_a_qr_and_join') || 'Students scan a QR and join without accounts through your Google Apps Script mailbox.'}</span>
               </button>
@@ -348,11 +353,11 @@ function TranslateModalView(props) {
           ? t('translate.action_pack', { count: batch.items.length })
           : t('translate.action_workspace', { count: batch.items.length });
         return (
-        <div ref={translateModalRef} onKeyDown={(e) => { if (e.key === 'Escape') handleSetIsTranslateModalOpenToFalse(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetIsTranslateModalOpenToFalse}>
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="header-translate-dialog-title" aria-describedby="header-translate-scope" onClick={e => e.stopPropagation()}>
-                <button type="button" onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
+        <div ref={translateModalRef} role="presentation" onKeyDown={(e) => { if (e.key === 'Escape' && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229) handleSetIsTranslateModalOpenToFalse(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200" onClick={handleSetIsTranslateModalOpenToFalse}>
+            <div className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border-4 border-indigo-100 transition-all motion-reduce:transition-none animate-in motion-reduce:animate-none zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="header-translate-dialog-title" aria-describedby="header-translate-scope" onClick={e => e.stopPropagation()}>
+                <button type="button" onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none" aria-label={t('common.close')}><X size={20} aria-hidden="true"/></button>
                 <h3 id="header-translate-dialog-title" className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
-                    <div className="bg-indigo-100 p-2 rounded-full text-indigo-600"><Languages size={20}/></div>
+                    <span className="inline-flex bg-indigo-100 p-2 rounded-full text-indigo-600" aria-hidden="true"><Languages size={20} aria-hidden="true"/></span>
                     {t('header.translate_button')}
                 </h3>
                 <div className="space-y-4">
@@ -362,7 +367,7 @@ function TranslateModalView(props) {
                             type="text"
                             value={targetTranslationLang}
                             onChange={(e) => setTargetTranslationLang(e.target.value)}
-                            className="w-full text-sm border-2 border-indigo-600 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all"
+                            className="w-full text-sm border-2 border-indigo-600 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 transition-all motion-reduce:transition-none"
                             placeholder={t('translate.placeholder')}
                             data-autofocus="true"
                         />
@@ -387,7 +392,7 @@ function TranslateModalView(props) {
                             type="button"
                             onClick={() => { setTranslateScope('single'); handleTranslateAction('single', { translationMode: companionPolicy.mode }); }}
                             disabled={isProcessing || !currentBatch.items.length || !primaryLanguage}
-                            className="flex-1 py-3 bg-white text-indigo-600 border-2 border-indigo-100 hover:border-indigo-300 font-bold rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 py-3 bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 font-bold rounded-xl transition-all motion-reduce:transition-none shadow-sm active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {t('translate.action_current')}
                         </button>
@@ -395,7 +400,7 @@ function TranslateModalView(props) {
                             type="button"
                             onClick={() => { setTranslateScope('pack'); handleTranslateAction('pack', { translationMode: companionPolicy.mode }); }}
                             disabled={isProcessing || !batch.items.length || !primaryLanguage}
-                            className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all motion-reduce:transition-none shadow-md active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {scopeLabel}
                         </button>

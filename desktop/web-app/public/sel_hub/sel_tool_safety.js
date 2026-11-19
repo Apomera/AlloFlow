@@ -676,7 +676,16 @@ window.SelHub = window.SelHub || {
         var announceToSR = ctx.announceToSR;
         var a11yClick = ctx.a11yClick;
         var celebrate = ctx.celebrate;
-        var callGemini = ctx.callGemini;
+        var callGemini = (function () {
+          var fn = ctx.callGemini;
+          if (typeof fn !== 'function') return null;
+          if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+            try { return window.__alloAiUsable('text', fn) ? fn : null; } catch (_) { return null; }
+          }
+          if (fn._alloQrBlocked) return null;
+          if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return null;
+          return fn;
+        })();
         var callTTS = ctx.callTTS;
         var band = ctx.gradeBand || 'elementary';
         if (band === 'high') band = 'middle'; // K-8 tool: map high school to middle

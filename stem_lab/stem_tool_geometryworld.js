@@ -9816,19 +9816,21 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           if (window.AlloPostFXEnabled === false) return;
           var ensure = function (cb) {
             if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            if (window._isDesktopBundledApp === true) { cb(); return; }
             var urls = [
-              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
-              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
-              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
-              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
-              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
-              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js', 'sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj'],
+              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js', 'sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R'],
+              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js', 'sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg'],
+              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js', 'sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs'],
+              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js', 'sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3'],
+              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js', 'sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa']
             ];
             var i = 0;
             (function nextScript() {
               if (i >= urls.length) { cb(); return; }
               var s = document.createElement('script');
-              s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+              s.src = urls[i][0]; s.integrity = urls[i][1]; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer';
+              s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
               document.head.appendChild(s);
             })();
           };
@@ -17493,7 +17495,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 var reader = new FileReader();
                 reader.onload = function(e2) {
                   try {
-                    var worldData = JSON.parse(e2.target.result);
+                    var worldData = JSON.parse(e2.target.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
                     var eng = window[engineKey];
                     if (eng) {
                       var builderPure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
@@ -19127,6 +19129,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               + 'For example: "Volume (volumen) = Length (longitud) x Width (ancho) x Height (altura)". '
               + 'Preserve numbers and formulas exactly. Respond with ONLY the translation, no explanation.\n\n' + textToTranslate, true)
               .then(function(result) {
+                if (typeof result !== 'string' || !result.trim()) {
+                  var ut0 = Object.assign({}, npcTranslations);
+                  delete ut0[transKey + '_loading'];
+                  upd('npcTranslations', ut0);
+                  return;
+                }
                 var parts = result.split('---');
                 var ut = Object.assign({}, npcTranslations);
                 ut[transKey] = { dialogue: (parts[0] || result).trim(), question: parts[1] ? parts[1].trim() : null };

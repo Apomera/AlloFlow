@@ -43,8 +43,10 @@ describe('DB-B2: chunk-retry body swap treats document text as DATA, not a repla
     expect(dp).toMatch(/return html\.replace\(titlePattern, \(\) => '<title>' \+ title \+ '<\/title>'\);/);
     expect(dp).toMatch(/return html\.replace\(\/<\\\/head\\s\*>\/i, \(\) => '<title>' \+ title \+ '<\/title>/);
     expect(dp).toMatch(/\(m, g1\) => '<html' \+ g1 \+ 'lang="' \+ p\.lang/); // $1 capture preserved
-    expect(dp).toMatch(/\.replace\(new RegExp\(escapeForRegex\(p\.text\)\), \(\) => '<span lang="/);
-    expect(dp).toMatch(/\.replace\(\/<\\\/title>\/i, \(\) => '<\/title><desc>' \+ p\.desc/);
+    // Wave 1 upgraded fix_lang_span from raw regex .replace() to a DOM text-node walker + body-only indexOf slice (zero $-token replacement context).
+    expect(dp).toMatch(/sp\.setAttribute\('lang', cleanLang\);[\s\S]{0,120}?sp\.textContent = needle;/);
+    expect(dp).toMatch(/val\.indexOf\(needle\)/);
+    expect(dp).toMatch(/\.replace\(\/<\\\/title>\/i, \(\) => '<\/title><desc>' \+ _escXml\(p\.desc\)/);
     // no remaining string-concat replacement that interpolates p.title/p.lang/p.text/p.desc
     expect(dp).not.toMatch(/\.replace\([^,]+, '<title>' \+ p\.title/);
     expect(dp).not.toMatch(/\.replace\([^,]+, '<html\$1lang="' \+ p\.lang/);
@@ -687,9 +689,10 @@ describe('B13: audit logic fixes #10, #11, #12, #8', () => {
     expect(dpx).toMatch(/currentHtml = runDeterministicWcagFixes\(currentHtml\)/);
     expect(dpx).toMatch(/Full deterministic WCAG pass on the REASSEMBLED doc \(audit wo72lu4mh #11\)/);
   });
-  it('#12: the AAA contrast pass has a local-background guard (no darkened white-on-colored)', () => {
-    expect(dpx).toMatch(/const _aaaHasLocalBg = \(fullStr, offset\) =>/);
-    expect(dpx).toMatch(/\(match, prefix, hex, offset, fullStr\) => \{\s*\n\s*try \{\s*\n\s*if \(_aaaHasLocalBg\(fullStr, offset\)\) return match;/);
+  it('#12: the contrast pass resolves real DOM ancestry backgrounds (no blind string-offset mutation of white-on-colored)', () => {
+    // Wave 1 replaced the legacy string-offset _aaaHasLocalBg regex pass with a full DOMParser ancestry engine.
+    expect(dpx).toMatch(/const fixContrastViolations = \(htmlContent\) => \{[\s\S]{0,600}?if \(typeof DOMParser === 'undefined'\) return \{ html: htmlContent, fixCount: 0 \};/);
+    expect(dpx).toMatch(/const probe = new DOMParser\(\)\.parseFromString\(probeHtml, 'text\/html'\);/);
   });
   it('#8: the OCR report surfaces a per-page warning when some scanned pages got no/partial text', () => {
     expect(vpx).toMatch(/\(\(ocrTextLayer\.pagesEmpty \|\| 0\) > 0\) \|\| \(\(ocrTextLayer\.pagesIncomplete \|\| 0\) > 0\)/);

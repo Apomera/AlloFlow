@@ -18,6 +18,7 @@
  */
 
 const zlib = require('zlib');
+const { types: utilTypes } = require('util');
 
 // CRC-32 (IEEE 802.3), the checksum ZIP central directories carry. Table built once.
 const CRC_TABLE = (() => {
@@ -42,13 +43,34 @@ function crc32(buf) {
 const FIXED_DOS_TIME = 0x0000;           // 00:00:00
 const FIXED_DOS_DATE = ((2020 - 1980) << 9) | (1 << 5) | 1;  // 2020-01-01
 
+const MAX_ZIP32_ENTRIES = 0xFFFF;
+const MAX_ZIP32_NAME = 0xFFFF;
+const MAX_ZIP32_UINT32 = 0xFFFFFFFF;
+
+function toEntryBuffer(data) {
+  if (Buffer.isBuffer(data)) return data;
+  if (ArrayBuffer.isView(data)) {
+    return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+  }
+  if (data instanceof ArrayBuffer || (utilTypes && typeof utilTypes.isAnyArrayBuffer === 'function' && utilTypes.isAnyArrayBuffer(data))) {
+    return Buffer.from(data);
+  }
+  if (data == null) return Buffer.alloc(0);
+  if (typeof data === 'string') return Buffer.from(data, 'utf8');
+  if (typeof data === 'object') {
+    throw new Error('makeZip: entry data must be a string, Buffer, Uint8Array, or ArrayBuffer');
+  }
+  return Buffer.from(String(data), 'utf8');
+}
+
 /**
- * @param {Array<{name: string, data: string|Buffer, store?: boolean}>} entries
+ * @param {Array<{name: string, data: string|Buffer|Uint8Array|ArrayBuffer, store?: boolean}>} entries
  *        Order is preserved exactly. `store: true` forces no compression.
  * @returns {Buffer} the .zip / .epub bytes
  */
 function makeZip(entries) {
   if (!Array.isArray(entries) || !entries.length) throw new Error('makeZip: entries must be a non-empty array');
+  if (entries.length > MAX_ZIP32_ENTRIES) throw new Error('makeZip: too many entries for ZIP32 (max 65535)');
   const locals = [];
   const central = [];
   let offset = 0;
@@ -56,13 +78,17 @@ function makeZip(entries) {
   for (const e of entries) {
     if (!e || typeof e.name !== 'string' || !e.name) throw new Error('makeZip: every entry needs a name');
     const nameBuf = Buffer.from(e.name, 'utf8');
+    if (nameBuf.length > MAX_ZIP32_NAME) throw new Error('makeZip: entry name exceeds 65535 bytes');
     // A name that is not pure ASCII needs the UTF-8 flag (bit 11) or readers guess CP437 and
     // mangle it. Cheap to set correctly; expensive to debug when a filename comes back as mojibake.
     const needsUtf8 = nameBuf.length !== e.name.length;
-    const raw = Buffer.isBuffer(e.data) ? e.data : Buffer.from(String(e.data == null ? '' : e.data), 'utf8');
+    const raw = toEntryBuffer(e.data);
+    if (raw.length > MAX_ZIP32_UINT32) throw new Error('makeZip: entry exceeds 4 GiB ZIP32 limit');
     const crc = crc32(raw);
     const stored = e.store === true;
     const body = stored ? raw : zlib.deflateRawSync(raw, { level: 9 });
+    if (body.length > MAX_ZIP32_UINT32) throw new Error('makeZip: compressed entry exceeds 4 GiB ZIP32 limit');
+    if (offset > MAX_ZIP32_UINT32) throw new Error('makeZip: archive offset exceeds 4 GiB ZIP32 limit');
     const method = stored ? 0 : 8;
 
     const local = Buffer.alloc(30 + nameBuf.length);
@@ -98,9 +124,11 @@ function makeZip(entries) {
     central.push(cd);
 
     offset += local.length + body.length;
+    if (offset > MAX_ZIP32_UINT32) throw new Error('makeZip: archive exceeds 4 GiB ZIP32 limit');
   }
 
   const cdBuf = Buffer.concat(central);
+  if (cdBuf.length > MAX_ZIP32_UINT32) throw new Error('makeZip: central directory exceeds 4 GiB ZIP32 limit');
   const end = Buffer.alloc(22);
   end.writeUInt32LE(0x06054b50, 0);             // end of central directory
   end.writeUInt16LE(entries.length, 8);

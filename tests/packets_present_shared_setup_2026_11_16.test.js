@@ -158,4 +158,88 @@ describe('the presenter lets the teacher edit a meaning and a sentence', () => {
       expect(areas()[0].value).toBe('BANK MEANING for fish');
     });
   }, 60000);
+
+  it('has footer, [data-show-rule], exact script disclosure without dead packets_handoff.js, and refuses active SVG customPicture', async () => {
+    const doc = new JSDOM(PAGE).window.document;
+    const scripts = [...doc.querySelectorAll('script[src]')].map((s) => s.getAttribute('src'));
+    expect(scripts).not.toContain('packets_handoff.js');
+    expect(SCRIPT).not.toContain('AlloPacketsHandoff');
+    expect(doc.querySelector('footer.foot a').getAttribute('href')).toBe('./');
+    expect(doc.querySelector('details.proof [data-show-rule]')).toBeTruthy();
+    expect(doc.querySelector('details.proof').textContent).toContain('twenty files from this site');
+
+    // Verify customPicture SVG <script> is refused in readVocabMakerSaved.
+    const dom = new JSDOM(PAGE, { runScripts: 'outside-only', url: 'https://packets.example/packets-present-export.html#from-vocab' });
+    const w = dom.window;
+    const badSvg = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>', 'utf8').toString('base64');
+    const cleanSvg = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="4"/></svg>', 'utf8').toString('base64');
+    w.localStorage.setItem('alloflow-packets-vocab/1', JSON.stringify({ title: 'Test', words: ['badword', 'goodword'] }));
+    w.localStorage.setItem('alloflow-packets-vocab-edits/1', JSON.stringify({
+      words: { badword: { customPicture: badSvg }, goodword: { customPicture: cleanSvg } },
+      senses: {},
+    }));
+    let mountedPack = null;
+    w.AlloModules = { WordPractice: { mount(_h, pack) { mountedPack = pack; return { setPack(p) { mountedPack = p; }, getPack() { return mountedPack; } }; } } };
+    w.eval(SCRIPT);
+    await w.AlloPacketsPresentExport.loadVocabMakerWords({ quiet: true });
+    const badItem = (mountedPack.words || []).find((it) => it.word === 'badword');
+    const goodItem = (mountedPack.words || []).find((it) => it.word === 'goodword');
+    expect(badItem && badItem.word).toBe('badword');
+    expect(badItem && badItem.image).toBeFalsy();
+    expect(goodItem && goodItem.image).toBe(cleanSvg);
+  });
+
+  it('Wave 4B: honors My words { none: true } picture suppression and preserves formatted picture credits into printable sheets', async () => {
+    const dom = new JSDOM(PAGE, { runScripts: 'outside-only', url: 'https://packets.example/packets-present-export.html' });
+    const w = dom.window;
+    w.fetch = async () => ({ ok: false, status: 404, json: async () => ({}) });
+    const fakePng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+    const mySvg = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><rect width="8" height="8"/></svg>', 'utf8').toString('base64');
+    w.eval(read('packets_my_words.js'));
+    const origGetMany = w.AlloPacketMyWords.getMany;
+    w.AlloPacketMyWords.getMany = async () => ({
+      cat: { word: 'cat', picture: { none: true, made: '2026-11-19T00:00:00Z' } },
+      dog: { word: 'dog', picture: { dataUri: mySvg, credit: { title: 'Sunny Dog', author: 'Pat Lee', license: 'CC BY 4.0', source: 'Openverse' } } },
+      sun: { word: 'sun', picture: { dataUri: mySvg, credit: { own: true } } },
+    });
+    w.AlloModules = {
+      WordSoundsSymbols: {
+        credits: { mulberry: { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0' } },
+        ready: () => true,
+        has: (word) => ['cat', 'dog', 'sun'].includes(String(word || '').toLowerCase()),
+        get: (word) => ({ word, label: word, set: 'mulberry', svg: '<svg xmlns="http://www.w3.org/2000/svg"><circle r="4"/></svg>' }),
+        words: () => ['cat', 'dog', 'sun'],
+      },
+    };
+    w.eval(read('word_picture_matcher.js'));
+    w.eval(read('word_practice_core.js'));
+    w.eval(read('word_practice_media.js'));
+    w.eval(read('word_practice_ui.js'));
+    w.AlloModules.WordPractice.rasterizeImage = async () => fakePng;
+    w.eval(SCRIPT);
+    await new Promise((r) => setTimeout(r, 40));
+
+    const pack = w.AlloPacketsPresentExport.getPack();
+    const byWord = Object.fromEntries((pack.words || []).map((it) => [it.word, it]));
+    // Suppressed word "cat" has no built-in symbol re-attached.
+    expect(byWord.cat.image).toBeFalsy();
+    expect(byWord.cat.picture).toBeFalsy();
+    // Saved My words credits are formatted via creditLine() and never "[object Object]".
+    expect(byWord.dog.picture && byWord.dog.picture.credit).toContain('Sunny Dog');
+    expect(byWord.dog.picture && byWord.dog.picture.credit).toContain('Pat Lee');
+    expect(byWord.sun.picture && byWord.sun.picture.credit).toBe("The teacher's own picture.");
+
+    const flashcardsHtml = w.AlloPacketsPresentExport.buildFlashcardsHtml(pack);
+    expect(flashcardsHtml).not.toContain('[object Object]');
+    // Suppressed "cat" card has no image, while "dog" and "sun" carry their saved My words images.
+    expect(flashcardsHtml).toMatch(/<div class="word">cat<\/div>[\s\S]*?<div class="side-tag">Back<\/div><div class="back-text">/);
+    const worksheetHtml = w.AlloPacketsPresentExport.buildWorksheetHtml(pack);
+    expect(worksheetHtml).not.toContain('[object Object]');
+    expect(worksheetHtml).toContain('Sunny Dog');
+    expect(worksheetHtml).toContain('Pat Lee');
+    expect(worksheetHtml).toContain("The teacher's own picture.");
+    expect(worksheetHtml).toContain('Mulberry Symbols');
+    w.AlloPacketMyWords.getMany = origGetMany;
+    dom.window.close();
+  });
 });

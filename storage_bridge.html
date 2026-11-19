@@ -68,6 +68,11 @@
         max-height: 160px; overflow-y: auto; }
   #bridge-banner { padding: 24px 16px; text-align: center; }
   #approval-ui button { min-height: 44px; }
+  .about-storage h2 { font-size: .95rem; margin: 14px 0 2px; }
+  .about-storage p { margin: 0; font-size: .9rem; }
+  .about-storage details { margin-top: 12px; }
+  .about-storage summary { cursor: pointer; font-size: .85rem; font-weight: 600; }
+  #saved-data-size { font-weight: 600; margin: 0 0 8px; }
 </style>
 </head>
 <body>
@@ -78,18 +83,41 @@
   internet.</p>
 </div>
 <main id="approval-ui" hidden>
-  <h1>Approve AlloFlow device storage?</h1>
-  <p class="muted">A page is asking to read and update AlloFlow work saved in
-  this browser profile. Approve only if you were using AlloFlow just now.
-  Approval for an identified page is remembered only for that exact origin
-  and connection type. Unidentified pages require approval each connection.
-  &ldquo;Forget approval&rdquo; affects future connections in the storage
-  partition opened by this page. Anyone who can use this browser
-  profile can reach this data, so on a shared computer use a separate
-  Windows or Chrome profile.</p>
+  <h1 id="approval-title">Approve AlloFlow device storage?</h1>
+  <div id="approval-intro" class="about-storage">
+    <p>AlloFlow is asking to keep your work saved in this browser on this
+    device, so it is still there the next time you open AlloFlow. Approve only
+    if you were using AlloFlow just now.</p>
+    <h2>What it does</h2>
+    <p>Gemini Canvas starts fresh every time it opens. Device storage keeps
+    your AlloFlow settings and saved work, such as lessons, resource packs and
+    recovery copies, in this browser so you can pick up where you left off.</p>
+    <h2>Saying no is fine</h2>
+    <p>If you choose Deny, AlloFlow still works normally. It just will not
+    remember your work after this page closes, so download or export anything
+    you want to keep. You can turn device storage on later with the Open device
+    storage button in AlloFlow&rsquo;s Storage and recovery window.</p>
+    <h2>Why it is safe</h2>
+    <p>The saved work stays in this browser on this device. Device storage does
+    not upload it to AlloFlow or anywhere else, and it needs no account. Only a
+    page you approve can read it, and in Gemini Canvas you are asked each
+    time.</p>
+    <h2>Good to know</h2>
+    <p>Anyone who uses this browser profile on this computer can open the saved
+    work. On a shared or school computer, use your own Windows or Chrome
+    profile, or choose Deny. Clearing this browser&rsquo;s site data also
+    deletes it. It is not a backup, so export anything important.</p>
+    <details>
+      <summary>Technical details</summary>
+      <p class="muted">Approval for an identified page is remembered only for
+      that exact origin and connection type. Unidentified pages require
+      approval each connection. &ldquo;Forget approval&rdquo; affects future
+      connections in the storage partition opened by this page.</p>
+    </details>
+  </div>
   <div class="card">
     <p><strong>Requesting page:</strong> <span id="approval-origin">Waiting for request?</span></p>
-    <p class="muted">An opaque origin does not identify a website or verify
+    <p class="muted" id="approval-origin-note">An opaque origin does not identify a website or verify
     that the requesting page is Gemini Canvas. Approve only a connection you
     intended to start.</p>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -97,6 +125,14 @@
       <button id="btn-deny" type="button" class="danger" disabled>Deny</button>
     </div>
     <p id="approval-status" class="muted" role="status" aria-live="polite"></p>
+  </div>
+  <div class="card" id="saved-data" hidden>
+    <p id="saved-data-size">Checking what is saved on this device…</p>
+    <button id="btn-delete-saved" type="button" class="danger" disabled>Delete saved AlloFlow data…</button>
+    <p class="muted">Deleting asks you to confirm in a separate window. It
+    removes AlloFlow work saved in this browser on this device and cannot be
+    undone.</p>
+    <p id="saved-data-status" class="muted" role="status" aria-live="polite"></p>
   </div>
 </main>
 <main id="review-ui" hidden>
@@ -738,6 +774,51 @@
   function kvWipeAll() {
     return tx('readwrite', function (store) { store.clear(); });
   }
+  // Size shown on the consent prompt: what this storage partition holds for AlloFlow.
+  function storedRecordSize(value) {
+    try {
+      if (value instanceof Blob) return value.size;
+      if (typeof value === 'string') return value.length;
+      return JSON.stringify(value).length;
+    } catch (_) { return 0; }
+  }
+  function formatStoredSize(n) {
+    if (n < 1024) return n + ' bytes';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    if (n < 1073741824) return (n / 1048576).toFixed(1) + ' MB';
+    return (n / 1073741824).toFixed(2) + ' GB';
+  }
+  function summarizeSavedWork() {
+    return kvAll().then(function (rows) {
+      var summary = { bytes: 0, count: 0 };
+      rows.forEach(function (row) {
+        if (RESERVED_NS_RE.test(String(row.ns || ''))) return;
+        summary.count++;
+        summary.bytes += storedRecordSize(row.value);
+      });
+      return summary;
+    });
+  }
+  function clinicalDeletionHeld() {
+    try {
+      if (Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY')) {
+        var pol = window.ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY;
+        if (!pol || typeof pol !== 'object' || pol.allowManualDeletion === false || pol.legalHold === true) return true;
+      }
+      return localStorage.getItem('alloflow_retention_legal_hold_v1') === '1';
+    } catch (_) { return true; }
+  }
+  // Deletes AlloFlow work in this partition. Clinical records under retention policy or legal hold stay.
+  function deleteSavedWork() {
+    if (!clinicalDeletionHeld()) return kvWipeAll().then(function () { return { held: false }; });
+    return kvAll().then(function (rows) {
+      var names = {};
+      rows.forEach(function (row) { if (row.ns !== 'protected_clinical_records') names[row.ns] = true; });
+      return Object.keys(names).reduce(function (chain, ns) {
+        return chain.then(function () { return kvClearNamespace(ns); });
+      }, Promise.resolve()).then(function () { return { held: true }; });
+    });
+  }
   function storageFacts() {
     var facts = { persisted: null, usage: null, quota: null };
     var chain = Promise.resolve();
@@ -815,10 +896,26 @@
       if (approvalFinished || event.source !== approvalOpener || event.origin !== location.origin ||
           !request || request.allo !== APPROVAL_PROTO || request.nonce !== approvalNonce || request.type !== 'request' ||
           request.channel !== 'iframe' || (request.requestOrigin !== 'null' && !isConcreteOrigin(request.requestOrigin))) return;
-      if (approvalContext && approvalContext.origin !== request.requestOrigin) return;
-      approvalContext = { origin: request.requestOrigin };
+      var purpose = request.purpose === 'delete' ? 'delete' : 'approve';
+      if (approvalContext && (approvalContext.origin !== request.requestOrigin || approvalContext.purpose !== purpose)) return;
+      approvalContext = { origin: request.requestOrigin, purpose: purpose };
       approvalLabel.textContent = request.requestOrigin === 'null' ? 'Unidentified page (opaque origin)' : request.requestOrigin;
-      approvalMessage.textContent = 'This window confirms access to the existing embedded storage. It does not open or move your saved work.';
+      if (purpose === 'delete') {
+        var bytes = Number.isSafeInteger(request.savedBytes) && request.savedBytes >= 0 ? request.savedBytes : null;
+        var count = Number.isSafeInteger(request.savedCount) && request.savedCount >= 0 ? request.savedCount : null;
+        document.getElementById('approval-title').textContent = 'Delete AlloFlow data saved on this device?';
+        document.getElementById('approval-intro').hidden = true;
+        document.getElementById('approval-origin-note').hidden = true;
+        approvalMessage.textContent = 'This deletes ' + (bytes === null || count === null ? 'the AlloFlow work'
+          : 'about ' + formatStoredSize(bytes) + ' (' + count + (count === 1 ? ' item' : ' items') + ') of AlloFlow work') +
+          ' saved in this browser on this device, and forgets earlier approvals. It cannot be undone. AlloFlow keeps working; it just starts fresh.';
+        approvalYes.textContent = 'Delete saved data';
+        approvalYes.className = 'danger';
+        approvalNo.textContent = 'Keep my data';
+        approvalNo.className = '';
+      } else {
+        approvalMessage.textContent = 'This window confirms access to the existing embedded storage. It does not open or move your saved work.';
+      }
       approvalYes.disabled = false;
       approvalNo.disabled = false;
     });
@@ -828,9 +925,14 @@
       clearTimeout(approvalDeadline);
       approvalYes.disabled = true;
       approvalNo.disabled = true;
-      approvalMessage.textContent = approved ? 'Approval sent. You may close this window.' : 'Connection denied. You may close this window.';
+      var deleting = approvalContext.purpose === 'delete';
+      approvalMessage.textContent = deleting
+        ? (approved ? 'Deletion confirmed. You may close this window.' : 'Nothing was deleted. You may close this window.')
+        : (approved ? 'Approval sent. You may close this window.' : 'Connection denied. You may close this window.');
+      var decision = { allo: APPROVAL_PROTO, nonce: approvalNonce, type: 'decision', approved: approved };
+      if (deleting) decision.purpose = 'delete';
       try {
-        approvalOpener.postMessage({ allo: APPROVAL_PROTO, nonce: approvalNonce, type: 'decision', approved: approved }, location.origin);
+        approvalOpener.postMessage(decision, location.origin);
       } catch (_) { approvalMessage.textContent = 'The connection is no longer available. Return to AlloFlow and try again.'; }
       setTimeout(function () { try { window.close(); } catch (_) {} }, 100);
     }
@@ -988,7 +1090,103 @@
     var connectionOrigin = null;
     var approvalAttempt = null;
     var consentWriteAbort = null;
+    var savedDataCard = document.getElementById('saved-data');
+    var savedDataSize = document.getElementById('saved-data-size');
+    var savedDataStatus = document.getElementById('saved-data-status');
+    var deleteSavedButton = document.getElementById('btn-delete-saved');
+    var savedSummary = null;
+    var deleteAttempt = null;
     if (connectionKind === 'popup') approvalUi.hidden = false;
+
+    // The consent prompt shows what this partition holds and offers deletion. Like
+    // approval, deletion is confirmed only in a separate top-level window, so a page
+    // that embeds this frame cannot trick someone into a one-click wipe.
+    function refreshSavedData() {
+      if (connectionKind !== 'iframe') return;
+      savedDataCard.hidden = false;
+      summarizeSavedWork().then(function (summary) {
+        savedSummary = summary;
+        if (!summary.count) {
+          savedDataSize.textContent = 'Nothing from AlloFlow is saved on this device yet.';
+          deleteSavedButton.disabled = true;
+          return;
+        }
+        savedDataSize.textContent = 'Saved on this device now: about ' + formatStoredSize(summary.bytes) +
+          ' (' + summary.count + (summary.count === 1 ? ' item' : ' items') + ').';
+        deleteSavedButton.disabled = !!deleteAttempt;
+      }, function () {
+        savedSummary = null;
+        savedDataSize.textContent = 'The amount saved on this device could not be read.';
+        deleteSavedButton.disabled = true;
+      });
+    }
+
+    function closeDeleteAttempt() {
+      var attempt = deleteAttempt;
+      deleteAttempt = null;
+      if (!attempt) return;
+      clearInterval(attempt.helloTimer);
+      clearInterval(attempt.closedTimer);
+      clearTimeout(attempt.deadline);
+      try { attempt.window.close(); } catch (_) {}
+    }
+
+    function openDeleteWindow() {
+      if (deleteAttempt || approvalAttempt || !savedSummary || !savedSummary.count) return;
+      var secret = makeApprovalNonce();
+      if (!secret) { savedDataStatus.textContent = 'Secure randomness is unavailable, so nothing was deleted.'; return; }
+      var url = new URL(location.href);
+      url.hash = 'allo-approve=' + secret;
+      var popup;
+      try { popup = window.open(url.href, '_blank', 'popup=yes,width=520,height=620'); } catch (_) {}
+      if (!popup) {
+        savedDataStatus.textContent = 'The confirmation window was blocked. Allow this storage page to open a popup, then try again.';
+        return;
+      }
+      var requestOrigin = pendingApproval ? pendingApproval.origin : (connectionOrigin || 'null');
+      var summary = savedSummary;
+      var attempt = { window: popup, nonce: secret };
+      deleteAttempt = attempt;
+      deleteSavedButton.disabled = true;
+      savedDataStatus.textContent = 'Confirm the deletion in the separate window.';
+      function requestDelete() {
+        if (deleteAttempt !== attempt) return;
+        try {
+          popup.postMessage({ allo: APPROVAL_PROTO, nonce: secret, type: 'request', channel: 'iframe', purpose: 'delete',
+            requestOrigin: requestOrigin, savedBytes: summary.bytes, savedCount: summary.count }, location.origin);
+        } catch (_) {}
+      }
+      function cancelDelete(message) {
+        if (deleteAttempt !== attempt) return;
+        closeDeleteAttempt();
+        savedDataStatus.textContent = message;
+        refreshSavedData();
+      }
+      requestDelete();
+      attempt.helloTimer = setInterval(requestDelete, 250);
+      attempt.closedTimer = setInterval(function () {
+        try { if (popup.closed) cancelDelete('The confirmation window closed. Nothing was deleted.'); }
+        catch (_) { cancelDelete('The confirmation window is no longer available. Nothing was deleted.'); }
+      }, 250);
+      attempt.deadline = setTimeout(function () {
+        cancelDelete('The deletion request expired. Nothing was deleted.');
+      }, 120000);
+    }
+
+    function finishDelete() {
+      savedDataStatus.textContent = 'Deleting…';
+      deleteSavedWork().then(function (result) {
+        savedDataStatus.textContent = result.held
+          ? 'Deleted. Clinical records under a retention policy or legal hold were kept. You can still approve or deny this connection.'
+          : 'Deleted. You can still approve or deny this connection; approving starts fresh.';
+        refreshSavedData();
+      }, function () {
+        savedDataStatus.textContent = 'The saved work could not be deleted. Nothing may have changed; try again.';
+        refreshSavedData();
+      });
+    }
+
+    deleteSavedButton.addEventListener('click', openDeleteWindow);
 
     function closeApprovalAttempt() {
       var attempt = approvalAttempt;
@@ -1018,8 +1216,10 @@
       consentCheckInFlight = false;
       if (consentWriteAbort) { var abort = consentWriteAbort; consentWriteAbort = null; abort(); }
       closeApprovalAttempt();
+      closeDeleteAttempt();
       approveButton.disabled = true;
       denyButton.disabled = true;
+      deleteSavedButton.disabled = true;
     }
 
     function pendingIsCurrent(approved) {
@@ -1061,6 +1261,7 @@
       approveButton.disabled = false;
       denyButton.disabled = false;
       approvalUi.hidden = false;
+      refreshSavedData();
       // In iframe mode this page is 1px and offscreen until the app is told to
       // reveal it. Without this the dialog would be invisible and the connection
       // would look like a hang.
@@ -1084,7 +1285,7 @@
 
     function openApprovalWindow() {
       var approved = pendingApproval;
-      if (!approved || !pendingIsCurrent(approved) || approved.saving) return;
+      if (!approved || !pendingIsCurrent(approved) || approved.saving || deleteAttempt) return;
       closeApprovalAttempt();
       var secret = makeApprovalNonce();
       if (!secret) {
@@ -1196,8 +1397,17 @@
       var msg = event.data;
       if (msg && msg.allo === APPROVAL_PROTO) {
         closeTransferredPorts(event);
+        var deleting = deleteAttempt;
+        if (deleting && event.source === deleting.window && event.origin === location.origin &&
+            msg.nonce === deleting.nonce && msg.type === 'decision' && msg.purpose === 'delete' &&
+            typeof msg.approved === 'boolean') {
+          closeDeleteAttempt();
+          if (msg.approved) finishDelete();
+          else { savedDataStatus.textContent = 'Nothing was deleted.'; refreshSavedData(); }
+          return;
+        }
         var attempt = approvalAttempt;
-        if (!attempt || event.source !== attempt.window || event.origin !== location.origin ||
+        if (!attempt || event.source !== attempt.window || event.origin !== location.origin || msg.purpose !== undefined ||
             msg.nonce !== attempt.nonce || msg.type !== 'decision' || typeof msg.approved !== 'boolean' ||
             attempt.generation !== connectionGeneration || !pendingIsCurrent(attempt.pending)) return;
         var approved = attempt.pending;

@@ -115,8 +115,13 @@ function HintsModal({
       if (element.hidden || element.getAttribute('aria-hidden') === 'true' || element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = element.closest('details:not([open])');
       if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
-      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      if (typeof window.getComputedStyle === 'function') {
+        for (let cur = element; cur && cur !== dialog; cur = cur.parentElement) {
+          const style = window.getComputedStyle(cur);
+          if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+        }
+      }
+      return true;
     });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
@@ -158,13 +163,13 @@ function HintsModal({
   }, [handleSetShowHintsModalToFalse]);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetShowHintsModalToFalse} role="presentation">
-      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] overflow-hidden relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="hints-modal-title">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[260] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetShowHintsModalToFalse} role="presentation">
+      <div ref={dialogRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] overflow-hidden relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="hints-modal-title">
         <div className="bg-yellow-50 p-4 border-b border-yellow-100 flex justify-between items-center shrink-0">
           <h3 id="hints-modal-title" className="font-bold text-lg text-yellow-800 flex items-center gap-2">
             <Lightbulb size={20} className="fill-yellow-500 text-yellow-600" aria-hidden="true"/> {t('hints.title')}
           </h3>
-          <button type="button" onClick={handleSetShowHintsModalToFalse} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full hover:bg-yellow-100 text-yellow-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600" aria-label={t?.('common.close') || 'Close'}><X size={20} aria-hidden="true"/></button>
+          <button type="button" onClick={handleSetShowHintsModalToFalse} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full hover:bg-yellow-100 text-yellow-700 transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600" aria-label={t?.('common.close') || 'Close'}><X size={20} aria-hidden="true"/></button>
         </div>
         {/* D4: hints and replayed toasts share one door. Two plain buttons, not a
             tab widget, so the arrow-key semantics of a real tablist are not implied. */}

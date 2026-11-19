@@ -246,7 +246,7 @@
     try {
       if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
     } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   }
 
   // Script a teacher ships inside litlab-config so learners with no AI can perform it.
@@ -2061,6 +2061,10 @@
                       ev.preventDefault();
                       var blob = items[ii].getAsFile();
                       if (!blob) return;
+                      if (/svg/i.test(String(blob.type || '')) || (typeof blob.size === 'number' && blob.size > 20 * 1024 * 1024)) {
+                        addToast && addToast(tr('Image must be a raster image under 20 MB.'), 'error');
+                        return;
+                      }
                       setIsLoading(true); setLoadingMsg(tr('Extracting text from image...'));
                       var reader = new FileReader();
                       reader.onload = async function () {
@@ -2107,10 +2111,13 @@
                     var file = ev.target.files && ev.target.files[0];
                     if (!file) return;
                     if (file.type.startsWith('text/') || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+                      if (typeof file.size === 'number' && file.size > 5 * 1024 * 1024) { addToast && addToast(tr('Text file exceeds the 5 MB safety limit.'), 'error'); return; }
                       var reader = new FileReader();
                       reader.onload = function (e2) { setSourceText(function (prev) { return prev ? prev + '\n\n' + e2.target.result : e2.target.result; }); };
                       reader.readAsText(file);
                     } else if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+                      if (/svg/i.test(String(file.type || '')) || /\.svg$/i.test(String(file.name || ''))) { addToast && addToast(tr('SVG images are blocked for security. Use PNG, JPG, WebP, or PDF.'), 'error'); return; }
+                      if (typeof file.size === 'number' && file.size > 20 * 1024 * 1024) { addToast && addToast(tr('File exceeds the 20 MB safety limit.'), 'error'); return; }
                       if (!props.onCallGeminiVision) { addToast && addToast(tr('Vision API not available.'), 'error'); return; }
                       setIsLoading(true); setLoadingMsg(tr('Extracting text from file...'));
                       var reader2 = new FileReader();

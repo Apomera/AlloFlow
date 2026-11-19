@@ -362,6 +362,7 @@ describe('the teacher dialog in Word Sounds', () => {
     expect(dialog.textContent).not.toContain('too big to email');
 
     const input = dialog.querySelector('#ws-take-home-files');
+    expect(input.getAttribute('accept')).toContain('.csv');
     const good = new File([JSON.stringify({ kind: 'alloflow-take-home-result', schemaVersion: 2, lessonId: 'other', lessonTitle: 'Other', learnerName: 'Ana', finishedAt: 't',
       activityTitles: { isolation: 'Find Sounds' },
       items: [{ activity: 'isolation', word: 'cat', attempts: 1, firstTry: true, correct: true, done: true }, { activity: 'isolation', word: 'map', attempts: 2, done: true }] })], 'ana.json', { type: 'application/json' });
@@ -374,7 +375,8 @@ describe('the teacher dialog in Word Sounds', () => {
       if (edit) file.items[0].firstTry = true;
       return new File([JSON.stringify(file)], name + '.json', { type: 'application/json' });
     };
-    Object.defineProperty(input, 'files', { configurable: true, value: [good, bad, v3('Ben', false), v3('Cy', true)] });
+    const csvSample = new File([readFileSync('tests/fixtures/packets_results/sample_results.csv', 'utf8')], 'student-default.csv', { type: 'text/csv' });
+    Object.defineProperty(input, 'files', { configurable: true, value: [good, bad, v3('Ben', false), v3('Cy', true), csvSample] });
     await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); });
     await flush(50);
     const table = dialog.querySelector('[data-ws-take-home-results]');
@@ -383,6 +385,7 @@ describe('the teacher dialog in Word Sounds', () => {
     expect(notes[0].closest('tr').textContent).toContain('Cy');
     expect(table.textContent).toContain('Ben');
     expect(table.textContent).toContain('Ana');
+    expect(table.textContent).toContain('Blue Heron7');
     expect(table.textContent).toContain('1 / 2');
     expect(table.textContent).toContain('Find Sounds: cat');
     expect(dialog.textContent).toContain('notes.txt is not a Word Sounds results file.');

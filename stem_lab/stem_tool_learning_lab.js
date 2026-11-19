@@ -79,7 +79,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var st = document.createElement('style');
     st.id = 'allo-ll-focus-css';
     st.textContent = '[data-ll-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}' +
-      '[data-ll-focusable][href="#ll-menu-categories"]:focus{position:static!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;overflow:visible!important;display:inline-block!important;padding:6px 12px!important;background:#2563eb!important;color:#fff!important;text-decoration:none!important;font-weight:700!important;border-radius:6px!important;margin-bottom:10px!important}';
+      '[data-ll-focusable][href="#ll-menu-categories"]:focus{position:static!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;overflow:visible!important;display:inline-block!important;padding:6px 12px!important;background:#2563eb!important;color:#fff!important;text-decoration:none!important;font-weight:700!important;border-radius:6px!important;margin-bottom:10px!important}' +
+      '.ll-workbench{background:#0f172a;color:#f1f5f9;border-radius:16px;}' +
+      '.ll-hero-deck{position:relative;border-radius:16px;padding:18px;margin-bottom:16px;border:1px solid rgba(192,132,252,0.42);background:linear-gradient(135deg,#1e1b4b 0%,#3b0764 52%,#0f172a 100%);color:#f8fafc;box-shadow:0 14px 32px rgba(15,23,42,0.34),inset 0 1px 0 rgba(255,255,255,0.1);overflow:hidden;}' +
+      '.ll-hero-top{display:flex;flex-wrap:wrap;align-items:flex-start;gap:14px;}' +
+      '.ll-hero-emblem{flex:0 0 54px;width:54px;height:54px;border-radius:14px;border:1px solid rgba(216,180,254,0.52);background:radial-gradient(circle at 30% 25%,rgba(192,132,252,0.34),rgba(15,23,42,0.88));display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,0.34);}' +
+      '.ll-hero-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid rgba(216,180,254,0.45);background:rgba(147,51,234,0.28);color:#f3e8ff;font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}' +
+      '.ll-hero-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px;}' +
+      '.ll-hero-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,23,42,0.52);border:1px solid rgba(216,180,254,0.32);color:#f1f5f9;}' +
+      '.ll-hero-pill-gold{background:rgba(245,158,11,0.22);border-color:rgba(252,211,77,0.52);color:#fef3c7;}' +
+      '.ll-preset-bar{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}' +
+      '.ll-preset-btn{min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:11px;font-size:12px;font-weight:750;background:rgba(255,255,255,0.12);border:1px solid rgba(216,180,254,0.38);color:#ffffff;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .12s ease;}' +
+      '.ll-preset-btn:hover{background:rgba(255,255,255,0.22);border-color:#e9d5ff;transform:translateY(-1px);}' +
+      '.ll-science-stage{margin-bottom:16px;padding:12px 14px;border-radius:14px;background:#172033;border:1px solid rgba(192,132,252,0.32);}' +
+      '.ll-science-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}' +
+      '.ll-science-title{font-size:11px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;color:#e9d5ff;}' +
+      '.ll-science-meta{font-size:11px;font-weight:700;color:#cbd5e1;}' +
+      '.theme-contrast .ll-workbench{background:#000000!important;color:#ffffff!important;border:2px solid #ffffff!important;}' +
+      '.theme-contrast .ll-hero-deck,.theme-contrast .ll-science-stage{background:#000000!important;border:2px solid #facc15!important;box-shadow:none!important;color:#ffffff!important;}' +
+      '.theme-contrast .ll-hero-badge,.theme-contrast .ll-hero-pill,.theme-contrast .ll-science-title{color:#facc15!important;background:#000000!important;border-color:#facc15!important;}' +
+      '.theme-contrast .ll-preset-btn{background:#000000!important;border:2px solid #facc15!important;color:#ffffff!important;}' +
+      '.theme-contrast .ll-preset-btn:hover{background:#facc15!important;color:#000000!important;}';
     if (document.head) document.head.appendChild(st);
   })();
 
@@ -21513,7 +21533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var useState = React.useState;
       var useEffect = React.useEffect;
 
-      var d = (ctx.toolData && ctx.toolData['learningLab']) || {};
+      var d = (ctx.toolData && ctx.toolData['learningLab'] && typeof ctx.toolData['learningLab'] === 'object' && !Array.isArray(ctx.toolData['learningLab'])) ? ctx.toolData['learningLab'] : {};
       var upd = function(key, val) { ctx.update('learningLab', key, val); };
       var updMulti = function(obj) {
         if (ctx.updateMulti) ctx.updateMulti('learningLab', obj);
@@ -21542,7 +21562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         bad: '#ef4444'
       };
 
-      var view = d.view || 'menu';
+      var view = (typeof d.view === 'string' && d.view) ? d.view : 'menu';
       function friendlyViewName(value) {
         var names = { menu: 'Learning Lab menu', badges: 'Badge gallery', bloom: 'Bloom’s Taxonomy', cogload: 'Cognitive load', metacog: 'Metacognition', zpd: 'Zone of proximal development', udlPrinciples: 'Universal Design for Learning', spaced: 'Spaced and retrieval practice', study: 'Study strategies', mindset: 'Mindset evidence', myths: 'Learning myths', 'careers-list': 'Education careers', 'maine-progs': 'Maine education programs', lessonPlan: 'Lesson planner', strategyPicker: 'Strategy picker', bloomMatch: 'Bloom matching activity', path: 'Education pathway', glossary: 'Learning glossary', memory: 'Memory and learning', testAnxiety: 'Test-anxiety resources', sdt: 'Self-determination theory', researchLit: 'Research literacy', lab: 'Learning lab activities', noteTaking: 'Note-taking resources', sleep: 'Sleep and learning', goals: 'Goal-setting resources', multitask: 'Multitasking evidence', reading: 'Reading resources', trauma: 'Trauma-aware education', mtss: 'Multi-tiered systems of support', mathPed: 'Mathematics pedagogy', writing: 'Writing pedagogy', groupWork: 'Group-work resources', quiz: 'Learning Lab quiz', resources: 'Learning Lab resources', mytkHub: 'My Toolkit' };
         if (names[value]) return names[value];
@@ -21554,7 +21574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var setView = function(value, label) { var nextLabel = String(label || friendlyViewName(value)); updMulti({ view: value, viewLabel: nextLabel }); llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_opening', 'Opening {value1}.'), { value1: nextLabel })); focusCurrentView(value); };
       function wrapShellView(content) { return h('main', { id: 'learning-lab-current-view', tabIndex: -1, 'aria-label': currentViewLabel, style: {  } }, content); }
 
-      var badges = d.badges || {};
+      var badges = (d.badges && typeof d.badges === 'object' && !Array.isArray(d.badges)) ? d.badges : {};
       var awardBadge = function(id, label) {
         if (badges[id]) return;
         var newBadges = Object.assign({}, badges, {});
@@ -21788,19 +21808,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           careers: true,
           specialized: true
         };
-        var collapsedCats = d.collapsedCats || defaultCollapsedCats;
+        var collapsedCats = (d.collapsedCats && typeof d.collapsedCats === 'object' && !Array.isArray(d.collapsedCats)) ? d.collapsedCats : defaultCollapsedCats;
+        var totalModulesCount = categories.reduce(function(acc, c) { return acc + (Array.isArray(c.modules) ? c.modules.length : 0); }, 0);
+        var quickStarters = [
+          { id: 'mytkHub', icon: '🧰', label: __alloT('stem.learning_lab.quick_toolkit_hub', 'My Toolkit') },
+          { id: 'bloom', icon: '📊', label: __alloT('stem.learning_lab.quick_bloom', 'Bloom’s Taxonomy') },
+          { id: 'cogload', icon: '⚖️', label: __alloT('stem.learning_lab.quick_cogload', 'Cognitive Load') },
+          { id: 'spaced', icon: '🔁', label: __alloT('stem.learning_lab.quick_spaced', 'Spaced & Retrieval') },
+          { id: 'udlPrinciples', icon: '♿', label: __alloT('stem.learning_lab.quick_udl', 'UDL 3.0 Principles') },
+          { id: 'path', icon: '🛤️', label: __alloT('stem.learning_lab.quick_path', '4-Week Path') }
+        ];
+        var pillarSpecs = [
+          { x: 14, w: 116, title: __alloT('stem.learning_lab.pillar_retrieval', 'Retrieval & Spacing'), sub: 'Dunlosky · Roediger', color: '#c084fc' },
+          { x: 140, w: 116, title: __alloT('stem.learning_lab.pillar_cogload', 'Cognitive Load'), sub: 'Sweller (1988)', color: '#38bdf8' },
+          { x: 266, w: 116, title: __alloT('stem.learning_lab.pillar_metacog', 'Metacognition'), sub: 'Plan · Monitor · Eval', color: '#34d399' },
+          { x: 392, w: 116, title: __alloT('stem.learning_lab.pillar_udl', 'UDL 3.0 Access'), sub: 'CAST Guidelines', color: '#fbbf24' }
+        ];
 
-        return h('div', { role: 'main', 'aria-label': __alloT('stem.learning_lab.learning_lab_main_menu', 'Learning Lab main menu'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { role: 'main', 'aria-label': __alloT('stem.learning_lab.learning_lab_main_menu', 'Learning Lab main menu'), className: 'll-workbench', style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
           h('a', { href: '#ll-menu-categories', 'data-ll-focusable': true,
             style: { position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' },
             onFocus: function(e) { Object.assign(e.target.style, { position: 'static', left: 'auto', width: 'auto', height: 'auto', display: 'inline-block', padding: '6px 12px', background: T.accent, color: '#fff', textDecoration: 'none', fontWeight: 700, borderRadius: 6, marginBottom: 10 }); },
             onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }); }
           }, __alloT('stem.learning_lab.skip_to_module_categories', 'Skip to module categories')),
-          h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h1', { id: 'learning-lab-menu-heading', tabIndex: -1, style: { margin: '0 0 6px', fontSize: 24, color: T.text } },
-              h('span', { 'aria-hidden': 'true' }, '🧠 '), __alloT('stem.learning_lab.learning_lab', 'Learning Lab')),
-            h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
-              __alloT('stem.learning_lab.the_science_of_how_learning_works_for_', 'The science of how learning works — for students, teachers, and future educators. Bloom\'s, UDL, metacognition, cognitive load, spaced repetition, study strategies that actually work, neuromyth debunking, education careers. Cited primary sources; honest about contested claims.'))
+          h('header', { className: 'll-hero-deck' },
+            h('div', { className: 'll-hero-top' },
+              h('div', { className: 'll-hero-emblem', 'aria-hidden': 'true' },
+                h('svg', { viewBox: '0 0 44 44', width: 34, height: 34, 'aria-hidden': 'true' },
+                  h('circle', { cx: 22, cy: 22, r: 19, fill: 'none', stroke: '#c084fc', strokeWidth: 1.4, strokeDasharray: '4 3', opacity: 0.78 }),
+                  h('path', { d: 'M9 30 Q16 14 22 21 T35 12', fill: 'none', stroke: '#38bdf8', strokeWidth: 2.3, strokeLinecap: 'round' }),
+                  h('circle', { cx: 11, cy: 27, r: 3, fill: '#c084fc' }),
+                  h('circle', { cx: 22, cy: 21, r: 3.3, fill: '#34d399' }),
+                  h('circle', { cx: 34, cy: 13, r: 3.3, fill: '#fbbf24' })
+                )
+              ),
+              h('div', { style: { flex: '1 1 260px', minWidth: 0 } },
+                h('div', { className: 'll-hero-badge' }, '\u25C6 ' + __alloT('stem.learning_lab.studio_eyebrow_badge', 'Cognitive Science & UDL 3.0 Studio')),
+                h('h1', { id: 'learning-lab-menu-heading', tabIndex: -1, style: { margin: '0 0 6px', fontSize: 24, color: '#ffffff' } },
+                  h('span', { 'aria-hidden': 'true' }, '🧠 '), __alloT('stem.learning_lab.learning_lab', 'Learning Lab')),
+                h('p', { style: { margin: 0, fontSize: 13, color: '#e2e8f0', lineHeight: 1.55 } },
+                  __alloT('stem.learning_lab.the_science_of_how_learning_works_for_', 'The science of how learning works — for students, teachers, and future educators. Bloom\'s, UDL, metacognition, cognitive load, spaced repetition, study strategies that actually work, neuromyth debunking, education careers. Cited primary sources; honest about contested claims.')),
+                h('div', { className: 'll-hero-pills', role: 'list', 'aria-label': __alloT('stem.learning_lab.studio_telemetry_summary', 'Learning Lab overview metrics') },
+                  h('span', { role: 'listitem', className: 'll-hero-pill' }, '📚 ' + totalModulesCount + ' ' + __alloT('stem.learning_lab.modules_count_unit', 'modules')),
+                  h('span', { role: 'listitem', className: 'll-hero-pill' }, '🧭 ' + categories.length + ' ' + __alloT('stem.learning_lab.domains_count_unit', 'domains')),
+                  h('span', { role: 'listitem', className: 'll-hero-pill' }, '🔬 ' + __alloT('stem.learning_lab.cited_sources_badge', 'Primary sources cited')),
+                  h('span', { role: 'listitem', className: 'll-hero-pill ll-hero-pill-gold' }, '🏅 ' + badgeCount + ' ' + __alloT('stem.learning_lab.badges_count_unit', 'badges'))
+                ),
+                h('div', { className: 'll-preset-bar', role: 'group', 'aria-label': __alloT('stem.learning_lab.quick_launch_starters', 'Quick launch Learning Lab starters') },
+                  quickStarters.map(function(qs) {
+                    return h('button', {
+                      key: 'll-qs-' + qs.id,
+                      type: 'button',
+                      className: 'll-preset-btn',
+                      'data-ll-focusable': true,
+                      onClick: function() { setView(qs.id, qs.label); },
+                      'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_open_module', 'Open {value1} module'), { value1: qs.label })
+                    }, h('span', { 'aria-hidden': 'true' }, qs.icon), h('span', null, qs.label));
+                  })
+                )
+              )
+            )
+          ),
+          h('section', { className: 'll-science-stage', 'aria-label': __alloT('stem.learning_lab.evidence_pillars_section', 'Evidence-based learning science architecture') },
+            h('div', { className: 'll-science-head' },
+              h('span', { className: 'll-science-title' }, '🧠 ' + __alloT('stem.learning_lab.evidence_pillars_title', 'Evidence-Based Learning Science Architecture')),
+              h('span', { className: 'll-science-meta' }, __alloT('stem.learning_lab.evidence_pillars_meta', '4 core frameworks · Dunlosky · Sweller · CAST UDL 3.0'))
+            ),
+            h('svg', {
+              viewBox: '0 0 522 92',
+              width: '100%',
+              height: 92,
+              role: 'img',
+              'aria-label': __alloT('stem.learning_lab.evidence_pillars_svg_aria', 'Diagram connecting four core learning science frameworks: Retrieval and Spacing, Cognitive Load, Metacognition, and UDL 3.0 Access'),
+              style: { display: 'block', borderRadius: 10, background: '#0f172a', border: '1px solid rgba(148,163,184,0.28)' }
+            },
+              h('line', { x1: 72, y1: 46, x2: 450, y2: 46, stroke: 'rgba(192,132,252,0.45)', strokeWidth: 2, strokeDasharray: '4 3' }),
+              pillarSpecs.map(function(p) {
+                return h('g', { key: 'll-pil-' + p.x },
+                  h('rect', { x: p.x, y: 14, width: p.w, height: 64, rx: 10, fill: '#1e293b', stroke: p.color, strokeWidth: 1.6 }),
+                  h('circle', { cx: p.x + 14, cy: 29, r: 4, fill: p.color }),
+                  h('text', { x: p.x + 24, y: 33, fill: '#f8fafc', fontSize: 10, fontWeight: 800 }, p.title.slice(0, 14)),
+                  h('text', { x: p.x + p.w / 2, y: 60, fill: '#cbd5e1', fontSize: 10, fontWeight: 600, textAnchor: 'middle' }, p.sub)
+                );
+              })
+            )
           ),
           badgeCount > 0 && h('button', { 'data-ll-focusable': true,
             'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_view_badge_gallery_badges_earned', 'View badge gallery — {value1} badges earned'), { value1: badgeCount }),

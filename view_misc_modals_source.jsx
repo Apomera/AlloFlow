@@ -391,6 +391,7 @@ function UDLGuideModal(props) {
     // handler leaves the conversation open — one press closes one layer.
     const onKey = (ev) => {
       if (ev.key === 'Escape') {
+        if (ev.isComposing || ev.keyCode === 229) return;
         ev.preventDefault();
         setChatMenuOpen(false);
         // 2.4.3: dismissing a menu must not drop focus to <body>.
@@ -483,10 +484,18 @@ function UDLGuideModal(props) {
       const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
       const focusable = () => Array.from(overlay.querySelectorAll(
           'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )).filter(el => el.offsetParent !== null || el === document.activeElement);
+      )).filter(el => {
+          if (el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+          for (let cur = el; cur && cur !== overlay; cur = cur.parentElement) {
+              const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(cur) : null;
+              if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+          }
+          return true;
+      });
       (focusable()[0] || overlay).focus();
       const onKey = (ev) => {
           if (ev.key === 'Escape') {
+              if (ev.isComposing || ev.keyCode === 229) return;
               // Consume it so the panel-level handler does not also close the
               // whole conversation on the same press.
               ev.preventDefault();
@@ -519,6 +528,7 @@ function UDLGuideModal(props) {
       const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
       const onKey = (ev) => {
           if (ev.key !== 'Escape') return;
+          if (ev.isComposing || ev.keyCode === 229) return;
           // Let the overflow menu and the preview overlay consume Escape first;
           // one press should close one layer, not the whole conversation.
           if (ev.defaultPrevented) return;
@@ -741,7 +751,7 @@ function UDLGuideModal(props) {
                     )}
                 </div>
                 <button type="button"
-                    aria-label={t('common.minimize')}
+                    aria-label={isUDLGuideExpanded ? t('common.minimize') : t('common.maximize')}
                     data-help-key="chat_expand"
                     onClick={handleToggleIsUDLGuideExpanded}
                     className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors"
@@ -770,7 +780,7 @@ function UDLGuideModal(props) {
             screen-reader user got nothing. The transcript is the log; `polite`
             + `additions` announces only the new turn rather than re-reading the
             whole thread on every render. */}
-        <div role="log" tabIndex={0} aria-live="polite" aria-relevant="additions" aria-atomic="false"
+        <div role="log" aria-live="polite" aria-relevant="additions" aria-atomic="false" tabIndex={0}
           aria-label={tx('chat_guide.transcript_aria', 'Conversation transcript')}
           className={`flex-1 min-h-0 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`} ref={udlScrollRef}>
           {udlMessages.map((msg, idx) => (
@@ -1370,7 +1380,7 @@ function PlatformDiagnosticsSection(props) {
 
       try {
         const w = window.open('', '_blank', 'width=80,height=60');
-        if (w) { try { w.close(); } catch (_) {} add('Pop-up windows', 'pass', 'window.open works — compare view + Save-as-PDF can open'); }
+        if (w) { try { w.opener = null; } catch (_) {} try { w.close(); } catch (_) {} add('Pop-up windows', 'pass', 'window.open works — compare view + Save-as-PDF can open'); }
         else add('Pop-up windows', 'fail', 'window.open returned null — the compare view and print flow cannot open here');
       } catch (e) { add('Pop-up windows', 'fail', 'window.open threw: ' + e.message); }
 
@@ -1476,7 +1486,7 @@ function PlatformDiagnosticsSection(props) {
           const t0 = Date.now();
           const ac = typeof AbortController === 'function' ? new AbortController() : null;
           const tid = ac ? setTimeout(() => { try { ac.abort(); } catch (_) {} }, 6000) : null;
-          const r = await fetch(pair[1], ac ? { signal: ac.signal } : undefined);
+          const r = await fetch(pair[1], Object.assign({ credentials: 'omit', referrerPolicy: 'no-referrer' }, ac ? { signal: ac.signal } : {}));
           if (tid) clearTimeout(tid);
           add('CDN: ' + pair[0], r.ok ? 'pass' : 'warn', 'HTTP ' + r.status + ' in ' + (Date.now() - t0) + 'ms');
         } catch (e) { add('CDN: ' + pair[0], 'fail', 'unreachable: ' + (e && e.message)); }
@@ -1484,7 +1494,7 @@ function PlatformDiagnosticsSection(props) {
 
       try {
         const t0 = Date.now();
-        const r = await fetch('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm', { cache: 'force-cache' });
+        const r = await fetch('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm', { cache: 'force-cache', credentials: 'omit', referrerPolicy: 'no-referrer' });
         if (r.ok) {
           await r.arrayBuffer();
           add('Writing-Check cache (10 MB WASM)', 'info', 'fetched in ' + (Date.now() - t0) + 'ms — under ~500ms means the HTTP cache held it; re-run in a fresh session to test cross-session caching');
@@ -1747,10 +1757,10 @@ function ModelDiagnosticsSection(props) {
             <table className="text-[11px] w-full">
               <thead>
                 <tr className="bg-slate-100 text-slate-700">
-                  <th className="text-left p-1.5 font-bold">{t('model_diag.col_requested') || 'Requested'}</th>
-                  <th className="text-left p-1.5 font-bold">{t('model_diag.col_served') || 'Served by Google'}</th>
-                  <th className="text-right p-1.5 font-bold">{t('model_diag.col_count') || 'Calls'}</th>
-                  <th className="text-right p-1.5 font-bold">{t('model_diag.col_last') || 'Last'}</th>
+                  <th scope="col" className="text-left p-1.5 font-bold">{t('model_diag.col_requested') || 'Requested'}</th>
+                  <th scope="col" className="text-left p-1.5 font-bold">{t('model_diag.col_served') || 'Served by Google'}</th>
+                  <th scope="col" className="text-right p-1.5 font-bold">{t('model_diag.col_count') || 'Calls'}</th>
+                  <th scope="col" className="text-right p-1.5 font-bold">{t('model_diag.col_last') || 'Last'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1769,7 +1779,7 @@ function ModelDiagnosticsSection(props) {
             </table>
           </div>
         )}
-        <p className="text-[10px] text-slate-500 mt-1 italic">{t('model_diag.served_hint') || '⇄ marks a row where Google served a different model than the one requested (silent reroute by the API).'}</p>
+        <p className="text-[10px] text-slate-600 mt-1 italic">{t('model_diag.served_hint') || '⇄ marks a row where Google served a different model than the one requested (silent reroute by the API).'}</p>
       </div>
 
       {/* ── 2. Catalog ── */}
@@ -1795,10 +1805,10 @@ function ModelDiagnosticsSection(props) {
             <table className="text-[10px] w-full">
               <thead className="sticky top-0 bg-slate-100">
                 <tr className="text-slate-700">
-                  <th className="text-left p-1 font-bold">{t('model_diag.col_id') || 'Model'}</th>
-                  <th className="text-left p-1 font-bold">{t('model_diag.col_display') || 'Name'}</th>
-                  <th className="text-right p-1 font-bold" title={t('model_diag.col_in_tt') || 'Input token limit'}>{t('model_diag.col_in') || 'In tok'}</th>
-                  <th className="text-right p-1 font-bold" title={t('model_diag.col_out_tt') || 'Output token limit'}>{t('model_diag.col_out') || 'Out tok'}</th>
+                  <th scope="col" className="text-left p-1 font-bold">{t('model_diag.col_id') || 'Model'}</th>
+                  <th scope="col" className="text-left p-1 font-bold">{t('model_diag.col_display') || 'Name'}</th>
+                  <th scope="col" className="text-right p-1 font-bold" title={t('model_diag.col_in_tt') || 'Input token limit'}>{t('model_diag.col_in') || 'In tok'}</th>
+                  <th scope="col" className="text-right p-1 font-bold" title={t('model_diag.col_out_tt') || 'Output token limit'}>{t('model_diag.col_out') || 'Out tok'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1906,8 +1916,10 @@ function AIBackendModalBody(props) {
       }
     };
   }, []);
+  const [confirmForgetKey, setConfirmForgetKey] = React.useState(false);
   const handleAIBackendDialogKeyDown = (event) => {
     if (event.key === 'Escape') {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       event.stopPropagation();
       setShowAIBackendModal(false);
@@ -1917,11 +1929,16 @@ function AIBackendModalBody(props) {
     const dialog = aiBackendDialogRef.current;
     if (!dialog) return;
     const focusable = Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
-      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      let node = element;
+      while (node && node !== dialog) {
+        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+        if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+        node = node.parentElement;
+      }
+      return true;
     });
     if (!focusable.length) {
       event.preventDefault();
@@ -2531,14 +2548,14 @@ function AIBackendModalBody(props) {
   );
   const guidedCard = (keyProps, onClick, emoji, title, badge, body, req) => (
     <button {...keyProps} type="button" onClick={onClick}
-        className="w-full text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99]">
-        <div className="flex items-center gap-2">
+        className="w-full text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none">
+        <span className="flex items-center gap-2">
             <span aria-hidden="true">{emoji}</span>
             <span className="font-black text-sm text-slate-800">{title}</span>
             {badge && <span className="ml-auto text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">{badge}</span>}
-        </div>
-        <p className="text-xs text-slate-600 mt-1 leading-relaxed">{body}</p>
-        {req && <p className="text-[11px] text-slate-500 mt-1">{req}</p>}
+        </span>
+        <span className="block text-xs text-slate-600 mt-1 leading-relaxed">{body}</span>
+        {req && <span className="block text-[11px] text-slate-600 mt-1">{req}</span>}
     </button>
   );
   const renderGuidedStep = () => {
@@ -2601,7 +2618,7 @@ function AIBackendModalBody(props) {
                 </a>
             </span>
         </label>
-        <p className="text-[11px] text-slate-500">{t('ai_backend.guided_gemini_key_note_teacher') || 'Stored only on this device and never used in student mode.'}</p>
+        <p className="text-[11px] text-slate-600">{t('ai_backend.guided_gemini_key_note_teacher') || 'Stored only on this device and never used in student mode.'}</p>
         {guidedBackBtn('choose')}
       </div>
     );
@@ -2625,9 +2642,9 @@ function AIBackendModalBody(props) {
             {GUIDED_CONNECT_APPS.map((app) => (
               <button key={app.id} {...app.keyProps} type="button"
                   onClick={() => { applyBackendChoice(app.id); setGuidedReady(false); setGuidedView('connect-detail:' + app.id); }}
-                  className="text-left border-2 border-slate-200 rounded-xl p-3 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99]">
-                  <span className="font-black text-xs text-slate-800">{app.title}</span>
-                  <p className="text-[11px] text-slate-600 mt-0.5">{app.body}</p>
+                  className="text-left border-2 border-slate-200 rounded-xl p-3 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none">
+                  <span className="block font-black text-xs text-slate-800">{app.title}</span>
+                  <span className="block text-[11px] text-slate-600 mt-0.5">{app.body}</span>
               </button>
             ))}
         </div>
@@ -2759,19 +2776,39 @@ function AIBackendModalBody(props) {
                 <button type="button" disabled={keyLockBusy || !keyLockCode} onClick={unlock} className="min-h-11 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-60">
                     {t('ai_backend.key_lock_unlock_btn') || 'Unlock'}
                 </button>
-                <button
-                    type="button"
-                    onClick={() => {
-                        if (typeof window.confirm === 'function' && !window.confirm(t('ai_backend.key_lock_forget_confirm') || 'Remove the saved AI key from this device? You can enter it again afterward.')) return;
-                        keyLockApi().forgetAiKey();
-                        setKeyLockMessage('');
-                        setConfigRevision((revision) => revision + 1);
-                        setKeyLockTick((tick) => tick + 1);
-                    }}
-                    className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
-                >
-                    {t('ai_backend.key_lock_forget_btn') || 'Forgot your code? Remove saved key'}
-                </button>
+                {!confirmForgetKey ? (
+                  <button
+                      type="button"
+                      onClick={() => setConfirmForgetKey(true)}
+                      className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+                  >
+                      {t('ai_backend.key_lock_forget_btn') || 'Forgot your code? Remove saved key'}
+                  </button>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2">
+                    <span className="text-xs font-semibold text-rose-900">{t('ai_backend.key_lock_forget_confirm') || 'Remove the saved AI key from this device? You can enter it again afterward.'}</span>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            keyLockApi().forgetAiKey();
+                            setConfirmForgetKey(false);
+                            setKeyLockMessage('');
+                            setConfigRevision((revision) => revision + 1);
+                            setKeyLockTick((tick) => tick + 1);
+                        }}
+                        className="min-h-9 rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800"
+                    >
+                        {t('common.remove') || 'Remove'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setConfirmForgetKey(false)}
+                        className="min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                    >
+                        {t('common.cancel') || 'Cancel'}
+                    </button>
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -2895,15 +2932,22 @@ function AIBackendModalBody(props) {
                         id="ai-backend-test"
                         onClick={async () => {
                             const btn = document.getElementById('ai-backend-test');
+                            if (!btn || btn.getAttribute('aria-busy') === 'true') return;
                             const status = document.getElementById('ai-backend-status');
-                            const panel = btn && btn.closest('[data-help-key="ai_backend_modal_panel"]');
+                            const panel = btn.closest('[data-help-key="ai_backend_modal_panel"]');
                             const lockedControls = panel
-                              ? Array.from(panel.querySelectorAll('input, select, button')).filter(control => control !== btn)
+                              ? Array.from(panel.querySelectorAll('input, select, button')).filter(control => {
+                                  if (control === btn || control.disabled) return false;
+                                  const lbl = (control.getAttribute('aria-label') || control.textContent || '').trim();
+                                  if (/^(close|cancel|back)\b/i.test(lbl) || control.hasAttribute('data-ai-backend-close')) return false;
+                                  return true;
+                                })
                               : [];
-                            btn.disabled = true;
+                            btn.setAttribute('aria-disabled', 'true');
+                            btn.setAttribute('aria-busy', 'true');
                             lockedControls.forEach(control => { control.disabled = true; });
                             btn.textContent = '⏳ Testing...';
-                            if (status) { status.textContent = ''; status.className = ''; }
+                            if (status) { status.textContent = 'Testing AI connection...'; status.className = 'text-xs font-bold mt-2 text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200'; }
                             try {
                                 const testedConfig = readAIBackendConfig();
                                 const testedFingerprint = fingerprintAIBackendConfig(testedConfig);
@@ -2963,7 +3007,8 @@ function AIBackendModalBody(props) {
                                 if (status) { status.textContent = '❌ Error: ' + err.message; status.className = 'text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100'; }
                             }
                             lockedControls.forEach(control => { control.disabled = false; });
-                            btn.disabled = false;
+                            btn.removeAttribute('aria-disabled');
+                            btn.removeAttribute('aria-busy');
                             btn.textContent = '🔌 Test Connection';
                         }}
                         className="flex-1 bg-violet-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-all shadow-lg shadow-violet-200 active:scale-95"
@@ -2997,7 +3042,7 @@ function AIBackendModalBody(props) {
                         {isStudentAiSetup ? 'Disconnect & erase key' : '↩ Reset'}
                     </button>}
                 </div>
-                <div id="ai-backend-status"></div>
+                <div id="ai-backend-status" role="status" aria-live="polite" aria-atomic="true"></div>
                 </>)}
 
                 {advancedOpen && (<>

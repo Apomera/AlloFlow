@@ -124,6 +124,49 @@ describe('the builder', () => {
     expect(PC.readyTimeLine(TH.CHECK_LABELS, 90)).toBe('You have 90 seconds. Do as many as you can.');
     expect(PC.readyTimeLine(TH.CHECK_LABELS, null)).toBe(LINES.none);
   });
+
+  it('falls back to duration-agnostic spoken directions for non-preset custom timers while keeping translation and bank guards', async () => {
+    for (const [measure, grade, seconds, taskLine] of [
+      ['quantity_discrimination', 'K', 90, LINES.qd],
+      ['missing_number', '1', 180, LINES.mn],
+    ]) {
+      const lesson = { ...form(measure, grade), timeLimitS: seconds };
+      const made = PC.buildCheckPacket({ lesson, loader: TH, directions: D });
+      expect(made.spoken, measure + ':' + seconds).toEqual([taskLine, LINES.tries]);
+      const built = lessonOf(made.html);
+      expect(built.directions).toEqual(['directions-1', 'directions-2']);
+      expect(built.directions.map((id) => built.audio[id])).toEqual([D.clips[taskLine], D.clips[LINES.tries]]);
+      expect(made.manifest.speech.recordings.directions).toBe(2);
+    }
+    // Plays cleanly on the Get ready screen without speaking a wrong time limit.
+    const custom = PC.buildCheckPacket({ lesson: { ...form('quantity_discrimination', 'K'), timeLimitS: 90 }, loader: TH, directions: D });
+    const t = open(custom.html);
+    expect(t.toReady()).toBe('Get ready');
+    expect(t.q('[data-check-hear]')).not.toBe(null);
+    t.q('[data-check-hear]').click();
+    await t.settle();
+    expect(t.sound.filter((s) => s.ev === 'play').map((s) => s.src)).toEqual([D.clips[LINES.qd], D.clips[LINES.tries]]);
+    // Translated labels on a custom timer still auto-omit spoken directions.
+    for (const labels of [
+      { check_ready_timed: 'Tienes {time}. Haz todos los que puedas.' },
+      { check_seconds: '{n} segundos' },
+      { check_ready_one_try: 'Tienes un intento para cada una.' },
+      { quantity_discrimination_directions: 'Toca el número mayor.' },
+    ]) {
+      const translated = PC.buildCheckPacket({ lesson: { ...form('quantity_discrimination', 'K'), timeLimitS: 90 }, loader: TH, directions: D, labels });
+      expect(translated.spoken).toBe(null);
+      expect(lessonOf(translated.html).directions).toBeUndefined();
+    }
+    // A malformed URI supplied for the custom time line is refused rather than silently skipped.
+    const customLine = PC.readyTimeLine(TH.CHECK_LABELS, 90);
+    const badBank = { ...D, clips: { ...D.clips, [customLine]: 'https://example.org/90s.mp3' } };
+    expect(PC.buildCheckPacket({ lesson: { ...form('quantity_discrimination', 'K'), timeLimitS: 90 }, loader: TH, directions: badBank }).spoken).toBe(null);
+    // If a bank carries a valid verbatim clip for that custom time, all 3 lines are included.
+    const fullBank = { ...D, clips: { ...D.clips, [customLine]: D.clips[LINES.one] } };
+    const withThree = PC.buildCheckPacket({ lesson: { ...form('quantity_discrimination', 'K'), timeLimitS: 90 }, loader: TH, directions: fullBank });
+    expect(withThree.spoken).toEqual([LINES.qd, customLine, LINES.tries]);
+    expect(lessonOf(withThree.html).directions).toEqual(['directions-1', 'directions-2', 'directions-3']);
+  });
 });
 
 // A built check, opened in jsdom with a clock the test moves and a player that records what it is asked to play.

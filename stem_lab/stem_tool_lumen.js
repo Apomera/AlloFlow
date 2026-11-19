@@ -1242,8 +1242,9 @@
     });
   }
   function csvSafe(s) {
-    s = String(s == null ? '' : s);
-    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    var raw = String(s == null ? '' : s);
+    if (typeof s !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw)) raw = "'" + raw;
+    return /[",\r\n]/.test(raw) ? '"' + raw.replace(/"/g, '""') + '"' : raw;
   }
   function slug(s) {
     return String(s == null ? 'lumen' : s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'lumen';
@@ -1859,11 +1860,14 @@
     if (typeof window === 'undefined') return Promise.resolve(null);
     if (window.mammoth) return Promise.resolve(window.mammoth);
     if (_mammothLoadPromise) return _mammothLoadPromise;
-    var url = cdnUrl || 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+    if (window._isDesktopBundledApp === true && !cdnUrl) return Promise.reject(new Error('Mammoth offline bundle unavailable in desktop mode.'));
+    var defaultUrl = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+    var url = cdnUrl || defaultUrl;
     _mammothLoadPromise = new Promise(function (resolve, reject) {
       try {
         var s = document.createElement('script');
-        s.src = url; s.async = true; s.crossOrigin = 'anonymous';
+        s.src = url; s.async = true; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer';
+        if (url === defaultUrl) s.integrity = 'sha384-nFoSjZIoH3CCp8W639jJyQkuPHinJ2NHe7on1xvlUA7SuGfJAfvMldrsoAVm6ECz';
         s.onload = function () { resolve(window.mammoth || null); };
         s.onerror = function () { _mammothLoadPromise = null; reject(new Error('Could not load mammoth from ' + url)); };
         document.head.appendChild(s);
@@ -2335,6 +2339,27 @@
         alert.className = 'sr-only';
         document.body.appendChild(alert);
       })();
+      (function injectLumenStudioCss() {
+        if (!document.head || document.getElementById('allo-lumen-studio-css')) return;
+        var st = document.createElement('style');
+        st.id = 'allo-lumen-studio-css';
+        st.textContent = [
+          '.allo-lumen-home{box-sizing:border-box;min-width:0;overflow-wrap:anywhere;}',
+          '.allo-lumen-home *,.allo-lumen-home *::before,.allo-lumen-home *::after{box-sizing:border-box;}',
+          '.allo-lumen-home button:focus-visible{outline:3px solid #d97706;outline-offset:2px;}',
+          '.allo-lumen-mode-card{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
+          '.allo-lumen-mode-card:hover{transform:translateY(-2px);}',
+          '.allo-lumen-preset-chip{transition:background-color .15s ease,border-color .15s ease;}',
+          '@media(prefers-reduced-motion:reduce){.allo-lumen-mode-card,.allo-lumen-preset-chip{transition:none!important;transform:none!important;}}',
+          '.theme-contrast .allo-lumen-home{background:#000000!important;color:#ffff00!important;border:2px solid #ffff00!important;box-shadow:none!important;}',
+          '.theme-contrast .allo-lumen-home .allo-lumen-surface{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;box-shadow:none!important;}',
+          '.theme-contrast .allo-lumen-home button:focus-visible{outline:3px solid #ffffff!important;outline-offset:2px;}',
+          '.theme-contrast .allo-lumen-home svg text{fill:#ffff00!important;}',
+          '.theme-contrast #lumen-chart-main,.theme-contrast #lumen-chart-present{background:#000000!important;border:2px solid #ffff00!important;}',
+          '.theme-contrast #lumen-chart-main text,.theme-contrast #lumen-chart-present text{fill:#ffff00!important;}'
+        ].join('\n');
+        document.head.appendChild(st);
+      })();
     }
 
     window.StemLab.registerTool('lumen', {
@@ -2355,15 +2380,32 @@
         var h = React && React.createElement;
         if (!h) return null;
         try {
-          var d = (ctx.toolData && ctx.toolData.lumen) || {};
-          var isContrast = !!ctx.isContrast;
-          var isDark = !!ctx.isDark;
-          var themeSurface = isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff');
-          var themeInk = isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a');
-          var themeBorder = isContrast ? '#fbbf24' : (isDark ? '#475569' : '#e2e8f0');
+          var rawD = ctx.toolData && ctx.toolData.lumen;
+          var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
+          var isContrast = !!ctx.isContrast || ctx.theme === 'contrast';
+          var isDark = !isContrast && (!!ctx.isDark || ctx.theme === 'dark');
+          var themeSurface = isContrast ? '#000000' : (isDark ? '#151e31' : '#ffffff');
+          var themeCanvas = isContrast ? '#000000' : (isDark ? '#0b1120' : '#fffdf7');
+          var themeSub = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc');
+          var themeInk = isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a');
+          var themeMuted = isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569');
+          var themeBorder = isContrast ? '#ffff00' : (isDark ? '#334155' : '#e2d5be');
+          var themeAccent = isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#b45309');
+          var themeAccentBg = isContrast ? '#000000' : (isDark ? 'rgba(251,191,36,0.14)' : '#fef3c7');
           var upd = function (k, v) {
             if (ctx.update) ctx.update('lumen', k, v);
             else if (ctx.setToolData) ctx.setToolData(function (p) { p = p || {}; p.lumen = Object.assign({}, p.lumen); p.lumen[k] = v; return p; });
+          };
+          var updBatch = function (patch) {
+            if (ctx.setToolData) {
+              ctx.setToolData(function (p) {
+                p = (p && typeof p === 'object') ? p : {};
+                var prevL = (p.lumen && typeof p.lumen === 'object' && !Array.isArray(p.lumen)) ? p.lumen : {};
+                return Object.assign({}, p, { lumen: Object.assign({}, prevL, patch) });
+              });
+            } else {
+              Object.keys(patch).forEach(function (k) { upd(k, patch[k]); });
+            }
           };
           var announce = function (msg) {
             try { var el = document.getElementById('allo-live-lumen'); if (el) el.textContent = msg; } catch (e2) { }
@@ -2377,45 +2419,224 @@
               return Promise.resolve(confirmApi(message, options || {})).then(function (ok) { return !!ok; }).catch(function () { announce(unavailable); return false; });
             } catch (e) { announce(unavailable); return Promise.resolve(false); }
           };
-          var mode = d.mode || 'home';
-          var modeButton = function (target, title, description, accent, icon) {
+          var mode = (d.mode === 'data' || d.mode === 'study' || d.mode === 'home') ? d.mode : 'home';
+          var savedObsCount = Array.isArray(d.observations) ? d.observations.length : 0;
+          var modeButton = function (target, title, description, accent, icon, tagText) {
             return h('button', {
               key: target,
               type: 'button',
               onClick: function () { upd('mode', target); announce(title + ' opened.'); },
-              className: 'p-4 rounded-2xl border-2 text-left transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2',
-              style: { borderColor: isContrast ? themeBorder : accent, background: (isDark || isContrast) ? themeSurface : '#ffffff', color: (isDark || isContrast) ? themeInk : undefined, minHeight: '142px' },
+              className: 'allo-lumen-mode-card allo-lumen-surface p-4 rounded-2xl border-2 text-left transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2',
+              style: {
+                borderColor: isContrast ? '#ffff00' : accent,
+                background: themeSurface,
+                color: themeInk,
+                minHeight: '154px',
+                display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px', cursor: 'pointer',
+                boxShadow: isContrast ? 'none' : (isDark ? '0 8px 20px rgba(2,6,23,0.4)' : '0 4px 14px rgba(15,23,42,0.06)')
+              },
               'aria-label': title + '. ' + description
             },
-              h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, icon),
-              h('span', { className: 'block mt-2 font-extrabold text-base' + ((isDark || isContrast) ? '' : ' text-slate-900') }, title),
-              h('span', { className: 'block mt-1 text-sm leading-5' + ((isDark || isContrast) ? ' text-slate-300' : ' text-slate-600') }, description));
+              h('div', null,
+                h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' } },
+                  h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, icon),
+                  tagText ? h('span', {
+                    style: {
+                      fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px',
+                      background: isContrast ? '#000000' : (isDark ? 'rgba(148,163,184,0.16)' : '#f1f5f9'),
+                      color: isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#334155'),
+                      border: '1px solid ' + (isContrast ? '#ffff00' : (isDark ? '#475569' : '#cbd5e1'))
+                    }
+                  }, tagText) : null
+                ),
+                h('span', { className: 'block font-extrabold text-base', style: { color: themeInk } }, title),
+                h('span', { className: 'block mt-1 text-sm leading-5', style: { color: themeMuted } }, description)
+              ),
+              h('span', { style: { fontSize: '12px', fontWeight: 800, color: isContrast ? '#ffff00' : accent } },
+                __alloT('stem.lumen.open_workspace', 'Open workspace') + ' →')
+            );
           };
           if (mode === 'home') {
             var hasCurrentSource = !!String(ctx.sourceText || ctx.inputText || '').trim();
-            return h('div', { className: 'p-5 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' },
-              h('div', { className: 'flex items-start gap-3 flex-wrap' },
-                h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '💡'),
-                h('div', { className: 'flex-1 min-w-[220px]' },
-                  h('h1', { className: 'font-extrabold text-xl text-slate-900 m-0' }, 'Lumen'),
-                  h('p', { className: 'mt-1 mb-0 text-sm text-slate-600' }, 'Study, analyze and communicate what the evidence supports.')),
-                hasCurrentSource ? h('span', { className: 'px-3 py-1 rounded-full bg-blue-100 text-blue-900 text-xs font-bold' }, 'Current AlloFlow source available') : null),
-              h('div', { className: 'mt-5 grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))' } },
-                modeButton('study', 'Study Sources', 'Ask questions, inspect exact supporting passages and save grounded notes.', '#2563eb', '📖'),
-                modeButton('data', 'Analyze Data', 'Build defensible charts and claims with uncertainty and provenance kept visible.', '#d97706', '📊'),
-                h('div', { className: 'p-4 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50', 'aria-label': __alloT('stem.lumen.a11y_conduct_inquiry_available_through_research_hub', 'Conduct Inquiry. Available through Research Hub.') },
-                  h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '🔎'),
-                  h('span', { className: 'block mt-2 font-extrabold text-base text-slate-700' }, 'Conduct Inquiry'),
-                  h('span', { className: 'block mt-1 text-sm leading-5 text-slate-500' }, 'Research Hub remains the inquiry workspace while its evidence model is connected to Lumen.'))),
-              h('p', { className: 'mt-4 mb-0 text-xs text-slate-500' }, 'Your sources and study notes stay on this device. Only passages selected for a question are sent to your configured AI provider.'));
+            var launchHomeSample = function (rows, chartTp, meta, msg) {
+              var stamped = rows.map(function (r) { return Object.assign({}, r, { synthetic: true }); });
+              updBatch({
+                mode: 'data',
+                observations: stamped,
+                chartType: chartTp || 'trend',
+                variable: meta.variable || 'Measure',
+                unit: meta.unit || 'units',
+                xLabel: meta.xLabel || 'Week',
+                variable2: meta.variable2 || null,
+                unit2: meta.unit2 || null,
+                seriesLabels: meta.seriesLabels || null,
+                aiHyps: null, aiText: '', signoff: null, focusIds: null
+              });
+              announce(msg);
+            };
+            var ladderSteps = [
+              { lvl: 'L0', glyph: '●', title: __alloT('stem.lumen.ladder_l0', 'L0 Observed'), desc: __alloT('stem.lumen.ladder_l0d', 'Raw measured rows'), col: isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#0f172a') },
+              { lvl: 'L1', glyph: '◈', title: __alloT('stem.lumen.ladder_l1', 'L1 Derived Math'), desc: __alloT('stem.lumen.ladder_l1d', '95% CI & n-floor'), col: isContrast ? '#ffff00' : (isDark ? '#38bdf8' : '#0369a1') },
+              { lvl: 'L2', glyph: '◧', title: __alloT('stem.lumen.ladder_l2', 'L2 AI-Organized'), desc: __alloT('stem.lumen.ladder_l2d', 'Number-checked prose'), col: isContrast ? '#ffff00' : (isDark ? '#a78bfa' : '#5b21b6') },
+              { lvl: 'L3', glyph: '◑', title: __alloT('stem.lumen.ladder_l3', 'L3 AI Reading'), desc: __alloT('stem.lumen.ladder_l3d', 'Ranked rivals + sign-off'), col: isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#b45309') }
+            ];
+            return h('div', {
+              className: 'allo-lumen-home p-5 rounded-2xl',
+              style: {
+                background: themeCanvas,
+                border: '1px solid ' + themeBorder,
+                color: themeInk,
+                boxShadow: isContrast ? 'none' : (isDark ? '0 10px 30px rgba(2,6,23,0.45)' : '0 4px 18px rgba(180,83,9,0.08)')
+              }
+            },
+              // Hero Workbench Header with bespoke Prism Emblem + Subject Badge + Telemetry Pills
+              h('header', {
+                className: 'allo-lumen-surface rounded-2xl p-4 mb-4',
+                style: {
+                  background: isContrast ? '#000000' : (isDark ? 'linear-gradient(135deg,#172033 0%,#1c1917 100%)' : 'linear-gradient(135deg,#ffffff 0%,#fffbeb 70%,#fef3c7 100%)'),
+                  border: '1px solid ' + themeBorder
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' } },
+                  h('span', {
+                    style: {
+                      display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '999px',
+                      fontSize: '11px', fontWeight: 800, letterSpacing: '0.03em',
+                      background: themeAccentBg, color: themeAccent, border: '1px solid ' + themeBorder
+                    }
+                  }, __alloT('stem.lumen.subject_badge', 'Science & Inquiry · Honest Evidence Studio')),
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
+                    hasCurrentSource ? h('span', {
+                      style: {
+                        padding: '3px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 800,
+                        background: isContrast ? '#000000' : (isDark ? 'rgba(59,130,246,0.2)' : '#dbeafe'),
+                        color: isContrast ? '#ffff00' : (isDark ? '#93c5fd' : '#1e3a8a'),
+                        border: '1px solid ' + (isContrast ? '#ffff00' : (isDark ? '#3b82f6' : '#93c5fd'))
+                      }
+                    }, 'Current AlloFlow source available') : null,
+                    h('span', {
+                      style: {
+                        padding: '3px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 700,
+                        background: themeSurface, color: themeMuted, border: '1px solid ' + themeBorder
+                      }
+                    }, __alloT('stem.lumen.pill_points', 'Points') + ': ' + savedObsCount),
+                    h('span', {
+                      style: {
+                        padding: '3px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 700,
+                        background: themeSurface, color: themeMuted, border: '1px solid ' + themeBorder
+                      }
+                    }, __alloT('stem.lumen.pill_privacy', 'On-Device · FERPA-Safe'))
+                  )
+                ),
+                h('div', { className: 'flex items-center gap-3 flex-wrap' },
+                  // Bespoke Inline SVG: Lumen Optical Prism & Provenance Spectrum Emblem
+                  h('svg', {
+                    width: 48, height: 48, viewBox: '0 0 48 48', role: 'img',
+                    'aria-label': __alloT('stem.lumen.emblem_alt', 'Lumen optical prism emblem refracting light into evidence channels'),
+                    style: { flexShrink: 0, display: 'block' }
+                  },
+                    h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : (isDark ? '#0f172a' : '#fffbeb'), stroke: themeAccent, strokeWidth: 1.5 }),
+                    h('line', { x1: 6, y1: 27, x2: 18, y2: 24, stroke: isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a'), strokeWidth: 2.2, strokeLinecap: 'round' }),
+                    h('polygon', { points: '24,10 14,34 34,34', fill: isContrast ? '#000000' : (isDark ? 'rgba(251,191,36,0.18)' : 'rgba(245,158,11,0.22)'), stroke: themeAccent, strokeWidth: 1.8, strokeLinejoin: 'round' }),
+                    h('line', { x1: 29, y1: 21, x2: 42, y2: 15, stroke: isContrast ? '#ffff00' : '#0e7490', strokeWidth: 2, strokeLinecap: 'round' }),
+                    h('line', { x1: 30, y1: 25, x2: 42, y2: 25, stroke: isContrast ? '#ffff00' : '#d97706', strokeWidth: 2, strokeLinecap: 'round' }),
+                    h('line', { x1: 31, y1: 29, x2: 42, y2: 35, stroke: isContrast ? '#ffff00' : '#7c3aed', strokeWidth: 2, strokeLinecap: 'round', strokeDasharray: '2.5 2' })
+                  ),
+                  h('div', { className: 'flex-1', style: { minWidth: 0 } },
+                    h('h1', { className: 'font-extrabold text-xl m-0', style: { color: themeInk } }, 'Lumen'),
+                    h('p', { className: 'mt-1 mb-0 text-sm', style: { color: themeMuted } },
+                      __alloT('stem.lumen.home_subtitle', 'Study, analyze and communicate what the evidence supports.'))
+                  )
+                )
+              ),
+
+              // Visual Centerpiece: Epistemic Provenance Ladder SVG
+              h('section', {
+                className: 'allo-lumen-surface rounded-2xl p-3.5 mb-4',
+                'aria-label': __alloT('stem.lumen.ladder_aria', 'Epistemic provenance ladder'),
+                style: { background: themeSurface, border: '1px solid ' + themeBorder }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' } },
+                  h('span', { style: { fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: themeAccent } },
+                    __alloT('stem.lumen.ladder_heading', 'Provenance Grammar — Every Mark Declares Its Origin')),
+                  h('span', { style: { fontSize: '11px', fontWeight: 700, color: themeMuted } },
+                    '▣ ' + __alloT('stem.lumen.ladder_src', 'Sourced') + ' · ◇ ' + __alloT('stem.lumen.ladder_syn', 'Synthetic Practice'))
+                ),
+                h('svg', {
+                  viewBox: '0 0 640 84', width: '100%', role: 'img',
+                  'aria-label': __alloT('stem.lumen.ladder_svg_aria', 'Four-level provenance ladder from L0 Observed to L1 Derived math, L2 AI-organized, and L3 AI reading'),
+                  style: { display: 'block', height: 'auto' }
+                },
+                  h('rect', { x: 1, y: 1, width: 638, height: 82, rx: 10, fill: themeSub, stroke: themeBorder, strokeWidth: 1 }),
+                  ladderSteps.map(function (st, i) {
+                    var bx = 12 + i * 156;
+                    return h('g', { key: st.lvl },
+                      i > 0 ? h('line', { x1: bx - 10, y1: 42, x2: bx - 2, y2: 42, stroke: themeAccent, strokeWidth: 1.8 }) : null,
+                      h('rect', { x: bx, y: 12, width: 146, height: 60, rx: 8, fill: themeSurface, stroke: st.col, strokeWidth: 1.3, strokeDasharray: st.lvl === 'L3' ? '5 3' : undefined }),
+                      h('text', { x: bx + 12, y: 34, fontSize: 13, fontWeight: 900, fill: st.col }, st.glyph + ' ' + st.title),
+                      h('text', { x: bx + 12, y: 55, fontSize: 10.5, fontWeight: 600, fill: themeMuted }, st.desc)
+                    );
+                  })
+                )
+              ),
+
+              // Workspace Mode Cards
+              h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))' } },
+                modeButton('study', 'Study Sources', 'Ask questions, inspect exact supporting passages and save grounded notes.', '#2563eb', '📖', __alloT('stem.lumen.tag_citations', 'Exact passages')),
+                modeButton('data', 'Analyze Data', 'Build defensible charts and claims with uncertainty and provenance kept visible.', '#d97706', '📊', __alloT('stem.lumen.tag_charts', '9 chart geometries')),
+                h('div', {
+                  className: 'allo-lumen-surface p-4 rounded-2xl border-2 border-dashed',
+                  style: { borderColor: themeBorder, background: themeSub, minHeight: '154px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
+                  'aria-label': __alloT('stem.lumen.a11y_conduct_inquiry_available_through_research_hub', 'Conduct Inquiry. Available through Research Hub.')
+                },
+                  h('div', null,
+                    h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '🔎'),
+                    h('span', { className: 'block mt-2 font-extrabold text-base', style: { color: themeInk } }, 'Conduct Inquiry'),
+                    h('span', { className: 'block mt-1 text-sm leading-5', style: { color: themeMuted } }, 'Research Hub remains the inquiry workspace while its evidence model is connected to Lumen.')
+                  ),
+                  h('span', { style: { fontSize: '11px', fontWeight: 700, color: themeMuted } }, __alloT('stem.lumen.via_research_hub', 'Connected via Research Hub'))
+                )
+              ),
+
+              // Quick-Launch Starter Presets (Practice Data)
+              h('div', {
+                className: 'allo-lumen-surface mt-4 p-3 rounded-xl flex items-center gap-2 flex-wrap',
+                role: 'group', 'aria-label': __alloT('stem.lumen.quick_starters_aria', 'Quick-start practice datasets'),
+                style: { background: themeSub, border: '1px solid ' + themeBorder }
+              },
+                h('span', { style: { fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', color: themeAccent } },
+                  '⚗ ' + __alloT('stem.lumen.quick_launch', 'Quick-launch practice canvas:')),
+                h('button', {
+                  type: 'button', className: 'allo-lumen-preset-chip allo-lumen-surface px-2.5 py-1 rounded-full text-xs font-bold',
+                  style: { background: themeSurface, color: themeInk, border: '1px solid ' + themeBorder, cursor: 'pointer' },
+                  onClick: function () { launchHomeSample(GROWTH_SAMPLE, 'trend', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }, 'Opened Plant Growth trend example (synthetic practice data).'); }
+                }, __alloT('stem.lumen.starter_growth', 'Plant Growth (Trend) →')),
+                h('button', {
+                  type: 'button', className: 'allo-lumen-preset-chip allo-lumen-surface px-2.5 py-1 rounded-full text-xs font-bold',
+                  style: { background: themeSurface, color: themeInk, border: '1px solid ' + themeBorder, cursor: 'pointer' },
+                  onClick: function () { launchHomeSample(PAIRED_SAMPLE, 'scatter', { variable: 'WCPM', unit: 'words/min', xLabel: 'Week', variable2: 'Comprehension', unit2: '%' }, 'Opened Paired Scatter example (synthetic practice data).'); }
+                }, __alloT('stem.lumen.starter_scatter', 'Paired Measures (Scatter) →')),
+                h('button', {
+                  type: 'button', className: 'allo-lumen-preset-chip allo-lumen-surface px-2.5 py-1 rounded-full text-xs font-bold',
+                  style: { background: themeSurface, color: themeInk, border: '1px solid ' + themeBorder, cursor: 'pointer' },
+                  onClick: function () { launchHomeSample(MULTI_SAMPLE, 'multiSeriesLine', { variable: 'WCPM', unit: 'words/min', xLabel: 'Week', seriesLabels: { cold: 'Cold read', practiced: 'Practiced' } }, 'Opened Multi-Series example (synthetic practice data).'); }
+                }, __alloT('stem.lumen.starter_multi', 'Two Conditions (Multi-line) →'))
+              ),
+
+              h('p', { className: 'mt-3 mb-0 text-xs', style: { color: themeMuted } },
+                'Your sources and study notes stay on this device. Only passages selected for a question are sent to your configured AI provider.')
+            );
           }
           if (mode === 'study') {
             var study = (typeof window !== 'undefined') && window.LumenStudy;
             if (study && typeof study.render === 'function' && window.LumenEvidence) return study.render(ctx);
-            return h('div', { role: 'status', className: 'p-5 rounded-xl border border-amber-300 bg-amber-50 text-slate-800' },
-              h('button', { type: 'button', onClick: function () { upd('mode', 'home'); }, className: 'mb-3 text-sm font-bold underline' }, '← Lumen home'),
-              h('p', { className: 'font-bold m-0' }, 'Study Sources is still loading.'),
-              h('p', { className: 'text-sm mt-1 mb-0' }, 'The evidence module loads separately from the data workspace.'));
+            return h('div', {
+              role: 'status', className: 'allo-lumen-home allo-lumen-surface p-5 rounded-xl',
+              style: { background: themeCanvas, border: '1px solid ' + themeBorder, color: themeInk }
+            },
+              h('button', { type: 'button', onClick: function () { upd('mode', 'home'); }, className: 'mb-3 text-sm font-bold underline', style: { color: themeAccent, background: 'transparent', border: 'none', cursor: 'pointer' } }, '← Lumen home'),
+              h('p', { className: 'font-bold m-0', style: { color: themeInk } }, 'Study Sources is still loading.'),
+              h('p', { className: 'text-sm mt-1 mb-0', style: { color: themeMuted } }, 'The evidence module loads separately from the data workspace.'));
           }
           var obs = Array.isArray(d.observations) ? d.observations : [];
           var ceiling = d.ceiling || 'L1';

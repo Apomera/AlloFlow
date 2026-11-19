@@ -13,7 +13,7 @@ Status: **hard-qa-findings**
 - Guided-review activities reviewed: **5,700**
 - Remaining distinct-question gap: **7,829**
 - Exact response-option kernels shared across different packs: **324**
-- Hard findings: **1**
+- Hard findings: **901**
 - Libraries: **22** with 264 chapters, 1056 lessons, 1320 checks, 1650 flashcards, and 440 memory aids
 - Unique learner-visible sources reviewed: **136**
 
@@ -23,20 +23,20 @@ A hard-QA pass does not mean every pack has 500 independent questions. Guided tr
 
 | Pack | Independent practice | Distinct kernels | Guided review | New independent questions needed | Hard findings | Warning items |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Audiology 5343 diagnostics | 300 | 204 | 200 | 296 | 0 | 220 |
-| Early Childhood Education (5025) | 300 | 205 | 200 | 295 | 0 | 217 |
-| Educational Leadership (5412) | 300 | 200 | 200 | 300 | 0 | 235 |
+| Audiology 5343 diagnostics | 300 | 204 | 200 | 296 | 100 | 220 |
+| Early Childhood Education (5025) | 300 | 205 | 200 | 295 | 100 | 215 |
+| Educational Leadership (5412) | 300 | 200 | 200 | 300 | 100 | 233 |
 | Praxis ESOL (5362) | 200 | 100 | 300 | 400 | 0 | 198 |
-| ParaPro diagnostic batches 1-2 | 500 | 500 | 0 | 0 | 0 | 418 |
+| ParaPro diagnostic batches 1-2 | 500 | 500 | 0 | 0 | 300 | 418 |
 | PLT: Grades 5–9 (5623) | 200 | 100 | 300 | 400 | 0 | 198 |
 | PLT: Grades 7–12 (5624) | 200 | 100 | 300 | 400 | 0 | 198 |
 | PLT: Early Childhood (5621) | 200 | 100 | 300 | 400 | 0 | 198 |
 | PLT K–6 (5622) | 200 | 100 | 300 | 400 | 0 | 198 |
 | Praxis Core (5752) | 200 | 107 | 300 | 393 | 0 | 72 |
 | Reading Specialist 5302 diagnostics | 200 | 100 | 300 | 400 | 0 | 191 |
-| School Counselor 5422 diagnostics | 300 | 200 | 200 | 300 | 0 | 209 |
-| School Librarian (5312) | 300 | 135 | 200 | 365 | 0 | 194 |
-| School Psychologist 5403 diagnostics | 300 | 200 | 200 | 300 | 0 | 213 |
+| School Counselor 5422 diagnostics | 300 | 200 | 200 | 300 | 100 | 209 |
+| School Librarian (5312) | 300 | 135 | 200 | 365 | 100 | 194 |
+| School Psychologist 5403 diagnostics | 300 | 200 | 200 | 300 | 100 | 213 |
 | Special Education 5355 diagnostics | 200 | 100 | 300 | 400 | 0 | 175 |
 | Behavioral Disorders and Emotional Disturbances (5372) | 200 | 103 | 300 | 397 | 0 | 174 |
 | Special Education EC/EI (5692) | 200 | 100 | 300 | 400 | 0 | 166 |

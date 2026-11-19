@@ -1,0 +1,20 @@
+/* Printed passage sheet for packets-read-along.html.
+   Token-only print rules using variables from packets.css. */
+
+#paper { display: none; }
+
+@media print {
+  @page { margin: 14mm 15mm; }
+  body.paper-on { background: var(--surface); color: var(--ink); }
+  body.paper-on > :not(#paper) { display: none !important; }
+  body.paper-on #paper { display: block !important; color: var(--ink); font-size: 13pt; line-height: 1.75; }
+
+  .paper-sheet { max-width: 100%; }
+  .paper-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; border-bottom: 1.5pt solid var(--ink); padding-bottom: 6pt; margin-bottom: 12pt; }
+  .paper-head h1 { margin: 0; font-size: 17pt; line-height: 1.2; color: var(--ink); }
+  .paper-meta { display: flex; gap: 16pt; font-size: 10.5pt; color: var(--muted); white-space: nowrap; }
+  .paper-sub { margin: 0 0 10pt; font-size: 10pt; color: var(--muted); }
+  .paper-body { margin: 0; }
+  .paper-para { margin: 0 0 11pt; break-inside: avoid; }
+  .paper-line { display: block; margin: 0 0 4pt; }
+}

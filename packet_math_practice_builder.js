@@ -29,7 +29,9 @@
     rehearsal: { activity: 'math_rehearsal', name: 'Rehearsal with known facts', short: 'new and known facts' },
   };
   var OPS = { add: 'add', '+': 'add', sub: 'sub', '-': 'sub', mul: 'mul', x: 'mul', X: 'mul', '*': 'mul', div: 'div', '/': 'div', ':': 'div' };
-  OPS[String.fromCharCode(0x2212)] = 'sub'; OPS[String.fromCharCode(0xD7)] = 'mul'; OPS[String.fromCharCode(0xF7)] = 'div';
+  OPS[String.fromCharCode(0x2212)] = 'sub'; OPS[String.fromCharCode(0x2013)] = 'sub'; OPS[String.fromCharCode(0x2014)] = 'sub';
+  OPS[String.fromCharCode(0xD7)] = 'mul'; OPS[String.fromCharCode(0xB7)] = 'mul'; OPS[String.fromCharCode(0x22C5)] = 'mul';
+  OPS[String.fromCharCode(0xF7)] = 'div';
   var OP_NAMES = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division' };
 
   function text(value) { return value == null ? '' : String(value); }
@@ -151,13 +153,20 @@
     return fact(a, b, op);
   }
   // "7 x 8, 6+7; 12 - 5" -> [{ a, b, op }]. For a plain text box and the command line.
+  // Also tolerates real-world pasted worksheets: BOM, leading numbering/bullets, trailing blank = / = ? / = ___, and Word/Docs dashes or middle dots.
+  function cleanFactLine(raw) {
+    return text(raw).replace(/^\uFEFF/, '').trim()
+      .replace(/^(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '')
+      .replace(/\s*=\s*(?:\?|_+|[\u25A1\u2B1C])?$/, '').trim();
+  }
   function parseFacts(value) {
-    var shape = new RegExp('^(\\d+)\\s*([-+xX*/:' + String.fromCharCode(0x2212, 0xD7, 0xF7) + '])\\s*(\\d+)(?:\\s*=\\s*(\\d+))?$');
-    return text(value).split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).map(function (part, i) {
-      var m = shape.exec(part);
-      if (!m) throw new Error('Fact ' + (i + 1) + ': "' + part + '" is not a fact. Write it like 7 x 8 or 6 + 7.');
+    var shape = new RegExp('^(\\d+)\\s*([-+xX*/:' + String.fromCharCode(0x2212, 0x2013, 0x2014, 0xD7, 0xB7, 0x22C5, 0xF7) + '])\\s*(\\d+)(?:\\s*=\\s*(\\d+))?$');
+    return text(value).replace(/^\uFEFF/, '').split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).map(function (part, i) {
+      var clean = cleanFactLine(part);
+      var m = shape.exec(clean);
+      if (!m) throw new Error('Fact ' + (i + 1) + ': "' + (clean || part) + '" is not a fact. Write it like 7 x 8 or 6 + 7.');
       var f = checkFact({ a: Number(m[1]), b: Number(m[3]), op: OPS[m[2]] }, i + 1);
-      if (m[4] != null && Number(m[4]) !== answerOf(f)) throw new Error('Fact ' + (i + 1) + ': ' + part + ' is not right. The answer is ' + answerOf(f) + '.');
+      if (m[4] != null && Number(m[4]) !== answerOf(f)) throw new Error('Fact ' + (i + 1) + ': ' + clean + ' is not right. The answer is ' + answerOf(f) + '.');
       return f;
     });
   }

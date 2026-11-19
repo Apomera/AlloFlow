@@ -93,10 +93,11 @@
 (function (root) {
   'use strict';
 
-  var VERSION = 1;
+  var VERSION = 2;
   var DB_NAME = 'alloflow-packets-my-words';
   var WORDS = 'words';
   var ROWS = 'rows';
+  var MEDIA = 'media';
   var CHANNEL = 'alloflow-packets-my-words';
   var PING_KEY = 'alloflow-packets-my-words/changed';
   var NOT_KEEPING = 'This browser is not keeping your words.';
@@ -114,6 +115,12 @@
   function normalizeWord(word) {
     var text = typeof word === 'string' ? word.trim().toLowerCase() : '';
     return /^[a-z]+$/.test(text) && text.length >= LIMITS.wordMin && text.length <= LIMITS.wordMax ? text : '';
+  }
+  function normalizeMediaKey(value) {
+    var w = normalizeWord(value);
+    if (w) return w;
+    var text = typeof value === 'string' ? value.trim().toLowerCase().replace(/\s+/g, ' ') : '';
+    return /^[a-z0-9][a-z0-9 '-]{0,47}$/.test(text) ? text : '';
   }
 
   // One line of plain text: no control characters, single spaces, a length limit.
@@ -454,6 +461,7 @@
           var db = request.result;
           if (!db.objectStoreNames.contains(WORDS)) db.createObjectStore(WORDS, { keyPath: 'word' });
           if (!db.objectStoreNames.contains(ROWS)) db.createObjectStore(ROWS, { keyPath: 'word' });
+          if (!db.objectStoreNames.contains(MEDIA)) db.createObjectStore(MEDIA, { keyPath: 'key' });
         };
         request.onsuccess = function () {
           var db = request.result;
@@ -599,24 +607,61 @@
       askedToKeep = true;
       try { var st = home.navigator && home.navigator.storage; if (st && typeof st.persist === 'function') st.persist().catch(function () {}); } catch (_) {}
     }
-    // Every word as one object to save in a file: { kind, version, saved, words: [{ word, sounds, clip, picture }] }.
+    function mediaBytes(entry) {
+      if (!entry) return 0;
+      var clipBytes = entry.clip ? (Number(entry.clip.bytes) || 0) : 0;
+      var pictureNone = !!(entry.picture && entry.picture.none === true);
+      var pictureBytes = entry.picture && !pictureNone ? (Number(entry.picture.bytes) || 0) : 0;
+      return clipBytes + pictureBytes;
+    }
+    function listMedia() {
+      return open().then(function (db) {
+        if (!db.objectStoreNames.contains(MEDIA)) return [];
+        return read([MEDIA], function (stores, done) {
+          done([]);
+          stores[MEDIA].getAll().onsuccess = function (event) {
+            done((event.target.result || []).slice().sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; }));
+          };
+        }, []);
+      }, function () { return []; });
+    }
+    // Every word (and any v2 media items) as one object to save in a file: { kind, version, saved, words: [...], media?: [...] }.
     function exportAll() {
-      return list().then(function (rows) { return getMany(rows.map(function (row) { return row.word; })); }).then(function (found) {
-        var words = Object.keys(found || {}).sort().map(function (word) {
+      return Promise.all([
+        list().then(function (rows) { return getMany(rows.map(function (row) { return row.word; })); }),
+        listMedia(),
+      ]).then(function (pair) {
+        var found = pair[0] || {}, mediaRows = pair[1] || [];
+        var words = Object.keys(found).sort().map(function (word) {
           var e = found[word], out = { word: word };
           ['sounds', 'clip', 'picture'].forEach(function (name) { if (e && e[name]) out[name] = e[name]; });
           return out;
         });
-        return { kind: EXPORT_KIND, version: 1, saved: new Date().toISOString(), words: words };
+        var media = mediaRows.map(function (e) {
+          var out = { key: e.key };
+          ['clip', 'picture'].forEach(function (name) { if (e && e[name]) out[name] = e[name]; });
+          return out;
+        }).filter(function (e) { return !!(e.key && (e.clip || e.picture)); });
+        var out = { kind: EXPORT_KIND, version: 1, saved: new Date().toISOString(), words: words };
+        if (media.length) out.media = media;
+        return out;
       });
     }
-    // A saved My words file, put back. Each part goes through put(), so it is cleaned by the same rules as anything typed
-    // or recorded here; what does not pass is left out and named. -> { kept: [words], refused: [words] }
+    // A saved My words file, put back. Each part goes through put() / putMedia(), so it is cleaned by the same rules as
+    // anything typed or recorded here; what does not pass is left out and named. -> { kept: [keys], refused: [keys] }
     function importAll(data) {
       if (!isObject(data) || data.kind !== EXPORT_KIND || !Array.isArray(data.words)) return refuse('not_my_words', 'This is not a My words file.');
-      var kept = [], refused = [];
+      var kept = [], refused = [], mediaList = Array.isArray(data.media) ? data.media : [];
+      var stepMedia = function (j) {
+        if (j >= mediaList.length || j >= LIMITS.words) return Promise.resolve({ kept: kept, refused: refused });
+        var row = mediaList[j], patchIn = {};
+        if (!isObject(row)) { refused.push('?'); return stepMedia(j + 1); }
+        ['clip', 'picture'].forEach(function (name) { if (own(row, name) && row[name]) patchIn[name] = row[name]; });
+        var rawKey = own(row, 'key') ? row.key : row.word;
+        return putMedia(rawKey, patchIn).then(function (entry) { if (entry) kept.push(entry.key || entry.word); }, function () { refused.push(line(rawKey, 40) || '?'); }).then(function () { return stepMedia(j + 1); });
+      };
       var step = function (i) {
-        if (i >= data.words.length || i >= LIMITS.words) return Promise.resolve({ kept: kept, refused: refused });
+        if (i >= data.words.length || i >= LIMITS.words) return stepMedia(0);
         var row = data.words[i], patchIn = {};
         if (!isObject(row)) { refused.push('?'); return step(i + 1); }
         ['sounds', 'clip', 'picture'].forEach(function (name) { if (own(row, name) && row[name]) patchIn[name] = row[name]; });
@@ -644,21 +689,130 @@
       }, []);
     }
     function clear() {
-      return run([WORDS, ROWS], 'readwrite', function (stores, done) {
-        done(0);
-        stores[ROWS].count().onsuccess = function (event) {
-          done(event.target.result || 0);
-          stores[WORDS].clear(); stores[ROWS].clear();
-        };
+      return open().then(function (db) {
+        var hasMedia = db.objectStoreNames.contains(MEDIA);
+        var names = hasMedia ? [WORDS, ROWS, MEDIA] : [WORDS, ROWS];
+        return run(names, 'readwrite', function (stores, done) {
+          done(0);
+          var rowCount = 0, mediaCount = 0, pending = hasMedia ? 2 : 1;
+          var finish = function () {
+            if (--pending > 0) return;
+            done(rowCount + mediaCount);
+            stores[WORDS].clear(); stores[ROWS].clear();
+            if (stores[MEDIA]) stores[MEDIA].clear();
+          };
+          stores[ROWS].count().onsuccess = function (event) { rowCount = event.target.result || 0; finish(); };
+          if (hasMedia) stores[MEDIA].count().onsuccess = function (event) { mediaCount = event.target.result || 0; finish(); };
+        });
       }).then(function (count) { if (count) announce('', 'clear'); return count; }, function () { return 0; });
     }
     function usage() {
-      return list().then(function (rows) {
-        return { count: rows.length, bytes: rows.reduce(function (sum, row) { return sum + (Number(row.bytes) || 0); }, 0) };
-      });
+      return open().then(function (db) {
+        var hasMedia = db.objectStoreNames.contains(MEDIA);
+        var names = hasMedia ? [ROWS, MEDIA] : [ROWS];
+        return read(names, function (stores, done) {
+          var rowList = [], mediaList = [], pending = hasMedia ? 2 : 1;
+          done({ count: 0, bytes: 0 });
+          var finish = function () {
+            if (--pending > 0) return;
+            done({
+              count: rowList.length + mediaList.length,
+              bytes: rowList.reduce(function (sum, row) { return sum + (Number(row.bytes) || 0); }, 0)
+                + mediaList.reduce(function (sum, entry) { return sum + mediaBytes(entry); }, 0),
+            });
+          };
+          stores[ROWS].getAll().onsuccess = function (event) { rowList = event.target.result || []; finish(); };
+          if (hasMedia) stores[MEDIA].getAll().onsuccess = function (event) { mediaList = event.target.result || []; finish(); };
+        }, { count: 0, bytes: 0 });
+      }, function () { return { count: 0, bytes: 0 }; });
     }
 
-    return { available: available, get: get, getMany: getMany, put: put, remove: remove, list: list, clear: clear, usage: usage, exportAll: exportAll, importAll: importAll, onChange: onChange };
+    // Unified binary media API (pictures & recordings) shared across Word Sounds, Vocab and Symbol Runner.
+    // Standard 2-24 letter words route directly to the shared words/rows stores; single symbols, digits and
+    // multi-word phrases route to the sibling media object store inside the same IndexedDB database.
+    function getMedia(rawKey) {
+      var wKey = normalizeWord(rawKey);
+      if (wKey) return get(wKey);
+      var mKey = normalizeMediaKey(rawKey);
+      if (!mKey) return Promise.resolve(null);
+      return read([MEDIA], function (stores, done) {
+        done(null);
+        stores[MEDIA].get(mKey).onsuccess = function (event) { done(event.target.result || null); };
+      }, null);
+    }
+    function getManyMedia(rawKeys) {
+      var wordKeys = [], mediaKeys = [];
+      (Array.isArray(rawKeys) ? rawKeys : []).forEach(function (raw) {
+        var wKey = normalizeWord(raw);
+        if (wKey) { if (wordKeys.indexOf(wKey) < 0) wordKeys.push(wKey); return; }
+        var mKey = normalizeMediaKey(raw);
+        if (mKey && mediaKeys.indexOf(mKey) < 0) mediaKeys.push(mKey);
+      });
+      if (!wordKeys.length && !mediaKeys.length) return Promise.resolve({});
+      return Promise.all([
+        wordKeys.length ? getMany(wordKeys) : Promise.resolve({}),
+        mediaKeys.length ? read([MEDIA], function (stores, done) {
+          var found = {};
+          done(found);
+          mediaKeys.forEach(function (k) { stores[MEDIA].get(k).onsuccess = function (event) { if (event.target.result) found[k] = event.target.result; }; });
+        }, {}) : Promise.resolve({}),
+      ]).then(function (pair) {
+        var out = {};
+        Object.keys(pair[0] || {}).forEach(function (k) { out[k] = pair[0][k]; });
+        Object.keys(pair[1] || {}).forEach(function (k) { out[k] = pair[1][k]; });
+        return out;
+      });
+    }
+    function putMedia(rawKey, patch) {
+      var wKey = normalizeWord(rawKey);
+      if (wKey) return put(wKey, patch);
+      var mKey = normalizeMediaKey(rawKey), cleaned = {}, names;
+      try {
+        if (!mKey) throw fail('bad_word', 'That word or symbol cannot be kept here.');
+        if (!isObject(patch)) throw fail('bad_part', 'There is nothing to keep for this item.');
+        names = ['clip', 'picture'].filter(function (name) { return own(patch, name) && patch[name] !== undefined; });
+        if (!names.length) throw fail('bad_part', 'There is nothing to keep for this item.');
+        names.forEach(function (name) { cleaned[name] = patch[name] === null ? null : PARTS[name](mKey, patch[name]); });
+      } catch (error) {
+        return Promise.reject(error && error.code ? error : fail('bad_part', 'This could not be kept.'));
+      }
+      return run([MEDIA], 'readwrite', function (stores, done, stop) {
+        stores[MEDIA].get(mKey).onsuccess = function (event) {
+          var before = event.target.result || null;
+          var entry = { key: mKey, updated: new Date().toISOString() };
+          ['clip', 'picture'].forEach(function (name) {
+            var part = own(cleaned, name) ? cleaned[name] : before && before[name];
+            if (part) entry[name] = part;
+          });
+          if (!entry.clip && !entry.picture) {
+            stores[MEDIA].delete(mKey); done(null);
+            return;
+          }
+          var write = function () { stores[MEDIA].put(entry); done(entry); };
+          if (before) { write(); return; }
+          stores[MEDIA].count().onsuccess = function (counted) {
+            if (counted.target.result >= LIMITS.words) stop(fail('too_many_words', 'This browser keeps at most ' + LIMITS.words + ' custom items. Remove some to add more.'));
+            else write();
+          };
+        };
+      }).then(function (entry) { announce('', entry ? 'put' : 'remove'); if (entry) keepAsked(); return entry; }, function (error) { throw storageError(error); });
+    }
+    function removeMedia(rawKey) {
+      var wKey = normalizeWord(rawKey);
+      if (wKey) return remove(wKey);
+      var mKey = normalizeMediaKey(rawKey);
+      if (!mKey) return Promise.resolve(false);
+      return run([MEDIA], 'readwrite', function (stores, done) {
+        done(false);
+        stores[MEDIA].get(mKey).onsuccess = function (event) {
+          done(!!event.target.result);
+          stores[MEDIA].delete(mKey);
+        };
+      }).then(function (was) { if (was) announce('', 'remove'); return was; }, function () { return false; });
+    }
+
+    return { available: available, get: get, getMany: getMany, put: put, remove: remove, list: list, clear: clear, usage: usage, exportAll: exportAll, importAll: importAll, onChange: onChange,
+      getMedia: getMedia, getManyMedia: getManyMedia, putMedia: putMedia, removeMedia: removeMedia };
   }
 
   var api = create(root);
@@ -667,6 +821,7 @@
   api.NOT_KEEPING = NOT_KEEPING;
   api.create = create;
   api.normalizeWord = normalizeWord;
+  api.normalizeMediaKey = normalizeMediaKey;
   api.svgRefusal = svgRefusal;
   api.dataUriBytes = dataUriBytes;
   api.resizeToDataUri = resizeToDataUri;

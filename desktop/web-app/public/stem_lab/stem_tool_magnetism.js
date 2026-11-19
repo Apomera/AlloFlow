@@ -3758,6 +3758,36 @@
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+
+  // Bespoke Electromagnetism Lab studio polish + Light/Dark/High-Contrast parity
+  (function () {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-magnetism-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-magnetism-studio-css';
+    st.textContent = [
+      '.mag-root .mag-studio-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; background: rgba(14,165,233,0.16); border: 1px solid rgba(56,189,248,0.45); color: #075985; font-size: 10px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }',
+      '.theme-dark .mag-root .mag-studio-badge { background: rgba(14,165,233,0.22); border-color: rgba(125,211,252,0.48); color: #e0f2fe; }',
+      '.mag-root .mag-studio-telemetry { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 15px 6px; border-top: 1px solid rgba(148,163,184,0.22); }',
+      '.mag-root .mag-studio-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: rgba(15,23,42,0.06); border: 1px solid rgba(100,116,139,0.3); color: #0f172a; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.theme-dark .mag-root .mag-studio-pill { background: rgba(15,23,42,0.68); border-color: rgba(125,211,252,0.3); color: #e2e8f0; }',
+      '.mag-root .mag-studio-schematic { margin: 4px 15px 10px; padding: 7px 10px; border-radius: 12px; background: linear-gradient(135deg, #0f172a 0%, #172554 55%, #0c4a6e 100%); border: 1px solid rgba(56,189,248,0.34); }',
+      '.mag-root .mag-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 0 0 12px; padding: 9px 12px; border-radius: 12px; background: rgba(15,23,42,0.05); border: 1px solid rgba(100,116,139,0.28); min-width: 0; }',
+      '.theme-dark .mag-root .mag-starter-bar { background: rgba(15,23,42,0.58); border-color: rgba(125,211,252,0.26); }',
+      '.mag-root .mag-starter-label { font-size: 10.5px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; color: #075985; }',
+      '.theme-dark .mag-root .mag-starter-label { color: #bae6fd; }',
+      '.mag-root .mag-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 7px 11px; border-radius: 10px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.mag-root .mag-starter-chip:hover:not(:disabled) { background: #e0f2fe; border-color: #0284c7; }',
+      '.mag-root .mag-starter-chip[data-active="true"] { background: #0369a1; border-color: #0284c7; color: #ffffff; }',
+      '.theme-dark .mag-root .mag-starter-chip { background: rgba(15,23,42,0.78); border-color: rgba(125,211,252,0.34); color: #f0f9ff; }',
+      '.theme-dark .mag-root .mag-starter-chip:hover:not(:disabled) { background: rgba(14,165,233,0.28); border-color: #38bdf8; color: #ffffff; }',
+      '.theme-dark .mag-root .mag-starter-chip[data-active="true"] { background: #0284c7; border-color: #7dd3fc; color: #ffffff; }',
+      '.theme-contrast [data-stem-tool-shell="magnetism"] .mag-studio-badge, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-studio-pill, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-studio-schematic, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-starter-bar { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="magnetism"] .mag-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="magnetism"] .mag-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="magnetism"] .mag-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   if (_hasHost) window.StemLab.registerTool('magnetism', {
     icon: '🧲',
     label: 'Magnetism Lab',
@@ -3825,12 +3855,12 @@
       // strength on low power. Bloom is sighted-only decoration — every scene
       // here keeps its 2D diagram and SR text as the authoritative surface.
       var MAG_POSTFX_URLS = [
-        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
-        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
-        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
-        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
-        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
-        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+        ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js', 'sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj'],
+        ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js', 'sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R'],
+        ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js', 'sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg'],
+        ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js', 'sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs'],
+        ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js', 'sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3'],
+        ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js', 'sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa']
       ];
       var _magPostFXPromise = null;
       function magPostFXReady() { return !!(window.THREE && window.THREE.EffectComposer && window.THREE.RenderPass && window.THREE.UnrealBloomPass); }
@@ -3838,13 +3868,14 @@
       // at a time; the shared promise means six scenes never double-load them.
       function magLoadPostFX() {
         if (magPostFXReady()) return Promise.resolve(true);
+        if (window._isDesktopBundledApp === true) return Promise.resolve(false);
         if (_magPostFXPromise) return _magPostFXPromise;
         _magPostFXPromise = new Promise(function (resolve) {
           var i = 0;
           (function next() {
             if (i >= MAG_POSTFX_URLS.length) { resolve(magPostFXReady()); return; }
             try {
-              var s = document.createElement('script'); s.src = MAG_POSTFX_URLS[i]; s.async = false;
+              var s = document.createElement('script'); s.src = MAG_POSTFX_URLS[i][0]; s.integrity = MAG_POSTFX_URLS[i][1]; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer'; s.async = false;
               s.onload = function () { i++; next(); }; s.onerror = function () { i++; next(); };
               document.head.appendChild(s);
             } catch (e) { resolve(false); }
@@ -4190,7 +4221,8 @@
         factIdx: 0,
         askInput: '', askAnswer: '', askLoading: false
       };
-      var d = Object.assign({}, MAG_DEFAULTS, (labToolData && labToolData.magnetism) || {});
+      var _rawMag = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData.magnetism : null;
+      var d = Object.assign({}, MAG_DEFAULTS, (_rawMag && typeof _rawMag === 'object' && !Array.isArray(_rawMag)) ? _rawMag : {});
       var tubeRuntime = React.useRef({ raf: null, token: 0, running: false, latest: null, finish: null });
       tubeRuntime.current.latest = d;
       React.useEffect(function () {
@@ -7996,7 +8028,8 @@
         upd({ charge3dProgress: initialProgress, charge3dRunning: true, charge3dUsed: true, lorentzUsed: true });
         function frame(timestamp) {
           if (token !== _charge3DRunToken) return;
-          var current = (ctx.toolData && ctx.toolData.magnetism) || {};
+          var _curMag = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData.magnetism : null;
+        var current = (_curMag && typeof _curMag === 'object' && !Array.isArray(_curMag)) ? _curMag : {};
           if (!current.charge3dRunning || current.tab !== 'motor' || current.motorMode !== 'particle' || current.chargeView !== '3d') { _charge3DRAF = null; return; }
           if (started == null) started = timestamp;
           var progress = Math.min(100, initialProgress + (timestamp - started) / 40);
@@ -10952,9 +10985,9 @@
                 h('span', { className: 'mag-section-label' }, 'Read · step · compare'),
                 h('div', { className: 'mag-walk-bearing' },
                   h('svg', { viewBox: '0 0 80 80', width: 80, height: 80, role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_current_compass_the_red_tip_points_about', 'Current compass. The red tip points about {word}.'), { word: bearing.word }) },
-                    h('text', { x: 40, y: 9, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'N'), h('text', { x: 75, y: 43, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'E'),
-                    h('text', { x: 40, y: 79, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'S'), h('text', { x: 5, y: 43, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'W'),
-                    h('circle', { cx: 40, cy: 40, r: 25, fill: '#0f172a', stroke: SOFT, strokeWidth: 1.5 }),
+                    h('text', { x: 40, y: 12, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'N'), h('text', { x: 74, y: 43, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'E'),
+                    h('text', { x: 40, y: 76, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'S'), h('text', { x: 6, y: 43, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'W'),
+                    h('circle', { cx: 40, cy: 40, r: 23, fill: '#0f172a', stroke: SOFT, strokeWidth: 1.5 }),
                     h('g', { 'data-walk-needle-angle': bearing.angle.toFixed(1), transform: 'translate(40,40) rotate(' + bearing.angle.toFixed(1) + ')' },
                       h('polygon', { points: '21,0 -3,-6 -3,6', fill: '#f43f5e' }), h('polygon', { points: '-21,0 3,-6 3,6', fill: '#e2e8f0' }))),
                   h('div', null, h('b', { className: 'mag-walk-position' }, 'Column ' + (d.mazePx + 1) + ' · Row ' + (d.mazePy + 1)), h('span', null, 'Red tip = local field direction'), h('small', null, d.mazeSteps + ' steps · ' + (d.mazeWon ? 'source found' : 'source hidden')))),
@@ -12189,6 +12222,7 @@
                 h('rect', { className: 'mag-shell-pole s', x: 32, y: 24, width: 12, height: 16, rx: 3 }),
                 h('circle', { className: 'mag-shell-spark', cx: 51, cy: 32, r: 2.2 }))),
             h('div', { className: 'mag-shell-copy' },
+              h('span', { className: 'mag-studio-badge' }, __alloT('stem.magnetism.badge_subject', 'Physics · Electromagnetism & Fields')),
               h('small', null, 'Magnetism & Electromagnetism Lab · Chapter ' + story.chapterNumber + '/' + story.chapterCount),
               h('h2', { id: 'mag-shell-title' }, station.icon + ' ' + station.label),
               h('p', null, h('b', null, guide.phase + '. '), guide.goal)),
@@ -12210,6 +12244,31 @@
                 'aria-expanded': menuOpen ? 'true' : 'false', 'aria-controls': 'mag-shell-menu', onClick: toggleMenu, style: btn(menuOpen) },
               h('span', { 'aria-hidden': 'true' }, '☰'),
               h('span', null, h('small', null, d.labShellPanel ? 'Open panel · ' + d.labShellPanel : 'Story, guide, settings'), h('b', null, menuOpen ? 'Close lab menu' : 'Lab menu')))),
+          h('div', { className: 'mag-studio-telemetry' },
+            h('span', { className: 'mag-studio-pill' }, '\uD83E\uDDF2 ' + __alloT('stem.magnetism.telemetry_station', 'Station ') + story.stationNumber + '/' + story.stationCount),
+            h('span', { className: 'mag-studio-pill' }, '\u26A1 ' + activeModelLabel()),
+            h('span', { className: 'mag-studio-pill' }, '\uD83D\uDDFA\uFE0F ' + __alloT('stem.magnetism.telemetry_expedition', 'Expedition: ') + expedition.doneCount + '/' + expedition.total),
+            h('span', { className: 'mag-studio-pill' }, '\uD83E\uDDED ' + (d.learningMode === 'challenge' ? __alloT('stem.magnetism.mode_challenge', 'Challenge Mode') : __alloT('stem.magnetism.mode_guided', 'Guided Mode')))
+          ),
+          h('div', { className: 'mag-studio-schematic' },
+            h('svg', {
+              viewBox: '0 0 580 58', role: 'img',
+              'aria-label': __alloT('stem.magnetism.a11y_em_coupling_diagram', 'Electromagnetic coupling diagram: magnetic fields and dipole flux connect to electric currents and Lorentz forces, which drive Faraday induction, motors, and planetary magnetospheres'),
+              style: { width: '100%', maxHeight: 60, height: 'auto', display: 'block' }
+            },
+              h('line', { x1: 174, y1: 29, x2: 208, y2: 29, stroke: '#38bdf8', strokeWidth: 2 }),
+              h('line', { x1: 372, y1: 29, x2: 406, y2: 29, stroke: '#fbbf24', strokeWidth: 2 }),
+              h('rect', { x: 8, y: 7, width: 166, height: 44, rx: 10, fill: (d.tab === 'field' || d.tab === 'maze' || d.tab === 'materials') ? 'rgba(56,189,248,0.34)' : 'rgba(15,23,42,0.72)', stroke: (d.tab === 'field' || d.tab === 'maze' || d.tab === 'materials') ? '#38bdf8' : '#475569', strokeWidth: (d.tab === 'field' || d.tab === 'maze' || d.tab === 'materials') ? 2 : 1.3 }),
+              h('text', { x: 91, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '1. Fields & Domains'),
+              h('text', { x: 91, y: 41, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'Dipoles · Compass · Flux'),
+              h('rect', { x: 208, y: 7, width: 164, height: 44, rx: 10, fill: (d.tab === 'electro' || d.tab === 'motor' || d.tab === 'crane') ? 'rgba(244,63,94,0.32)' : 'rgba(15,23,42,0.72)', stroke: (d.tab === 'electro' || d.tab === 'motor' || d.tab === 'crane') ? '#fb7185' : '#475569', strokeWidth: (d.tab === 'electro' || d.tab === 'motor' || d.tab === 'crane') ? 2 : 1.3 }),
+              h('text', { x: 290, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '2. Current & Force'),
+              h('text', { x: 290, y: 41, textAnchor: 'middle', fill: '#fecdd3', fontSize: 10.5 }, 'Solenoids · Motors · qv×B'),
+              h('rect', { x: 406, y: 7, width: 166, height: 44, rx: 10, fill: (d.tab === 'induce' || d.tab === 'transformer' || d.tab === 'earth' || d.tab === 'quiz') ? 'rgba(251,191,36,0.28)' : 'rgba(15,23,42,0.72)', stroke: (d.tab === 'induce' || d.tab === 'transformer' || d.tab === 'earth' || d.tab === 'quiz') ? '#fbbf24' : '#475569', strokeWidth: (d.tab === 'induce' || d.tab === 'transformer' || d.tab === 'earth' || d.tab === 'quiz') ? 2 : 1.3 }),
+              h('text', { x: 489, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '3. Induction & Shield'),
+              h('text', { x: 489, y: 41, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'Faraday · Grid · Earth')
+            )
+          ),
           h('div', { className: 'mag-shell-journey', 'aria-hidden': 'true' },
             h('span', { style: { width: expedition.percent + '%' } })),
           menuOpen ? h('div', { id: 'mag-shell-menu', className: 'mag-shell-menu', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_choose_a_lab_support_panel', 'Choose a lab support panel') },
@@ -13165,7 +13224,25 @@
         d.tab !== 'quiz' ? shellPanelFrame('evidence', 'Evidence Studio', '📓', function () { return investigationNotebook(); }, '#34d399') : null,
         labToolbar('signal'),
         shellPanelFrame('settings', 'Lab settings', '⚙️', function () { return labToolbar('settings'); }, '#a78bfa'),
-        h('div', { id: 'mag-panel-' + d.tab, className: 'mag-active-panel', role: 'tabpanel', 'aria-labelledby': 'mag-tab-' + d.tab }, body),
+        h('div', { id: 'mag-panel-' + d.tab, className: 'mag-active-panel', role: 'tabpanel', 'aria-labelledby': 'mag-tab-' + d.tab },
+          (d.tab !== 'quiz' && d.learningMode !== 'challenge' && !d.labFocus && !(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked))) && h('div', { className: 'mag-starter-bar', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_quick_station_starters', 'Quick electromagnetism lab starters') },
+            h('span', { className: 'mag-starter-label' }, __alloT('stem.magnetism.quick_launch', 'Quick stations:')),
+            [
+              { id: 'field', icon: '🧭', label: __alloT('stem.magnetism.starter_field', 'Field Lines') },
+              { id: 'electro', icon: '🔋', label: __alloT('stem.magnetism.starter_electro', 'Electromagnet') },
+              { id: 'motor', icon: '⚙️', label: __alloT('stem.magnetism.starter_motor', 'DC Motor') },
+              { id: 'induce', icon: '⚡', label: __alloT('stem.magnetism.starter_induce', 'Faraday Generator') },
+              { id: 'transformer', icon: '🔌', label: __alloT('stem.magnetism.starter_grid', 'Power Grid') },
+              { id: 'earth', icon: '🌍', label: __alloT('stem.magnetism.starter_earth', "Earth's Shield") }
+            ].map(function (st) {
+              return h('button', {
+                key: 'mag-st-' + st.id, type: 'button', className: 'mag-starter-chip',
+                'data-active': d.tab === st.id ? 'true' : 'false',
+                onClick: function () { upd(Object.assign({ tab: st.id, labShellPanel: '', labShellMenuOpen: false }, st.id === 'earth' ? { earthSeen: true } : {})); }
+              }, h('span', { 'aria-hidden': 'true' }, st.icon), h('span', null, st.label));
+            })
+          ),
+          body),
         d.tab !== 'quiz' ? shellPanelFrame('coach', 'Question Lab', '💬', function () { return askBox(); }, '#a78bfa') : null,
         d.labFocus ? null : shellPanelFrame('journey', 'Magnetism Expedition', '🗺️', function () { return journeyStrip(); }, '#34d399'),
         shellPanelFrame('notes', 'Field notes', '💡', function () { return factStrip(); }, '#fbbf24')

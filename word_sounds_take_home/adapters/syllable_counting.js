@@ -121,13 +121,20 @@ module.exports = {
         update();
       });
     };
+    var doc = ctx.root.ownerDocument;
     var tap = ctx.el('button', { type: 'button', class: 'primary', 'aria-label': ctx.L.syllable_counting_tap, style: 'min-width:128px;min-height:128px;border-radius:64px;font-size:1.2rem',
       on: { click: function () { if (ctx.isDone()) return; taps++; update(); } } },
       [ctx.el('span', { 'aria-hidden': 'true', style: 'display:block;font-size:2.4rem', text: '👏' }), ctx.L.syllable_counting_tap]);
     var undo = ctx.el('button', { type: 'button', on: { click: function () {
-      if (ctx.isDone() || taps === 0) return; taps--; update();
+      if (ctx.isDone() || taps === 0) return;
+      taps--; update();
+      if (taps === 0) { try { tap.focus(); } catch (_) {} }
     } }, text: ctx.L.syllable_counting_undo });
-    var reset = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; taps = 0; update(); } }, text: ctx.L.syllable_counting_reset });
+    var reset = ctx.el('button', { type: 'button', on: { click: function () {
+      if (ctx.isDone()) return;
+      taps = 0; update();
+      try { tap.focus(); } catch (_) {}
+    } }, text: ctx.L.syllable_counting_reset });
     var submit = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () {
       if (!canSubmit()) { if (!ctx.isDone()) ctx.announce(status.textContent); return; }
       var answer = taps;
@@ -140,8 +147,27 @@ module.exports = {
       attempt++;
       taps = 0;
       delivered = false;
-      if (outcome === 'retry') update();
+      if (outcome === 'retry') { update(); try { tap.focus(); } catch (_) {} }
     } }, text: ctx.L.syllable_counting_submit });
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        if (ctx.isDone()) return false;
+        var k = String(key == null ? '' : key);
+        if (k === ' ' || k === 'Spacebar') {
+          var ae = doc && doc.activeElement;
+          var onOtherBtn = !!(ae && String(ae.tagName || '').toUpperCase() === 'BUTTON' && ae !== tap && !ae.closest('[hidden]') && !ae.disabled && ae.getAttribute('aria-disabled') !== 'true');
+          if (onOtherBtn) return false;
+          tap.click();
+          return true;
+        }
+        if (k === 'Backspace') {
+          if (taps === 0) return false;
+          undo.click();
+          return true;
+        }
+        return false;
+      });
+    }
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.syllable_counting_question }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); hear([item.promptAudio], false); } }, text: ctx.L.hear_question }),

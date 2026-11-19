@@ -266,7 +266,10 @@
       return null;
     }
     var snapshot = {};
-    Object.keys(candidate).forEach(function (key) { snapshot[key] = candidate[key]; });
+    Object.keys(candidate).forEach(function (key) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
+      snapshot[key] = candidate[key];
+    });
     snapshot.version = RECOVERY_VERSION;
     snapshot.id = id;
     snapshot.savedAt = savedAt;
@@ -452,6 +455,7 @@
       if (prototype !== Object.prototype && prototype !== null) return value;
       var out = {};
       Object.keys(value).forEach(function (key) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
         out[key] = visit(value[key], path ? path + '.' + key : key);
       });
       return out;
@@ -591,11 +595,39 @@
     this.remotePort = null;      // retained only to close on failed transfer
     this.portTransferred = false;
     this.onPageHide = null;
+    this.consentGuard = null;    // MutationObserver keeping the consent frame interactive
   }
   BridgeTransport.prototype.alive = function () {
     if (!this.win) return false;
     if (this.kind === 'popup') { try { return !this.win.closed; } catch (_) { return false; } }
     return !!(this.frameEl && this.frameEl.isConnected);
+  };
+  // While a person is answering the consent prompt, no app dialog may make the
+  // frame inert. App dialogs isolate every other <body> child (the Canvas
+  // recovery dialog opens while it waits for this very approval), and an inert
+  // frame ignores clicks, so the prompt looked live but could not be answered.
+  BridgeTransport.prototype.guardConsentFrame = function () {
+    var frame = this.frameEl;
+    if (!frame || this.consentGuard || typeof MutationObserver !== 'function') return;
+    frame.setAttribute('data-allo-consent-frame', '');
+    var clear = function () {
+      var changed = false;
+      if (frame.hasAttribute('inert') || frame.inert) {
+        try { frame.inert = false; } catch (_) {}
+        frame.removeAttribute('inert');
+        changed = true;
+      }
+      if (frame.getAttribute('aria-hidden') === 'true') { frame.removeAttribute('aria-hidden'); changed = true; }
+      if (changed && document.activeElement !== frame) { try { frame.focus(); } catch (_) {} }
+    };
+    var observer = new MutationObserver(clear);
+    observer.observe(frame, { attributes: true, attributeFilter: ['inert', 'aria-hidden'] });
+    this.consentGuard = observer;
+    clear();
+  };
+  BridgeTransport.prototype.releaseConsentGuard = function () {
+    if (this.consentGuard) { try { this.consentGuard.disconnect(); } catch (_) {} this.consentGuard = null; }
+    if (this.frameEl) this.frameEl.removeAttribute('data-allo-consent-frame');
   };
   BridgeTransport.prototype.connect = function (bridgeUrl) {
     var self = this;
@@ -665,6 +697,7 @@
           if (self.frameEl) {
             self.frameEl.style.cssText = CONSENT_FRAME_CSS;
             self.frameEl.removeAttribute('aria-hidden');
+            self.guardConsentFrame();
             try { self.frameEl.focus(); } catch (_) {}
           }
           if (self.connectTimer) clearTimeout(self.connectTimer);
@@ -675,6 +708,7 @@
           return;
         }
         if (msg.type === 'allo-bridge-ready') {
+          self.releaseConsentGuard();
           if (self.frameEl) {
             self.frameEl.style.cssText = HIDDEN_FRAME_CSS;
             self.frameEl.setAttribute('aria-hidden', 'true');
@@ -785,6 +819,7 @@
     });
   };
   BridgeTransport.prototype.teardown = function (reason) {
+    this.releaseConsentGuard();
     var connectReject = this.connectReject;
     if (this.connectTimer) clearTimeout(this.connectTimer);
     if (this.helloTimer) clearInterval(this.helloTimer);
@@ -824,15 +859,37 @@
   function directDb() {
     if (_directDb) return _directDb;
     _directDb = new Promise(function (resolve, reject) {
-      var req = indexedDB.open(DIRECT_DB, 1);
+      var req;
+      try {
+        req = indexedDB.open(DIRECT_DB, 1);
+      } catch (err) {
+        _directDb = null;
+        reject(err || storageError('allo/idb-open-failed'));
+        return;
+      }
       req.onupgradeneeded = function () {
         var db = req.result;
         if (!db.objectStoreNames.contains(DIRECT_STORE)) {
           db.createObjectStore(DIRECT_STORE, { keyPath: 'k' }).createIndex('ns', 'ns', { unique: false });
         }
       };
-      req.onsuccess = function () { resolve(req.result); };
-      req.onerror = function () { reject(req.error || storageError('allo/idb-open-failed')); };
+      req.onsuccess = function () {
+        var db = req.result;
+        db.onclose = function () { _directDb = null; };
+        db.onversionchange = function () {
+          _directDb = null;
+          try { db.close(); } catch (_) {}
+        };
+        resolve(db);
+      };
+      req.onerror = function () {
+        _directDb = null;
+        reject(req.error || storageError('allo/idb-open-failed'));
+      };
+      req.onblocked = function () {
+        _directDb = null;
+        reject(storageError('allo/idb-blocked', 'IndexedDB open was blocked by another tab.'));
+      };
     });
     return _directDb;
   }
@@ -924,7 +981,7 @@
           } else if (op === 'namespaces') {
             var all = store.getAll();
             all.onsuccess = function () {
-              var by = {};
+              var by = Object.create(null);
               (all.result || []).forEach(function (r) {
                 var b = by[r.ns] = by[r.ns] || { ns: r.ns, count: 0, bytes: 0 };
                 b.count++;
@@ -957,17 +1014,17 @@
   };
 
   // ── Memory fallback ──────────────────────────────────────────────
-  var _mem = {};
+  var _mem = Object.create(null);
   var memoryBackend = {
     request: function (op, params) {
       var ns = params && params.ns, key = params && params.key;
-      var bucket = _mem[ns] = _mem[ns] || {};
+      var bucket = _mem[ns] = _mem[ns] || Object.create(null);
       switch (op) {
-        case 'get': return Promise.resolve(key in bucket ? bucket[key] : null);
+        case 'get': return Promise.resolve(own(bucket, key) ? bucket[key] : null);
         case 'set': bucket[key] = params.value; return Promise.resolve(true);
         case 'compareAndSwap':
           try {
-            var casExists = Object.prototype.hasOwnProperty.call(bucket, key);
+            var casExists = own(bucket, key);
             var casResult = applyCompareAndSwap(
               casExists ? bucket[key] : undefined,
               casExists,
@@ -979,14 +1036,14 @@
           } catch (error) { return Promise.reject(error); }
         case 'mutateRecovery':
           try {
-            var recoveryResult = applyRecoveryMutation(key in bucket ? bucket[key] : null, params.mutation);
+            var recoveryResult = applyRecoveryMutation(own(bucket, key) ? bucket[key] : null, params.mutation);
             bucket[key] = recoveryResult.store;
             return Promise.resolve(recoveryResult);
           } catch (error) { return Promise.reject(error); }
         case 'delete': delete bucket[key]; return Promise.resolve(true);
         case 'list': return Promise.resolve(Object.keys(bucket));
         case 'getAll': return Promise.resolve(Object.keys(bucket).map(function (k) { return { key: k, value: bucket[k] }; }));
-        case 'clearNamespace': { var n = Object.keys(bucket).length; _mem[ns] = {}; return Promise.resolve(n); }
+        case 'clearNamespace': { var n = Object.keys(bucket).length; _mem[ns] = Object.create(null); return Promise.resolve(n); }
         case 'namespaces': return Promise.resolve(Object.keys(_mem).sort().map(function (k) {
           return { ns: k, count: Object.keys(_mem[k]).length, bytes: 0 };
         }));
@@ -1479,10 +1536,13 @@
             var overlay = document.createElement('div');
             overlay.setAttribute('role', 'dialog');
             overlay.setAttribute('aria-modal', 'true');
-            overlay.style.cssText = 'position:fixed;inset:0;z-index:100001;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:16px;';
+            overlay.setAttribute('data-allo-device-storage-confirm', '');
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:16px;';
             var box = document.createElement('form');
             box.style.cssText = 'background:#fff;color:#0f172a;border-radius:12px;padding:18px;width:min(100%,380px);font:14px/1.45 system-ui,sans-serif;box-shadow:0 20px 50px rgba(0,0,0,.4);';
             var heading = document.createElement('h3');
+            heading.id = 'allo-device-storage-code-title';
+            overlay.setAttribute('aria-labelledby', heading.id);
             heading.textContent = 'Educator access code required';
             heading.style.cssText = 'margin:0 0 8px;font-size:16px;';
             var input = document.createElement('input');
@@ -1511,7 +1571,31 @@
             box.appendChild(row);
             overlay.appendChild(box);
             document.body.appendChild(overlay);
+            var onModalKey = function (ev) {
+              if (ev.key === 'Escape') {
+                if (ev.isComposing || ev.keyCode === 229) return;
+                ev.preventDefault();
+                ev.stopPropagation();
+                finish(false);
+                return;
+              }
+              if (ev.key === 'Tab') {
+                var focusables = [input, cancel, submit].filter(function (el) { return el && !el.disabled; });
+                if (!focusables.length) return;
+                var first = focusables[0];
+                var last = focusables[focusables.length - 1];
+                if (ev.shiftKey && (document.activeElement === first || focusables.indexOf(document.activeElement) === -1)) {
+                  ev.preventDefault();
+                  last.focus();
+                } else if (!ev.shiftKey && (document.activeElement === last || focusables.indexOf(document.activeElement) === -1)) {
+                  ev.preventDefault();
+                  first.focus();
+                }
+              }
+            };
+            document.addEventListener('keydown', onModalKey, true);
             var finish = function (ok) {
+              document.removeEventListener('keydown', onModalKey, true);
               try { overlay.remove(); } catch (_) {}
               if (openerBtn && openerBtn.focus) try { openerBtn.focus(); } catch (_) {}
               resolve(!!ok);
@@ -1534,6 +1618,11 @@
             try { input.focus(); } catch (_) {}
           });
         };
+        var runAfterEducatorVerify = function (openerBtn, next) {
+          var dac = window.AlloModules && window.AlloModules.DeviceAccessCode;
+          if (!dac || typeof dac.isConfigured !== 'function' || !dac.isConfigured()) { next(); return; }
+          verifyEducatorCodeForProbe(openerBtn).then(function (ok) { if (ok) next(); });
+        };
         list.forEach(function (info) {
           var line = document.createElement('div');
           line.style.cssText = 'display:flex;align-items:center;gap:8px;margin:3px 0;';
@@ -1546,8 +1635,7 @@
           exp.style.cssText = btnCss + 'padding:2px 8px;';
           exp.onclick = function () {
             if (isProbeBlockedForLearner()) { probeNotice('Export is disabled in student mode.'); return; }
-            verifyEducatorCodeForProbe(exp).then(function (ok) {
-              if (!ok) return;
+            runAfterEducatorVerify(exp, function () {
               api.getAll(info.ns).then(function (rows) {
                 var blob = new Blob([JSON.stringify({ ns: info.ns, exportedAt: new Date().toISOString(), records: rows }, null, 2)], { type: 'application/json' });
                 var a = document.createElement('a');
@@ -1565,8 +1653,7 @@
           del.onclick = function () {
             if (isProbeBlockedForLearner()) { probeNotice('Erasing stored data is disabled in student mode.'); return; }
             if (isClinicalDeletionHeld(info.ns)) { probeNotice('Manual clinical-record deletion is blocked by retention policy or legal hold.'); return; }
-            verifyEducatorCodeForProbe(del).then(function (ok) {
-              if (!ok) return;
+            runAfterEducatorVerify(del, function () {
               if (isClinicalDeletionHeld(info.ns)) { probeNotice('Manual clinical-record deletion is blocked by retention policy or legal hold.'); return; }
               confirmDeviceStorageErase(info, del).then(function (confirmed) {
                 if (confirmed) api.clearNamespace(info.ns).then(function () { dataBtn.onclick(); });

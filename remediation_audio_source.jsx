@@ -40,7 +40,7 @@ const remediationAudio = (() => {
     try {
       const ctx = _getAudioCtx();
       if (!ctx) return;
-      if (ctx.state === 'suspended') { try { ctx.resume(); } catch(e) {} }
+      if (ctx.state === 'suspended') { try { Promise.resolve(ctx.resume()).catch(() => {}); } catch(e) {} }
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
       osc.type = type;
@@ -50,6 +50,7 @@ const remediationAudio = (() => {
       g.gain.exponentialRampToValueAtTime(gain, now + attack);
       g.gain.exponentialRampToValueAtTime(0.0001, now + duration + release);
       osc.connect(g); g.connect(ctx.destination);
+      osc.onended = () => { try { osc.disconnect(); } catch (_) {} try { g.disconnect(); } catch (_) {} };
       osc.start(now);
       osc.stop(now + duration + release + 0.02);
     } catch(e) { /* non-blocking */ }

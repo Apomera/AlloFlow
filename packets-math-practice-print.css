@@ -1,0 +1,44 @@
+/* The paper copy of math fact practice (packets-math-practice.html, step 3, "Print on paper").
+   On screen it is never shown. While a file is ready (body.paper-on), printing the page prints
+   the Cover, Copy, Compare practice sheet and teacher answer key and nothing else, using tokens
+   from packets.css so it fits cleanly on both US Letter and A4. */
+@media print {
+  @page { margin: 12mm 15mm; }
+
+  body.paper-on { background: var(--surface); color: var(--ink); font-size: 11pt; line-height: 1.35; }
+  body.paper-on > :not(#paper) { display: none !important; }
+  body.paper-on > #paper[hidden] { display: block !important; }
+
+  .paper { font-family: var(--font); color: var(--ink); background: var(--surface); }
+  .paper h2 { color: var(--ink); margin: 0 0 3mm; font-size: 16pt; line-height: 1.2; }
+  .paper-sheet { break-after: page; page-break-after: always; }
+  .paper-teacher { break-before: page; page-break-before: always; break-after: auto; page-break-after: auto; }
+
+  .paper-who { display: flex; gap: 8mm; align-items: flex-end; margin: 0 0 4mm; font-size: 12pt; }
+  .paper-field { display: flex; flex: 2 1 0; gap: 2mm; align-items: flex-end; white-space: nowrap; }
+  .paper-field-short { flex: 1 1 0; }
+  .paper-fill { display: inline-block; flex: 1 1 auto; min-width: 22mm; height: 6mm; border-bottom: 0.35mm solid var(--ink); }
+
+  .paper-how { margin: 0 0 4mm; font-size: 10.5pt; line-height: 1.4; color: var(--ink); }
+  .paper-keep { margin: 0 0 3mm; font-weight: 700; color: var(--ink); }
+  .paper-meta { margin: 0 0 4mm; font-size: 10.5pt; color: var(--muted); }
+
+  .paper-ccc { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums lining-nums; }
+  .paper-ccc thead { display: table-header-group; }
+  .paper-ccc th { text-align: left; font-size: 10pt; font-weight: 700; padding: 2mm 2.5mm; border-bottom: 0.5mm solid var(--ink); color: var(--ink); }
+  .paper-ccc td { padding: 3mm 2.5mm; border-bottom: 0.25mm solid var(--line-strong); vertical-align: middle; font-size: 13pt; }
+  .paper-ccc tr { break-inside: avoid; page-break-inside: avoid; }
+  .paper-ccc .pc-n { width: 9mm; font-size: 10pt; font-weight: 700; color: var(--muted); }
+  .paper-ccc .pc-look { width: 30%; font-weight: 700; border-right: 0.4mm dashed var(--ink); white-space: nowrap; }
+  .paper-ccc .pc-try { width: 32%; white-space: nowrap; }
+  .paper-ccc .pc-fix { width: 32%; }
+  .paper-blank { display: inline-block; width: 16mm; height: 0.9em; margin-left: 1.5mm; border-bottom: 0.45mm solid var(--ink); vertical-align: baseline; }
+  .paper-blank-wide { width: 100%; max-width: 44mm; margin-left: 0; }
+
+  .paper-key { margin: 0; padding: 0; list-style: none; column-gap: 8mm; columns: 2; font-variant-numeric: tabular-nums lining-nums; }
+  .paper-key.key-cols-3 { columns: 3; }
+  .paper-key li { display: flex; gap: 2mm; padding: 1mm 0; border-bottom: 0.2mm solid var(--line-strong); break-inside: avoid; page-break-inside: avoid; }
+  .kn { flex: 0 0 10mm; font-weight: 700; color: var(--muted); }
+  .kw { flex: 1 1 auto; }
+  .ka { flex: 0 0 auto; font-weight: 700; }
+}

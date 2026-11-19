@@ -1661,8 +1661,27 @@ function _loadPyodideScript() {
     script.referrerPolicy = 'no-referrer';
     script.src = PYODIDE_CDN + 'pyodide.js';
     script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load pyodide.js from ' + script.src));
+    let settled = false;
+    const cleanup = () => {
+      clearTimeout(timer);
+      script.onload = null;
+      script.onerror = null;
+    };
+    const fail = (err) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
+      reject(err);
+    };
+    const timer = setTimeout(() => fail(new Error('Timed out loading pyodide.js from ' + script.src)), 30000);
+    script.onload = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve();
+    };
+    script.onerror = () => fail(new Error('Failed to load pyodide.js from ' + script.src));
     document.head.appendChild(script);
   });
 }
@@ -1696,7 +1715,13 @@ async function _initPoetry() {
 const PyodideRuntime = {
   /** Start the download in the background; returns the init promise. */
   warmup() {
-    if (!_initPromise) _initPromise = _init();
+    if (!_initPromise) {
+      const pending = _init().catch((err) => {
+        if (_initPromise === pending) _initPromise = null;
+        throw err;
+      });
+      _initPromise = pending;
+    }
     return _initPromise;
   },
 
@@ -1753,7 +1778,13 @@ const PyodideRuntime = {
   /** Start pronouncing-package install in background. Returns the promise so
    *  callers can await readiness if they want; idempotent across calls. */
   warmupPoetry() {
-    if (!_poetryPromise) _poetryPromise = _initPoetry();
+    if (!_poetryPromise) {
+      const pending = _initPoetry().catch((err) => {
+        if (_poetryPromise === pending) _poetryPromise = null;
+        throw err;
+      });
+      _poetryPromise = pending;
+    }
     return _poetryPromise;
   },
 

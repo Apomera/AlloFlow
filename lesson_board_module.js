@@ -4312,7 +4312,7 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
   }
   var cell = (value) => {
     let text3 = String(value ?? "");
-    if (/^[\s]*[=+@-]/.test(text3) || /^[\t\r\n]/.test(text3)) text3 = "'" + text3;
+    if (/^[\s]*[=+@|-]/.test(text3) || /^[\t\r\n]/.test(text3)) text3 = "'" + text3;
     return '"' + text3.replaceAll('"', '""') + '"';
   };
   function reportCSV(report) {
@@ -8976,14 +8976,14 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
         if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable("text", callGemini);
       } catch (_) {
       }
-      return typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+      return typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
     })();
     const sceneryImagen = (() => {
       try {
         if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable("images", callImagen);
       } catch (_) {
       }
-      return typeof callImagen === "function" && !callImagen._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+      return typeof callImagen === "function" && !callImagen._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
     })() ? callImagen : null;
     const [useClassRoles, setUseClassRoles] = useState12(false);
     const [playStyle, setPlayStyle] = useState12("tabletop");

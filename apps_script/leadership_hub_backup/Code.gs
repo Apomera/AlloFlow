@@ -91,10 +91,24 @@ function lhbFolder_() {
   if (id) {
     try { return DriveApp.getFolderById(id); } catch (ignore) { /* recreated below */ }
   }
-  var folder = DriveApp.createFolder(LHB_FOLDER_NAME);
-  // Restricted is Drive's default for a new folder; nothing here shares it.
-  props.setProperty(LHB_PROP_FOLDER, folder.getId());
-  return folder;
+  var lock = (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;
+  var locked = false;
+  if (lock) {
+    if (!lock.tryLock(10000)) throw new Error('Backup folder setup is busy.');
+    locked = true;
+  }
+  try {
+    var freshId = props.getProperty(LHB_PROP_FOLDER);
+    if (freshId) {
+      try { return DriveApp.getFolderById(freshId); } catch (ignore2) { /* recreated below */ }
+    }
+    var folder = DriveApp.createFolder(LHB_FOLDER_NAME);
+    // Restricted is Drive's default for a new folder; nothing here shares it.
+    props.setProperty(LHB_PROP_FOLDER, folder.getId());
+    return folder;
+  } finally {
+    if (locked) { try { lock.releaseLock(); } catch (relErr) {} }
+  }
 }
 
 function doPost(e) {
@@ -104,15 +118,18 @@ function doPost(e) {
   } catch (err) {
     return lhbJson_({ ok: false, error: 'bad-json' });
   }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return lhbJson_({ ok: false, error: 'bad-json' });
+  }
   var props = lhbProps_();
   var token = props.getProperty(LHB_PROP_TOKEN);
   if (!token) return lhbJson_({ ok: false, error: 'not-set-up', hint: 'Run setup() in the script editor first.' });
   var cache = (typeof CacheService !== 'undefined' && CacheService && CacheService.getScriptCache) ? CacheService.getScriptCache() : null;
+  var failCount = parseInt((cache && cache.get('lhb_auth_fail')) || '0', 10) || 0;
+  if (failCount >= 20) {
+    return lhbJson_({ ok: false, error: 'rate-limited' });
+  }
   if (!lhbTimingSafeTokenEq(data.token, token)) {
-    var failCount = parseInt((cache && cache.get('lhb_auth_fail')) || '0', 10) || 0;
-    if (failCount >= 20) {
-      return lhbJson_({ ok: false, error: 'rate-limited' });
-    }
     if (cache) cache.put('lhb_auth_fail', String(failCount + 1), 60);
     return lhbJson_({ ok: false, error: 'bad-token' });
   }

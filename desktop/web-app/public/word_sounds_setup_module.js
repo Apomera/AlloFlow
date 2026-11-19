@@ -3568,7 +3568,7 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
   const kind = pack.kind === "student-voice" ? "student-voice" : "teacher-model";
   const isStudent = kind === "student-voice";
   const consentOk = !isStudent || pack.consent === true;
-  const aiAvailable = typeof window !== "undefined" && typeof window.callGeminiAudio === "function" && (typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("audio", window.callGeminiAudio) : !window.callGeminiAudio._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled);
+  const aiAvailable = typeof window !== "undefined" && typeof window.callGeminiAudio === "function" && (typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("audio", window.callGeminiAudio) : !window.callGeminiAudio._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked);
   const allKeys = Object.keys(PHONEME_PACK_GROUPS).reduce((acc, g) => acc.concat(PHONEME_PACK_GROUPS[g]), []);
   const recordedCount = allKeys.filter((k) => clips[k]).length;
   const setKind = (k) => setPack((prev) => Object.assign({}, prev, { kind: k }));
@@ -3947,21 +3947,27 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
   const importPack = (ev) => {
     const file = ev.target.files && ev.target.files[0];
     if (!file) return;
+    if (typeof file.size === "number" && file.size > 25 * 1024 * 1024) {
+      setStatus(T("word_sounds.voice_pack_msg_read_fail", "Could not read that file."));
+      ev.target.value = "";
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const data = JSON.parse(e.target.result);
+        const data = JSON.parse(e.target.result, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
         const incoming = data && (data.phonemes || data.clips) || null;
         if (!incoming || typeof incoming !== "object") {
           setStatus(T("word_sounds.voice_pack_msg_not_pack", "That file is not a phoneme pack."));
           return;
         }
         const sanitizeClips = (o) => {
-          const out = {};
+          const out = /* @__PURE__ */ Object.create(null);
           if (o && typeof o === "object") Object.keys(o).forEach((k) => {
+            if (k === "__proto__" || k === "constructor" || k === "prototype") return;
             if (typeof o[k] === "string" && o[k]) out[k] = o[k];
           });
-          return out;
+          return Object.assign({}, out);
         };
         const safeClips = sanitizeClips(incoming);
         const safeInstr = sanitizeClips(data && data.instr);
@@ -4220,7 +4226,7 @@ const preparePackWordAiFree = async (env) => {
   });
   const needs = packAiOnlyNeeds(activities);
   let text = {};
-  const _packTextUsable = aiUsable && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true));
+  const _packTextUsable = aiUsable && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
   if ((needs.sentence || needs.story) && _packTextUsable) {
     const safeWord = String(word || "").replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, "");
     const safeGrade = String(gradeLevel || "Early Readers (K-2)").replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, "");
@@ -4245,7 +4251,7 @@ const preparePackWordAiFree = async (env) => {
     }
   }
   let image = null;
-  const _packImagenUsable = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("images", callImagen) : typeof callImagen === "function" && !callImagen._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+  const _packImagenUsable = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("images", callImagen) : typeof callImagen === "function" && !callImagen._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   if (_packImagenUsable && wantPicture) {
     try {
       const safeWordImg = String(word || "").replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, "");
@@ -6047,7 +6053,7 @@ function useWordSoundsAiTopic({ enabled, topic, language, gradeLevel, syllableRa
   }, []);
   React.useEffect(cancel, [contextKey, cancel]);
   const generate = async () => {
-    const _topicAiUsable = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+    const _topicAiUsable = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
     if (!enabled || !_topicAiUsable || !topic.trim() || !mounted.current || pending.current) return;
     const operation = { controller: new AbortController(), contextKey };
     pending.current = operation;
@@ -6441,7 +6447,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   const [aacDefaultOn, setAacDefaultOn] = useSetupState("aacDefaultOn", () => false);
   const [syllableRange, setSyllableRange] = useSetupState("syllableRange", () => ({ min: 1, max: 4 }));
   const [aiTopic, setAiTopic] = useSetupState("aiTopic", () => "");
-  const goalAiUsable = !!isTeacherMode && !isProbeMode && sessionType !== "assessment" && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("text", callGemini) : typeof callGemini === "function");
+  const goalAiUsable = !!isTeacherMode && !isProbeMode && sessionType !== "assessment" && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
   const [goalText, setGoalText] = useSetupState("goalText", () => "");
   const planner = useWordSoundsPlanner({ store: setupDraft, enabled: goalAiUsable, language: wordSoundsLanguage, gradeLevel, callGemini, warnLog });
   const [goalApplied, setGoalApplied] = React.useState("");
@@ -7001,7 +7007,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     return uniqueWords;
   }, [includeGlossary, includeCustom, includeAI, glossaryTerms, customText, aiTerms, preloadedWords, JSON.stringify(readyLists), wordSoundsLanguage, withinSyllableRange, selectedWords, selectionInputsKey]);
   const selectedIndices = React.useMemo(() => new Set(previewList.map((word, index) => selectedWords.has(word) ? index : -1).filter((index) => index >= 0)), [previewList, selectedWords]);
-  const planAiHere = (kind, fn) => typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable(kind, fn) : typeof fn === "function";
+  const planAiHere = (kind, fn) => typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable(kind, fn) : typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   const planEnv = {
     language: wordSoundsLanguage,
     pictures: planAiHere("images", callImagen) || preloadedWords.some((item) => item && item.image),
@@ -7179,7 +7185,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     if (selectedIndices.size > 0 && lessonActivityRuns(activityToPrepare) && startRef.current) startRef.current();
   }, [activityToPrepare, includeLessonPlan, !!lessonPlan[activityToPrepare]?.enabled, isProcessing, selectedIndices.size]);
   const assessmentKeepsAllWords = sessionType === "assessment" && preloadedWords.length > 0 && (!!preparedSessionConfig.fixedForm || Array.isArray(preparedSessionConfig.itemIds) && preparedSessionConfig.itemIds.length > 0 || preloadedWords.some((item) => item && (item.itemId != null || item.probeItemId != null)));
-  const aiSyllableUsable = !!isTeacherMode && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("text", callGemini) : typeof callGemini === "function");
+  const aiSyllableUsable = !!isTeacherMode && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
   const aiSyllableWanted = aiSyllableUsable && syllableDictionaryState !== "loading" ? unreviewedSyllableCountWords.filter((word) => {
     const r = syllableCountFor(word);
     return !r.counts.length && !r.suggestedCount;
@@ -7188,7 +7194,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   React.useEffect(() => {
     const prefix = WS_CORE.packAudioLanguageKey(wordSoundsLanguage) + "|";
     const ask = aiSyllableWanted.filter((word) => !aiSyllableAsked.current.has(prefix + WS_CORE.packAudioKey(word))).slice(0, 40);
-    const syllableAiAllowed = Boolean(aiSyllableUsable) && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && (typeof window === "undefined" || !window.__alloStudentAiDisabled && !window._alloQrBlocked));
+    const syllableAiAllowed = Boolean(aiSyllableUsable) && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && (typeof window === "undefined" || !window.__alloStudentAiDisabled && !window._alloQrBlocked && !window.__alloAiSecretsLocked));
     if (!ask.length || !syllableAiAllowed) return;
     const controller = new AbortController();
     const forget = () => ask.forEach((word) => aiSyllableAsked.current.delete(prefix + WS_CORE.packAudioKey(word)));
@@ -7969,12 +7975,12 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
                          }
                       `;
           const prompt = packIsEnglish ? _procPrompt_english : _procPrompt_nonEnglish;
-          const _hsGeminiUsable = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+          const _hsGeminiUsable = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("text", callGemini) : typeof callGemini === "function" && !callGemini._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
           const result = _hsGeminiUsable ? await awaitGeneration(callGemini(prompt + "\nRHYME CHOICES: Create a distinct distractor set for this target word; do not reuse the example distractors. Use familiar words of similar syllable count and difficulty, with a mix of similar beginning sounds and different vowel/end sounds. Every distractor must be a genuine non-rhyme of both the target and rhymeWord, including alternate spellings. Preserve one correct rhyme only.", true, false, null, null, signal)) : null;
           if (!isGenerationActive()) return;
           const data = result ? parseWordSoundsAnalysis(result, rawWord) : { word: rawWord, phonemes: [] };
           let imageUrl = null;
-          const _hsImagenUsable = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("images", callImagen) : typeof callImagen === "function" && !callImagen._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+          const _hsImagenUsable = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? window.__alloAiUsable("images", callImagen) : typeof callImagen === "function" && !callImagen._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
           if (_hsImagenUsable) {
             try {
               const safeImgTheme2 = String(effectiveImageTheme || "").replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, "");
@@ -8154,7 +8160,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         ...item.activityItems?.sentence_match?.sequence || [],
         ...item.activityItems?.sentence_match?.extras || []
       ]).map(normalizePackKey).filter(Boolean))];
-      const _wsImagenOk = typeof callImagen === "function" && !callImagen._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true) && (typeof window === "undefined" || typeof window.__alloAiUsable !== "function" || window.__alloAiUsable("images", callImagen));
+      const _wsImagenOk = typeof callImagen === "function" && !callImagen._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) && (typeof window === "undefined" || typeof window.__alloAiUsable !== "function" || window.__alloAiUsable("images", callImagen));
       const stripImgTags = (v) => String(v || "").replace(/<\/?UNTRUSTED_[A-Z0-9_-]*>/gi, "");
       const safeImgTheme = stripImgTags(effectiveImageTheme);
       if (_wsImagenOk) {
@@ -8548,7 +8554,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         probeForm: isAssessment ? probeForm || "A" : null
       };
       const configSummary = isAssessment ? `\u{1F4CA} Assessment \xB7 ${wsActivityName(probeActivitySel)} probe (timed, no hints)` + (probeStudentTrimmed ? ` \xB7 ${probeStudentTrimmed}` : "") : lessonPlanConfig ? `Goal: ${lessonPlanConfig.masteryThreshold} in a row \u2022 ` + enabledActivities.map((a) => `${wsActivityName(a.id)} (${a.count}-${WS_CORE.lessonItemCeiling(a.count, lessonPlanConfig.masteryThreshold)})`).join(" \u2192 ") + ` \u2022 Est. ${lessonPlanConfig.estimatedMinutes} min` : "Quick Practice Mode";
-      const picturesWanted = !isAssessment && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("images", callImagen) : typeof callImagen === "function");
+      const picturesWanted = !isAssessment && (typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("images", callImagen) : typeof callImagen === "function" && !callImagen._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
       const runSummary = {
         words: WS_CORE.lessonOwnItems(processed).length,
         audioReady: WS_CORE.lessonOwnItems(processed).filter((item) => wordsWithAudioPlan.has(item)).length,
@@ -8708,7 +8714,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   })();
   const goalSetupChanged = !!goalEffect && planner.draft.setupKey !== plannerSetupKey;
   const startLabel = isProcessing ? tf("status.generating", "Generating...") : teacherSpokenCountWords.length ? tf("word_sounds.start_teacher_led", "Start teacher-led activity") : sessionType === "assessment" ? tf("word_sounds.start", "Start Activity") : tf("word_sounds.prepare_lesson_button", "Prepare lesson");
-  const aiHere = (kind, fn) => typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable(kind, fn) : typeof fn === "function";
+  const aiHere = (kind, fn) => typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable(kind, fn) : typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   const textAiHere = aiHere("text", callGemini), imageAiHere = aiHere("images", callImagen);
   const isAssessmentSetup = sessionType === "assessment";
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in" }, /* @__PURE__ */ React.createElement("div", { ref: setupDialogRef, role: "dialog", "aria-modal": "true", "aria-label": tf("word_sounds.setup_dialog_label", "Word Sounds setup"), tabIndex: -1, "data-ws-setup-dialog": "true", style: { maxWidth: "min(96vw, 1500px)", maxHeight: "94vh" }, className: "bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full flex flex-col overflow-hidden border border-slate-400 focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-700 to-indigo-700 p-4 sm:p-6 flex flex-wrap justify-between items-center gap-3 text-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-3 rounded-2xl backdrop-blur-md" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 32, className: "text-yellow-300 animate-pulse motion-reduce:animate-none" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black tracking-tight" }, isProbeMode ? `\u{1F4CA} ${tf("word_sounds.probe_title", "{skill} Probe", { skill: probeActivityLabel })}` : tf("word_sounds.title", "Word Sounds")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-100 font-medium opacity-90" }, tf("word_sounds.subtitle", "Design your phonics lesson"), " \u2022 ", gradeLevel || "K-2"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ws_gen_minimize", onClick: () => {

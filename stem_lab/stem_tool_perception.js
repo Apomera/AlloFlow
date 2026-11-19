@@ -635,7 +635,24 @@
     '[data-perception-inspector]{container:perception-inspector / inline-size;padding:14px;border-inline-start-width:3px;overflow-wrap:anywhere}[data-perception-inspector] .perception-inspector-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end;max-width:48rem}[data-perception-inspector] .perception-inspector-controls>.perception-field{grid-column:1/-1;max-width:none;margin:0}[data-perception-inspector] .perception-inspector-controls>button{height:100%;min-height:44px;padding:8px 10px}[data-perception-inspector] .perception-camera-navigation-row{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;max-width:36rem;padding:12px;border:1px solid var(--pl-border);border-radius:10px;background:var(--pl-panel)}[data-perception-inspector] .perception-camera-overview{width:100%;max-width:18rem;margin:0;justify-self:center}[data-perception-inspector] .perception-camera-navigation{width:100%;max-width:15rem;margin:0;align-self:center;justify-self:center}[data-perception-inspector] .perception-camera-navigation button{border-color:var(--pl-control)}[data-perception-inspector] .perception-camera-crop-reminder{margin:12px 0 0!important;padding:10px 12px;border-inline-start:3px solid var(--pl-accent);border-start-end-radius:8px;border-end-end-radius:8px;background:var(--pl-panel);color:var(--pl-ink);font-weight:600}[data-perception-inspector] .perception-camera-linked{margin:12px 0 0!important;color:var(--pl-ink)}[data-perception-inspector] .perception-inspector-tips{margin-top:12px;border-top:1px solid var(--pl-border)}[data-perception-inspector] .perception-inspector-tips>summary{display:list-item;min-height:44px;padding:12px 0;font-size:.875rem;font-weight:650;line-height:1.5;cursor:pointer;overflow-wrap:anywhere}[data-perception-inspector] .perception-inspector-tip-copy{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:10px 20px;padding:2px 0 8px}[data-perception-inspector] .perception-inspector-tip-copy>p{margin:0!important;overflow-wrap:anywhere}@container perception-inspector (max-width:18rem){[data-perception-inspector] .perception-inspector-controls{grid-template-columns:minmax(0,1fr)}}@container perception-inspector (min-width:28rem){[data-perception-inspector] .perception-inspector-controls{grid-template-columns:minmax(10rem,1.25fr) minmax(0,1fr) minmax(0,1fr)}[data-perception-inspector] .perception-inspector-controls>.perception-field{grid-column:auto}[data-perception-inspector] .perception-inspector-controls>button{height:auto}}@container perception-inspector (min-width:32rem){[data-perception-inspector] .perception-camera-navigation-row{grid-template-columns:minmax(0,18rem) minmax(0,15rem)}}@media(forced-colors:active){[data-perception-inspector] .perception-camera-crop-reminder{color:CanvasText;background:Canvas;border-color:Highlight}[data-perception-inspector] .perception-inspector-tips>summary:focus-visible{outline:3px solid Highlight;outline-offset:3px}}',
     '[data-perception-adjustment]{container:perception-adjustment / inline-size;padding:12px;border:1px solid var(--pl-border);border-radius:12px;background:var(--pl-ground);overflow-wrap:anywhere}[data-perception-adjustment]:focus-within{border-color:var(--pl-accent)}[data-perception-adjustment]>label>span{align-items:flex-start;font-weight:650;line-height:1.5}[data-perception-lab] [data-perception-adjustment]>label output{max-width:100%;padding:3px 8px;border:1px solid var(--pl-border);border-radius:6px;background:var(--pl-panel);color:var(--pl-ink);font-weight:700;line-height:1.5;text-align:end;overflow-wrap:anywhere}[data-perception-adjustment] .perception-precision-row{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding-top:10px;border-top:1px solid var(--pl-border);align-items:stretch}[data-perception-adjustment] .perception-precision-value{display:grid;grid-template-columns:minmax(0,1fr) fit-content(40%);gap:8px;align-items:center}[data-perception-adjustment] .perception-precision-value input[type=number]{min-width:0;width:100%;text-align:start}[data-perception-adjustment] .perception-precision-unit{min-width:0;max-width:100%;line-height:1.5;overflow-wrap:anywhere}[data-perception-adjustment] .perception-precision-row button{width:100%;min-height:44px;border-color:var(--pl-control);align-self:stretch}[data-perception-adjustment] .perception-precision-hint{margin-top:10px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}[data-perception-adjustment] .perception-precision-error{margin:10px 0 0;padding:10px 12px;border:1px solid var(--pl-border);border-inline-start:3px solid var(--pl-accent);border-radius:6px;background:var(--pl-panel);line-height:1.5;overflow-wrap:anywhere}@container perception-adjustment (min-width:14rem){[data-perception-adjustment] .perception-precision-row{grid-template-columns:minmax(0,1fr) minmax(4.5rem,.45fr)}}@media(forced-colors:active){[data-perception-adjustment]{border-color:CanvasText;background:Canvas}[data-perception-adjustment]:focus-within{border-color:Highlight}[data-perception-lab] [data-perception-adjustment]>label output{border-color:CanvasText;background:Canvas;color:CanvasText}[data-perception-adjustment] .perception-precision-error{border-color:CanvasText;border-inline-start-color:Highlight;color:CanvasText;background:Canvas}[data-perception-adjustment] :focus-visible{outline:3px solid Highlight;outline-offset:3px}}',
     // Selected buttons use paired system colors; prevent text backplates from hiding HighlightText.
-    '@media(forced-colors:active){[data-perception-lab],[data-perception-lab][data-perception-theme]{--pl-ink:CanvasText;--pl-soft:CanvasText;--pl-panel:Canvas;--pl-ground:Canvas;--pl-border:CanvasText}[data-perception-lab] button[aria-pressed=true]{background:Highlight;color:HighlightText;border-color:Highlight;forced-color-adjust:none}[data-perception-lab] .perception-reading a{color:LinkText}}'
+    '@media(forced-colors:active){[data-perception-lab],[data-perception-lab][data-perception-theme]{--pl-ink:CanvasText;--pl-soft:CanvasText;--pl-panel:Canvas;--pl-ground:Canvas;--pl-border:CanvasText}[data-perception-lab] button[aria-pressed=true]{background:Highlight;color:HighlightText;border-color:Highlight;forced-color-adjust:none}[data-perception-lab] .perception-reading a{color:LinkText}}',
+    '.perception-hero-brand{display:flex;align-items:flex-start;gap:14px;min-width:0;flex:1 1 20rem}',
+    '.perception-hero-emblem{flex:0 0 60px;width:60px;height:60px;display:grid;place-items:center;border-radius:14px;background:var(--pl-panel);border:1.5px solid var(--pl-accent);box-shadow:0 6px 18px rgba(21,86,108,.12)}',
+    '.perception-hero-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}',
+    '.perception-subject-pill,.perception-telemetry-pill{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border-radius:999px;font-size:.75rem;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums}',
+    '.perception-subject-pill{background:var(--pl-active);color:var(--pl-active-ink);border:1px solid var(--pl-accent)}',
+    '.perception-telemetry-pill{background:var(--pl-panel);color:var(--pl-soft);border:1px solid var(--pl-border)}',
+    '.perception-stage-telemetry{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;padding:8px 12px;border-radius:10px;border:1px solid var(--pl-border);background:var(--pl-ground)}',
+    '.perception-stage-telemetry-pills{display:flex;flex-wrap:wrap;gap:6px}',
+    '.perception-preset-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--pl-border)}',
+    '.perception-preset-label{font-size:.75rem;font-weight:700;color:var(--pl-soft);margin-inline-end:4px}',
+    '[data-perception-lab] .perception-preset-bar button{min-height:36px;padding:5px 10px;font-size:.75rem;border-radius:999px}',
+    '.perception-capacity-meter{width:100%;height:8px;border-radius:999px;background:var(--pl-ground);border:1px solid var(--pl-border);overflow:hidden;margin:6px 0 10px}',
+    '.perception-capacity-fill{display:block;height:100%;background:var(--pl-accent);transition:width .25s ease}',
+    '.theme-contrast [data-perception-lab]{--pl-ink:#fff;--pl-soft:#fff;--pl-panel:#000;--pl-ground:#000;--pl-border:#ffff00;--pl-control:#ffff00;--pl-accent:#ffff00;--pl-active:#ffff00;--pl-active-ink:#000;--pl-shadow:none}',
+    '.theme-contrast [data-perception-lab] button[aria-pressed=true]{background:#ffff00;color:#000;border-color:#ffff00}',
+    '.theme-contrast [data-perception-lab] .perception-reading a{color:#ffff00}',
+    '@media(prefers-reduced-motion:reduce){.perception-capacity-fill{transition:none}}'
   ].join('\n');
   var studySerial = 0;
   function PerceptionAdjustment(props) {
@@ -2814,6 +2831,65 @@
           !hasComparison && sceneActions,
            !hasComparison && drawingInspectionTools(),
            !hasComparison && liveFrameStatus(),
+          !hasComparison && h('div', { className: 'perception-stage-telemetry', 'data-perception-stage-telemetry': 'true' },
+            h('div', { className: 'perception-stage-telemetry-pills' },
+              meta.controls.map(function (ctrl) {
+                return h('span', { key: ctrl.key, className: 'perception-telemetry-pill' },
+                  t(meta.id + '_' + ctrl.key + '_label', ctrl.label) + ': ' + activeModel[ctrl.key] + ctrl.unit);
+              }),
+              h('span', { className: 'perception-telemetry-pill' },
+                activeModel.context ? t('telemetry_context_on', 'Surroundings: On') : t('telemetry_context_off', 'Surroundings: Off')),
+              h('span', { className: 'perception-telemetry-pill' },
+                activeModel.reveal ? t('telemetry_guides_on', 'Guides: Revealed') : t('telemetry_guides_off', 'Guides: Hidden'))
+            ),
+            (!studyLocked && !studyBusy && !importBusy && !controlsBusy && !playing) && (function () {
+              var PRESETS_BY_EXP = {
+                brightness: [
+                  { id: 'strong', label: t('preset_brightness_strong', 'High contrast (95%)'), vals: { contrast: 95, target: 128, context: true } },
+                  { id: 'equal', label: t('preset_brightness_equal', 'Equal fields (0%)'), vals: { contrast: 0, target: 128, context: true } },
+                  { id: 'dark', label: t('preset_brightness_dark', 'Dark target (72 RGB)'), vals: { contrast: 85, target: 72, context: true } }
+                ],
+                ebbinghaus: [
+                  { id: 'max', label: t('preset_ebbinghaus_max', 'Large ring (48)'), vals: { surround: 48, gap: 8, context: true } },
+                  { id: 'wide', label: t('preset_ebbinghaus_wide', 'Wide gap (26)'), vals: { surround: 36, gap: 26, context: true } },
+                  { id: 'bare', label: t('preset_ebbinghaus_bare', 'No ring'), vals: { context: false } }
+                ],
+                mullerLyer: [
+                  { id: 'sharp', label: t('preset_ml_sharp', 'Sharp 20\u00B0 fins'), vals: { angle: 20, fin: 62, context: true } },
+                  { id: 'blunt', label: t('preset_ml_blunt', 'Wide 70\u00B0 fins'), vals: { angle: 70, fin: 24, context: true } },
+                  { id: 'bare', label: t('preset_ml_bare', 'Shafts only'), vals: { context: false } }
+                ],
+                cafeWall: [
+                  { id: 'stagger', label: t('preset_cafe_stagger', '50% stagger'), vals: { offset: 50, mortar: 5, context: true } },
+                  { id: 'aligned', label: t('preset_cafe_aligned', 'Aligned (0%)'), vals: { offset: 0, mortar: 5, context: true } },
+                  { id: 'thick', label: t('preset_cafe_thick', 'Thick mortar (12)'), vals: { offset: 50, mortar: 12, context: true } }
+                ],
+                necker: [
+                  { id: 'deep', label: t('preset_necker_deep', 'Deep projection'), vals: { depth: 120, cue: 'none' } },
+                  { id: 'front', label: t('preset_necker_front', 'Lower-left cue'), vals: { depth: 95, cue: 'front' } },
+                  { id: 'back', label: t('preset_necker_back', 'Upper-right cue'), vals: { depth: 95, cue: 'back' } }
+                ],
+                moire: [
+                  { id: 'fine', label: t('preset_moire_fine', 'Fine 3\u00B0 bands'), vals: { angle: 3, spacing: 10, context: true } },
+                  { id: 'steep', label: t('preset_moire_steep', 'Steep 18\u00B0 grid'), vals: { angle: 18, spacing: 12, context: true } },
+                  { id: 'single', label: t('preset_moire_single', 'Single grid'), vals: { context: false } }
+                ],
+                ponzo: [
+                  { id: 'strong', label: t('preset_ponzo_strong', 'Strong perspective'), vals: { convergence: 95, upperY: 165, context: true } },
+                  { id: 'parallel', label: t('preset_ponzo_parallel', 'Parallel rails (0%)'), vals: { convergence: 0, upperY: 175, context: true } },
+                  { id: 'bare', label: t('preset_ponzo_bare', 'Bars only'), vals: { context: false } }
+                ]
+              };
+              var list = PRESETS_BY_EXP[meta.id] || [];
+              if (!list.length) return null;
+              return h('div', { className: 'perception-preset-bar', role: 'group', 'aria-label': t('quick_presets_label', 'Quick setup presets') },
+                h('span', { className: 'perception-preset-label' }, t('try_setup', 'Quick setup:')),
+                list.map(function (preset) {
+                  return button(preset.label, function () { change(preset.vals); announce(preset.label); }, { key: preset.id, 'data-perception-preset': preset.id });
+                })
+              );
+            })()
+          ),
           figure(meta.id, activeModel, false, contextComparing ? contextHeading(activeModel) : undefined),
            impressionPrompt(),
           model.reveal && h('div', { className: 'perception-reading', 'data-perception-result': 'true' }, h('strong', null, resultText(meta.id, activeModel)), h('p', null, explanationText(meta.id, model)), h('a', { href: meta.source, target: '_blank', rel: 'noopener noreferrer' }, t('reference', 'Scientific reference: Michael Bach')))),
@@ -2825,7 +2901,31 @@
     var statusView = h('div', { className: 'perception-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, status);
     return h('section', { 'data-perception-lab': 'true', 'data-perception-theme': ctx.isContrast || ctx.theme === 'contrast' ? 'contrast' : ctx.isDark || ctx.theme === 'dark' ? 'dark' : 'light', 'data-perception-expanded': String(state.expanded), onKeyDown: function (event) { if (event.key === 'Escape') { stop(); if (state.expanded) { update(function (next) { next.expanded = false; return next; }); setControlsOpen(true); } } } },
       h('style', null, CSS),
-      h('header', { className: 'perception-heading' }, h('div', null, h('div', { className: 'perception-eyebrow' }, t('eyebrow', 'Observe · adjust · compare')), h('h2', null, t('title', 'Perception Lab')), h('p', null, t('intro', 'Explore how an image and its surroundings shape what you see. Make a prediction, change one variable, then reveal the drawing.'))),
+      h('header', { className: 'perception-heading' },
+        h('div', { className: 'perception-hero-brand' },
+          h('div', { className: 'perception-hero-emblem', 'aria-hidden': 'true' },
+            h('svg', { viewBox: '0 0 64 64', width: 46, height: 46, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
+              h('circle', { cx: 32, cy: 32, r: 27, fill: 'none', stroke: 'var(--pl-border)', strokeWidth: 1.4, strokeDasharray: '4 3' }),
+              h('path', { d: 'M8 32 C16 17 48 17 56 32 C48 47 16 47 8 32 Z', fill: 'none', stroke: 'var(--pl-accent)', strokeWidth: 2.3 }),
+              h('circle', { cx: 32, cy: 32, r: 10.5, fill: 'none', stroke: 'var(--pl-accent)', strokeWidth: 2 }),
+              h('circle', { cx: 32, cy: 32, r: 4.8, fill: '#ed761c' }),
+              h('line', { x1: 32, y1: 6, x2: 32, y2: 14, stroke: 'var(--pl-accent)', strokeWidth: 1.6 }),
+              h('line', { x1: 32, y1: 50, x2: 32, y2: 58, stroke: 'var(--pl-accent)', strokeWidth: 1.6 }),
+              h('line', { x1: 6, y1: 32, x2: 14, y2: 32, stroke: 'var(--pl-accent)', strokeWidth: 1.6 }),
+              h('line', { x1: 50, y1: 32, x2: 58, y2: 32, stroke: 'var(--pl-accent)', strokeWidth: 1.6 })
+            )
+          ),
+          h('div', null,
+            h('div', { className: 'perception-eyebrow' }, t('eyebrow', 'Observe · adjust · compare')),
+            h('h2', null, t('title', 'Perception Lab')),
+            h('p', null, t('intro', 'Explore how an image and its surroundings shape what you see. Make a prediction, change one variable, then reveal the drawing.')),
+            h('div', { className: 'perception-hero-pills' },
+              h('span', { className: 'perception-subject-pill' }, t('subject_badge', 'Science \u00B7 Arts \u00B7 Psychophysics')),
+              h('span', { className: 'perception-telemetry-pill' }, t(meta.id + '_family', meta.family)),
+              h('span', { className: 'perception-telemetry-pill' }, format(t('telemetry_saved_short', '{saved}/{limit} saved'), capacity))
+            )
+          )
+        ),
         h('div', { className: 'perception-actions' }, props.onOpenGallery && button(t('open_gallery', '3D gallery'), function () { stop(); props.onOpenGallery(); }, { 'data-perception-open-gallery': true, disabled: focusBrowseLocked }), button(t('all_tools', 'All tools'), function () { openTool(null); }), button(t('open_art', 'Open Art Studio'), function () { openTool('artStudio'); }), button(t('open_optics', 'Open Optics Lab'), function () { openTool('opticsLab'); }))),
       h('nav', { className: 'perception-experiments', 'aria-label': t('choose_experiment', 'Choose an experiment') }, EXPERIMENTS.map(function (item, index) { return button(h(React.Fragment, null, experimentThumbnails[index], h('span', { className: 'perception-experiment-copy' }, h('strong', null, t(item.id + '_title', item.title)), h('small', null, t(item.id + '_family', item.family)))), function () { selectExperiment(item.id); }, { key: item.id, 'aria-pressed': item.id === meta.id, 'data-perception-experiment': item.id }); })),
       h('label', { className: 'perception-mobile-picker', htmlFor: 'perception-experiment-picker' }, t('choose_experiment', 'Choose an experiment'), h('select', { id: 'perception-experiment-picker', value: meta.id, onChange: function (event) { selectExperiment(event.target.value); } }, EXPERIMENTS.map(function (item) { return h('option', { key: item.id, value: item.id }, t(item.id + '_title', item.title)); }))),
@@ -2845,6 +2945,9 @@
         h('div', { className: 'perception-notebook-heading' }, h('h3', { id: uid + '-notebook', tabIndex: -1 }, t('notebook', 'Observation notebook')),
           h('div', { className: 'perception-actions' }, deleted && button(t('undo_deletion', 'Undo deletion'), undoDeletion, { id: uid + '-undo', disabled: maskStudyViews || importBusy || capacity.free < undoCount }), importUndo && button(t('undo_import', 'Undo import'), undoImport, { id: uid + '-import-undo', disabled: studyLocked || studyBusy || importBusy || (matchStartBusy || inquiryBusy) }), button(t('import_notebook', 'Import notebook'), openImport, { id: uid + '-import-open', disabled: studyLocked || studyBusy || importBusy || (matchStartBusy || inquiryBusy) }), button(t('export_notebook', 'Export notebook'), exportNotebook, { disabled: maskStudyViews || importBusy || !state.studies.length }))),
         h('p', { 'data-perception-notebook-capacity': true, 'aria-live': 'polite', 'aria-atomic': 'true' }, format(t('notebook_capacity', 'Saved observations: {saved} of {limit}. Available spaces: {free}.'), capacity)),
+        h('div', { className: 'perception-capacity-meter', 'aria-hidden': 'true' },
+          h('span', { className: 'perception-capacity-fill', style: { width: Math.min(100, Math.round((capacity.saved / Math.max(1, capacity.limit)) * 100)) + '%' } })
+        ),
         h('p', null, t('notebook_hint', 'This notebook holds up to 24 observations. New observations need one available space; new three-match studies need three. Existing observations stay until you delete them.')),
         deleted && capacity.free < undoCount && h('p', { 'data-perception-undo-capacity': true }, format(t('notebook_undo_capacity', 'Undo needs {count} available spaces; {free} remain. No observations were changed.'), { count: undoCount, free: capacity.free })),
         h('p', null, t('notebook_actions_hint', 'Pin a saved observation to compare it with your current drawing. Deleting an observation offers one undo; export saves your notebook as JSON.')),

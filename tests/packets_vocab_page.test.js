@@ -23,7 +23,7 @@ const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src '
 // packets_handoff.js (2026-11-12): a file handed over by Change this file on Open a practice file (tests/packets_open_page.test.js).
 // 2026-11-12, deliberately: the picture list, the Word Sounds builder (for its picture credits and its drawing check) and
 // the loader of recordings and pictures (packets_vocab_media.js). Without fetch (jsdom) the page makes files without them.
-const SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_zip.js', 'packets_handoff.js', BANK_FILE,
+const SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_zip.js', 'packets_handoff.js', 'packets_my_words.js', BANK_FILE,
   'word_sounds_symbols_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', SCRIPT];
 const BRITISH = /practis|standardis|licence|colour|\bmarking\b|\bmarked\b|\btick(?:ed|s)?\b|USB stick|\bwhilst\b|\bmaths\b|favour|behaviour|\bcentre\b/i;
 const ALLOWED_AI_SENTENCES = ['Runs without AI.', 'This page runs without AI.', 'This page runs without AI. No account. Nothing you choose leaves your device.', 'Run AI.',
@@ -34,7 +34,9 @@ const ALLOWED_AI_SENTENCES = ['Runs without AI.', 'This page runs without AI.', 
   'This meaning was checked with AI help when the word list was prepared, not by a person.',
   'Some meanings were checked and corrected with AI help when the word list was prepared, not by a person.',
   // 2026-11-17 (review D13): the badge itself says the checking was AI help, not a person.
-  'AI-checked'];
+  'AI-checked',
+  // 2026-11-19 (Wave 2A): unified About-this-page copy matching the AI-checked badge.
+  'They show AI-checked.'];
 const parse = (file) => new JSDOM(read(file)).window.document;
 const V = require('../packet_vocab_builder.js');
 const verify = require('../packets_verify_core.js');
@@ -160,8 +162,10 @@ describe('the maker, run with the stand-in word list', () => {
     await p.type(WORDS);
     p.$('next-1').click();
     expect(p.$('step-2').hidden).toBe(false);
-    expect([...p.$('rows').querySelectorAll('.v-row')].map((r) => r.getAttribute('data-row'))).toEqual(['habitat', 'predator', 'prey', 'cell', 'bat', 'adapt', 'camouflage']);
+    // 2026-11-19 (Wave 2A): Step 2 floats unchecked ("Read these first") and needs-a-look rows to the top while preserving list order within each group.
+    expect([...p.$('rows').querySelectorAll('.v-row')].map((r) => r.getAttribute('data-row'))).toEqual(['prey', 'adapt', 'camouflage', 'habitat', 'predator', 'cell', 'bat']);
     expect(p.$('rows-line').textContent).toBe('7 words. 3 not checked yet.');
+    expect(p.$('sources').textContent).toContain('They show AI-checked.');
     const cell = p.row('cell');
     expect(cell.querySelector('.v-mark').textContent).toBe('AI-checked'); // 2026-11-17 (review D13)
     expect(p.row('prey').querySelector('.v-mark').textContent).toBe('not checked');
@@ -309,11 +313,18 @@ describe('the maker, run with the stand-in word list', () => {
     p.$('next-2').click();
     await wait(60);
     const single = await textOf(await p.built());
+    // 1 line puts that code name directly into the single file above; 2-40 lines saves a .zip in 1 click.
+    p.$('f-batch-names').value = 'BlueHeron7';
+    p.fire(p.$('f-batch-names'), 'input');
+    expect(p.$('batch-make').hidden).toBe(true);
+    expect(p.$('batch-said').textContent).toContain('Using BlueHeron7 in the file above');
+    expect(p.$('summary-rows').textContent).toContain('BlueHeron7');
     p.$('f-batch-names').value = 'BlueHeron7\nRedFox2\nbluheron7\nBlueHeron7';
     p.fire(p.$('f-batch-names'), 'input');
+    expect(p.$('batch-make').hidden).toBe(false);
+    expect(p.$('batch-make').textContent).toBe('Save .zip for 3 students');
     p.$('batch-make').click();
-    expect(p.$('batch-said').textContent).toMatch(/^Ready: 3 files in one \.zip file, \d+ KB\.$/);
-    p.$('batch-save').click();
+    expect(p.$('batch-said').textContent).toMatch(/^Saved .*__3-students\.zip \(\d+ KB\)\./);
     expect(p.saved[p.saved.length - 1].name).toMatch(/__3-students\.zip$/);
     // Open a file I made: the words, the kinds, the title and the teacher's choices come back.
     const fresh = await open();
@@ -399,5 +410,127 @@ describe('the maker, run with the stand-in word list', () => {
     const m = JSON.parse(/id="packet-manifest">(.*?)<\/script>/.exec(html)[1]);
     expect(m.attributions).toEqual(['Meanings written by the teacher: sun, moon, star, comet.']);
     expect(V.readBack(verify.readParts(html)).words).toEqual(['sun', 'moon', 'star', 'comet']);
+  });
+
+  it('Wave 3A: unified Step 3 fold, Show toggle on teacher code, #rehearse= Step 2 banner, zero-storage .txt roster, and 60 MB reopen cap', async () => {
+    const doc = parse(PAGE);
+    expect(doc.getElementById('learner-tip')).toBeNull();
+    expect(doc.getElementById('code-name-box')).toBeNull();
+    expect(doc.getElementById('batch-save')).toBeNull();
+    expect(doc.getElementById('batch').querySelector('summary').textContent).toBe('Put student code names in the file');
+    expect(doc.getElementById('open-present-export').textContent).toContain('Present & print word cards');
+    expect(read(SCRIPT)).toContain('60 * 1024 * 1024');
+
+    // #rehearse= with 4+ words clears hash, jumps to Step 2 and shows 1-line confirmation banner.
+    const r = await open({ before: (w) => { w.location.hash = '#rehearse=habitat,predator,prey,cell'; } });
+    await wait(25);
+    expect(r.w.location.hash).toBe('');
+    expect(r.$('step-2').hidden).toBe(false);
+    expect(r.$('rehearse-note').hidden).toBe(false);
+    expect(r.$('rehearse-note').textContent).toContain('Loaded 4 missed words');
+
+    // Teacher code Show toggle switches password <-> text.
+    r.$('next-2').click();
+    await wait(50);
+    const checkRadio = r.d.querySelector('input[name="mode"][value="check"]');
+    checkRadio.checked = true; r.fire(checkRadio, 'change');
+    expect(r.$('f-code').type).toBe('password');
+    r.$('code-show').click();
+    expect(r.$('f-code').type).toBe('text');
+    expect(r.$('code-show').textContent).toBe('Hide');
+    r.$('code-show').click();
+    expect(r.$('f-code').type).toBe('password');
+
+    // Zero-storage .txt roster loader fills #f-batch-names without writing to localStorage.
+    const rosterFile = new r.w.File(['BlueHeron7\nRedFox3\n'], 'roster.txt', { type: 'text/plain' });
+    Object.defineProperty(r.$('batch-file'), 'files', { configurable: true, value: [rosterFile] });
+    r.fire(r.$('batch-file'), 'change');
+    await wait(30);
+    expect(r.$('f-batch-names').value).toContain('BlueHeron7');
+    expect(r.$('batch-make').textContent).toBe('Save .zip for 2 students');
+    expect(JSON.stringify({ ...r.w.localStorage })).not.toContain('BlueHeron7');
+  });
+
+  it('Wave 3B: registers readVocab in packets_reopen.js and hands off wrong-maker/results files in 1 click', async () => {
+    const reopenKit = require('../packets_reopen.js');
+    const vocabBank = require('./fixtures/packets_vocab_bank_fixture.js');
+    await vocabBank.load();
+    const g = { crypto: globalThis.crypto }; g.window = g;
+    new Function('window', read('word_sounds_take_home_loader.js')).call(g, g);
+    const th = g.AlloWordSoundsTakeHome;
+    const rows = V.draftRows({ words: ['habitat', 'predator', 'prey', 'cell'], bank: vocabBank });
+    const html = V.buildVocabPacket({ lesson: V.lessonFromVocab({ loader: th, rows, types: ['meaning'], mode: 'practice' }), loader: th, rows, bank: vocabBank }).html;
+    const ok = reopenKit.readVocab(html, { verify, builder: V, codeName: V.codeName });
+    expect(ok.ok).toBe(true);
+    expect(ok.kind).toBe('vocab');
+    expect(ok.vocab.words).toEqual(['habitat', 'predator', 'prey', 'cell']);
+    const standalone = reopenKit.readVocab(html, { verify });
+    expect(standalone.ok).toBe(true);
+    expect(standalone.vocab.words.slice().sort()).toEqual(['cell', 'habitat', 'predator', 'prey']);
+
+    const p = await open();
+    const handed = [];
+    p.w.AlloPacketHandoff = { HASH: '#open-file', RESULTS_HASH: '#import-results', redirect: async (file, href, hash) => { handed.push({ name: file.name, href, hash }); } };
+    const csv = '\uFEFF"format","session_id"\r\n"alloflow-packet-result/1","S-1"\r\n';
+    Object.defineProperty(p.$('reopen-file'), 'files', { configurable: true, value: [new p.w.File([csv], 'vocab-res.csv', { type: 'text/csv' })] });
+    p.fire(p.$('reopen-file'), 'change');
+    await wait(30);
+    expect(p.$('reopen-page').hidden).toBe(false);
+    expect(p.$('reopen-page').getAttribute('href')).toBe('packets-results.html');
+    p.$('reopen-page').dispatchEvent(new p.w.MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(handed).toEqual([{ name: 'vocab-res.csv', href: 'packets-results.html', hash: '#import-results' }]);
+  });
+
+  it('Wave 4A: preserves Preview removals across Back-to-Step-2 with Restore, and hides stale Lookup panel on Use', async () => {
+    let previewOpts = null;
+    const p = await open();
+    p.w.AlloPacketHandoff = {
+      hostPreview: (opts) => { previewOpts = opts; return { update: () => {}, stop: () => {} }; },
+    };
+    await p.type('habitat, predator, prey, cell, adapt');
+    p.$('next-1').click();
+    await wait(30);
+    p.$('next-2').click();
+    await wait(60);
+    expect(previewOpts && typeof previewOpts.onAction === 'function').toBe(true);
+    const items = previewOpts.describe(JSON.parse(/var lesson=(.*);\nvar labels=/.exec(previewOpts.html)[1]));
+    const beforeCount = items.length;
+    await previewOpts.onAction({ action: 'remove', item: items[0] });
+    expect(p.$('preview-note').hidden).toBe(false);
+    expect(p.$('preview-note').textContent).toContain('1 question removed in Preview');
+    expect(p.$('preview-restore')).toBeTruthy();
+
+    // Stepping Back to Step 2 and returning to Step 3 preserves the removal!
+    p.$('back-3').click();
+    await wait(20);
+    p.$('next-2').click();
+    await wait(60);
+    expect(p.$('preview-note').hidden).toBe(false);
+    expect(p.$('summary-facts').textContent).toContain(String(beforeCount - 1) + ' questions');
+
+    // Clicking Restore brings back the full count and hides #preview-note.
+    p.$('preview-restore').click();
+    await wait(60);
+    expect(p.$('preview-note').hidden).toBe(true);
+    expect(p.$('summary-facts').textContent).toContain(String(beforeCount) + ' questions');
+
+    // Vocab Lookup: clicking Use this meaning hides #found immediately and confirms on visible #look-line.
+    const lookupDom = new JSDOM(read('packets-vocab-lookup.html'), {
+      url: 'https://packets.test/packets-vocab-lookup.html#word=biome&more=tundra',
+      runScripts: 'outside-only',
+      pretendToBeVisual: true,
+    });
+    const lw = lookupDom.window;
+    lw.fetch = async () => ({ ok: true, status: 200, json: async () => ([{ meanings: [{ partOfSpeech: 'noun', definitions: [{ definition: 'A large natural area' }] }] }]) });
+    lw.eval(read('packets-vocab-lookup.js'));
+    lw.document.getElementById('online-on').checked = true;
+    lw.document.getElementById('look').click();
+    await wait(30);
+    expect(lw.document.getElementById('found').hidden).toBe(false);
+    lw.document.getElementById('use').click();
+    expect(lw.document.getElementById('found').hidden).toBe(true);
+    expect(lw.document.getElementById('word').value).toBe('tundra');
+    expect(lw.document.getElementById('look-line').textContent).toContain('Saved for biome');
+    lookupDom.window.close();
   });
 });

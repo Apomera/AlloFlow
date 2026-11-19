@@ -386,18 +386,41 @@
     return out;
   }
 
+  // 2026-11-19 (Wave 6B, parity with symbol_runner_core.js): confusable look-alike
+  // pairs prioritized as distractors whenever present in the same-category pool.
+  var LOOK_ALIKES = {
+    b: ['d', 'p'], d: ['b', 'q'], p: ['q', 'b'], q: ['p', 'd'],
+    m: ['w', 'n'], w: ['m'], n: ['u', 'm'], u: ['n'],
+    '6': ['9'], '9': ['6'],
+    '12': ['21'], '21': ['12'], '13': ['30', '31'], '30': ['13'], '31': ['13'],
+    '14': ['40', '41'], '40': ['14'], '41': ['14'], '15': ['50', '51'], '50': ['15'], '51': ['15'],
+    '16': ['60', '61'], '60': ['16'], '61': ['16'], '17': ['70', '71'], '70': ['17'], '71': ['17'],
+    '18': ['80', '81'], '80': ['18'], '81': ['18'], '19': ['90', '91'], '90': ['19'], '91': ['19']
+  };
+
   function buildChoices(item, pool, seed) {
-    var choices = [item.answer];
-    var seen = {};
-    seen[item.answer] = true;
+    // Which of two numbers is bigger: the two shown numbers are the only choices.
     if (item.sizePair) {
-      [item.sizePair.left, item.sizePair.right].forEach(function (edge) {
-        var ek = text(edge).trim().toLowerCase();
-        if (ek && !seen[ek] && choices.length < 6) {
-          seen[ek] = true;
-          choices.push(ek);
-        }
-      });
+      var left = text(item.sizePair.left).trim().toLowerCase();
+      var right = text(item.sizePair.right).trim().toLowerCase();
+      if (left && right && left !== right && (left === item.answer || right === item.answer)) {
+        return mixed([left, right], seed + '|choices');
+      }
+    }
+    var choices = [item.answer];
+    var seen = Object.create(null);
+    seen[item.answer] = true;
+    var inPool = Object.create(null);
+    for (var pi = 0; pi < pool.length; pi++) {
+      if (item.category && pool[pi].category === item.category) inPool[pool[pi].answer] = pool[pi].answer;
+    }
+    var alikes = LOOK_ALIKES[item.answer] || [];
+    for (var ai = 0; ai < alikes.length && choices.length < 6; ai++) {
+      var alike = alikes[ai];
+      if (inPool[alike] && !seen[alike]) {
+        seen[alike] = true;
+        choices.push(inPool[alike]);
+      }
     }
     var sameCat = mixed(pool.filter(function (p) { return !seen[p.answer] && item.category && p.category === item.category; }), seed + '|same');
     for (var si = 0; si < sameCat.length && choices.length < 6; si++) {
@@ -581,9 +604,78 @@
     };
   }
 
+  var SVG_MAX = 300000;
+  var IMG_MAX = 400000;
+  function decodeBase64Utf8(body) {
+    if (typeof Buffer === 'function') return Buffer.from(body, 'base64').toString('utf8');
+    if (typeof atob === 'function') {
+      var bin = atob(body);
+      try { return decodeURIComponent(escape(bin)); } catch (_) { return bin; }
+    }
+    return '';
+  }
+  function svgRefusal(svg) {
+    var s = typeof svg === 'string' ? svg : '';
+    var stripped = s.replace(/^\s*<\?xml\s[^>]*\?>/i, '').replace(/^(?:\s*<!--[\s\S]*?-->)+/, '').trim();
+    if (!/^\s*<svg[\s>]/i.test(stripped) || !/<\/svg>\s*$/i.test(stripped)) return 'not an SVG drawing';
+    if (stripped.length > SVG_MAX) return 'the drawing is too large';
+    if (stripped.indexOf('\\') >= 0) return 'an escape character';
+    if (/<!(?:doctype|entity)/i.test(stripped)) return 'a document type or entity declaration';
+    if (/<\?(?!xml\s)/i.test(stripped)) return 'a processing instruction';
+    var plain = stripped.replace(/&#x([0-9a-f]+);?/gi, function (m, hex) { return String.fromCharCode(parseInt(hex, 16) & 0xFFFF); })
+      .replace(/&#(\d+);?/g, function (m, dec) { return String.fromCharCode(Number(dec) & 0xFFFF); })
+      .replace(/&(colon|newline|tab);/gi, function (m, name) { return name.toLowerCase() === 'colon' ? ':' : ''; });
+    var packed = plain.replace(/[\x00-\x20]+/g, '');
+    var bare = function (value) { return String(value || '').replace(/[\x00-\x20]+/g, ''); };
+    if (/<\s*(?:[\w-]+:)?script\b/i.test(plain)) return 'a script';
+    if (/<\s*(?:[\w-]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject';
+    if (/<\s*(?:[\w-]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a drawing';
+    if (/[\s"'\/]on[a-z]+\s*=/i.test(plain)) return 'an event handler';
+    if (/(?:java|vb|live)script:/i.test(packed)) return 'a script address';
+    if (/xml:base\s*=/i.test(plain)) return 'a base address';
+    var m, href = /(?:[\s"'\/])(?:[\w-]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    while ((m = href.exec(plain))) {
+      if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
+    }
+    if (/[\s"'\/]src\s*=/i.test(plain)) return 'a link to something outside the drawing';
+    var style = /<\s*(?:[\w-]+:)?style\b[^>]*>/gi;
+    while ((m = style.exec(plain))) {
+      if (/\/\s*>$/.test(m[0])) continue;
+      var end = plain.slice(style.lastIndex).search(/<\s*\/\s*(?:[\w-]+:)?style\s*>/i);
+      var css = end < 0 ? plain.slice(style.lastIndex) : plain.slice(style.lastIndex, style.lastIndex + end);
+      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
+    }
+    var url = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
+    while ((m = url.exec(plain))) {
+      if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
+    }
+    return '';
+  }
   function safeDataImage(src) {
     var s = text(src).trim();
-    return /^data:image\/(?:png|jpeg|jpg|gif|webp|svg\+xml);/i.test(s) ? s : '';
+    var m = /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)((?:;[a-z0-9=.+-]+)*),(.*)$/i.exec(s);
+    if (!m) return '';
+    var subtype = m[1].toLowerCase();
+    var params = m[2] || '';
+    var body = m[3] || '';
+    var isBase64 = /;base64(?:$|;)/i.test(params);
+    if (isBase64) {
+      var cleaned = body.replace(/\s+/g, '');
+      if (!cleaned || cleaned.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(cleaned)) return '';
+      var byteLen = (cleaned.length / 4) * 3 - (cleaned.slice(-2) === '==' ? 2 : cleaned.slice(-1) === '=' ? 1 : 0);
+      if (byteLen <= 0 || byteLen > (subtype === 'svg+xml' ? SVG_MAX : IMG_MAX)) return '';
+      if (subtype === 'svg+xml') {
+        var decoded = '';
+        try { decoded = decodeBase64Utf8(cleaned); } catch (_) { return ''; }
+        if (svgRefusal(decoded)) return '';
+      }
+      return 'data:image/' + subtype + ';base64,' + cleaned;
+    }
+    if (subtype !== 'svg+xml') return '';
+    var utf8 = '';
+    try { utf8 = decodeURIComponent(body); } catch (_) { return ''; }
+    if (!utf8 || utf8.length > SVG_MAX || svgRefusal(utf8)) return '';
+    return s;
   }
 
   function safeDataAudio(src) {
@@ -604,6 +696,7 @@
     var picByAns = {};
     var audByAns = {};
     var seenCredits = {};
+    var pictureMeta = {};
     var attributions = [];
     var hasMulberry = false;
     var hasOpenMoji = false;
@@ -614,28 +707,36 @@
     var clipMap = o.clips && typeof o.clips === 'object' ? o.clips : {};
 
     plan.pool.forEach(function (sym) {
-      var rawPic = picMap[sym.answer] || picMap[sym.word];
-      var imgData = safeDataImage(rawPic && typeof rawPic === 'object' ? (rawPic.src || rawPic.dataUri) : rawPic);
-      if (imgData) {
-        var pid = 'p' + (nextImgId++);
-        images[pid] = imgData;
-        picByAns[sym.answer] = pid;
-        if (rawPic && typeof rawPic === 'object') {
-          var creditLine = text(rawPic.credit).trim();
-          if (creditLine && !seenCredits[creditLine]) {
-            seenCredits[creditLine] = true;
-            attributions.push(creditLine);
+      if (!picByAns[sym.answer]) {
+        var rawPic = picMap[sym.answer] || picMap[sym.word];
+        var imgData = safeDataImage(rawPic && typeof rawPic === 'object' ? (rawPic.src || rawPic.dataUri) : rawPic);
+        if (imgData) {
+          var pid = 'p' + (nextImgId++);
+          images[pid] = imgData;
+          picByAns[sym.answer] = pid;
+          if (rawPic && typeof rawPic === 'object') {
+            var creditLine = text(rawPic.credit).trim();
+            if (creditLine && !seenCredits[creditLine]) {
+              seenCredits[creditLine] = true;
+              attributions.push(creditLine);
+            }
+            if (rawPic.set === 'mulberry' || /Mulberry/i.test(creditLine)) hasMulberry = true;
+            if (rawPic.set === 'openmoji' || /OpenMoji/i.test(creditLine)) hasOpenMoji = true;
+            var metaKey = text(sym.answer).trim().toLowerCase();
+            if (metaKey && (creditLine || rawPic.set)) {
+              pictureMeta[metaKey] = { credit: creditLine.slice(0, 240), set: text(rawPic.set).trim().slice(0, 32) };
+            }
           }
-          if (rawPic.set === 'mulberry' || /Mulberry/i.test(creditLine)) hasMulberry = true;
-          if (rawPic.set === 'openmoji' || /OpenMoji/i.test(creditLine)) hasOpenMoji = true;
         }
       }
-      var rawClip = clipMap[sym.answer] || clipMap[sym.word];
-      var audData = safeDataAudio(rawClip && typeof rawClip === 'object' ? rawClip.dataUri : rawClip);
-      if (audData) {
-        var aid = 'a' + (nextAudId++);
-        audio[aid] = audData;
-        audByAns[sym.answer] = aid;
+      if (!audByAns[sym.answer]) {
+        var rawClip = clipMap[sym.answer] || clipMap[sym.word];
+        var audData = safeDataAudio(rawClip && typeof rawClip === 'object' ? rawClip.dataUri : rawClip);
+        if (audData) {
+          var aid = 'a' + (nextAudId++);
+          audio[aid] = audData;
+          audByAns[sym.answer] = aid;
+        }
       }
     });
 
@@ -723,7 +824,7 @@
     }
     lesson.activityTitles.symbol_runner = adapter.title;
     lesson.revision = 'r' + fnv(JSON.stringify([lesson.title, lesson.form || '', lesson.check || null, lesson.blocks, Object.keys(images).sort(), Object.keys(audio).sort()]));
-    return { lesson: lesson, plan: plan, attributions: attributions, hasMulberry: hasMulberry, hasOpenMoji: hasOpenMoji };
+    return { lesson: lesson, plan: plan, attributions: attributions, pictureMeta: pictureMeta, hasMulberry: hasMulberry, hasOpenMoji: hasOpenMoji };
   }
 
   var SYMBOL_ANSWERS = {
@@ -780,6 +881,21 @@
     } else if (plan && plan.mode === 'custom') {
       itemsMeta = plan.pool.map(function (it) { return it.word; });
     }
+    var pictureMeta = {};
+    if (!isCheck) {
+      if (builtMeta && builtMeta.pictureMeta) {
+        pictureMeta = Object.assign({}, builtMeta.pictureMeta);
+      } else if (o.pictures && typeof o.pictures === 'object') {
+        Object.keys(o.pictures).forEach(function (k) {
+          var rawPic = o.pictures[k];
+          if (!rawPic || typeof rawPic !== 'object') return;
+          var mk = text(k).trim().toLowerCase();
+          var cl = text(rawPic.credit).trim();
+          var st = text(rawPic.set).trim();
+          if (mk && (cl || st)) pictureMeta[mk] = { credit: cl.slice(0, 240), set: st.slice(0, 32) };
+        });
+      }
+    }
     var recipe = {
       builder: VERSION,
       packetMode: isCheck ? 'check' : 'practice',
@@ -793,6 +909,7 @@
       items: itemsMeta,
       known: (!isCheck && plan && plan.rehearsal) ? plan.knownSymbols.map(function (k) { return k.answer; }) : [],
     };
+    if (Object.keys(pictureMeta).length) recipe.pictureMeta = pictureMeta;
     html = withManifest(html, { symbolRunner: recipe });
     if (o.learner) html = withCodeName(html, o.learner);
     var block = /<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(html);
@@ -913,12 +1030,19 @@
     }
 
     if (!isCheck && srBlock && lesson.images && typeof lesson.images === 'object') {
+      var picMeta = sr && sr.pictureMeta && typeof sr.pictureMeta === 'object' ? sr.pictureMeta : null;
+      var picAttribs = Array.isArray(m.attributions) ? m.attributions.filter(function (line) {
+        return typeof line === 'string' && line.trim() && !/Machine-made recordings:/i.test(line);
+      }) : [];
       srBlock.items.forEach(function (it) {
         if (!it || !it.image) return;
         var src = safeDataImage(lesson.images[it.image]);
         var ans = text(it.answer || it.word).trim().toLowerCase();
         if (src && ans && !out.pictures[ans]) {
-          out.pictures[ans] = { src: src, alt: text(it.word || ans), credit: 'Restored from file', set: 'custom' };
+          var meta = picMeta ? (picMeta[ans] || picMeta[text(it.answer || it.word).trim()] || null) : null;
+          var credit = (meta && text(meta.credit).trim()) || (picAttribs.length === 1 ? picAttribs[0].trim() : 'Restored from file');
+          var set = (meta && text(meta.set).trim()) || (/Mulberry/i.test(credit) ? 'mulberry' : /OpenMoji/i.test(credit) ? 'openmoji' : /AlloFlow Curriculum Diagram/i.test(credit) ? 'diagram' : 'custom');
+          out.pictures[ans] = { src: src, alt: text(it.word || ans), credit: credit, set: set };
         }
       });
     }

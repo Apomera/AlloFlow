@@ -37,7 +37,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-spacecolony-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-spacecolony-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 204, 135)\"],[style*=\"background-color: rgb(255, 204, 135)\"],[style*=\"background: rgb(255, 242, 189)\"],[style*=\"background-color: rgb(255, 242, 189)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(245, 158, 11)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(113, 113, 122)\"],[style*=\"; color: rgb(113, 113, 122)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(83, 112, 131)\"],[style*=\"; color: rgb(83, 112, 131)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(79, 70, 232)\"],[style*=\"; color: rgb(79, 70, 232)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(113, 113, 122)\"],[style*=\"; color: rgb(113, 113, 122)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(83, 112, 131)\"],[style*=\"; color: rgb(83, 112, 131)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(79, 70, 232)\"],[style*=\"; color: rgb(79, 70, 232)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 204, 135)\"],[style*=\"background-color: rgb(255, 204, 135)\"],[style*=\"background: rgb(255, 242, 189)\"],[style*=\"background-color: rgb(255, 242, 189)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(6, 182, 212)\"],[style*=\"background-color: rgb(6, 182, 212)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button[data-spacecolony-launch]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 204, 135)\"],[style*=\"background-color: rgb(255, 204, 135)\"],[style*=\"background: rgb(255, 242, 189)\"],[style*=\"background-color: rgb(255, 242, 189)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(245, 158, 11)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(113, 113, 122)\"],[style*=\"; color: rgb(113, 113, 122)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(83, 112, 131)\"],[style*=\"; color: rgb(83, 112, 131)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(79, 70, 232)\"],[style*=\"; color: rgb(79, 70, 232)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(113, 113, 122)\"],[style*=\"; color: rgb(113, 113, 122)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(83, 112, 131)\"],[style*=\"; color: rgb(83, 112, 131)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(79, 70, 232)\"],[style*=\"; color: rgb(79, 70, 232)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 204, 135)\"],[style*=\"background-color: rgb(255, 204, 135)\"],[style*=\"background: rgb(255, 242, 189)\"],[style*=\"background-color: rgb(255, 242, 189)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(6, 182, 212)\"],[style*=\"background-color: rgb(6, 182, 212)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button[data-spacecolony-launch]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-spacecolony-root] .sc-workbench-hero{background:#000!important;border-color:#fff!important;box-shadow:none!important}.theme-contrast [data-spacecolony-root] .sc-subject-pill,.theme-contrast [data-spacecolony-root] .sc-telemetry-pill{background:#000!important;border-color:#ffff00!important;color:#ffff00!important}.theme-contrast [data-spacecolony-root] .sc-loop-strip{background:#000!important;border-color:#00ffff!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -628,7 +628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       // first and falls back to the static gateQ / local outcome, so play never blocks.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       // AI gate (default OFF). The turn-advance "planet event" game-master call
@@ -642,20 +642,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
 
-          var d = labToolData || {};
-          var upd = function (k, v) { setLabToolData(function (n) { var o = Object.assign({}, n); o[k] = v; return o; }); };
-          var colony = d.colony || null;
+          var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData : {};
+          var upd = function (k, v) { setLabToolData(function (n) { var o = Object.assign({}, (n && typeof n === 'object' && !Array.isArray(n)) ? n : {}); o[k] = v; return o; }); };
+          var colony = (d.colony && typeof d.colony === 'object' && !Array.isArray(d.colony)) ? d.colony : null;
           var colonyWorldName = colony ? (colony.planet || 'Kepler-442b') : 'Centauri Haven (fictional)';
-          var turn = d.colonyTurn || 0;
-          var resources = d.colonyRes || { food: 40, energy: 30, water: 30, materials: 20, science: 10 };
-          var buildings = d.colonyBuildings || [];
-          var settlers = d.colonySettlers || [];
-          var mapData = d.colonyMap || null;
+          var turn = (typeof d.colonyTurn === 'number' && isFinite(d.colonyTurn)) ? d.colonyTurn : 0;
+          var rawRes = (d.colonyRes && typeof d.colonyRes === 'object' && !Array.isArray(d.colonyRes)) ? d.colonyRes : {};
+          var resources = {
+            food: (typeof rawRes.food === 'number' && isFinite(rawRes.food)) ? rawRes.food : 40,
+            energy: (typeof rawRes.energy === 'number' && isFinite(rawRes.energy)) ? rawRes.energy : 30,
+            water: (typeof rawRes.water === 'number' && isFinite(rawRes.water)) ? rawRes.water : 30,
+            materials: (typeof rawRes.materials === 'number' && isFinite(rawRes.materials)) ? rawRes.materials : 20,
+            science: (typeof rawRes.science === 'number' && isFinite(rawRes.science)) ? rawRes.science : 10
+          };
+          var buildings = Array.isArray(d.colonyBuildings) ? d.colonyBuildings : [];
+          var settlers = Array.isArray(d.colonySettlers) ? d.colonySettlers : [];
+          var mapData = (d.colonyMap && typeof d.colonyMap === 'object' && Array.isArray(d.colonyMap.tiles)) ? d.colonyMap : null;
           var mapSize = 200;
           var selectedTile = d.colonySelTile || null;
-          var colonyZoom = d.colonyZoom || 1.0;
-          var camX = d.colonyCamX || 0;
-          var camY = d.colonyCamY || 0;
+          var colonyZoom = (typeof d.colonyZoom === 'number' && isFinite(d.colonyZoom) && d.colonyZoom > 0) ? d.colonyZoom : 1.0;
+          var camX = (typeof d.colonyCamX === 'number' && isFinite(d.colonyCamX)) ? d.colonyCamX : 0;
+          var camY = (typeof d.colonyCamY === 'number' && isFinite(d.colonyCamY)) ? d.colonyCamY : 0;
           // Drag state for pan
           if (!window._colonyDragState) window._colonyDragState = { dragging: false, startX: 0, startY: 0, startCamX: 0, startCamY: 0, didDrag: false };
           var dragState = window._colonyDragState;
@@ -664,14 +671,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           var edgeScroll = window._colonyEdgeScroll;
           var colonyEvent = d.colonyEvent || null;
           var scienceGate = d.scienceGate || null;
-          var gameLog = d.colonyLog || [];
-          var colonyPhase = d.colonyPhase || 'setup';
-          var terraform = d.colonyTerraform || 0;
+          var gameLog = Array.isArray(d.colonyLog) ? d.colonyLog : [];
+          var colonyPhase = typeof d.colonyPhase === 'string' ? d.colonyPhase : 'setup';
+          var terraform = (typeof d.colonyTerraform === 'number' && isFinite(d.colonyTerraform)) ? d.colonyTerraform : 0;
           var weather = d.colonyWeather || null;
           var gameMode = d.colonyMode || 'mcq'; // 'mcq' or 'freeResponse'
           var gradeLevel = d.colonyGrade || '6-8';
           var gradeDifficultyMap = { 'K-2': 'very easy, age 5-7, use simple words', '3-5': 'easy, age 8-10, elementary level', '6-8': 'medium, age 11-13, middle school level', '9-12': 'challenging, age 14-17, high school level', 'College': 'advanced, undergraduate university level' };
-          var stats = d.colonyStats || { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 };
+          var stats = (d.colonyStats && typeof d.colonyStats === 'object' && !Array.isArray(d.colonyStats)) ? d.colonyStats : { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 };
 
           // ══ HoMM-Inspired Turn Phase System ══
           var turnPhase = d.turnPhase || (turn > 0 ? 'day' : null);
@@ -2025,30 +2032,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             var buttonStyle = {minHeight:44,padding:'8px 12px',border:'1px solid #64748b',borderRadius:9,background:'#12283b',color:'#e0f2fe',fontWeight:700,cursor:'pointer'};
             return h('section', {'data-centauri-habitat':'true','aria-labelledby':'centauri-habitat-title',style:{marginBottom:22,border:'1px solid #356079',borderRadius:20,overflow:'hidden',background:'#081823',color:'#e2e8f0'}},
               h('style',null,'@keyframes habitat-flow{to{stroke-dashoffset:32}}[data-centauri-habitat] .habitat-flow{animation:habitat-flow 3s linear infinite}@media(prefers-reduced-motion:reduce){[data-centauri-habitat] .habitat-flow{animation:none}}[data-centauri-habitat] button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}'),
-              h('div',{style:{padding:'18px 20px 8px',display:'flex',flexWrap:'wrap',justifyContent:'space-between',gap:12}},
-                h('div',null,h('div',{style:{fontSize:11,letterSpacing:2,color:'#67e8f9',fontWeight:800}},'KEPLER COLONY / HABITAT COMMAND'),h('h3',{id:'centauri-habitat-title',style:{fontSize:26,margin:'6px 0',fontWeight:850}},colonyWorldName),h('p',{style:{fontSize:13,color:'#cbd5e1',margin:0}},'Scout → compare → build → observe. Keep the outpost running before attempting wider environmental change.')),
-                h('span',{style:{fontSize:12,color:'#fde68a'}},colony ? 'Sol '+turn+' · '+settlers.length+' settlers' : 'Mission preview · 6 settlers')),
+              h('div',{style:{padding:'18px 20px 10px',display:'flex',flexWrap:'wrap',justifyContent:'space-between',alignItems:'center',gap:12}},
+                h('div',{style:{minWidth:0,flex:'1 1 260px'}},h('div',{style:{fontSize:11,letterSpacing:2,color:'#67e8f9',fontWeight:800}},t('stem.spacecolony.habitat_command_eyebrow','KEPLER COLONY / HABITAT COMMAND')),h('h3',{id:'centauri-habitat-title',style:{fontSize:24,margin:'6px 0',fontWeight:850,color:'#f8fafc'}},colonyWorldName),h('p',{style:{fontSize:13,color:'#cbd5e1',margin:0}},t('stem.spacecolony.habitat_command_tagline','Scout → compare → build → observe. Keep the outpost running before attempting wider environmental change.'))),
+                h('div',{style:{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}},
+                  (function () {
+                    var onlineCount = loops.filter(function (lp) { return buildings.indexOf(lp.building) >= 0; }).length;
+                    return h('div',{className:'sc-loop-strip',style:{padding:'5px 8px',borderRadius:12,border:'1px solid #2b546b',background:'rgba(7,22,33,0.9)',display:'inline-flex',alignItems:'center'}},
+                      h('svg',{width:176,height:48,viewBox:'0 0 176 48',role:'img','aria-label':t('stem.spacecolony.closed_loop_telemetry','Closed-loop life-support telemetry') + ': ' + onlineCount + '/3 ' + t('stem.spacecolony.loops_online','loops online')},
+                        h('rect',{x:1,y:1,width:174,height:46,rx:8,fill:'#081924',stroke:'#1e4256',strokeWidth:1}),
+                        loops.map(function (lp, idx) {
+                          var isOn = buildings.indexOf(lp.building) >= 0;
+                          var cx = 29 + idx * 59;
+                          var netVal = (net[lp.id] >= 0 ? '+' : '') + net[lp.id];
+                          return h('g',{key:lp.id},
+                            h('circle',{cx:cx - 18,cy:15,r:4.5,fill:isOn ? lp.color : 'none',stroke:lp.color,strokeWidth:1.6}),
+                            h('text',{x:cx - 10,y:19,fill:'#e2e8f0',fontSize:10,fontWeight:700,fontFamily:'system-ui,sans-serif'},lp.id === 'food' ? 'FOOD' : lp.id === 'water' ? 'H2O' : 'PWR'),
+                            h('text',{x:cx,y:37,textAnchor:'middle',fill:net[lp.id] < 0 ? '#fda4af' : lp.color,fontSize:11,fontWeight:800,fontFamily:'ui-monospace,monospace'},netVal + '/s')
+                          );
+                        })
+                      )
+                    );
+                  })(),
+                  h('span',{className:'sc-telemetry-pill',style:{fontSize:12,fontWeight:700,color:'#fde68a',padding:'6px 10px',borderRadius:999,border:'1px solid rgba(253,230,138,0.35)',background:'rgba(253,230,138,0.08)'}},colony ? 'Sol '+turn+' · '+settlers.length+' settlers' : 'Mission preview · 6 settlers')
+                )
+              ),
               h(ColonyTerraformScene,{React:React,turn:turn,progress:terraform,buildings:buildings,efficiency:buildingEff,phase:turnPhase,playing:!!colony,onTurn:function(){var target=document.querySelector('[data-colony-turn-controls]');if(target){target.focus();target.scrollIntoView({block:'start',behavior:'instant'});}},onBuild:function(){upd('showBuild',true);setTimeout(function(){var target=document.getElementById('spacecolony-construction');if(target){target.focus();target.scrollIntoView({block:'start',behavior:'instant'});}},0);}, t: t}),
-              h('details',{style:{padding:12}},h('summary',{style:{minHeight:44,cursor:'pointer',color:'#a5f3fc',fontSize:13}},'2D system diagram'),
-              h('svg',{viewBox:'0 0 780 310',role:'img','aria-label':'Habitat systems: '+loops.map(function(loop){return loop.name+' '+(buildings.indexOf(loop.building)>=0?'online':'planned');}).join(', '),style:{display:'block',width:'100%',background:'linear-gradient(#0b1c32,#29414d)'}},
-                h('circle',{cx:680,cy:52,r:24,fill:'#ffcc87',opacity:0.9}),h('circle',{cx:713,cy:35,r:7,fill:'#fff2bd',opacity:0.8}),
+              h('details',{style:{padding:12}},h('summary',{style:{minHeight:44,cursor:'pointer',color:'#a5f3fc',fontSize:13,fontWeight:700}},t('stem.spacecolony.two_d_system_diagram','2D system diagram')),
+              h('svg',{viewBox:'0 0 780 310',role:'img','aria-label':'Habitat systems: '+loops.map(function(loop){return loop.name+' '+(buildings.indexOf(loop.building)>=0?'online':'planned');}).join(', '),style:{display:'block',width:'100%',borderRadius:12,border:'1px solid #2b546b',background:'linear-gradient(#081529,#1f3847)'}},
+                [[54,48],[118,28],[192,62],[268,36],[344,54],[438,32],[520,58],[604,42]].map(function(pt, idx){return h('circle',{key:'st-'+idx,cx:pt[0],cy:pt[1],r:idx%3===0?1.8:1.2,fill:'#e0f2fe',opacity:0.65});}),
+                h('circle',{cx:680,cy:52,r:36,fill:'#ffcc87',opacity:0.14}),
+                h('circle',{cx:680,cy:52,r:24,fill:'#ffcc87',opacity:0.9}),h('circle',{cx:713,cy:35,r:7,fill:'#fff2bd',opacity:0.85}),
                 h('path',{d:'M0 184L110 118 195 180 320 143 440 185 570 135 780 181V310H0Z',fill:'#405360'}),
                 h('path',{d:'M0 225L140 194 320 214 495 188 665 215 780 198V310H0Z',fill:'#243e48'}),
-                h('ellipse',{cx:390,cy:178,rx:88,ry:18,fill:'#07131d',opacity:0.55}),
-                h('path',{d:'M315 166A75 68 0 0 1 465 166Z',fill:'#123e52',stroke:'#a5f3fc',strokeWidth:2}),
-                h('path',{d:'M330 164Q350 85 390 98Q430 85 450 164M390 99V164',fill:'none',stroke:'#5899af',strokeWidth:2}),
-                h('rect',{x:372,y:135,width:36,height:32,rx:7,fill:'#fef3c7',opacity:0.85}),
-                h('text',{x:390,y:191,textAnchor:'middle',style:textStyle},'SEALED HABITAT'),
+                h('ellipse',{cx:390,cy:178,rx:94,ry:20,fill:'#07131d',opacity:0.6}),
+                h('path',{d:'M315 166A75 68 0 0 1 465 166Z',fill:'#123e52',stroke:'#a5f3fc',strokeWidth:2.2}),
+                h('path',{d:'M330 164Q350 85 390 98Q430 85 450 164M390 99V164M323 136Q390 124 457 136',fill:'none',stroke:'#5899af',strokeWidth:1.6}),
+                h('circle',{cx:390,cy:98,r:4,fill:'#67e8f9'}),
+                h('rect',{x:372,y:135,width:36,height:32,rx:7,fill:'#fef3c7',opacity:0.88}),
+                h('text',{x:390,y:191,textAnchor:'middle',style:Object.assign({},textStyle,{fontWeight:700,letterSpacing:1})},'SEALED HABITAT'),
                 loops.map(function(loop) {
                   var online = buildings.indexOf(loop.building)>=0;
                   return h('g',{key:loop.id},
-                    h('path',{d:'M390 175V214H'+loop.x+'V239',fill:'none',stroke:loop.color,strokeWidth:online?4:2,strokeDasharray:online?'9 7':'3 7',className:online?'habitat-flow':undefined,opacity:online?0.9:0.4}),
-                    h('rect',{x:loop.x-72,y:237,width:144,height:47,rx:12,fill:'#0b2130',stroke:chosen.id===loop.id?'#ffffff':loop.color,strokeWidth:chosen.id===loop.id?3:1}),
+                    h('path',{d:'M390 175V214H'+loop.x+'V239',fill:'none',stroke:loop.color,strokeWidth:online?4:2,strokeDasharray:online?'9 7':'3 7',className:online?'habitat-flow':undefined,opacity:online?0.92:0.42}),
+                    h('circle',{cx:loop.x,cy:214,r:4,fill:online?loop.color:'#1e293b',stroke:loop.color,strokeWidth:1.5}),
+                    h('rect',{x:loop.x-72,y:237,width:144,height:47,rx:12,fill:'#0b2130',stroke:chosen.id===loop.id?'#ffffff':loop.color,strokeWidth:chosen.id===loop.id?3:1.2}),
                     h('text',{x:loop.x,y:257,textAnchor:'middle',style:Object.assign({},textStyle,{fill:loop.color,fontWeight:700})},loop.name),
                     h('text',{x:loop.x,y:274,textAnchor:'middle',style:Object.assign({},textStyle,{fontSize:11})},online?'ONLINE':'PLANNED'),
                     loop.id==='food' ? h('path',{d:'M139 237V209Q170 170 201 209V237Z',fill:online?'#21794f':'#24413c',stroke:loop.color}) : loop.id==='water' ? h('g',null,[0,1,2].map(function(i){return h('rect',{key:i,x:354+i*25,y:211,width:22,height:26,rx:6,fill:online?'#087e99':'#244451',stroke:loop.color});})) : h('path',{d:'M565 231L579 202H652L640 231ZM587 204L576 228M610 204L600 228M633 204L624 228M574 217H646',fill:online?'#22558a':'#2b414c',stroke:loop.color}));
                 }),
-                h('text',{x:18,y:27,style:Object.assign({},textStyle,{fontSize:11,fill:'#cbd5e1'})},'Illustrative scene · fictional surface and sky')),
+                h('rect',{x:16,y:12,width:288,height:26,rx:8,fill:'rgba(8,24,35,0.78)',stroke:'#356079',strokeWidth:1}),
+                h('text',{x:28,y:29,style:Object.assign({},textStyle,{fontSize:11,fill:'#e0f2fe',fontWeight:700})},loops.filter(function(l){return buildings.indexOf(l.building)>=0;}).length + '/3 LOOPS ONLINE · TERRAFORM ' + Math.round(terraform) + '%'),
+                h('text',{x:18,y:54,style:Object.assign({},textStyle,{fontSize:11,fill:'#cbd5e1'})},'Illustrative scene · fictional surface and sky')),
               ),
               h('div',{style:{padding:18,display:'grid',gap:14}},
                 h('div',{role:'group','aria-label':t('stem.spacecolony.inspect_habitat_loop','Inspect habitat loop'),style:{display:'flex',flexWrap:'wrap',gap:8}},loops.map(function(loop){return h('button',{key:loop.id,type:'button','aria-pressed':chosen.id===loop.id,onClick:function(){upd('colonyHabitatLoop',loop.id);},style:Object.assign({},buttonStyle,{flex:'1 1 150px',borderColor:chosen.id===loop.id?loop.color:'#64748b'})},loop.name+' · '+stocks[loop.id]+' units · '+(net[loop.id]>=0?'+':'')+net[loop.id]+'/sol');})),
@@ -2079,12 +2113,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 h('details',null,h('summary',{style:{cursor:'pointer',minHeight:32,fontSize:13,color:'#fde68a'}},'Mission science and the Solar System connection'),h('button',{type:'button',style:buttonStyle,onClick:function(){setLabToolData(function(previous){return Object.assign({},previous,{solarSystem:Object.assign({},previous.solarSystem||{},{viewTab:'drone'})});});if(typeof setStemLabTool==='function')setStemLabTool('solarSystem');}},'Practice with Solar System drones'),h('p',{style:{fontSize:12,lineHeight:1.6,color:'#cbd5e1'}},'Use Solar System drone exploration to practice observing, sampling, and recognizing model limits. In Kepler Colony, link this campaign’s field evidence to a habitat design, test it through construction and turns, then revise. Sample inventories are not transferred between planets. The alien biosphere, surface, and advanced technologies are fiction; global terraforming progress is a game mechanic. The immediate objective is a functioning sealed habitat.')))
             );
           }
+          var scDomeEmblem = React.createElement('svg', { width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+            React.createElement('rect', { x: 1, y: 1, width: 40, height: 40, rx: 12, fill: '#0b1930', stroke: '#38bdf8', strokeWidth: 1.5 }),
+            React.createElement('ellipse', { cx: 21, cy: 23, rx: 16, ry: 6, fill: 'none', stroke: '#818cf8', strokeWidth: 1.2, strokeDasharray: '3 2', transform: 'rotate(-16 21 23)' }),
+            React.createElement('path', { d: 'M10 27 A11 11 0 0 1 32 27 Z', fill: '#164e63', stroke: '#67e8f9', strokeWidth: 1.5 }),
+            React.createElement('path', { d: 'M15 27 Q17 17 21 16 Q25 17 27 27 M21 16 V27', fill: 'none', stroke: '#a5f3fc', strokeWidth: 1.1 }),
+            React.createElement('rect', { x: 18, y: 22, width: 6, height: 5, rx: 1.5, fill: '#fef08a' }),
+            React.createElement('line', { x1: 7, y1: 27.5, x2: 35, y2: 27.5, stroke: '#38bdf8', strokeWidth: 1.5, strokeLinecap: 'round' }),
+            React.createElement('circle', { cx: 31, cy: 11, r: 2.8, fill: '#fde68a' }),
+            React.createElement('circle', { cx: 11, cy: 12, r: 1.3, fill: '#e0f2fe' })
+          );
           return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 md:p-6 border border-slate-700 overflow-hidden', 'data-spacecolony-root': 'true', tabIndex: -1, style: {width:'100%',minWidth:0,boxSizing:'border-box',alignSelf:'flex-start',flex:'0 0 auto'} },
-            React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5' },
-              React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
-                React.createElement('button', { type: 'button', onClick: function () { upd('selectedTool', null); }, 'aria-label': t('stem.spacecolony.back_to_colony_overview', 'Back to colony overview'), title: t('stem.spacecolony.back', 'Back'), className: 'transition-colors grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-600 bg-slate-800 text-slate-200 hover:border-indigo-400 hover:text-white text-lg' }, '\u2190'),
-                React.createElement('h2', { className: 'text-xl font-bold text-white tracking-tight' }, t('stem.spacecolony.kepler_colony', '\uD83D\uDE80 Kepler Colony') + (colony ? ' · ' + colonyName : '')),
-                React.createElement('span', { className: 'hidden sm:inline-flex text-[0.6875rem] text-indigo-200 bg-indigo-900/70 border border-indigo-700 px-2 py-1 rounded-full' }, 'Habitat Engineering Mission')
+            React.createElement('div', { className: 'sc-workbench-hero flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5 p-3.5 rounded-2xl border border-cyan-500/30', style: { background: 'linear-gradient(135deg, rgba(15,23,42,0.92), rgba(14,42,68,0.88))', boxShadow: '0 8px 24px rgba(2,6,23,0.35)' } },
+              React.createElement('div', { className: 'flex items-center gap-3 min-w-0 flex-wrap' },
+                React.createElement('button', { type: 'button', onClick: function () { upd('selectedTool', null); }, 'aria-label': t('stem.spacecolony.back_to_colony_overview', 'Back to colony overview'), title: t('stem.spacecolony.back', 'Back'), className: 'transition-colors grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-slate-600 bg-slate-800 text-slate-200 hover:border-indigo-400 hover:text-white text-lg' }, '\u2190'),
+                scDomeEmblem,
+                React.createElement('div', { style: { minWidth: 0 } },
+                  React.createElement('div', { className: 'flex items-center gap-2 flex-wrap mb-0.5' },
+                    React.createElement('span', { className: 'sc-subject-pill inline-flex text-[0.6875rem] font-bold uppercase tracking-wider text-cyan-200 bg-cyan-950/80 border border-cyan-500/40 px-2 py-0.5 rounded-full' }, t('stem.spacecolony.subject_badge', 'Engineering · Exoplanet Habitat Systems')),
+                    React.createElement('span', { className: 'hidden sm:inline-flex text-[0.6875rem] text-indigo-200 bg-indigo-900/70 border border-indigo-700 px-2 py-0.5 rounded-full' }, t('stem.spacecolony.habitat_engineering_mission', 'Habitat Engineering Mission'))
+                  ),
+                  React.createElement('h2', { className: 'text-xl font-bold text-white tracking-tight m-0' }, t('stem.spacecolony.kepler_colony', '\uD83D\uDE80 Kepler Colony') + (colony ? ' · ' + colonyName : ''))
+                )
+              ),
+              !colony && React.createElement('div', { className: 'flex gap-1.5 text-[0.6875rem] items-center flex-wrap' },
+                React.createElement('span', { className: 'sc-telemetry-pill px-2.5 py-1 rounded-full font-bold text-cyan-200 bg-slate-900/80 border border-cyan-500/35' }, colonyWorldName),
+                React.createElement('span', { className: 'sc-telemetry-pill px-2.5 py-1 rounded-full font-bold text-emerald-200 bg-slate-900/80 border border-emerald-500/35' }, t('stem.spacecolony.structures_count', 'Structures') + ': ' + buildings.length),
+                React.createElement('span', { className: 'sc-telemetry-pill px-2.5 py-1 rounded-full font-bold text-amber-200 bg-slate-900/80 border border-amber-500/35' }, t('stem.spacecolony.terraform_pct', 'Terraform') + ': ' + Math.round(terraform) + '%')
               ),
               colony && React.createElement('div', { className: 'flex gap-1 text-[0.6875rem] items-center flex-wrap' },
                 [

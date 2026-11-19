@@ -139,7 +139,7 @@ window.StemLab = window.StemLab || {
           var file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;
           if(file.size>200000){patch({notice:'Import failed: the notebook is larger than 200 KB.'});return;}
           var reader=new FileReader();
-          reader.onload=function(){try{var state=parseOsmosisNotebook(JSON.parse(reader.result));patch(Object.assign({},state,{notice:'Notebook imported: '+state.log.length+' trials restored.'}));}catch(error){patch({notice:'Import failed. '+(error instanceof SyntaxError?'This file is not valid JSON.':error.message)});}};
+          reader.onload=function(){try{var state=parseOsmosisNotebook(JSON.parse(reader.result,function(k,v){return(k==='__proto__'||k==='constructor'||k==='prototype')?undefined:v;}));patch(Object.assign({},state,{notice:'Notebook imported: '+state.log.length+' trials restored.'}));}catch(error){patch({notice:'Import failed. '+(error instanceof SyntaxError?'This file is not valid JSON.':error.message)});}};
           reader.onerror=function(){patch({notice:'Import failed: the file could not be read.'});};reader.readAsText(file);
         } })
       )
@@ -12108,7 +12108,7 @@ window.StemLab = window.StemLab || {
 
       // ── Tool body (cell) ──
       return (function() {
-var d = labToolData.cell || {};
+var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object' && !Array.isArray(labToolData.cell)) ? labToolData.cell : {};
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -33656,7 +33656,7 @@ var d = labToolData.cell || {};
 [data-cell-organism-chooser]{padding:20px!important;gap:16px!important;border:1px solid #d4e3df!important;border-radius:18px!important;background:#f7fbf9!important}
 [data-cell-organism-chooser] h4{font-size:19px!important;letter-spacing:-.3px;color:#173f3b!important}
 .theme-contrast [data-cell-organism-chooser]{background:#000!important;border-color:#fff!important}
-.theme-contrast [data-cell-organism-chooser] h4{color:#fff!important}
+.theme-contrast [data-cell-organism-chooser] h4,.theme-contrast [data-cell-selected-organism-header] h4{color:#fff!important}
 .theme-contrast [data-cell-organism-chooser] h4+p{color:#e6e6e6!important}
 [data-cell-organism-chooser] h4+p{font-size:12px!important;line-height:1.6;margin-top:5px}
 [data-cell-organism-grid]{gap:12px!important;align-items:stretch}
@@ -33852,6 +33852,22 @@ var d = labToolData.cell || {};
 @media(min-width:1000px){[data-cell-selected-structure],[data-cell-inspector-empty]{position:sticky;top:16px}}
 @media(max-width:900px){[data-cell-study-layout]>[data-cell-selected-structure],[data-cell-study-layout]>[data-cell-inspector-empty]{grid-column:1;grid-row:auto}[data-cell-study-layout]{grid-template-columns:minmax(0,1fr)}[data-cell-selected-structure]{position:static}[data-cell-interior-workspace]{padding:14px!important}[data-cell-structure-picker]{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:480px){[data-cell-interior-workspace]{padding:10px!important;border-radius:14px!important;gap:12px}[data-cell-header] h3{font-size:20px!important}[data-cell-study-nav]{padding:12px!important}[data-cell-study-nav] h4{font-size:18px!important}[data-cell-structure-picker]{grid-template-columns:repeat(2,minmax(0,1fr))}[data-cell-selected-structure]{padding:16px!important}[data-cell-diagram-heading],[data-cell-diagram-caption]{padding:10px 12px}}
+.cell-hero-banner{width:100%;border-radius:16px;padding:14px 16px;border:1px solid rgba(20,184,166,0.38);background:linear-gradient(135deg,#042f2e 0%,#115e59 54%,#0f172a 100%);color:#f0fdfa;box-shadow:0 12px 28px rgba(4,47,46,0.22),inset 0 1px 0 rgba(255,255,255,0.12);}
+.cell-hero-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+.cell-hero-emblem{flex:0 0 44px;width:44px;height:44px;border-radius:12px;border:1px solid rgba(94,234,212,0.52);background:radial-gradient(circle at 30% 25%,rgba(45,212,191,0.32),rgba(4,47,46,0.9));display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,0,0,0.28);}
+.cell-hero-subject{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;border:1px solid rgba(94,234,212,0.45);background:rgba(13,148,136,0.28);color:#ccfbf1;font-size:10px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;}
+.cell-hero-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+.cell-hero-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:750;background:rgba(15,23,42,0.52);border:1px solid rgba(94,234,212,0.3);color:#f0fdfa;}
+.cell-scale-ribbon{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid rgba(94,234,212,0.28);background:rgba(2,6,23,0.56);}
+.cell-preset-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.cell-preset-btn{min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:750;background:rgba(255,255,255,0.12);border:1px solid rgba(153,246,228,0.38);color:#ffffff;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .12s ease;}
+.cell-preset-btn:hover{background:rgba(255,255,255,0.22);border-color:#99f6e4;transform:translateY(-1px);}
+.cell-preset-btn:focus-visible{outline:3px solid #fde047;outline-offset:2px;}
+.theme-contrast .cell-hero-banner{background:#000000!important;border:2px solid #facc15!important;box-shadow:none!important;color:#ffffff!important;}
+.theme-contrast .cell-hero-subject,.theme-contrast .cell-hero-pill{background:#000000!important;border-color:#facc15!important;color:#facc15!important;}
+.theme-contrast .cell-scale-ribbon{background:#000000!important;border:1px solid #ffffff!important;}
+.theme-contrast .cell-preset-btn{background:#000000!important;border:2px solid #facc15!important;color:#ffffff!important;}
+.theme-contrast .cell-preset-btn:hover{background:#facc15!important;color:#000000!important;}
 `),
             // Focus is optional; the header remains available to return to every mode.
             React.createElement('style', null,
@@ -33866,16 +33882,86 @@ var d = labToolData.cell || {};
             // Header
 
             React.createElement("div", { "data-cell-header": true, className: "flex flex-wrap items-center gap-3 mb-3" },
-
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.cell.a11y_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
-
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" + onHostInk }, "\uD83D\uDD2C Cell Simulator"),
-
-              React.createElement("span", { className: "px-2 py-0.5 bg-teal-100 text-teal-800 text-[0.6875rem] font-bold rounded-full" }, "CELL v3"),
-
-              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[0.6875rem] font-bold rounded-full" }, "⭐ " + (d.researchPoints || 0) + " RP"),
-
-              React.createElement("span", { "data-cell-current-activity": true, className: "text-xs text-slate-600 ml-1" + onHostInk }, d.mode === 'play' ? cellPlayLabel(d.playAsOrganism) : (cellModeLabelMap[activeCellMode] || "Observe")),
+              (function() {
+                var cellExtSafe = (d._cellExt && typeof d._cellExt === 'object' && !Array.isArray(d._cellExt)) ? d._cellExt : {};
+                var obsCount = Array.isArray(cellExtSafe.organismsObserved) ? cellExtSafe.organismsObserved.length : 0;
+                var discCount = Array.isArray(d.discoveries) ? d.discoveries.length : 0;
+                var rpVal = (typeof d.researchPoints === 'number' && isFinite(d.researchPoints)) ? d.researchPoints : 0;
+                var cellPresetLocked = d.mode === 'quiz' || !!(ctx && (ctx.quizLock || ctx.teacherLock));
+                var quickCellPresets = [
+                  { id: 'observe', icon: '👁', label: __alloT('stem.cell.preset_petri_observe', 'Petri Observe') },
+                  { id: 'interior', icon: '🔬', label: __alloT('stem.cell.preset_inside_cell', 'Inside the Cell') },
+                  { id: 'processes', icon: '⚙️', label: __alloT('stem.cell.preset_cell_processes', 'Cell Processes') },
+                  { id: 'osmoHunt', icon: '💧', label: __alloT('stem.cell.preset_osmosis_lab', 'Osmosis Lab') },
+                  { id: 'compare', icon: '⚖️', label: __alloT('stem.cell.preset_compare_cells', 'Compare Cells') }
+                ];
+                return React.createElement("div", { className: "cell-hero-banner" },
+                  React.createElement("div", { className: "cell-hero-row" },
+                    React.createElement("button", { type: "button", onClick: function () { setStemLabTool(null); }, className: "transition-colors p-2 rounded-lg active:scale-[0.97] bg-white/10 hover:bg-white/20 border border-white/25", 'aria-label': __alloT('stem.cell.a11y_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-white" })),
+                    React.createElement("div", { className: "cell-hero-emblem", "aria-hidden": "true" },
+                      React.createElement("svg", { viewBox: "0 0 40 40", width: 32, height: 32, "aria-hidden": "true" },
+                        React.createElement("ellipse", { cx: 20, cy: 20, rx: 17, ry: 14.5, fill: "rgba(45,212,191,0.18)", stroke: "#5eead4", strokeWidth: 1.8 }),
+                        React.createElement("circle", { cx: 17, cy: 19, r: 5.5, fill: "#0d9488", stroke: "#ccfbf1", strokeWidth: 1.3 }),
+                        React.createElement("circle", { cx: 17, cy: 19, r: 2, fill: "#fef08a" }),
+                        React.createElement("ellipse", { cx: 28, cy: 15, rx: 4, ry: 2.2, transform: "rotate(-22 28 15)", fill: "#fb923c", stroke: "#ffedd5", strokeWidth: 0.9 }),
+                        React.createElement("path", { d: "M24 25 Q28 23 31 26 M23 28 Q27 26.5 30 29", fill: "none", stroke: "#a7f3d0", strokeWidth: 1.4, strokeLinecap: "round" })
+                      )
+                    ),
+                    React.createElement("div", { style: { minWidth: 0, flex: '1 1 200px' } },
+                      React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-1" },
+                        React.createElement("span", { className: "cell-hero-subject" }, __alloT('stem.cell.microscopy_workbench_badge', 'Cell Biology & Microscopy Studio')),
+                        React.createElement("span", { className: "px-2 py-0.5 bg-teal-100 text-teal-900 text-[0.6875rem] font-bold rounded-full" }, "CELL v3"),
+                        React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-900 text-[0.6875rem] font-bold rounded-full" }, "⭐ " + rpVal + " RP")
+                      ),
+                      React.createElement("div", { className: "flex flex-wrap items-baseline gap-2" },
+                        React.createElement("h3", { className: "text-lg font-bold text-white tracking-tight m-0" }, "\uD83D\uDD2C Cell Simulator"),
+                        React.createElement("span", { "data-cell-current-activity": true, className: "text-xs text-teal-100 font-semibold" }, d.mode === 'play' ? cellPlayLabel(d.playAsOrganism) : (cellModeLabelMap[activeCellMode] || "Observe"))
+                      )
+                    )
+                  ),
+                  React.createElement("div", { className: "cell-hero-pills", role: "list", "aria-label": __alloT('stem.cell.workbench_telemetry_summary', 'Cell Simulator telemetry') },
+                    React.createElement("span", { role: "listitem", className: "cell-hero-pill" }, "🦠 " + obsCount + "/11 " + __alloT('stem.cell.organisms_observed_unit', 'organisms observed')),
+                    React.createElement("span", { role: "listitem", className: "cell-hero-pill" }, "🔎 " + discCount + " " + __alloT('stem.cell.discoveries_unit', 'discoveries')),
+                    React.createElement("span", { role: "listitem", className: "cell-hero-pill" }, "🧪 19 " + __alloT('stem.cell.lab_modes_unit', 'lab modes'))
+                  ),
+                  React.createElement("div", { className: "cell-scale-ribbon", role: "note", "aria-label": __alloT('stem.cell.microscopy_scale_aria', 'Logarithmic microscopy size scale from 0.1 micrometer virus through 1 micrometer bacteria, 15 micrometer animal cell, 60 micrometer plant cell, to 250 micrometer Paramecium') },
+                    React.createElement("svg", {
+                      viewBox: "0 0 460 44",
+                      width: "100%",
+                      height: 44,
+                      "aria-hidden": "true",
+                      style: { display: 'block' }
+                    },
+                      React.createElement("line", { x1: 28, y1: 16, x2: 432, y2: 16, stroke: "#5eead4", strokeWidth: 1.6, opacity: 0.75 }),
+                      [
+                        { x: 46, label: "0.1 µm Virus", r: 2.5, c: "#fb7185" },
+                        { x: 136, label: "1 µm Bacteria", r: 3.5, c: "#fbbf24" },
+                        { x: 234, label: "15 µm Animal", r: 5, c: "#38bdf8" },
+                        { x: 332, label: "60 µm Plant", r: 6, c: "#34d399" },
+                        { x: 422, label: "250 µm Ciliate", r: 6.5, c: "#c084fc" }
+                      ].map(function(pt, pi) {
+                        return React.createElement("g", { key: "cs-" + pi },
+                          React.createElement("circle", { cx: pt.x, cy: 16, r: pt.r, fill: pt.c, stroke: "#f8fafc", strokeWidth: 1 }),
+                          React.createElement("text", { x: pt.x, y: 36, fill: "#e2e8f0", fontSize: 10, fontWeight: 700, textAnchor: "middle" }, pt.label)
+                        );
+                      })
+                    )
+                  ),
+                  !cellPresetLocked && React.createElement("div", { className: "cell-preset-bar", role: "group", "aria-label": __alloT('stem.cell.quick_lab_presets', 'Quick launch Cell Simulator stations') },
+                    quickCellPresets.map(function(cp) {
+                      var isAct = activeCellMode === cp.id;
+                      return React.createElement("button", {
+                        key: "cell-qp-" + cp.id,
+                        type: "button",
+                        className: "cell-preset-btn",
+                        "aria-pressed": isAct ? "true" : "false",
+                        onClick: function() { jumpCellMode(cp.id); },
+                        style: isAct ? { background: "rgba(20,184,166,0.38)", borderColor: "#5eead4" } : undefined
+                      }, React.createElement("span", { "aria-hidden": "true" }, cp.icon), React.createElement("span", null, cp.label));
+                    })
+                  )
+                );
+              })(),
 
 
               (function() {
@@ -34298,7 +34384,7 @@ var d = labToolData.cell || {};
               function importCellProgress() {
                 var text = String(d.interiorProgressTransfer || '').trim(), parsed;
                 if (!text) { upd('interiorProgressNotice', 'Paste a progress JSON record first.'); return; }
-                try { parsed = JSON.parse(text); } catch (e) { upd('interiorProgressNotice', 'Import failed: this is not valid JSON.'); return; }
+                try { parsed = JSON.parse(text, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); } catch (e) { upd('interiorProgressNotice', 'Import failed: this is not valid JSON.'); return; }
                 var candidate = parsed && typeof parsed === 'object' ? (parsed.progress || parsed) : null;
                 if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) { upd('interiorProgressNotice', 'Import failed: expected a progress object.'); return; }
                 if (candidate.schemaVersion != null && Number(candidate.schemaVersion) > CELL_PROGRESS_SCHEMA_VERSION) { upd('interiorProgressNotice', 'Import failed: this progress record was created by a newer version.'); return; }

@@ -512,9 +512,13 @@ function aePortlandPracticeRating(domains) {
   return { label: aeTranslatedRubricLabel('Proficient'), rule: t("educator_evaluation.no_more_than_two_domains_below_proficient_none_unsatisf_1w2y4a6", 'no more than two domains below Proficient, none Unsatisfactory') };
 }
 
+function aeHasOwn(obj, key) {
+  return !!(obj && typeof key === 'string' && Object.prototype.hasOwnProperty.call(obj, key));
+}
 let AE_ACTIVE_FW = { ...AE_FRAMEWORKS.maine_pepg, practiceWeight: null };
 function aeSetActiveFramework(config) {
-  const profile = AE_FRAMEWORKS[config && config.frameworkProfile] || AE_FRAMEWORKS.maine_pepg;
+  const fwKey = config && config.frameworkProfile;
+  const profile = aeHasOwn(AE_FRAMEWORKS, fwKey) ? AE_FRAMEWORKS[fwKey] : AE_FRAMEWORKS.maine_pepg;
   const rawWeight = config && config.pepgPracticeWeight;
   const weight = rawWeight != null && String(rawWeight) !== '' && Number.isFinite(Number(rawWeight)) && Number(rawWeight) >= 0 && Number(rawWeight) <= 100 ? Math.round(Number(rawWeight)) : null;
   const custom = aeNormalizeRubric(config && config.customRubric);
@@ -955,16 +959,43 @@ function aeDate(value) {
   return d.toLocaleDateString([], { dateStyle: 'medium' });
 }
 
+function aeVaultBackend() {
+  try {
+    const sw = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SensitiveWorkspace;
+    if (!sw || typeof sw.getStatus !== 'function') return { mode: 'local', storage: localStorage };
+    const phase = sw.getStatus()?.phase;
+    if (phase === 'ready') {
+      const sess = typeof sw.getSession === 'function' ? sw.getSession('educator-evaluation') : null;
+      if (sess && sess.storage) return { mode: 'vault', storage: sess.storage };
+    }
+    if (phase === 'locked' || phase === 'setup' || phase === 'locking') {
+      return { mode: 'locked', storage: null };
+    }
+  } catch (_) {}
+  return { mode: 'local', storage: localStorage };
+}
+
 function aeReadLocalWorkspace() {
   let raw = '';
   try {
-    raw = localStorage.getItem(AE_STORAGE_KEY) || '';
+    const backend = aeVaultBackend();
+    if (backend.mode === 'locked') {
+      return { status: 'unavailable', workspace: null, raw: '', error: t("educator_evaluation.protected_vault_locked", 'Protected workspace is locked. Unlock protected records to open saved evaluations.') };
+    }
+    if (backend.mode === 'vault') {
+      raw = backend.storage.getItem(AE_STORAGE_KEY) || '';
+      if (!raw) {
+        try { raw = localStorage.getItem(AE_STORAGE_KEY) || ''; } catch (_) {}
+      }
+    } else {
+      raw = localStorage.getItem(AE_STORAGE_KEY) || '';
+    }
   } catch (error) {
     return { status: 'unavailable', workspace: null, raw: '', error: error && error.message ? error.message : t("educator_evaluation.browser_storage_is_unavailable_1c9wx7a", 'Browser storage is unavailable.') };
   }
   if (!raw) return { status: 'empty', workspace: null, raw: '', error: '' };
   try {
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(raw, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
     const workspace = aeNormalizeWorkspace(parsed);
     if (!workspace) return { status: 'corrupt', workspace: null, raw, error: t("educator_evaluation.the_saved_workspace_has_an_invalid_structure_1v5zq0b", 'The saved workspace has an invalid structure.') };
     return { status: 'ok', workspace, raw: '', error: '' };
@@ -980,7 +1011,21 @@ function aeLoad() {
 
 function aeStore(workspace) {
   try {
-    localStorage.setItem(AE_STORAGE_KEY, JSON.stringify(workspace));
+    const backend = aeVaultBackend();
+    if (backend.mode === 'locked') {
+      return {
+        ok: false,
+        error: t("educator_evaluation.protected_vault_locked", 'Protected workspace is locked. Unlock protected records before saving.'),
+        detail: 'protected-vault-locked',
+      };
+    }
+    const serialized = JSON.stringify(workspace);
+    if (backend.mode === 'vault') {
+      backend.storage.setItem(AE_STORAGE_KEY, serialized);
+      try { localStorage.removeItem(AE_STORAGE_KEY); } catch (_) {}
+    } else {
+      localStorage.setItem(AE_STORAGE_KEY, serialized);
+    }
     return { ok: true, error: '', savedAt: aeNow() };
   } catch (error) {
     const name = error && error.name ? String(error.name) : '';
@@ -1072,7 +1117,10 @@ function aeThreeWayMerge(base, local, remote, path) {
     if (aePlainObject(before) && aePlainObject(attempted) && aePlainObject(current)) {
       const result = {};
       const keys = Array.from(new Set(Object.keys(before).concat(Object.keys(attempted), Object.keys(current))));
-      keys.forEach((key) => { result[key] = merge(before[key], attempted[key], current[key], currentPath + '.' + key); });
+      keys.forEach((key) => {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
+        result[key] = merge(before[key], attempted[key], current[key], currentPath + '.' + key);
+      });
       return result;
     }
     const idArray = (value) => Array.isArray(value) && value.every((item) => aePlainObject(item) && aeSafeId(item.id, ''));
@@ -1191,7 +1239,7 @@ function aeSafeWeightSnapshot(value) {
 function aeNormalizeWorkspace(value) {
   if (!aePlainObject(value)) return null;
   const rawConfig = aePlainObject(value.config) ? value.config : {};
-  const frameworkProfile = AE_FRAMEWORKS[rawConfig.frameworkProfile] ? rawConfig.frameworkProfile : 'maine_pepg';
+  const frameworkProfile = aeHasOwn(AE_FRAMEWORKS, rawConfig.frameworkProfile) && AE_FRAMEWORKS[rawConfig.frameworkProfile] ? rawConfig.frameworkProfile : 'maine_pepg';
   const customRubric = aeNormalizeRubric(rawConfig.customRubric);
   const config = {
     organization: aeString(rawConfig.organization, 160, 'Sample School'),
@@ -1233,7 +1281,7 @@ function aeNormalizeWorkspace(value) {
       active: aeBoolean(raw.active, true),
       evaluator: aeString(raw.evaluator, 160, config.evaluatorName),
       dueDate: aeDateValue(raw.dueDate),
-      cycleStatus: AE_STATUS_META[status] ? status : 'not_started',
+      cycleStatus: aeHasOwn(AE_STATUS_META, status) ? status : 'not_started',
       lastActivityAt: aeTimestamp(raw.lastActivityAt),
       finalizedAt: aeTimestamp(raw.finalizedAt),
       cycleLockedAt: aeTimestamp(raw.cycleLockedAt),
@@ -1557,7 +1605,7 @@ function aeNormalizeSimulationParams(rawParams) {
   params.finalizedCount = aeSimulationClamp(params.finalizedCount, 0, params.staffCount, 2);
   params.overdueCount = aeSimulationClamp(params.overdueCount, 0, params.staffCount - params.finalizedCount, 1);
   params.walkthroughsPerTeacher = aeSimulationClamp(params.walkthroughsPerTeacher, 0, 8, 1);
-  params.frameworkProfile = AE_FRAMEWORKS[params.frameworkProfile] ? params.frameworkProfile : 'maine_pepg';
+  params.frameworkProfile = aeHasOwn(AE_FRAMEWORKS, params.frameworkProfile) ? params.frameworkProfile : 'maine_pepg';
   params.thinEvidenceDomain = /^d[1-4]$/.test(params.thinEvidenceDomain) ? params.thinEvidenceDomain : 'none';
   const labels = {
     staffCount: 'educators', buildingCount: 'buildings', finalizedCount: 'finalized cycles', overdueCount: 'overdue cycles',
@@ -1810,7 +1858,7 @@ function aeTeacherStatus(teacher) {
   if (!teacher) return 'not_started';
   if (aeCycleFinalized(teacher)) return 'finalized';
   if (teacher.dueDate && teacher.dueDate < aeToday()) return 'overdue';
-  if (teacher.cycleStatus && AE_STATUS_META[teacher.cycleStatus]) return teacher.cycleStatus;
+  if (teacher.cycleStatus && aeHasOwn(AE_STATUS_META, teacher.cycleStatus)) return teacher.cycleStatus;
   return 'not_started';
 }
 function aeCompletionSummary(teachers) {
@@ -2085,7 +2133,7 @@ const AE_STYLES = `
 .ae-local-banner.ae-sync-error{background:#fff1f2;border-bottom-color:#fda4af;color:#881337}.ae-preview-banner{background:#eef2ff;border-bottom-color:#a5b4fc;color:#312e81}.ae-save-state{margin-left:auto;white-space:nowrap;border:1px solid currentColor;border-radius:999px;padding:2px 8px;font-weight:800}.ae-local-banner .ae-btn{min-height:32px;padding:4px 9px;font-size:11px}.ae-operation-notice{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 20px;background:#eff6ff;border-bottom:1px solid #bfdbfe;color:#1e3a5f;font-size:12px}.ae-operation-success{background:#ecfdf5;border-bottom-color:#86efac;color:#14532d}.ae-operation-error{background:#fff1f2;border-bottom-color:#fda4af;color:#881337}.ae-operation-notice .ae-btn{min-height:44px;padding:8px 12px}.ae-tour{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 20px;background:#f5f3ff;border-bottom:1px solid #c4b5fd;color:#3b1d72}.ae-tour p{margin:3px 0 0;font-size:12px}.ae-tour .ae-actions{flex:0 0 auto}.ae-review-heading{margin:0 0 6px}.ae-review-heading:focus{outline:3px solid #fbbf24;outline-offset:3px;border-radius:4px}.ae-review-facts{display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:5px 12px;margin:10px 0}.ae-review-facts dt{font-weight:800}.ae-review-facts dd{margin:0;overflow-wrap:anywhere}
 .ae-donut-wrap{display:flex;gap:18px;align-items:center;margin-top:12px}.ae-donut{width:178px;height:178px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;position:relative}.ae-donut:after{content:"";width:108px;height:108px;border-radius:50%;background:#fff;position:absolute;box-shadow:inset 0 0 0 1px #e2e8f0}.ae-donut-center{position:relative;z-index:1;text-align:center;line-height:1.15}.ae-donut-center strong{font-size:24px;display:block}.ae-donut-center span{font-size:11px;color:var(--ae-muted);display:block;max-width:86px}.ae-legend{display:grid;gap:7px;min-width:0}.ae-legend-row{display:grid;grid-template-columns:12px 1fr auto;gap:7px;align-items:center;font-size:12px}.ae-swatch{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
 .ae-table-wrap{width:100%;overflow:auto;border:1px solid var(--ae-line);border-radius:12px}.ae-table{border-collapse:collapse;width:100%;font-size:12px;background:#fff}.ae-table th,.ae-table td{padding:10px 11px;text-align:left;border-bottom:1px solid #e4e9f1;vertical-align:top}.ae-table th{background:#f2f5f9;color:#36445b;font-weight:850;white-space:nowrap}.ae-table tr:last-child td{border-bottom:0}.ae-table tbody tr:hover{background:#f8fbff}.ae-row-btn{border:0;background:transparent;color:#1d4ed8;text-align:left;font-weight:800;padding:6px 0;min-height:32px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}.ae-empty{text-align:center;padding:34px 16px;color:var(--ae-muted)}
-.ae-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.ae-toolbar .ae-input,.ae-toolbar .ae-select{width:auto;min-width:170px}.ae-record{border:1px solid var(--ae-line);border-radius:13px;background:#fff;padding:13px;margin-bottom:10px}.ae-record-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.ae-record h4{margin:0 0 3px}.ae-meta{font-size:11px;color:var(--ae-muted);display:flex;gap:8px;flex-wrap:wrap}.ae-evidence{white-space:pre-wrap;background:#f8fafc;border-left:4px solid #64748b;padding:10px 12px;margin:10px 0;border-radius:0 9px 9px 0}.ae-interpretation{border-left-color:#2563eb;background:#eff6ff}.ae-thread{border-top:1px solid var(--ae-line);margin-top:14px;padding-top:12px}.ae-comment{padding:9px 11px;border-radius:10px;background:#f3f6fa;margin:7px 0}.ae-comment-teacher{background:#f3e8ff}.ae-comment strong{font-size:12px}.ae-comment p{margin:3px 0;white-space:pre-wrap}.ae-comment time{font-size:10px;color:var(--ae-muted)}
+.ae-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.ae-toolbar .ae-input,.ae-toolbar .ae-select{width:auto;min-width:170px}.ae-record{border:1px solid var(--ae-line);border-radius:13px;background:#fff;padding:13px;margin-bottom:10px}.ae-record-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.ae-record h4,.ae-record .ae-record-title{margin:0 0 3px;font-size:14px;font-weight:700;display:block}.ae-meta{font-size:11px;color:var(--ae-muted);display:flex;gap:8px;flex-wrap:wrap}.ae-evidence{white-space:pre-wrap;background:#f8fafc;border-left:4px solid #64748b;padding:10px 12px;margin:10px 0;border-radius:0 9px 9px 0}.ae-interpretation{border-left-color:#2563eb;background:#eff6ff}.ae-thread{border-top:1px solid var(--ae-line);margin-top:14px;padding-top:12px}.ae-comment{padding:9px 11px;border-radius:10px;background:#f3f6fa;margin:7px 0}.ae-comment-teacher{background:#f3e8ff}.ae-comment strong{font-size:12px}.ae-comment p{margin:3px 0;white-space:pre-wrap}.ae-comment time{font-size:10px;color:var(--ae-muted)}
 .ae-stepper{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:12px 0 18px;list-style:none;padding:0}.ae-step{font-size:9px;text-align:center;color:#69758a;position:relative;padding-top:24px}.ae-step:before{content:"";width:18px;height:18px;border-radius:50%;background:#d9e0ea;border:2px solid #fff;box-shadow:0 0 0 1px #aeb9ca;position:absolute;top:0;left:50%;transform:translateX(-50%)}.ae-step:after{content:"";height:2px;background:#ccd5e2;position:absolute;top:9px;left:calc(50% + 10px);right:calc(-50% + 10px)}.ae-step:last-child:after{display:none}.ae-step-done{color:#154e39;font-weight:750}.ae-step-done:before{background:#16a34a;box-shadow:0 0 0 1px #15803d}.ae-step-done:after{background:#16a34a}.ae-step-current:before{background:#2563eb;box-shadow:0 0 0 3px #bfdbfe}.ae-domain{border:1px solid var(--ae-line);border-radius:12px;margin:8px 0;overflow:hidden}.ae-domain summary{cursor:pointer;padding:11px 12px;font-weight:800;background:#f8fafc}.ae-domain-body{padding:8px 12px 12px}.ae-domain-component{display:flex;gap:7px;align-items:flex-start;padding:5px 0;font-size:12px}.ae-domain-component strong{min-width:26px}.ae-rating-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.ae-rating-card{border:1px solid var(--ae-line);border-radius:12px;padding:10px}.ae-rating-card h4{min-height:40px;margin:0 0 8px}.ae-score{font-size:28px;font-weight:900;color:#173e70}.ae-timeline{border-left:2px solid #c8d2e1;margin:10px 0 0 8px;padding-left:18px}.ae-event{position:relative;padding:0 0 16px}.ae-event:before{content:"";position:absolute;width:11px;height:11px;border-radius:50%;background:#2563eb;left:-24.5px;top:4px;border:2px solid #fff;box-shadow:0 0 0 1px #2563eb}.ae-event h4{margin:0;font-size:12px}.ae-event p{margin:2px 0;font-size:11px;color:var(--ae-muted)}.ae-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.ae-footer{padding:10px 20px;border-top:1px solid var(--ae-line);background:#fff;color:#667085;font-size:10px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.ae-footer a{color:#1d4ed8}
 .ae-onboarding-overlay{position:fixed;inset:0;z-index:290;background:rgba(7,18,38,.72);display:flex;align-items:center;justify-content:center;padding:16px}.ae-onboarding-card{width:min(720px,100%);max-height:92vh;overflow:auto;background:#fff;border:1px solid #cbd5e1;border-radius:22px;box-shadow:0 30px 90px rgba(7,18,38,.42);padding:24px}.ae-onboarding-kicker{color:#1d4ed8;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.ae-onboarding-card h2{margin:5px 0 7px;color:#172033;font-size:24px;line-height:1.2}.ae-onboarding-card>p{margin:0;color:#5b667a;font-size:13px;line-height:1.55}.ae-onboarding-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}.ae-onboarding-option{border:2px solid #d8deea;border-radius:16px;background:#fff;color:#172033;text-align:left;padding:16px;min-height:150px;cursor:pointer;display:flex;flex-direction:column;gap:8px}.ae-onboarding-option:hover{border-color:#2563eb;background:#f8fbff}.ae-onboarding-option strong{font-size:16px;color:#173e70}.ae-onboarding-option span:not(.ae-onboarding-badge){font-size:12px;line-height:1.5;color:#5b667a}.ae-onboarding-note{margin-top:16px;background:#fff8e8;border:1px solid #f2cc72;color:#624409;border-radius:12px;padding:11px 12px;font-size:11px;line-height:1.5}@media(max-width:640px){.ae-onboarding-card{padding:18px}.ae-onboarding-options{grid-template-columns:1fr}.ae-onboarding-card h2{font-size:21px}}
 @media(max-width:1000px){.ae-span-4,.ae-span-5,.ae-span-6,.ae-span-7,.ae-span-8{grid-column:span 12}.ae-rating-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ae-workspace{height:97vh}.ae-main{padding:14px}.ae-stepper{grid-template-columns:repeat(10,minmax(72px,1fr));overflow-x:auto;padding-bottom:8px}.ae-step{font-size:9px;min-width:72px}.ae-step:before{width:16px;height:16px}.ae-step:after{top:8px}.ae-donut-wrap{justify-content:center}.ae-top{align-items:flex-start}.ae-brand p{display:none}}
@@ -2462,7 +2510,7 @@ function AeGuidedTour({ step, onMove, onFinish }) {
 
 
 function AeStatus({ status }) {
-  const meta = AE_STATUS_META[status] || AE_STATUS_META.not_started;
+  const meta = aeHasOwn(AE_STATUS_META, status) ? AE_STATUS_META[status] : AE_STATUS_META.not_started;
   return <span className={'ae-chip ae-chip-' + meta.tone}>{aeStatusLabel(status)}</span>;
 }
 
@@ -2976,7 +3024,7 @@ function AeOverview({ openWorkflowAction = null, workspace, selectedTeacher, set
       {isEvaluator && <section className="ae-card ae-span-5" aria-labelledby="ae-completion-title"><h3 id="ae-completion-title">{t("educator_evaluation.teachers_evaluated_fjk8wj", "Teachers evaluated")}</h3><p className="ae-sub">{t("educator_evaluation.active_educators_due_in_wk6o4y", "Active educators due in")} {workspace.config.academicYear}</p>
         {summary.total === 0 ? <div className="ae-empty" style={{ marginTop: 12 }}><strong>{t("educator_evaluation.no_educators_yet_1wyu48u", "No educators yet")}</strong><p>{t("educator_evaluation.add_your_roster_in_staff_completion_tracking_begins_with_y_11da9la", "Add your roster in Staff, completion tracking begins with your first educator.")}</p></div> : <>
         <AeDonut segments={completionSegments} centerTop={summary.finalized + ' / ' + summary.total} centerBottom="finalized" label={summary.finalized + ' of ' + summary.total + t("educator_evaluation.eligible_teachers_finalized_1uhhk1a", ' eligible teachers finalized; ') + summary.open + t("educator_evaluation.not_finalized_1t1pp9c", ' not finalized')} />
-        <div className="ae-table-wrap" style={{ marginTop: 12 }}><table className="ae-table"><caption className="ae-live">{t("educator_evaluation.evaluation_status_counts_198dv4l", "Evaluation status counts")}</caption><thead><tr><th>{t("educator_evaluation.status_3pd73", "Status")}</th><th>{t("educator_evaluation.teachers_suo8i", "Teachers")}</th></tr></thead><tbody>
+        <div className="ae-table-wrap" style={{ marginTop: 12 }}><table className="ae-table"><caption className="ae-live">{t("educator_evaluation.evaluation_status_counts_198dv4l", "Evaluation status counts")}</caption><thead><tr><th scope="col">{t("educator_evaluation.status_3pd73", "Status")}</th><th scope="col">{t("educator_evaluation.teachers_suo8i", "Teachers")}</th></tr></thead><tbody>
           {Object.keys(AE_STATUS_META).map((status) => <tr key={status}><td><AeStatus status={status} /></td><td>{summary.statuses[status] || 0}</td></tr>)}
         </tbody></table></div>
         </>}
@@ -2992,7 +3040,7 @@ function AeOverview({ openWorkflowAction = null, workspace, selectedTeacher, set
         </>}
       </section>
       {isEvaluator && <section id="ae-roster-status-list" className="ae-card ae-span-12"><div className="ae-record-head"><div><h3>{t("educator_evaluation.roster_status_2shoo8", "Roster status")}</h3><p className="ae-sub">{t("educator_evaluation.select_a_row_to_open_the_educator_s_working_record_av3e05", "Select a row to open the educator’s working record.")}</p></div><button type="button" className="ae-btn" onClick={() => setTab('staff')}>{t("educator_evaluation.manage_staff_1kpuiqg", "Manage staff")}</button></div>
-        {matchingTeachers.length === 0 ? <div className="ae-empty">{activeTeachers.length ? t("educator_evaluation.no_matching_educators_20260908", "No educators match. Try another search or clear the filters.") : t("educator_evaluation.no_educators_yet_add_your_roster_in_staff_1pab6mk", "No educators yet. Add your roster in Staff.")}</div> : <div className="ae-table-wrap" style={{ marginTop: 12 }}><table className="ae-table"><thead><tr><th>{t("educator_evaluation.educator_8c1rq4", "Educator")}</th><th>{t("educator_evaluation.next_action_107tu5e", "Next action")}</th><th>{t("educator_evaluation.assignment_10eds7k", "Assignment")}</th><th>{t("educator_evaluation.evaluator_125q2ii", "Evaluator")}</th><th>{t("educator_evaluation.formal_observation_16nrpso", "Formal observation")}</th><th>{t("educator_evaluation.walkthroughs_12hordq", "Walkthroughs")}</th><th>{t("educator_evaluation.spm_slo_18l13ic", "SPM / SLO")}</th><th>{t("educator_evaluation.final_record_1awuyqk", "Final record")}</th><th>{t("educator_evaluation.next_due_wbbyhu", "Next due")}</th></tr></thead><tbody>
+        {matchingTeachers.length === 0 ? <div className="ae-empty">{activeTeachers.length ? t("educator_evaluation.no_matching_educators_20260908", "No educators match. Try another search or clear the filters.") : t("educator_evaluation.no_educators_yet_add_your_roster_in_staff_1pab6mk", "No educators yet. Add your roster in Staff.")}</div> : <div className="ae-table-wrap" style={{ marginTop: 12 }}><table className="ae-table"><thead><tr><th scope="col">{t("educator_evaluation.educator_8c1rq4", "Educator")}</th><th scope="col">{t("educator_evaluation.next_action_107tu5e", "Next action")}</th><th scope="col">{t("educator_evaluation.assignment_10eds7k", "Assignment")}</th><th scope="col">{t("educator_evaluation.evaluator_125q2ii", "Evaluator")}</th><th scope="col">{t("educator_evaluation.formal_observation_16nrpso", "Formal observation")}</th><th scope="col">{t("educator_evaluation.walkthroughs_12hordq", "Walkthroughs")}</th><th scope="col">{t("educator_evaluation.spm_slo_18l13ic", "SPM / SLO")}</th><th scope="col">{t("educator_evaluation.final_record_1awuyqk", "Final record")}</th><th scope="col">{t("educator_evaluation.next_due_wbbyhu", "Next due")}</th></tr></thead><tbody>
           {matchingTeachers.map((teacher) => {
             const obs = workspace.observations.filter((item) => item.teacherId === teacher.id);
             const walks = workspace.walkthroughs.filter((item) => item.teacherId === teacher.id && item.publishedAt);
@@ -3324,7 +3372,7 @@ function AeStaff({ workspace, selectedTeacher, setSelectedTeacherId, role, updat
       <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn" onClick={() => { setPasting(false); clearPaste(); setPasteNotice(null); }}>{t("educator_evaluation.cancel_ew9em3", "Cancel")}</button><button type="button" className="ae-btn ae-btn-primary" disabled={readyRows.length === 0} onClick={savePaste}>{t("educator_evaluation.add_educators_count_20260823", 'Add ') + readyRows.length + (readyRows.length === 1 ? t("educator_evaluation.educator_singular_20260823", ' educator') : t("educator_evaluation.educator_plural_20260823", ' educators'))}</button>{pasteRows.length > readyRows.length && <span className="ae-help">{(pasteRows.length - readyRows.length) + t("educator_evaluation.skipped_lines_stay_out_20260823", ' skipped line(s) above will not be added.')}</span>}</div>
     </section>}
     <div className="ae-grid"><section className="ae-card ae-span-7"><div className="ae-toolbar"><input className="ae-input" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("educator_evaluation.search_staff_1puhliv", "Search staff")} aria-label={t("educator_evaluation.search_staff_1puhliv", "Search staff")}/><select className="ae-select" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label={t("educator_evaluation.filter_by_evaluation_status_jrlny4", "Filter by evaluation status")}><option value="all">{t("educator_evaluation.all_statuses_u1q98u", "All statuses")}</option>{Object.keys(AE_STATUS_META).map((key) => <option key={key} value={key}>{AE_STATUS_META[key].label}</option>)}</select></div>
-      <div className="ae-table-wrap"><table className="ae-table"><thead><tr><th>{t("educator_evaluation.educator_8c1rq4", "Educator")}</th><th>{t("educator_evaluation.employee_type_1ridbwr", "Employee type")}</th><th>{t("educator_evaluation.status_3pd73", "Status")}</th><th>{t("educator_evaluation.due_lfawnp", "Due")}</th></tr></thead><tbody>{matches.map((teacher) => <tr key={teacher.id}><td><button type="button" className="ae-row-btn" onClick={() => setSelectedTeacherId(teacher.id)}>{teacher.name}</button><br/><span className="ae-sub">{teacher.code} · {teacher.assignment || t("educator_evaluation.no_assignment_16215uj", 'No assignment')}</span></td><td>{teacher.employeeType === 'temporary' ? t("educator_evaluation.temporary_12plq58", 'Temporary') : t("educator_evaluation.professional_1wvex2a", 'Professional')}</td><td><AeStatus status={aeTeacherStatus(teacher)} /></td><td>{aeDate(teacher.dueDate)}</td></tr>)}</tbody></table></div>
+      <div className="ae-table-wrap"><table className="ae-table"><thead><tr><th scope="col">{t("educator_evaluation.educator_8c1rq4", "Educator")}</th><th scope="col">{t("educator_evaluation.employee_type_1ridbwr", "Employee type")}</th><th scope="col">{t("educator_evaluation.status_3pd73", "Status")}</th><th scope="col">{t("educator_evaluation.due_lfawnp", "Due")}</th></tr></thead><tbody>{matches.map((teacher) => <tr key={teacher.id}><td><button type="button" className="ae-row-btn" onClick={() => setSelectedTeacherId(teacher.id)}>{teacher.name}</button><br/><span className="ae-sub">{teacher.code} · {teacher.assignment || t("educator_evaluation.no_assignment_16215uj", 'No assignment')}</span></td><td>{teacher.employeeType === 'temporary' ? t("educator_evaluation.temporary_12plq58", 'Temporary') : t("educator_evaluation.professional_1wvex2a", 'Professional')}</td><td><AeStatus status={aeTeacherStatus(teacher)} /></td><td>{aeDate(teacher.dueDate)}</td></tr>)}</tbody></table></div>
     </section><section className="ae-card ae-span-5"><h3>{t("educator_evaluation.selected_educator_2guy6p", "Selected educator")}</h3>{selectedTeacher && selectedTeacher.cycleLockedAt && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}>{t("educator_evaluation.employee_category_data_availability_and_framework_weights__1cdamlp", "Employee category, data availability, and framework weights were frozen when cycle work began (")}{aeDateTime(selectedTeacher.cycleLockedAt)}).</div>}{!selectedTeacher ? <div className="ae-empty">{t("educator_evaluation.select_an_educator_to_review_the_assignment_blqh4w", "Select an educator to review the assignment.")}</div> : <AeStaffProfileEditor teacher={selectedTeacher} workspace={workspace} role={role} isRemote={isRemote} updateStaffProfile={updateStaffProfile}/>}</section></div>
   </div>;
 }
@@ -3529,7 +3577,7 @@ function AeWalkthroughs({ initialRecordId = '', workspace, selectedTeacher, setS
     {role === 'evaluator' && !showForm && pendingEdits.length > 0 && <section className="ae-card" aria-label="Unfinished walkthrough edits" style={{ marginBottom: 16 }}><h3>Unfinished edits to saved visits</h3><p className="ae-help">Resume an edit to save it, copy it, or discard the unsaved changes.</p><div className="ae-actions">{pendingEdits.map(({ record, label }) => <button type="button" className="ae-btn" key={record.id} onClick={() => { if (workspace.teachers.some((teacher) => teacher.id === record.teacherId)) setSelectedTeacherId(record.teacherId); setEditingRecord(record); setShowForm(true); }}>Resume {label}</button>)}</div></section>}
     {showForm && role === 'evaluator' && (!cycleFinalized || editingRecord) && <AeWalkthroughForm key={editingRecord?.id || "new"} academicYear={workspace.config.academicYear} teachers={teachers} selectedTeacherId={selectedTeacher ? selectedTeacher.id : ''} createWalkthrough={createWalkthrough} editingRecord={editingRecord} currentRecord={editingRecord ? (workspace.walkthroughs.find((record) => record.id === editingRecord.id) || null) : null} updateWalkthroughDraft={updateWalkthroughDraft} requestActionReview={requestActionReview} addTeacher={addTeacher} canAddStaff={canAddStaff} onCreated={(id) => { setOpenId(id); setEditingRecord(null); setShowForm(false); }}/>}
     {role === 'evaluator' && !showForm && openId && (() => { const draftRecord = records.find((item) => item.id === openId && !item.publishedAt); if (!draftRecord || aeCycleFinalized(workspace.teachers.find((item) => item.id === draftRecord.teacherId))) return null; return <div className="ae-note ae-warn" style={{ marginBottom: 12 }}><strong>Private draft controls</strong><p className="ae-help">Correct the saved note before publication, or discard it if it should not be retained.</p><div className="ae-actions"><button type="button" className="ae-btn" onClick={() => { setEditingRecord(draftRecord); setShowForm(true); }}>Edit draft</button><button type="button" className="ae-btn ae-btn-danger" onClick={() => discardWalkthroughDraft(draftRecord.id, () => setOpenId(''))}>Discard draft</button></div></div>; })()}
-    <div className="ae-grid"><section className="ae-card ae-span-5"><h3>{t("educator_evaluation.visit_records_bic8za", "Visit records")}</h3>{records.length === 0 ? <div className="ae-empty">{t("educator_evaluation.no_walkthroughs_yet_1evk53z", "No walkthroughs yet.")}</div> : records.map((record) => { const teacher = workspace.teachers.find((item) => item.id === record.teacherId); return <button type="button" key={record.id} className="ae-record" style={{ width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => { setOpenId(record.id); setSelectedTeacherId(record.teacherId); }}><div className="ae-record-head"><div><h4>{teacher ? teacher.name : t("educator_evaluation.unknown_educator_3f7jiu", 'Unknown educator')}</h4><div className="ae-meta"><span>{aeDate(record.date)}</span><span>{record.durationMin} min</span><span>{record.announced}</span></div></div><span className={'ae-chip ' + (record.publishedAt ? 'ae-chip-good' : 'ae-chip-neutral')}>{record.publishedAt ? t("educator_evaluation.published_75k7c9", 'Published') : t("educator_evaluation.private_draft_11oqeav", 'Private draft')}</span></div><p className="ae-sub" style={{ marginTop: 8 }}>{record.evidence.slice(0, 120)}{record.evidence.length > 120 ? '…' : ''}</p></button>; })}</section>
+    <div className="ae-grid"><section className="ae-card ae-span-5"><h3>{t("educator_evaluation.visit_records_bic8za", "Visit records")}</h3>{records.length === 0 ? <div className="ae-empty">{t("educator_evaluation.no_walkthroughs_yet_1evk53z", "No walkthroughs yet.")}</div> : records.map((record) => { const teacher = workspace.teachers.find((item) => item.id === record.teacherId); return <button type="button" key={record.id} aria-pressed={openId === record.id} className="ae-record" style={{ width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => { setOpenId(record.id); setSelectedTeacherId(record.teacherId); }}><span className="ae-record-head"><span style={{ display: 'block' }}><span className="ae-record-title">{teacher ? teacher.name : t("educator_evaluation.unknown_educator_3f7jiu", 'Unknown educator')}</span><span className="ae-meta"><span>{aeDate(record.date)}</span><span>{record.durationMin} min</span><span>{record.announced}</span></span></span><span className={'ae-chip ' + (record.publishedAt ? 'ae-chip-good' : 'ae-chip-neutral')}>{record.publishedAt ? t("educator_evaluation.published_75k7c9", 'Published') : t("educator_evaluation.private_draft_11oqeav", 'Private draft')}</span></span><span className="ae-sub" style={{ display: 'block', marginTop: 8 }}>{record.evidence.slice(0, 120)}{record.evidence.length > 120 ? '…' : ''}</span></button>; })}</section>
       <section className="ae-card ae-span-7"><h3>{t("educator_evaluation.walkthrough_detail_o8078q", "Walkthrough detail")}</h3>{!openId ? <div className="ae-empty">{t("educator_evaluation.choose_a_visit_to_review_evidence_and_conversation_1vps0ym", "Choose a visit to review evidence and conversation.")}</div> : (() => { const record = records.find((item) => item.id === openId); if (!record) return <div className="ae-empty">{t("educator_evaluation.record_not_found_a5oa6l", "Record not found.")}</div>; const teacher = workspace.teachers.find((item) => item.id === record.teacherId); return <><div className="ae-record-head"><div><h4>{teacher ? teacher.name : t("educator_evaluation.unknown_educator_3f7jiu", 'Unknown educator')} · {aeDate(record.date)}</h4><div className="ae-meta"><span>{t("educator_evaluation.started_163dnb2", "Started")} {aeDateTime(record.startedAt)}</span><span>{record.durationMin} minutes</span><span>{record.lessonPhase.replace(/_/g, ' ')}</span></div></div><span className={'ae-chip ' + (record.publishedAt ? 'ae-chip-good' : ((Date.now() - new Date(record.startedAt).getTime()) > 14 * 86400000 ? 'ae-chip-amber' : 'ae-chip-neutral'))}>{record.publishedAt ? t("educator_evaluation.published_snapshot_1an1wnv", 'Published snapshot') : ((Date.now() - new Date(record.startedAt).getTime()) > 14 * 86400000 ? t("educator_evaluation.private_draft_1un9trq", 'Private draft · ') + Math.floor((Date.now() - new Date(record.startedAt).getTime()) / 86400000) + t("educator_evaluation.days_unpublished_1xvkbxt", ' days unpublished') : t("educator_evaluation.private_evaluator_draft_em0xyi", 'Private evaluator draft'))}</span></div><h4>{t("educator_evaluation.directly_witnessed_evidence_3xyvim", "Directly witnessed evidence")}</h4><div className="ae-evidence">{record.evidence}</div>{record.interpretation && <><h4>{t("educator_evaluation.interpretation_feedback_c0i2id", "Interpretation / feedback")}</h4><div className="ae-evidence ae-interpretation">{record.interpretation}</div></>}<div className="ae-chips">{record.componentTags.map((code) => <span className="ae-chip ae-chip-blue" key={code}>{code}</span>)}</div>{!record.publishedAt && role === 'evaluator' && !aeCycleFinalized(teacher) && <div className="ae-note ae-warn" style={{ marginTop: 12 }}><label className="ae-check"><input type="checkbox" checked={draftReleaseChecked} onChange={(event) => setDraftReleaseChecked(event.target.checked)}/><span>{t("educator_evaluation.i_reviewed_this_saved_draft_and_removed_student_identifyin_x8dx3g", "I reviewed this saved draft and removed student-identifying information.")}</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!draftReleaseChecked} onClick={() => { publishWalkthrough(record.id); setDraftReleaseChecked(false); }}>{t("educator_evaluation.publish_saved_draft_to_teacher_4k4347", "Publish saved draft to teacher")}</button><p className="ae-help">{t("educator_evaluation.unpublished_drafts_never_enter_the_educator_s_record_docum_1gj0to6", "Unpublished drafts never enter the educator’s record, documents, or trends, but they also sit outside the educator’s review rights. Publish promptly, or clear notes you do not intend to publish.")}</p></div>}{record.publishedAt && role === 'teacher' && !record.teacherAcknowledgedAt && <div style={{ marginTop: 12 }}><button type="button" className="ae-btn ae-btn-primary" disabled={readOnlyPreview || aeCycleFinalized(teacher)} title={(readOnlyPreview || aeCycleFinalized(teacher)) ? t("educator_evaluation.preview_only_no_acknowledgment_is_recorded_1801uuq", 'Preview only; no acknowledgment is recorded.') : undefined} onClick={() => acknowledgeWalkthrough(record.id)}>{t("educator_evaluation.acknowledge_receipt_1erqgfr", "Acknowledge receipt")}</button><p className="ae-help">{t("educator_evaluation.acknowledgment_records_receipt_not_agreement_and_is_not_th_vqhr36", "Acknowledgment records receipt, not agreement, and is not the signature your district’s evaluation form asks for at the conference.")}</p></div>}{record.teacherAcknowledgedAt && <div className="ae-note ae-ok" style={{ marginTop: 12 }}>{t("educator_evaluation.teacher_acknowledged_receipt_tzqdjf", "Teacher acknowledged receipt")} {aeDateTime(record.teacherAcknowledgedAt)}.</div>}{record.publishedAt && <AeThread workspace={workspace} recordType="walkthrough" recordId={record.id} teacherId={record.teacherId} role={role} onAdd={addComment} readOnlyPreview={readOnlyPreview}/>}</>; })()}</section>
     </div>
   </div>;
@@ -3677,7 +3725,7 @@ function AeFormalObservations({ initialRecordId = '', workspace, selectedTeacher
           {step === 8 && role === 'teacher' && <div className="ae-note">{t("educator_evaluation.acknowledgment_recorded_awaiting_evaluator_finalization_3jswkv", "Acknowledgment recorded. Awaiting evaluator finalization.")}</div>}
           {step === 9 && <div className="ae-note ae-ok"><strong>{t("educator_evaluation.formal_observation_finalized_gycub8", "Formal observation finalized.")}</strong><br/>{t("educator_evaluation.finalized_4cmc2p", "Finalized")} {aeDateTime(active.finalizedAt)}. Published versions remain locked; later context appears as appended comments.</div>}
         </fieldset></section>
-        <aside className="ae-span-5"><AeFrameworkReference/><AeFormalRecordSummary observation={active} role={role}/><div className="ae-card" style={{ marginTop: 16 }}><AeThread workspace={workspace} recordType="formal_observation" recordId={active.id} teacherId={active.teacherId} role={role} onAdd={addComment} readOnlyPreview={readOnlyPreview || cycleFinalized}/></div></aside>
+        <aside aria-label={t("educator_evaluation.framework_reference_aside", "Framework reference and formal record summary")} className="ae-span-5"><AeFrameworkReference/><AeFormalRecordSummary observation={active} role={role}/><div className="ae-card" style={{ marginTop: 16 }}><AeThread workspace={workspace} recordType="formal_observation" recordId={active.id} teacherId={active.teacherId} role={role} onAdd={addComment} readOnlyPreview={readOnlyPreview || cycleFinalized}/></div></aside>
       </div></>;
     })()}
   </div>;
@@ -3792,7 +3840,7 @@ function AeSpm({ initialRecordId = '', workspace, selectedTeacher, setSelectedTe
       {active.status === 'results_submitted' && role === 'teacher' && <div className="ae-note" style={{ marginTop: 12 }}>{t("educator_evaluation.results_submitted_nvv11s", "Results submitted")} {aeDateTime(active.resultsSubmittedAt)}. Awaiting evaluator rating.</div>}
       {active.status === 'locked' && <div className="ae-note ae-ok" style={{ marginTop: 12 }}><strong>{t("educator_evaluation.rated_and_locked_145iw5n", "Rated and locked ·")} {active.rating} ({aeBand(active.rating)})</strong><br/>{t("educator_evaluation.locked_hvffeb", "Locked")} {aeDateTime(active.lockedAt)}. Plan approval and final result rating remain separate audit events.</div>}
       <AeThread workspace={workspace} recordType="spm" recordId={active.id} teacherId={active.teacherId} role={role} onAdd={addComment} readOnlyPreview={readOnlyPreview || cycleFinalized}/></fieldset>
-    </section><aside className="ae-card ae-span-5"><h3>{t("educator_evaluation.submission_receipts_19d77qi", "Submission receipts")}</h3><div className="ae-timeline"><div className="ae-event"><h4>{t("educator_evaluation.created_2qkacb", "Created")}</h4><p>{aeDateTime(active.createdAt)}</p></div>{active.submittedAt && <div className="ae-event"><h4>{t("educator_evaluation.submitted_12at4de", "Submitted")}</h4><p>{aeDateTime(active.submittedAt)}</p></div>}{active.firstOpenedAt && <div className="ae-event"><h4>{t("educator_evaluation.first_opened_by_evaluator_1gept4m", "First opened by evaluator")}</h4><p>{aeDateTime(active.firstOpenedAt)}</p></div>}{active.approvedAt && <div className="ae-event"><h4>{t("educator_evaluation.approved_by_esl6dj", "Approved by")} {active.approvedBy}</h4><p>{aeDateTime(active.approvedAt)}</p></div>}{active.resultsSubmittedAt && <div className="ae-event"><h4>{t("educator_evaluation.results_submitted_nvv11s", "Results submitted")}</h4><p>{aeDateTime(active.resultsSubmittedAt)}</p></div>}{active.lockedAt && <div className="ae-event"><h4>{t("educator_evaluation.rated_and_locked_1fxynnu", "Rated and locked")}</h4><p>{aeDateTime(active.lockedAt)}</p></div>}</div><div className="ae-note ae-warn">{t("educator_evaluation.opened_is_an_automatic_access_receipt_it_does_not_claim_th_1ixjybh", "“Opened” is an automatic access receipt. It does not claim the person read or agreed with the contents; approval and acknowledgment are explicit actions.")}</div></aside></div>; })()}
+    </section><aside aria-label={t("educator_evaluation.submission_receipts_19d77qi", "Submission receipts")} className="ae-card ae-span-5"><h3>{t("educator_evaluation.submission_receipts_19d77qi", "Submission receipts")}</h3><div className="ae-timeline"><div className="ae-event"><h4>{t("educator_evaluation.created_2qkacb", "Created")}</h4><p>{aeDateTime(active.createdAt)}</p></div>{active.submittedAt && <div className="ae-event"><h4>{t("educator_evaluation.submitted_12at4de", "Submitted")}</h4><p>{aeDateTime(active.submittedAt)}</p></div>}{active.firstOpenedAt && <div className="ae-event"><h4>{t("educator_evaluation.first_opened_by_evaluator_1gept4m", "First opened by evaluator")}</h4><p>{aeDateTime(active.firstOpenedAt)}</p></div>}{active.approvedAt && <div className="ae-event"><h4>{t("educator_evaluation.approved_by_esl6dj", "Approved by")} {active.approvedBy}</h4><p>{aeDateTime(active.approvedAt)}</p></div>}{active.resultsSubmittedAt && <div className="ae-event"><h4>{t("educator_evaluation.results_submitted_nvv11s", "Results submitted")}</h4><p>{aeDateTime(active.resultsSubmittedAt)}</p></div>}{active.lockedAt && <div className="ae-event"><h4>{t("educator_evaluation.rated_and_locked_1fxynnu", "Rated and locked")}</h4><p>{aeDateTime(active.lockedAt)}</p></div>}</div><div className="ae-note ae-warn">{t("educator_evaluation.opened_is_an_automatic_access_receipt_it_does_not_claim_th_1ixjybh", "“Opened” is an automatic access receipt. It does not claim the person read or agreed with the contents; approval and acknowledgment are explicit actions.")}</div></aside></div>; })()}
   </div>;
 }
 
@@ -3878,10 +3926,14 @@ function AeCopyShareSource({ name, label, onCopied }) {
     const urls = ['/' + path, 'https://alloflow-cdn.pages.dev/' + path];
     let source = '';
     for (const url of urls) {
+      let timer = null;
       try {
-        const response = await fetch(url, { credentials: 'omit' });
+        const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+        if (ctrl) timer = setTimeout(() => { try { ctrl.abort(); } catch (_) {} }, 10000);
+        const response = await fetch(url, ctrl ? { credentials: 'omit', signal: ctrl.signal } : { credentials: 'omit' });
         if (response.ok) { source = await response.text(); break; }
       } catch (error) {}
+      finally { if (timer) clearTimeout(timer); }
     }
     const expected = signatures[name] || [];
     if (!source || !expected.every((token) => source.includes(token))) return '';
@@ -4046,10 +4098,17 @@ function AeSimulationStudio({ workspace, onApply }) {
     const file = event.target.files && event.target.files[0];
     event.target.value = '';
     if (!file) return;
+    const MAX_SCENARIO_BYTES = 10 * 1024 * 1024;
+    if (typeof file.size === 'number' && file.size > MAX_SCENARIO_BYTES) {
+      setMessage(t("educator_evaluation.scenario_import_failed_20260902", 'That file could not be read as scenarios.'));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(String(reader.result || ''));
+        const rawText = String(reader.result || '');
+        if (rawText.length > MAX_SCENARIO_BYTES) throw new Error('Scenario file exceeds size limit');
+        const parsed = JSON.parse(rawText, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
         const list = (Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.scenarios) ? parsed.scenarios : [])).map(aeSanitizeScenario).filter(Boolean);
         const importedTour = parsed && !Array.isArray(parsed) ? aeSanitizeTourSteps(parsed.tour) : null;
         if (tourSteps && aeWriteTourOverride(tourSteps)) { setTourCustom(true); setTourSteps(tourSteps.map((step) => ({ ...step }))); }
@@ -4930,7 +4989,7 @@ function aeWorkspaceConfigurationDraft(config) {
   return {
     organization: source.organization || '', building: source.building || '', academicYear: source.academicYear || '',
     evaluatorName: source.evaluatorName || '', evaluatorInitials: source.evaluatorInitials || '',
-    frameworkProfile: AE_FRAMEWORKS[source.frameworkProfile] ? source.frameworkProfile : 'maine_pepg',
+    frameworkProfile: aeHasOwn(AE_FRAMEWORKS, source.frameworkProfile) ? source.frameworkProfile : 'maine_pepg',
     pepgPracticeWeight: source.pepgPracticeWeight == null || source.pepgPracticeWeight === '' ? null : Number(source.pepgPracticeWeight),
     aiReflectionEnabled: !!source.aiReflectionEnabled,
   };
@@ -4998,7 +5057,7 @@ function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser 
       {!isRemote && role === 'evaluator' && <AeSetupPaths workspace={workspace} updateConfig={updateConfig}/>}
       {!isRemote && role === 'evaluator' && workspace.config.sampleMode && <AeSimulationStudio workspace={workspace} onApply={onApplySimulation}/>}
       {isRemote && canConfigure ? <AeReviewedWorkspaceConfiguration workspace={workspace} repository={repository} onReload={onReload}/> : <section className="ae-card ae-span-6"><h3>{t("educator_evaluation.workspace_setup_1nnvlnz", "Workspace setup")}</h3><fieldset disabled={!canConfigure} style={{ border: 0, padding: 0, margin: 0 }}><label className="ae-field"><span>{t("educator_evaluation.organization_lea_1qjo0jx", "Organization / LEA")}</span><input className="ae-input" value={workspace.config.organization} onChange={(event) => set('organization', event.target.value)}/></label><div className="ae-form-grid"><label className="ae-field"><span>{t("educator_evaluation.building_12fqnbp", "Building")}</span><input className="ae-input" value={workspace.config.building} onChange={(event) => set('building', event.target.value)}/></label><label className="ae-field"><span>{t("educator_evaluation.academic_year_ud1477", "Academic year")}</span><input className="ae-input" value={workspace.config.academicYear} onChange={(event) => set('academicYear', event.target.value)}/></label><label className="ae-field"><span>{t("educator_evaluation.evaluator_name_18o703x", "Evaluator name")}</span><input className="ae-input" value={workspace.config.evaluatorName} onChange={(event) => set('evaluatorName', event.target.value)}/></label><label className="ae-field"><span>{t("educator_evaluation.evaluator_initials_kj8ht7", "Evaluator initials")}</span><input className="ae-input" value={workspace.config.evaluatorInitials} onChange={(event) => set('evaluatorInitials', event.target.value)}/></label><label className="ae-field ae-field-wide"><span>{t("educator_evaluation.evaluation_framework_s7z0k3", "Evaluation framework")}</span><select className="ae-select" value={workspace.config.frameworkProfile || 'pa_act13'} onChange={(event) => set('frameworkProfile', event.target.value)}>{Object.keys(AE_FRAMEWORKS).map((id) => <option key={id} value={id}>{AE_FRAMEWORKS[id].name}</option>)}</select></label>{workspace.config.frameworkProfile === 'maine_pepg' && <label className="ae-field ae-field-wide"><span>{t("educator_evaluation.professional_practice_weight_optional_slg_measures_are_a_d_1lfqc4y", "Professional Practice weight (%), optional; SLG measures are a district choice under the 2019 amendments")}</span><input className="ae-input" type="number" min="0" max="100" step="1" value={workspace.config.pepgPracticeWeight == null ? '' : workspace.config.pepgPracticeWeight} onChange={(event) => set('pepgPracticeWeight', event.target.value)} placeholder={t("educator_evaluation.e_g_75_student_learning_and_growth_gets_the_rest_1upk9dh", "e.g. 75, Student Learning & Growth gets the rest")}/></label>}</div></fieldset>{isRemote && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}><strong>{t("educator_evaluation.district_configuration_is_read_only_here_l2osuy", "District configuration is read-only here.")}</strong><br/>{t("educator_evaluation.an_authorized_portal_administrator_must_review_and_explici_mbmyir", "An authorized portal administrator must review and explicitly confirm any organization, year, framework, weight, or AI-policy change.")}</div>}<div className="ae-note">{AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.framework_snapshot_pennsylvania_act_13_classroom_teacher_f_iou943", 'Framework snapshot: Pennsylvania Act 13 classroom-teacher framework, June 2021. Full performance-level rubric text is not bundled.') : (AE_ACTIVE_FW.id === 'portland_me' ? t("educator_evaluation.framework_portland_pepg_guidebook_profile_the_current_dist_jnitnw", 'Framework: Portland PEPG guidebook profile; the current district plan governs. Summative Professional Practice uses the guidebook’s categorical decision matrix, not a numeric average. Confirm the guidebook version and evidence expectations before official use.') : t("educator_evaluation.framework_maine_pepg_the_district_plan_governs_rating_leve_1ftr3t5", 'Framework: Maine PEPG; the district plan governs. Rating-level labels shown are Maine State Model defaults; confirm labels, cut points, and category weights against your district’s PEPG plan. Full rubric text is not bundled.'))}</div></section>}
-      <section className="ae-card ae-span-6"><h3>{t("educator_evaluation.official_references_6ap9m", "Official references")}</h3>{AE_ACTIVE_FW.id === 'pa_act13' ? <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness">{t("educator_evaluation.pennsylvania_department_of_education_educator_effectivenes_rv8e04", "Pennsylvania Department of Education · Educator Effectiveness")}</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pacodeandbulletin.gov/secure/pacode/data/022/chapter19/s19.2a.html">{t("educator_evaluation.22_pa_code_19_2a_classroom_teachers_2sbofk", "22 Pa. Code § 19.2a · Classroom teachers")}</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pdesas.org/Page/Viewer/ViewPage/75">{t("educator_evaluation.pde_sas_act_13_toolkit_1mlqgks", "PDE/SAS Act 13 Toolkit")}</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">{t("educator_evaluation.danielson_group_framework_access_and_licensing_cgrunz", "Danielson Group · Framework access and licensing")}</a></li></ul> : <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.maine.gov/doe/educators/educatoreval/educator">{t("educator_evaluation.maine_doe_educator_effectiveness_pepg_g3l1y6", "Maine DOE · Educator Effectiveness (PEPG)")}</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://legislature.maine.gov/statutes/20-A/title20-Ach508sec0.html">{t("educator_evaluation.20_a_m_r_s_a_ch_508_educator_effectiveness_lk8cna", "20-A M.R.S.A. ch. 508 · Educator Effectiveness")}</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180">{t("educator_evaluation.doe_rule_chapter_180_pepg_systems_1sqgdzk", "DOE Rule Chapter 180 · PEPG Systems")}</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">{t("educator_evaluation.danielson_group_framework_access_and_licensing_cgrunz", "Danielson Group · Framework access and licensing")}</a></li></ul>}{AE_ACTIVE_FW.id === 'pa_act13' ? <div className="ae-note ae-warn">{t("educator_evaluation.the_older_50_observation_model_is_not_the_default_current__16agmve", "The older 50% observation model is not the default current Act 13 classroom-teacher composition. This workspace uses assignment-aware 70/10/10/10, 80% O&P where Building Level Data is unavailable, and 100% O&P for temporary classroom teachers.")}</div> : <div className="ae-note ae-warn">Maine PEPG systems are LOCAL: the district plan defines the rubric, rating levels, category weights, and process. That plan is built with a steering committee that must have a teacher majority, chosen by the local bargaining unit representative where teachers are covered by an agreement, and any revisions are reached by consensus. Since the 2019 amendments, student learning &amp; growth measures are a district choice, not a state mandate. This workspace mirrors that plan; it never substitutes for it. Enter the plan’s Professional Practice / Student Learning &amp; Growth split above.</div>}</section>
+      <section className="ae-card ae-span-6"><h3>{t("educator_evaluation.official_references_6ap9m", "Official references")}</h3>{AE_ACTIVE_FW.id === 'pa_act13' ? <ul><li><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness">{t("educator_evaluation.pennsylvania_department_of_education_educator_effectivenes_rv8e04", "Pennsylvania Department of Education · Educator Effectiveness")}</a></li><li><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://www.pacodeandbulletin.gov/secure/pacode/data/022/chapter19/s19.2a.html">{t("educator_evaluation.22_pa_code_19_2a_classroom_teachers_2sbofk", "22 Pa. Code § 19.2a · Classroom teachers")}</a></li><li><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://www.pdesas.org/Page/Viewer/ViewPage/75">{t("educator_evaluation.pde_sas_act_13_toolkit_1mlqgks", "PDE/SAS Act 13 Toolkit")}</a></li><li><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">{t("educator_evaluation.danielson_group_framework_access_and_licensing_cgrunz", "Danielson Group · Framework access and licensing")}</a></li></ul> : <ul><li><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://www.maine.gov/doe/educators/educatoreval/educator">{t("educator_evaluation.maine_doe_educator_effectiveness_pepg_g3l1y6", "Maine DOE · Educator Effectiveness (PEPG)")}</a></li><li><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://legislature.maine.gov/statutes/20-A/title20-Ach508sec0.html">{t("educator_evaluation.20_a_m_r_s_a_ch_508_educator_effectiveness_lk8cna", "20-A M.R.S.A. ch. 508 · Educator Effectiveness")}</a></li><li><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180">{t("educator_evaluation.doe_rule_chapter_180_pepg_systems_1sqgdzk", "DOE Rule Chapter 180 · PEPG Systems")}</a></li><li><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">{t("educator_evaluation.danielson_group_framework_access_and_licensing_cgrunz", "Danielson Group · Framework access and licensing")}</a></li></ul>}{AE_ACTIVE_FW.id === 'pa_act13' ? <div className="ae-note ae-warn">{t("educator_evaluation.the_older_50_observation_model_is_not_the_default_current__16agmve", "The older 50% observation model is not the default current Act 13 classroom-teacher composition. This workspace uses assignment-aware 70/10/10/10, 80% O&P where Building Level Data is unavailable, and 100% O&P for temporary classroom teachers.")}</div> : <div className="ae-note ae-warn">Maine PEPG systems are LOCAL: the district plan defines the rubric, rating levels, category weights, and process. That plan is built with a steering committee that must have a teacher majority, chosen by the local bargaining unit representative where teachers are covered by an agreement, and any revisions are reached by consensus. Since the 2019 amendments, student learning &amp; growth measures are a district choice, not a state mandate. This workspace mirrors that plan; it never substitutes for it. Enter the plan’s Professional Practice / Student Learning &amp; Growth split above.</div>}</section>
       {canConfigure && !isRemote && <section className="ae-card ae-span-12"><details><summary>{t("educator_evaluation.advanced_workspace_options_ai_reflection_and_custom_rubric_19lpqnj", "Advanced workspace options · AI reflection and custom rubric")}</summary><div style={{ paddingTop: 12 }}>{/* Off by default: this is the only feature that sends evaluation text off the device. */}<div className="ae-field ae-field-wide"><span>{t("educator_evaluation.ai_reflection_optional_k41h6r", "AI reflection (optional)")}</span><label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginTop: 6 }}><input type="checkbox" style={{ width: 24, height: 24, flex: '0 0 auto' }} checked={!!workspace.config.aiReflectionEnabled} onChange={(event) => updateConfig('aiReflectionEnabled', event.target.checked)} /><span className="ae-help" style={{ margin: 0 }}>{t("educator_evaluation.let_an_evaluator_ask_a_model_to_check_whether_the_evidence_10ic6oo", "Let an evaluator ask a model to check whether the evidence they wrote supports the ratings they assigned, and what other readings it allows.")} <strong>{t("educator_evaluation.this_sends_the_selected_educator_s_evidence_notes_and_rati_1wi7gdz", "This sends the selected educator's evidence notes and ratings to your configured AI provider.")}</strong> {t("educator_evaluation.the_reply_is_advisory_shown_to_the_evaluator_only_and_neve_1idqpos", "The reply is advisory, shown to the evaluator only, and never written into the record. Leave this off if policy does not permit AI in evaluation.")}</span></label></div><div className="ae-field ae-field-wide"><span>{t("educator_evaluation.custom_rubric_1637ee3", "Custom rubric")}</span><p className="ae-help">{t("educator_evaluation.using_4b72xz", "Using")} <strong>{AE_ACTIVE_FW.name}</strong> <code>{AE_ACTIVE_FW.versionTag}</code>. Load district-approved domains and components as JSON.</p><div className="ae-btn-row"><button type="button" className="ae-btn" onClick={exportRubric}>{t("educator_evaluation.download_current_rubric_xcgwnx", "Download current rubric")}</button><button type="button" className="ae-btn" onClick={() => rubricFileRef.current && rubricFileRef.current.click()}>{t("educator_evaluation.load_a_custom_rubric_cmb3ga", "Load a custom rubric")}</button><input ref={rubricFileRef} type="file" accept="application/json,.json" hidden tabIndex={-1} aria-label={t("educator_evaluation.choose_custom_evaluation_rubric_json_1pkk7ci", "Choose custom evaluation rubric JSON")} onChange={(event) => { const file = event.target.files && event.target.files[0]; if (file) importRubric(file); event.target.value = ''; }}/>{workspace.config.customRubric && <button type="button" className="ae-btn" onClick={clearRubric}>{t("educator_evaluation.restore_the_built_in_rubric_1tdh6uz", "Restore the built-in rubric")}</button>}</div></div></div></details></section>}
       {isRemote && canConfigure && <section className="ae-card ae-span-12"><h3>{t("educator_evaluation.approved_rubric_boundary_ja2glj", "Approved rubric boundary")}</h3><p className="ae-sub">{t("educator_evaluation.the_district_portal_persists_the_approved_built_in_framewo_17mxti4", "The district portal persists the approved built-in framework profiles shown above. Custom rubric JSON import is available only in a private on-device workspace and is intentionally unavailable here until the server can validate, version, license-review, and preserve that rubric for every affected record.")}</p><div className="ae-actions"><button type="button" className="ae-btn" onClick={exportRubric}>{t("educator_evaluation.download_current_rubric_reference_1th708k", "Download current rubric reference")}</button></div></section>}
       {(isRemote || (!isRemote && workspace.config.setupPath === 'local')) && <AeShareQr isRemote={isRemote} standalone={standalone} portalUrl={portalUrl}/>}
@@ -5411,8 +5470,13 @@ function EducatorEvaluationPanel(props) {
       if (el.closest('[hidden],[inert],[aria-hidden="true"]')) return false;
       const closedDetails = el.closest('details:not([open])');
       if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
-      const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let node = el; node && node !== dialog; node = node.parentElement) {
+          const st = window.getComputedStyle(node);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+        }
+      }
+      return true;
     });
     if (!shellRoot.contains(document.activeElement)) (focusable()[0] || dialog).focus();
     const keydown = (event) => {
@@ -6276,7 +6340,14 @@ function EducatorEvaluationPanel(props) {
   // Practice menu (2026-09-02): tour, rehearsal, Simulation Studio, scenarios,
   // and a safe round trip between a real workspace and fictional practice.
   const [practiceOpen, setPracticeOpen] = React.useState(false);
-  const [realStashPresent, setRealStashPresent] = React.useState(() => { try { return !!localStorage.getItem(AE_REAL_STASH_KEY); } catch (_) { return false; } });
+  const [realStashPresent, setRealStashPresent] = React.useState(() => {
+    try {
+      const b = aeVaultBackend();
+      if (b.mode === 'locked') return false;
+      if (b.mode === 'vault') return !!(b.storage.getItem(AE_REAL_STASH_KEY) || localStorage.getItem(AE_REAL_STASH_KEY));
+      return !!localStorage.getItem(AE_REAL_STASH_KEY);
+    } catch (_) { return false; }
+  });
   const practiceRef = React.useRef(null);
   React.useEffect(() => {
     if (!practiceOpen) return undefined;
@@ -6290,7 +6361,17 @@ function EducatorEvaluationPanel(props) {
   const enterPracticeWorkspace = () => {
     if (draftChangeBlocked()) return;
     if (workspace.config.sampleMode) return true;
-    try { localStorage.setItem(AE_REAL_STASH_KEY, JSON.stringify({ kind: 'alloflow-evaluation-real-stash', stashedAt: aeNow(), workspace: workspaceRef.current })); }
+    try {
+      const b = aeVaultBackend();
+      if (b.mode === 'locked') throw new Error('Protected workspace is locked');
+      const payload = JSON.stringify({ kind: 'alloflow-evaluation-real-stash', stashedAt: aeNow(), workspace: workspaceRef.current });
+      if (b.mode === 'vault') {
+        b.storage.setItem(AE_REAL_STASH_KEY, payload);
+        try { localStorage.removeItem(AE_REAL_STASH_KEY); } catch (_) {}
+      } else {
+        localStorage.setItem(AE_REAL_STASH_KEY, payload);
+      }
+    }
     catch (_) { notify(t("educator_evaluation.practice_stash_failed_20260902", 'The real workspace could not be set aside in this browser, so practice was not started.'), 'error'); return false; }
     setRealStashPresent(true);
     chooseLocalStart('sample');
@@ -6299,7 +6380,11 @@ function EducatorEvaluationPanel(props) {
   };
   const returnToRealWork = () => {
     let stash = null;
-    try { stash = JSON.parse(localStorage.getItem(AE_REAL_STASH_KEY) || 'null'); } catch (_) { stash = null; }
+    try {
+      const b = aeVaultBackend();
+      const raw = b.mode === 'locked' ? '' : (b.mode === 'vault' ? (b.storage.getItem(AE_REAL_STASH_KEY) || localStorage.getItem(AE_REAL_STASH_KEY) || 'null') : (localStorage.getItem(AE_REAL_STASH_KEY) || 'null'));
+      stash = JSON.parse(raw || 'null', (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
+    } catch (_) { stash = null; }
     const real = stash && stash.workspace ? aeNormalizeWorkspace(stash.workspace) : null;
     if (draftChangeBlocked()) return;
     if (!real) { notify(t("educator_evaluation.no_real_stash_20260902", 'No real workspace is set aside on this device.'), 'error'); setRealStashPresent(false); return; }
@@ -6312,7 +6397,11 @@ function EducatorEvaluationPanel(props) {
     setTab('overview');
     setTourStep(null);
     aeSaveOnboardingChoice('blank');
-    try { localStorage.removeItem(AE_REAL_STASH_KEY); } catch (_) {}
+    try {
+      const b = aeVaultBackend();
+      if (b.mode === 'vault') b.storage.removeItem(AE_REAL_STASH_KEY);
+      localStorage.removeItem(AE_REAL_STASH_KEY);
+    } catch (_) {}
     setRealStashPresent(false);
     setPracticeOpen(false);
     announce(t("educator_evaluation.real_workspace_restored_20260902", 'Real workspace restored'));
@@ -6574,7 +6663,7 @@ function EducatorEvaluationPanel(props) {
   const aeAiBlocked = typeof window !== 'undefined' && (
     window.__alloStudentAiDisabled === true ||
     window.__alloAiSecretsLocked === true ||
-    (typeof window.callGemini === 'function' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable(window.callGemini))
+    (typeof window.callGemini === 'function' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', window.callGemini))
   );
   const aiReflectionEnabled = !!(workspace.config && workspace.config.aiReflectionEnabled) && !aeAiBlocked;
   const askForReflection = () => {
@@ -6591,7 +6680,7 @@ function EducatorEvaluationPanel(props) {
     const ask = typeof window !== 'undefined' ? window.callGemini : null;
     const askUsable = typeof ask === 'function' && (
       typeof window.__alloAiUsable === 'function'
-        ? !!window.__alloAiUsable(ask)
+        ? !!window.__alloAiUsable('text', ask)
         : (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true))
     );
     if (!askUsable) {
@@ -6668,7 +6757,7 @@ function EducatorEvaluationPanel(props) {
     reader.onerror = () => notify(t("educator_evaluation.rubric_import_failed_the_file_could_not_be_read_19uye8a", 'Rubric import failed: the file could not be read.'), 'error');
     reader.onload = () => {
       let rubric = null;
-      try { rubric = aeNormalizeRubric(JSON.parse(String(reader.result || ''))); }
+      try { rubric = aeNormalizeRubric(JSON.parse(String(reader.result || ''), (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v)); }
       catch (error) { notify(t("educator_evaluation.rubric_import_failed_that_file_is_not_valid_json_pe01r0", 'Rubric import failed: that file is not valid JSON.'), 'error'); return; }
       if (!rubric) {
         notify(t("educator_evaluation.rubric_import_failed_use_exactly_d1_d2_d3_and_d4_include_b_s84l4r", 'Rubric import failed: use exactly d1, d2, d3, and d4; include bounded unique components; weighted domains must total 100%.'), 'error');
@@ -6684,7 +6773,7 @@ function EducatorEvaluationPanel(props) {
     reader.onerror = () => notify(t("educator_evaluation.import_failed_the_selected_file_could_not_be_read_15d3w26", 'Import failed: the selected file could not be read.'), 'error');
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(aePacketExtract(String(reader.result || '')));
+        const parsed = JSON.parse(aePacketExtract(String(reader.result || '')), (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
         if (parsed.kind === AE_PACKET_KIND && Number(parsed.version) === 1) {
           if (parsed.packetType === 'response') {
             const merged = aeClone(workspaceRef.current);
@@ -6885,7 +6974,11 @@ function EducatorEvaluationPanel(props) {
   };
   const startFreshAfterRecovery = () => {
     if (!localRecoveryResetArmed) { setLocalRecoveryResetArmed(true); return; }
-    try { localStorage.removeItem(AE_STORAGE_KEY); } catch (_) {}
+    try {
+      const b = aeVaultBackend();
+      if (b.mode === 'vault') b.storage.removeItem(AE_STORAGE_KEY);
+      localStorage.removeItem(AE_STORAGE_KEY);
+    } catch (_) {}
     const blank = aeBlankWorkspace();
     workspaceRef.current = blank;
     setWorkspace(blank);
@@ -7006,7 +7099,7 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
       {tab === 'about' && <AeAbout workspace={workspace} updateConfig={updateConfig} role={role} isRemote={isRemote} exportRubric={exportRubric} importRubric={importRubric} clearRubric={clearRubric} currentUser={remoteState.currentUser} repository={repository} standalone={standalone} portalUrl={(remoteState.deployment && remoteState.deployment.portalUrl) || ''} onApplySimulation={applySimulationWorkspace} onReload={loadRemoteWorkspace}/>}
       </div>
     </main>
-    <footer className="ae-footer"><span>{t("educator_evaluation.no_ai_scoring_evidence_and_judgments_stay_separate_publish_m8tdt1", "No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model")}</span><span>{AE_ACTIVE_FW.id === 'pa_act13' ? <><a href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness" target="_blank" rel="noreferrer">PDE Educator Effectiveness</a> · <a href="https://www.pdesas.org/Page/Viewer/ViewPage/75" target="_blank" rel="noreferrer">Act 13 Toolkit</a></> : <><a href="https://www.maine.gov/doe/educators/educatoreval/educator" target="_blank" rel="noreferrer">Maine DOE Educator Effectiveness</a> · <a href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180" target="_blank" rel="noreferrer">PEPG Rule Ch. 180</a></>}</span></footer><div className="ae-live" aria-live="polite" aria-atomic="true"><span key={liveMessage.id}>{liveMessage.text}</span></div>
+    <footer className="ae-footer"><span>{t("educator_evaluation.no_ai_scoring_evidence_and_judgments_stay_separate_publish_m8tdt1", "No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model")}</span><span>{AE_ACTIVE_FW.id === 'pa_act13' ? <><a href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness" target="_blank" rel="noopener noreferrer">PDE Educator Effectiveness</a> · <a href="https://www.pdesas.org/Page/Viewer/ViewPage/75" target="_blank" rel="noopener noreferrer">Act 13 Toolkit</a></> : <><a href="https://www.maine.gov/doe/educators/educatoreval/educator" target="_blank" rel="noopener noreferrer">Maine DOE Educator Effectiveness</a> · <a href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180" target="_blank" rel="noopener noreferrer">PEPG Rule Ch. 180</a></>}</span></footer><div className="ae-live" aria-live="polite" aria-atomic="true"><span key={liveMessage.id}>{liveMessage.text}</span></div>
   </div>;
   const notificationReviewOpen = isRemote && ['selecting_recipient', 'reviewing_recipient', 'ready', 'sending'].includes(notificationState.status);
   const releaseReviewOpen = isRemote && !!releaseShareState.review;

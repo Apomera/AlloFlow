@@ -45,6 +45,23 @@
     document.head.appendChild(st);
   })();
 
+  // Studio workbench visual polish + high-contrast header parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function') return;
+    if (document.getElementById('allo-graphcalc-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-graphcalc-studio-css';
+    st.textContent = [
+      '.graphcalc-shell button{transition:background-color .14s ease,border-color .14s ease,transform .12s ease;}',
+      '.graphcalc-shell button:focus-visible,.graphcalc-shell input:focus-visible,.graphcalc-shell select:focus-visible,.graphcalc-shell textarea:focus-visible{outline:2px solid var(--gc-accent,#6366f1);outline-offset:2px;}',
+      '.graphcalc-preset-chip:hover{filter:brightness(1.06);}',
+      '.theme-contrast .graphcalc-header{background:#000000 !important;border-bottom:2px solid #ffff00 !important;color:#ffffff !important;}',
+      '.theme-contrast .graphcalc-header button,.theme-contrast .graphcalc-header select{background:#000000 !important;color:#ffff00 !important;border:1px solid #ffff00 !important;}',
+      '.theme-contrast .graphcalc-header-pill{background:#000000 !important;color:#ffff00 !important;border:1px solid #ffff00 !important;}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   /* ── StemLab plugin guard ───────────────────────────────── */
   if (!window.StemLab) {
@@ -974,7 +991,7 @@
     // Teacher exports: CSV rows, a file download, and printing through a new window that holds
     // the content (window.print() on the tool's own page is ignored in Gemini Canvas).
     function csvText(rows) {
-      return rows.map(function (r) { return r.map(function (v) { var s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(','); }).join('\n');
+      return rows.map(function (r) { return r.map(function (v) { var s = String(v == null ? '' : v); if (typeof v !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s) && !Number.isFinite(Number(s))) s = "'" + s; return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(','); }).join('\n');
     }
     function downloadText(name, text, mime) {
       try {
@@ -988,6 +1005,7 @@
     function printReport(title, rows, extra) {
       var w = null;
       try { w = window.open('', '_blank'); } catch (e) { w = null; }
+      try { if (w) w.opener = null; } catch (_) {}
       if (!w || !w.document) return false;
       w.document.open();
       w.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + esc(title) + '</title><style>body{font-family:system-ui,sans-serif;margin:24px;color:#0f172a;background:#fff}table{border-collapse:collapse}th,td{border:1px solid #64748b;padding:4px 8px;text-align:left}pre{white-space:pre-wrap}</style></head><body><h1>' + esc(title) + '</h1><table><tbody>' +
@@ -2757,19 +2775,32 @@
         return h('div', { className: 'graphcalc-shell', style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', color: gcText, fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
 
-          // Header
-          h('div', { className: 'graphcalc-header', style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' } },
-            h('button', { 'aria-label': __alloT('stem.graphcalc.back', 'Back'), onClick: function() { setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: '#c7d2fe', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' } }, __alloT('stem.graphcalc.back_2', '\u2190 Back')),
-            h('div', { style: { fontWeight: 'bold', fontSize: '16px', color: '#c7d2fe' } }, __alloT('stem.graphcalc.graphing_calculator', '\uD83D\uDCC8 Graphing Calculator')),
-            h('span', { style: { fontSize: '10px', color: '#c7d2fe', maxWidth: '300px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, gradeIntros[band] || ''),
-            h('div', { className: 'graphcalc-header-actions', style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
-              h('span', { style: { background: tierInfo.color + '22', color: tierInfo.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color + '44' } }, tierInfo.icon + ' ' + tierInfo.name),
-              h('select', { value: tier, onChange: function(e) { SOUNDS.tierChange(); upd('tier', e.target.value); }, 'aria-label': __alloT('stem.graphcalc.difficulty_tier', 'Difficulty tier'), style: { background: 'rgba(255,255,255,0.1)', border: '1px solid #818cf8', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' } },
+          // Precision Math Workbench Hero Header
+          h('div', { className: 'graphcalc-header', style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 52%, #312e81 100%)', borderBottom: '1px solid rgba(129,140,248,0.35)', flexWrap: 'wrap' } },
+            h('button', { type: 'button', 'aria-label': __alloT('stem.graphcalc.back', 'Back'), onClick: function() { setStemLabTool(null); }, style: { background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(199,210,254,0.45)', borderRadius: '8px', padding: '6px 12px', color: '#f8fafc', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' } }, __alloT('stem.graphcalc.back_2', '\u2190 Back')),
+            h('svg', { width: 34, height: 34, viewBox: '0 0 34 34', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              h('rect', { x: 1.5, y: 1.5, width: 31, height: 31, rx: 8, fill: '#1e1b4b', stroke: '#818cf8', strokeWidth: 1.4 }),
+              h('line', { x1: 6, y1: 17, x2: 28, y2: 17, stroke: '#64748b', strokeWidth: 1 }),
+              h('line', { x1: 17, y1: 6, x2: 17, y2: 28, stroke: '#64748b', strokeWidth: 1 }),
+              h('path', { d: 'M7,25 Q17,4 27,25', fill: 'none', stroke: '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
+              h('circle', { cx: 17, cy: 14.5, r: 2.4, fill: '#fbbf24' })
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', minWidth: 0 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+                h('div', { style: { fontWeight: 900, fontSize: '16px', color: '#ffffff' } }, __alloT('stem.graphcalc.graphing_calculator', '\uD83D\uDCC8 Graphing Calculator')),
+                h('span', { className: 'graphcalc-header-pill', style: { background: 'rgba(56,189,248,0.18)', border: '1px solid rgba(125,211,252,0.5)', color: '#bae6fd', padding: '2px 7px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Math · Lab')
+              ),
+              h('span', { style: { fontSize: '11px', color: '#e0e7ff', maxWidth: '340px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, gradeIntros[band] || '')
+            ),
+            h('div', { className: 'graphcalc-header-actions', style: { marginLeft: 'auto', display: 'flex', gap: '7px', alignItems: 'center', flexWrap: 'wrap' } },
+              h('span', { className: 'graphcalc-header-pill', style: { background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(199,210,254,0.35)', color: '#e2e8f0', padding: '3px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: 700, fontFamily: 'monospace' } }, gaRows.length + ' curve' + (gaRows.length === 1 ? '' : 's') + ' · [' + win.xmin + ',' + win.xmax + ']'),
+              h('span', { className: 'graphcalc-header-pill', style: { background: 'rgba(15,23,42,0.65)', color: '#f8fafc', padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color } }, tierInfo.icon + ' ' + tierInfo.name),
+              h('select', { value: tier, onChange: function(e) { SOUNDS.tierChange(); upd('tier', e.target.value); }, 'aria-label': __alloT('stem.graphcalc.difficulty_tier', 'Difficulty tier'), style: { background: '#0f172a', border: '1px solid #818cf8', borderRadius: '6px', padding: '4px 8px', color: '#f8fafc', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } },
                 h('option', { value: 'explorer' }, __alloT('stem.graphcalc.explorer_2', '\uD83D\uDFE2 Explorer')), h('option', { value: 'analyst' }, __alloT('stem.graphcalc.analyst_2', '\uD83D\uDFE1 Analyst')),
                 h('option', { value: 'engineer' }, __alloT('stem.graphcalc.engineer_2', '\uD83D\uDD35 Engineer')), h('option', { value: 'researcher' }, __alloT('stem.graphcalc.researcher_2', '\uD83D\uDFE3 Researcher'))
               ),
-              h('button', { onClick: takeSnapshot, 'aria-label': __alloT('stem.graphcalc.take_snapshot', 'Take snapshot'), style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCF8'),
-              badges.length > 0 ? h('span', { style: { background: 'rgba(167,139,250,0.15)', color: '#a78bfa', padding: '3px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' } }, '\uD83C\uDFC5 ' + badges.length) : null
+              h('button', { type: 'button', onClick: takeSnapshot, 'aria-label': __alloT('stem.graphcalc.take_snapshot', 'Take snapshot'), style: { background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.55)', borderRadius: '6px', padding: '4px 8px', color: '#fde68a', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCF8'),
+              badges.length > 0 ? h('span', { className: 'graphcalc-header-pill', style: { background: 'rgba(167,139,250,0.22)', border: '1px solid rgba(196,181,253,0.45)', color: '#ede9fe', padding: '3px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' } }, '\uD83C\uDFC5 ' + badges.length) : null
             )
           ),
 
@@ -2778,7 +2809,34 @@
 
             // Left sidebar
             h('div', { className: 'graphcalc-left-sidebar', style: { width: '220px', borderRight: '1px solid ' + gcBorder, display: 'flex', flexDirection: 'column', background: gcDeeper } },
-              h('div', { style: { padding: '10px 12px', borderBottom: '1px solid ' + gcBorder, fontSize: '11px', fontWeight: 'bold', color: gcAccent, letterSpacing: '1px' } }, __alloT('stem.graphcalc.functions', '\uD83D\uDCDD FUNCTIONS')),
+              h('div', { style: { padding: '10px 12px', borderBottom: '1px solid ' + gcBorder, fontSize: '11px', fontWeight: 'bold', color: gcAccent, letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+                h('span', null, __alloT('stem.graphcalc.functions', '\uD83D\uDCDD FUNCTIONS')),
+                h('span', { style: { fontSize: '10px', color: gcMuted, fontWeight: 700 } }, gaRows.length + '/6')
+              ),
+              // Quick-start function preset chips
+              h('div', { style: { padding: '6px 8px', borderBottom: '1px solid ' + gcBorder, background: gcCard } },
+                h('div', { style: { fontSize: '10px', fontWeight: 700, color: gcMuted, marginBottom: '4px' } }, __alloT('stem.graphcalc.quick_presets', 'QUICK EXAMPLES')),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                  [
+                    { id: 'parab', label: 'Parabola', exprs: ['x^2 - 4', ''] },
+                    { id: 'cross', label: 'Crossing', exprs: ['-x + 5', 'x - 1'] },
+                    { id: 'trig', label: 'Trig Wave', exprs: ['sin(x)', 'cos(x)'] },
+                    { id: 'exp', label: 'Growth', exprs: ['2^x', '2*x + 1'] }
+                  ].map(function(pr) {
+                    return h('button', {
+                      key: pr.id,
+                      type: 'button',
+                      className: 'graphcalc-preset-chip',
+                      onClick: function() {
+                        var nf = funcs.map(function(f, idx) { return Object.assign({}, f, { expr: pr.exprs[idx] || '' }); });
+                        updMulti({ funcs: nf, _gaFn: 0, _gaIdx: -1 });
+                        if (announceToSR) announceToSR('Loaded ' + pr.label + ' example: ' + pr.exprs.filter(Boolean).join(' and '));
+                      },
+                      style: { padding: '3px 7px', borderRadius: '999px', background: gcButtonBg, color: gcButtonText, border: '1px solid ' + gcBorder, fontSize: '10px', fontWeight: 700, cursor: 'pointer' }
+                    }, pr.label);
+                  })
+                )
+              ),
               h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 funcs.map(function(fn, i) {
                   return h('div', { key: 'f' + i, style: { marginBottom: '8px' } },
@@ -2893,6 +2951,18 @@
               ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-graphcalc-fs]'), node); },
               // Scrolls in a short viewport so the Describe panel never hides the window or table fields.
               style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', minWidth: 0, minHeight: 0, overflowY: 'auto' } },
+              // Live curve legend & active-mode strip
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', padding: '6px 46px 6px 12px', background: gcPanel, borderBottom: '1px solid ' + gcBorder, fontSize: '11px', color: gcText } },
+                gaRows.length > 0 ? gaRows.map(function(ri) {
+                  var cs = gcCurveStyle(ri);
+                  return h('span', { key: 'lg-' + ri, style: { display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '2px 7px', borderRadius: '999px', background: gcCard, border: '1px solid ' + gcBorder, fontFamily: 'monospace', fontWeight: 700 } },
+                    h('svg', { width: 18, height: 8, 'aria-hidden': 'true' }, h('line', { x1: 1, y1: 4, x2: 17, y2: 4, stroke: cs.color, strokeWidth: 2.5, strokeDasharray: cs.dash.length ? cs.dash.join(' ') : undefined })),
+                    'y' + (ri + 1) + ' = ' + String(funcs[ri].expr || '').slice(0, 22)
+                  );
+                }) : h('span', { style: { color: gcMuted, fontWeight: 600 } }, __alloT('stem.graphcalc.legend_empty', 'No curves plotted yet — type an expression or pick a Quick Example')),
+                d.traceMode ? h('span', { style: { marginLeft: 'auto', padding: '2px 7px', borderRadius: '999px', background: gcAccentSoft, color: gcAccent, border: '1px solid ' + gcAccentBorder, fontSize: '10px', fontWeight: 800 } }, 'Trace ON') : null,
+                d.showDeriv ? h('span', { style: { padding: '2px 7px', borderRadius: '999px', background: gcAccentSoft, color: gcAccent, border: '1px solid ' + gcAccentBorder, fontSize: '10px', fontWeight: 800 } }, 'Tangent ON') : null
+              ),
               h('button', {
                 type: 'button',
                 'data-graphcalc-fs': 'true',
@@ -2900,7 +2970,7 @@
                 'aria-label': __alloT('stem.graphcalc.enter_fullscreen', 'View the graph fullscreen'),
                 'data-fs-out': __alloT('stem.graphcalc.enter_fullscreen', 'View the graph fullscreen'),
                 'data-fs-in': __alloT('stem.graphcalc.exit_fullscreen', 'Exit fullscreen graph (Escape)'),
-                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + gcBorder, color: gcText, fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                style: { position: 'absolute', top: 4, right: 8, zIndex: 20, width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + gcBorder, color: '#f8fafc', fontSize: 15, fontWeight: 700, cursor: 'pointer' }
               }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               // The accessible name is built from the selected function's key features.
               h('canvas', { ref: canvasRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'graphcalc-canvas-desc', 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization') + (gaInfo ? '. ' + (gaRows.length > 1 ? gcFill(__alloT('stem.graphcalc.ga_rows_graphed', '{n} functions are graphed.'), { n: gaRows.length }) + ' ' : '') + gaInfo.desc.short : '') + gcCanvasNotes(), style: { width: '100%', flex: 1, minHeight: 240, background: gcPal ? gcPal.bg : 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode || rocShow ? 'crosshair' : 'default', touchAction: d.traceMode || rocShow ? 'none' : 'auto' },
@@ -3104,14 +3174,30 @@
                     h('svg', { viewBox: '0 0 300 200', role: 'img', 'aria-label': __alloT('stem.graphcalc.quadratic_linked_graph','Graph linked to the inquiry sliders. ') + inquirySummary, style: { width: '100%', display: 'block' } },
                       h('defs', null, h('clipPath', { id: 'graphcalc-inquiry-clip' }, h('rect', { x: 18, y: 18, width: 264, height: 164 }))),
                       h('rect', { x: 18, y: 18, width: 264, height: 164, fill: 'none', stroke: gcBorder }),
-                      h('line', { x1: 18, x2: 282, y1: inquiryY(0), y2: inquiryY(0), stroke: gcMuted }),
-                      h('line', { x1: inquiryX(0), x2: inquiryX(0), y1: 18, y2: 182, stroke: gcMuted }),
+                      [-10, -5, 5, 10].map(function(gv) {
+                        return h('g', { key: 'ig-' + gv },
+                          h('line', { x1: inquiryX(gv), x2: inquiryX(gv), y1: 18, y2: 182, stroke: gcBorder, strokeWidth: 0.7, strokeDasharray: '2 3' }),
+                          h('line', { x1: 18, x2: 282, y1: inquiryY(gv), y2: inquiryY(gv), stroke: gcBorder, strokeWidth: 0.7, strokeDasharray: '2 3' })
+                        );
+                      }),
+                      h('line', { x1: 18, x2: 282, y1: inquiryY(0), y2: inquiryY(0), stroke: gcMuted, strokeWidth: 1.2 }),
+                      h('line', { x1: inquiryX(0), x2: inquiryX(0), y1: 18, y2: 182, stroke: gcMuted, strokeWidth: 1.2 }),
+                      iq.a !== 0 && h('line', { x1: inquiryX(iq.hVertex), x2: inquiryX(iq.hVertex), y1: 18, y2: 182, stroke: gcAccent, strokeWidth: 1.1, strokeDasharray: '4 3', opacity: 0.7 }),
                       h('text', { x: 284, y: inquiryY(0) - 5, fill: gcText, fontSize: 12 }, 'x'),
                       h('text', { x: inquiryX(0) + 5, y: 14, fill: gcText, fontSize: 12 }, 'y'),
                       h('path', { 'data-quadratic-inquiry-curve': true, d: inquiryPath, fill: 'none', stroke: gcAccent, strokeWidth: 2.5, clipPath: 'url(#graphcalc-inquiry-clip)' }),
-                      iq.a !== 0 && h('circle', { 'data-quadratic-inquiry-vertex': true, cx: inquiryX(iq.hVertex), cy: inquiryY(iq.kVertex), r: 4, fill: gcAccent, stroke: gcText, strokeWidth: 1 })),
-                    h('figcaption', { role: 'status', style: { color: gcText, fontSize: 12, lineHeight: 1.5 } }, inquirySummary),
+                      iq.a !== 0 && h('circle', { 'data-quadratic-inquiry-vertex': true, cx: inquiryX(iq.hVertex), cy: inquiryY(iq.kVertex), r: 4.5, fill: gcAccent, stroke: gcText, strokeWidth: 1.2 })),
+                    h('figcaption', { role: 'status', style: { color: gcText, fontSize: 12, lineHeight: 1.5, fontWeight: 700, marginTop: 4 } }, inquirySummary),
                     h('p', { style: { color: gcMuted, fontSize: 11, margin: '4px 0 0' } }, __alloT('stem.graphcalc.quadratic_graph_window','Fixed window: −14 to 14 on both axes. Portions outside the window are clipped.'))),
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' } },
+                    [
+                      { id: 'std', label: 'x²', patch: { a: 1, hVertex: 0, kVertex: 0 } },
+                      { id: 'inv', label: '−(x−2)²+4', patch: { a: -1, hVertex: 2, kVertex: 4 } },
+                      { id: 'flat', label: 'Flat (a=0)', patch: { a: 0, hVertex: 0, kVertex: 3 } }
+                    ].map(function(qp) {
+                      return h('button', { key: qp.id, type: 'button', onClick: function() { setIQ(qp.patch); }, style: { padding: '3px 7px', fontSize: '10px', fontWeight: 700, background: gcButtonBg, color: gcButtonText, border: '1px solid ' + gcBorder, borderRadius: '6px', cursor: 'pointer' } }, qp.label);
+                    })
+                  ),
                   [
                     { key: 'a',       label: __alloT('stem.graphcalc.stretch_a', 'stretch a'),  val: iq.a,       min: -3,  max: 3,   step: 0.1 },
                     { key: 'hVertex', label: __alloT('stem.graphcalc.vertex_h', 'vertex h'),   val: iq.hVertex, min: -10, max: 10,  step: 1 },

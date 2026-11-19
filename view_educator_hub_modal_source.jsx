@@ -28,9 +28,8 @@ function _educatorAlloSheetBridgeUrl() {
     const pathname = String(loc.pathname || '');
     const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(host);
     const isDesktopBundled = !!window._isDesktopBundledApp || (isLocal && pathname.indexOf('/app/') === 0);
-    const isAlloHosted = /(^|\.)alloflow/i.test(host)
-      || /(^|\.)web\.app$/i.test(host)
-      || /(^|\.)firebaseapp\.com$/i.test(host);
+    const isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host)
+      || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
     if (isDesktopBundled || isLocal || isAlloHosted) {
       return new URL('allo_sheet/host_bridge.js?v=5', loc.href).toString();
     }
@@ -225,16 +224,17 @@ function EducatorHubModal(props) {
         'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
       )).filter(function (element) {
         if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
-        let ancestor = element.parentElement;
-        while (ancestor && ancestor !== dialog) {
-          if (ancestor.matches && ancestor.matches('details:not([open])')) {
-            const directSummary = ancestor.querySelector(':scope > summary');
+        let node = element;
+        while (node && node !== dialog) {
+          if (node !== element && node.matches && node.matches('details:not([open])')) {
+            const directSummary = node.querySelector(':scope > summary');
             if (element !== directSummary) return false;
           }
-          ancestor = ancestor.parentElement;
+          const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+          if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+          node = node.parentElement;
         }
-        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+        return true;
       });
     };
     const first = getFocusable()[0];
@@ -405,7 +405,7 @@ function EducatorHubModal(props) {
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes('clin') ? 'clinician' : (hubRoleRaw.includes('lead') || hubRoleRaw.includes('admin') || hubRoleRaw.includes('principal') || hubRoleRaw.includes('coach')) ? 'leader' : hubRoleRaw.includes('student') ? 'student' : hubRoleRaw.includes('family') ? 'family' : 'educator';
   const hubRoleLabel = ({ educator: 'educators', clinician: 'clinicians', leader: 'leaders', student: 'students', family: 'families' }[hubRoleKey] || 'educators');
-  const hubRoleRecommendations = { educator: ['lesson', 'document', 'lumen', 'whiteboard', 'page-designer'], clinician: ['behavior-lens', 'dynamic-assessment', 'report-writer', 'lumen', 'accessibility-lab'], leader: ['leadership-hub', 'community-catalog', 'professional-development', 'document', 'lumen'], student: ['lumen', 'reading-library', 'stem-lab', 'text-inquiry', 'test-prep'], family: ['reading-library', 'lingua-practice', 'sel-hub', 'allohaven', 'storyforge'] };
+  const hubRoleRecommendations = { educator: ['lesson', 'document', 'lumen', 'whiteboard', 'page-designer'], clinician: ['behavior-lens', 'dynamic-assessment', 'report-writer', 'lumen', 'accessibility-lab'], leader: ['leadership-hub', 'community-catalog', 'professional-development', 'document', 'lumen'], student: ['lumen', 'document', 'whiteboard', 'page-designer', 'symbol-studio'], family: ['document', 'lumen', 'whiteboard', 'page-designer', 'symbol-studio'] };
   const hubUsageRankedIds = Object.entries(hubUsageCounts).sort((a, b) => Number(b[1]) - Number(a[1])).map(([id]) => id);
   const hubRecommendedIds = Array.from(new Set([...(hubRoleRecommendations[hubRoleKey] || hubRoleRecommendations.educator), ...hubUsageRankedIds])).slice(0, 5);
   const recommendedCards = hubRecommendedIds.map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
@@ -499,8 +499,8 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">🪄</span>
                 <div>
                   <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700">{t('educator_hub.blueprint_mode_badge') || 'Blueprint Mode'}</span>
-                  <h3 className="font-bold text-indigo-800">{t('educator_hub.lesson_builder_title') || 'Help me build a lesson'}</h3>
-                  <p className="text-xs text-indigo-800 mt-1">{t('educator_hub.lesson_builder_desc') || "Answer a few questions, then build a differentiated lesson step by step with AlloBot."}</p>
+                  <span className="block font-bold text-indigo-800">{t('educator_hub.lesson_builder_title') || 'Help me build a lesson'}</span>
+                  <span className="block text-xs text-indigo-800 mt-1">{t('educator_hub.lesson_builder_desc') || "Answer a few questions, then build a differentiated lesson step by step with AlloBot."}</span>
                 </div>
               </button>
 
@@ -510,8 +510,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_lumen_card" onClick={() => { setShowEducatorHub(false); setLabToolData(prev => ({ ...prev, lumen: { ...((prev && prev.lumen) || {}), mode: 'home' } })); setStemLabTool('lumen'); setShowStemLab(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">💡</span>
                 <div>
-                  <h3 className="font-bold text-amber-800">{t('educator_hub.lumen_title') || 'Lumen'}</h3>
-                  <p className="text-xs text-amber-800 mt-1">{t('educator_hub.lumen_desc') || 'Research sources or explore data in one evidence workspace. Cite exact passages and keep uncertainty and provenance visible.'}</p>
+                  <span className="block font-bold text-amber-800">{t('educator_hub.lumen_title') || 'Lumen'}</span>
+                  <span className="block text-xs text-amber-800 mt-1">{t('educator_hub.lumen_desc') || 'Research sources or explore data in one evidence workspace. Cite exact passages and keep uncertainty and provenance visible.'}</span>
                 </div>
               </button>
 
@@ -521,8 +521,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_document_hub_card" onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">📄</span>
                 <div>
-                  <h3 className="font-bold text-emerald-800">{t('educator_hub.document_hub_title') || 'Document Hub'}</h3>
-                  <p className="text-xs text-emerald-800 mt-1">{t('educator_hub.document_hub_desc') || 'Build polished documents, audit accessibility, and export to PDF, HTML, worksheets, or slides.'}</p>
+                  <span className="block font-bold text-emerald-800">{t('educator_hub.document_hub_title') || 'Document Hub'}</span>
+                  <span className="block text-xs text-emerald-800 mt-1">{t('educator_hub.document_hub_desc') || 'Build polished documents, audit accessibility, and export to PDF, HTML, worksheets, or slides.'}</span>
                 </div>
               </button>
 
@@ -532,8 +532,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { openWhiteboard(); } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">✏️</span>
                 <div>
-                  <h3 className="font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</h3>
-                  <p className="text-xs text-indigo-800 mt-1">{t('educator_hub.whiteboard_desc') || 'Sketch ideas, build diagrams, and map thinking with graphic organizers and one-click image export.'}</p>
+                  <span className="block font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</span>
+                  <span className="block text-xs text-indigo-800 mt-1">{t('educator_hub.whiteboard_desc') || 'Sketch ideas, build diagrams, and map thinking with graphic organizers and one-click image export.'}</span>
                 </div>
               </button>
 
@@ -552,8 +552,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_throughline_card" onClick={() => { setShowEducatorHub(false); setShowMindMap(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDDF5'}</span>
                 <div>
-                  <h3 className="font-bold text-amber-800">{t('educator_hub.throughline_title') || 'Learning Web: Unit Path'}</h3>
-                  <p className="text-xs text-amber-800 mt-1">{t('educator_hub.throughline_desc') || 'Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web.'}</p>
+                  <span className="block font-bold text-amber-800">{t('educator_hub.throughline_title') || 'Learning Web: Unit Path'}</span>
+                  <span className="block text-xs text-amber-800 mt-1">{t('educator_hub.throughline_desc') || 'Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web.'}</span>
                 </div>
               </button>
 
@@ -562,8 +562,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
                 <div>
-                  <h3 className="font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'Page Designer'}</h3>
-                  <p className="text-xs text-rose-800 mt-1">{t('educator_hub.allo_studio_desc') || 'Create flyers, worksheets, posters, and slide decks with accessible exports, reading order, alt text, and a hand/AI process record.'}</p>
+                  <span className="block font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'Page Designer'}</span>
+                  <span className="block text-xs text-rose-800 mt-1">{t('educator_hub.allo_studio_desc') || 'Create flyers, worksheets, posters, and slide decks with accessible exports, reading order, alt text, and a hand/AI process record.'}</span>
                 </div>
               </button>
 
@@ -573,8 +573,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_video_studio_card" onClick={() => { setShowEducatorHub(false); setIsVideoStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🎥</span>
                 <div>
-                  <h3 className="font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</h3>
-                  <p className="text-xs text-sky-800 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export short videos, with prompt tools for NotebookLM and other AI video tools.'}</p>
+                  <span className="block font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</span>
+                  <span className="block text-xs text-sky-800 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export short videos, with prompt tools for NotebookLM and other AI video tools.'}</span>
                 </div>
               </button>
 
@@ -584,8 +584,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDEA7'}</span>
                 <div>
-                  <h3 className="font-bold text-purple-800">{t('educator_hub.symbol_studio_title') || 'Symbol Studio'}</h3>
-                  <p className="text-xs text-purple-800 mt-1">{t('educator_hub.symbol_studio_desc') || 'Create PCS-style icons for visual supports, AAC boards, and schedules — then edit them with image-to-image tools.'}</p>
+                  <span className="block font-bold text-purple-800">{t('educator_hub.symbol_studio_title') || 'Symbol Studio'}</span>
+                  <span className="block text-xs text-purple-800 mt-1">{t('educator_hub.symbol_studio_desc') || 'Create PCS-style icons for visual supports, AAC boards, and schedules — then edit them with image-to-image tools.'}</span>
                 </div>
               </button>
 
@@ -595,8 +595,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_allosheet_card" onClick={_openAlloSheet} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">📊</span>
                 <div>
-                  <h3 className="font-bold text-emerald-800">{t('educator_hub.allosheet_title') || 'AlloSheet (Pilot)'}</h3>
-                  <p className="text-xs text-emerald-800 mt-1">{t('educator_hub.allosheet_desc') || 'Explore educator data with agent assistance, review every change before applying it, and run local audits.'}</p>
+                  <span className="block font-bold text-emerald-800">{t('educator_hub.allosheet_title') || 'AlloSheet (Pilot)'}</span>
+                  <span className="block text-xs text-emerald-800 mt-1">{t('educator_hub.allosheet_desc') || 'Explore educator data with agent assistance, review every change before applying it, and run local audits.'}</span>
                 </div>
               </button>
 
@@ -615,20 +615,20 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_activities_card" onClick={() => { setShowEducatorHub(false); setShowRecentQrShares(true); }} className="flex items-start gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4 text-left transition-colors hover:bg-teal-100">
                 <span className="text-3xl mt-1" aria-hidden="true">🗓️</span>
                 <div>
-                  <h3 className="font-bold text-teal-800">{t('educator_hub.activities_title') || 'Polls & Sign-ups'}</h3>
-                  <p className="text-xs text-teal-800 mt-1">{t('educator_hub.activities_desc') || 'Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code — no account required.'}</p>
+                  <span className="block font-bold text-teal-800">{t('educator_hub.activities_title') || 'Polls & Sign-ups'}</span>
+                  <span className="block text-xs text-teal-800 mt-1">{t('educator_hub.activities_desc') || 'Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code — no account required.'}</span>
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('polls-signups')} aria-label={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Polls &amp; Sign-ups' : tr('hub.add_favorite', 'Add to favorites') + ': Polls &amp; Sign-ups'} title={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('polls-signups'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('polls-signups') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('polls-signups')} aria-label={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Polls & Sign-ups' : tr('hub.add_favorite', 'Add to favorites') + ': Polls & Sign-ups'} title={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('polls-signups'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('polls-signups') ? '★' : '☆'}</button>
               </div>
               {!hideFromFamily && (
               <div className="relative group" data-hub-id="assessment-center" data-hub-label="Assessment Center" data-hub-section="teach">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_assessment_center_card" onClick={() => { setShowEducatorHub(false); setShowClassAnalytics(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDDD2\uFE0F'}</span>
                 <div>
-                  <h3 className="font-bold text-violet-800">{t('educator_hub.assessment_center_title') || 'Assessment Center'}</h3>
-                  <p className="text-xs text-violet-800 mt-1">{t('educator_hub.assessment_center_desc') || 'Screening batteries, CBM probes, RTI decision aids, intervention logs, and student progress.'}</p>
+                  <span className="block font-bold text-violet-800">{t('educator_hub.assessment_center_title') || 'Assessment Center'}</span>
+                  <span className="block text-xs text-violet-800 mt-1">{t('educator_hub.assessment_center_desc') || 'Screening batteries, CBM probes, RTI decision aids, intervention logs, and student progress.'}</span>
                 </div>
               </button>
 
@@ -640,8 +640,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDE7A'}</span>
                 <div>
-                  <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
-                  <p className="text-xs text-blue-800 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Run test-teach-retest probes with graduated prompts, modifiability scoring, IEP goals, and family/teacher handoffs.'}</p>
+                  <span className="block font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</span>
+                  <span className="block text-xs text-blue-800 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Run test-teach-retest probes with graduated prompts, modifiability scoring, IEP goals, and family/teacher handoffs.'}</span>
                 </div>
               </button>
 
@@ -653,8 +653,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDC41\uFE0F'}</span>
                 <div>
-                  <h3 className="font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</h3>
-                  <p className="text-xs text-indigo-800 mt-1">{t('educator_hub.behavior_lens_desc') || 'Collect ABC observations, build FBA/BIP data, and use 60+ tools for behavior support.'}</p>
+                  <span className="block font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</span>
+                  <span className="block text-xs text-indigo-800 mt-1">{t('educator_hub.behavior_lens_desc') || 'Collect ABC observations, build FBA/BIP data, and use 60+ tools for behavior support.'}</span>
                 </div>
               </button>
 
@@ -666,8 +666,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_report_writer_card" onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">📝</span>
                 <div>
-                  <h3 className="font-bold text-violet-800">{t('educator_hub.report_writer_title') || 'Report Writer'}</h3>
-                  <p className="text-xs text-violet-800 mt-1">{t('educator_hub.report_writer_desc') || 'Draft clinical reports with fact chunks, accuracy checks, and developmental norms.'}</p>
+                  <span className="block font-bold text-violet-800">{t('educator_hub.report_writer_title') || 'Report Writer'}</span>
+                  <span className="block text-xs text-violet-800 mt-1">{t('educator_hub.report_writer_desc') || 'Draft clinical reports with fact chunks, accuracy checks, and developmental norms.'}</span>
                 </div>
               </button>
 
@@ -910,9 +910,9 @@ function EducatorHubModal(props) {
               }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left disabled:opacity-60 disabled:cursor-wait disabled:hover:scale-100">
                 <span className="text-3xl mt-1" aria-hidden="true">♿</span>
                 <div>
-                  <h3 className="font-bold text-teal-800">{t('educator_hub.document_accessibility_title') || 'Document accessibility'}</h3>
-                  <p className="text-xs text-teal-700 mt-1">{t('educator_hub.document_accessibility_desc') || 'Improve PDFs, Word documents, slides, spreadsheets, images, and web content. Review accessibility checks and export accessible formats.'}</p>
-                  <p className="text-xs text-teal-800 mt-1 font-semibold">{t('educator_hub.document_accessibility_resume') || 'To continue saved work, choose its PDF project file (.json).'}</p>
+                  <span className="block font-bold text-teal-800">{t('educator_hub.document_accessibility_title') || 'Document accessibility'}</span>
+                  <span className="block text-xs text-teal-700 mt-1">{t('educator_hub.document_accessibility_desc') || 'Improve PDFs, Word documents, slides, spreadsheets, images, and web content. Review accessibility checks and export accessible formats.'}</span>
+                  <span className="block text-xs text-teal-800 mt-1 font-semibold">{t('educator_hub.document_accessibility_resume') || 'To continue saved work, choose its PDF project file (.json).'}</span>
                 </div>
               </button>
 
@@ -946,8 +946,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_accessibility_lab_card" onClick={() => { setShowEducatorHub(false); setIsAccessibilityLabOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🔍</span>
                 <div>
-                  <h3 className="font-bold text-rose-800">{t('educator_hub.accessibility_lab_title') || 'Accessibility Lab'}</h3>
-                  <p className="text-xs text-rose-700 mt-1">{t('educator_hub.accessibility_lab_desc') || 'Check the student experience with student preview, keyboard and screen-reader checks, a live WCAG audit, and disability simulations.'}</p>
+                  <span className="block font-bold text-rose-800">{t('educator_hub.accessibility_lab_title') || 'Accessibility Lab'}</span>
+                  <span className="block text-xs text-rose-700 mt-1">{t('educator_hub.accessibility_lab_desc') || 'Check the student experience with student preview, keyboard and screen-reader checks, a live WCAG audit, and disability simulations.'}</span>
                 </div>
               </button>
 
@@ -966,8 +966,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_community_catalog_card" onClick={() => { setShowEducatorHub(false); setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDDC2\uFE0F'}</span>
                 <div>
-                  <h3 className="font-bold text-amber-800">{t('educator_hub.community_catalog_title') || 'Community Catalog'}</h3>
-                  <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons, or submit your own for community review.'}</p>
+                  <span className="block font-bold text-amber-800">{t('educator_hub.community_catalog_title') || 'Community Catalog'}</span>
+                  <span className="block text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons, or submit your own for community review.'}</span>
                 </div>
               </button>
 
@@ -978,8 +978,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_research_suite_card" onClick={() => { setShowEducatorHub(false); setIsResearchSuiteOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDCC7'}</span>
                 <div>
-                  <h3 className="font-bold text-purple-800">{t('educator_hub.research_suite_title') || 'Research Suite'}</h3>
-                  <p className="text-xs text-purple-700 mt-1">{t('educator_hub.research_suite_desc') || 'Run a named study: IRB tracking, consent provenance, Likert instruments, fidelity logs, and the study bundle export.'}</p>
+                  <span className="block font-bold text-purple-800">{t('educator_hub.research_suite_title') || 'Research Suite'}</span>
+                  <span className="block text-xs text-purple-700 mt-1">{t('educator_hub.research_suite_desc') || 'Run a named study: IRB tracking, consent provenance, Likert instruments, fidelity logs, and the study bundle export.'}</span>
                 </div>
               </button>
 
@@ -991,8 +991,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_professional_dev_card" onClick={() => { setShowEducatorHub(false); try { window.__alloPdIntent = true; localStorage.setItem('alloflow_pd_intent', '1'); } catch (_) {} setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🎓</span>
                 <div>
-                  <h3 className="font-bold text-sky-800">{t('educator_hub.professional_dev_title') || 'Professional Development'}</h3>
-                  <p className="text-xs text-sky-700 mt-1">{t('educator_hub.professional_dev_desc') || 'Work through short, self-paced modules, take a knowledge check, and download a completion record.'}</p>
+                  <span className="block font-bold text-sky-800">{t('educator_hub.professional_dev_title') || 'Professional Development'}</span>
+                  <span className="block text-xs text-sky-700 mt-1">{t('educator_hub.professional_dev_desc') || 'Work through short, self-paced modules, take a knowledge check, and download a completion record.'}</span>
                 </div>
               </button>
 
@@ -1004,8 +1004,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_admin_hub_card" onClick={() => { setShowEducatorHub(false); setIsAdminHubOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-indigo-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🏛️</span>
                 <div>
-                  <h3 className="font-bold text-cyan-900">{t('educator_hub.admin_hub_title') || 'Leadership Hub'}</h3>
-                  <p className="text-xs text-cyan-800 mt-1">{t('educator_hub.admin_hub_desc') || 'For leaders: conduct UDL walkthroughs, examine disproportionality patterns, and document meetings with aggregate or de-identified, device-only data. Reports are descriptive, not evaluative.'}</p>
+                  <span className="block font-bold text-cyan-900">{t('educator_hub.admin_hub_title') || 'Leadership Hub'}</span>
+                  <span className="block text-xs text-cyan-800 mt-1">{t('educator_hub.admin_hub_desc') || 'For leaders: conduct UDL walkthroughs, examine disproportionality patterns, and document meetings with aggregate or de-identified, device-only data. Reports are descriptive, not evaluative.'}</span>
                 </div>
               </button>
 
@@ -1017,8 +1017,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_school_rewards_card" onClick={() => { setShowEducatorHub(false); openSchoolRewards(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83C\uDF9F\uFE0F'}</span>
                 <div>
-                  <h3 className="font-bold text-emerald-900">{t('educator_hub.school_rewards_title') || 'School Rewards & Store'}</h3>
-                  <p className="text-xs text-emerald-800 mt-1">{t('educator_hub.school_rewards_desc') || 'Award recognition points and open the school-owned rewards ledger and prize store. The ledger lives in your school Google Workspace; the staff share link and setup checklist are inside.'}</p>
+                  <span className="block font-bold text-emerald-900">{t('educator_hub.school_rewards_title') || 'School Rewards & Store'}</span>
+                  <span className="block text-xs text-emerald-800 mt-1">{t('educator_hub.school_rewards_desc') || 'Award recognition points and open the school-owned rewards ledger and prize store. The ledger lives in your school Google Workspace; the staff share link and setup checklist are inside.'}</span>
                 </div>
               </button>
 
@@ -1030,8 +1030,8 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_communications_studio_card" onClick={() => { setShowEducatorHub(false); openCommunicationsStudio(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'✉️'}</span>
                 <div>
-                  <h3 className="font-bold text-sky-900">{t('educator_hub.communications_studio_title') || 'Communications Studio'}</h3>
-                  <p className="text-xs text-sky-800 mt-1">{t('educator_hub.communications_studio_desc') || 'Family updates, batch report-card comments, recommendation letters and replies to families, drafted only from your notes. Codenames only, plain-language check, optional translation draft, send to your Drive. Nothing is emailed from here.'}</p>
+                  <span className="block font-bold text-sky-900">{t('educator_hub.communications_studio_title') || 'Communications Studio'}</span>
+                  <span className="block text-xs text-sky-800 mt-1">{t('educator_hub.communications_studio_desc') || 'Family updates, batch report-card comments, recommendation letters and replies to families, drafted only from your notes. Codenames only, plain-language check, optional translation draft, send to your Drive. Nothing is emailed from here.'}</span>
                 </div>
               </button>
 

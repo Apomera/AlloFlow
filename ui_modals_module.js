@@ -75,6 +75,38 @@ var UI_MODAL_A11Y_STYLES = `
     border-radius: 14px !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
   }
+  .theme-dark [data-allo-ui-modal="role-selection"] > .min-h-full > div {
+    background: linear-gradient(145deg, #0f172a, #1e293b) !important;
+    border: 1px solid #475569 !important;
+    color: #f8fafc !important;
+    box-shadow: 0 32px 90px rgba(0,0,0,.65) !important;
+  }
+  .theme-dark [data-allo-ui-modal="role-selection"] button[data-help-key^="role_"] {
+    border-color: #475569 !important;
+    background: linear-gradient(180deg, #1e293b, #0f172a) !important;
+    color: #f8fafc !important;
+    box-shadow: 0 10px 24px rgba(0,0,0,.35);
+  }
+  .theme-dark [data-allo-ui-modal="role-selection"] button[data-help-key^="role_"]:hover {
+    border-color: #818cf8 !important;
+    background: #1e293b !important;
+  }
+  .theme-contrast [data-allo-ui-modal="role-selection"] > .min-h-full > div {
+    background: #000000 !important;
+    border: 2px solid #ffff00 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+  .theme-contrast [data-allo-ui-modal="role-selection"] button[data-help-key^="role_"] {
+    border: 2px solid #ffff00 !important;
+    background: #000000 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+  .theme-contrast [data-allo-ui-modal="role-selection"] button[data-help-key^="role_"]:hover {
+    background: #1a1a00 !important;
+    border-color: #ffffff !important;
+  }
   @media (prefers-reduced-motion: reduce) {
     [data-allo-ui-modal="role-selection"] button[data-help-key^="role_"]:hover { transform: none !important; }
   }

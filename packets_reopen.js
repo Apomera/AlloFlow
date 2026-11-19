@@ -37,7 +37,7 @@
     verify: { href: 'packets-verify.html', name: 'Look inside a file' },
   };
   var WORD = /^[a-z]{2,24}$/;
-  var READ_ALONG = 'This is a read-along. Make a read-along makes it. It cannot open a saved file yet: to change this one, make it again there.';
+  var READ_ALONG = 'This is a read-along. Make a read-along makes it, and can open it again.';
   var isObject = function (value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
   var own = function (object, key) { return Object.prototype.hasOwnProperty.call(object, key); };
   var list = function (value) { return Array.isArray(value) ? value : []; };
@@ -138,6 +138,7 @@
     if (parts.refused === 'empty') return no('other', 'This file is empty.');
     if (parts.refused) return no('other', 'This browser could not read the file.');
     if (parts.kind === 'results') return no('results', 'This is a results file, not a practice file. Add up results reads it.', PAGES.results);
+    if (parts.kind === 'zip') return no('zip', 'This is a .zip folder. Unzip it first and choose one .html file inside, or open a results .zip on Add up results.', PAGES.results);
     if (!parts.ok || !parts.lesson) return no('other', 'This is not a practice file made with this page. Choose the .html file you saved in step 3.');
     var m = parts.manifest || {}, lesson = parts.lesson;
     var blocks = list(lesson.blocks).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
@@ -265,6 +266,7 @@
     if (parts.refused === 'empty') return no('other', 'This file is empty.');
     if (parts.refused) return no('other', 'This browser could not read the file.');
     if (parts.kind === 'results') return no('results', 'This is a results file, not a file made here. Add up results reads it.', PAGES.results);
+    if (parts.kind === 'zip') return no('zip', 'This is a .zip folder. Unzip it first and choose one .html file inside, or open a results .zip on Add up results.', PAGES.results);
     if (!parts.ok || !parts.lesson) return no('other', 'This is not a file made with this page. Choose the .html file you saved in step 3.');
     var lesson = parts.lesson, m = parts.manifest || {}, packet = isObject(m.packet) ? m.packet : {};
     var blocks = list(lesson.blocks).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
@@ -398,7 +400,111 @@
     return out;
   }
 
-  var api = { read: read, readCheck: readCheck, readMath: readMath, wordOrder: wordOrder, creditOf: creditOf, PAGES: PAGES };
+  // identify(input, env) -> { ok: false, kind, why, page } for routing a file dropped on the wrong maker.
+  function identify(input, env) {
+    var e = env || {};
+    var out = { ok: false, kind: 'other', why: '', page: null, teacherCode: false };
+    var got = partsFor(input, e, out);
+    if (!got) return out;
+    if (got.kind === 'check' && isObject(got.lesson.check) && isObject(got.lesson.check.lock)) out.teacherCode = true;
+    return elsewhere(got.kind, out);
+  }
+
+  // readVocab(input, env) -> { ok, kind, why, page, teacherCode, title, learner, notes, vocab }
+  // Delegates full reconstruction to env.builder.readBack(parts) when provided; falls back cleanly to lesson blocks.
+  function readVocab(input, env) {
+    var e = env || {};
+    var out = { ok: false, kind: 'other', why: '', page: null, teacherCode: false, title: '', learner: '', notes: [], vocab: null };
+    var got = partsFor(input, e, out);
+    if (!got) return out;
+    if (got.kind !== 'vocab') return elsewhere(got.kind, out);
+    if (e.builder && typeof e.builder.readBack === 'function') {
+      var back = e.builder.readBack(got.parts);
+      if (!back || !back.ok) {
+        out.kind = 'other';
+        out.why = (back && back.why) || 'This is not a file made with this page. Choose the .html file you saved in step 3.';
+        return out;
+      }
+      out.ok = true;
+      out.kind = 'vocab';
+      out.vocab = back;
+      out.title = back.title || '';
+      out.learner = back.learner || '';
+      out.teacherCode = !!back.teacherCode;
+      return out;
+    }
+    var seen = {}, words = [], types = [];
+    got.blocks.forEach(function (b) {
+      var t = String(b.activity || '').replace(/^vocab_/, '');
+      if (t && types.indexOf(t) < 0) types.push(t);
+      list(b.items).forEach(function (it) {
+        var w = isObject(it) ? String(it.word || '').trim() : '';
+        var k = w.toLowerCase();
+        if (w && !seen[k]) { seen[k] = true; words.push(w); }
+      });
+    });
+    var mode = (isObject(got.manifest.packet) && got.manifest.packet.mode === 'check') || got.lesson.mode === 'probe' ? 'check' : 'practice';
+    out.ok = true;
+    out.kind = 'vocab';
+    out.title = String(got.lesson.title || got.manifest.title || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    out.learner = learnerOf(got.manifest, e);
+    out.teacherCode = isObject(got.lesson.check) && isObject(got.lesson.check.lock);
+    out.vocab = { ok: true, words: words, types: types, mode: mode, title: out.title, learner: out.learner, teacherCode: out.teacherCode };
+    return out;
+  }
+
+  // readReadAlong(input, env) -> { ok, kind, why, page, title, learner, notes, readAlong }
+  // Delegates full reconstruction (including sentence clips) to env.builder.readBack(parts) when provided; falls back cleanly to lesson.blocks[0].items.
+  function readReadAlong(input, env) {
+    var e = env || {};
+    var out = { ok: false, kind: 'other', why: '', page: null, teacherCode: false, title: '', learner: '', notes: [], readAlong: null };
+    var got = partsFor(input, e, out);
+    if (!got) return out;
+    if (got.kind !== 'read') return elsewhere(got.kind, out);
+    if (e.builder && typeof e.builder.readBack === 'function') {
+      var back = e.builder.readBack(got.parts);
+      if (!back || !back.ok) {
+        out.kind = 'other';
+        out.why = (back && back.why) || 'This is not a read-along file made on this page.';
+        return out;
+      }
+      out.ok = true;
+      out.kind = 'read';
+      out.readAlong = back;
+      out.title = back.title || '';
+      out.learner = back.learner || '';
+      return out;
+    }
+    var block = got.blocks[0], audio = isObject(got.lesson.audio) ? got.lesson.audio : {};
+    var sentences = [], clips = {};
+    list(block && block.items).forEach(function (item) {
+      list(isObject(item) ? item.lines : []).forEach(function (line) {
+        var lineText = isObject(line) ? String(line.text || '').replace(/\s+/g, ' ').trim() : '';
+        if (!lineText) return;
+        var row = { text: lineText };
+        if (line.para === true) row.para = true;
+        sentences.push(row);
+        var cid = typeof line.audio === 'string' ? line.audio : '';
+        if (cid && own(audio, cid) && typeof audio[cid] === 'string') clips[lineText] = audio[cid];
+      });
+    });
+    if (!sentences.length) { out.kind = 'other'; out.why = 'This read-along file has no sentences.'; return out; }
+    var passage = '';
+    for (var i = 0; i < sentences.length; i++) {
+      if (i > 0) passage += sentences[i].para ? '\n\n' : (/[.!?]["')\]]*$/.test(sentences[i - 1].text) ? ' ' : '\n');
+      passage += sentences[i].text;
+    }
+    var title = String(got.manifest.title || got.lesson.title || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+    if (title === 'Read along') title = '';
+    out.ok = true;
+    out.kind = 'read';
+    out.title = title;
+    out.learner = learnerOf(got.manifest, e);
+    out.readAlong = { ok: true, title: title, text: passage, sentences: sentences, voice: '', learner: out.learner, clips: clips, clipSources: {}, recordings: Object.keys(clips).length };
+    return out;
+  }
+
+  var api = { read: read, readCheck: readCheck, readMath: readMath, readVocab: readVocab, readReadAlong: readReadAlong, identify: identify, wordOrder: wordOrder, creditOf: creditOf, PAGES: PAGES };
   root.AlloPacketReopen = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

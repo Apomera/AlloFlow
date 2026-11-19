@@ -125,6 +125,10 @@ function VideoLibraryOverlay({ onClose, t }) {
             const directSummary = ancestor.querySelector(':scope > summary');
             if (el !== directSummary) return false;
           }
+          try {
+            const aSt = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(ancestor) : null;
+            if (aSt && (aSt.display === 'none' || aSt.visibility === 'hidden')) return false;
+          } catch (_) {}
           ancestor = ancestor.parentElement;
         }
         try {
@@ -264,7 +268,7 @@ function VideoLibraryOverlay({ onClose, t }) {
       <div
         ref={rootRef}
         tabIndex={-1}
-        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus:outline-none"
+        className="allo-docsuite flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2"
       >
         <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-violet-50 px-5 py-3">
           <div className="flex min-w-0 items-center gap-2">

@@ -41,9 +41,8 @@
       var pathname = String(loc.pathname || '');
       var isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(host);
       var isDesktopBundled = !!window._isDesktopBundledApp || (isLocal && pathname.indexOf('/app/') === 0);
-      var isAlloHosted = /(^|\.)alloflow/i.test(host)
-        || /(^|\.)web\.app$/i.test(host)
-        || /(^|\.)firebaseapp\.com$/i.test(host);
+      var isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host)
+        || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled && isLocal && loc.protocol === 'http:' && /^\d+$/.test(String(loc.port || ''))) {
         // Keep the companion and managed Grist on the same loopback site.
         // This lets Grist's Lax session cookie work even when Chromium blocks
@@ -334,7 +333,7 @@
     try {
       if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
     } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+    return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
   }
 
   function reply(source, requestId, payload) {
@@ -807,6 +806,11 @@
         try { window.alert('Allow pop-ups for this page, then open AlloSheet again.'); } catch (_) {}
         return null;
       }
+      try {
+        if (window.AlloModules && window.AlloModules.SensitiveWorkspace && typeof window.AlloModules.SensitiveWorkspace.registerDetachedWindow === 'function') {
+          window.AlloModules.SensitiveWorkspace.registerDetachedWindow(popup);
+        }
+      } catch (_) {}
       startPopupMonitor();
     }
     var entry = null;

@@ -37,6 +37,8 @@
   var e = React.createElement;
   var useState = React.useState;
   var useMemo = React.useMemo;
+  var useEffect = React.useEffect;
+  var useRef = React.useRef;
 
   // ------------------------------------------------------------------
   // parseRecommendations: comprehensive → Action[]
@@ -59,8 +61,19 @@
     { re: /glossary|vocabulary\s+list|word\s+bank/i, type: 'glossary' },
   ];
 
-  function actionId(prefix) {
-    return prefix + '_' + Math.random().toString(36).slice(2, 8);
+  function _stableHash(str) {
+    var s = String(str || '');
+    var h = 5381;
+    for (var i = 0; i < s.length; i++) {
+      h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+    }
+    return h.toString(36);
+  }
+
+  function actionId(prefix, key, index) {
+    var normKey = Array.isArray(key) ? key.join('|') : String(key || '');
+    var suffix = _stableHash(normKey.toLowerCase().replace(/\s+/g, ' ').trim());
+    return prefix + '_' + suffix + (typeof index === 'number' && index > 0 ? '_' + index : '');
   }
 
   function parseEngagementGap(gap) {
@@ -81,6 +94,16 @@
   function parseRecommendations(comprehensive, history) {
     var actions = [];
     if (!comprehensive) return actions;
+    var usedIds = {};
+    function nextStableId(prefix, key) {
+      var base = actionId(prefix, key);
+      if (!usedIds[base]) { usedIds[base] = 1; return base; }
+      var n = usedIds[base]++;
+      var candidate = base + '_' + n;
+      while (usedIds[candidate]) { n++; candidate = base + '_' + n; }
+      usedIds[candidate] = 1;
+      return candidate;
+    }
 
     // ---- Vocabulary ----
     var vocab = comprehensive.vocabulary;
@@ -98,7 +121,7 @@
       if (addTerms.length > 0) {
         var existingGlossary = findExistingItem(history, 'glossary');
         actions.push({
-          id: actionId('vocab'),
+          id: nextStableId('vocab', 'glossary:' + addTerms.join(',')),
           dimension: 'Vocabulary',
           icon: '📚',
           label: 'Add ' + addTerms.length + ' Tier 2/3 word' + (addTerms.length === 1 ? '' : 's') + ' to glossary',
@@ -123,7 +146,7 @@
         if (artifactType) {
           var existing = findExistingItem(history, artifactType);
           actions.push({
-            id: actionId('eng'),
+            id: nextStableId('eng', artifactType + ':' + gap),
             dimension: 'Engagement',
             icon: '🎯',
             label: (existing ? 'Regenerate ' : 'Generate ') + artifactType + ' to address gap',
@@ -135,7 +158,7 @@
           });
         } else {
           actions.push({
-            id: actionId('eng'),
+            id: nextStableId('eng', 'manual:' + gap),
             dimension: 'Engagement',
             icon: '🎯',
             label: 'Manual review',
@@ -150,7 +173,7 @@
       if (/recall.heavy|skews?\s+(low|recall)|add\s+\d+\s+(application|analysis|higher|L3|L4)/i.test(dok)) {
         var existingQuiz = findExistingItem(history, 'quiz');
         actions.push({
-          id: actionId('dok'),
+          id: nextStableId('dok', 'quiz:' + dok),
           dimension: 'Engagement',
           icon: '🧠',
           label: 'Augment quiz with higher-DOK questions',
@@ -178,7 +201,7 @@
         if (artifactType) {
           var existing = findExistingItem(history, artifactType);
           actions.push({
-            id: actionId('a11y'),
+            id: nextStableId('a11y', artifactType + ':' + fix),
             dimension: 'Accessibility',
             icon: '♿',
             label: (existing ? 'Regenerate ' : 'Generate ') + artifactType + ' to fix accessibility',
@@ -190,7 +213,7 @@
           });
         } else {
           actions.push({
-            id: actionId('a11y'),
+            id: nextStableId('a11y', 'manual:' + fix),
             dimension: 'Accessibility',
             icon: '♿',
             label: 'Manual review',
@@ -212,7 +235,7 @@
       var clRecs = Array.isArray(cl.recommendations) ? cl.recommendations.filter(function (r) { return typeof r === 'string' && r; }) : [];
       var clDetail = clRecs[0] || (cl.llmReview && cl.llmReview.narrative) || 'Lesson pacing needs adjustment.';
       actions.push({
-        id: actionId('pace'),
+        id: nextStableId('pace', 'lesson-plan:' + clDetail),
         dimension: 'Cognitive load / pacing',
         icon: '⏱️',
         label: missingDurations
@@ -228,7 +251,7 @@
       adjustments.forEach(function (adj) {
         if (typeof adj !== 'string' || !adj.trim()) return;
         actions.push({
-          id: actionId('pace'),
+          id: nextStableId('pace', 'manual:' + adj),
           dimension: 'Cognitive load / pacing',
           icon: '⏱️',
           label: 'Manual review',
@@ -250,7 +273,7 @@
         if (artifactType) {
           var existing = findExistingItem(history, artifactType);
           actions.push({
-            id: actionId('udl'),
+            id: nextStableId('udl', pillar + ':' + artifactType + ':' + rec),
             dimension: 'UDL · ' + (pillar === 'actionExpression' ? 'Action & Expression' : pillar.charAt(0).toUpperCase() + pillar.slice(1)),
             icon: '🌐',
             label: (existing ? 'Regenerate ' : 'Generate ') + artifactType + ' (UDL pillar)',
@@ -262,7 +285,7 @@
           });
         } else {
           actions.push({
-            id: actionId('udl'),
+            id: nextStableId('udl', pillar + ':manual:' + rec),
             dimension: 'UDL · ' + pillar,
             icon: '🌐',
             label: 'Manual review',
@@ -283,7 +306,7 @@
   function _arAiUsable(kind, fn) {
     if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
     if (typeof window !== 'undefined') {
-      if (window.__alloStudentAiDisabled === true) return false;
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
       if (typeof window.__alloAiUsable === 'function') {
         try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
       }
@@ -353,33 +376,69 @@
     var setHistory = props.setHistory;
     if (typeof handleGenerate !== 'function') return { ok: false, reason: 'no-handle-generate' };
 
-    // Capture the existing item (if any) BEFORE regeneration.
+    // Snapshot pre-call history IDs and item count so we ONLY merge a genuinely NEW
+    // item created by this handleGenerate invocation (handling both append & prepend
+    // and preventing wrong-item merges or false-success on silent failures).
     var existingId = action.existingItemId;
     var beforeSnapshot = null;
-    if (existingId && Array.isArray(props.history)) {
-      var found = props.history.find(function (h) { return h && h.id === existingId; });
-      if (found) beforeSnapshot = JSON.parse(JSON.stringify({ id: found.id, type: found.type, data: found.data, title: found.title, meta: found.meta, timestamp: found.timestamp || Date.now() }));
+    var priorIds = new Set();
+    var priorTargetItems = new Set();
+    if (Array.isArray(props.history)) {
+      props.history.forEach(function (h) {
+        if (!h) return;
+        if (h.id != null) priorIds.add(h.id);
+        if (h.type === action.target) priorTargetItems.add(h);
+      });
+      if (existingId) {
+        var found = props.history.find(function (h) { return h && h.id === existingId; });
+        if (found) beforeSnapshot = JSON.parse(JSON.stringify({ id: found.id, type: found.type, data: found.data, title: found.title, meta: found.meta, timestamp: found.timestamp || Date.now() }));
+      }
     }
 
+    var genRet;
     try {
-      // Trigger regeneration. handleGenerate appends a NEW history item.
-      await handleGenerate(action.target, null, false, null, action.configHints || {}, false);
+      // Trigger regeneration. handleGenerate adds a NEW history item (append or prepend).
+      genRet = await handleGenerate(action.target, null, false, null, action.configHints || {}, false);
     } catch (e) {
       return { ok: false, reason: 'generation-failed', error: String(e) };
     }
+    if (genRet === false || (genRet && typeof genRet === 'object' && genRet.ok === false)) {
+      return { ok: false, reason: (genRet && genRet.reason) || 'generation-failed' };
+    }
 
-    // Post-generation: merge the new item into the existing slot if there was one.
-    // We use setHistory(updater) for fresh state access.
-    if (existingId) {
+    // Post-generation: locate the newly added item of action.target (not in priorIds)
+    // and, when existingId is set, merge it into the existing slot while snapshotting prior data.
+    var updaterRan = false;
+    var foundNewItem = false;
+    if (typeof setHistory === 'function') {
       setHistory(function (prev) {
+        updaterRan = true;
         if (!Array.isArray(prev)) return prev;
-        // Find the newest item of action.target (handleGenerate just appended it)
-        var newestIdx = -1;
-        for (var i = prev.length - 1; i >= 0; i--) {
-          if (prev[i] && prev[i].type === action.target) { newestIdx = i; break; }
+        // Identify genuinely NEW items of action.target (works for both append & prepend).
+        var newCandidates = [];
+        for (var i = 0; i < prev.length; i++) {
+          var item = prev[i];
+          if (!item || item.type !== action.target) continue;
+          var isNew = item.id != null ? !priorIds.has(item.id) : !priorTargetItems.has(item);
+          if (isNew) newCandidates.push({ idx: i, item: item });
         }
-        if (newestIdx === -1) return prev;
-        var newest = prev[newestIdx];
+        if (newCandidates.length === 0) {
+          foundNewItem = false;
+          return prev;
+        }
+        foundNewItem = true;
+        if (!existingId) return prev;
+
+        // Pick the newest candidate (highest timestamp if present, else last in list).
+        var picked = newCandidates[newCandidates.length - 1];
+        for (var ci = 0; ci < newCandidates.length; ci++) {
+          var candTs = Number(newCandidates[ci].item.timestamp) || 0;
+          var pickedTs = Number(picked.item.timestamp) || 0;
+          if (candTs > pickedTs) picked = newCandidates[ci];
+        }
+        var newestIdx = picked.idx;
+        var newest = picked.item;
+
         // Find the existing slot
         var existingIdx = prev.findIndex(function (h) { return h && h.id === existingId; });
         if (existingIdx === -1 || existingIdx === newestIdx) return prev;
@@ -399,12 +458,16 @@
           }]),
           lastRemediatedAt: Date.now(),
         });
-        // Replace old, drop new
+        // Replace old, drop newly inserted duplicate regardless of whether it was appended or prepended.
         var next = prev.slice();
         next[existingIdx] = merged;
         next.splice(newestIdx, 1);
         return next;
       });
+    }
+
+    if (updaterRan && !foundNewItem) {
+      return { ok: false, reason: 'no-new-item-created', beforeSnapshot: beforeSnapshot };
     }
 
     return { ok: true, beforeSnapshot: beforeSnapshot };
@@ -431,6 +494,7 @@
       } : null;
     }, [comprehensive]);
 
+    var aiUsable = _arAiUsable('text', props.callGemini);
     var checkedSet = useState(function () {
       var s = {};
       initialActions.forEach(function (a) { if (a.target !== 'manual') s[a.id] = true; });
@@ -438,11 +502,67 @@
     });
     var checked = checkedSet[0]; var setChecked = checkedSet[1];
 
-    var [factCheckOn, setFactCheckOn] = useState(initialClaims.length > 0 && _arAiUsable('text', props.callGemini));
+    // Preserve user toggles when history updates (deterministic IDs), and default-check newly parsed actions.
+    useEffect(function () {
+      setChecked(function (prev) {
+        var next = {};
+        var changed = false;
+        initialActions.forEach(function (a) {
+          if (a.target === 'manual') return;
+          if (Object.prototype.hasOwnProperty.call(prev, a.id)) {
+            next[a.id] = prev[a.id];
+          } else {
+            next[a.id] = true;
+            changed = true;
+          }
+        });
+        if (!changed && Object.keys(prev).length === Object.keys(next).length) return prev;
+        return next;
+      });
+    }, [initialActions]);
+
+    var [factCheckOn, setFactCheckOn] = useState(initialClaims.length > 0 && aiUsable);
     var [phase, setPhase] = useState('confirm'); // confirm | applying | verifying | reAuditing | done | error
     var [progress, setProgress] = useState({ current: 0, total: 0, label: '' });
     var [verdicts, setVerdicts] = useState(null);
     var [errorMsg, setErrorMsg] = useState('');
+    var beforeReadinessRef = useRef(initialReadiness);
+
+    // Reset transient remediation state whenever the modal opens so a mounted host
+    // re-opening after a prior Apply never shows stale 'done'/'error' or prior readiness.
+    useEffect(function () {
+      if (props.isOpen) {
+        setPhase('confirm');
+        setVerdicts(null);
+        setErrorMsg('');
+        setProgress({ current: 0, total: 0, label: '' });
+        beforeReadinessRef.current = initialReadiness;
+      }
+    }, [props.isOpen]);
+
+    // Keep beforeReadiness snapshot aligned while in confirm phase; freeze once Apply starts.
+    useEffect(function () {
+      if (phase === 'confirm') {
+        beforeReadinessRef.current = initialReadiness;
+      }
+    }, [phase, initialReadiness]);
+
+    // WCAG modal keyboard accessibility: close on Escape when not actively mutating.
+    useEffect(function () {
+      if (!props.isOpen) return;
+      var canDismiss = phase === 'confirm' || phase === 'done' || phase === 'error';
+      if (!canDismiss) return;
+      var onKeyDown = function (ev) {
+        if (ev && ev.key === 'Escape' && typeof props.onClose === 'function') {
+          ev.preventDefault();
+          props.onClose();
+        }
+      };
+      if (typeof window !== 'undefined' && window.addEventListener) {
+        window.addEventListener('keydown', onKeyDown);
+        return function () { window.removeEventListener('keydown', onKeyDown); };
+      }
+    }, [props.isOpen, phase, props.onClose]);
 
     function toggleAction(id) {
       var next = Object.assign({}, checked);
@@ -451,12 +571,14 @@
     }
 
     async function handleApply() {
+      beforeReadinessRef.current = initialReadiness;
+      var runFactCheck = !!(factCheckOn && initialClaims.length > 0 && _arAiUsable('text', props.callGemini));
       var selected = initialActions.filter(function (a) { return a.target !== 'manual' && checked[a.id]; });
-      var totalSteps = selected.length + (factCheckOn && initialClaims.length > 0 && _arAiUsable('text', props.callGemini) ? 1 : 0) + 1; // +1 for re-audit
+      var totalSteps = selected.length + (runFactCheck ? 1 : 0) + 1; // +1 for re-audit
       var step = 0;
 
       // 1. Optional fact-check
-      if (factCheckOn && initialClaims.length > 0 && _arAiUsable('text', props.callGemini)) {
+      if (runFactCheck) {
         step++;
         setPhase('verifying');
         setProgress({ current: step, total: totalSteps, label: 'Verifying ' + initialClaims.length + ' claim' + (initialClaims.length === 1 ? '' : 's') + ' with Google Search...' });
@@ -554,22 +676,32 @@
       );
     }
 
+    var canDismiss = phase === 'confirm' || phase === 'done' || phase === 'error';
+    var beforeReadiness = beforeReadinessRef.current || initialReadiness;
+    var factCheckReady = !!(factCheckOn && aiUsable && initialClaims.length > 0);
+
     return e('div', {
       className: 'fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4',
-      onClick: function (ev) { if (ev.target === ev.currentTarget && phase === 'confirm') props.onClose(); },
+      onClick: function (ev) { if (ev.target === ev.currentTarget && canDismiss && typeof props.onClose === 'function') props.onClose(); },
     },
-      e('div', { className: 'bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col' },
+      e('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'audit-remediator-title',
+        className: 'bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col',
+      },
         // Header
         e('div', { className: 'px-6 py-4 border-b border-slate-200 flex items-center justify-between' },
           e('div', null,
-            e('h2', { className: 'text-xl font-black text-slate-800 flex items-center gap-2' },
+            e('h2', { id: 'audit-remediator-title', className: 'text-xl font-black text-slate-800 flex items-center gap-2' },
               e('span', { 'aria-hidden': 'true' }, '🛠️'),
               ' Apply Audit Fixes'),
             e('p', { className: 'text-xs text-slate-600 mt-0.5' },
               initialActions.length + ' suggestion' + (initialActions.length === 1 ? '' : 's') + ' parsed from the audit · ' + selectedCount + ' selected'
               + (manualCount > 0 ? ' · ' + manualCount + ' need manual review' : ''))
           ),
-          phase === 'confirm' && e('button', {
+          canDismiss && e('button', {
+            type: 'button',
             className: 'text-slate-500 hover:text-slate-800 text-2xl leading-none px-2',
             onClick: props.onClose, 'aria-label': 'Close',
           }, '×')
@@ -578,7 +710,7 @@
         // Body
         e('div', { className: 'flex-1 overflow-y-auto px-6 py-4 space-y-3' },
           phase === 'confirm' && [
-            initialClaims.length > 0 && e('label', {
+            initialClaims.length > 0 && aiUsable && e('label', {
               key: 'fc',
               className: 'flex items-start gap-3 p-3 rounded-lg bg-indigo-50 border border-indigo-200 cursor-pointer hover:bg-indigo-100',
             },
@@ -603,7 +735,11 @@
             initialActions.map(ActionRow)
           ],
 
-          (phase === 'verifying' || phase === 'applying' || phase === 'reAuditing') && e('div', { className: 'p-8 text-center' },
+          (phase === 'verifying' || phase === 'applying' || phase === 'reAuditing') && e('div', {
+            role: 'status',
+            'aria-live': 'polite',
+            className: 'p-8 text-center',
+          },
             e('div', { className: 'text-4xl mb-3', 'aria-hidden': 'true' }, '⚙️'),
             e('div', { className: 'text-base font-bold text-slate-800 mb-2' }, progress.label),
             e('div', { className: 'w-full max-w-md mx-auto h-2 bg-slate-200 rounded-full overflow-hidden' },
@@ -616,12 +752,12 @@
           ),
 
           phase === 'done' && e('div', null,
-            e('div', { className: 'p-4 rounded-lg bg-emerald-50 border border-emerald-300 mb-4' },
+            e('div', { className: 'p-4 rounded-lg bg-emerald-50 border border-emerald-300 mb-4', role: 'status', 'aria-live': 'polite' },
               e('div', { className: 'text-base font-bold text-emerald-900 flex items-center gap-2' },
                 e('span', { 'aria-hidden': 'true' }, '✓'), ' Fixes applied and audit re-run')
             ),
-            initialReadiness && newReadiness && e('div', { className: 'flex items-center gap-3 mb-4' },
-              ReadinessBlock('Before', initialReadiness),
+            beforeReadiness && newReadiness && e('div', { className: 'flex items-center gap-3 mb-4' },
+              ReadinessBlock('Before', beforeReadiness),
               e('div', { className: 'text-2xl text-slate-600', 'aria-hidden': 'true' }, '→'),
               ReadinessBlock('After', newReadiness)
             ),
@@ -641,7 +777,7 @@
             )
           ),
 
-          phase === 'error' && e('div', { className: 'p-4 rounded-lg bg-rose-50 border border-rose-300' },
+          phase === 'error' && e('div', { role: 'alert', className: 'p-4 rounded-lg bg-rose-50 border border-rose-300' },
             e('div', { className: 'text-base font-bold text-rose-900' }, 'Something went wrong'),
             e('div', { className: 'text-sm text-rose-800 mt-1' }, errorMsg || 'Unknown error.')
           )
@@ -650,15 +786,18 @@
         // Footer
         e('div', { className: 'px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3' },
           phase === 'confirm' && e('button', {
+            type: 'button',
             className: 'px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900',
             onClick: props.onClose,
           }, 'Cancel'),
           phase === 'confirm' && e('button', {
+            type: 'button',
             className: 'px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed',
             onClick: handleApply,
-            disabled: selectedCount === 0 && !(factCheckOn && initialClaims.length > 0),
+            disabled: selectedCount === 0 && !factCheckReady,
           }, 'Apply' + (selectedCount > 0 ? ' ' + selectedCount + ' fix' + (selectedCount === 1 ? '' : 'es') : '')),
           (phase === 'done' || phase === 'error') && e('button', {
+            type: 'button',
             className: 'px-4 py-2 text-sm font-bold text-white bg-slate-700 hover:bg-slate-800 rounded-lg',
             onClick: props.onClose,
           }, 'Close')
@@ -666,6 +805,15 @@
       )
     );
   }
+
+  AuditRemediator._internals = {
+    actionId: actionId,
+    parseEngagementGap: parseEngagementGap,
+    parseRecommendations: parseRecommendations,
+    applyArtifactAction: applyArtifactAction,
+    verifyClaimsBatch: verifyClaimsBatch,
+    _arAiUsable: _arAiUsable,
+  };
 
   // ------------------------------------------------------------------
   // Register

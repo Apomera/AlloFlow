@@ -2442,7 +2442,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       className: 'mt-2 rounded-lg border p-2', style: props.panel || null },
       h('div', { className: 'rounded-md overflow-hidden', style: { height: (props.height || 200) + 'px' } },
         h('canvas', {
-          ref: canvasRef, role: 'img',
+          ref: canvasRef, role: 'img', 'data-a11y-static': 'true',
           'aria-label': props.ariaLabel || t('stem.heatlab.lens_aria', 'Particle zoom lens'),
           'aria-describedby': descId,
           style: { width: '100%', height: '100%', display: 'block' }
@@ -6857,6 +6857,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var html = worksheetHtml(), msg;
         var w = null;
         try { w = window.open('', '_blank'); } catch (e) { w = null; }
+        try { if (w) w.opener = null; } catch (_) {}
         if (w && w.document) {
           try { w.document.open(); w.document.write(html); w.document.close(); msg = t('stem.heatlab.ws_opened', 'Worksheet opened in a new tab. Use its Print button.'); }
           catch (e2) { w = null; }
@@ -7292,7 +7293,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               }, '+ ' + t('stem.heatlab.probe_add', 'Add a thermometer')) : null,
               h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(251,146,60,0.35)', height: '200px' } },
                 h('canvas', {
-                  ref: probeChartRef, role: 'img',
+                  ref: probeChartRef, role: 'img', 'data-a11y-static': 'true',
                   'aria-describedby': 'ht-probe-chart-description',
                   'aria-label': t('stem.heatlab.probe_chart_aria', 'Temperature against time for each thermometer. At {time} of simulated time: {list}.')
                     .replace('{time}', heatTimeLabel(live.clock)).replace('{list}', probes.length ? probeSummary : t('stem.heatlab.no_probes', 'no thermometers placed')),
@@ -7482,7 +7483,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           irOn ? h('div', { className: 'mt-2', 'data-ht-ir-view': 'mug' },
             h('div', { className: 'rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(251,191,36,0.35)', height: '170px' } },
               h('canvas', {
-                ref: mugIrRef, role: 'img', 'aria-describedby': 'ht-mug-ir-read',
+                ref: mugIrRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'ht-mug-ir-read',
                 'aria-label': __alloOneWord(t('stem.heatlab.ir_mug_aria', 'Thermal camera view of the mug after {min} minutes: tea {tea} °C, outer surface of the wrap {surf} °C, room 20 °C.')
                   .replace('{min}', String(mugMin)).replace('{tea}', fmt(mugTeaC, 1)).replace('{surf}', fmt(mugSurfC, 1))),
                 style: { width: '100%', height: '100%', display: 'block' }
@@ -7634,7 +7635,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           irOn ? h('div', { className: 'mt-2', 'data-ht-ir-view': 'wall' },
             h('div', { className: 'rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(132,204,22,0.35)', height: '150px' } },
               h('canvas', {
-                ref: wallIrRef, role: 'img', 'aria-describedby': 'ht-wall-ir-read',
+                ref: wallIrRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'ht-wall-ir-read',
                 'aria-label': t('stem.heatlab.ir_wall_aria', 'Thermal camera view through the wall, inside at {in} °C on the left, outside at {out} °C on the right. Inside surface {si} °C, outside surface {so} °C.')
                   .replace('{in}', fmt(WALL_IN_C, 0)).replace('{out}', fmt(WALL_OUT_C, 0))
                   .replace('{si}', fmt(wallProf.insideSurfaceC, 1)).replace('{so}', fmt(wallProf.outsideSurfaceC, 1)),
@@ -7728,7 +7729,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             irKey(TOUCH_LO, TOUCH_HI)),
           h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(56,189,248,0.35)', height: '180px' } },
             h('canvas', {
-              ref: touchIrRef, role: 'img', 'aria-describedby': 'ht-touch-intro',
+              ref: touchIrRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'ht-touch-intro',
               'aria-label': t('stem.heatlab.ir_touch_aria', 'Thermal camera view: a {a} block and a {b} block on a bench, both reading 20 °C, the same colour as the bench. {hand}')
                 .replace('{a}', touchMatA.name.toLowerCase()).replace('{b}', touchMatB.name.toLowerCase())
                 .replace('{hand}', touchSide
@@ -7976,7 +7977,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             function (e) { upd({ eqCursor: parseFloat(e.target.value) }); }, heatTimeLabel(eqTime), 'ht-eq-ledger'),
           h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(52,211,153,0.35)', height: '190px' } },
             h('canvas', {
-              ref: eqTRef, role: 'img', 'aria-describedby': 'ht-eq-ledger',
+              ref: eqTRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'ht-eq-ledger',
               'aria-label': t('stem.heatlab.eq_t_aria', 'Temperature against time. {b1} starts at {t1} °C and {b2} at {t2} °C; they converge on {tf} °C with a time constant of {tau}. At {now}: {n1} °C and {n2} °C.')
                 .replace('{b1}', eqMat1.name).replace('{t1}', fmt(eqT1, 0)).replace('{b2}', eqMat2.name.toLowerCase()).replace('{t2}', fmt(eqT2, 0))
                 .replace('{tf}', fmt(eqRun.Tf, 1)).replace('{tau}', heatTimeLabel(eqRun.tauS)).replace('{now}', heatTimeLabel(eqTime))
@@ -7989,7 +7990,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }),
           h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(52,211,153,0.35)', height: '170px' } },
             h('canvas', {
-              ref: eqSRef, role: 'img', 'aria-describedby': 'ht-eq-ledger',
+              ref: eqSRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'ht-eq-ledger',
               'aria-label': t('stem.heatlab.eq_s_aria', 'Entropy change against time. The blocks’ entropy changes by {s} J/K by {now}{room}.')
                 .replace('{s}', eqNow.dS.toFixed(3)).replace('{now}', heatTimeLabel(eqTime))
                 .replace('{room}', eqLeak ? t('stem.heatlab.eq_s_aria_room', '; the room gains {r} J/K, so the total changes by {tot} J/K').replace('{r}', eqNow.dSroom.toFixed(3)).replace('{tot}', eqNow.dStotal.toFixed(3)) : ''),
@@ -8193,7 +8194,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               : null,
             h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(167,139,250,0.35)', height: '200px' } },
               h('canvas', {
-                ref: hcTimeRef, role: 'img', 'aria-describedby': 'ht-hc-desc',
+                ref: hcTimeRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'ht-hc-desc',
                 'aria-label': (hcMode === 'heat'
                   ? t('stem.heatlab.hc_chart_aria_heat', 'Heating curve for 1 kg of {sub} at {p} W, temperature against time: flat at {mp} °C for {melt} while it melts{boil}. It reaches {end} °C after {total}.')
                     .replace('{p}', fmt(hcPower, 0)).replace('{melt}', heatTimeLabel(hcHeat.stages[1].endS - hcHeat.stages[1].startS))
@@ -8708,7 +8709,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         fmtW(p[2]) + (p[0] === 'total' ? '' : ' · ' + fmt(s.totalW > 0 ? p[2] / s.totalW * 100 : 0, 0) + '%'))
                     ];
                   })),
-                h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: bodyInk } },
+                h('p', { id: 'ht-flask-summary', className: 'text-[0.6875rem] mt-1 leading-relaxed', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: bodyInk } },
                   t('stem.heatlab.fl_biggest', 'The biggest leak now is {path}, {pct}% of the heat. After 6 hours the coffee is at {t6} °C; it falls to 60 °C after {to60}.')
                     .replace('{path}', big[1].toLowerCase()).replace('{pct}', fmt(s.totalW > 0 ? big[2] / s.totalW * 100 : 0, 0))
                     .replace('{t6}', fmt(flRun.at6hC, 1))
@@ -8716,7 +8717,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             })(),
             h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(244,114,182,0.35)', height: '190px' } },
               h('canvas', {
-                ref: flaskRef, role: 'img',
+                ref: flaskRef, role: 'img', 'data-a11y-static': 'true',
+                'aria-describedby': 'ht-flask-summary',
                 'aria-label': t('stem.heatlab.fl_chart_aria', 'Coffee temperature over 12 hours. Your build: {y} °C after 6 hours. A plain open double wall: {p} °C. A real flask with all three features: {f} °C.')
                   .replace('{y}', fmt(flRun.at6hC, 1)).replace('{p}', fmt(flRefs.plain.at6hC, 1)).replace('{f}', fmt(flRefs.full.at6hC, 1)),
                 style: { width: '100%', height: '100%', display: 'block' }
@@ -9011,7 +9013,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     : null,
                   nbPts.length ? h('div', { className: 'mt-1.5 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(167,139,250,0.35)', height: '200px' } },
                     h('canvas', {
-                      ref: nbPlotRef, role: 'img',
+                      ref: nbPlotRef, role: 'img', 'data-a11y-static': 'true',
+                      'aria-describedby': nbMsg ? 'ht-nb-status' : undefined,
                       'aria-label': __alloOneWord(t('stem.heatlab.nb_plot_aria', '{y} against {x} for {n} trials. {x} runs from {x0} to {x1}; {y} from {y0} to {y1}.')
                         .replace(/\{x\}/g, nbX).replace(/\{y\}/g, nbY).replace('{n}', String(nbPts.length))
                         .replace('{x0}', nbCell(Math.min.apply(null, nbPts.map(function (p) { return p[0]; })))).replace('{x1}', nbCell(Math.max.apply(null, nbPts.map(function (p) { return p[0]; }))))
@@ -9040,7 +9043,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       t('stem.heatlab.nb_cancel', 'Cancel')))
                   : h('button', { type: 'button', onClick: function () { setNbConfirm({ type: 'clear' }); }, className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(false) },
                     '🗑 ' + (nbKind === 'all' ? t('stem.heatlab.nb_clear_all', 'Clear the notebook') : t('stem.heatlab.nb_clear_kind', 'Clear these rows')))),
-              h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] mt-1.5', style: { color: bodyInk } }, nbMsg))
+              h('p', { id: 'ht-nb-status', role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] mt-1.5', style: { color: bodyInk } }, nbMsg))
         ),
 
         // ── Stage C: guided claim-evidence-reasoning investigations ──
@@ -9216,7 +9219,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           !clTested ? h('p', { className: 'text-[0.6875rem] mt-2 italic', style: { color: softInk } },
             t('stem.heatlab.cl_untested', 'Choose your materials, then press Test. Each test is also recorded in your lab notebook.')) : null,
           clTested ? h('div', { className: 'mt-2 rounded-lg border p-2.5', 'data-ht-cooler-result': clTested.meets ? 'pass' : 'fail', style: panelStyle(clTested.meets ? '#16a34a' : '#f59e0b') },
-            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[0.6875rem] font-black leading-relaxed', style: { color: bodyInk } },
+            h('p', { id: 'ht-cooler-summary', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[0.6875rem] font-black leading-relaxed', style: { color: bodyInk } },
               __alloOneWord(t('stem.heatlab.cl_result', '{design}: the ice lasts {h} hours ({warm} warming to 0 °C, then {melt} melting). Cost {cost}; outside {cm} cm.')
                 .replace('{design}', clDescribe(clTested.design)).replace('{h}', fmt(clTested.meltH, 1)).replace('{warm}', heatTimeLabel(clTested.warmS))
                 .replace('{melt}', heatTimeLabel(clTested.meltS - clTested.warmS)).replace('{cost}', function () { return clMoney(clTested.cost); }).replace('{cm}', fmt(clTested.outerCm, 1))) + ' ' +
@@ -9231,7 +9234,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               '🏅 ' + t('stem.heatlab.cl_badge', 'Badge earned: a design you built meets the brief.')) : null,
             h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(56,189,248,0.35)', height: '190px' } },
               h('canvas', {
-                ref: coolerRef, role: 'img',
+                ref: coolerRef, role: 'img', 'data-a11y-static': 'true',
+                'aria-describedby': 'ht-cooler-summary',
                 'aria-label': __alloOneWord(t('stem.heatlab.cl_chart_aria', 'Ice pack temperature against time in the car: it warms from −18 °C to 0 °C in {warm}, holds at 0 °C while it melts until {h} hours, then the meltwater warms towards 30 °C.')
                   .replace('{warm}', heatTimeLabel(clTested.warmS)).replace('{h}', fmt(clTested.meltH, 1))),
                 style: { width: '100%', height: '100%', display: 'block' }
@@ -9276,10 +9280,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }, '💾 ' + t('stem.heatlab.cl_save', 'Save for comparison ({n} of 3 used)').replace('{n}', String(clSaved.length)))
           ) : null,
           (clSaved.length || clTested) ? h('div', { className: 'mt-2', 'data-ht-cooler-compare': 'true' },
-            h('p', { className: 'text-[0.6875rem] font-black', style: { color: bodyInk } }, '⚖️ ' + t('stem.heatlab.cl_compare_title', 'Trade-off: cost against how long the ice lasts')),
+            h('p', { id: 'ht-trade-title', className: 'text-[0.6875rem] font-black', style: { color: bodyInk } }, '⚖️ ' + t('stem.heatlab.cl_compare_title', 'Trade-off: cost against how long the ice lasts')),
             h('div', { className: 'mt-1 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(56,189,248,0.35)', height: '190px' } },
               h('canvas', {
-                ref: tradeRef, role: 'img',
+                ref: tradeRef, role: 'img', 'data-a11y-static': 'true',
+                'aria-describedby': 'ht-trade-title',
                 'aria-label': __alloOneWord(t('stem.heatlab.cl_trade_aria', 'Cost against hours the ice lasts for {n} designs; the target is 4 hours and the budget ${b}.')
                   .replace('{n}', String(clSaved.length + (clTested && !clStale ? 1 : 0))).replace('{b}', String(HEAT_COOLER.budget))),
                 style: { width: '100%', height: '100%', display: 'block' }

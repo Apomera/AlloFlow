@@ -296,7 +296,8 @@ function ConceptSortView(props) {
     className: "min-h-11 px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 motion-reduce:hover:scale-100 transition-all motion-reduce:transition-none flex items-center gap-3"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 24,
-    className: "fill-current text-yellow-700"
+    "aria-hidden": "true",
+    className: "fill-current text-yellow-300"
   }), " ", t('concept_sort.start_action'))) : generatedContent?.data && generatedContent?.data.categories && /*#__PURE__*/React.createElement("div", {
     className: "space-y-4 overflow-y-auto pr-2"
   }, /*#__PURE__*/React.createElement("div", {
@@ -572,7 +573,7 @@ function ConceptSortView(props) {
           height: 44,
           flexShrink: 0
         },
-        className: "rounded text-sm hover:bg-rose-50 text-rose-500 disabled:opacity-30 flex items-center justify-center",
+        className: "rounded text-sm hover:bg-rose-50 text-rose-700 disabled:opacity-30 flex items-center justify-center",
         title: t("a11y.delete_item"),
         "aria-label": _conceptSortText(t, "a11y.delete_item", "Delete this item") + ": " + item.content
       }, "🗑")), item.image && csRefineItemImage && /*#__PURE__*/React.createElement("div", {
@@ -592,14 +593,14 @@ function ConceptSortView(props) {
         placeholder: t("placeholders.edit_image_prompt"),
         disabled: isBusy || !!csEditDoor?.disabled,
         title: csEditDoor?.title || undefined,
-        className: "min-h-11 flex-1 text-[11px] bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-500",
+        className: "min-h-11 flex-1 text-[11px] bg-white border border-amber-300 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-amber-400 placeholder:text-slate-500",
         "aria-label": `${t('concept_sort.refine_prompt_for') || 'Image edit prompt for'} ${item.content}`
       }), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => csRefineItemImage(item.id),
         disabled: isBusy || !refineInput.trim() || !!csEditDoor?.disabled,
         className: "min-h-11 px-2 py-1 rounded text-[11px] font-bold bg-amber-700 hover:bg-amber-800 text-white disabled:opacity-30",
-        "aria-label": _conceptSortText(t, "a11y.apply_edit_prompt", "Apply edit prompt") + ": " + item.content,
+        "aria-label": `${t('common.send') || 'Send'} — ${_conceptSortText(t, "a11y.apply_edit_prompt", "Apply edit prompt")}: ${item.content}`,
         "data-concept-sort-action": true,
         style: {
           minHeight: 44
@@ -623,7 +624,7 @@ function ConceptSortView(props) {
           setCsAddingText('');
         }
       },
-      className: "min-h-11 flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400",
+      className: "min-h-11 flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-emerald-400",
       "aria-label": t("a11y.new_item_text"),
       disabled: csBusyId === '__adding__'
     }), /*#__PURE__*/React.createElement("button", {
@@ -660,7 +661,7 @@ function ConceptSortView(props) {
     },
     placeholder: t('concept_sort.new_category_placeholder') || 'Category name',
     "aria-label": t('concept_sort.new_category_label') || 'New category name',
-    className: "min-h-11 flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400"
+    className: "min-h-11 flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-emerald-400"
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {

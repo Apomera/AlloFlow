@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://cjrtnc.leaningtech.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' https://cdn.jsdelivr.net data:; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://cjrtnc.leaningtech.com; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>AlloFlow · independent PDF/UA validator (veraPDF in-browser)</title>
 <!--
@@ -26,20 +28,28 @@
 -->
 <style>
   body { font-family: system-ui, Segoe UI, Roboto, sans-serif; max-width: 760px; margin: 20px auto; padding: 0 16px; color: #0f172a; }
-  h2 { font-size: 18px; } #status { font-weight: 700; padding: 8px 12px; border-radius: 8px; background: #f1f5f9; }
+  h1 { font-size: 18px; margin: 0 0 12px; } #status { font-weight: 700; padding: 8px 12px; border-radius: 8px; background: #f1f5f9; }
   input[type=file] { margin: 12px 0; } ul { margin: 6px 0 0; padding-left: 20px; }
   li { margin: 3px 0; font-size: 13px; } .pass { color: #15803d; } .fail { color: #b91c1c; }
-  .muted { color: #64748b; font-size: 12px; } #report { margin-top: 12px; }
+  .muted { color: #475569; font-size: 12px; } #report { margin-top: 12px; }
+  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: #1e3a8a; color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { left: 12px; }
+  :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+  @media (forced-colors: active) { :focus-visible { outline: 3px solid Highlight; outline-offset: 2px; } }
 </style>
 </head>
 <body>
-<h2>Independent PDF/UA-1 validator <span class="muted">(veraPDF, in-browser)</span></h2>
-<p id="status">Booting…</p>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content" tabindex="-1">
+<h1>Independent PDF/UA-1 validator <span class="muted">(veraPDF, in-browser)</span></h1>
+<p id="status" role="status" aria-live="polite">Booting…</p>
 <label for="pick">Choose a PDF to validate</label>
 <input type="file" id="pick" accept="application/pdf,.pdf" disabled />
 <div id="report"></div>
 <div id="ro" style="margin-top:10px"></div>
 <p class="muted">Runs entirely in your browser — nothing is uploaded. Independent check against ISO 14289-1; not a legal compliance certificate.</p>
+</main>
 
 <script>
   // Identify this document before either external runtime can fail or hang. The repeated pulse
@@ -58,8 +68,8 @@
     }
   })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js" integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js" integrity="sha384-Gktch8f4Bz1CImPunwHa96WmqMngIXVkCnlyJCQtPldjKqLpIlwGiuLXaTq9hfYN" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
   // CheerpJ maps the web server root to /app/, so this is the jar's path UNDER
   // /app (i.e. its URL path from the origin root). Jar at web-root → /app/verapdf-cli.jar;
@@ -67,6 +77,8 @@
   const JAR_URL = '/app/verapdf/verapdf-cli.jar';
   const PDFBOX_JAR_URL = '/app/verapdf/pdfbox-app.jar'; // co-loaded for PDFBox structural repairs (Plan A)
   const NOTO_FONT_URL = 'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/hinted/ttf/NotoSans-Regular.ttf';
+  const NOTO_FONT_SHA256 = '478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823';
+  const MAX_VERAPDF_BYTES = 50 * 1024 * 1024;
   let _notoTtf = null; // cached substitute-font bytes for the embedding recipe
 
   const $ = (id) => document.getElementById(id);
@@ -215,7 +227,16 @@
       }
       if (needFont) { // R-FONT: embed a WinAnsi TrueType substitute for non-embedded standard-14 fonts
         try {
-          if (!_notoTtf) _notoTtf = new Uint8Array(await (await fetch(NOTO_FONT_URL)).arrayBuffer());
+          if (!_notoTtf) {
+            const fontRes = await fetch(NOTO_FONT_URL, { credentials: 'omit', referrerPolicy: 'no-referrer' });
+            if (!fontRes.ok) throw new Error('Substitute font fetch failed (HTTP ' + fontRes.status + ')');
+            const fontBuf = await fontRes.arrayBuffer();
+            if (crypto && crypto.subtle && typeof crypto.subtle.digest === 'function') {
+              const digestHex = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', fontBuf))).map(b => b.toString(16).padStart(2, '0')).join('');
+              if (digestHex !== NOTO_FONT_SHA256) throw new Error('Substitute font integrity verification failed');
+            }
+            _notoTtf = new Uint8Array(fontBuf);
+          }
           cheerpOSAddStringFile('/str/sub.ttf', _notoTtf);
           const PDTrueTypeFont = await pb.pdmodel.font.PDTrueTypeFont;
           const WinAnsiEncoding = await pb.pdmodel.font.encoding.WinAnsiEncoding;
@@ -272,11 +293,12 @@
   }
   window.__remediate = remediate; // for headless tests
 
+  const _roEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   function render(r) {
     $('report').innerHTML =
       (r.compliant ? '<b class="pass">✅ PASSES PDF/UA-1</b>' : '<b class="fail">❌ FAILS PDF/UA-1</b>') +
-      ' — ' + r.failedRules.length + ' distinct rule(s), ' + r.failedChecks + ' check(s) failed' +
-      (r.failedRules.length ? '<ul>' + r.failedRules.map((f) => '<li>ISO 14289-1 §' + f.clause + ' (test ' + f.testNumber + '): ' + f.message + (f.count > 1 ? ' <span class="muted">×' + f.count + '</span>' : '') + '</li>').join('') + '</ul>' : '');
+      ' — ' + _roEsc(r.failedRules.length) + ' distinct rule(s), ' + _roEsc(r.failedChecks) + ' check(s) failed' +
+      (r.failedRules.length ? '<ul>' + r.failedRules.map((f) => '<li>ISO 14289-1 §' + _roEsc(f.clause) + ' (test ' + _roEsc(f.testNumber) + '): ' + _roEsc(f.message) + (f.count > 1 ? ' <span class="muted">×' + _roEsc(f.count) + '</span>' : '') + '</li>').join('') + '</ul>' : '');
   }
 
   // ── Reading-order preview (2026-06-22) ── veraPDF/PDFBox validate the STRUCTURE; this previews the
@@ -285,7 +307,6 @@
   // aloud with the browser's built-in speechSynthesis (no NVDA, no dependency). A multi-column or complex
   // layout tagged in the wrong order reads out of sequence here, which makes the silent defect visible+audible.
   let _lastBytes = null, _roItems = null, _roSpeaking = false;
-  const _roEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const _roName = (v) => { try { return v && v.encodedName ? String(v.encodedName).replace(/^\//, '') : (v ? String(v.toString()).replace(/^\//, '') : ''); } catch (e) { return ''; } };
   function _roText(d) {
     try {
@@ -436,6 +457,7 @@
 
   $('pick').addEventListener('change', async (e) => {
     const f = e.target.files[0]; if (!f) return;
+    if (Number(f.size) > MAX_VERAPDF_BYTES) { setStatus('❌ PDF exceeds the 50 MB validation limit.'); return; }
     setStatus('Validating ' + f.name + '…');
     const t = performance.now();
     const _b = new Uint8Array(await f.arrayBuffer());
@@ -456,11 +478,9 @@
       if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(host)) return true;
       if (u.protocol !== 'https:') return false;
       return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
-        /\.pages\.dev$/.test(host) && /^alloflow/.test(host) ||
         host === 'alloflow.app' || /\.alloflow\.app$/.test(host) ||
         host === 'alloflow.com' || /\.alloflow\.com$/.test(host) ||
         host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
-        /\.(?:web\.app|firebaseapp\.com)$/.test(host) ||
         /\.usercontent\.goog$/.test(host) || /\.idx\.google\.com$/.test(host);
     } catch (_) {
       return false;
@@ -478,6 +498,10 @@
     const replyOrigin = ev.origin && ev.origin !== 'null' ? ev.origin : '*';
     const d = ev.data || {};
     if (d.type === 'verapdf-validate' && d.bytes && ready) {
+      if ((d.bytes.byteLength || d.bytes.length || 0) > MAX_VERAPDF_BYTES) {
+        replyTarget.postMessage({ type: 'verapdf-result', error: 'PDF exceeds the 50 MB validation limit.' }, replyOrigin);
+        return;
+      }
       setStatus('⏳ Validating the PDF AlloFlow sent…');
       try {
         const r = await validateBytes(d.bytes);
@@ -492,8 +516,13 @@
     }
     // Closed-loop remediation: validate → repair → re-validate → loop, return the green (or best-effort) PDF.
     if (d.type === 'verapdf-remediate' && d.bytes && ready) {
+      if ((d.bytes.byteLength || d.bytes.length || 0) > MAX_VERAPDF_BYTES) {
+        replyTarget.postMessage({ type: 'verapdf-remediate-result', error: 'PDF exceeds the 50 MB remediation limit.' }, replyOrigin);
+        return;
+      }
+      const clampedIters = Math.max(1, Math.min(10, Math.floor(Number(d.maxIters) || 5)));
       try {
-        const r = await remediate(d.bytes, d.maxIters, { allowArtifact: !!d.allowArtifact }); // Artifact-wrap stays off unless the caller explicitly opts in
+        const r = await remediate(d.bytes, clampedIters, { allowArtifact: !!d.allowArtifact }); // Artifact-wrap stays off unless the caller explicitly opts in
         replyTarget.postMessage({ type: 'verapdf-remediate-result', result: r }, replyOrigin);
       } catch (e) {
         replyTarget.postMessage({ type: 'verapdf-remediate-result', error: String(e && (e.message || e)) }, replyOrigin);

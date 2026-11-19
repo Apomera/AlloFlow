@@ -248,12 +248,20 @@ function PdfDiffViewer(props) {
     const nestedDialog = event.target?.closest?.('[role="alertdialog"]');
     if (nestedDialog && nestedDialog !== container) return;
     if (event.key === "Escape") {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       if (typeof onEscape === "function") onEscape();
       return;
     }
     if (event.key !== "Tab") return;
-    const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let node = el; node && node !== container; node = node.parentElement) {
+        const s = typeof window.getComputedStyle === "function" ? window.getComputedStyle(node) : null;
+        if (s && (s.display === "none" || s.visibility === "hidden")) return false;
+      }
+      return true;
+    });
     if (!focusable.length) {
       event.preventDefault();
       container.focus();
@@ -902,6 +910,7 @@ ${_effectiveText}`;
           onKeyDown: (event) => {
             event.stopPropagation();
             if (event.key === "Escape") {
+              if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
               event.preventDefault();
               finishDiffConfirmation(false);
               return;
@@ -954,13 +963,21 @@ function GroupSessionModal(props) {
   };
   const containGroupFocus = (event) => {
     if (!event || !groupDialogRef.current) return;
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     if (event.key === "Escape") {
       event.preventDefault();
       handleSetShowGroupModalToFalse();
       return;
     }
     if (event.key !== "Tab") return;
-    const focusable = Array.from(groupDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    const focusable = Array.from(groupDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let node = el; node && node !== groupDialogRef.current; node = node.parentElement) {
+        const s = typeof window.getComputedStyle === "function" ? window.getComputedStyle(node) : null;
+        if (s && (s.display === "none" || s.visibility === "hidden")) return false;
+      }
+      return true;
+    });
     if (!focusable.length) {
       event.preventDefault();
       groupDialogRef.current.focus();
@@ -1160,14 +1177,15 @@ function GroupSessionModal(props) {
       assignedGroup && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-green-800 bg-green-100 px-2 py-1 rounded-md flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Users, { size: 10 }), " ", assignedGroup[1].name),
       /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": gsText("reorder_aria", "Reorder {title}", { title: res.title || (t("common.untitled") || "Untitled") }), className: "mt-2 grid grid-cols-2 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, -1), disabled: index === 0, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": gsText("move_earlier_aria", "Move {title} earlier", { title: res.title || gsText("untitled_resource", "resource") }) }, "\u2190 ", gsText("move_earlier", "Earlier")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, 1), disabled: index === sessionData.resources.length - 1, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": gsText("move_later_aria", "Move {title} later", { title: res.title || gsText("untitled_resource", "resource") }) }, gsText("move_later", "Later"), " \u2192"))
     );
-  })) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-slate-600 italic" }, t("groups.no_resources") || "No resources in this session"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-5 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("groups.active_groups")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1", "data-help-key": "group_active_list" }, sessionData.groups && activeSessionGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, group.name), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleDeleteGroup(gid), className: "text-red-800 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 transition-colors", "aria-label": t("common.delete") }, /* @__PURE__ */ React.createElement(X, { size: 16 }))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2" }, t("groups.assign_resource_label"), isPushingResource[gid] === "pushing" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-purple-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, className: "animate-spin motion-reduce:animate-none" }), " ", t("groups.pushing") || "Pushing\u2026"), isPushingResource[gid] === "success" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-emerald-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11 }), " ", t("groups.pushed") || "Sent")), /* @__PURE__ */ React.createElement(
+  })) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-slate-600 italic" }, t("groups.no_resources") || "No resources in this session"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-5 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("groups.active_groups")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1", "data-help-key": "group_active_list" }, sessionData.groups && activeSessionGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, group.name), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleDeleteGroup(gid), className: "min-w-8 min-h-8 inline-flex items-center justify-center text-red-800 hover:text-red-900 p-1.5 rounded-lg hover:bg-red-50 transition-colors", "aria-label": (t("common.delete") || "Delete") + ": " + (group.name || "") }, /* @__PURE__ */ React.createElement(X, { size: 16, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("label", { htmlFor: `group-resource-${gid}`, className: "text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2" }, t("groups.assign_resource_label"), isPushingResource[gid] === "pushing" && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "flex items-center gap-1 text-[10px] text-purple-700 font-bold normal-case" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("groups.pushing") || "Pushing\u2026"), isPushingResource[gid] === "success" && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "flex items-center gap-1 text-[10px] text-emerald-700 font-bold normal-case" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11, "aria-hidden": "true" }), " ", t("groups.pushed") || "Sent")), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("common.selection"),
+      id: `group-resource-${gid}`,
+      "aria-label": (t("groups.assign_resource_label") || "Assign resource") + ": " + (group.name || ""),
       value: group.resourceId || "",
       onChange: (e) => handleSetGroupResource(gid, e.target.value || null),
       disabled: isPushingResource[gid] === "pushing",
-      className: "w-full text-sm p-2 rounded-lg border border-slate-400 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+      className: "w-full text-sm p-2 rounded-lg border border-slate-400 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("groups.assign_resource_placeholder")),
     sessionData.resources && sessionData.resources.map((res) => {
@@ -1447,7 +1465,7 @@ function FluencyModePanel(props) {
         evidenceRecords.push(fluencyResult);
       }
       const evidenceSummary = typeof summarizeFluencyEvidence === "function" ? summarizeFluencyEvidence(evidenceRecords, { sampleSize: 3 }) : null;
-      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4 gap-4 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t("fluency.accuracy_score")), /* @__PURE__ */ React.createElement("div", { className: `text-6xl font-black ${fluencyResult.accuracy >= 90 ? "text-green-500" : fluencyResult.accuracy >= 70 ? "text-yellow-500" : "text-red-500"}` }, fluencyResult.accuracy, "%"), isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${readingLevelColors[rrMetrics.readingLevel]}` }, readingLevelLabels[rrMetrics.readingLevel])), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden animate-in motion-reduce:animate-none zoom-in duration-300 delay-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t("fluency.rate_label")), /* @__PURE__ */ React.createElement("div", { className: "text-6xl font-black text-indigo-600" }, fluencyResult.wcpm), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mt-1" }, t("fluency.wcpm_label")), !hideBenchmarkForPartner && /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${levelColors[benchmarkResult.level]}` }, levelLabels[benchmarkResult.level]))), !hideBenchmarkForPartner && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase" }, t("fluency.benchmark_title")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.grade"), value: fluencyBenchmarkGrade, onChange: (e) => setFluencyBenchmarkGrade(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, Object.keys(FLUENCY_BENCHMARKS).map((g) => /* @__PURE__ */ React.createElement("option", { key: g, value: g }, t("fluency.grade_select"), " ", g)), /* @__PURE__ */ React.createElement("option", { value: "custom" }, t("fluency.custom_norms") || "Custom (Manual)")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.season"), value: fluencyBenchmarkSeason, onChange: (e) => setFluencyBenchmarkSeason(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, /* @__PURE__ */ React.createElement("option", { value: "fall" }, t("fluency.season_fall")), /* @__PURE__ */ React.createElement("option", { value: "winter" }, t("fluency.season_winter")), /* @__PURE__ */ React.createElement("option", { value: "spring" }, t("fluency.season_spring"))), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, t("fluency.benchmark_target"), ": ", benchmarkResult.target, " WCPM")), fluencyBenchmarkGrade === "custom" && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center animate-in motion-reduce:animate-none slide-in-from-top duration-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.custom_wcpm") || "Target WCPM", ":"), ["fall", "winter", "spring"].map((s) => /* @__PURE__ */ React.createElement("div", { key: s, className: "flex flex-col items-center gap-0.5" }, /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4 gap-4 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t("fluency.accuracy_score")), /* @__PURE__ */ React.createElement("div", { className: `text-6xl font-black ${fluencyResult.accuracy >= 90 ? "text-green-700" : fluencyResult.accuracy >= 70 ? "text-amber-700" : "text-red-600"}` }, fluencyResult.accuracy, "%"), isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${readingLevelColors[rrMetrics.readingLevel]}` }, readingLevelLabels[rrMetrics.readingLevel])), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden animate-in motion-reduce:animate-none zoom-in duration-300 delay-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t("fluency.rate_label")), /* @__PURE__ */ React.createElement("div", { className: "text-6xl font-black text-indigo-600" }, fluencyResult.wcpm), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mt-1" }, t("fluency.wcpm_label")), !hideBenchmarkForPartner && /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${levelColors[benchmarkResult.level]}` }, levelLabels[benchmarkResult.level]))), !hideBenchmarkForPartner && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase" }, t("fluency.benchmark_title")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.grade"), value: fluencyBenchmarkGrade, onChange: (e) => setFluencyBenchmarkGrade(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, Object.keys(FLUENCY_BENCHMARKS).map((g) => /* @__PURE__ */ React.createElement("option", { key: g, value: g }, t("fluency.grade_select"), " ", g)), /* @__PURE__ */ React.createElement("option", { value: "custom" }, t("fluency.custom_norms") || "Custom (Manual)")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.season"), value: fluencyBenchmarkSeason, onChange: (e) => setFluencyBenchmarkSeason(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, /* @__PURE__ */ React.createElement("option", { value: "fall" }, t("fluency.season_fall")), /* @__PURE__ */ React.createElement("option", { value: "winter" }, t("fluency.season_winter")), /* @__PURE__ */ React.createElement("option", { value: "spring" }, t("fluency.season_spring"))), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, t("fluency.benchmark_target"), ": ", benchmarkResult.target, " WCPM")), fluencyBenchmarkGrade === "custom" && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center animate-in motion-reduce:animate-none slide-in-from-top duration-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.custom_wcpm") || "Target WCPM", ":"), ["fall", "winter", "spring"].map((s) => /* @__PURE__ */ React.createElement("div", { key: s, className: "flex flex-col items-center gap-0.5" }, /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "number",
@@ -1651,7 +1669,7 @@ function FluencyModePanel(props) {
       /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 }),
       " ",
       t("fluency.try_again")
-    )) : /* @__PURE__ */ React.createElement(React.Fragment, null, fluencyStatus === "listening" && fluencyTimeLimit > 0 && fluencyTimerVisibility === "visible" && /* @__PURE__ */ React.createElement("div", { className: `text-4xl font-black tabular-nums transition-colors ${fluencyTimeRemaining <= 10 ? "text-red-500 animate-pulse motion-reduce:animate-none" : fluencyTimeRemaining <= 30 ? "text-yellow-500" : "text-indigo-600"}` }, Math.floor(fluencyTimeRemaining / 60), ":", (fluencyTimeRemaining % 60).toString().padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { className: `text-sm font-bold uppercase tracking-widest transition-colors ${fluencyStatus === "listening" ? "text-red-500" : fluencyStatus === "processing" ? "text-indigo-500 animate-pulse motion-reduce:animate-none" : "text-slate-600"}` }, fluencyStatus === "listening" ? t("fluency.listening") : fluencyStatus === "processing" ? t("fluency.processing") : fluencyStatus === "complete" ? t("fluency.complete") : t("fluency.prompt")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 items-center" }, fluencyStatus === "complete" && /* @__PURE__ */ React.createElement(
+    )) : /* @__PURE__ */ React.createElement(React.Fragment, null, fluencyStatus === "listening" && fluencyTimeLimit > 0 && fluencyTimerVisibility === "visible" && /* @__PURE__ */ React.createElement("div", { className: `text-4xl font-black tabular-nums transition-colors ${fluencyTimeRemaining <= 10 ? "text-red-600 animate-pulse motion-reduce:animate-none" : fluencyTimeRemaining <= 30 ? "text-amber-700" : "text-indigo-600"}` }, Math.floor(fluencyTimeRemaining / 60), ":", (fluencyTimeRemaining % 60).toString().padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { className: `text-sm font-bold uppercase tracking-widest transition-colors ${fluencyStatus === "listening" ? "text-red-600" : fluencyStatus === "processing" ? "text-indigo-600 animate-pulse motion-reduce:animate-none" : "text-slate-600"}` }, fluencyStatus === "listening" ? t("fluency.listening") : fluencyStatus === "processing" ? t("fluency.processing") : fluencyStatus === "complete" ? t("fluency.complete") : t("fluency.prompt")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 items-center" }, fluencyStatus === "complete" && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -1949,6 +1967,7 @@ function SourceDuplicateChoice({ info, onChoose, text }) {
     buttons()[0].focus();
     const keydown = (event) => {
       if (event.key === "Escape") {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         event.stopPropagation();
         onChoose("skip");
@@ -2005,6 +2024,7 @@ function SourceResearchDialog({ title, onClose, children, sourceText, busy, scro
   }, []);
   const containFocus = (event) => {
     if (event.key === "Escape") {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       event.stopPropagation();
       if (!busy) onClose();
@@ -3151,7 +3171,7 @@ function SourceGenPanel(props) {
       className: "bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
       title: t("standards.search_button_title")
     },
-    isFindingStandards ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Search, { size: 14 })
+    isFindingStandards ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true" })
   )), suggestedStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100" }, suggestedStandards.map((std, idx) => /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -3166,10 +3186,10 @@ function SourceGenPanel(props) {
           addToast(t("standards.toast_max_limit"), "error");
         }
       },
-      className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors group"
+      className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase" }, std.framework)),
-    /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
+    /* @__PURE__ */ React.createElement("span", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase" }, std.framework)),
+    /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
   ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -3392,6 +3412,7 @@ function SourceGenPanel(props) {
         "aria-describedby": "allo-source-replace-desc",
         onKeyDown: (e) => {
           if (e.key === "Escape") {
+            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
             e.preventDefault();
             e.stopPropagation();
             keepText();
@@ -3480,6 +3501,7 @@ function TourOverlay(props) {
   };
   const containTourFocus = (event) => {
     if (!event || !tourDialogRef.current) return;
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
@@ -3487,7 +3509,14 @@ function TourOverlay(props) {
       return;
     }
     if (event.key !== "Tab") return;
-    const focusable = Array.from(tourDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    const focusable = Array.from(tourDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let node = el; node && node !== tourDialogRef.current; node = node.parentElement) {
+        const s = typeof window.getComputedStyle === "function" ? window.getComputedStyle(node) : null;
+        if (s && (s.display === "none" || s.visibility === "hidden")) return false;
+      }
+      return true;
+    });
     if (!focusable.length) {
       event.preventDefault();
       tourDialogRef.current.focus();
@@ -3789,12 +3818,16 @@ function VolumeBuilderView(props) {
     setExploreDifficulty,
     t
   } = props;
+  const cubeDragCleanupRef = React.useRef(null);
+  React.useEffect(() => () => {
+    if (typeof cubeDragCleanupRef.current === "function") cubeDragCleanupRef.current();
+  }, []);
   if (!(mathMode === "Volume Builder")) return null;
   const isLBlock = cubeShape === "lblock";
   const safeNotch = {
-    l: Math.max(1, Math.min(cubeNotch.l, cubeDims.l - 1)),
-    w: Math.max(1, Math.min(cubeNotch.w, cubeDims.w - 1)),
-    h: Math.max(1, Math.min(cubeNotch.h, cubeDims.h - 1))
+    l: Math.max(0, Math.min(cubeNotch.l, cubeDims.l - 1)),
+    w: Math.max(0, Math.min(cubeNotch.w, cubeDims.w - 1)),
+    h: Math.max(0, Math.min(cubeNotch.h, cubeDims.h - 1))
   };
   const rectVolume = cubeDims.l * cubeDims.w * cubeDims.h;
   const notchVolume = isLBlock ? safeNotch.l * safeNotch.w * safeNotch.h : 0;
@@ -3813,6 +3846,7 @@ function VolumeBuilderView(props) {
   };
   const handleCubeDragEnd = () => {
     cubeDragRef.current = null;
+    cubeDragCleanupRef.current = null;
     window.removeEventListener("mousemove", handleCubeDrag);
     window.removeEventListener("mouseup", handleCubeDragEnd);
   };
@@ -3994,8 +4028,10 @@ function VolumeBuilderView(props) {
       className: "bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none",
       style: { minHeight: "400px", perspective: "900px" },
       onMouseDown: (e) => {
+        if (typeof cubeDragCleanupRef.current === "function") cubeDragCleanupRef.current();
         cubeDragRef.current = { x: e.clientX, y: e.clientY };
-        window.addEventListener("mousemove", handleCubeDrag);
+        cubeDragCleanupRef.current = handleCubeDragEnd;
+        window.addEventListener("mousemove", handleCubeDrag, { passive: true });
         window.addEventListener("mouseup", handleCubeDragEnd);
       },
       onWheel: (e) => {
@@ -4036,17 +4072,19 @@ function VolumeBuilderView(props) {
       onChange: (e) => setCubeShowLayers(parseInt(e.target.value)),
       className: "flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
     }
-  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-emerald-600 w-12 text-center" }, cubeShowLayers !== null ? cubeShowLayers : cubeDims.h, " / ", cubeDims.h), cubeShowLayers !== null && cubeShowLayers < cubeDims.h && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeShowLayers(null), className: "text-xs text-emerald-500 hover:text-emerald-700 font-bold" }, t("volume_builder.layers_all") || "All")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg p-3 border border-emerald-100", "data-help-key": "volume_builder_volume_readout" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1" }, t("stem.volume_label")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-emerald-800" }, isLBlock ? /* @__PURE__ */ React.createElement(React.Fragment, null, "V = (", cubeDims.l, "\xD7", cubeDims.w, "\xD7", cubeDims.h, ") \u2212 (", safeNotch.l, "\xD7", safeNotch.w, "\xD7", safeNotch.h, ") = ", vbHideAnswer ? /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600", "aria-label": vbText("answer_hidden", "hidden until you answer") }, "?") : /* @__PURE__ */ React.createElement(React.Fragment, null, rectVolume, " \u2212 ", notchVolume, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume))) : /* @__PURE__ */ React.createElement(React.Fragment, null, "V = ", cubeDims.l, " \xD7 ", cubeDims.w, " \xD7 ", cubeDims.h, " = ", vbHideAnswer ? /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600", "aria-label": vbText("answer_hidden", "hidden until you answer") }, "?") : /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, vbHideAnswer ? vbText("unit_cubes_hidden", "How many unit cubes?") : vbText(volume === 1 ? "unit_cubes_one" : "unit_cubes_other", volume === 1 ? "{count} unit cube" : "{count} unit cubes", { count: volume }))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-600 uppercase tracking-wider mb-1" }, t("stem.surface_area"), isLBlock && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-normal text-teal-500/70" }, t("volume_builder.surface_area_approx") || "(approx \u2014 full prism)")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-teal-800" }, "SA ", isLBlock ? "\u2248 " : "= ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-teal-600" }, surfaceArea)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, "2(", cubeDims.l, "\xD7", cubeDims.w, " + ", cubeDims.l, "\xD7", cubeDims.h, " + ", cubeDims.w, "\xD7", cubeDims.h, ")")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, t("volume_builder.difficulty_label") || "Difficulty:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["easy", "medium", "hard"].map((d) => /* @__PURE__ */ React.createElement("button", { type: "button", key: d, onClick: () => setExploreDifficulty(d), className: "text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === "easy" ? "bg-green-700 text-white" : d === "hard" ? "bg-red-700 text-white" : "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200") }, t("volume_builder.difficulty_" + d) || d)))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-emerald-600 w-12 text-center" }, cubeShowLayers !== null ? cubeShowLayers : cubeDims.h, " / ", cubeDims.h), cubeShowLayers !== null && cubeShowLayers < cubeDims.h && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeShowLayers(null), className: "text-xs text-emerald-700 hover:text-emerald-900 font-bold" }, t("volume_builder.layers_all") || "All")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg p-3 border border-emerald-100", "data-help-key": "volume_builder_volume_readout" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1" }, t("stem.volume_label")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-emerald-800" }, isLBlock ? /* @__PURE__ */ React.createElement(React.Fragment, null, "V = (", cubeDims.l, "\xD7", cubeDims.w, "\xD7", cubeDims.h, ") \u2212 (", safeNotch.l, "\xD7", safeNotch.w, "\xD7", safeNotch.h, ") = ", vbHideAnswer ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-700", "aria-hidden": "true" }, "?"), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, vbText("answer_hidden", "hidden until you answer"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, rectVolume, " \u2212 ", notchVolume, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-700" }, volume))) : /* @__PURE__ */ React.createElement(React.Fragment, null, "V = ", cubeDims.l, " \xD7 ", cubeDims.w, " \xD7 ", cubeDims.h, " = ", vbHideAnswer ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-700", "aria-hidden": "true" }, "?"), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, vbText("answer_hidden", "hidden until you answer"))) : /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-700" }, volume))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, vbHideAnswer ? vbText("unit_cubes_hidden", "How many unit cubes?") : vbText(volume === 1 ? "unit_cubes_one" : "unit_cubes_other", volume === 1 ? "{count} unit cube" : "{count} unit cubes", { count: volume }))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 uppercase tracking-wider mb-1" }, t("stem.surface_area"), isLBlock && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-normal text-teal-700" }, t("volume_builder.surface_area_approx") || "(approx \u2014 full prism)")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-teal-800" }, "SA ", isLBlock ? "\u2248 " : "= ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-teal-600" }, surfaceArea)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, "2(", cubeDims.l, "\xD7", cubeDims.w, " + ", cubeDims.l, "\xD7", cubeDims.h, " + ", cubeDims.w, "\xD7", cubeDims.h, ")")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, t("volume_builder.difficulty_label") || "Difficulty:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["easy", "medium", "hard"].map((d) => /* @__PURE__ */ React.createElement("button", { type: "button", key: d, onClick: () => setExploreDifficulty(d), className: "text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === "easy" ? "bg-green-700 text-white" : d === "hard" ? "bg-red-700 text-white" : "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200") }, t("volume_builder.difficulty_" + d) || d)))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     const vdiff = getAdaptiveDifficulty();
     const vmax = vdiff === "easy" ? 4 : vdiff === "hard" ? 10 : 7;
-    const l = Math.floor(Math.random() * (vmax - 1)) + 1;
-    const w = Math.floor(Math.random() * (vmax - 1)) + 1;
-    const h = Math.floor(Math.random() * (vmax - 1)) + 1;
+    const minDim = cubeShape === "lblock" ? 2 : 1;
+    const span = Math.max(1, vmax - minDim);
+    const l = Math.floor(Math.random() * span) + minDim;
+    const w = Math.floor(Math.random() * span) + minDim;
+    const h = Math.floor(Math.random() * span) + minDim;
     setCubeDims({ l, w, h });
     if (cubeShape === "lblock") {
-      const nL = Math.max(1, Math.min(cubeNotch.l, l - 1));
-      const nW = Math.max(1, Math.min(cubeNotch.w, w - 1));
-      const nH = Math.max(1, Math.min(cubeNotch.h, h - 1));
+      const nL = Math.max(0, Math.min(cubeNotch.l, l - 1));
+      const nW = Math.max(0, Math.min(cubeNotch.w, w - 1));
+      const nH = Math.max(0, Math.min(cubeNotch.h, h - 1));
       setCubeChallenge({ l, w, h, shape: "lblock", notch: { l: nL, w: nW, h: nH }, answer: l * w * h - nL * nW * nH });
     } else {
       setCubeChallenge({ l, w, h, shape: "rect", answer: l * w * h });

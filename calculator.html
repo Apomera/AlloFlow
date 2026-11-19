@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+  <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cost Scenario Planner | AlloFlow</title>
     <meta name="description"
@@ -743,7 +744,7 @@
                 <div class="product-card" data-product="${p.id}" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleProduct('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleProduct('${p.id}')}">
                     <div class="product-header">
                         <div class="product-check">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
                         <div class="product-info" style="flex:1">
                             <span class="product-category" style="color:${p.categoryColor};background:${p.categoryBg}">${p.category}</span>

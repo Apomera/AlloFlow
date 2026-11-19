@@ -16,7 +16,7 @@
 .drop-go { margin-top: 0.75rem; }
 .drop-go .btn { min-width: 12rem; }
 .drop-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.75rem; margin-top: 1rem; }
-.drop-over { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; margin: 0; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--ink); background: rgba(238, 240, 251, 0.94); border: 4px dashed var(--accent); pointer-events: none; }
+.drop-over { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; margin: 0; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--ink); background: var(--accent-soft); border: 4px dashed var(--accent); pointer-events: none; }
 
 /* State b: what needs a look */
 .check-group { margin-top: 1.75rem; }
@@ -84,7 +84,7 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 /* The cue that a table is wider than its box: a line at its top left, and a shade at the right edge that goes when the end is reached */
 .scroll-cue { position: sticky; left: 0; margin: 0; padding: 0.45rem 0.9rem; font-size: 0.875rem; font-weight: 600; color: var(--ink); background: var(--note); border-bottom: 1px solid var(--line); }
 .scroll-cue::after { content: " \2192"; content: " \2192" / ""; }
-.table-scroll.is-wide { background: linear-gradient(to left, var(--surface) 45%, rgba(255, 255, 255, 0)) right / 2.5rem 100% no-repeat local, radial-gradient(farthest-side at 100% 50%, rgba(20, 24, 60, 0.22), rgba(20, 24, 60, 0)) right / 1rem 100% no-repeat scroll, var(--surface); }
+.table-scroll.is-wide { background: linear-gradient(to left, var(--surface) 45%, transparent) right / 2.5rem 100% no-repeat local, radial-gradient(farthest-side at 100% 50%, var(--scroll-shadow), transparent) right / 1rem 100% no-repeat scroll, var(--surface); }
 
 /* One learner */
 .learner-line { margin-top: 1.25rem; font-size: 1.125rem; color: var(--ink); }
@@ -147,6 +147,15 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 .missed-fold summary { min-height: 2.75rem; display: flex; align-items: center; font-size: 0.875rem; font-weight: 600; color: var(--ink); cursor: pointer; }
 .new-tab-hint { margin-top: 0.4rem; }
 .mixed-files { margin-top: 0.75rem; }
+.goal-fold { margin-top: 0.75rem; }
+.goal-fold > summary { width: fit-content; min-height: 2.5rem; display: inline-flex; align-items: center; font-size: 0.9375rem; font-weight: 600; color: var(--accent); cursor: pointer; }
+.paper-fold > summary { width: fit-content; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+.paper-fold > summary h4 { display: inline; margin: 0; }
+.paper-fold-body { margin-top: 0.45rem; }
+.manual-merge-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem 0.75rem; margin-top: 0.6rem; }
+.manual-merge-row .field { margin-top: 0; min-width: 11rem; }
+.row-remove { min-height: 2.25rem; padding: 0.15rem 0.4rem; color: var(--muted); }
+.row-remove:hover { color: var(--ink); }
 .save-nudge { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; margin: 1rem 0 0; padding: 0.6rem 0.9rem; max-width: 46rem; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .save-nudge[hidden] { display: none; }
 
@@ -211,7 +220,7 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 @media print {
   @page { margin: 14mm; }
   html, body { background: #ffffff; color: #000000; font-size: 11pt; }
-  .top, .proof, .skip, .foot, .no-print, .drop-over, #state-empty, #state-check, .results-lead, .btn:not(.name-link), .sort-name::after { display: none !important; }
+  .top, .proof, .skip, .foot, .no-print, .drop-over, #state-empty, #state-check, .results-lead, .btn:not(.name-link), .sort-name::after, .scroll-cue { display: none !important; }
   .print-only { display: block; }
   .print-head { margin-bottom: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1px solid #000000; font-size: 9pt; }
   .results { padding: 0; }
@@ -222,6 +231,7 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
   .name-link { display: inline !important; min-height: 0; text-decoration: none; }
   .sort { min-height: 0; padding: 0; }
   .table-scroll { overflow: visible; max-width: none; border-color: #000000; border-radius: 0; }
+  .table-scroll.is-wide { background: #ffffff !important; }
   .data { font-size: 9.5pt; }
   .data-wide { min-width: 0; }
   .data th, .data td { padding: 0.25rem 0.45rem; border-color: #999999; }
@@ -231,7 +241,7 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
   .chart-value, .chart-goal-label { stroke: #ffffff; }
   .data thead { display: table-header-group; }
   .data tr, .middle, .measure, .chart { break-inside: avoid; }
-  #group-table .data tbody th { position: static; }
+  #group-table .data thead th:first-child, #group-table .data tbody th { position: static; }
   .middle, .measure { border-color: #000000; }
   .honest { border: 1px solid #000000; border-left-width: 4px; }
   .measures { grid-template-columns: 1fr; gap: 0.75rem; }

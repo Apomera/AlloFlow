@@ -1455,6 +1455,16 @@ function selectCurriculumArtifacts(history, config) {
 // dimensions whose inputs haven't changed reuse cached LLM reviews instead
 // of re-calling Gemini. Persists for the page session only; cleared on reload.
 const _auditLLMCache = new Map();
+const _AUDIT_LLM_CACHE_MAX = 64;
+const _origAuditCacheSet = _auditLLMCache.set.bind(_auditLLMCache);
+_auditLLMCache.set = (key, value) => {
+    if (_auditLLMCache.has(key)) _auditLLMCache.delete(key);
+    else if (_auditLLMCache.size >= _AUDIT_LLM_CACHE_MAX) {
+        const oldest = _auditLLMCache.keys().next().value;
+        if (oldest !== undefined) _auditLLMCache.delete(oldest);
+    }
+    return _origAuditCacheSet(key, value);
+};
 function _hashStr(s) {
     let h = 5381;
     for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;

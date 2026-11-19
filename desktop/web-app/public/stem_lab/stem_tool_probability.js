@@ -67,6 +67,43 @@ window.StemLab = window.StemLab || {
   function sfxProbSuccess() { probTone(523,0.08,"sine",0.07); setTimeout(function(){probTone(659,0.08,"sine",0.07);},70); setTimeout(function(){probTone(784,0.1,"sine",0.08);},140); }
   if(!document.getElementById("prob-a11y")){var _s=document.createElement("style");_s.id="prob-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
 
+  // Probability Lab workbench polish, starter presets & theme parity (Light / Dark / High-Contrast)
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-prob-workbench-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-prob-workbench-css';
+    st.textContent = [
+      '.prob-hero-header{position:relative;overflow:hidden;border-radius:16px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(167,139,250,.45);background:linear-gradient(135deg,#1e1b4b 0%,#3b0764 56%,#134e4a 100%);box-shadow:0 14px 30px rgba(30,27,75,.22);color:#ffffff}',
+      '.prob-hero-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between}',
+      '.prob-hero-id{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 240px}',
+      '.prob-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(196,181,253,.18);border:1px solid rgba(196,181,253,.45);color:#ede9fe}',
+      '.prob-hero-pills{display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+      '.prob-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(15,23,42,.58);border:1px solid rgba(196,181,253,.36);color:#f5f3ff}',
+      '.prob-telemetry-pill strong{color:#fde68a;font-weight:900}',
+      '.prob-starter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;margin-bottom:12px;border-radius:12px;background:#f8fafc;border:1px solid #ddd6fe}',
+      '.prob-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#4c1d95;margin-right:2px}',
+      '.prob-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#ffffff;border:1px solid #a78bfa;color:#4c1d95;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
+      '.prob-starter-chip:hover:not(:disabled){background:#ede9fe;border-color:#7c3aed;color:#2e1065}',
+      '.prob-starter-chip[aria-pressed="true"]{background:#6d28d9;border-color:#5b21b6;color:#ffffff}',
+      '.prob-starter-chip:disabled{opacity:.55;cursor:not-allowed}',
+      '.theme-dark .prob-starter-bar{background:rgba(15,23,42,.72);border-color:rgba(167,139,250,.35)}',
+      '.theme-dark .prob-starter-label{color:#ddd6fe}',
+      '.theme-dark .prob-starter-chip{background:#1e1b4b;border-color:rgba(167,139,250,.5);color:#ede9fe}',
+      '.theme-dark .prob-starter-chip:hover:not(:disabled){background:#312e81;border-color:#c4b5fd;color:#ffffff}',
+      '.theme-dark .prob-starter-chip[aria-pressed="true"]{background:#7c3aed;border-color:#ddd6fe;color:#ffffff}',
+      '[data-probability-root] button:focus-visible,[data-probability-root] select:focus-visible,[data-probability-root] input:focus-visible,[data-probability-root] [role="switch"]:focus-visible{outline:3px solid #7c3aed;outline-offset:2px}',
+      '.theme-contrast .prob-hero-header,.theme-contrast [data-probability-command]{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .prob-hero-badge,.theme-contrast .prob-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .prob-telemetry-pill strong{color:#00ff00!important}',
+      '.theme-contrast .prob-starter-bar{background:#000000!important;border:2px solid #ffffff!important;color:#ffffff!important}',
+      '.theme-contrast .prob-starter-label{color:#ffff00!important}',
+      '.theme-contrast .prob-starter-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .prob-starter-chip[aria-pressed="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast [data-probability-root] button:focus-visible,[data-probability-root] select:focus-visible,.theme-contrast [data-probability-root] input:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-probability')) return;
@@ -759,18 +796,24 @@ window.StemLab = window.StemLab || {
 
       React.useEffect(function() {
         stopProbabilityTimers();
-        setLabToolData(function(prev) {
-          var current = prev.probability || {};
-          if (!current._autoRunning && !current._piSlowRunning) return prev;
-          return Object.assign({}, prev, { probability: Object.assign({}, current, { _autoRunning: false, _piSlowRunning: false }) });
-        });
+        if (typeof setLabToolData === 'function') {
+          setLabToolData(function(prev) {
+            var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var current = (basePrev.probability && typeof basePrev.probability === 'object' && !Array.isArray(basePrev.probability)) ? basePrev.probability : {};
+            if (!current._autoRunning && !current._piSlowRunning) return prev;
+            return Object.assign({}, basePrev, { probability: Object.assign({}, current, { _autoRunning: false, _piSlowRunning: false }) });
+          });
+        }
         return function() {
           stopProbabilityTimers();
-          setLabToolData(function(prev) {
-            var current = prev.probability || {};
-            if (!current._autoRunning && !current._piSlowRunning) return prev;
-            return Object.assign({}, prev, { probability: Object.assign({}, current, { _autoRunning: false, _piSlowRunning: false }) });
-          });
+          if (typeof setLabToolData === 'function') {
+            setLabToolData(function(prev) {
+              var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+              var current = (basePrev.probability && typeof basePrev.probability === 'object' && !Array.isArray(basePrev.probability)) ? basePrev.probability : {};
+              if (!current._autoRunning && !current._piSlowRunning) return prev;
+              return Object.assign({}, basePrev, { probability: Object.assign({}, current, { _autoRunning: false, _piSlowRunning: false }) });
+            });
+          }
         };
       }, []);
 
@@ -778,7 +821,8 @@ window.StemLab = window.StemLab || {
       // effect makes manual batches, Auto-Run, and the specialty simulations
       // share one award path while the persisted list prevents reset farming.
       var probabilityRewardGuard = React.useRef({ milestones: {}, challenges: {} });
-      var probabilityProgress = (labToolData && labToolData.probability) || {};
+      var rawProbProgress = (labToolData && typeof labToolData === 'object') ? labToolData.probability : null;
+      var probabilityProgress = (rawProbProgress && typeof rawProbProgress === 'object' && !Array.isArray(rawProbProgress)) ? rawProbProgress : {};
       var probabilityProgressTotal = probabilityProgress.totalTrials || 0;
       var probabilityMilestoneSignature = Array.isArray(probabilityProgress._awardedTrialMilestones)
         ? probabilityProgress._awardedTrialMilestones.join(',')
@@ -790,19 +834,22 @@ window.StemLab = window.StemLab || {
         );
         if (!pending.length) return;
 
-        setLabToolData(function(prev) {
-          var current = prev.probability || {};
-          var awarded = Array.isArray(current._awardedTrialMilestones)
-            ? current._awardedTrialMilestones.slice()
-            : [];
-          pending.forEach(function(milestone) {
-            if (awarded.indexOf(milestone) === -1) awarded.push(milestone);
+        if (typeof setLabToolData === 'function') {
+          setLabToolData(function(prev) {
+            var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var current = (basePrev.probability && typeof basePrev.probability === 'object' && !Array.isArray(basePrev.probability)) ? basePrev.probability : {};
+            var awarded = Array.isArray(current._awardedTrialMilestones)
+              ? current._awardedTrialMilestones.slice()
+              : [];
+            pending.forEach(function(milestone) {
+              if (awarded.indexOf(milestone) === -1) awarded.push(milestone);
+            });
+            awarded.sort(function(a, b) { return a - b; });
+            return Object.assign({}, basePrev, {
+              probability: Object.assign({}, current, { _awardedTrialMilestones: awarded })
+            });
           });
-          awarded.sort(function(a, b) { return a - b; });
-          return Object.assign({}, prev, {
-            probability: Object.assign({}, current, { _awardedTrialMilestones: awarded })
-          });
-        });
+        }
 
         var claimable = pending.filter(function(milestone) {
           if (probabilityRewardGuard.current.milestones[milestone]) return false;
@@ -816,16 +863,17 @@ window.StemLab = window.StemLab || {
         if (addToast) addToast('\uD83C\uDF89 Trial milestone' + (claimable.length > 1 ? 's ' : ' ') + claimable.join(', ') + '! +' + earnedXP + ' XP', 'success');
       }, [probabilityProgressTotal, probabilityMilestoneSignature]);
 
-      // ── Theme detection (fixes pre-existing undefined isDark/isContrast bug) ──
-      var isDark = false, isContrast = false;
+      // ── Theme detection (ctx flags + DOM fallback for full Light/Dark/Contrast parity) ──
+      var isDark = !!ctx.isDark, isContrast = !!ctx.isContrast;
       try {
-        isDark = !!document.querySelector('.theme-dark');
-        isContrast = !!document.querySelector('.theme-contrast');
+        if (!isDark) isDark = !!document.querySelector('.theme-dark');
+        if (!isContrast) isContrast = !!document.querySelector('.theme-contrast');
       } catch(e) {}
 
       // ── Tool body (probability) ──
       return (function() {
-var d = (labToolData.probability) || {};
+var _rawProbData = (labToolData && typeof labToolData === 'object') ? labToolData.probability : null;
+var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_rawProbData)) ? _rawProbData : {};
           // A saved file is input: diceSides 9999 drew a 9999x9999 two-dice grid and froze the tab.
           // Wrong-typed fields crashed the whole tool, so each is reset to its empty value.
           var _pFix = {};
@@ -853,7 +901,7 @@ var d = (labToolData.probability) || {};
             }, { debounce: 800 });
           }
 
-          var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { probability: Object.assign({}, prev.probability, (function() { var o = {}; o[key] = val; return o; })()) }); }); };
+          var upd = function(key, val) { if (typeof setLabToolData !== 'function') return; setLabToolData(function(prev) { var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {}; var prevProb = (basePrev.probability && typeof basePrev.probability === 'object' && !Array.isArray(basePrev.probability)) ? basePrev.probability : {}; return Object.assign({}, basePrev, { probability: Object.assign({}, prevProb, (function() { var o = {}; o[key] = val; return o; })()) }); }); };
 
           // Marble-bag replacement toggle. Shared by the switch's pointer and
           // keyboard paths so the two cannot drift; flipping the mode
@@ -1836,19 +1884,49 @@ var d = (labToolData.probability) || {};
                       React.createElement("div", { style: { color: isDark || isContrast ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.35 } }, currentRoute.desc)
                     )
                   ),
-                  React.createElement("svg", { viewBox: "0 0 320 150", width: "100%", height: "auto", role: "img", 'aria-label': t('stem.probability.command_visual_label', 'Probability bars showing observed results settling toward expected values'), style: { display: 'block', maxHeight: 170 } },
-                    React.createElement("rect", { x: 0, y: 0, width: 320, height: 150, rx: 18, fill: isDark || isContrast ? '#172554' : '#eef2ff' }),
-                    [48, 96, 144, 192, 240].map(function(x, idx) {
-                      var hgt = resultCount > 0 ? [72, 98, 58, 84, 66][idx] : [46, 68, 92, 62, 78][idx];
-                      return React.createElement("g", { key: 'prob-bar-' + idx },
-                        React.createElement("rect", { x: x, y: 118 - hgt, width: 26, height: hgt, rx: 8, fill: idx % 2 ? '#14b8a6' : '#7c3aed', opacity: 0.88 }),
-                        React.createElement("circle", { cx: x + 13, cy: 118 - hgt, r: 4, fill: '#fbbf24' })
-                      );
-                    }),
-                    React.createElement("line", { x1: 32, y1: 118, x2: 288, y2: 118, stroke: isDark || isContrast ? "rgba(255,255,255,0.42)" : "rgba(15,23,42,0.22)", strokeWidth: 2 }),
-                    React.createElement("path", { d: "M44 82 C88 42, 132 96, 176 64 S250 52, 282 82", fill: "none", stroke: "#fbbf24", strokeWidth: 4, strokeLinecap: "round", strokeDasharray: "8 8" }),
-                    React.createElement("text", { x: 28, y: 28, fill: isDark || isContrast ? "#f8fafc" : "#1e1b4b", fontSize: 13, fontWeight: 900 }, t('stem.probability.observed_vs_expected', 'Observed vs. expected'))
-                  )
+                  (function() {
+                    var obsArr = Array.isArray(d.results) ? d.results : [];
+                    var liveBuckets = [];
+                    if (obsArr.length > 0) {
+                      var freqMap = {};
+                      obsArr.forEach(function(item) { var keyStr = String(item); freqMap[keyStr] = (freqMap[keyStr] || 0) + 1; });
+                      var keys = Object.keys(freqMap).slice(0, 6);
+                      var maxFreq = Math.max.apply(null, keys.map(function(k) { return freqMap[k]; }).concat([1]));
+                      liveBuckets = keys.map(function(k) {
+                        var shortK = k.length > 6 ? k.slice(0, 5) + '…' : k;
+                        return { lbl: shortK, hgt: Math.max(12, Math.round((freqMap[k] / maxFreq) * 74)), pct: Math.round((freqMap[k] / obsArr.length) * 100) };
+                      });
+                    } else {
+                      liveBuckets = [
+                        { lbl: 'A', hgt: 42 }, { lbl: 'B', hgt: 62 }, { lbl: 'C', hgt: 76 }, { lbl: 'D', hgt: 56 }, { lbl: 'E', hgt: 46 }
+                      ];
+                    }
+                    var slotCount = liveBuckets.length || 1;
+                    var slotW = Math.min(44, Math.floor(240 / slotCount));
+                    var barW = Math.min(28, Math.max(16, slotW - 10));
+                    var startX = Math.round(160 - (slotCount * slotW) / 2);
+                    var expY = 74;
+                    return React.createElement("svg", { viewBox: "0 0 320 156", width: "100%", height: "auto", role: "img", 'aria-label': t('stem.probability.command_visual_label', 'Probability bars showing observed results settling toward expected values'), style: { display: 'block', maxHeight: 176 } },
+                      React.createElement("rect", { x: 0, y: 0, width: 320, height: 156, rx: 16, fill: isContrast ? '#000000' : isDark ? '#172554' : '#eef2ff', stroke: isContrast ? '#00ff00' : 'none', strokeWidth: isContrast ? 2 : 0 }),
+                      React.createElement("text", { x: 18, y: 24, fill: isContrast ? '#ffffff' : isDark ? '#f8fafc' : '#1e1b4b', fontSize: 12, fontWeight: 900 }, t('stem.probability.observed_vs_expected', 'Observed vs. expected')),
+                      React.createElement("rect", { x: 196, y: 14, width: 10, height: 10, rx: 2, fill: isContrast ? '#00ff00' : '#7c3aed' }),
+                      React.createElement("text", { x: 210, y: 23, fill: isContrast ? '#ffffff' : isDark ? '#e2e8f0' : '#334155', fontSize: 10, fontWeight: 700 }, t('stem.probability.legend_obs', 'Obs')),
+                      React.createElement("line", { x1: 242, y1: 19, x2: 260, y2: 19, stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 2.5, strokeDasharray: "4 3" }),
+                      React.createElement("text", { x: 264, y: 23, fill: isContrast ? '#ffff00' : isDark ? '#fde68a' : '#92400e', fontSize: 10, fontWeight: 700 }, t('stem.probability.legend_exp', 'Exp')),
+                      React.createElement("line", { x1: 24, y1: 122, x2: 296, y2: 122, stroke: isContrast ? '#ffffff' : isDark ? 'rgba(255,255,255,0.42)' : 'rgba(15,23,42,0.24)', strokeWidth: 2 }),
+                      React.createElement("line", { x1: 24, y1: expY, x2: 296, y2: expY, stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 2, strokeDasharray: "6 5" }),
+                      liveBuckets.map(function(bkt, idx) {
+                        var bx = startX + idx * slotW + Math.round((slotW - barW) / 2);
+                        var by = 122 - bkt.hgt;
+                        var barFill = isContrast ? (idx % 2 ? '#ffff00' : '#00ff00') : (idx % 2 ? '#14b8a6' : '#7c3aed');
+                        return React.createElement("g", { key: 'prob-bar-' + idx },
+                          React.createElement("rect", { x: bx, y: by, width: barW, height: bkt.hgt, rx: 6, fill: barFill, opacity: isContrast ? 1 : 0.9 }),
+                          React.createElement("circle", { cx: bx + barW / 2, cy: by, r: 3.5, fill: isContrast ? '#ffffff' : '#fbbf24' }),
+                          React.createElement("text", { x: bx + barW / 2, y: 138, textAnchor: "middle", fill: isContrast ? '#ffffff' : isDark ? '#cbd5e1' : '#334155', fontSize: 10, fontWeight: 800 }, bkt.lbl)
+                        );
+                      })
+                    );
+                  })()
                 ),
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 8 } }, routes.map(function(route) {
                   var active = route.modes.indexOf(d.mode) >= 0;
@@ -1862,6 +1940,7 @@ var d = (labToolData.probability) || {};
           };
 
           return React.createElement("div", {
+            'data-probability-root': 'true',
             className: "max-w-3xl mx-auto animate-in fade-in duration-200",
             style: {
               // This tool can be mounted as a flex child. Without an explicit
@@ -1880,35 +1959,48 @@ var d = (labToolData.probability) || {};
 
             React.createElement("style", null, t('stem.probability.keyframes_coinflip_0_transform_scalex_', '@keyframes coinFlip{0%{transform:scaleX(1)}25%{transform:scaleX(0.05) translateY(-10px)}60%{transform:scaleX(1.08) translateY(-4px)}100%{transform:scaleX(1) translateY(0)}} @keyframes diceRoll{0%{transform:rotate(0deg)scale(1)}25%{transform:rotate(-24deg)scale(1.12)}55%{transform:rotate(19deg)scale(1.08)}80%{transform:rotate(-8deg)scale(1.04)}100%{transform:rotate(0deg)scale(1)}} @keyframes resultPop{0%{transform:scale(0.78);opacity:0.35}55%{transform:scale(1.09);opacity:1}100%{transform:scale(1);opacity:1}} @keyframes sportBounce{0%{transform:translateY(0)scale(1)}40%{transform:translateY(-20px)scale(1.12)}70%{transform:translateY(-6px)scale(1.06)}100%{transform:translateY(0)scale(1)}}')),
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-
-              React.createElement("button", { onClick: leaveProbabilityLab, className: "p-1.5 rounded-lg transition-colors", style: { color: _muted }, 'aria-label': t('stem.probability.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
-
-              React.createElement("h3", { className: "text-lg font-bold", style: { color: _text } }, t('stem.probability.probability_lab', "\uD83C\uDFB2 Probability Lab")),
-
-              d.trials > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 text-xs font-bold rounded-full", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.1)', color: _accent } }, d.trials + " trials"),
-
-              (d._bestStreak || 0) >= 3 && React.createElement("span", { className: "ml-1 px-2 py-0.5 text-xs font-bold rounded-full", style: { background: isDark || isContrast ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.08)', color: '#ef4444' } }, '🔥 Best: ' + (d._bestStreak || 0)),
-
-              // Mute toggle (wraps probTone at the source via window._probabilityMuted)
-              React.createElement("button", {
-                onClick: function() {
-                  var next = !d.muted;
-                  upd('muted', next);
-                  window._probabilityMuted = next;
-                  if (!next) { setTimeout(function() { probTone(660, 0.08, 'sine', 0.06); }, 0); }
-                  if (typeof announceToSR === 'function') announceToSR(next ? 'Sound muted' : 'Sound on');
-                },
-                'aria-label': d.muted ? 'Unmute sound effects' : 'Mute sound effects',
-                'aria-pressed': !!d.muted,
-                title: d.muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
-                className: 'ml-auto p-1 rounded-md text-base hover:bg-slate-100 transition-colors',
-                style: { color: d.muted ? '#94a3b8' : (_accent || '#7c3aed') }
-              }, d.muted ? '🔇' : '🔊')
-
+            React.createElement("div", { className: "prob-hero-header" },
+              React.createElement("div", { className: "prob-hero-row" },
+                React.createElement("div", { className: "prob-hero-id" },
+                  React.createElement("button", { onClick: leaveProbabilityLab, className: "p-2 rounded-lg transition-colors", style: { color: '#ffffff', background: isContrast ? '#000000' : 'rgba(255,255,255,0.12)', border: isContrast ? '2px solid #00ff00' : '1px solid rgba(255,255,255,0.22)' }, 'aria-label': t('stem.probability.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                  React.createElement("svg", { width: 42, height: 42, viewBox: "0 0 64 64", style: { flexShrink: 0 }, 'aria-hidden': 'true', focusable: 'false' },
+                    React.createElement("rect", { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.58)', stroke: isContrast ? '#00ff00' : 'rgba(196,181,253,0.55)', strokeWidth: 1.8 }),
+                    React.createElement("rect", { x: 14, y: 14, width: 22, height: 22, rx: 5, fill: isContrast ? '#000000' : '#7c3aed', stroke: isContrast ? '#ffff00' : '#ddd6fe', strokeWidth: 1.6 }),
+                    React.createElement("circle", { cx: 20, cy: 20, r: 2.2, fill: '#ffffff' }),
+                    React.createElement("circle", { cx: 30, cy: 20, r: 2.2, fill: '#ffffff' }),
+                    React.createElement("circle", { cx: 25, cy: 25, r: 2.2, fill: '#fbbf24' }),
+                    React.createElement("circle", { cx: 20, cy: 30, r: 2.2, fill: '#ffffff' }),
+                    React.createElement("circle", { cx: 30, cy: 30, r: 2.2, fill: '#ffffff' }),
+                    React.createElement("path", { d: "M12 50 Q26 48 34 34 T52 49", fill: "none", stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth: 2.4, strokeLinecap: "round" })
+                  ),
+                  React.createElement("div", { style: { minWidth: 0 } },
+                    React.createElement("span", { className: "prob-hero-badge" }, t('stem.probability.hero_badge', 'Probability · Chance & Distributions')),
+                    React.createElement("h3", { className: "text-lg font-black mt-0.5", style: { color: '#ffffff' } }, t('stem.probability.probability_lab', "\uD83C\uDFB2 Probability Lab"))
+                  )
+                ),
+                React.createElement("div", { className: "prob-hero-pills" },
+                  React.createElement("span", { className: "prob-telemetry-pill" }, t('stem.probability.pill_model', 'Model'), ' ', React.createElement("strong", null, String(d.mode || 'coin'))),
+                  d.trials > 0 && React.createElement("span", { className: "prob-telemetry-pill" }, React.createElement("strong", null, String(d.trials)), ' ', t('stem.probability.pill_trials', 'trials')),
+                  (d._bestStreak || 0) >= 3 && React.createElement("span", { className: "prob-telemetry-pill" }, '🔥 ', t('stem.probability.pill_best', 'Best'), ' ', React.createElement("strong", null, String(d._bestStreak || 0))),
+                  // Mute toggle (wraps probTone at the source via window._probabilityMuted)
+                  React.createElement("button", {
+                    onClick: function() {
+                      var next = !d.muted;
+                      upd('muted', next);
+                      window._probabilityMuted = next;
+                      if (!next) { setTimeout(function() { probTone(660, 0.08, 'sine', 0.06); }, 0); }
+                      if (typeof announceToSR === 'function') announceToSR(next ? 'Sound muted' : 'Sound on');
+                    },
+                    'aria-label': d.muted ? 'Unmute sound effects' : 'Mute sound effects',
+                    'aria-pressed': !!d.muted,
+                    title: d.muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
+                    className: 'p-1.5 rounded-lg text-base transition-colors',
+                    style: { color: '#ffffff', background: isContrast ? '#000000' : 'rgba(255,255,255,0.12)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(255,255,255,0.22)' }
+                  }, d.muted ? '🔇' : '🔊')
+                )
+              ),
+              React.createElement("p", { className: "text-xs mt-2", style: { color: isContrast ? '#ffffff' : '#e2e8f0' } }, t('stem.probability.explore_probability_through_experiment', "Explore probability through experiments. Run trials and watch observed frequencies converge to expected values."))
             ),
-
-            React.createElement("p", { className: "text-xs italic -mt-1 mb-3", style: { color: _muted } }, t('stem.probability.explore_probability_through_experiment', "Explore probability through experiments. Run trials and watch observed frequencies converge to expected values.")),
 
             renderCommandDeck(),
 
@@ -1925,6 +2017,44 @@ var d = (labToolData.probability) || {};
             ),
 
             React.createElement("button", { type: "button", "data-probability-more": true, "aria-expanded": !!d.showAllExperiments, "aria-controls": "probability-experiment-list", onClick: function() { upd('showAllExperiments', !d.showAllExperiments); }, className: "mb-3 px-3 py-2 rounded-lg text-sm font-bold", style: { minHeight: 44, whiteSpace: "normal", color: _btnText, background: _btnBg } }, d.showAllExperiments ? t('stem.probability.show_common_experiments', 'Show common experiments') : t('stem.probability.show_all_experiments', 'Show all experiments (13)')),
+
+            // Starter Experiment Presets (outside #probability-experiment-list; disabled while auto-running)
+            React.createElement("div", {
+              className: "prob-starter-bar",
+              role: "group",
+              'aria-label': t('stem.probability.starter_presets_aria', 'Starter probability setups')
+            },
+              React.createElement("span", { className: "prob-starter-label" }, t('stem.probability.starter_presets_label', 'Quick Setups:')),
+              [
+                { id: 'st-2d6', label: t('stem.probability.starter_2d6', '🎲 2d6 Sum Peak'), mode: 'dice2', patch: { diceSides: 6 } },
+                { id: 'st-bag', label: t('stem.probability.starter_bag_wor', '🎱 Bag Without Replacement'), mode: 'marbleBag', patch: { mbWithoutReplacement: true } },
+                { id: 'st-monty', label: t('stem.probability.starter_monty', '🚪 Monty Hall Switch'), mode: 'monty', patch: {} },
+                { id: 'st-pi', label: t('stem.probability.starter_pi', '🥧 Monte Carlo π'), mode: 'pi', patch: {} },
+                { id: 'st-galton', label: t('stem.probability.starter_galton', '⚙️ Galton Bell Curve'), mode: 'galton', patch: {} }
+              ].map(function(preset) {
+                var activePreset = d.mode === preset.mode && (preset.mode !== 'marbleBag' || !!d.mbWithoutReplacement);
+                return React.createElement("button", {
+                  key: preset.id,
+                  type: "button",
+                  className: "prob-starter-chip",
+                  disabled: !!(d._autoRunning || d._piSlowRunning),
+                  'aria-pressed': activePreset ? 'true' : 'false',
+                  onClick: function() {
+                    sfxProbClick();
+                    stopProbabilityTimers();
+                    if (typeof setLabToolData === 'function') {
+                      setLabToolData(function(prev) {
+                        var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+                        var current = (basePrev.probability && typeof basePrev.probability === 'object' && !Array.isArray(basePrev.probability)) ? basePrev.probability : {};
+                        return Object.assign({}, basePrev, {
+                          probability: Object.assign({}, current, probabilityResetPatch(), { mode: preset.mode }, preset.patch)
+                        });
+                      });
+                    }
+                  }
+                }, preset.label);
+              })
+            ),
 
             // ── Topic-accent hero band per mode ──
             (function() {
@@ -1943,7 +2073,10 @@ var d = (labToolData.probability) || {};
                 custom:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\u2699',         title: t('stem.probability.custom_design_your_own_outcome_set', 'Custom \u2014 design your own outcome set'),         hint: t('stem.probability.build_any_discrete_distribution_test_t', 'Build any discrete distribution. Test the law of large numbers with skewed odds, demonstrate that simulations can answer ANY closed-form question if you have enough trials. Monte Carlo in miniature.') },
                 tree:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: t('stem.probability.tree_multi_stage_probability', 'Tree \u2014 multi-stage probability'),                 hint: t('stem.probability.multiply_along_branches_add_across_lea', 'Multiply along branches; add across leaves. Two coin flips: HH HT TH TT each 0.25. Tree diagrams scale up to medical-test base-rate problems and Bayes\u2019 theorem.') },
                 pi:        { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',   icon: '\uD83E\uDD67', title: t('stem.probability.pi_monte_carlo_estimation', 'Pi \u2014 Monte Carlo \u03c0 estimation'),            hint: t('stem.probability.throw_darts_at_a_unit_square_count_how', 'Throw darts at a unit square; count how many land inside the inscribed quarter circle. \u03c0 \u2248 4 \u00d7 (inside / total). Convergence is O(1/\u221AN) \u2014 each digit costs 100\u00d7 more darts.') },
-                birthday:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)',  icon: '\uD83C\uDF82', title: t('stem.probability.birthday_the_famous_paradox', 'Birthday \u2014 the famous paradox'),                  hint: t('stem.probability.in_a_room_of_23_the_probability_of_a_s', 'In a room of 23, the probability of a shared birthday is > 50%. By 70 it\u2019s > 99.9%. Counterintuitive because we count comparisons (23 choose 2 = 253), not people. The cleanest classroom counter to gut-feel probability.') }
+                birthday:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)',  icon: '\uD83C\uDF82', title: t('stem.probability.birthday_the_famous_paradox', 'Birthday \u2014 the famous paradox'),                  hint: t('stem.probability.in_a_room_of_23_the_probability_of_a_s', 'In a room of 23, the probability of a shared birthday is > 50%. By 70 it\u2019s > 99.9%. Counterintuitive because we count comparisons (23 choose 2 = 253), not people. The cleanest classroom counter to gut-feel probability.') },
+                monty:     { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '\uD83D\uDEAA', title: t('stem.probability.monty_mode_title', 'Monty Hall \u2014 conditional information'),         hint: t('stem.probability.monty_mode_hint', 'Your initial door holds a 1/3 chance. When the host deliberately opens a goat door, switching captures the remaining 2/3 probability.') },
+                galton:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\u2699\uFE0F', title: t('stem.probability.galton_mode_title', 'Galton Board \u2014 binomial to bell curve'),      hint: t('stem.probability.galton_mode_hint', 'Each peg is an independent 50/50 bounce. Summed across rows, individual random paths assemble Pascal\u2019s triangle and the normal curve.') },
+                volume3d:  { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)',   icon: '\uD83E\uDDCA', title: t('stem.probability.volume3d_mode_title', '3D Volume \u2014 Monte Carlo solid integration'),  hint: t('stem.probability.volume3d_mode_hint', 'Sample random (x, y, z) darts inside a bounding cube; the inside-to-total fraction estimates complex 3D volumes directly.') }
               };
               var meta = MODE_META[d.mode] || MODE_META.coin;
               // Title ink: the accent, shifted until it reads 4.6:1 on the band (WCAG 1.4.3):
@@ -2007,8 +2140,8 @@ var d = (labToolData.probability) || {};
                     'aria-label': __alloFill(__alloT('stem.probability.a11y_d_p_equals_one_over', 'd{value1}, P equals one over {value2}'), { value1: sides, value2: sides }),
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-2',
                     style: active
-                      ? { background: dieColor, color: '#fff', borderColor: dieColor, boxShadow: '0 2px 4px ' + dieColor + '55' }
-                      : { background: '#fff', color: dieColor, borderColor: dieColor + '88' }
+                      ? { background: isContrast ? '#000000' : dieColor, color: isContrast ? '#ffff00' : '#fff', borderColor: isContrast ? '#ffff00' : dieColor, boxShadow: isContrast ? 'none' : ('0 2px 4px ' + dieColor + '55') }
+                      : { background: isContrast ? '#000000' : isDark ? '#0f172a' : '#fff', color: isContrast ? '#ffffff' : isDark ? '#f8fafc' : dieColor, borderColor: isContrast ? '#00ff00' : (dieColor + '88') }
                   },
                     'd' + sides + ' · 1/' + sides
                   );
@@ -4532,7 +4665,7 @@ var d = (labToolData.probability) || {};
             })(),
 
             React.createElement("button", { "aria-label": t('stem.probability.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-700 to-purple-700 rounded-full hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all" }, t('stem.probability.snapshot_2', "\uD83D\uDCF8 Snapshot")),
-            React.createElement("button", { "aria-label": t('stem.probability.export_csv', "Export CSV"), onClick: function() { try { var _r = (typeof d !== 'undefined' && d && d.results) ? d.results : []; if (!_r.length) return; var _counts = {}; _r.forEach(function(o){ var k = String(o); _counts[k] = (_counts[k]||0)+1; }); var _csv = 'outcome,count\n' + Object.keys(_counts).map(function(k){ return '\"' + k.replace(/\"/g,'') + '\",' + _counts[k]; }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'probability_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 CSV saved!', 'success'); } catch(e){} }, className: "mt-3 ml-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-800 to-teal-800 rounded-full hover:from-emerald-800 hover:to-teal-800 shadow-md" }, t('stem.probability.export_csv_2', "\uD83D\uDCE5 Export CSV")),
+            React.createElement("button", { "aria-label": t('stem.probability.export_csv', "Export CSV"), onClick: function() { try { var _r = (typeof d !== 'undefined' && d && d.results) ? d.results : []; if (!_r.length) return; var _counts = {}; _r.forEach(function(o){ var k = String(o); _counts[k] = (_counts[k]||0)+1; }); var _csv = 'outcome,count\n' + Object.keys(_counts).map(function(k){ var _s = String(k).replace(/\"/g,'""'); if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(_s) && !Number.isFinite(Number(_s))) _s = "'" + _s; return '\"' + _s + '\",' + _counts[k]; }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _u = URL.createObjectURL(_b); var _a = document.createElement('a'); _a.href = _u; _a.download = 'probability_' + Date.now() + '.csv'; _a.click(); setTimeout(function(){ try { URL.revokeObjectURL(_u); } catch(_e){} }, 1000); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 CSV saved!', 'success'); } catch(e){} }, className: "mt-3 ml-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-800 to-teal-800 rounded-full hover:from-emerald-800 hover:to-teal-800 shadow-md" }, t('stem.probability.export_csv_2', "\uD83D\uDCE5 Export CSV")),
 
             // ── AI Explain Results + TTS Narrate ──
             React.createElement("div", { className: "mt-4 pt-4", style: { borderTop: '1px solid ' + (isDark||isContrast?'rgba(139,92,246,0.15)':'#ede9fe') } },

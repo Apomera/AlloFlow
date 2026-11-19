@@ -56,7 +56,16 @@ function DirectionsComposerView({
   previewOpenRef.current = !!showDirectionsChoicePreview;
   const getFocusableIn = container => {
     if (!container || typeof container.querySelectorAll !== 'function') return [];
-    return Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true' && !(typeof el.closest === 'function' && el.closest('[inert]')));
+    return Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter(el => {
+      if (el.hidden || el.getAttribute('aria-hidden') === 'true' || (typeof el.closest === 'function' && el.closest('[hidden], [inert], [aria-hidden="true"]'))) return false;
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let cur = el; cur && cur !== container; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+        }
+      }
+      return true;
+    });
   };
   React.useEffect(() => {
     const doc = typeof window !== 'undefined' ? window.document : null;
@@ -169,14 +178,14 @@ function DirectionsComposerView({
     if (legacySetGoalText) legacySetGoalText(value);
   };
   return (
-<div className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return; const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null; const expectedRoot = showDirectionsChoicePreview ? previewDialogRef.current : composerDialogRef.current; if (Array.isArray(stack) && stack.length > 0 && expectedRoot && stack[stack.length - 1]?.root !== expectedRoot) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (showDirectionsChoicePreview) { setShowDirectionsChoicePreview(false); } else { setShowDirectionsComposer(false); } } }}>
-          <div ref={composerDialogRef} tabIndex={-1} data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Lesson Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
+<div role="presentation" className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return; const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null; const expectedRoot = showDirectionsChoicePreview ? previewDialogRef.current : composerDialogRef.current; if (Array.isArray(stack) && stack.length > 0 && expectedRoot && stack[stack.length - 1]?.root !== expectedRoot) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (showDirectionsChoicePreview) { setShowDirectionsChoicePreview(false); } else { setShowDirectionsComposer(false); } } }}>
+          <div ref={composerDialogRef} tabIndex={-1} data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Lesson Directions'} className="allo-docsuite bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
             <div className="flex items-center gap-2 mb-1">
               <ClipboardList size={18} className="text-amber-600" aria-hidden="true" />
               <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Lesson Directions'}</h2>
-              <button type="button" onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 p-1 rounded-lg transition-all motion-reduce:transition-none"><X size={16} /></button>
+              <button type="button" onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 p-1 rounded-lg transition-all motion-reduce:transition-none"><X size={16} aria-hidden="true" /></button>
             </div>
-            <p className="text-[11px] text-slate-500 mb-2">{t('directions.subtitle') || 'Student-facing. Students see this first — in class, on homework QRs, and on the take-home shelf.'}</p>
+            <p className="text-[11px] text-slate-600 mb-2">{t('directions.subtitle') || 'Student-facing. Students see this first — in class, on homework QRs, and on the take-home shelf.'}</p>
             <div className="space-y-2 min-h-0 flex-1 overflow-y-auto pr-1" data-directions-scroll>
               <input data-help-key="directions_title" autoFocus value={mbDirectionsDraft?.title || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), title: e.target.value }))} placeholder={t('directions.title_placeholder') || "Title (e.g. Tonight's homework)"} aria-label={t('directions.title_aria') || 'Directions title'} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
               <textarea data-help-key="directions_body" value={mbDirectionsDraft?.body || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), body: e.target.value }))} placeholder={t('directions.body_placeholder') || 'Directions for students: the steps, and what finished work looks like.'} aria-label={t('directions.body_aria') || 'Directions for students'} rows={6} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
@@ -310,8 +319,8 @@ function DirectionsComposerView({
                       </div>
                     )}
                     {showDirectionsChoicePreview && (
-                      <div className="fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowDirectionsChoicePreview(false)} onKeyDown={e => { if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return; const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null; if (Array.isArray(stack) && stack.length > 0 && previewDialogRef.current && stack[stack.length - 1]?.root !== previewDialogRef.current) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setShowDirectionsChoicePreview(false); } }}>
-                        <div ref={previewDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="directions-choice-preview-title" className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+                      <div role="presentation" className="fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowDirectionsChoicePreview(false)} onKeyDown={e => { if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return; const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null; if (Array.isArray(stack) && stack.length > 0 && previewDialogRef.current && stack[stack.length - 1]?.root !== previewDialogRef.current) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setShowDirectionsChoicePreview(false); } }}>
+                        <div ref={previewDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="directions-choice-preview-title" className="allo-docsuite max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
                           <div className="mb-3 flex items-start gap-3">
                             <div className="min-w-0 flex-1">
                               <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-700">{tr('directions.student_preview_badge', 'Student preview')}</p>
@@ -345,11 +354,19 @@ function DirectionsComposerView({
               </div>
               <div className="border-t border-slate-100 pt-2">
                 <p className="text-[11px] font-bold text-slate-600 mb-1">{t('directions.objectives') || 'Goals (auto-check where possible)'}</p>
-                {(mbDirectionsDraft?.objectives || []).map((o, oi) => (
-                  <div key={o.id} className="flex items-center gap-1.5 mb-1">
+                {(mbDirectionsDraft?.objectives || []).map((o, oi) => {
+                  const xpRaw = Object.prototype.hasOwnProperty.call(numDrafts, o.id + ':xp') ? numDrafts[o.id + ':xp'] : null;
+                  const xpNum = xpRaw === null ? null : Number(xpRaw);
+                  const xpInvalid = o.kind === 'xp' && xpRaw !== null && xpRaw !== '' && (!Number.isFinite(xpNum) || xpNum < 1 || xpNum > 1000);
+                  const timeRaw = Object.prototype.hasOwnProperty.call(numDrafts, o.id + ':time') ? numDrafts[o.id + ':time'] : null;
+                  const timeNum = timeRaw === null ? null : Number(timeRaw);
+                  const timeInvalid = o.kind === 'time' && timeRaw !== null && timeRaw !== '' && (!Number.isFinite(timeNum) || timeNum < 1 || timeNum > 240);
+                  return (
+                  <div key={o.id} className="mb-1">
+                  <div className="flex items-center gap-1.5">
                     <span className={'text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 ' + (o.kind === 'xp' ? 'bg-indigo-50 text-indigo-700' : (o.kind === 'game' ? 'bg-emerald-50 text-emerald-700' : (o.kind === 'manual' ? 'bg-slate-100 text-slate-600' : 'bg-sky-50 text-sky-700')))}>{o.kind === 'manual' ? (t('directions.kind_manual') || 'self-check') : (o.kind === 'visited' ? (t('directions.kind_visited') || 'opened') : (o.kind === 'responded' ? (t('directions.kind_responded') || 'answered') : (o.kind === 'completed' ? (t('directions.kind_completed') || 'finished') : (o.kind === 'time' ? (t('directions.kind_time') || 'time') : o.kind))))}</span>
-                    <input value={o.label} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; list[oi] = { ...list[oi], label: e.target.value }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.objective_label') || 'Goal label'} className="flex-1 min-w-0 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800" />
-                    {o.kind === 'xp' && <input type="number" min="1" max="1000" value={Object.prototype.hasOwnProperty.call(numDrafts, o.id + ':xp') ? numDrafts[o.id + ':xp'] : (o.amount ?? 25)} onChange={e => {
+                    <input value={o.label} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; list[oi] = { ...list[oi], label: e.target.value }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.objective_label') || 'Goal label'} className="flex-1 min-w-0 min-h-6 text-[11px] border border-slate-300 rounded p-1 bg-white text-slate-800" />
+                    {o.kind === 'xp' && <input type="number" min="1" max="1000" aria-invalid={xpInvalid ? 'true' : undefined} aria-describedby={xpInvalid ? `dir-xp-err-${o.id}` : undefined} value={xpRaw !== null ? xpRaw : (o.amount ?? 25)} onChange={e => {
                       const raw = e.target.value;
                       const key = o.id + ':xp';
                       setNumDrafts(prev => ({ ...prev, [key]: raw }));
@@ -364,8 +381,8 @@ function DirectionsComposerView({
                       const amt = raw === '' ? (o.amount || 25) : Math.max(1, Math.min(1000, Number.isFinite(parsed) ? Math.round(parsed) : 1));
                       setNumDrafts(prev => { const next = { ...prev }; delete next[key]; return next; });
                       setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; if (list[oi]) list[oi] = { ...list[oi], amount: amt }; return { ...(p || {}), objectives: list }; });
-                    }} aria-label={t('directions.xp_amount') || 'XP amount'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
-                    {o.kind === 'time' && <input type="number" min="1" max="240" value={Object.prototype.hasOwnProperty.call(numDrafts, o.id + ':time') ? numDrafts[o.id + ':time'] : (o.minutes ?? 10)} onChange={e => {
+                    }} aria-label={t('directions.xp_amount') || 'XP amount'} className={'w-16 min-h-6 text-[11px] border rounded p-1 bg-white text-slate-800 flex-shrink-0 ' + (xpInvalid ? 'border-rose-600' : 'border-slate-300')} />}
+                    {o.kind === 'time' && <input type="number" min="1" max="240" aria-invalid={timeInvalid ? 'true' : undefined} aria-describedby={timeInvalid ? `dir-time-err-${o.id}` : undefined} value={timeRaw !== null ? timeRaw : (o.minutes ?? 10)} onChange={e => {
                       const raw = e.target.value;
                       const key = o.id + ':time';
                       setNumDrafts(prev => ({ ...prev, [key]: raw }));
@@ -380,10 +397,14 @@ function DirectionsComposerView({
                       const mins = raw === '' ? (o.minutes || 10) : Math.max(1, Math.min(240, Number.isFinite(parsed) ? Math.round(parsed) : 1));
                       setNumDrafts(prev => { const next = { ...prev }; delete next[key]; return next; });
                       setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; if (list[oi]) list[oi] = { ...list[oi], minutes: mins }; return { ...(p || {}), objectives: list }; });
-                    }} aria-label={t('directions.time_minutes') || 'Minutes'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
-                    <button type="button" onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} /></button>
+                    }} aria-label={t('directions.time_minutes') || 'Minutes'} className={'w-16 min-h-6 text-[11px] border rounded p-1 bg-white text-slate-800 flex-shrink-0 ' + (timeInvalid ? 'border-rose-600' : 'border-slate-300')} />}
+                    <button type="button" onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} aria-hidden="true" /></button>
                   </div>
-                ))}
+                  {xpInvalid && <p id={`dir-xp-err-${o.id}`} role="alert" className="mt-0.5 text-[11px] font-bold text-rose-700">{t('directions.xp_range_error') || 'Enter XP between 1 and 1000.'}</p>}
+                  {timeInvalid && <p id={`dir-time-err-${o.id}`} role="alert" className="mt-0.5 text-[11px] font-bold text-rose-700">{t('directions.time_range_error') || 'Enter minutes between 1 and 240.'}</p>}
+                  </div>
+                  );
+                })}
                 {/* Write-your-own comes FIRST: most goals a teacher actually wants
                     ("explain it in your own words") can never be auto-checked, and
                     burying that behind a row of game chips taught the opposite. */}

@@ -227,7 +227,7 @@ window.StemLab = window.StemLab || {
       var _ens = function(cb){
         if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
         var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-        var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+        if(window._isDesktopBundledApp===true){cb();return;} var _sri=["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.integrity=_sri[i]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
       };
       _ens(function(){
         try {
@@ -1588,7 +1588,7 @@ window.StemLab = window.StemLab || {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    window.setTimeout(function() { URL.revokeObjectURL(url); }, 0);
+    window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
     if (typeof addToast === 'function') addToast('\uD83D\uDCE6 STL exported \u2014 ready for 3D printing!', 'success');
     return true;
   }
@@ -3801,11 +3801,11 @@ window.StemLab = window.StemLab || {
             h('div',{className:'geo-action-row'},h('button',{type:'button',disabled:unitId!==(entry.beforeUnit||entry.unit),onClick:function(){restoreStretchStage(entry.before);}},'View before'),h('button',{type:'button',disabled:unitId!==entry.unit,onClick:function(){restoreStretchStage(entry.after);}},'View after'),h('button',{type:'button',disabled:!!edit,onClick:function(){removeStretchRecord(entry);}},'Remove entry'))));
       }
       function restoreStretchStage(stage){setLabToolData(function(p){var g=geoRememberStretchConstruction(p.geoSandbox||{},construction);return Object.assign({},p,{geoSandbox:Object.assign({},g,{construction:geoNormalizeConstruction(stage)})});});setStretchNotice('Saved construction opened. Undo returns to your previous work.');}
-      function downloadStretchText(){var blob=new Blob([geoStretchNotebookText(stretchRecords)],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='geometry-stretch-notebook.txt';a.click();window.setTimeout(function(){URL.revokeObjectURL(url);},0);}
+      function downloadStretchText(){var blob=new Blob([geoStretchNotebookText(stretchRecords)],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='geometry-stretch-notebook.txt';a.click();window.setTimeout(function(){URL.revokeObjectURL(url);},1000);}
       function importStretchFile(event){
         var file=event.target.files&&event.target.files[0];event.target.value='';if(!file)return;var request=++stretchImportRequest.current;setStretchImport(null);
         if(file.size>5*1024*1024){setStretchNotice('Choose a project smaller than 5 MB.');return;}
-        var reader=new FileReader();reader.onload=function(){if(request!==stretchImportRequest.current)return;try{var data=JSON.parse(reader.result);if(data.schema==='geometry-stretch-companion-v1'){setStretchImport({companion:geoCompanionObject(data.state),unit:geoProjectUnit(data.unit,'unit')});}else setStretchImport(geoStretchProjectImport(data));setStretchNotice('Review the import below before applying it.');}catch(error){setStretchNotice('Could not import: '+error.message);}};reader.onerror=function(){if(request===stretchImportRequest.current)setStretchNotice('Could not read this file.');};reader.readAsText(file);
+        var reader=new FileReader();reader.onload=function(){if(request!==stretchImportRequest.current)return;try{var data=JSON.parse(reader.result,function(k,v){return(k==='__proto__'||k==='constructor'||k==='prototype')?undefined:v;});if(data.schema==='geometry-stretch-companion-v1'){setStretchImport({companion:geoCompanionObject(data.state),unit:geoProjectUnit(data.unit,'unit')});}else setStretchImport(geoStretchProjectImport(data));setStretchNotice('Review the import below before applying it.');}catch(error){setStretchNotice('Could not import: '+error.message);}};reader.onerror=function(){if(request===stretchImportRequest.current)setStretchNotice('Could not read this file.');};reader.readAsText(file);
       }
       function appendCompanionObject(object){
         prepareGeoModeTransition('stretch');
@@ -4756,7 +4756,7 @@ window.StemLab = window.StemLab || {
           var payload = { schema: 'geo-sandbox-anonymous-trace-v1', privacy: 'No names, prompts, or explanation text.', events: researchTrace };
           var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
           var url = URL.createObjectURL(blob), link = document.createElement('a');
-          link.href = url; link.download = 'geometry-sandbox-research-trace.json'; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+          link.href = url; link.download = 'geometry-sandbox-research-trace.json'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
           if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_anonymous_research_trace_exported', 'Anonymous research trace exported.'));
         } catch (e) { if (addToast) addToast('Could not export the research trace.', 'warning'); }
       }
@@ -6730,6 +6730,7 @@ mode === 'stretch' && (function() {
                       onClick: function() {
                         try {
                           var win = window.open('', '_blank');
+                          try { if (win) win.opener = null; } catch (_) {}
                           if (!win) { addToast(t('stem.geosandbox.net_popup', 'Allow pop-ups to print the net.'), 'info'); return; }
                           win.document.write('<!doctype html><title>' + t('stem.geosandbox.net_title', 'Prism net') + '</title><style>body{margin:24px;font-family:sans-serif}svg{width:100%;max-width:640px;height:auto}button{margin-bottom:16px;padding:8px 16px;font-weight:bold}@media print{button{display:none}}</style>' +
                             '<button onclick="window.print()">' + t('common.print', 'Print') + '</button><h3>' + t('stem.geosandbox.net_title', 'Prism net') + '</h3>' + svg.replace('width="' + W.toFixed(0) + '" height="' + H.toFixed(0) + '"', 'width="640"'));

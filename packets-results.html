@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="packets.css">
 <link rel="stylesheet" href="packets-results.css">
 <script src="packets-page.js" defer></script>
+<script src="packets_handoff.js" defer></script>
 <script src="packets_results_reader.js" defer></script>
 <script src="packets-results.js" defer></script>
 </head>
@@ -39,7 +40,7 @@
       <li>This page runs without AI. It counts, sorts and draws what is in your files, and nothing else.</li>
       <li>Nothing is kept on this device unless you turn on <strong>Keep these results on this device</strong>. When it is on, the results shown on this page are kept in this browser's storage for this site (local storage), on this device only. <strong>Remove them from this device</strong> deletes them. On a shared computer, leave it off.</li>
       <li>The files you save from this page are made in this tab and saved to this device by your browser.</li>
-      <li>This page loads seven files, all from this site: the page itself, two stylesheets (<code>packets.css</code>, <code>packets-results.css</code>), three scripts (<code>packets-page.js</code>, <code>packets_results_reader.js</code>, <code>packets-results.js</code>) and the icon in the browser tab. It loads no fonts, no trackers and nothing from another site.</li>
+      <li>This page loads eight files, all from this site: the page itself, two stylesheets (<code>packets.css</code>, <code>packets-results.css</code>), four scripts (<code>packets-page.js</code>, <code>packets_handoff.js</code>, <code>packets_results_reader.js</code>, <code>packets-results.js</code>) and the icon in the browser tab. It loads no fonts, no trackers and nothing from another site.</li>
       <li>There are no cookies and nothing to sign in to.</li>
       <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
     </ul>
@@ -62,9 +63,9 @@
       <div id="drop" class="drop">
         <svg class="drop-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M24 30V8"/><path d="m15 17 9-9 9 9"/><path d="M8 30v8a2 2 0 0 0 2 2h28a2 2 0 0 0 2-2v-8"/></svg>
         <h2 id="drop-title">Drop results files here</h2>
-        <p class="drop-sub" id="drop-sub">The files your students saved at the end: CSV or JSON. Up to 500 at a time.</p>
+        <p class="drop-sub" id="drop-sub">The files your students saved at the end: CSV, JSON, or a .zip folder of them. Up to 500 at a time.</p>
         <p class="drop-go"><button type="button" class="btn btn-primary" id="choose" aria-describedby="drop-sub">Choose files</button></p>
-        <input type="file" id="files" multiple accept=".csv,.json,text/csv,application/json" aria-label="Results files" hidden>
+        <input type="file" id="files" multiple accept=".csv,.json,.zip,text/csv,application/json,application/zip" aria-label="Results files" hidden>
       </div>
       <p class="drop-foot"><button type="button" class="btn btn-text" id="samples">Try with sample results</button> <span class="hint">Eight made-up results files, to see how the page works.</span></p>
     </section>
@@ -73,6 +74,10 @@
       <h2 id="check-title" tabindex="-1">Check what was read</h2>
       <p id="check-line" class="sheet-intro"></p>
       <div id="check-body"></div>
+      <details id="manual-merge" class="goal-fold manual-merge-fold" hidden>
+        <summary>Combine with another name</summary>
+        <div id="manual-merge-body"></div>
+      </details>
       <div class="actions">
         <button type="button" class="btn" id="check-more">Add more files</button>
         <button type="button" class="btn btn-primary push" id="show-results">Show the results</button>
@@ -101,6 +106,7 @@
         <span id="save-nudge-text">To pick up here next week, save all of this as one file.</span>
         <button type="button" class="btn btn-small" id="save-nudge-go" aria-describedby="save-nudge-text">Save all of this as one file</button>
       </p>
+      <p id="results-undo" class="save-nudge no-print" role="status" hidden></p>
 
       <fieldset class="view-pick no-print">
         <legend class="sr-only">What to show</legend>

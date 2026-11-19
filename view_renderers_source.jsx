@@ -24,7 +24,7 @@ const _alloAiUsableKind = (kind, fn) => {
   try {
     if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
   } catch (_) {}
-  try { return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; } catch (_) { return false; }
+  try { return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; } catch (_) { return false; }
 };
 const _alloRuntimeAiAvailable = () => {
   try { return typeof window.callGemini === 'function' && _alloAiUsableKind('text', window.callGemini); } catch (_) { return false; }
@@ -375,12 +375,15 @@ const _loadOrganizerHtml2Canvas = (() => {
   return () => {
     if (typeof window === 'undefined') return Promise.reject(new Error('no window'));
     if (window.html2canvas) return Promise.resolve(window.html2canvas);
+    if (window._isDesktopBundledApp === true) return Promise.reject(new Error('html2canvas unavailable offline'));
     if (pending) return pending;
     pending = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      script.integrity = 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H';
       script.async = true;
       script.crossOrigin = 'anonymous';
+      script.referrerPolicy = 'no-referrer';
       script.onload = () => window.html2canvas ? resolve(window.html2canvas) : reject(new Error('html2canvas unavailable'));
       script.onerror = () => {
         pending = null;
@@ -3221,10 +3224,15 @@ function openConceptMap3D(opts) {
   }
   overlay.__alloDestroy = destroy;
   function onKey(e) {
-    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); destroy(); return; }
+    if (e.key === 'Escape') { if (e.isComposing || e.keyCode === 229) return; e.preventDefault(); e.stopPropagation(); destroy(); return; }
     if (e.key !== 'Tab') return;
     var candidates = Array.from(overlay.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function (el) {
-      return !el.hidden && el.getAttribute('aria-hidden') !== 'true' && (!el.style || (el.style.display !== 'none' && el.style.visibility !== 'hidden'));
+      if (el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (var cur = el; cur && cur !== overlay; cur = cur.parentElement) {
+        var st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(cur) : null;
+        if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+      }
+      return true;
     });
     var rectFocusable = candidates.filter(function (el) { return el.getClientRects().length > 0; });
     var focusable = rectFocusable.length ? rectFocusable : candidates;
@@ -4595,7 +4603,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         <input value={constelWhy} onChange={(e) => setConstelWhy(e.target.value)} maxLength={160}
                             placeholder={t('cg3d.constel_why_ph') || 'Why? One sentence you could defend from the source…'}
                             aria-label={t('cg3d.constel_why_aria') || 'Justify your weight'}
-                            className="flex-1 min-w-[220px] bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500" />
+                            className="flex-1 min-w-[220px] bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-400" />
                         <button type="button" onClick={saveConstelLink} disabled={!constelA || !constelB || constelA === constelB}
                             className="px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">
                             ⭐ {t('cg3d.constel_save') || 'Set my weight'}
@@ -4613,7 +4621,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             <span className="text-indigo-300 font-bold">■</span> {t('cg3d.constel_diff_mine') || 'you rated it stronger'} · <span className="text-amber-400 font-bold">■</span> {t('cg3d.constel_diff_ai') || 'the AI rated it stronger'} · <span className="text-slate-200 font-bold">■</span> {t('cg3d.constel_diff_agree') || 'you roughly agree'}
                         </div>
                     )}
-                    <p className="text-[11px] text-slate-500 italic mt-2">
+                    <p className="text-[11px] text-slate-300 italic mt-2">
                         {t('cg3d.constel_framing') || 'Brightness shows how strongly YOU rated each link. Comparing with the AI shows where your mental maps differ — a window into weighted connections and semantic similarity (closest to spreading-activation models of memory), not literally “how neural networks work.”'}
                     </p>
                 </div>
@@ -4628,7 +4636,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     <button type="button"
                         onClick={() => setHint(null)}
                         aria-label={t('common.close') || 'Close'}
-                        className="text-amber-700 hover:text-amber-900 font-bold px-1"
+                        className="min-h-6 min-w-6 inline-flex items-center justify-center rounded text-amber-800 hover:text-amber-950 font-bold px-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-800"
                     >✕</button>
                 </div>
             )}
@@ -4679,7 +4687,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                         </div>
                                         <form onSubmit={(e) => { e.preventDefault(); handleArtRefine(); }} className="flex gap-1">
                                             <input value={refinePrompt} onChange={(e) => setRefinePrompt(e.target.value)} disabled={refineBusy} placeholder={t('concept_space.refine_placeholder') || 'Tell the AI what to change…'} aria-label={t('concept_space.refine_placeholder') || 'Tell the AI what to change'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" />
-                                            <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨</button>
+                                            <button type="submit" aria-label="Apply art change" disabled={!refinePrompt.trim() || refineBusy} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50"><span aria-hidden="true">✨</span></button>
                                         </form>
                                     </>
                                 )}
@@ -4692,10 +4700,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 ) : (
                                     <>
                                         <button type="button" onClick={doSculptFromLabel} disabled={!_alloRuntimeAiAvailable()} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">🧊 {t('concept_space.art_sculpt_auto') || 'Sculpt from this concept'}</button>
-                                        <div className="text-[11px] text-slate-500 text-center">{t('concept_space.art_or_direct') || 'or describe your own:'}</div>
+                                        <div className="text-[11px] text-slate-600 text-center">{t('concept_space.art_or_direct') || 'or describe your own:'}</div>
                                         <div className="flex gap-1">
-                                            <button type="button" onClick={() => setArtType('sculpture')} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🧊 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
-                                            <button type="button" onClick={() => setArtType('image')} disabled={!canImagen} title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
+                                            <button type="button" aria-pressed={artType === 'sculpture'} onClick={() => setArtType('sculpture')} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}><span aria-hidden="true">🧊</span> {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
+                                            <button type="button" aria-pressed={artType === 'image'} onClick={() => setArtType('image')} disabled={!canImagen} title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}><span aria-hidden="true">🖼</span> {t('memory_palace.direct_image') || 'Image'}</button>
                                         </div>
                                         {directEval && directEval.verdict === 'reject' && (
                                             <div className="text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900"><span className="font-bold">{t('memory_palace.direct_rejected') || 'Let’s adjust:'}</span> {directEval.reason}</div>
@@ -4713,7 +4721,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                         {(!directEval || directEval.verdict === 'reject') && (
                                             <form onSubmit={(e) => { e.preventDefault(); handleArtSubmit(); }} className="flex gap-1">
                                                 <input value={directPrompt} onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }} placeholder={t('concept_space.art_prompt_placeholder') || 'e.g. a glowing brain with gears'} aria-label={t('concept_space.art_prompt_placeholder') || 'Describe the art'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" />
-                                                <button type="submit" disabled={!directPrompt.trim()} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨</button>
+                                                <button type="submit" aria-label="Create art" disabled={!directPrompt.trim()} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50"><span aria-hidden="true">✨</span></button>
                                             </form>
                                         )}
                                     </>
@@ -8051,6 +8059,34 @@ const renderOutlineContent = (deps) => {
 
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, setConceptMapNodes, t } = deps;
+  const nudgeConceptNode = (node, dx, dy) => {
+      if (isMapLocked || !node) return;
+      const width = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
+      const height = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+      const nextX = Math.max(0, Math.min(width, (Number(node.x) || 0) + dx));
+      const nextY = Math.max(0, Math.min(height, (Number(node.y) || 0) + dy));
+      setConceptMapNodes((nodes) => nodes.map((item) => item.id === node.id ? { ...item, x: nextX, y: nextY } : item));
+      try {
+          if (typeof window !== 'undefined' && typeof window.alloAnnounce === 'function') {
+              window.alloAnnounce((node.text || 'Concept') + ' moved to ' + Math.round(nextX) + ', ' + Math.round(nextY), 'polite');
+          }
+      } catch (_) {}
+  };
+  const deleteConceptNodeWithFocus = (nodeId) => {
+      const idx = (conceptMapNodes || []).findIndex(n => n.id === nodeId);
+      const remaining = (conceptMapNodes || []).filter(n => n.id !== nodeId);
+      const nextTarget = remaining[idx] || remaining[idx - 1] || null;
+      handleDeleteNode(nodeId);
+      try {
+          requestAnimationFrame(() => {
+              const container = mapContainerRef.current;
+              if (!container) return;
+              const nextBtn = nextTarget && container.querySelector('[data-concept-map-node="' + String(nextTarget.id).replace(/"/g, '') + '"]');
+              if (nextBtn && typeof nextBtn.focus === 'function') nextBtn.focus();
+              else if (typeof container.focus === 'function') container.focus();
+          });
+      } catch (_) {}
+  };
   const handleAccessibleNodeKeyDown = (e, node) => {
       if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -8060,7 +8096,7 @@ const renderInteractiveMap = (deps) => {
       if ((e.key === 'Delete' || e.key === 'Backspace') && !isChallengeActive && isTeacherMode && !isMapLocked) {
           e.preventDefault();
           e.stopPropagation();
-          handleDeleteNode(node.id);
+          deleteConceptNodeWithFocus(node.id);
           return;
       }
       const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
@@ -8068,13 +8104,7 @@ const renderInteractiveMap = (deps) => {
       e.preventDefault();
       e.stopPropagation();
       const step = e.shiftKey ? 25 : 10;
-      const width = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
-      const height = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
-      setConceptMapNodes((nodes) => nodes.map((item) => item.id === node.id ? {
-          ...item,
-          x: Math.max(0, Math.min(width, item.x + delta[0] * step)),
-          y: Math.max(0, Math.min(height, item.y + delta[1] * step))
-      } : item));
+      nudgeConceptNode(node, delta[0] * step, delta[1] * step);
   };
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderInteractiveMap fired"); } catch(_) {}
       const isVenn = generatedContent?.data?.structureType === 'Venn Diagram';
@@ -8242,6 +8272,7 @@ const renderInteractiveMap = (deps) => {
                                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? 'bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200' : 'bg-white text-slate-600 border border-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                                 title={isMapLocked ? t('concept_map.toolbar.unlock_tooltip') : t('concept_map.toolbar.lock_tooltip')}
                                 aria-label={isMapLocked ? t('concept_map.toolbar.unlock_tooltip') : t('concept_map.toolbar.lock_tooltip')}
+                                aria-pressed={!!isMapLocked}
                             >
                                 {isMapLocked ? <Lock size={14} /> : <Unlock size={14} />}
                                 {isMapLocked ? t('concept_map.toolbar.locked_label') : t('concept_map.toolbar.unlocked_label')}
@@ -8613,6 +8644,7 @@ const renderInteractiveMap = (deps) => {
                           <div
                               role="button"
                               tabIndex={0}
+                              data-concept-map-node={node.id}
                               aria-label={node.text}
                               aria-pressed={connectingSourceId === node.id}
                               onKeyDown={(e) => handleAccessibleNodeKeyDown(e, node)}
@@ -8620,9 +8652,17 @@ const renderInteractiveMap = (deps) => {
                           >
                               {node.text}
                           </div>
+                          {!isVenn && !isMapLocked && connectingSourceId === node.id && (
+                              <div role="group" aria-label={(t('concept_map.move_node_group') || 'Move concept') + ': ' + node.text} onClick={(e) => e.stopPropagation()} className={`absolute -bottom-9 left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-white border border-indigo-300 rounded-lg shadow-md px-1 py-0.5 z-30 ${node.type === 'flow-decision' ? '-rotate-45' : ''}`}>
+                                  <button type="button" onClick={() => nudgeConceptNode(node, -25, 0)} aria-label={(t('concept_map.move_left') || 'Move left') + ': ' + node.text} className="min-w-6 min-h-6 rounded hover:bg-indigo-100 text-indigo-800 text-xs font-bold focus-visible:outline-2 focus-visible:outline-indigo-600">←</button>
+                                  <button type="button" onClick={() => nudgeConceptNode(node, 0, -25)} aria-label={(t('concept_map.move_up') || 'Move up') + ': ' + node.text} className="min-w-6 min-h-6 rounded hover:bg-indigo-100 text-indigo-800 text-xs font-bold focus-visible:outline-2 focus-visible:outline-indigo-600">↑</button>
+                                  <button type="button" onClick={() => nudgeConceptNode(node, 0, 25)} aria-label={(t('concept_map.move_down') || 'Move down') + ': ' + node.text} className="min-w-6 min-h-6 rounded hover:bg-indigo-100 text-indigo-800 text-xs font-bold focus-visible:outline-2 focus-visible:outline-indigo-600">↓</button>
+                                  <button type="button" onClick={() => nudgeConceptNode(node, 25, 0)} aria-label={(t('concept_map.move_right') || 'Move right') + ': ' + node.text} className="min-w-6 min-h-6 rounded hover:bg-indigo-100 text-indigo-800 text-xs font-bold focus-visible:outline-2 focus-visible:outline-indigo-600">→</button>
+                              </div>
+                          )}
                           {!isChallengeActive && !isMapLocked && (
                               <button type="button" aria-label={(t('concept_map.tooltips.delete_node') || 'Delete concept') + ': ' + node.text}
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteNode(node.id); }}
+                                  onClick={(e) => { e.stopPropagation(); deleteConceptNodeWithFocus(node.id); }}
                                   className={`absolute -top-1 -right-1 min-w-6 min-h-6 bg-red-700 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition-colors z-20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:scale-110 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 ${node.type === 'flow-decision' ? '-rotate-45 -translate-y-2 translate-x-2' : ''}`}
                                   title={t('concept_map.tooltips.delete_node')}
                               >
@@ -8821,7 +8861,7 @@ function TableChartTools(props) {
   const smallLabel = 'block text-xs font-semibold text-slate-700';
   const primary = 'px-3 py-1.5 rounded bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold';
   const secondary = 'px-3 py-1.5 rounded bg-white border border-slate-300 text-slate-700 text-xs font-bold';
-  const onPanelKey = event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); } };
+  const onPanelKey = event => { if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); event.stopPropagation(); close(); } };
   return <>
     <div className={'w-px h-4 mx-1 ' + (tone === 'indigo' ? 'bg-indigo-200' : 'bg-orange-200')} />
     <button type="button" ref={tableButtonRef} data-tc-open="table" aria-expanded={panel === 'table'} aria-controls={id('panel')} onClick={() => open('table')} className={toolButton}>{tx('table_chart.table_button', 'Table')}</button>

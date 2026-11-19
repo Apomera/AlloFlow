@@ -9019,6 +9019,7 @@
       function openMemo() {
         var w = null;
         try { w = window.open('', '_blank'); } catch (_) { w = null; }
+        try { if (w) w.opener = null; } catch (_) {}
         if (!w || !w.document) {
           var m = t('stem.citylab.open_blocked', 'A new window could not be opened here. Use Download instead.');
           setExportNote(m); announceToSR(m); return;
@@ -9341,6 +9342,7 @@
                       var file = e.target.files && e.target.files[0];
                       e.target.value = '';
                       if (!file || !window.FileReader) return;
+                      if (file.size > 5 * 1024 * 1024) { setImportNote('Plan file exceeds the 5 MB limit.'); return; }
                       var reader = new window.FileReader();
                       reader.onload = function () {
                         var res = importPlan(String(reader.result));
@@ -10050,6 +10052,7 @@
                       if (!files.length || !window.FileReader) return;
                       var loaded = [], failedCount = 0, done = 0;
                       files.forEach(function (file) {
+                        if (file.size > 5 * 1024 * 1024) { failedCount++; if (++done === files.length) finish(); return; }
                         var reader = new window.FileReader();
                         reader.onload = function () {
                           var res = importPlan(String(reader.result));

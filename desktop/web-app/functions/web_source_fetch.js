@@ -177,9 +177,11 @@ function requestPinnedPage(url, addresses, options = {}) {
   const transport = url.protocol === "https:" ? https : http;
   return new Promise((resolve, reject) => {
     let settled = false;
+    let deadlineTimer = null;
     const finish = (fn, value) => {
       if (settled) return;
       settled = true;
+      if (deadlineTimer) { clearTimeout(deadlineTimer); deadlineTimer = null; }
       fn(value);
     };
     const req = transport.request(url, {
@@ -223,6 +225,7 @@ function requestPinnedPage(url, addresses, options = {}) {
       response.on("end", () => finish(resolve, { status, headers, body: Buffer.concat(chunks), bytes: size }));
       response.on("error", (error) => finish(reject, error));
     });
+    deadlineTimer = setTimeout(() => req.destroy(sourceError("source-timeout", 504, "The source page took too long to respond.")), timeoutMs);
     req.setTimeout(timeoutMs, () => req.destroy(sourceError("source-timeout", 504, "The source page took too long to respond.")));
     req.on("error", (error) => finish(reject, error));
     req.end();

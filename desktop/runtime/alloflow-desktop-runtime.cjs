@@ -6,7 +6,7 @@ const fs = require('fs');
 const http = require('http');
 const net = require('net');
 const os = require('os');
-const { SourceFetchError, fetchPublicPage, isPublicIp } = require('./web-source-fetch.cjs');
+const { SourceFetchError, assertPublicTarget, fetchPublicPage, isPublicIp } = require('./web-source-fetch.cjs');
 const { createAlloSheetGristBridge } = require('./allosheet-grist-bridge.cjs');
 const { createAlloSheetEngineManager } = require('./allosheet-engine-manager.cjs');
 const { createWindowsZipExtractor } = require('./allosheet-zip-extractor.cjs');
@@ -880,6 +880,7 @@ function deepMerge(base, incoming) {
   if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) return { ...base };
   const out = { ...base };
   for (const [key, value] of Object.entries(incoming)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
     if (value && typeof value === 'object' && !Array.isArray(value) && base[key] && typeof base[key] === 'object' && !Array.isArray(base[key])) {
       out[key] = deepMerge(base[key], value);
     } else {
@@ -913,6 +914,25 @@ function validatedHttpUrl(value, label) {
   return text;
 }
 
+function validatedProviderBaseUrl(value, label = 'Provider URL') {
+  const text = validatedHttpUrl(value, label);
+  const parsed = new URL(text);
+  const cleanHost = String(parsed.hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
+  const isLoopback = isLoopbackHostname(cleanHost) || cleanHost === '::ffff:127.0.0.1';
+  if (!isLoopback) {
+    if (
+      parsed.protocol !== 'https:'
+      || (net.isIP(cleanHost) && !isPublicIp(cleanHost))
+      || cleanHost === 'metadata.google.internal'
+      || cleanHost.endsWith('.internal')
+      || cleanHost.endsWith('.local')
+    ) {
+      throw new Error(label + ' must use localhost or a public HTTPS endpoint.');
+    }
+  }
+  return text;
+}
+
 function assertAllowedObject(source, allowedKeys, label) {
   if (!isPlainObject(source)) throw new Error(label + ' must be an object.');
   const unknown = Object.keys(source).filter((key) => !allowedKeys.includes(key));
@@ -941,7 +961,7 @@ function sanitizeConfigPatch(input) {
       assertAllowedObject(override, ['baseUrl', 'enabled'], 'provider');
       const clean = {};
       if (Object.prototype.hasOwnProperty.call(override, 'baseUrl')) {
-        clean.baseUrl = validatedHttpUrl(override.baseUrl, 'Provider URL');
+        clean.baseUrl = validatedProviderBaseUrl(override.baseUrl, 'Provider URL');
       }
       if (Object.prototype.hasOwnProperty.call(override, 'enabled')) {
         if (typeof override.enabled !== 'boolean') throw new Error('Provider enabled must be true or false.');
@@ -1132,8 +1152,16 @@ function getDefaultRuntimeOrigin() {
   return `http://${host}:${port}`;
 }
 
+function isValidHostHeader(hostHeader) {
+  const raw = String(hostHeader || '').trim();
+  if (!raw || raw.length > 255) return false;
+  if (/[\x00-\x20@/?#\\]/.test(raw)) return false;
+  return /^(?:\[[0-9a-fA-F:]+\]|[A-Za-z0-9.-]+)(?::\d{1,5})?$/.test(raw);
+}
+
 function getRequestOrigin(req) {
-  const host = req.headers.host || '127.0.0.1';
+  const rawHost = String((req && req.headers && req.headers.host) || '').trim();
+  const host = isValidHostHeader(rawHost) ? rawHost : '127.0.0.1';
   return `http://${host}`;
 }
 
@@ -2787,6 +2815,7 @@ function serveLanJoinPage(req, res, code, origin, requestUrl, postPin = '') {
       try { if (location.search.indexOf('pin=') !== -1 && history && history.replaceState) history.replaceState(null, '', location.pathname); } catch (e) {}
       var KEY = 'alloflow_live_session_config', UID_KEY = 'alloflow_lan_participant_uid';
       var cfg = JSON.parse(${configJson});
+      if (location && location.origin && /^https?:\/\//i.test(location.origin)) cfg.lanApiBase = location.origin;
       // Reopening this page in the same tab keeps the device's server-assigned
       // identity while its token is still valid for this share run.
       try {
@@ -3795,6 +3824,35 @@ function getEngineDir(config) {
   return engine.modelDirectory || path.join(getDataDir(), 'engine');
 }
 
+function safeModelFileInDir(modelsRoot, modelUrl, allowedExtRe = null) {
+  let pathname = '';
+  try {
+    pathname = new URL(String(modelUrl || '')).pathname || '';
+  } catch (_) {
+    return '';
+  }
+  let decoded = '';
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch (_) {
+    return '';
+  }
+  const base = path.posix.basename(decoded.replace(/\\/g, '/'));
+  if (!base || base === '.' || base === '..' || /[\\/\0:]/.test(base) || /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(base)) {
+    throw new Error('Model URL does not contain a safe filename.');
+  }
+  if (allowedExtRe && !allowedExtRe.test(base)) {
+    throw new Error('Model URL filename extension is not allowed.');
+  }
+  const resolvedRoot = path.resolve(modelsRoot);
+  const resolvedTarget = path.resolve(resolvedRoot, base);
+  const rel = path.relative(resolvedRoot, resolvedTarget);
+  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
+    throw new Error('Model download target escapes the managed models folder.');
+  }
+  return resolvedTarget;
+}
+
 function engineModelFilePath(config) {
   const engine = getEngineConfig(config);
   if (!engine.modelUrl) return '';
@@ -3803,8 +3861,7 @@ function engineModelFilePath(config) {
   if (!/^https?:\/\//i.test(String(engine.modelUrl))) {
     return path.resolve(String(engine.modelUrl));
   }
-  const name = decodeURIComponent(String(engine.modelUrl).split('/').pop().split('?')[0] || '');
-  return name ? path.join(getEngineDir(config), 'models', name) : '';
+  return safeModelFileInDir(path.join(getEngineDir(config), 'models'), engine.modelUrl, /\.gguf$/i);
 }
 
 function clampEngineNumber(value, min, max, fallback) {
@@ -3955,11 +4012,29 @@ function sanitizeSpawnExtraArgs(extraArgs) {
     .slice(0, 32);
 }
 
+async function fetchVerifiedHttpsDownload(initialUrl, label, signal) {
+  let currentUrl = String(initialUrl || '');
+  for (let hop = 0; hop <= 5; hop++) {
+    assertSecureDownloadUrl(currentUrl, hop === 0 ? label : label + ' redirect target');
+    const parsed = new URL(currentUrl);
+    await assertPublicTarget(parsed);
+    const response = await fetch(parsed.toString(), { redirect: 'manual', signal });
+    if (response.status >= 300 && response.status < 400) {
+      try { if (response.body && typeof response.body.cancel === 'function') await response.body.cancel(); } catch (_) {}
+      const location = response.headers.get('location');
+      if (!location) throw new Error(label + ' redirect missing Location header.');
+      if (hop === 5) throw new Error(label + ' exceeded maximum redirect hops.');
+      currentUrl = new URL(location, parsed).toString();
+      continue;
+    }
+    return response;
+  }
+  throw new Error(label + ' exceeded maximum redirect hops.');
+}
+
 async function downloadEngineFile(url, destination, label, expectedSha256) {
-  assertSecureDownloadUrl(url, label);
   const signal = managedEngine.abortController ? managedEngine.abortController.signal : undefined;
-  const response = await fetch(url, { redirect: 'follow', signal });
-  assertSecureDownloadUrl(response.url || url, label + ' redirect target');
+  const response = await fetchVerifiedHttpsDownload(url, label, signal);
   if (!response.ok || !response.body) throw new Error(label + ' download failed (HTTP ' + response.status + ').');
   const totalBytes = Number(response.headers.get('content-length')) || 0;
   fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -3986,23 +4061,111 @@ async function downloadEngineFile(url, destination, label, expectedSha256) {
   managedEngine.download = null;
 }
 
+function assertSafeArchiveEntryNames(entries, maxEntries = 5000) {
+  if (!Array.isArray(entries) || entries.length > maxEntries) {
+    throw new Error('Engine archive contains too many entries.');
+  }
+  for (const rawEntry of entries) {
+    const entry = String(rawEntry || '').trim();
+    if (!entry) continue;
+    const normalized = entry.replace(/\\/g, '/');
+    if (normalized.startsWith('/') || /^[A-Za-z]:/.test(normalized) || normalized.includes('\0')) {
+      throw new Error('Engine archive contains an unsafe absolute path.');
+    }
+    if (normalized.split('/').some((seg) => seg === '..')) {
+      throw new Error('Engine archive contains a path traversal entry.');
+    }
+  }
+}
+
+function assertNoSymlinksInDir(rootDir, maxVisited = 6000) {
+  let visited = 0;
+  const walk = (dir) => {
+    const items = fs.readdirSync(dir, { withFileTypes: true });
+    for (const item of items) {
+      visited += 1;
+      if (visited > maxVisited) throw new Error('Extracted engine archive exceeded entry budget.');
+      const full = path.join(dir, item.name);
+      const st = fs.lstatSync(full);
+      if (st.isSymbolicLink()) {
+        fs.rmSync(full, { force: true });
+        throw new Error('Engine archive contained a disallowed symbolic link.');
+      }
+      if (st.isDirectory()) walk(full);
+    }
+  };
+  walk(rootDir);
+}
+
+function assertSafeVerboseArchiveListing(stdout, maxEntries = 5000) {
+  const lines = String(stdout || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (lines.length > maxEntries) {
+    throw new Error('Engine archive contains too many entries.');
+  }
+  for (const line of lines) {
+    if (/^[lhcbps]/i.test(line)) {
+      throw new Error('Engine archive contains a disallowed symbolic link, hardlink, or special file.');
+    }
+    if (/\s->\s/.test(line)) {
+      throw new Error('Engine archive contains a disallowed link target.');
+    }
+  }
+}
+
 async function expandEngineZip(zipPath, destDir) {
   fs.mkdirSync(destDir, { recursive: true });
+  const isTarball = /\.(tar\.gz|tgz)$/i.test(zipPath);
+  const winSysRoot = process.env.SystemRoot || 'C:\\Windows';
+  const tarCmd = process.platform === 'win32' ? path.join(winSysRoot, 'System32', 'tar.exe') : 'tar';
+  if (isTarball) {
+    const listed = spawnSync(tarCmd, ['-tzf', zipPath], { encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
+    if (listed.status !== 0) throw new Error('Engine tarball listing failed (exit ' + listed.status + ').');
+    assertSafeArchiveEntryNames(String(listed.stdout || '').split(/\r?\n/).filter(Boolean));
+    const verbose = spawnSync(tarCmd, ['-tvzf', zipPath], { encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
+    if (verbose.status !== 0) throw new Error('Engine tarball verbose listing failed (exit ' + verbose.status + ').');
+    assertSafeVerboseArchiveListing(verbose.stdout);
+    await new Promise((resolveDone, rejectDone) => {
+      const child = process.platform === 'win32'
+        ? spawn(tarCmd, ['-xzf', zipPath, '-C', destDir], { windowsHide: true })
+        : spawn('tar', ['-xzf', zipPath, '-C', destDir]);
+      child.on('exit', (code) => (code === 0 ? resolveDone() : rejectDone(new Error('Engine archive extraction failed (exit ' + code + ').'))));
+      child.on('error', rejectDone);
+    });
+    assertNoSymlinksInDir(destDir);
+    return;
+  }
+  if (process.platform === 'win32') {
+    const listed = spawnSync(tarCmd, ['-tf', zipPath], { encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
+    if (listed.status === 0) {
+      assertSafeArchiveEntryNames(String(listed.stdout || '').split(/\r?\n/).filter(Boolean));
+      const verbose = spawnSync(tarCmd, ['-tvf', zipPath], { encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
+      if (verbose.status !== 0) throw new Error('Engine zip verbose listing failed (exit ' + verbose.status + ').');
+      assertSafeVerboseArchiveListing(verbose.stdout);
+      await new Promise((resolveDone, rejectDone) => {
+        const child = spawn(tarCmd, ['-xf', zipPath, '-C', destDir], { windowsHide: true });
+        child.on('exit', (code) => (code === 0 ? resolveDone() : rejectDone(new Error('Engine archive extraction failed (exit ' + code + ').'))));
+        child.on('error', rejectDone);
+      });
+      assertNoSymlinksInDir(destDir);
+      return;
+    }
+    const extractZip = createWindowsZipExtractor({ fs, path, spawnSync });
+    await extractZip(zipPath, destDir);
+    assertNoSymlinksInDir(destDir);
+    return;
+  }
+  const listed = spawnSync('unzip', ['-Z1', zipPath], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
+  if (listed.status !== 0) throw new Error('Engine zip listing failed (exit ' + listed.status + ').');
+  assertSafeArchiveEntryNames(String(listed.stdout || '').split(/\r?\n/).filter(Boolean));
+  const verbose = spawnSync('unzip', ['-Zl', zipPath], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
+  if (verbose.status !== 0) throw new Error('Engine zip verbose listing failed (exit ' + verbose.status + ').');
+  assertSafeVerboseArchiveListing(verbose.stdout);
   await new Promise((resolveDone, rejectDone) => {
-    // llama.cpp publishes .zip for Windows and .tar.gz for macOS — pick the
-    // extractor by archive extension, not platform, so a custom binaryUrl of
-    // either kind works everywhere tar/unzip exist.
-    const isTarball = /\.(tar\.gz|tgz)$/i.test(zipPath);
-    const child = isTarball
-      ? spawn('tar', ['-xzf', zipPath, '-C', destDir])
-      : (process.platform === 'win32'
-        ? spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
-            "Expand-Archive -LiteralPath '" + zipPath.replace(/'/g, "''") + "' -DestinationPath '" + destDir.replace(/'/g, "''") + "' -Force"],
-            { windowsHide: true })
-        : spawn('unzip', ['-o', zipPath, '-d', destDir]));
+    const child = spawn('unzip', ['-o', zipPath, '-d', destDir]);
     child.on('exit', (code) => (code === 0 ? resolveDone() : rejectDone(new Error('Engine archive extraction failed (exit ' + code + ').'))));
     child.on('error', rejectDone);
   });
+  assertNoSymlinksInDir(destDir);
 }
 
 // Windows loader failures for a child that never ran: wrong-format image /
@@ -4560,8 +4723,7 @@ function asrModelFilePath(config) {
   const asr = getAsrConfig(config);
   if (!asr.modelUrl) return '';
   if (!/^https?:\/\//i.test(String(asr.modelUrl))) return path.resolve(String(asr.modelUrl));
-  const name = decodeURIComponent(String(asr.modelUrl).split('/').pop().split('?')[0] || '');
-  return name ? path.join(getAsrDir(config), 'models', name) : '';
+  return safeModelFileInDir(path.join(getAsrDir(config), 'models'), asr.modelUrl, /\.(?:bin|gguf)$/i);
 }
 function asrBinarySourceMarker(archDir) {
   return path.join(archDir, 'binary-source.txt');
@@ -4573,10 +4735,8 @@ const PRIMARY_ASR_ARCH = 'x64';
 // Reuses the generic download primitive shape but writes progress into
 // managedAsr.download (downloadEngineFile is coupled to managedEngine state).
 async function downloadAsrFile(url, destination, label, expectedSha256) {
-  assertSecureDownloadUrl(url, label);
   const signal = managedAsr.abortController ? managedAsr.abortController.signal : undefined;
-  const response = await fetch(url, { redirect: 'follow', signal });
-  assertSecureDownloadUrl(response.url || url, label + ' redirect target');
+  const response = await fetchVerifiedHttpsDownload(url, label, signal);
   if (!response.ok || !response.body) throw new Error(label + ' download failed (HTTP ' + response.status + ').');
   const totalBytes = Number(response.headers.get('content-length')) || 0;
   fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -4944,12 +5104,52 @@ async function probeProvider(provider) {
   // Same localhost→127.0.0.1 normalization as probeUrl (IPv6-first fetch vs
   // IPv4-bound local servers) — the models list request must match the probe.
   const modelsUrl = String(provider.baseUrl + provider.modelsPath).replace(/^(https?:\/\/)localhost([:/])/i, '$1127.0.0.1$2');
+  try {
+    const parsedModelsUrl = new URL(modelsUrl);
+    const host = String(parsedModelsUrl.hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
+    const isLoopback = isLoopbackHostname(host) || host === '::ffff:127.0.0.1';
+    if (!isLoopback) {
+      await assertPublicTarget(parsedModelsUrl);
+    }
+  } catch (ssrfErr) {
+    return {
+      ...provider,
+      status: 'offline',
+      reachable: false,
+      httpStatus: 'blocked',
+      error: (ssrfErr && ssrfErr.message) || 'Blocked non-public provider URL.',
+      modelCount: 0,
+      models: [],
+    };
+  }
   const probe = await probeUrl(modelsUrl);
   let models = [];
   if (probe.reachable && typeof fetch === 'function') {
+    const listController = new AbortController();
+    const listTimer = setTimeout(() => listController.abort(), 2500);
     try {
-      const response = await fetch(modelsUrl, { redirect: 'error', headers: { Accept: 'application/json' } });
-      const data = await response.json();
+      const response = await fetch(modelsUrl, { redirect: 'error', signal: listController.signal, headers: { Accept: 'application/json' } });
+      const reader = response.body && typeof response.body.getReader === 'function' ? response.body.getReader() : null;
+      let text = '';
+      if (reader) {
+        const chunks = [];
+        let total = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          total += value.byteLength;
+          if (total > 1024 * 1024) {
+            try { await reader.cancel(); } catch (_) {}
+            throw new Error('Provider models response exceeded 1 MiB limit.');
+          }
+          chunks.push(Buffer.from(value));
+        }
+        text = Buffer.concat(chunks).toString('utf8');
+      } else {
+        text = await response.text();
+        if (text.length > 1024 * 1024) throw new Error('Provider models response exceeded 1 MiB limit.');
+      }
+      const data = JSON.parse(text);
       if (provider.protocol === 'ollama-native') {
         models = (data.models || []).map((model) => model.name).filter(Boolean);
       } else {
@@ -4957,6 +5157,8 @@ async function probeProvider(provider) {
       }
     } catch (_) {
       models = [];
+    } finally {
+      clearTimeout(listTimer);
     }
   }
 
@@ -5742,6 +5944,17 @@ async function handleApi(req, res, url) {
     let patch;
     try {
       patch = sanitizeConfigPatch(await readRequestJson(req));
+      if (patch.providers) {
+        for (const override of Object.values(patch.providers)) {
+          if (override && override.baseUrl) {
+            const parsedBase = new URL(override.baseUrl);
+            const cleanHost = String(parsedBase.hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
+            if (!isLoopbackHostname(cleanHost) && cleanHost !== '::ffff:127.0.0.1') {
+              await assertPublicTarget(parsedBase);
+            }
+          }
+        }
+      }
     } catch (error) {
       jsonResponse(res, 400, { error: error.message });
       return;
@@ -5772,20 +5985,12 @@ async function handleApi(req, res, url) {
     let validatedBaseUrl = preset.baseUrl;
     if (body.baseUrl != null && String(body.baseUrl).trim() !== '') {
       try {
-        validatedBaseUrl = validatedHttpUrl(body.baseUrl, 'Provider URL');
+        validatedBaseUrl = validatedProviderBaseUrl(body.baseUrl, 'Provider URL');
         const parsedBase = new URL(validatedBaseUrl);
         const cleanHost = String(parsedBase.hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
         const isLoopback = isLoopbackHostname(cleanHost) || cleanHost === '::ffff:127.0.0.1';
         if (!isLoopback) {
-          if (
-            parsedBase.protocol !== 'https:'
-            || (net.isIP(cleanHost) && !isPublicIp(cleanHost))
-            || cleanHost === 'metadata.google.internal'
-            || cleanHost.endsWith('.internal')
-            || cleanHost.endsWith('.local')
-          ) {
-            throw new Error('Provider URL must use localhost or a public HTTPS endpoint.');
-          }
+          await assertPublicTarget(parsedBase);
         }
       } catch (error) {
         jsonResponse(res, 400, { error: error && error.message ? error.message : 'Invalid provider URL.' });
@@ -6420,6 +6625,10 @@ function createServer() {
 function createLanShareServer() {
   const server = http.createServer(async (req, res) => {
     try {
+      if (req.headers.host && !isValidHostHeader(req.headers.host)) {
+        jsonResponse(res, 400, { error: 'Invalid Host header.' });
+        return;
+      }
       const url = new URL(req.url || '/', getRequestOrigin(req));
       if (url.pathname.startsWith('/api/')) {
         await handlePublicLanApi(req, res, url);

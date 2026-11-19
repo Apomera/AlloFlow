@@ -43,7 +43,7 @@
   var state = null;
   var step = 1;
   var ownRows = [], ownStop = '', ownTimer = 0;
-  var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null;
+  var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null, paperOn = false;
   var previewSession = null, inPreviewAction = false;
   function stopPreview() { if (previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; } }
 
@@ -145,7 +145,7 @@
     setText('step-1-problem', '');
   }
   // One typed fact, looked at by the builder, with its reason in plain words.
-  function typedParts() { return String(state.facts || '').split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean); }
+  function typedParts() { return String(state.facts || '').replace(/^\uFEFF/, '').split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean); }
   function reason(error) { return capital(said(error).replace(/^Fact [^:]*: /, '').replace(/^".*" is not a fact\./, 'This is not a fact.')); }
   function checkPart(part, seen) {
     var parsed;
@@ -308,17 +308,17 @@
     setText('title-hint', 'The student sees it at the top of the file. The results file\'s name starts with it. Left empty, it is "' + titleFallback() + '".');
   }
   function syncCodeName() {
-    var field = $('f-code-name');
-    if (field && field.value !== state.learner) field.value = state.learner;
-    var clean = codeNameNow(), typed = String(state.learner || '').trim();
-    setText('code-name-said', typed && clean !== typed ? (clean ? 'The file will have: ' + clean + '. A code name keeps letters, digits, spaces, dots, dashes and underscores.' : 'A code name needs a letter or a number.') : '');
-    if (typed) $('code-name-box').open = true;
+    var field = $('f-batch-names');
+    if (field && state.learner && !field.value.trim()) {
+      field.value = state.learner;
+      if ($('batch')) $('batch').open = true;
+    }
   }
   function clearBuilt() {
     buildRun++;
     built = null;
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
-    dropBatchFile();
+    clearPaper();
     show('summary', false);
     show('try', false);
     show('save', false);
@@ -349,7 +349,7 @@
       var input = { loader: loader, mode: state.method, known: knownNow(pick) };
       if (pick.set) input.factSet = pick.set.id; else input.facts = pick.facts;
       lesson = builder.lessonFromMathPractice(input);
-      result = builder.buildMathPracticePacket({ lesson: lesson, loader: loader, title: state.title, learner: state.learner });
+      result = builder.buildMathPracticePacket({ lesson: lesson, loader: loader, title: state.title });
     } catch (error) {
       var msg = 'The file could not be put together (' + (said(error) || 'no reason was given') + '). Your choices are still here.';
       if (run === buildRun) problem(msg);
@@ -430,12 +430,44 @@
       return { said: said(err) || 'Could not remove that fact.' };
     });
   }
+  function drawSummaryRows() {
+    if (!built || !built.summaryBase) return;
+    var rows = built.summaryBase.slice();
+    if (built.codeName) rows.push(['Code name', built.codeName + '. The file opens with it filled in.']);
+    rows.push(['File', built.name + ', ' + fileSize(built.bytes) + '.']);
+    var host = $('summary-rows');
+    host.textContent = '';
+    rows.forEach(function (row) {
+      host.appendChild(el('dt', '', row[0]));
+      host.appendChild(el('dd', '', row[1]));
+    });
+  }
+  function applySingleCodeName() {
+    if (!built || !built.baseHtml) return;
+    var single = activeSingleCode();
+    state.learner = single;
+    var html = single ? builder.withCodeName(built.baseHtml, single) : built.baseHtml;
+    var blob = new Blob([html], { type: 'text/html' });
+    if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+    built.html = html;
+    built.codeName = single;
+    built.name = withName(built.plain, single);
+    built.bytes = blob.size;
+    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
+    drawSummaryRows();
+    setText('summary-facts', capital(count(built.cards, 'card')) + '. No clock. ' + fileSize(built.bytes) + '.');
+    if (fileUrl) {
+      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
+      show('try', true);
+      var handoff = window.AlloPacketHandoff;
+      if (!inPreviewAction && handoff && typeof handoff.hostPreview === 'function') {
+        if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
+        else previewSession = handoff.hostPreview({ url: fileUrl, html: built.html, describe: describePreview, onAction: onPreviewAction });
+      }
+    }
+  }
   function drawResult(result, pick, plan, lesson) {
     show('making', false);
-    var blob = new Blob([result.html], { type: 'text/html' });
-    var learner = codeNameNow();
-    built = { html: result.html, name: withName(result.lesson.lessonId + '.html', learner), bytes: blob.size, lesson: lesson, plain: result.lesson.lessonId + '.html' };
-    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     var cards = plan.cards.length, knownCards = plan.cards.filter(function (c) { return c.role === 'known'; }).length;
     var rows = [['Facts', pick.set ? pick.set.opName + ': ' + pick.set.name + '. ' + capital(count(pick.facts.length, 'fact')) + '.' : capital(count(pick.facts.length, 'fact')) + ': ' + pick.facts.map(word).join(', ') + '.']];
     if (plan.mode === 'ccc') {
@@ -450,28 +482,98 @@
     rows.push(['Feedback', 'Right or wrong after every answer. After a wrong answer the file shows the answer, the student types it while looking, and then answers again from memory. Up to 3 tries from memory on each card.']);
     rows.push(['Clock', 'None.']);
     rows.push(['Title', result.lesson.title]);
-    if (learner) rows.push(['Code name', learner + '. The file opens with it filled in.']);
-    rows.push(['File', built.name + ', ' + fileSize(built.bytes) + '.']);
-    var host = $('summary-rows');
-    host.textContent = '';
-    rows.forEach(function (row) {
-      host.appendChild(el('dt', '', row[0]));
-      host.appendChild(el('dd', '', row[1]));
-    });
-    setText('summary-facts', capital(count(cards, 'card')) + '. No clock. ' + fileSize(built.bytes) + '.');
+    built = { baseHtml: result.html, html: result.html, name: result.lesson.lessonId + '.html', bytes: 0, lesson: lesson, plain: result.lesson.lessonId + '.html', cards: cards, summaryBase: rows, codeName: '' };
+    applySingleCodeName();
     show('summary', true);
-    if (fileUrl) {
-      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
-      show('try', true);
-      var handoff = window.AlloPacketHandoff;
-      if (!inPreviewAction && handoff && typeof handoff.hostPreview === 'function') {
-        if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
-        else previewSession = handoff.hostPreview({ url: fileUrl, html: built.html, describe: describePreview, onAction: onPreviewAction });
-      }
-    }
     show('save', true);
+    try { drawPaper(result, plan); } catch (_) { clearPaper(); }
     setText('making-said', 'The file is ready: ' + count(cards, 'card') + ', ' + fileSize(built.bytes) + '.');
     drawBatch();
+  }
+  function clearPaper() {
+    paperOn = false;
+    var host = $('paper');
+    if (host) host.textContent = '';
+    if (doc.body) doc.body.classList.remove('paper-on');
+    show('print', false);
+    show('print-note', false);
+  }
+  function paperField(label, short) {
+    var box = el('span', short ? 'paper-field paper-field-short' : 'paper-field');
+    box.appendChild(doc.createTextNode(label + ':'));
+    box.appendChild(el('span', 'paper-fill'));
+    return box;
+  }
+  function drawPaper(result, plan) {
+    var host = $('paper');
+    if (!host || !plan || !Array.isArray(plan.cards) || !plan.cards.length) { clearPaper(); return; }
+    var title = (result && result.lesson && result.lesson.title) || 'Math fact practice';
+    var items = plan.cards.map(function (c) { return builder.factWord(c.fact, loader); });
+    host.textContent = '';
+
+    var sheet = el('section', 'paper-sheet');
+    sheet.setAttribute('aria-label', 'Practice sheet');
+    sheet.appendChild(el('h2', 'paper-title', title));
+    var who = el('div', 'paper-who');
+    who.appendChild(paperField('Name', false));
+    who.appendChild(paperField('Date', true));
+    sheet.appendChild(who);
+    sheet.appendChild(el('p', 'paper-how', '1. Look at the fact on the left and say it to yourself. 2. Fold or cover the left column. 3. Write the answer from memory in the middle column. 4. Uncover and compare. If it does not match, write the whole fact once on the right.'));
+
+    var table = el('table', 'paper-ccc');
+    var thead = el('thead'), headRow = el('tr');
+    [['No.', 'pc-n'], ['Look and cover', 'pc-look'], ['Cover and write', 'pc-try'], ['Write again if needed', 'pc-fix']].forEach(function (col) {
+      var th = el('th', col[1], col[0]);
+      th.scope = 'col';
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    var tbody = el('tbody');
+    items.forEach(function (it, idx) {
+      var tr = el('tr');
+      tr.appendChild(el('td', 'pc-n', String(idx + 1) + '.'));
+      tr.appendChild(el('td', 'pc-look', it.word + ' = ' + it.answer));
+      var tryCell = el('td', 'pc-try');
+      tryCell.appendChild(doc.createTextNode(it.word + ' ='));
+      tryCell.appendChild(el('span', 'paper-blank'));
+      tr.appendChild(tryCell);
+      var fixCell = el('td', 'pc-fix');
+      fixCell.appendChild(el('span', 'paper-blank paper-blank-wide'));
+      tr.appendChild(fixCell);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    sheet.appendChild(table);
+    host.appendChild(sheet);
+
+    var teacher = el('section', 'paper-teacher');
+    teacher.setAttribute('aria-label', 'Answer key');
+    teacher.appendChild(el('h2', 'paper-title', title + ' \u2014 Answer key'));
+    teacher.appendChild(el('p', 'paper-keep', 'For the teacher. Keep this sheet apart from the student copy.'));
+    if (plan.mode === 'rehearsal') {
+      teacher.appendChild(el('p', 'paper-meta', 'New ' + (plan.newFacts.length === 1 ? 'fact' : 'facts') + ': ' + listed(plan.newFacts.map(word)) + '. Known facts: ' + listed(plan.knownFacts.map(word)) + '.'));
+    }
+    var keyList = el('ol', items.length > 20 ? 'paper-key key-cols-3' : 'paper-key');
+    items.forEach(function (it, idx) {
+      var li = el('li');
+      li.appendChild(el('span', 'kn', String(idx + 1) + '.'));
+      li.appendChild(el('span', 'kw', it.word));
+      li.appendChild(el('span', 'ka', '= ' + it.answer));
+      keyList.appendChild(li);
+    });
+    teacher.appendChild(keyList);
+    host.appendChild(teacher);
+
+    if (doc.body) doc.body.classList.add('paper-on');
+    paperOn = true;
+    show('print', true);
+    show('print-note', true);
+  }
+  function printPaper() {
+    if (!paperOn || typeof window.print !== 'function') return;
+    window.print();
   }
   function download(url, name) {
     var link = doc.createElement('a');
@@ -493,15 +595,25 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Step 3: "Make one for each student" (2026-11-13, as on the other makers): the file above with each code name in its
-  // manifest (builder.withCodeName), in one .zip file (packets_zip.js). Math fact practice has no versions.
+  // Step 3: unified code-name / batch .zip fold: 1 line puts that code name into the single file above;
+  // 2-40 lines saves one file per student in one .zip file in 1 click (packets_zip.js).
   // ---------------------------------------------------------------------------
+  var MAX_REOPEN_BYTES = 60 * 1024 * 1024;
+  var MAX_ROSTER_BYTES = 256 * 1024;
+  function cleanRosterLine(raw) {
+    var s = String(raw || '').replace(/^\uFEFF/, '').trim();
+    if (!s) return '';
+    s = s.replace(/^(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '').trim();
+    var col = s.indexOf('\t') >= 0 ? s.split('\t')[0] : (s.indexOf(',') >= 0 ? s.split(',')[0] : s);
+    return col.trim().replace(/^["']+|["']+$/g, '').trim();
+  }
   function batchList() {
     var seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
-    String(($('f-batch-names') && $('f-batch-names').value) || '').split(/\r?\n/).forEach(function (line) {
+    String(($('f-batch-names') && $('f-batch-names').value) || '').replace(/^\uFEFF/, '').split(/\r?\n/).forEach(function (line) {
       if (!line.trim()) return;
-      var name = builder.codeName(line);
-      if (!name) { out.unusable.push(line.trim().slice(0, 40)); return; }
+      var cleaned = cleanRosterLine(line);
+      var name = builder.codeName(cleaned);
+      if (!name) { out.unusable.push((cleaned || line.trim()).slice(0, 40)); return; }
       var key = name.toLowerCase();
       if (seen[key]) { if (out.twice.indexOf(name) < 0) out.twice.push(name); return; }
       seen[key] = true;
@@ -510,44 +622,62 @@
     });
     return out;
   }
+  function activeSingleCode() {
+    var list = batchList();
+    return list.names.length === 1 ? list.names[0] : '';
+  }
   function drawBatch() {
     var list = batchList(), n = list.names.length, parts = [];
-    if (!n) parts.push('Type or paste the code names, one on each line.');
-    else parts.push(count(n, 'file') + (built ? ', about ' + fileSize(n * built.bytes) + ' in all.' : '. The size shows here once the file above is ready.'));
+    var btn = $('batch-make');
+    if (n === 0) {
+      parts.push('Leave empty so each student types a code name at the start.');
+      if (btn) btn.hidden = true;
+    } else if (n === 1) {
+      parts.push('Using ' + list.names[0] + ' in the file above' + (built ? ' (' + built.name + ')' : '') + '. Add another line to save a .zip.');
+      if (btn) btn.hidden = true;
+    } else {
+      parts.push(count(n, 'file') + (built ? ', about ' + fileSize(n * built.bytes) + ' in all.' : '. The size shows here once the file above is ready.'));
+      if (btn) {
+        btn.hidden = false;
+        btn.textContent = 'Save .zip for ' + n + ' students';
+      }
+    }
     if (list.over) parts.push('Not used: ' + count(list.over, 'more code name') + '. At most ' + MAX_STUDENTS + ' go in one .zip file.');
     if (list.twice.length) parts.push('Listed more than once, used once: ' + list.twice.join(', ') + '.');
     if (list.unusable.length) parts.push('Not used, because a code name needs a letter or a number: ' + list.unusable.join(', ') + '.');
-    if (batchFile) parts = ['Ready: ' + count(batchFile.count, 'file') + ' in one .zip file, ' + fileSize(batchFile.bytes) + '.'];
     setText('batch-said', parts.join(' '));
   }
-  function dropBatchFile() {
-    if (batchFile && batchFile.url) { try { URL.revokeObjectURL(batchFile.url); } catch (_) {} }
-    batchFile = null;
-    show('batch-save', false);
-  }
-  function makeBatch() {
+  function saveBatchZip() {
     setText('batch-problem', '');
-    dropBatchFile();
     var list = batchList();
-    if (!list.names.length) { setText('batch-problem', 'Type at least one code name.'); return; }
-    if (!built) { setText('batch-problem', 'The file above is not ready yet.'); return; }
+    if (list.names.length < 2) { setText('batch-problem', 'Type at least 2 code names to save a .zip file.'); return; }
+    if (!built || !built.baseHtml) { setText('batch-problem', 'The file above is not ready yet.'); return; }
     if (!window.AlloPacketZip || typeof window.AlloPacketZip.create !== 'function') { setText('batch-problem', 'This page could not load the part that makes .zip files. Load the page again.'); return; }
     try {
-      var base = builder.buildMathPracticePacket({ lesson: built.lesson, loader: loader, title: state.title }).html;
       var zip = window.AlloPacketZip.create(), encoder = new TextEncoder();
-      list.names.forEach(function (name) { zip.add(withName(built.plain, name), encoder.encode(builder.withCodeName(base, name))); });
+      list.names.forEach(function (name) { zip.add(withName(built.plain, name), encoder.encode(builder.withCodeName(built.baseHtml, name))); });
       var parts = zip.finish();
-      batchFile = { parts: parts, bytes: zip.bytes, count: list.names.length, name: built.plain.replace(/\.html$/, '') + '__' + list.names.length + '-students.zip', url: '' };
-    } catch (error) { setText('batch-problem', 'The .zip file could not be made (' + said(error) + ').'); return; }
-    show('batch-save', true);
-    drawBatch();
+      var zipName = built.plain.replace(/\.html$/, '') + '__' + list.names.length + '-students.zip';
+      var url = URL.createObjectURL(new Blob(parts, { type: 'application/zip' }));
+      download(url, zipName);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      setText('batch-said', 'Saved ' + zipName + ' (' + fileSize(zip.bytes) + '). Each file\'s name ends with the student\'s code name. Send each student their own file.');
+    } catch (error) { setText('batch-problem', 'The .zip file could not be made (' + said(error) + ').'); }
   }
-  function saveBatch() {
-    if (!batchFile) return;
-    if (!batchFile.url) { try { batchFile.url = URL.createObjectURL(new Blob(batchFile.parts, { type: 'application/zip' })); } catch (_) { batchFile.url = ''; } }
-    if (!batchFile.url) { setText('batch-problem', 'This browser cannot save files from a page.'); return; }
-    download(batchFile.url, batchFile.name);
-    setText('batch-said', 'Saved ' + batchFile.name + '. Each file\'s name ends with the student\'s code name. Send each student their own file.');
+  function loadRosterFile(file) {
+    setText('batch-problem', '');
+    if (!file) return;
+    if (file.size > MAX_ROSTER_BYTES) { setText('batch-problem', 'That text file is too large. Choose a plain .txt list of code names.'); return; }
+    if (typeof FileReader !== 'function') { setText('batch-problem', 'This browser cannot read local files here.'); return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      var input = $('f-batch-names');
+      if (input) input.value = String(reader.result || '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+      applySingleCodeName();
+      drawBatch();
+    };
+    reader.onerror = function () { setText('batch-problem', 'This browser could not read that file.'); };
+    reader.readAsText(file);
   }
 
   // ---------------------------------------------------------------------------
@@ -555,6 +685,7 @@
   // reads it (readMath, with packets_verify_core.js). The file is read in this tab only. Nothing in it is run.
   // ---------------------------------------------------------------------------
   var reopenKit = null;
+  var reopenPending = null;
   function showReopen(line, items, page) {
     setText('reopen-line', line);
     var host = $('reopen-list');
@@ -567,8 +698,23 @@
     show('reopen-note', true);
     $('reopen-note').focus();
   }
-  function applyReopen(result, name) {
-    if (!result.ok) { showReopen(result.why, [], result.page); return; }
+  function applyReopen(result, name, bytes) {
+    if (!result.ok) {
+      var handoff = window.AlloPacketHandoff;
+      var pageHref = result.page ? result.page.href : '';
+      if (pageHref && bytes) {
+        reopenPending = {
+          file: { name: name, bytes: bytes },
+          href: pageHref,
+          hash: pageHref === 'packets-results.html' ? ((handoff && handoff.RESULTS_HASH) || '#import-results') : ((handoff && handoff.HASH) || '#open-file'),
+        };
+      } else {
+        reopenPending = null;
+      }
+      showReopen(result.why, [], result.page);
+      return;
+    }
+    reopenPending = null;
     var got = result.math, items = [];
     clearTimeout(buildTimer);
     stopPreview();
@@ -591,6 +737,8 @@
     items.push(builder.METHODS[got.method].name + '.' + (got.method === 'rehearsal' ? ' The facts chosen as known are in step 2.' : ''));
     fresh.title = result.title;
     fresh.learner = result.learner || '';
+    if ($('f-batch-names')) $('f-batch-names').value = fresh.learner;
+    if (fresh.learner && $('batch')) $('batch').open = true;
     if (result.title) items.push('Title: ' + result.title + (/[.!?]$/.test(result.title) ? '' : '.'));
     result.notes.forEach(function (note) { items.push(note); });
     state = fresh;
@@ -598,9 +746,10 @@
     goTo(1, true);
     showReopen('Filled in from ' + name + '. Change what you want, then make the new file in step 3.', items, null);
   }
-  function reopenText(text, name) {
+  function reopenText(text, name, bytes) {
     if (!reopenKit) return;
-    applyReopen(reopenKit.readMath(text, { verify: window.AlloPacketVerify, builder: builder, codeName: builder.codeName }), String(name || 'the file').slice(0, 120));
+    var rawBytes = bytes || (typeof TextEncoder === 'function' ? new TextEncoder().encode(String(text || '')).buffer : null);
+    applyReopen(reopenKit.readMath(text, { verify: window.AlloPacketVerify, builder: builder, codeName: builder.codeName }), String(name || 'the file').slice(0, 120), rawBytes);
   }
   function wireReopen() {
     $('reopen-choose').addEventListener('click', function () { $('reopen-file').click(); });
@@ -608,12 +757,30 @@
       var file = this.files && this.files[0];
       this.value = '';
       if (!file) return;
-      if (file.size > 20 * 1024 * 1024) { showReopen('This file is too large to be a practice file made here.', [], null); return; }
-      var reader = new FileReader();
-      reader.onload = function () { reopenText(String(reader.result || ''), file.name); };
-      reader.onerror = function () { showReopen('This browser could not read the file.', [], null); };
-      reader.readAsText(file);
+      if (file.size > MAX_REOPEN_BYTES) { reopenPending = null; showReopen('This file is too large to be a practice file made here.', [], null); return; }
+      var done = function (buf) {
+        var text = typeof TextDecoder === 'function' ? new TextDecoder('utf-8').decode(buf) : '';
+        reopenText(text, file.name, buf);
+      };
+      if (typeof file.arrayBuffer === 'function') {
+        file.arrayBuffer().then(done, function () { showReopen('This browser could not read the file.', [], null); });
+      } else {
+        var reader = new FileReader();
+        reader.onload = function () { reopenText(String(reader.result || ''), file.name); };
+        reader.onerror = function () { showReopen('This browser could not read the file.', [], null); };
+        reader.readAsText(file);
+      }
     });
+    if ($('reopen-page')) {
+      $('reopen-page').addEventListener('click', function (event) {
+        var handoff = window.AlloPacketHandoff;
+        if (!reopenPending || !handoff || typeof handoff.redirect !== 'function') return;
+        event.preventDefault();
+        var target = reopenPending;
+        reopenPending = null;
+        handoff.redirect(target.file, target.href, target.hash).catch(function () { $('reopen-page').click(); });
+      });
+    }
   }
   function applyRehearseHash() {
     var hash = window.location ? String(window.location.hash || '') : '';
@@ -667,6 +834,8 @@
     }
     remember();
     drawStep1();
+    setText('rehearse-note', 'Loaded ' + count(missedFacts.length, 'missed fact') + (knownFacts.length >= 3 ? ' and ' + count(knownFacts.length, 'known fact') : '') + ' from results. They are in step 1, under My own facts.');
+    show('rehearse-note', true);
     goTo(2, true);
     return true;
   }
@@ -678,7 +847,7 @@
     try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
     handoff.take().then(function (file) {
       if (!file) { showReopen('The file is not here any more. Choose it with Open a file I made.', [], null); return; }
-      reopenText(new TextDecoder('utf-8').decode(file.bytes), file.name);
+      reopenText(new TextDecoder('utf-8').decode(file.bytes), file.name, file.bytes);
     }, function () { showReopen('This browser could not hand the file over. Choose it with Open a file I made.', [], null); });
   }
 
@@ -739,10 +908,17 @@
       ownTimer = setTimeout(drawOwn, 250);
     });
     $('f-title').addEventListener('input', function () { state.title = this.value.slice(0, 80); remember(); if (step === 3) makeSoon(400); });
-    $('f-code-name').addEventListener('input', function () { state.learner = this.value.slice(0, 40); syncCodeName(); if (step === 3) makeSoon(400); });
-    $('f-batch-names').addEventListener('input', function () { dropBatchFile(); setText('batch-problem', ''); drawBatch(); });
-    $('batch-make').addEventListener('click', makeBatch);
-    $('batch-save').addEventListener('click', saveBatch);
+    $('f-batch-names').addEventListener('input', function () { setText('batch-problem', ''); applySingleCodeName(); drawBatch(); });
+    $('batch-make').addEventListener('click', saveBatchZip);
+    if ($('batch-load') && $('batch-file')) {
+      $('batch-load').addEventListener('click', function () { $('batch-file').value = ''; $('batch-file').click(); });
+      $('batch-file').addEventListener('change', function () {
+        var file = this.files && this.files[0];
+        this.value = '';
+        loadRosterFile(file);
+      });
+    }
+    if ($('print')) $('print').addEventListener('click', printPaper);
     $('save').addEventListener('click', saveFile);
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
@@ -750,7 +926,8 @@
       state = defaults();
       $('f-facts').value = '';
       $('f-title').value = '';
-      $('f-code-name').value = '';
+      if ($('f-batch-names')) $('f-batch-names').value = '';
+      show('rehearse-note', false);
       goTo(1, true);
       setText('forget-said', 'Done. The page is back to how it started.');
     });

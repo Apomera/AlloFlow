@@ -417,7 +417,7 @@ function requirePdfPath(args) { return _requireFileOfType(args, /\.pdf$/i, '.pdf
 // The driver mirrors the browser intake exactly — sheets through convertXlsxToMarkdownTables,
 // text through UTF-8 decode, both into the pipeline-native text payload — so these audit and
 // remediate with the same behavior the app gives them (accessible-HTML deliverable, no tagged PDF).
-function requireDocPath(args) { return _requireFileOfType(args, /\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xls|xlsb|ods)$/i, '.pdf, .docx, .pptx, an image (.png/.jpg/.webp), a text file (.md/.txt/.csv/.tsv), or a spreadsheet (.xlsx/.xls/.xlsb/.ods)'); }
+function requireDocPath(args) { return _requireFileOfType(args, /\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xlsm|xls|xlsb|ods)$/i, '.pdf, .docx, .pptx, an image (.png/.jpg/.webp), a text file (.md/.txt/.csv/.tsv), or a spreadsheet (.xlsx/.xlsm/.xls/.xlsb/.ods)'); }
 
 function requireGeminiKey() {
   // ALLOFLOW_MCP_MODEL_BACKEND routes model calls to another provider; a config error there
@@ -488,15 +488,35 @@ function optionalOcrLanguage(args) {
   return value;
 }
 
-// Collision-safe output path: never overwrite an existing file.
+function pathOccupied(filePath) {
+  try {
+    fs.lstatSync(filePath);
+    return true;
+  } catch (err) {
+    return !!(err && err.code !== 'ENOENT');
+  }
+}
+
+// Collision-safe output path: never overwrite an existing file or dangling symlink.
 function claimOutputPath(dir, base) {
-  let candidate = enforceAllowedRoot(path.join(dir, base), 'output file');
-  if (!fs.existsSync(candidate)) return candidate;
+  if (typeof base !== 'string' || !base.trim() || base === '.' || base === '..' || /[\\/\0]/.test(base) || path.basename(base) !== base) {
+    throw invalidParams('Output filename must be a single file name without path separators');
+  }
+  const safeDir = path.resolve(dir);
+  const checkInside = (p) => {
+    const resolved = path.resolve(p);
+    if (!isInsideRoot(resolved, safeDir) || resolved === safeDir) {
+      throw invalidParams('Output path escaped target directory');
+    }
+    return enforceAllowedRoot(resolved, 'output file');
+  };
+  let candidate = checkInside(path.join(safeDir, base));
+  if (!pathOccupied(candidate)) return candidate;
   const ext = path.extname(base);
   const stem = base.slice(0, base.length - ext.length);
   for (let i = 2; i < 1000; i++) {
-    candidate = enforceAllowedRoot(path.join(dir, stem + '-' + i + ext), 'output file');
-    if (!fs.existsSync(candidate)) return candidate;
+    candidate = checkInside(path.join(safeDir, stem + '-' + i + ext));
+    if (!pathOccupied(candidate)) return candidate;
   }
   throw new Error('Could not find a free output name for ' + base);
 }
@@ -653,7 +673,7 @@ function atomicWriteJson(finalPath, value, mode = 0o600, documentPath = false) {
 }
 
 function checkpointEngineFiles() {
-  const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs'), path.join(__dirname,'remediation_narration_plan.cjs'), path.join(__dirname,'accessible_html_edit.cjs'), path.join(__dirname,'scan_reading_corrections.cjs'), path.join(__dirname,'pdf_annotations.cjs'), path.join(__dirname,'remediation_verification.cjs'), path.join(__dirname,'remediation_epub_validation.cjs'), path.join(__dirname,'remediation_ace_worker.cjs'), path.join(__dirname,'remediation_epub_archive.cjs'), path.join(__dirname,'remediation_ace_browser.cjs')];
+  const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs'), path.join(__dirname, 'remediation_chromium_pdf.cjs'), path.join(__dirname,'remediation_narration_plan.cjs'), path.join(__dirname,'accessible_html_edit.cjs'), path.join(__dirname,'scan_reading_corrections.cjs'), path.join(__dirname,'pdf_annotations.cjs'), path.join(__dirname,'remediation_verification.cjs'), path.join(__dirname,'remediation_epub_validation.cjs'), path.join(__dirname,'remediation_ace_worker.cjs'), path.join(__dirname,'remediation_epub_archive.cjs'), path.join(__dirname,'remediation_ace_browser.cjs')];
   for (const name of Driver.MODULE_FILES) files.push(path.join(Driver.ASSETS_ROOT, name));
   for (const name of ['document_runtime_integrity.json', 'runtime_graph_delivery_policy.js', 'runtime_graph_host.js']) {
     files.push(path.join(Driver.ASSETS_ROOT, name));
@@ -1684,10 +1704,10 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
   // ever destroyed. The wider agent-bridge deadlines make this rare; this makes it free.
   const requestKey = (req) => {
     const h = crypto.createHash('sha256');
-    h.update(String(req.kind || '')).update(' ').update(String(req.prompt || ''));
+    h.update(String(req.kind || '')).update('\x00').update(String(req.prompt || ''));
     for (const part of req.parts || []) {
       const inline = part && (part.inline_data || part.inlineData);
-      if (inline && inline.data) h.update(' ').update(String(inline.mime_type || inline.mimeType || '')).update(String(inline.data));
+      if (inline && inline.data) h.update('\x00').update(String(inline.mime_type || inline.mimeType || '')).update(String(inline.data));
     }
     return h.digest('hex');
   };
@@ -2030,7 +2050,11 @@ function listBatchInputs(dirPathArg, limit, label) {
   try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
   catch (_) { throw invalidParams('arguments.dir_path does not exist or is unreadable: ' + dir); }
   const files = entries
-    .filter((e) => e.isFile() && (label === 'narration' ? /\.html?$/i : label === 'keyless remediation' ? /\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xls|xlsb|ods)$/i : /\.(pdf|docx|pptx)$/i).test(e.name) && !/-tagged(?:-review-required)?(?:-\d+)?\.pdf$/i.test(e.name) && !(label === 'narration' && /-readalong(?:-\d+)?\.html?$/i.test(e.name))) // don't re-process our own outputs
+    .filter((e) => e.isFile()
+      && (label === 'narration' ? /\.html?$/i : /\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xlsm|xls|xlsb|ods)$/i).test(e.name)
+      && !/-tagged(?:-(?:review-required|held-for-review))?(?:-\d+)?\.pdf$/i.test(e.name)
+      && !/^accessibility-audit-scoreboard(?:-\d+)?\.csv$/i.test(e.name)
+      && !(label === 'narration' && /-readalong(?:-\d+)?\.html?$/i.test(e.name))) // don't re-process our own outputs
     .map((e) => path.join(dir, e.name))
     .sort();
   if (!files.length) throw invalidParams('No supported document files found in ' + dir);
@@ -2946,7 +2970,7 @@ function loadEditHistory(htmlPath, htmlSha256, runHtmlSha256) {
 // report and the completion manifest. Shared by remediateOneFile and pdf_finalize_edited_html (2026-11-08).
 const SCAN_READING_MAX_BYTES = 100 * 1024 * 1024;
 async function writeRunArtifacts({ filePath, outDir, opts, out, compatibility, job, signal, onLog, stemOverride, personEdit }) {
-  const stem = stemOverride || path.basename(filePath).replace(/\.(pdf|docx|pptx)$/i, '');
+  const stem = stemOverride || path.basename(filePath).replace(/\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xlsm|xls|xlsb|ods)$/i, '');
   const files = {};
   if (out.accessibleHtml) {
     files.accessibleHtml = claimOutputPath(outDir, stem + '-accessible.html');
@@ -4688,6 +4712,24 @@ const TOOL_HANDLERS = {
       if (!fs.existsSync(vp)) throw invalidParams('arguments.verapdf_json does not exist: ' + vp);
       try { vera = JSON.parse(authorizedReadFileSync(vp, 'utf8')); }
       catch (e) { throw invalidParams('arguments.verapdf_json is not readable JSON: ' + ((e && e.message) || e)); }
+      if (!vera || typeof vera !== 'object' || Array.isArray(vera)) {
+        throw invalidParams('arguments.verapdf_json must contain a JSON object');
+      }
+      if (typeof vera.compliant !== 'boolean') {
+        throw invalidParams('arguments.verapdf_json must include an explicit boolean compliant field');
+      }
+      if (vera.failedRules !== undefined && !Array.isArray(vera.failedRules)) {
+        throw invalidParams('arguments.verapdf_json.failedRules must be an array when present');
+      }
+      if (vera.passedChecks !== undefined && (!Number.isSafeInteger(vera.passedChecks) || vera.passedChecks < 0)) {
+        throw invalidParams('arguments.verapdf_json.passedChecks must be a non-negative integer');
+      }
+      if (vera.failedChecks !== undefined && (!Number.isSafeInteger(vera.failedChecks) || vera.failedChecks < 0)) {
+        throw invalidParams('arguments.verapdf_json.failedChecks must be a non-negative integer');
+      }
+      if (vera.passedChecks !== undefined && vera.failedChecks !== undefined && (vera.passedChecks + vera.failedChecks <= 0)) {
+        throw invalidParams('arguments.verapdf_json reported zero checks');
+      }
     }
     let accessibleHtml = '';
     if (args.accessible_html !== undefined) {
@@ -4699,8 +4741,14 @@ const TOOL_HANDLERS = {
       const tp = _requireFileOfType({ file_path: args.tagged_pdf }, /\.pdf$/i, '.pdf');
       const pdfBytes = authorizedReadFileSync(tp);
       // A veraPDF verdict describes the bytes it validated; refuse to print it beside different ones.
-      if (vera && typeof vera.inputSha256 === 'string' && vera.inputSha256 !== crypto.createHash('sha256').update(pdfBytes).digest('hex')) {
-        throw invalidParams('arguments.verapdf_json validated different bytes than arguments.tagged_pdf (inputSha256 mismatch)');
+      if (vera) {
+        const pdfSha256 = crypto.createHash('sha256').update(pdfBytes).digest('hex');
+        if (typeof vera.inputSha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(vera.inputSha256)) {
+          throw invalidParams('arguments.verapdf_json must include a valid 64-hex inputSha256 when arguments.tagged_pdf is provided');
+        }
+        if (vera.inputSha256.toLowerCase() !== pdfSha256) {
+          throw invalidParams('arguments.verapdf_json validated different bytes than arguments.tagged_pdf (inputSha256 mismatch)');
+        }
       }
       taggedPdfBase64 = Buffer.from(pdfBytes).toString('base64');
     }
@@ -4709,7 +4757,24 @@ const TOOL_HANDLERS = {
     // genuine failure. Preserving that distinction is what keeps the report honest in both
     // directions rather than flattening a deliberate abstention into a defect.
     // Rows carry `rule` (what the report prints) and a category; they used to carry id/label and printed blank.
-    const failed = (vera && vera.failedRules) || [];
+    const failed = (vera && Array.isArray(vera.failedRules)) ? vera.failedRules : [];
+    const veraStatusLower = String((vera && vera.status) || '').toLowerCase();
+    const veraIncompleteOrFailed = !!(vera && (
+      vera.error
+      || (vera.jobEndStatus !== undefined && vera.jobEndStatus !== 'normal')
+      || ['failed', 'unavailable', 'error', 'not-run', 'not_run'].includes(veraStatusLower)
+      || (vera.profile !== undefined && String(vera.profile).toLowerCase() !== 'ua1')
+      || (vera.profileName !== undefined && vera.profileName !== 'PDF/UA-1 validation profile')
+    ));
+    if (vera && vera.compliant === true) {
+      if (veraIncompleteOrFailed
+        || failed.length > 0
+        || (Number.isSafeInteger(vera.failedRuleCount) && vera.failedRuleCount > 0)
+        || (Number.isSafeInteger(vera.failedChecks) && vera.failedChecks > 0)
+        || vera.passedChecks === 0) {
+        throw invalidParams('arguments.verapdf_json claims compliant=true despite incomplete, errored, or contradictory failure evidence');
+      }
+    }
     const checks = failed.map((r) => ({
       category: 'veraPDF (ISO 14289-1)',
       rule: 'ISO 14289-1 clause ' + r.clause + ' test ' + r.testNumber + (r.message ? ': ' + r.message : ''),
@@ -4722,10 +4787,14 @@ const TOOL_HANDLERS = {
       checks.push({ category: 'veraPDF (ISO 14289-1)', rule: 'Machine-checkable PDF/UA-1 rules (veraPDF)', status: 'pass',
         detail: (_num(vera.passedChecks) !== undefined ? vera.passedChecks + ' checks passed, ' : '') + '0 failed rules' });
     }
+    const hasFail = checks.some((c) => c.status === 'fail');
+    const hasWarn = checks.some((c) => c.status === 'warn');
     const summary = {
       pass: checks.filter((c) => c.status === 'pass').length, fail: checks.filter((c) => c.status === 'fail').length,
       warn: checks.filter((c) => c.status === 'warn').length, manual: 0, na: 0,
-      conformancePct: vera ? (vera.compliant ? 100 : (checks.some((c) => c.status === 'fail') ? 0 : 95)) : 0,
+      conformancePct: (vera && !veraIncompleteOrFailed)
+        ? (vera.compliant === true ? 100 : (!hasFail && hasWarn ? 95 : 0))
+        : 0,
     };
 
     const html = await withSingleFlight('generate_conformance_report', () => getDriver().buildConformanceReport({
@@ -4836,7 +4905,7 @@ const TOOL_HANDLERS = {
 
   async extract_document_text(args, ctx) {
     assertAllowedKeys(args, ['file_path', 'output_path'], 'arguments');
-    const filePath = _requireFileOfType(args, /\.(docx|pptx|xlsx|xlsm|pdf)$/i, '.docx, .pptx, .xlsx or .pdf');
+    const filePath = _requireFileOfType(args, /\.(docx|pptx|xlsx|xlsm|xls|xlsb|ods|md|markdown|txt|csv|tsv|pdf)$/i, '.docx, .pptx, .xlsx, .xls, .xlsb, .ods, .md, .txt, .csv, .tsv or .pdf');
     const out = await withSingleFlight('extract_document_text', () => getDriver().extractDocumentText({ filePath, onLog: ctx && ctx.onProgress }));
     let dest;
     if (args.output_path !== undefined) {
@@ -5156,15 +5225,24 @@ const TOOL_HANDLERS = {
     const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
     const stat = fs.statSync(htmlPath);
     if (stat.size > 5 * 1024 * 1024) throw invalidParams('The HTML file is larger than 5MB — audit a page, not an archive.');
-    // Hosts without a Gemini key (Codex, ChatGPT, Cursor...) still get the two model-free engines;
+    // Hosts without a model backend/key (Codex, ChatGPT, Cursor...) still get the two model-free engines;
     // the AI rubric is reported as not-run, never as a pass, and the verification state says so.
-    const includeAi = !!Driver.resolveGeminiApiKey().key;
+    let transportCfg = null;
+    let transportError = null;
+    try { transportCfg = Driver.resolveModelTransportConfig(); } catch (err) { transportError = (err && err.message) || String(err); }
+    const includeAi = !transportError && (transportCfg.backend !== 'gemini' ? true : !!Driver.resolveGeminiApiKey().key);
+    const aiLabel = includeAi ? transportCfg.backend : 'not-run';
     return withSingleFlight('audit_html', async () => {
       const out = await getDriver().auditHtml({
         html: authorizedReadFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress, includeAi,
       });
-      out.aiEngine = includeAi ? 'gemini' : 'not-run';
-      if (!includeAi) out.note = 'No Gemini key on this host: only axe-core and IBM Equal Access ran. The AI content rubric is not-run, so content-level issues (descriptions, reading order, plain language) were not judged. ' + (out.note || '');
+      out.aiEngine = aiLabel;
+      if (!includeAi) {
+        const reason = transportError
+          ? `Model backend unavailable (${transportError})`
+          : 'No Gemini key on this host';
+        out.note = `${reason}: only axe-core and IBM Equal Access ran. The AI content rubric is not-run, so content-level issues (descriptions, reading order, plain language) were not judged. ` + (out.note || '');
+      }
       return out;
     });
   },
@@ -5417,10 +5495,11 @@ const TOOL_HANDLERS = {
     const missing = [];
     for (const row of rows) {
       if (!row || !row.file || bands.indexOf(triageBand(row)) === -1) continue;
+      const resolvedRowFile = enforceAllowedRoot(path.resolve(row.file), 'a document listed in the scoreboard');
       // The scoreboard is a record of a past run; the folder may have moved on since. A file that
       // is gone is reported by name rather than silently dropped, so the count still adds up.
-      if (!fs.existsSync(row.file)) { missing.push(row.file); continue; }
-      selected.push(enforceAllowedRoot(path.resolve(row.file), 'a document listed in the scoreboard'));
+      if (!fs.existsSync(resolvedRowFile)) { missing.push(resolvedRowFile); continue; }
+      selected.push(resolvedRowFile);
     }
     if (!selected.length) {
       throw invalidParams('No documents in ' + scoreboardPath + ' are in band(s) ' + bands.join(', ')
@@ -5925,8 +6004,10 @@ async function handleRequest(msg) {
     case 'tools/list': sendResult(id, { tools: TOOLS }); return;
     case 'tools/call': {
       const name = params && params.name;
-      const handler = TOOL_HANDLERS[name];
-      if (!handler) { sendError(id, -32602, 'Unknown tool: ' + String(name)); return; }
+      const handler = typeof name === 'string' && Object.prototype.hasOwnProperty.call(TOOL_HANDLERS, name)
+        ? TOOL_HANDLERS[name]
+        : null;
+      if (typeof handler !== 'function') { sendError(id, -32602, 'Unknown tool: ' + String(name)); return; }
       const key = String(id);
       const abortController = new AbortController();
       const entry = { tool: name, cancelled: false, abortController };
@@ -6166,41 +6247,50 @@ function startHttpTransport(port) {
     req.on('data', (chunk) => { if (tooLarge) return; bodyBytes += Buffer.byteLength(chunk, 'utf8'); if (bodyBytes > MAX_LINE_BYTES || body.length + chunk.length > MAX_LINE_CHARS) { tooLarge = true; res.writeHead(413, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('payload too large'); req.destroy(); return; } body += chunk; });
     req.on('end', async () => {
       if (tooLarge) return;
-      let parsed;
-      try { parsed = JSON.parse(body); } catch (_) { res.writeHead(400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } })); return; }
-      const batch = Array.isArray(parsed);
-      if (batch && (parsed.length < 1 || parsed.length > 64)) { res.writeHead(400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid batch size' } })); return; }
-      const messages = batch ? parsed : [parsed];
-      const replies = [];
-      for (const msg of messages) {
-        if (!msg || msg.jsonrpc !== '2.0') { replies.push({ jsonrpc: '2.0', id: msg && msg.id !== undefined ? msg.id : null, error: { code: -32600, message: 'Invalid request' } }); continue; }
-        if (msg.id === undefined || msg.id === null) {
-          // Notifications: translate a cancel aimed at an HTTP request id to its private id.
-          if (msg.method === 'notifications/cancelled' && msg.params && msg.params.requestId !== undefined) {
-            for (const [privateId, waiter] of HTTP_PENDING) if (String(waiter.origId) === String(msg.params.requestId)) { msg = Object.assign({}, msg, { params: Object.assign({}, msg.params, { requestId: privateId }) }); break; }
+      try {
+        let parsed;
+        try { parsed = JSON.parse(body); } catch (_) { if (!res.writableEnded && !res.destroyed) { res.writeHead(400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } })); } return; }
+        const batch = Array.isArray(parsed);
+        if (batch && (parsed.length < 1 || parsed.length > 64)) { if (!res.writableEnded && !res.destroyed) { res.writeHead(400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid batch size' } })); } return; }
+        const messages = batch ? parsed : [parsed];
+        const replies = [];
+        for (const msg of messages) {
+          if (!msg || msg.jsonrpc !== '2.0') { replies.push({ jsonrpc: '2.0', id: msg && msg.id !== undefined ? msg.id : null, error: { code: -32600, message: 'Invalid request' } }); continue; }
+          if (msg.id === undefined || msg.id === null) {
+            // Notifications: translate a cancel aimed at an HTTP request id to its private id.
+            if (msg.method === 'notifications/cancelled' && msg.params && msg.params.requestId !== undefined) {
+              for (const [privateId, waiter] of HTTP_PENDING) if (String(waiter.origId) === String(msg.params.requestId)) { msg = Object.assign({}, msg, { params: Object.assign({}, msg.params, { requestId: privateId }) }); break; }
+            }
+            Promise.resolve().then(() => handleNotification(msg)).catch((e) => log('http notification error: ' + ((e && e.message) || e)));
+            continue;
           }
-          Promise.resolve().then(() => handleNotification(msg)).catch((e) => log('http notification error: ' + ((e && e.message) || e)));
-          continue;
+          const privateId = HTTP_ID_PREFIX + (++HTTP_SEQ);
+          replies.push(new Promise((resolve) => {
+            HTTP_PENDING.set(privateId, { origId: msg.id, resolve });
+            Promise.resolve().then(() => handleRequest(Object.assign({}, msg, { id: privateId }))).then(() => {
+              // A cancelled request is deliberately never answered (spec); over HTTP that must not
+              // leave the response hanging, so it collapses to "no reply" (202 when nothing else replied).
+              if (HTTP_PENDING.has(privateId)) { HTTP_PENDING.delete(privateId); resolve(null); }
+            }).catch((e) => {
+              HTTP_PENDING.delete(privateId);
+              resolve({ jsonrpc: '2.0', id: msg.id, error: { code: -32603, message: (e && e.message) || 'internal error' } });
+            });
+          }));
         }
-        const privateId = HTTP_ID_PREFIX + (++HTTP_SEQ);
-        replies.push(new Promise((resolve) => {
-          HTTP_PENDING.set(privateId, { origId: msg.id, resolve });
-          Promise.resolve().then(() => handleRequest(Object.assign({}, msg, { id: privateId }))).then(() => {
-            // A cancelled request is deliberately never answered (spec); over HTTP that must not
-            // leave the response hanging, so it collapses to "no reply" (202 when nothing else replied).
-            if (HTTP_PENDING.has(privateId)) { HTTP_PENDING.delete(privateId); resolve(null); }
-          }).catch((e) => {
-            HTTP_PENDING.delete(privateId);
-            resolve({ jsonrpc: '2.0', id: msg.id, error: { code: -32603, message: (e && e.message) || 'internal error' } });
-          });
-        }));
+        const results = (await Promise.all(replies)).filter(Boolean);
+        if (res.writableEnded || res.destroyed) return;
+        const headers = { 'Mcp-Session-Id': sessionId, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
+        if (!results.length) { res.writeHead(202, headers); res.end(); return; }
+        headers['Content-Type'] = 'application/json';
+        res.writeHead(200, headers);
+        res.end(JSON.stringify(batch ? results : results[0]));
+      } catch (err) {
+        log('http request error: ' + ((err && err.message) || err));
+        if (!res.headersSent && !res.writableEnded && !res.destroyed) {
+          res.writeHead(500, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' });
+          res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32603, message: 'Internal error' } }));
+        }
       }
-      const results = (await Promise.all(replies)).filter(Boolean);
-      const headers = { 'Mcp-Session-Id': sessionId, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
-      if (!results.length) { res.writeHead(202, headers); res.end(); return; }
-      headers['Content-Type'] = 'application/json';
-      res.writeHead(200, headers);
-      res.end(JSON.stringify(batch ? results : results[0]));
     });
   });
   server.on('error', (e) => log('http transport error: ' + ((e && e.message) || e)));

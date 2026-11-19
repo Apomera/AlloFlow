@@ -16,12 +16,19 @@
 // Resolve getGlobalAudioContext from monolith at module-parse time. Falls
 // through to window lookup if not yet assigned. The host page's monolith
 // (AlloFlowANTI.txt) defines this function at module scope.
+var _cachedFallbackAudioCtx = null;
 var getGlobalAudioContext = (typeof window !== 'undefined' && window.getGlobalAudioContext)
     ? window.getGlobalAudioContext
     : (function() {
-        // Minimal fallback: return a Web Audio context directly.
+        if (typeof window !== 'undefined' && typeof window.getGlobalAudioContext === 'function') {
+            return window.getGlobalAudioContext();
+        }
+        if (_cachedFallbackAudioCtx && _cachedFallbackAudioCtx.state !== 'closed') {
+            return _cachedFallbackAudioCtx;
+        }
         var Ctx = (typeof window !== 'undefined') && (window.AudioContext || window.webkitAudioContext);
-        return Ctx ? new Ctx() : null;
+        _cachedFallbackAudioCtx = Ctx ? new Ctx() : null;
+        return _cachedFallbackAudioCtx;
     });
 
 const LargeFileHandler = {
@@ -110,9 +117,7 @@ const LargeFileHandler = {
             for (let channel = 0; channel < numberOfChannels; channel++) {
                 const sourceData = audioBuffer.getChannelData(channel);
                 const destData = chunkBuffer.getChannelData(channel);
-                for (let j = 0; j < chunkLength; j++) {
-                    destData[j] = sourceData[startSample + j];
-                }
+                destData.set(sourceData.subarray(startSample, startSample + chunkLength));
             }
             const wavBlob = this.audioBufferToWav(chunkBuffer);
             const base64 = await this.blobToBase64(wavBlob);
@@ -146,23 +151,31 @@ const LargeFileHandler = {
         const numChannels = 1;
         const originalLength = buffer.length;
         const monoData = new Float32Array(originalLength);
-        const channelCount = buffer.numberOfChannels;
-        for (let i = 0; i < originalLength; i++) {
-            let sum = 0;
-            for (let ch = 0; ch < channelCount; ch++) {
-                sum += buffer.getChannelData(ch)[i];
+        const channelCount = Math.max(1, buffer.numberOfChannels || 1);
+        const channels = Array.from({ length: channelCount }, (_, ch) => buffer.getChannelData(ch));
+        if (channelCount === 1) {
+            monoData.set(channels[0]);
+        } else {
+            const invChannels = 1 / channelCount;
+            for (let i = 0; i < originalLength; i++) {
+                let sum = 0;
+                for (let ch = 0; ch < channelCount; ch++) {
+                    sum += channels[ch][i];
+                }
+                monoData[i] = sum * invChannels;
             }
-            monoData[i] = sum / channelCount;
         }
         const resampleRatio = targetSampleRate / originalSampleRate;
-        const newLength = Math.floor(originalLength * resampleRatio);
+        const newLength = originalLength > 0 ? Math.floor(originalLength * resampleRatio) : 0;
         const resampledData = new Float32Array(newLength);
-        for (let i = 0; i < newLength; i++) {
-            const srcIndex = i / resampleRatio;
-            const srcIndexFloor = Math.floor(srcIndex);
-            const srcIndexCeil = Math.min(srcIndexFloor + 1, originalLength - 1);
-            const fraction = srcIndex - srcIndexFloor;
-            resampledData[i] = monoData[srcIndexFloor] * (1 - fraction) + monoData[srcIndexCeil] * fraction;
+        if (originalLength > 0) {
+            for (let i = 0; i < newLength; i++) {
+                const srcIndex = i / resampleRatio;
+                const srcIndexFloor = Math.floor(srcIndex);
+                const srcIndexCeil = Math.min(srcIndexFloor + 1, originalLength - 1);
+                const fraction = srcIndex - srcIndexFloor;
+                resampledData[i] = monoData[srcIndexFloor] * (1 - fraction) + monoData[srcIndexCeil] * fraction;
+            }
         }
         const dataLength = resampledData.length * (bitDepth / 8);
         const wavBuffer = new ArrayBuffer(44 + dataLength);
@@ -319,7 +332,7 @@ const LargeFileTranscriptionModal = React.memo(({
             <div
                 ref={dialogRef}
                 tabIndex={-1}
-                className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none"
+                className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none"
                 role="dialog" aria-modal="true" aria-labelledby="large-file-modal-title" aria-describedby="large-file-description" aria-busy={isProcessing} onClick={e => e.stopPropagation()}
             >
                 <button

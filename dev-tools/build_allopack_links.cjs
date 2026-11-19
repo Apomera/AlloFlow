@@ -156,9 +156,9 @@ function renderVersion(entry, single = false) {
     <p class="pack-credit">${esc(entry.credit || 'Review this resource before teaching.')}</p>
     ${terms.reuse}
     ${renderProvenance(entry)}
-    <div class="pack-actions"><a class="pack-open" href="${link}" data-pack-alias="${esc(entry.share_slug)}" aria-label="Open ${esc(entry.title)} — ${label}">Open pack</a>
-    <button type="button" data-copy-pack="${link}" hidden aria-label="Copy link to ${esc(entry.title)} — ${label}">Copy link</button>
-    <a href="./${esc(entry.path)}" data-pack-download="${esc(entry.path)}" download="${esc(path.basename(entry.path))}" aria-label="Download ${esc(entry.title)} — ${label}">Download JSON</a></div>
+    <div class="pack-actions"><a class="pack-open" href="${link}" data-pack-alias="${esc(entry.share_slug)}" aria-label="Open pack: ${esc(entry.title)} — ${label}">Open pack</a>
+    <button type="button" data-copy-pack="${link}" hidden aria-label="Copy link: ${esc(entry.title)} — ${label}">Copy link</button>
+    <a href="./${esc(entry.path)}" data-pack-download="${esc(entry.path)}" download="${esc(path.basename(entry.path))}" aria-label="Download JSON: ${esc(entry.title)} — ${label}">Download JSON</a></div>
     <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="${link}"></label>
   </div>`;
 }

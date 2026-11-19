@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "corpusId": "extended-fidelity-v1",
+  "description": "Extended deterministic offline fidelity & safety-block fixtures covering RTL/inline-lang, spanned H43 tables, nested lists/code/MathML formulas, and legal-record blocks.",
+  "cases": [
+    {
+      "id": "extended-rtl-bilingual",
+      "documentKind": "rtl-bilingual",
+      "backend": "portable",
+      "fixture": "rtl-bilingual-inline",
+      "expected": {
+        "exitCode": 0,
+        "readiness": "review-required"
+      }
+    },
+    {
+      "id": "extended-spanned-table",
+      "documentKind": "spanned-table",
+      "backend": "portable",
+      "fixture": "spanned-table-h43",
+      "expected": {
+        "exitCode": 0,
+        "readiness": "review-required"
+      }
+    },
+    {
+      "id": "extended-stem-blocks",
+      "documentKind": "stem-blocks",
+      "backend": "portable",
+      "fixture": "nested-list-code-formula",
+      "expected": {
+        "exitCode": 0,
+        "readiness": "review-required"
+      }
+    },
+    {
+      "id": "extended-legal-blocked",
+      "documentKind": "legal-record",
+      "backend": "portable",
+      "fixture": "signed-legal-blocked",
+      "expected": {
+        "exitCode": 3,
+        "readiness": "blocked"
+      }
+    }
+  ]
+}

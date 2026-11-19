@@ -117,6 +117,20 @@
     }
     return hex;
   }
+  // Decode base64 text to bytes with a byte limit. Returns null when invalid or over maxBytes.
+  function bytesOfBase64(text, maxBytes) {
+    var clean = String(text || '').replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/').replace(/=+$/, '');
+    if (!clean || /[^A-Za-z0-9+\/]/.test(clean) || clean.length % 4 === 1) return null;
+    var outLen = Math.floor(clean.length * 3 / 4);
+    if (maxBytes && outLen > maxBytes) return null;
+    var out = new Uint8Array(outLen), bits = 0, held = 0, pos = 0;
+    for (var i = 0; i < clean.length; i++) {
+      held = (held << 6) | B64.indexOf(clean.charAt(i));
+      bits += 6;
+      if (bits >= 8) { bits -= 8; out[pos++] = (held >> bits) & 255; }
+    }
+    return out;
+  }
 
   // ---------------------------------------------------------------------------
   // Reading the markup as text
@@ -528,15 +542,22 @@
     var closedAt = endOfData.exec(scriptText);
     if (!closedAt) return null;
     var lesson = null;
-    try { lesson = JSON.parse(scriptText.slice(opened[0].length, closedAt.index)); } catch (error) { lesson = null; }
+    try { lesson = JSON.parse(scriptText.slice(opened[0].length, closedAt.index), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); } catch (error) { lesson = null; }
     return isObject(lesson) ? { lesson: lesson, from: opened[0].length, to: closedAt.index } : null;
   }
 
   // ---------------------------------------------------------------------------
   // readParts: the manifest and the data block of a file, read the way verifyPacket reads them, with no scan.
   // For a page that fills itself in from a file made earlier (packets-make.html). Nothing in the file is run.
-  //   { ok, refused, kind: 'packet' | 'older' | 'results' | 'not_html' | 'not_packet', manifest, manifestError, lesson, generator }
+  //   { ok, refused, kind: 'packet' | 'older' | 'results' | 'zip' | 'not_html' | 'not_packet', manifest, manifestError, lesson, generator }
   // ---------------------------------------------------------------------------
+  function isZipBytes(bytes) {
+    return !!bytes && bytes.length >= 4 && bytes[0] === 0x50 && bytes[1] === 0x4B
+      && ((bytes[2] === 0x03 && bytes[3] === 0x04) || (bytes[2] === 0x05 && bytes[3] === 0x06));
+  }
+  function isResultsJson(head, text) {
+    return /^\s*[{[]/.test(head) && (text.indexOf('alloflow-take-home-result') >= 0 || text.indexOf('alloflow-packet-results-bundle') >= 0);
+  }
   function readParts(input) {
     var out = { ok: false, refused: '', kind: 'not_packet', manifest: null, manifestError: false, lesson: null, generator: '' };
     if (!Encoder || !Decoder) { out.refused = 'no_decoder'; return out; }
@@ -547,11 +568,12 @@
     var size = text !== null ? text.length : bytes.length;
     if (size > MAX_BYTES) { out.refused = 'too_big'; return out; }
     if (!size) { out.refused = 'empty'; return out; }
+    if (isZipBytes(bytes)) { out.kind = 'zip'; return out; }
     if (bytes && ((bytes[0] === 0xFF && bytes[1] === 0xFE) || (bytes[0] === 0xFE && bytes[1] === 0xFF))) { out.kind = 'not_html'; return out; }
     if (text === null) text = textOf(bytes);
     if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
     var head = text.slice(0, 4000);
-    if ((/^\s*[{[]/.test(head) && text.indexOf('alloflow-take-home-result') >= 0) || (head.indexOf('alloflow-packet-result/1') >= 0 && head.indexOf('<') < 0)) { out.kind = 'results'; return out; }
+    if (isResultsJson(head, text) || (head.indexOf('alloflow-packet-result/1') >= 0 && head.indexOf('<') < 0)) { out.kind = 'results'; return out; }
     if (text.indexOf('<') < 0) { out.kind = 'not_html'; return out; }
     var starts = readMarkup(text).tags.filter(function (tag) { return !tag.closing; });
     var attr = function (tag, name) { return name in tag.attrs ? String(tag.attrs[name]) : ''; };
@@ -561,7 +583,7 @@
     var inline = scripts.filter(function (tag) { return tag !== manifestTag && !('src' in tag.attrs) && !/json/i.test(attr(tag, 'type')); })[0];
     if (manifestTag) {
       var manifest = null;
-      try { manifest = JSON.parse(text.slice(manifestTag.textFrom, manifestTag.textTo)); } catch (_) { manifest = null; }
+      try { manifest = JSON.parse(text.slice(manifestTag.textFrom, manifestTag.textTo), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); } catch (_) { manifest = null; }
       if (isObject(manifest) && manifest.kind !== MANIFEST_KIND) return out;
       out.manifest = isObject(manifest) ? manifest : null;
       out.manifestError = !out.manifest;
@@ -598,13 +620,14 @@
     report.ok = true;
     report.fingerprint = { sha256: sha256(bytes).hex, of: typeof input === 'string' ? 'the text of the file' : 'the file as it is on disk' };
     var notPacket = function (why) { report.why = why; return report; };
+    if (isZipBytes(bytes)) return notPacket('This is a .zip folder, not a single packet file. Unzip it first to check an .html file inside, or open a results .zip on Add up results.');
     if ((bytes[0] === 0xFF && bytes[1] === 0xFE) || (bytes[0] === 0xFE && bytes[1] === 0xFF)) return notPacket('This is not an AlloFlow packet: the file is not UTF-8 text.');
     if (text === null) text = textOf(bytes);
     if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
 
     // What kind of file is it?
     var head = text.slice(0, 4000);
-    if (/^\s*[{[]/.test(head) && text.indexOf('alloflow-take-home-result') >= 0) return notPacket('This looks like a results file, not a packet. The page named Add up results reads results files.');
+    if (isResultsJson(head, text)) return notPacket('This looks like a results file, not a packet. The page named Add up results reads results files.');
     if (head.indexOf('alloflow-packet-result/1') >= 0 && head.indexOf('<') < 0) return notPacket('This looks like a results file, not a packet. The page named Add up results reads results files.');
     if (text.indexOf('<') < 0) return notPacket('This is not an AlloFlow packet: it is not a web page file.');
     var markup = readMarkup(text);
@@ -626,7 +649,7 @@
     var manifest = null;
     if (manifestTags.length) {
       report.manifest.found = true;
-      try { manifest = JSON.parse(text.slice(manifestTags[0].textFrom, manifestTags[0].textTo)); } catch (error) { report.manifest.error = 'The manifest block is not readable JSON.'; }
+      try { manifest = JSON.parse(text.slice(manifestTags[0].textFrom, manifestTags[0].textTo), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); } catch (error) { report.manifest.error = 'The manifest block is not readable JSON.'; }
       if (manifest !== null && !isObject(manifest)) { manifest = null; report.manifest.error = 'The manifest block does not hold a list of named facts.'; }
       if (manifest && manifest.kind !== MANIFEST_KIND) return notPacket('This is not an AlloFlow packet: it has a block named ' + MANIFEST_ID + ', but the block does not say it is a packet.');
       report.manifest.readable = !!manifest;
@@ -888,11 +911,121 @@
     }
     report.claims = claims;
 
+  // Pure-text inspection of an embedded SVG drawing (no browser parser, no code run).
+  // Returns a plain reason when the SVG holds code, event handlers or outside links, or ''.
+  var MAX_SVG_BYTES = 300000;
+  function svgHazard(svg) {
+    var text = typeof svg === 'string' ? svg : '';
+    if (text.length > MAX_SVG_BYTES) return 'more than 300 KB of text';
+    if (/<!(?:doctype|entity)/i.test(text)) return 'a document type or entity declaration';
+    if (/<\?(?!xml\s)/i.test(text)) return 'a processing instruction';
+    var plain = text
+      .replace(/&#x([0-9a-f]+);?/gi, function (_, hex) { return String.fromCharCode(parseInt(hex, 16) & 0xFFFF); })
+      .replace(/&#(\d+);?/g, function (_, dec) { return String.fromCharCode(Number(dec) & 0xFFFF); })
+      .replace(/&(colon|newline|tab);/gi, function (_, name) { return name.toLowerCase() === 'colon' ? ':' : ''; });
+    var packed = plain.replace(/[\x00-\x20]+/g, '');
+    var bare = function (value) { return String(value || '').replace(/[\x00-\x20]+/g, ''); };
+    if (/<\s*(?:[\w-]+:)?script\b/i.test(plain)) return 'a script block';
+    if (/<\s*(?:[\w-]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject block';
+    if (/<\s*(?:[\w-]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a static drawing shape';
+    if (/[\s"'\/]on[a-z]+\s*=/i.test(plain)) return 'an event handler';
+    if (/(?:java|vb|live)script:/i.test(packed)) return 'a script address';
+    if (/xml:base\s*=/i.test(plain)) return 'a base address';
+    var m, href = /(?:[\s"'\/])(?:[\w-]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    while ((m = href.exec(plain))) {
+      var target = bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]);
+      if (target.charAt(0) !== '#') return 'a link to something outside the drawing';
+    }
+    if (/[\s"'\/]src\s*=/i.test(plain)) return 'a link to something outside the drawing';
+    var styleRe = /<\s*(?:[\w-]+:)?style\b[^>]*>/gi;
+    while ((m = styleRe.exec(plain))) {
+      if (/\/\s*>$/.test(m[0])) continue;
+      var end = plain.slice(styleRe.lastIndex).search(/<\s*\/\s*(?:[\w-]+:)?style\s*>/i);
+      var css = end < 0 ? plain.slice(styleRe.lastIndex) : plain.slice(styleRe.lastIndex, styleRe.lastIndex + end);
+      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
+    }
+    var urlRe = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
+    while ((m = urlRe.exec(plain))) {
+      if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
+    }
+    return '';
+  }
+  function decodeSvgDataUri(uri) {
+    var m = /^data:image\/svg\+xml((?:;[a-z0-9._+-]+(?:=[^;,]+)?)*),([\s\S]*)$/i.exec(String(uri || ''));
+    if (!m) return { ok: false };
+    var params = m[1] || '', payload = m[2] || '';
+    if (/;base64(?:$|;)/i.test(params)) {
+      var bytes = bytesOfBase64(payload, MAX_SVG_BYTES);
+      if (!bytes) return { ok: false };
+      try { return { ok: true, svg: textOf(bytes) }; } catch (_) { return { ok: false }; }
+    }
+    if (payload.length > MAX_SVG_BYTES * 3) return { ok: false };
+    try {
+      var decoded = decodeURIComponent(payload.replace(/\+/g, '%20'));
+      return decoded.length <= MAX_SVG_BYTES ? { ok: true, svg: decoded } : { ok: false };
+    } catch (_) {
+      return payload.length <= MAX_SVG_BYTES && /<\s*svg\b/i.test(payload) ? { ok: true, svg: payload } : { ok: false };
+    }
+  }
+  // Inspect every data:image/svg+xml URI in parsed lesson.images and across the raw file text.
+  function scanSvgDataUris(text, lesson, dataFrom, where) {
+    var out = [], seen = Object.create(null), checked = 0;
+    function unescapeJson(raw) {
+      if (raw.indexOf('\\') < 0) return raw;
+      return raw
+        .replace(/\\u([0-9a-f]{4})/gi, function (_, hex) { return String.fromCharCode(parseInt(hex, 16)); })
+        .replace(/\\(["'\/\\])/g, '$1')
+        .replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t');
+    }
+    function inspect(uri, at, len, place) {
+      if (checked >= MAX_KEPT) return;
+      var norm = String(uri || '');
+      if (seen[norm]) return;
+      seen[norm] = true;
+      checked++;
+      var decoded = decodeSvgDataUri(norm);
+      if (!decoded.ok) {
+        out.push({ id: 'svg-unreadable', name: 'An embedded SVG picture could not be read', cls: LOOK, at: at, length: len, where: place,
+          why: 'An SVG picture held as a data: address could not be decoded as text, so its contents were not read.',
+          excerpt: at >= 0 ? excerptAt(text, at, len) : show(norm, 120), listed: true });
+        return;
+      }
+      var reason = svgHazard(decoded.svg);
+      if (reason) {
+        out.push({ id: 'svg-active', name: 'Code or an external link inside an embedded SVG picture', cls: UNEXPECTED, at: at, length: len, where: place,
+          why: 'An SVG picture stored inside the file contains ' + reason + '. A packet picture should hold only static drawing shapes.',
+          excerpt: at >= 0 ? excerptAt(text, at, len) : show(decoded.svg, 120), listed: true });
+      }
+    }
+    if (lesson && isObject(lesson.images)) {
+      Object.keys(lesson.images).forEach(function (key) {
+        var val = lesson.images[key];
+        if (typeof val === 'string' && /^data:image\/svg\+xml[;,]/i.test(val)) {
+          var pos = dataFrom >= 0 ? text.indexOf(val.slice(0, 48), dataFrom) : -1;
+          inspect(val, pos >= 0 ? pos : dataFrom, pos >= 0 ? Math.min(val.length, 120) : 12, 'the data block');
+        }
+      });
+    }
+    var quoted = /(["'])(data:image\/svg\+xml(?:;[a-z0-9._+-]+(?:=[^;,"'\\]+)?)*,[^"'\\]*(?:\\.[^"'\\]*)*)\1/gi, m;
+    while ((m = quoted.exec(text))) {
+      var raw = m[2];
+      inspect(unescapeJson(raw), m.index + 1, raw.length, where(m.index + 1));
+    }
+    var bare = /\bdata:image\/svg\+xml(?:;[a-z0-9._+-]+(?:=[^;,\s"'`<>)]+)?)*,[^\s"'`<>)]+/gi;
+    while ((m = bare.exec(text))) {
+      var before = m.index > 0 ? text.charAt(m.index - 1) : '';
+      if (before === '"' || before === "'") continue;
+      inspect(unescapeJson(m[0]), m.index, m[0].length, where(m.index));
+    }
+    return out;
+  }
+
     // --- Counts, and the findings in order ---
     // Each sound and each picture is held once, as a data: address with something in it.
     report.counts.sounds = (text.match(/\bdata:audio\/[a-z0-9.+-]+;base64,[A-Za-z0-9+\/]/gi) || []).length;
-    report.counts.pictures = (text.match(/\bdata:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+\/]/gi) || []).length;
-    var all = findings.map(function (f) { f.listed = true; return f; }).concat(scanned);
+    report.counts.pictures = (text.match(/\bdata:image\/[a-z0-9.+-]+(?:;[a-z0-9._+-]+(?:=[^;,\s"'`<>)]+)?)*(?:;base64)?,[^\s"'`)]/gi) || []).length;
+    var svgFindings = scanSvgDataUris(text, lesson, dataFrom, where);
+    var all = findings.map(function (f) { f.listed = true; return f; }).concat(scanned, svgFindings);
     placeAll(text, all);
     var rank = function (f) { return f.cls === UNEXPECTED ? 0 : f.cls === LOOK ? 1 : 2; };
     all.sort(function (x, y) { return rank(x) - rank(y) || x.line - y.line || x.col - y.col; });

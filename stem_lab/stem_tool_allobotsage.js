@@ -98,7 +98,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       + ' .abs-twinkle { animation: absTwinkle 2.4s ease-in-out infinite; }'
       + ' .abs-drift-rise { animation: absDriftRise 6s ease-in-out infinite; }'
       + ' .abs-slow-spin { animation: absSlowSpin 8s linear infinite; transform-origin: center; transform-box: fill-box; }'
-      + ' .abs-bubble { animation: absBubble 5s ease-in-out infinite; }';
+      + ' .abs-bubble { animation: absBubble 5s ease-in-out infinite; }'
+      // ── Starbound Spellforge Observatory Workbench + Light / Dark / High-Contrast Parity ──
+      + ' .abs-workbench { --abs-surface: #ffffff; --abs-surface-2: #f8fafc; --abs-border: #e2e8f0; --abs-ink: #0f172a; --abs-muted: #475569; --abs-accent: #7c3aed; --abs-accent-soft: #f5f3ff; }'
+      + ' .abs-hero-deck { position: relative; border-radius: 18px; border: 1px solid rgba(167,139,250,0.42); background: linear-gradient(135deg, #17153b 0%, #3b1d7a 52%, #1e1b4b 100%); color: #f8fafc; box-shadow: 0 14px 32px rgba(30,27,75,0.28), inset 0 1px 0 rgba(255,255,255,0.12); overflow: hidden; }'
+      + ' .abs-hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(167,139,250,0.22); border: 1px solid rgba(216,180,254,0.45); color: #ede9fe; }'
+      + ' .abs-hero-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(15,23,42,0.44); border: 1px solid rgba(196,181,253,0.3); color: #f1f5f9; }'
+      + ' .abs-hero-pill-gold { background: rgba(245,158,11,0.22); border-color: rgba(252,211,77,0.55); color: #fef3c7; }'
+      + ' .abs-preset-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }'
+      + ' .abs-preset-btn { min-height: 44px; display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 12px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.12); border: 1px solid rgba(221,214,254,0.35); color: #ffffff; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease; }'
+      + ' .abs-preset-btn:hover { background: rgba(255,255,255,0.22); border-color: #ddd6fe; transform: translateY(-1px); }'
+      + ' .abs-preset-btn:focus-visible { outline: 3px solid #fde047; outline-offset: 2px; }'
+      + ' .abs-stage-card { border-radius: 16px; border: 1px solid var(--abs-border); background: var(--abs-surface); box-shadow: 0 6px 20px rgba(15,23,42,0.06); padding: 14px; margin-bottom: 18px; }'
+      + ' .abs-stage-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--abs-muted); }'
+      + ' .abs-stage-sub { font-size: 12px; color: var(--abs-muted); }'
+      + ' .abs-inquiry-preset { min-height: 44px; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; border: 1px solid rgba(148,163,184,0.4); background: #0f172a; color: #f1f5f9; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; }'
+      + ' .abs-inquiry-preset:hover { background: #1e293b; border-color: #a78bfa; }'
+      + ' .abs-inquiry-preset:focus-visible { outline: 3px solid #fde047; outline-offset: 2px; }'
+      + ' .dark .abs-workbench { --abs-surface: #0f172a; --abs-surface-2: #1e293b; --abs-border: #334155; --abs-ink: #f8fafc; --abs-muted: #cbd5e1; --abs-accent: #c4b5fd; --abs-accent-soft: #1e1b4b; }'
+      + ' .dark .abs-stage-card { box-shadow: 0 8px 24px rgba(2,6,23,0.45); }'
+      + ' .theme-contrast .abs-workbench { --abs-surface: #000000; --abs-surface-2: #000000; --abs-border: #ffffff; --abs-ink: #ffffff; --abs-muted: #facc15; --abs-accent: #facc15; --abs-accent-soft: #000000; }'
+      + ' .theme-contrast .abs-hero-deck { background: #000000 !important; border: 2px solid #facc15 !important; box-shadow: none !important; color: #ffffff !important; }'
+      + ' .theme-contrast .abs-hero-badge { background: #000000 !important; border: 2px solid #facc15 !important; color: #facc15 !important; }'
+      + ' .theme-contrast .abs-hero-pill { background: #000000 !important; border: 1px solid #ffffff !important; color: #ffffff !important; }'
+      + ' .theme-contrast .abs-hero-pill-gold { border-color: #facc15 !important; color: #facc15 !important; }'
+      + ' .theme-contrast .abs-preset-btn, .theme-contrast .abs-inquiry-preset { background: #000000 !important; border: 2px solid #facc15 !important; color: #ffffff !important; }'
+      + ' .theme-contrast .abs-preset-btn:hover, .theme-contrast .abs-inquiry-preset:hover { background: #facc15 !important; color: #000000 !important; }'
+      + ' .theme-contrast .abs-stage-card { background: #000000 !important; border: 2px solid #ffffff !important; box-shadow: none !important; color: #ffffff !important; }'
+      + ' .theme-contrast .abs-stage-title, .theme-contrast .abs-stage-sub { color: #facc15 !important; }';
     document.head.appendChild(_s);
   }
   (function() {
@@ -1541,26 +1568,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       var onHostInk = isContrast ? ' text-white' : '';
       var React = window.React;
       var h = React.createElement;
-      var toolData = ctx.toolData || {};
+      var toolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var addToast = ctx.addToast || function() {};
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var setStemLabTool = ctx.setStemLabTool || function() {};
       var awardXP = ctx.awardXP || function() {};
       var callGemini = ctx.callGemini || null;
 
-      var d = toolData.alloBotSage || {};
-      var aiChallengeCache = d.aiChallengeCache || {};
+      var d = (toolData.alloBotSage && typeof toolData.alloBotSage === 'object' && !Array.isArray(toolData.alloBotSage)) ? toolData.alloBotSage : {};
+      var aiChallengeCache = (d.aiChallengeCache && typeof d.aiChallengeCache === 'object' && !Array.isArray(d.aiChallengeCache)) ? d.aiChallengeCache : {};
 
       // Helpers to patch alloBotSage state.
       function updSage(patch) { ctx.updateMulti('alloBotSage', patch); }
       function updKey(k, v) { ctx.update('alloBotSage', k, v); }
 
       // ── Persistent state ──
-      var phase            = d.phase || 'hub'; // hub | loadout | expedition | debrief
-      var essence          = d.essence || 0;
-      var expeditionsDone  = d.expeditionsCompleted || 0;
-      var totalCasts       = d.totalCasts || 0;
-      var critCasts        = d.critCasts || 0;
+      var phase            = (typeof d.phase === 'string' && d.phase) ? d.phase : 'hub'; // hub | loadout | expedition | debrief
+      var essence          = (typeof d.essence === 'number' && isFinite(d.essence)) ? d.essence : 0;
+      var expeditionsDone  = (typeof d.expeditionsCompleted === 'number' && isFinite(d.expeditionsCompleted)) ? d.expeditionsCompleted : 0;
+      var totalCasts       = (typeof d.totalCasts === 'number' && isFinite(d.totalCasts)) ? d.totalCasts : 0;
+      var critCasts        = (typeof d.critCasts === 'number' && isFinite(d.critCasts)) ? d.critCasts : 0;
       // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
       var seenSpells = Array.isArray(d.seenSpells) ? d.seenSpells : [];
       var equippedLoadout = Array.isArray(d.equippedLoadout) ? d.equippedLoadout : [];
@@ -1765,7 +1792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         var todayStr = sageLocalDate(new Date());
         var lastClaim = d.dailyClaimedOn || null;
         var dailyAvailable = lastClaim !== todayStr;
-        var streakState = d.streak || { count: 0, lastDate: null, longest: 0, milestones: {} };
+        var streakState = (d.streak && typeof d.streak === 'object' && !Array.isArray(d.streak)) ? d.streak : { count: 0, lastDate: null, longest: 0, milestones: {} };
         function isYesterday(dateStr) { return sageIsYesterday(dateStr, Date.now()); }
         // Display value: snap to 0 if the saved streak's lastDate is stale
         // (older than yesterday). It'll reset on the next claim anyway.
@@ -1847,7 +1874,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           { key: 'immersiveReader', label: t('stem.allobotsage.immersive_reader', 'Immersive Reader'), icon: '\uD83D\uDCD6' }
         ];
 
-        return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 abs-fade relative' },
+        var activeDomainCount = Object.keys(sourceTally).length;
+        var masteryPct = SPELLBOOK.length > 0 ? Math.round((unlockedSpells.length / SPELLBOOK.length) * 100) : 0;
+        var wandTierHub = unlockedSpells.length === 0 ? 0 : unlockedSpells.length < 4 ? 1 : unlockedSpells.length < 10 ? 2 : 3;
+        var robeTierHub = unlockedSpells.length >= 15 ? 2 : unlockedSpells.length >= 5 ? 1 : 0;
+        var ringRadius = 22;
+        var ringCirc = 2 * Math.PI * ringRadius;
+        var ringOffset = ringCirc * (1 - Math.min(1, Math.max(0, masteryPct / 100)));
+
+        return h('div', { className: 'abs-workbench max-w-4xl mx-auto p-4 md:p-6 abs-fade relative' },
           // ── Spell Preview Modal (overlay) ──
           // Renders when d.previewingSpellId is set. Shows 2-3 sample challenge
           // questions, per-spell SRS health, and a "Drill in Study Hall" jump.
@@ -2037,39 +2072,153 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.spellforge', 'Spellforge'))
           ),
 
-          // Hero row: AlloBot + headline
+          // Hero row: Starbound Spellforge Observatory Deck
           // ── Phase B: wand-tier + robe-tier scale with mastery ──
           // wandTier:  0 (no spells) → 1 (1-3) → 2 (4-9) → 3 (10+)
           // robeTier:  0 (default) → 1 (5+ spells) → 2 (15+ spells)
-          h('div', { className: 'rounded-2xl p-4 md:p-6 mb-4', style: { background: 'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%)', color: 'white' } },
-            h('div', { className: 'flex items-center gap-4' },
-              allobotAvatar(visitMood, {
-                wandTier: unlockedSpells.length === 0 ? 0
-                          : unlockedSpells.length < 4 ? 1
-                          : unlockedSpells.length < 10 ? 2
-                          : 3,
-                robeTier: unlockedSpells.length >= 15 ? 2
-                          : unlockedSpells.length >= 5 ? 1
-                          : 0,
-                idleTwist: true // Phase C: micro-flourish on the hub avatar
-              }),
+          h('div', { className: 'abs-hero-deck p-4 md:p-6 mb-4' },
+            h('div', { className: 'flex flex-col sm:flex-row sm:items-center gap-4' },
+              h('div', { className: 'flex items-center gap-3 shrink-0' },
+                allobotAvatar(visitMood, {
+                  wandTier: wandTierHub,
+                  robeTier: robeTierHub,
+                  idleTwist: true // Phase C: micro-flourish on the hub avatar
+                }),
+                // Grimoire Mastery Arc Gauge (non-spoiler mastery progress)
+                h('svg', { viewBox: '0 0 60 60', width: 58, height: 58, 'aria-hidden': 'true', className: 'shrink-0 hidden sm:block' },
+                  h('circle', { cx: 30, cy: 30, r: ringRadius, fill: 'rgba(15,23,42,0.45)', stroke: 'rgba(196,181,253,0.28)', strokeWidth: 4.5 }),
+                  h('circle', {
+                    cx: 30, cy: 30, r: ringRadius, fill: 'none',
+                    stroke: wandTierHub >= 3 ? '#fde047' : '#a78bfa', strokeWidth: 4.5, strokeLinecap: 'round',
+                    strokeDasharray: ringCirc.toFixed(1), strokeDashoffset: ringOffset.toFixed(1),
+                    transform: 'rotate(-90 30 30)'
+                  }),
+                  h('text', { x: 30, y: 29, fill: '#f8fafc', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, masteryPct + '%'),
+                  h('text', { x: 30, y: 40, fill: '#ddd6fe', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'T' + wandTierHub)
+                )
+              ),
               h('div', { className: 'flex-1 min-w-0' },
-                h('h1', { className: 'text-xl md:text-2xl font-bold' }, t('stem.allobotsage.allobot_starbound_sage', 'AlloBot: Starbound Sage')),
-                h('p', { className: 'text-sm text-violet-200 mt-1 italic' }, greeting),
-                h('div', { className: 'flex flex-wrap gap-2 mt-3 text-xs' },
-                  h('div', { className: 'px-2.5 py-1 rounded-lg bg-white/10' }, '\u2728 ' + unlockedSpells.length + '/' + SPELLBOOK.length + ' spells'),
-                  h('div', { className: 'px-2.5 py-1 rounded-lg bg-white/10' }, '\uD83D\uDD2E ' + totalCasts + ' casts'),
-                  h('div', { className: 'px-2.5 py-1 rounded-lg bg-white/10' }, '\uD83C\uDF0C ' + expeditionsDone + ' expeditions'),
+                h('div', { className: 'flex flex-wrap items-center gap-2 mb-1.5' },
+                  h('span', { className: 'abs-hero-badge' },
+                    h('svg', { viewBox: '0 0 20 20', width: 14, height: 14, 'aria-hidden': 'true' },
+                      h('circle', { cx: 10, cy: 10, r: 8, fill: 'none', stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '3 2' }),
+                      h('polygon', { points: '10,3 11.8,8.2 17,10 11.8,11.8 10,17 8.2,11.8 3,10 8.2,8.2', fill: '#fde047' })
+                    ),
+                    t('stem.allobotsage.starbound_spellforge_badge', 'Starbound Spellforge · Retrieval Roguelite')
+                  )
+                ),
+                h('h1', { className: 'text-xl md:text-2xl font-bold tracking-tight' }, t('stem.allobotsage.allobot_starbound_sage', 'AlloBot: Starbound Sage')),
+                h('p', { className: 'text-sm text-violet-100 mt-1 italic' }, greeting),
+                h('div', { className: 'flex flex-wrap gap-2 mt-3' },
+                  h('div', { className: 'abs-hero-pill' }, '\u2728 ' + unlockedSpells.length + '/' + SPELLBOOK.length + ' ' + t('stem.allobotsage.spells_label', 'spells')),
+                  h('div', { className: 'abs-hero-pill' }, '\uD83E\uDDED ' + activeDomainCount + '/6 ' + t('stem.allobotsage.domains_label', 'domains')),
+                  h('div', { className: 'abs-hero-pill' }, '\uD83D\uDD2E ' + totalCasts + ' ' + t('stem.allobotsage.casts_lower', 'casts')),
+                  h('div', { className: 'abs-hero-pill' }, '\uD83C\uDF0C ' + expeditionsDone + ' ' + t('stem.allobotsage.expeditions_label', 'expeditions')),
                   // Streak chip \u2014 color glows when streak is active (>= 1 day) and intensifies at milestones
                   streakDisplay > 0 && h('div', {
-                    className: 'px-2.5 py-1 rounded-lg font-semibold ' + (streakDisplay >= 7 ? 'bg-orange-400/30 text-orange-100' : 'bg-amber-400/15 text-amber-100'),
+                    className: 'abs-hero-pill abs-hero-pill-gold',
                     title: 'Longest streak: ' + (streakState.longest || streakDisplay) + ' days'
                   }, '\uD83D\uDD25 ' + streakDisplay + '-day streak'),
-                  h('div', { className: 'px-2.5 py-1 rounded-lg bg-amber-400/20 text-amber-200 font-semibold' }, '\u2B50 ' + essence + ' essence')
+                  h('div', { className: 'abs-hero-pill abs-hero-pill-gold' }, '\u2B50 ' + essence + ' ' + t('stem.allobotsage.essence_label', 'essence'))
+                ),
+                // Quick-Launch Observatory Presets (44px touch targets, non-spoiler)
+                h('div', { className: 'abs-preset-bar', role: 'group', 'aria-label': t('stem.allobotsage.quick_launch_presets', 'Quick launch studio modes') },
+                  h('button', {
+                    type: 'button',
+                    className: 'abs-preset-btn',
+                    onClick: function() { sfxClick(); updKey('phase', 'inquiry'); },
+                    'aria-label': t('stem.allobotsage.open_ai_workload_inquiry', 'Open AI Workload Inquiry Lab')
+                  }, '\uD83D\uDD2C ' + t('stem.allobotsage.ai_workload_inquiry_btn', 'AI Workload Inquiry')),
+                  h('button', {
+                    type: 'button',
+                    className: 'abs-preset-btn',
+                    onClick: function() { sfxClick(); updKey('phase', 'dashboard'); },
+                    'aria-label': t('stem.allobotsage.open_progress_telemetry', 'Open Progress Telemetry Dashboard')
+                  }, '\uD83D\uDCCA ' + t('stem.allobotsage.progress_telemetry_btn', 'Progress Telemetry')),
+                  unlockedSpells.length > 0
+                    ? h('button', {
+                        type: 'button',
+                        className: 'abs-preset-btn',
+                        onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: null, practiceQuestion: null, practiceSession: null }); },
+                        'aria-label': t('stem.allobotsage.quick_study_hall_aria', 'Launch untimed Study Hall drill')
+                      }, '\uD83D\uDCDA ' + t('stem.allobotsage.study_hall_btn', 'Study Hall Drill'))
+                    : (ctx.setStemLabTool && h('button', {
+                        type: 'button',
+                        className: 'abs-preset-btn',
+                        onClick: function() { sfxClick(); try { ctx.setStemLabTool('spaceExplorer'); } catch(e) {} },
+                        'aria-label': t('stem.allobotsage.launch_space_explorer_starter', 'Open Space Explorer to unlock your first spell')
+                      }, '\uD83D\uDE80 ' + t('stem.allobotsage.unlock_in_space_explorer', 'Start in Space Explorer')))
                 )
               )
             )
           ),
+
+          // ── Visual Stage: Grimoire Constellation & Domain Resonance Map ──
+          (function() {
+            var constellationNodes = [
+              { key: 'spaceExplorer',   short: t('stem.allobotsage.node_space', 'Space'),     x: 68,  y: 36, color: '#a855f7' },
+              { key: 'mathLab',         short: t('stem.allobotsage.node_math', 'Math'),       x: 150, y: 26, color: '#38bdf8' },
+              { key: 'roadReady',       short: t('stem.allobotsage.node_road', 'RoadReady'),  x: 270, y: 26, color: '#f59e0b' },
+              { key: 'wordSounds',      short: t('stem.allobotsage.node_words', 'Words'),     x: 352, y: 36, color: '#ec4899' },
+              { key: 'writeCraft',      short: t('stem.allobotsage.node_write', 'Write'),     x: 112, y: 94, color: '#34d399' },
+              { key: 'immersiveReader', short: t('stem.allobotsage.node_reader', 'Reader'),   x: 308, y: 94, color: '#60a5fa' }
+            ];
+            var cx = 210, cy = 62;
+            return h('section', { className: 'abs-stage-card', 'aria-label': t('stem.allobotsage.constellation_map_section', 'Grimoire domain constellation map') },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                h('div', { className: 'abs-stage-title' }, '\u2728 ' + t('stem.allobotsage.grimoire_constellation_title', 'Grimoire Constellation & Domain Resonance')),
+                h('div', { className: 'abs-stage-sub font-semibold' }, activeDomainCount + '/6 ' + t('stem.allobotsage.domains_attuned', 'domains attuned') + ' \u00B7 ' + masteryPct + '% ' + t('stem.allobotsage.forged', 'forged'))
+              ),
+              h('svg', {
+                viewBox: '0 0 420 124',
+                width: '100%',
+                height: 124,
+                role: 'img',
+                'aria-label': t('stem.allobotsage.constellation_svg_aria', 'Grimoire constellation showing six STEAM domains connected to the central Spellforge core, with active domains illuminated'),
+                style: { display: 'block', borderRadius: 12, background: isContrast ? '#000000' : 'linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%)', border: isContrast ? '2px solid #ffffff' : '1px solid rgba(139,92,246,0.35)' }
+              },
+                // Subtle orbital reference rings
+                h('ellipse', { cx: cx, cy: cy, rx: 146, ry: 44, fill: 'none', stroke: isContrast ? '#facc15' : 'rgba(167,139,250,0.22)', strokeWidth: 1, strokeDasharray: '4 4' }),
+                h('ellipse', { cx: cx, cy: cy, rx: 86, ry: 28, fill: 'none', stroke: isContrast ? '#ffffff' : 'rgba(148,163,184,0.18)', strokeWidth: 1 }),
+                // Resonance beams from each domain to central core
+                constellationNodes.map(function(nd) {
+                  var active = !!(sourceTally[nd.key] && sourceTally[nd.key].count > 0);
+                  return h('line', {
+                    key: 'beam-' + nd.key,
+                    x1: nd.x, y1: nd.y, x2: cx, y2: cy,
+                    stroke: active ? (isContrast ? '#facc15' : nd.color) : 'rgba(148,163,184,0.32)',
+                    strokeWidth: active ? 2.4 : 1.2,
+                    strokeDasharray: active ? '' : '3 3'
+                  });
+                }),
+                // Central Spellforge Core
+                h('circle', { cx: cx, cy: cy, r: 19, fill: isContrast ? '#000000' : '#312e81', stroke: isContrast ? '#facc15' : '#c4b5fd', strokeWidth: 2 }),
+                h('text', { x: cx, y: cy + 4, fill: '#ffffff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, unlockedSpells.length + '/' + SPELLBOOK.length),
+                // Domain star nodes
+                constellationNodes.map(function(nd) {
+                  var tally = sourceTally[nd.key];
+                  var count = tally ? tally.count : 0;
+                  var active = count > 0;
+                  var labelY = nd.y < 60 ? nd.y + 22 : nd.y + 20;
+                  return h('g', { key: 'node-' + nd.key },
+                    active && h('circle', { cx: nd.x, cy: nd.y, r: 14, fill: isContrast ? '#facc15' : nd.color, opacity: isContrast ? 0.25 : 0.28 }),
+                    h('circle', {
+                      cx: nd.x, cy: nd.y, r: 9.5,
+                      fill: active ? (isContrast ? '#facc15' : nd.color) : '#1e293b',
+                      stroke: active ? '#ffffff' : '#94a3b8',
+                      strokeWidth: active ? 2 : 1.4
+                    }),
+                    h('text', { x: nd.x, y: nd.y + 3.5, fill: active ? (isContrast ? '#000000' : '#ffffff') : '#cbd5e1', fontSize: 10, fontWeight: 800, textAnchor: 'middle' }, count),
+                    h('text', { x: nd.x, y: labelY, fill: active ? '#f8fafc' : '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, nd.short)
+                  );
+                })
+              ),
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mt-2 abs-stage-sub' },
+                h('span', null, t('stem.allobotsage.constellation_legend_lit', 'Bright star = spells forged in domain \u00B7 Dim star = open tool below to ignite')),
+                h('span', { className: 'font-semibold' }, t('stem.allobotsage.wand_tier_readout', 'Wand Tier') + ' ' + wandTierHub + '/3')
+              )
+            );
+          })(),
 
           // Daily bonus
           dailyAvailable && unlockedSpells.length > 0 && h('button', {
@@ -2228,7 +2377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       h('span', { className: 'text-base', style: { filter: h2.earned ? '' : 'grayscale(0.5) opacity(0.65)' } }, h2.icon),
                       h('div', { className: 'flex-1 min-w-0' },
                         h('div', { className: 'font-semibold truncate ' + (h2.earned ? 'text-emerald-900' : 'text-slate-700') }, h2.label),
-                        h('div', { className: 'text-[0.5625rem] ' + (h2.earned ? 'text-emerald-700' : 'text-slate-400') }, h2.earned ? '✓ Earned' : h2.progress)
+                        h('div', { className: 'text-[0.5625rem] ' + (h2.earned ? 'text-emerald-700' : 'text-slate-600') }, h2.earned ? '✓ Earned' : h2.progress)
                       )
                     );
                   })
@@ -2251,8 +2400,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     'aria-label': src.label + (earned ? ': ' + tally.count + ' spells earned' : ': no spells yet')
                   },
                     h('div', { className: 'text-2xl', style: { filter: earned ? '' : 'grayscale(1) opacity(0.5)' } }, src.icon),
-                    h('div', { className: 'text-[0.6875rem] font-bold mt-1 ' + (earned ? 'text-amber-900' : 'text-slate-400') }, src.label),
-                    h('div', { className: 'text-[0.625rem] ' + (earned ? 'text-amber-700' : 'text-slate-400') },
+                    h('div', { className: 'text-[0.6875rem] font-bold mt-1 ' + (earned ? 'text-amber-900' : 'text-slate-600') }, src.label),
+                    h('div', { className: 'text-[0.625rem] ' + (earned ? 'text-amber-700' : 'text-slate-600') },
                       earned ? (tally.count + ' spell' + (tally.count > 1 ? 's' : '')) : 'yet to earn'
                     )
                   );
@@ -2330,15 +2479,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.allobotsage.set_ai_assistance_level_learner_effort', 'Set AI assistance level, learner effort, task novelty, and error cost, then observe how the modeled learning state changes. The result updates live; record a hypothesis or pattern you notice.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · learn ' + learnGain.toFixed(1) + ' · risk ' + risk.toFixed(1)),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-          h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': t('stem.allobotsage.workload_learning_risk_chart', 'Workload, learning, and risk chart'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
-            h('line', { x1: 160, y1: 10, x2: 160, y2: 110, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
-            h('line', { x1: 30, y1: 60, x2: 290, y2: 60, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
-            h('text', { x: 160, y: 8, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, t('stem.allobotsage.high_learning', 'high learning')),
-            h('text', { x: 160, y: 118, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, t('stem.allobotsage.low_learning', 'low learning')),
-            h('text', { x: 30, y: 64, fill: '#94a3b8', fontSize: 8 }, 'safe'),
-            h('text', { x: 290, y: 64, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, 'risky'),
-            h('circle', { cx: 30 + Math.min(260, Math.max(0, risk * 20 + 130)), cy: 60 - Math.min(50, Math.max(-50, learnGain * 5)), r: 6, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
-            h('text', { x: 160, y: 78, fill: sm.color, fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, sm.label)
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }, role: 'group', 'aria-label': t('stem.allobotsage.inquiry_presets_group', 'Workload inquiry scenario presets') },
+            h('button', { type: 'button', className: 'abs-inquiry-preset', onClick: function() { setIQ({ aiAssist: 25, learnerEffort: 75, novelty: 8, errorCost: 4 }); } }, t('stem.allobotsage.preset_balanced_copilot', 'Balanced Co-Pilot')),
+            h('button', { type: 'button', className: 'abs-inquiry-preset', onClick: function() { setIQ({ aiAssist: 90, learnerEffort: 10, novelty: 7, errorCost: 8 }); } }, t('stem.allobotsage.preset_shortcircuit_risk', 'Short-Circuit Risk')),
+            h('button', { type: 'button', className: 'abs-inquiry-preset', onClick: function() { setIQ({ aiAssist: 10, learnerEffort: 85, novelty: 6, errorCost: 9 }); } }, t('stem.allobotsage.preset_high_stakes_solo', 'High-Stakes Solo'))
+          ),
+          h('svg', { width: '100%', height: 144, viewBox: '0 0 360 144', role: 'img', 'aria-label': t('stem.allobotsage.workload_learning_risk_chart', 'Workload, learning, and risk chart'), style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 10, border: '1px solid rgba(148,163,184,0.28)' } },
+            h('rect', { x: 18, y: 18, width: 162, height: 54, fill: 'rgba(34,197,94,0.09)' }),
+            h('rect', { x: 180, y: 72, width: 162, height: 54, fill: 'rgba(239,68,68,0.10)' }),
+            h('line', { x1: 180, y1: 18, x2: 180, y2: 126, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
+            h('line', { x1: 18, y1: 72, x2: 342, y2: 72, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
+            h('text', { x: 180, y: 13, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.allobotsage.high_learning', 'High Learning')),
+            h('text', { x: 180, y: 139, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.allobotsage.low_learning', 'Low Learning')),
+            h('text', { x: 24, y: 68, fill: '#86efac', fontSize: 10, fontWeight: 700 }, t('stem.allobotsage.safe_axis', 'Safe')),
+            h('text', { x: 336, y: 68, fill: '#fca5a5', fontSize: 10, fontWeight: 700, textAnchor: 'end' }, t('stem.allobotsage.risky_axis', 'Risky')),
+            h('circle', { cx: 24 + Math.min(312, Math.max(0, risk * 24 + 156)), cy: 72 - Math.min(46, Math.max(-46, learnGain * 5)), r: 7, fill: sm.color, stroke: '#ffffff', strokeWidth: 2 }),
+            h('text', { x: 180, y: 92, fill: sm.color, fontSize: 11, textAnchor: 'middle', fontWeight: 800 }, sm.label)
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', { style: { fontSize: 11 } },

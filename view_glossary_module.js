@@ -63,9 +63,14 @@ function readGlossaryImageFile(file, signal, allowSvg = false) {
 async function searchGlossaryMulberry(query, signal) {
   const q = String(query || '').trim();
   if (!q) return [];
+  if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+    throw new Error('Online Mulberry symbol search is disabled in offline Desktop mode.');
+  }
   // The glossary's primary term column is English, independent of UI language.
   const response = await fetch('https://globalsymbols.com/api/v1/labels/search?query=' + encodeURIComponent(q) + '&symbolset=mulberry&language=eng&language_iso_format=639-3&limit=30', {
-    signal
+    signal,
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer'
   });
   if (!response.ok) throw new Error('Mulberry search is unavailable. Please try again.');
   const rows = await response.json();
@@ -83,11 +88,18 @@ async function searchGlossaryMulberry(query, signal) {
   }).slice(0, 30);
 }
 async function prepareGlossaryMulberry(result, signal) {
+  if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+    throw new Error('Online Mulberry symbol download is disabled in offline Desktop mode.');
+  }
   if (!/^https:\/\//i.test(result?.url || '')) throw new Error('This symbol has no usable image.');
   const response = await fetch(result.url, {
-    signal
+    signal,
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer'
   });
   if (!response.ok) throw new Error('The symbol could not be downloaded. Please try again.');
+  const declaredLen = Number(response.headers?.get?.('content-length') || 0);
+  if (Number.isFinite(declaredLen) && declaredLen > 10 * 1024 * 1024) throw new Error('The symbol image exceeds the 10 MB limit.');
   const source = await readGlossaryImageFile(await response.blob(), signal, true);
   // Rasterize SVGs for the same image editing/export paths as uploaded pictures.
   // Credit travels inside the image, including exports that copy only image bytes.
@@ -1459,7 +1471,16 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryA
   var syns = Array.isArray(entry.synonyms) ? entry.synonyms.slice(0, 4) : [];
   var audio = entry.audio;
   var sourceWord = entry.word || item.term;
-  var sourceUrl = entry.sourceUrl || (sourceWord ? 'https://en.wiktionary.org/wiki/' + encodeURIComponent(sourceWord) : '');
+  var safeEntryUrl = '';
+  if (entry.sourceUrl) {
+    try {
+      var parsedSrc = new URL(String(entry.sourceUrl));
+      if ((parsedSrc.protocol === 'https:' || parsedSrc.protocol === 'http:') && !parsedSrc.username && !parsedSrc.password) {
+        safeEntryUrl = parsedSrc.href;
+      }
+    } catch (_) {}
+  }
+  var sourceUrl = safeEntryUrl || (sourceWord ? 'https://en.wiktionary.org/wiki/' + encodeURIComponent(sourceWord) : '');
   var sourceLabel = entry.source || 'Wiktionary';
   if (!verifiedDef && !pos && !example && !syns.length && !audio && !sourceUrl) return null;
   var stopCardControlEvent = function (e) {
@@ -2632,6 +2653,7 @@ function GlossaryView(props) {
   function containModalFocus(e, container, onEscape) {
     if (!e) return;
     if (e.key === 'Escape') {
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
       e.preventDefault();
       if (typeof onEscape === 'function') onEscape(e);
       return;
@@ -3334,6 +3356,7 @@ function GlossaryView(props) {
     if (!e) return;
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
     if (e.key === 'Escape') {
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
       handleCloseFlashcardEditDrawer(e);
       return;
     }
@@ -3536,7 +3559,7 @@ function GlossaryView(props) {
     var fieldClass = 'w-full rounded-lg border border-slate-300 px-3 py-2  focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 resize-y';
     var drawerButtonFocus = ' focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2';
     return /*#__PURE__*/React.createElement("div", {
-      className: "fixed inset-0 z-[130] pointer-events-none"
+      className: "fixed inset-0 z-[270] pointer-events-none"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       tabIndex: -1,
@@ -3550,7 +3573,7 @@ function GlossaryView(props) {
       "aria-modal": "true",
       "aria-labelledby": "flashcard-edit-title",
       onKeyDown: handleFlashcardEditDrawerKeyDown,
-      className: "absolute right-0 top-0 h-full w-full max-w-md bg-white text-slate-800 shadow-2xl pointer-events-auto p-5 overflow-y-auto animate-in slide-in-from-right-8 duration-200 motion-reduce:animate-none motion-reduce:transition-none",
+      className: "allo-docsuite absolute right-0 top-0 h-full w-full max-w-md bg-white text-slate-800 shadow-2xl pointer-events-auto p-5 overflow-y-auto animate-in slide-in-from-right-8 duration-200 motion-reduce:animate-none motion-reduce:transition-none",
       onClick: e => e.stopPropagation(),
       onMouseDown: e => e.stopPropagation()
     }, /*#__PURE__*/React.createElement("div", {
@@ -3563,7 +3586,7 @@ function GlossaryView(props) {
     }, t('common.edit'), " ", flashcardTermLabel.toLowerCase())), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: handleCloseFlashcardEditDrawer,
-      className: `p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 ${drawerButtonFocus}`,
+      className: `min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${drawerButtonFocus}`,
       "aria-label": t('common.close')
     }, /*#__PURE__*/React.createElement(X, {
       size: 20,
@@ -3761,6 +3784,7 @@ function GlossaryView(props) {
       submitWordSearchCell(wordSearchActive.r, wordSearchActive.c);
       return;
     } else if (event.key === 'Escape') {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       setWordSearchStart(null);
       setWordSearchPath([]);
@@ -5111,7 +5135,7 @@ function GlossaryView(props) {
     }) || 'Interactive flashcards' : t('flashcards.deck_standard') || 'Interactive flashcards',
     tabIndex: -1,
     onKeyDown: e => containModalFocus(e, flashcardDialogRef.current, closeInteractiveFlashcards),
-    className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start p-4 sm:p-6 animate-in fade-in duration-300 motion-reduce:animate-none motion-reduce:transition-none overflow-auto"
+    className: "fixed inset-0 z-[260] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start p-4 sm:p-6 animate-in fade-in duration-300 motion-reduce:animate-none motion-reduce:transition-none overflow-auto"
   }, /*#__PURE__*/React.createElement("div", {
     "data-flashcard-header": true,
     className: "mb-4 w-full max-w-4xl space-y-3"
@@ -5154,7 +5178,7 @@ function GlossaryView(props) {
     ref: flashcardCloseRef,
     type: "button",
     onClick: closeInteractiveFlashcards,
-    className: "min-h-12 min-w-12 inline-flex items-center justify-center text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+    className: "min-h-12 min-w-12 inline-flex items-center justify-center text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors motion-reduce:transition-none z-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 32,
@@ -5347,7 +5371,8 @@ function GlossaryView(props) {
   }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'definition'))), generatedContent?.data[flashcardIndex].def)))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6 text-slate-600 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse motion-reduce:animate-none"
   }, t('flashcards.flip_hint'), " ", /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 10
+    size: 10,
+    "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("div", {
     "data-flashcard-face": "back",
     style: {

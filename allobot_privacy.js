@@ -19,7 +19,7 @@
     const rawUrl = backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : descriptor.backend === backend ? descriptor.baseUrl : config.backend === backend ? config.baseUrl : '';
     let origin = '';
     try { const url = new URL(rawUrl); if (['https:', 'http:'].includes(url.protocol)) origin = url.origin; } catch (_) {}
-    return { backend, label: names[backend] || 'Other AI', origin, active: Boolean(tag || descriptor.backend || typeof active === 'string'), managed: window.ALLOFLOW_MANAGED_AI_POLICY != null };
+    return { backend, label: Object.prototype.hasOwnProperty.call(names, backend) ? names[backend] : 'Other AI', origin, active: Boolean(tag || descriptor.backend || typeof active === 'string'), managed: window.ALLOFLOW_MANAGED_AI_POLICY != null };
   };
   window.AlloFlowChatPrivacy = Object.freeze({
     destination,

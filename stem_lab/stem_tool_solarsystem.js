@@ -9593,11 +9593,13 @@ const d = labToolData.solarSystem || {};
                     'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
                     'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
                   ];
-                  var i = 0;
+                  if (window._isDesktopBundledApp === true) { cb(); return; }
+var _sri = ["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"];
+var i = 0;
                   (function nextScript() {
                     if (i >= urls.length) { cb(); return; }
                     var s = document.createElement('script');
-                    s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+                    s.src = urls[i]; s.integrity = _sri[i]; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer'; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
                     document.head.appendChild(s);
                   })();
                 };
@@ -11567,6 +11569,7 @@ const d = labToolData.solarSystem || {};
           React.useEffect(function() {
             if (_orrPaused) return;
             var running = true;
+            var rafId = 0;
             var lastTs = performance.now();
             function tick(ts) {
               if (!running) return;
@@ -11575,9 +11578,9 @@ const d = labToolData.solarSystem || {};
               if (dt > 0 && dt < 0.2) { // cap at 200ms to avoid jumps on tab switch
                 _orrTimeRef.current += _orrSpeed * dt;
               }
-              requestAnimationFrame(tick);
+              rafId = requestAnimationFrame(tick);
             }
-            requestAnimationFrame(tick);
+            rafId = requestAnimationFrame(tick);
             // IMPORTANT: no periodic state persistence — writing orr_time to React state every
             // 2s triggers a parent re-render, which unmounts/remounts CanvasPanel (defined
             // inside this IIFE → new identity on every parent render). The canvas buffer
@@ -11588,6 +11591,7 @@ const d = labToolData.solarSystem || {};
             // still work — but only once per unmount, not continuously.
             return function() {
               running = false;
+              if (rafId) { try { cancelAnimationFrame(rafId); } catch (_) {} rafId = 0; }
               try { upd("orr_time", _orrTimeRef.current); } catch (e) { /* non-fatal */ }
             };
           }, [_orrPaused, _orrSpeed]);
@@ -21876,11 +21880,13 @@ const d = labToolData.solarSystem || {};
                               'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
                               'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
                             ];
-                            var i = 0;
+                            if (window._isDesktopBundledApp === true) { cb(); return; }
+var _sri = ["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"];
+var i = 0;
                             (function nextScript() {
                               if (i >= urls.length) { cb(); return; }
                               var s = document.createElement('script');
-                              s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+                              s.src = urls[i]; s.integrity = _sri[i]; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer'; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
                               document.head.appendChild(s);
                             })();
                           };

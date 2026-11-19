@@ -132,6 +132,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     document.head.appendChild(st);
   })();
 
+  // Bespoke Physiology & Nutrition Science Studio CSS + High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-nutritionlab-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-nutritionlab-studio-css';
+    st.textContent = [
+      '.nl-hero-deck { background: linear-gradient(125deg, #064e3b 0%, #0f5132 52%, #0f4c5c 100%); border: 1px solid rgba(110,231,183,0.36); border-radius: 18px; padding: 18px 20px; margin-bottom: 18px; color: #f8fafc; box-shadow: 0 14px 32px -20px rgba(6,78,59,0.75); }',
+      '.nl-emblem-box { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, rgba(16,185,129,0.28), rgba(6,78,59,0.92)); border: 1.5px solid rgba(110,231,183,0.55); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 16px rgba(6,78,59,0.45); }',
+      '.nl-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(163,230,53,0.18); border: 1px solid rgba(190,242,100,0.48); color: #ecfccb; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.nl-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(110,231,183,0.22); }',
+      '.nl-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(2,44,34,0.62); border: 1px solid rgba(110,231,183,0.34); color: #ecfdf5; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.nl-pathway-strip { margin-top: 12px; padding: 8px 10px; border-radius: 12px; background: rgba(2,44,34,0.56); border: 1px solid rgba(110,231,183,0.26); }',
+      '.nl-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(110,231,183,0.22); }',
+      '.nl-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #d1fae5; }',
+      '.nl-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(2,44,34,0.72); border: 1px solid rgba(110,231,183,0.38); color: #ecfdf5; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.nl-starter-chip:hover:not(:disabled) { background: rgba(16,185,129,0.34); border-color: #bef264; color: #ffffff; }',
+      '.nl-starter-chip:focus-visible, .nl-hero-deck button:focus-visible { outline: 2px solid #bef264; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-emblem-box, .theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-subject-badge, .theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-telemetry-pill, .theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-pathway-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // Live region (WCAG 4.1.3)
   (function() {
     if (document.getElementById('allo-live-nutritionlab')) return;
@@ -18804,7 +18829,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var useEffect = React.useEffect;
       var useRef = React.useRef;
 
-      var d = (ctx.toolData && ctx.toolData['nutritionLab']) || {};
+      var rawNl = (ctx && ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData['nutritionLab'] : null;
+      var d = (rawNl && typeof rawNl === 'object' && !Array.isArray(rawNl)) ? rawNl : {};
       // Stabilize view/chrome identities (declarations hoist, so re-binding
       // here covers every later use — views reconcile instead of remounting).
       MicronutrientAtlas = stableType('MicronutrientAtlas', MicronutrientAtlas);
@@ -18830,7 +18856,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       MacroInquiryWidget = stableType('MacroInquiryWidget', MacroInquiryWidget);
       HydrationLab = stableType('HydrationLab', HydrationLab);
       NutrientBodyMap = stableType('NutrientBodyMap', NutrientBodyMap);
-      var upd = function(key, val) { ctx.update('nutritionLab', key, val); };
+      var upd = function(key, val) { if (ctx && typeof ctx.update === 'function') ctx.update('nutritionLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[NutritionLab]', msg); };
 
       // ── Persisted-state helper ──
@@ -18858,7 +18884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         if (savedBadges && d.nlBadges === undefined) upd('nlBadges', savedBadges);
       }
 
-      var viewState = useState(d.view || 'menu');
+      var viewState = useState(typeof d.view === 'string' && d.view ? d.view : 'menu');
       var view = viewState[0], setView = viewState[1];
 
       var BADGE_IDS = ['myNutritionKit','macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay','deficiencyDetective','hydrationLab','macroInquiry','bodyMap'];
@@ -18866,7 +18892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         setView(v);
         upd('view', v);
         if (BADGE_IDS.indexOf(v) !== -1) {
-          var prev = d.nlBadges || {};
+          var prev = (d.nlBadges && typeof d.nlBadges === 'object' && !Array.isArray(d.nlBadges)) ? d.nlBadges : {};
           if (!prev[v]) {
             var next = Object.assign({}, prev);
             next[v] = true;
@@ -18882,14 +18908,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // ─────────────────────────────────────────────────────
 
       function BackBar(props) {
-        return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white p-4 shadow' },
+        return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700 text-white p-4 shadow border-b border-emerald-400/30' },
           h('button', {
             onClick: function() { setView('menu'); upd('view', 'menu'); },
             'aria-label': __alloT('stem.nutritionlab.back_to_nutritionlab_menu', 'Back to NutritionLab menu'),
-            className: 'px-3 py-1.5 rounded-lg bg-black/25 hover:bg-black/40 font-bold text-sm transition-colors focus:outline-none focus:ring-2 ring-white/70'
+            className: 'min-h-[44px] px-3.5 py-2 rounded-lg bg-black/25 hover:bg-black/40 border border-white/20 font-bold text-sm transition-colors focus:outline-none focus:ring-2 ring-white/70'
           }, __alloT('stem.nutritionlab.menu', '← Menu')),
-          h('span', { className: 'text-3xl' }, props.icon),
-          h('h1', { className: 'text-xl font-black flex-1' }, props.title)
+          h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, props.icon),
+          h('h1', { className: 'text-xl font-black flex-1 min-w-0' }, props.title)
         );
       }
 
@@ -19099,10 +19125,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           }
         ];
 
-        var badges = d.nlBadges || {};
+        var badges = (d.nlBadges && typeof d.nlBadges === 'object' && !Array.isArray(d.nlBadges)) ? d.nlBadges : {};
         var visitedCount = BADGE_IDS.filter(function(id) { return badges[id]; }).length;
         var totalCount = BADGE_IDS.length;
         var allDone = visitedCount === totalCount;
+        var nlLocked = !!(ctx && (ctx.quizLock || ctx.teacherLock));
         var nutritionRouteCards = ['myNutritionKit', 'labelReader', 'hydrationLab', 'macroInquiry'].map(function(id) {
           return bigCards.concat(miniCards).find(function(c) { return c.id === id; });
         }).filter(Boolean);
@@ -19157,12 +19184,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         };
 
         return h('div', { className: 'p-6 max-w-6xl mx-auto' },
-          h('div', { className: 'text-center mb-6' },
-            h('div', { className: 'text-6xl mb-3' },
-              h('span', { className: 'nutritionlab-leaf-sway inline-block', 'aria-hidden': true }, '🥗')),
-            h('h1', { className: 'nutritionlab-onhost text-3xl sm:text-4xl font-black text-slate-800 mb-2' }, 'NutritionLab'),
-            h('p', { className: 'nutritionlab-onhost text-lg text-slate-700 max-w-2xl mx-auto' },
-              __alloT('stem.nutritionlab.nutrition_science_from_a_physiology_fi', 'Nutrition science from a physiology-first lens. What your body uses food for, why micronutrients matter, how to read a label, and the careers built on this knowledge. No calorie targets, no good/bad food binaries — just real biology.'))
+          h('div', { className: 'nl-hero-deck' },
+            h('div', { className: 'flex flex-wrap items-center gap-4' },
+              // Bespoke Nutritional Physiology SVG Emblem
+              h('div', { className: 'nl-emblem-box', 'aria-hidden': 'true' },
+                h('svg', { width: 40, height: 40, viewBox: '0 0 48 48', 'aria-hidden': 'true' },
+                  h('circle', { cx: 24, cy: 24, r: 21, fill: 'rgba(2,44,34,0.72)', stroke: '#6ee7b7', strokeWidth: 1.4, strokeDasharray: '4 3' }),
+                  // Balanced nutrient ring arcs (carbs, protein, healthy fats, fiber/micros)
+                  h('circle', { cx: 24, cy: 24, r: 13, fill: 'none', stroke: '#34d399', strokeWidth: 4, strokeDasharray: '26 56', strokeDashoffset: '0' }),
+                  h('circle', { cx: 24, cy: 24, r: 13, fill: 'none', stroke: '#38bdf8', strokeWidth: 4, strokeDasharray: '22 60', strokeDashoffset: '-28' }),
+                  h('circle', { cx: 24, cy: 24, r: 13, fill: 'none', stroke: '#fbbf24', strokeWidth: 4, strokeDasharray: '18 64', strokeDashoffset: '-52' }),
+                  // Cellular ATP / botanical leaf spark center
+                  h('path', { d: 'M24 15 C29 18 30 25 24 31 C18 25 19 18 24 15 Z', fill: '#a7f3d0', stroke: '#064e3b', strokeWidth: 1.2 }),
+                  h('line', { x1: 24, y1: 18, x2: 24, y2: 30, stroke: '#065f46', strokeWidth: 1.4, strokeLinecap: 'round' })
+                )
+              ),
+              h('div', { className: 'flex-1 min-w-[220px]' },
+                h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
+                  h('h1', { className: 'text-2xl sm:text-3xl font-black text-white tracking-tight m-0' }, 'NutritionLab'),
+                  h('span', { className: 'nl-subject-badge' }, __alloT('stem.nutritionlab.subject_badge', 'Human Physiology · Nutrition Science'))
+                ),
+                h('p', { className: 'text-sm text-emerald-50/95 leading-relaxed m-0 max-w-3xl' },
+                  __alloT('stem.nutritionlab.nutrition_science_from_a_physiology_fi', 'Nutrition science from a physiology-first lens. What your body uses food for, why micronutrients matter, how to read a label, and the careers built on this knowledge. No calorie targets, no good/bad food binaries — just real biology.'))
+              )
+            ),
+            // Live non-spoiler telemetry strip
+            h('div', { className: 'nl-telemetry-strip' },
+              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDDED ' + __alloT('stem.nutritionlab.telemetry_explored', 'Modules Explored: ') + visitedCount + ' / ' + totalCount),
+              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDDEC ' + __alloT('stem.nutritionlab.telemetry_nutrients', '35 Nutrients · 12 Body Regions')),
+              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDD57 ' + __alloT('stem.nutritionlab.telemetry_foods', '119+ USDA Foods')),
+              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDDF0 ' + __alloT('stem.nutritionlab.telemetry_kit', '127 Personal Kit Tools'))
+            ),
+            // Physiology-first Nutrient Pathway Schematic (inline SVG, >=10.5px labels, non-spoiler)
+            h('div', { className: 'nl-pathway-strip' },
+              h('svg', {
+                viewBox: '0 0 560 64', role: 'img',
+                'aria-label': __alloT('stem.nutritionlab.a11y_nutrient_pathway_diagram', 'Physiology-first nutrient pathway: Macronutrients for fuel and repair flow through digestion and absorption into micronutrients and cellular ATP supporting brain, muscle, and blood'),
+                style: { width: '100%', maxHeight: 68, height: 'auto', display: 'block' }
+              },
+                h('line', { x1: 168, y1: 32, x2: 204, y2: 32, stroke: '#6ee7b7', strokeWidth: 2 }),
+                h('line', { x1: 356, y1: 32, x2: 392, y2: 32, stroke: '#7dd3fc', strokeWidth: 2 }),
+                h('rect', { x: 8, y: 10, width: 160, height: 44, rx: 10, fill: 'rgba(16,185,129,0.20)', stroke: '#34d399', strokeWidth: 1.4 }),
+                h('text', { x: 88, y: 28, textAnchor: 'middle', fill: '#ecfdf5', fontSize: 11.5, fontWeight: 800 }, 'Macronutrients'),
+                h('text', { x: 88, y: 44, textAnchor: 'middle', fill: '#a7f3d0', fontSize: 10.5 }, 'Carbs · Protein · Fat · Fiber'),
+                h('rect', { x: 204, y: 10, width: 152, height: 44, rx: 10, fill: 'rgba(56,189,248,0.18)', stroke: '#38bdf8', strokeWidth: 1.4 }),
+                h('text', { x: 280, y: 28, textAnchor: 'middle', fill: '#f0f9ff', fontSize: 11.5, fontWeight: 800 }, 'Digestion & Transport'),
+                h('text', { x: 280, y: 44, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'Enzymes · Gut · Circulation'),
+                h('rect', { x: 392, y: 10, width: 160, height: 44, rx: 10, fill: 'rgba(251,191,36,0.18)', stroke: '#fbbf24', strokeWidth: 1.4 }),
+                h('text', { x: 472, y: 28, textAnchor: 'middle', fill: '#fefce8', fontSize: 11.5, fontWeight: 800 }, 'Cellular ATP & Organs'),
+                h('text', { x: 472, y: 44, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'Brain · Muscle · Oxygen · Bone')
+              )
+            ),
+            // One-click Lab Workflow Starters (44px touch targets, hidden when locked)
+            !nlLocked && h('div', { className: 'nl-starter-bar', role: 'group', 'aria-label': __alloT('stem.nutritionlab.quick_starters_label', 'Quick nutrition lab starters') },
+              h('span', { className: 'nl-starter-label' }, __alloT('stem.nutritionlab.quick_launch', 'Quick launch:')),
+              [
+                { id: 'macroLab', icon: '🍽️', label: __alloT('stem.nutritionlab.starter_plate', 'Build a Plate') },
+                { id: 'bodyMap', icon: '🫀', label: __alloT('stem.nutritionlab.starter_bodymap', '3D Body Map') },
+                { id: 'labelReader', icon: '🏷️', label: __alloT('stem.nutritionlab.starter_labels', 'Decode Food Labels') },
+                { id: 'energyBalance', icon: '⚡', label: __alloT('stem.nutritionlab.starter_atp', 'ATP & Metabolism') },
+                { id: 'myNutritionKit', icon: '🥗', label: __alloT('stem.nutritionlab.starter_kit', 'My Nutrition Kit') }
+              ].map(function(st) {
+                return h('button', {
+                  key: 'nl-st-' + st.id, type: 'button', className: 'nl-starter-chip',
+                  onClick: function() { goto(st.id); }
+                }, h('span', { 'aria-hidden': 'true' }, st.icon), h('span', null, st.label));
+              })
+            )
           ),
           // Framing banner — sets tone immediately, especially for adolescent users
           h('div', { className: 'mb-6 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300' },

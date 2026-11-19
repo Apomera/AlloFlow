@@ -4,6 +4,7 @@ Exposes POST /v1/audio/speech with { input, voice, speed }
 Returns WAV audio matching the OpenAI TTS API format.
 """
 import asyncio
+import hmac
 import math
 import os
 import threading
@@ -48,15 +49,52 @@ def is_allowed_origin(origin):
     return origin in trusted
 
 
+def is_allowed_host(host_header):
+    if not host_header or not isinstance(host_header, str):
+        return False
+    try:
+        hostname = (urlsplit("http://" + host_header.strip()).hostname or "").lower()
+    except ValueError:
+        return False
+    allowed = {"localhost", "127.0.0.1", "::1", "edge-tts"}
+    for raw in os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(","):
+        val = raw.strip()
+        if not val:
+            continue
+        try:
+            h = (urlsplit(val).hostname or "").lower()
+            if h:
+                allowed.add(h)
+        except ValueError:
+            pass
+    return hostname in allowed
+
+
 @app.before_request
 def guard_browser_origin():
+    if not is_allowed_host(request.host):
+        return jsonify({"error": "Host header is not allowed."}), 403
     if not is_allowed_origin(request.headers.get("Origin")):
         return jsonify({"error": "Browser origin is not allowed; configure ALLOFLOW_TTS_ALLOWED_ORIGINS for your school app."}), 403
+    if request.method != "OPTIONS" and request.path != "/health":
+        if os.environ.get("ALLOFLOW_OFFLINE_ONLY", "").strip() == "1" and os.environ.get("ALLOFLOW_ALLOW_CLOUD_EDGE_TTS", "").strip() != "1":
+            return jsonify({"error": "Cloud Edge TTS is disabled in ALLOFLOW_OFFLINE_ONLY mode; use local Piper TTS or set ALLOFLOW_ALLOW_CLOUD_EDGE_TTS=1."}), 403
+        expected_token = os.environ.get("ALLOFLOW_TTS_API_TOKEN", "").strip()
+        extra_origins = [v.strip() for v in os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(",") if v.strip()]
+        if (expected_token and len(expected_token) < 32) or (extra_origins and len(expected_token) < 32):
+            return jsonify({"error": "Server misconfigured: ALLOFLOW_TTS_API_TOKEN (>=32 chars) is required when configured or when extra origins are enabled."}), 503
+        if expected_token:
+            auth = request.headers.get("Authorization", "")
+            prefix = "Bearer "
+            if not auth.startswith(prefix) or not hmac.compare_digest(auth[len(prefix):].strip(), expected_token):
+                return jsonify({"error": "Valid bearer token required."}), 401
 
 
 @app.after_request
 def add_cors_headers(response):
     response.vary.add("Origin")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Cache-Control", "no-store")
     origin = request.headers.get("Origin")
     if origin and is_allowed_origin(origin):
         response.headers["Access-Control-Allow-Origin"] = origin
@@ -121,7 +159,7 @@ def _run_edge_tts(text: str, voice: str, rate: str) -> bytes:
 @app.route("/v1/audio/speech", methods=["POST"])
 def speech():
     """OpenAI-compatible TTS endpoint."""
-    data = request.get_json(force=True, silent=True)
+    data = request.get_json(silent=True)
     if not isinstance(data, dict):
         return jsonify({"error": "Request must be a JSON object."}), 400
     text = data.get("input", "")

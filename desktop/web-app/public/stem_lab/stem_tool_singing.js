@@ -2168,7 +2168,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       };
       const open = (idx) => {
         cur = { idx: [...idx] };
-        peak = Math.max(...idx.map((i) => frames[i].loud ?? 0));
+        let maxLoud = 0;
+        for (let k = 0; k < idx.length; k++) {
+          const v = frames[idx[k]].loud ?? 0;
+          if (v > maxLoud) maxLoud = v;
+        }
+        peak = maxLoud;
         dip = null;
         dev = null;
       };
@@ -6359,6 +6364,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         this.stream?.getTracks().forEach((t) => t.stop());
         this.stream = null;
         this.input = null;
+        if (this.ownCtx) {
+          const ctxToClose = this.ownCtx;
+          this.ownCtx = null;
+          try { if (ctxToClose.state !== 'closed') Promise.resolve(ctxToClose.close()).catch(() => {}); } catch (_) {}
+        }
       }
 
       _disconnect() {
@@ -10356,7 +10366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var own = (document.currentScript && document.currentScript.src) || (typeof VS_SCRIPT_SRC === 'string' ? VS_SCRIPT_SRC : '');
       if (own) list.push(new URL('../vendor/opensheetmusicdisplay-2.2.1/opensheetmusicdisplay.min.js', own).href);
     } catch (e) { /* jsdelivr only */ }
-    list.push(VS_OSMD_URL);
+    if (typeof window === 'undefined' || window._isDesktopBundledApp !== true) list.push(VS_OSMD_URL);
     return list;
   }
   function vsLoadOSMD() {
@@ -10371,6 +10381,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       return new Promise(function (resolve) {
         var el = document.createElement('script');
         el.src = sources[i];
+        if (sources[i] === VS_OSMD_URL) {
+          el.integrity = 'sha384-SN393YK0P5KMe7T1cPYzMSaCAP9VHWjBHw+irRbO7IyqZxGp14EH+p3YOKBwC1KL';
+          el.crossOrigin = 'anonymous';
+          el.referrerPolicy = 'no-referrer';
+        }
         el.async = true;
         el.onload = function () { resolve(have() ? true : false); };
         el.onerror = function () { resolve(false); };
@@ -11327,6 +11342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       // The window is opened inside the click: one opened after the music is drawn would count as a pop-up.
       var w = null;
       try { w = window.open('', '_blank'); } catch (e) { w = null; }
+      try { if (w) w.opener = null; } catch (_) {}
       try { if (w && w.document) w.document.write('<p style="font-family:system-ui,sans-serif;margin:2em">' + vsEsc(t('stem.singing.vs_print_preparing', 'Getting the page ready…')) + '</p>'); } catch (e) { w = null; }
       makeSheet(count, system).then(function (html) {
         if (w && !w.closed) {
@@ -13452,8 +13468,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // Audio Engine: Start / Stop
         // ══════════════════════════════════════════
 
+        var startingMicRef = React.useRef(false);
+        var singingMountedRef = React.useRef(true);
         var startMic = React.useCallback(function() {
-          if (isRecording) return;
+          if (isRecording || startingMicRef.current) return;
           setMicError(null);
 
           // A non-secure origin (file:// in the desktop shell) leaves mediaDevices
@@ -13466,6 +13484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             return;
           }
 
+          startingMicRef.current = true;
           // Browser voice processing is on by default and it fights this analysis:
           // auto gain control flattens the loudness Vocal Range measures, and
           // noise suppression smears the amplitude Vibrato Lab reads.
@@ -13477,6 +13496,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             }
           })
             .then(function(stream) {
+              startingMicRef.current = false;
+              if (!singingMountedRef.current) {
+                try { stream.getTracks().forEach(function(tr) { tr.stop(); }); } catch (_) {}
+                return;
+              }
+              if (streamRef.current) { try { streamRef.current.getTracks().forEach(function(tr) { tr.stop(); }); } catch (_) {} }
+              if (audioCtxRef.current) { try { audioCtxRef.current.close().catch(function() {}); } catch (_) {} }
               streamRef.current = stream;
               var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
               audioCtxRef.current = audioCtx;
@@ -13569,6 +13595,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               animFrameRef.current = requestAnimationFrame(analyzeLoop);
             })
             .catch(function(err) {
+              startingMicRef.current = false;
               console.warn('[Singing] Mic error:', err);
               var name = (err && err.name) || '';
               var msg;
@@ -13609,7 +13636,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         // Cleanup on unmount
         React.useEffect(function() {
+          singingMountedRef.current = true;
           return function() {
+            singingMountedRef.current = false;
+            startingMicRef.current = false;
             if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
             if (streamRef.current) {
               streamRef.current.getTracks().forEach(function(track) { track.stop(); });

@@ -70,7 +70,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
     const rawSynthesize = typeof dependencies.synthesize === 'function' ? dependencies.synthesize : null;
     const synthesize = rawSynthesize
         ? async (request) => {
-            if (rawSynthesize._alloQrBlocked === true) {
+            if (rawSynthesize._alloQrBlocked === true || (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('tts', rawSynthesize))))) {
                 throw serviceError('synthesize-unavailable', 'Cloud read-aloud synthesis is disabled in this session.');
             }
             return rawSynthesize(request);
@@ -922,7 +922,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
     const rawBridgeSynthesize = typeof dependencies.synthesize === 'function' ? dependencies.synthesize : null;
     const synthesize = rawBridgeSynthesize
         ? async (request) => {
-            if (rawBridgeSynthesize._alloQrBlocked === true) {
+            if (rawBridgeSynthesize._alloQrBlocked === true || (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('tts', rawBridgeSynthesize))))) {
                 throw new Error('Cloud read-aloud synthesis is disabled in this session.');
             }
             return rawBridgeSynthesize(request);

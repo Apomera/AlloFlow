@@ -68,6 +68,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       '#echo-sonar-fs-workspace:fullscreen .echo-canvas-shell,#echo-sonar-fs-workspace:-webkit-full-screen .echo-canvas-shell{flex:1;min-height:360px}#echo-sonar-fs-workspace:fullscreen .echo-canvas-shell canvas,#echo-sonar-fs-workspace:-webkit-full-screen .echo-canvas-shell canvas{width:100%;height:100%;object-fit:contain}',
       '.echo-canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}',
       '.echo-control-chip{min-height:32px}',
+      '.echo-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:16px 18px;border:1px solid rgba(129,140,248,.35);box-shadow:0 16px 36px -14px rgba(15,23,42,.38),inset 0 1px 0 rgba(255,255,255,.10)}',
+      '.echo-hero-deck--light{background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 54%,#083344 100%);color:#f8fafc}',
+      '.echo-hero-deck--dark{background:linear-gradient(135deg,#020617 0%,#1e1b4b 52%,#0c4a6e 100%);color:#f8fafc}',
+      '.echo-hero-deck--hc,.theme-contrast .echo-hero-deck{background:#000000 !important;background-image:none !important;border:2px solid #ffff00 !important;color:#ffffff !important;box-shadow:none !important}',
+      '.echo-telemetry-pill{display:inline-flex;align-items:center;gap:6px;border-radius:12px;padding:6px 10px;font-size:11px;font-weight:700;border:1px solid rgba(148,163,184,.28);background:rgba(15,23,42,.52);color:#e2e8f0}',
+      '.echo-hero-deck--hc .echo-telemetry-pill,.theme-contrast .echo-telemetry-pill{background:#000000 !important;border-color:#ffff00 !important;color:#ffff00 !important}',
+      '.echo-root :is(button,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:3px solid #6366f1;outline-offset:2px}',
+      '.theme-contrast .echo-root :is(button,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:3px solid #ffff00 !important;outline-offset:2px !important}',
+      '.theme-contrast .echo-tabbar [role="tab"][aria-selected="true"]{background:#ffff00 !important;color:#000000 !important;border:2px solid #ffff00 !important}',
+      '.theme-contrast .echo-tabbar [role="tab"][aria-selected="false"]{background:#000000 !important;color:#ffffff !important;border:1px solid #ffffff !important}',
+      '.theme-contrast .echo-preset-chip{background:#000000 !important;color:#ffff00 !important;border:1px solid #ffff00 !important}',
+      '.theme-contrast .echo-sweep-panel{background:#000000 !important;color:#ffffff !important;border:2px solid #ffff00 !important}',
       '@media(max-width:760px){.echo-focus-grid,.echo-metric-grid{grid-template-columns:1fr!important}.echo-canvas-shell{padding:6px!important}.echo-canvas-toolbar{justify-content:flex-start!important}.echo-focus-subtitle{white-space:normal!important}}'
     ].join('');
     if (document.head) document.head.appendChild(st);
@@ -681,7 +693,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var useEffect = React.useEffect;
       var useRef = React.useRef;
       var useCallback = React.useCallback;
-      var d = (ctx.toolData && ctx.toolData['echolocation']) || {};
+      var rawD = ctx.toolData && ctx.toolData['echolocation'];
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
       // Live ref to `d` for continuous animation loops. The sonar canvas
       // useEffect reads d.mothsCaught, d.fruitCollected, d.caveMapped
       // inside its animate() callback but doesn't list those in its deps
@@ -691,8 +704,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       // mount-time values.
       var dataRef = useRef(d);
       dataRef.current = d;
-      var upd = function(key, val) { ctx.update('echolocation', key, val); };
-      var updMulti = function(obj) { ctx.updateMulti('echolocation', obj); };
+      var upd = function(key, val) { if (typeof ctx.update === 'function') ctx.update('echolocation', key, val); };
+      var updMulti = function(obj) { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('echolocation', obj); };
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
@@ -702,7 +715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var awardXP = ctx.awardXP;
       var celebrate = ctx.celebrate;
       var beep = ctx.beep;
-      var ArrowLeft = ctx.icons.ArrowLeft;
+      var ArrowLeft = (ctx.icons && ctx.icons.ArrowLeft) || function() { return null; };
       var isDark = ctx.isDark;
       var isContrast = ctx.isContrast;
       var gradeLevel = ctx.gradeLevel;
@@ -796,8 +809,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         drips: [], hiddenChamberFound: false
       });
 
-      var sceneIdx = d.sonarScene || 0;
-      var customObjects = d.customObjects || [];
+      var sceneIdx = (typeof d.sonarScene === 'number' && isFinite(d.sonarScene)) ? d.sonarScene : 0;
+      var customObjects = Array.isArray(d.customObjects) ? d.customObjects : [];
 
       function getActiveScene() {
         if (sceneIdx === 4) {
@@ -1013,7 +1026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             var _ens = function(cb){
               if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
               var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-              var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+              if(window._isDesktopBundledApp===true){cb();return;} var _sri=["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.integrity=_sri[i]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
             };
             _ens(function(){
               try {
@@ -3135,6 +3148,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               },
               style: { width: '100%', height: 'auto', borderRadius: '8px', display: 'block', background: isDark ? '#0f172a' : '#f8fafc' }
             }),
+            // Frequency presets + live ultrasonic spectrum band gauge
+            h('div', { className: 'flex flex-wrap items-center gap-1.5 mt-3', role: 'group', 'aria-label': t('stem.echolocation.wave_presets_group', 'Acoustic frequency presets') },
+              h('span', { className: 'text-[0.6875rem] font-bold ' + (isContrast ? 'text-white' : (isDark ? 'text-indigo-200' : 'text-slate-700')) }, t('stem.echolocation.quick_presets', 'Presets:')),
+              [
+                { label: t('stem.echolocation.preset_whale', 'Blue Whale 20 Hz'), hz: 20 },
+                { label: t('stem.echolocation.preset_middle_c', 'Middle C 262 Hz'), hz: 262 },
+                { label: t('stem.echolocation.preset_speech', 'Speech 1 kHz'), hz: 1000 },
+                { label: t('stem.echolocation.preset_brown_bat', 'Little Brown Bat 45 kHz'), hz: 45000 },
+                { label: t('stem.echolocation.preset_horseshoe', 'Horseshoe Bat 85 kHz'), hz: 85000 }
+              ].map(function(pr) {
+                var activeP = Math.abs(waveFreq - pr.hz) <= 15;
+                return h('button', {
+                  key: pr.hz, type: 'button',
+                  'aria-pressed': activeP ? 'true' : 'false',
+                  onClick: function() { upd('waveFreq', pr.hz); },
+                  className: 'echo-preset-chip px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border transition-all ' +
+                    (activeP
+                      ? 'bg-indigo-600 text-white border-indigo-500'
+                      : (isDark ? 'bg-slate-900/70 text-indigo-200 border-indigo-700/60 hover:bg-indigo-900/60' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100'))
+                }, pr.label);
+              })
+            ),
+            (function() {
+              var clampedF = Math.max(20, Math.min(200000, waveFreq));
+              var frac = (Math.log10(clampedF) - Math.log10(20)) / (Math.log10(200000) - Math.log10(20));
+              var markerX = Math.round(16 + frac * 388);
+              var split20k = Math.round(16 + ((Math.log10(20000) - Math.log10(20)) / (Math.log10(200000) - Math.log10(20))) * 388);
+              var bgBand = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f1f5f9');
+              var txtClr = isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#334155');
+              return h('svg', { viewBox: '0 0 420 56', 'aria-hidden': 'true', focusable: 'false', className: 'mt-2.5 w-full', style: { maxHeight: 58, display: 'block' } },
+                h('rect', { x: 16, y: 14, width: split20k - 16, height: 14, fill: isContrast ? '#000000' : (isDark ? '#14532d' : '#bbf7d0'), stroke: isContrast ? '#ffffff' : '#16a34a', strokeWidth: 1 }),
+                h('rect', { x: split20k, y: 14, width: 404 - split20k, height: 14, fill: isContrast ? '#000000' : (isDark ? '#4c1d95' : '#e9d5ff'), stroke: isContrast ? '#ffff00' : '#9333ea', strokeWidth: 1 }),
+                h('line', { x1: markerX, y1: 6, x2: markerX, y2: 34, stroke: isContrast ? '#ffff00' : '#0ea5e9', strokeWidth: 3 }),
+                h('circle', { cx: markerX, cy: 21, r: 5, fill: isContrast ? '#ffff00' : '#38bdf8', stroke: bgBand, strokeWidth: 1.5 }),
+                h('text', { x: 16, y: 49, fontSize: 10, fontWeight: 700, fill: txtClr }, '20 Hz'),
+                h('text', { x: Math.round((16 + split20k) / 2), y: 49, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? '#ffffff' : (isDark ? '#86efac' : '#15803d') }, t('stem.echolocation.spec_human', 'Human Audible')),
+                h('text', { x: split20k, y: 49, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: txtClr }, '20 kHz'),
+                h('text', { x: Math.round((split20k + 404) / 2), y: 49, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? '#ffff00' : (isDark ? '#d8b4fe' : '#6b21a8') }, t('stem.echolocation.spec_ultra', 'Bat Ultrasonic')),
+                h('text', { x: 404, y: 49, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: txtClr }, '200 kHz')
+              );
+            })(),
             // Controls
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3' },
               // Frequency slider
@@ -3728,6 +3782,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               },
               style: { width: '100%', height: 'auto', borderRadius: '8px', display: 'block', background: '#0a0a1a' }
             }),
+            // Doppler motion presets + live shift meter SVG
+            h('div', { className: 'flex flex-wrap items-center gap-1.5 mt-3', role: 'group', 'aria-label': t('stem.echolocation.doppler_presets_group', 'Doppler motion presets') },
+              h('span', { className: 'text-[0.6875rem] font-bold ' + (isContrast ? 'text-white' : (isDark ? 'text-indigo-200' : 'text-slate-700')) }, t('stem.echolocation.motion_presets', 'Motion presets:')),
+              [
+                { label: t('stem.echolocation.doppler_fast_in', 'Fast Approach (-8)'), spd: -8 },
+                { label: t('stem.echolocation.doppler_hover', 'Hovering (0)'), spd: 0 },
+                { label: t('stem.echolocation.doppler_away', 'Cruising Away (+5)'), spd: 5 },
+                { label: t('stem.echolocation.doppler_flee', 'Fleeing Fast (+10)'), spd: 10 }
+              ].map(function(dp) {
+                var activeD = mothSpeed === dp.spd;
+                return h('button', {
+                  key: dp.spd, type: 'button',
+                  'aria-pressed': activeD ? 'true' : 'false',
+                  onClick: function() { upd('mothSpeed', dp.spd); },
+                  className: 'echo-preset-chip px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border transition-all ' +
+                    (activeD
+                      ? 'bg-indigo-600 text-white border-indigo-500'
+                      : (isDark ? 'bg-slate-900/70 text-indigo-200 border-indigo-700/60 hover:bg-indigo-900/60' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100'))
+                }, dp.label);
+              })
+            ),
+            (function() {
+              var midX = 180;
+              var normShift = Math.max(-1, Math.min(1, -mothSpeed / 10));
+              var barW = Math.round(Math.abs(normShift) * 120);
+              var barX = normShift >= 0 ? midX : midX - barW;
+              var barFill = isContrast ? '#ffff00' : (normShift > 0 ? '#3b82f6' : normShift < 0 ? '#ef4444' : '#f59e0b');
+              var txtClr = isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#334155');
+              return h('svg', { viewBox: '0 0 360 44', 'aria-hidden': 'true', focusable: 'false', className: 'mt-2 w-full', style: { maxHeight: 46, display: 'block' } },
+                h('rect', { x: 48, y: 12, width: 264, height: 12, rx: 6, fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#e2e8f0'), stroke: isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1 }),
+                barW > 0 && h('rect', { x: barX, y: 13, width: barW, height: 10, rx: 4, fill: barFill }),
+                h('line', { x1: midX, y1: 6, x2: midX, y2: 30, stroke: isContrast ? '#ffffff' : '#64748b', strokeWidth: 2 }),
+                h('text', { x: 48, y: 39, fontSize: 10, fontWeight: 700, fill: isContrast ? '#ffffff' : (isDark ? '#fca5a5' : '#b91c1c') }, t('stem.echolocation.red_shift_lower', '← Red shift (lower f)')),
+                h('text', { x: midX, y: 39, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: txtClr }, 'f₀'),
+                h('text', { x: 312, y: 39, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: isContrast ? '#ffff00' : (isDark ? '#93c5fd' : '#1d4ed8') }, t('stem.echolocation.blue_shift_higher', 'Blue shift (higher f) →'))
+              );
+            })(),
             // Controls
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3' },
               h('div', null,
@@ -4616,7 +4707,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var soundmapLoading = d.soundmapLoading || false;
 
       function renderEcologyTab() {
-        var ECOLOGY_SECTION_IDS = callGemini ? ['soundscape', 'bioacoustics', 'soundmap'] : ['soundscape', 'bioacoustics'];
+        var ECOLOGY_SECTION_IDS = ['soundscape', 'bioacoustics', 'soundmap'];
+        if (!callGemini) ECOLOGY_SECTION_IDS = ['soundscape', 'bioacoustics'];
         var ecologyTabKeyDown = function(e, index) {
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ECOLOGY_SECTION_IDS.length;
@@ -5270,29 +5362,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       // Own the ground in dark (2026-08-23): the header and tab inks already
       // branch on isDark, but the shell painted nothing, so light inks floated
       // on the host's white content card (40 dark violations).
-      return h('div', { className: 'space-y-4', style: isDark ? { background: '#0f172a', borderRadius: 12, padding: 12 } : undefined },
-        // Header with back button
-        h('div', { className: 'flex items-center justify-between' },
-          h('div', { className: 'flex items-center gap-3' },
-            h('button', {
-              'aria-label': t('stem.echolocation.back_to_stem_lab_menu', 'Back to STEAM Lab menu'),
-              onClick: function() { if (setStemLabTool) setStemLabTool(null); },
-              className: 'p-2 rounded-lg transition-all ' + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-200')
-            }, h(ArrowLeft, { size: 18 })),
-            h('div', null,
-              h('div', { className: 'flex items-center gap-2' },
-                h('span', { className: 'text-2xl' }, '\uD83E\uDD87'),
-                h('span', { className: 'text-lg font-black ' + textColor }, t('stem.echolocation.echolocation_lab', 'Echolocation Lab'))),
-              h('div', { className: 'text-[0.6875rem] ' + subtextColor }, t('stem.echolocation.see_the_world_through_sound_bat_sonar_', 'See the world through sound \u2014 bat sonar vision, sound wave physics, Doppler effect & acoustic ecology')))),
-          // Quest progress
-          h('div', { className: 'text-right text-[0.6875rem] ' + subtextColor },
-            h('div', null, '\uD83E\uDD87 Cave: ' + (d.caveMapped ? '\u2713' : '\u2014')),
-            h('div', null, '\uD83E\uDD8B Moths: ' + (d.mothsCaught || 0) + '/10'),
-            h('div', null, '\uD83C\uDF0A Doppler: ' + (d.dopplerCorrect || 0) + '/5'))
+      var activeSpeciesLabel = currentSpeciesData ? currentSpeciesData.name : t('stem.echolocation.select_species_short', 'Choose species');
+      return h('div', { className: 'echo-root space-y-4', style: isDark ? { background: '#0f172a', borderRadius: 12, padding: 12 } : undefined },
+        // Bespoke Bio-Acoustics & Sonar Observatory Hero Workbench Header
+        h('section', {
+          'data-echo-hero': 'true',
+          className: 'echo-hero-deck ' + (isContrast ? 'echo-hero-deck--hc' : (isDark ? 'echo-hero-deck--dark' : 'echo-hero-deck--light'))
+        },
+          h('div', { className: 'flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between' },
+            h('div', { className: 'flex items-start gap-3 min-w-0' },
+              h('button', {
+                type: 'button',
+                'aria-label': t('stem.echolocation.back_to_stem_lab_menu', 'Back to STEAM Lab menu'),
+                onClick: function() { if (setStemLabTool) setStemLabTool(null); },
+                className: 'shrink-0 p-2 rounded-xl border border-white/20 bg-white/10 text-white transition-all hover:bg-white/20',
+                style: { minWidth: 40, minHeight: 40 }
+              }, h(ArrowLeft, { size: 18 })),
+              h('span', { className: 'shrink-0 inline-flex items-center justify-center rounded-2xl border border-cyan-300/35 bg-white/10 p-1.5', 'aria-hidden': 'true' },
+                h('svg', { viewBox: '0 0 44 44', width: 36, height: 36, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
+                  h('circle', { cx: 22, cy: 22, r: 20, fill: isContrast ? '#000000' : '#0c1228', stroke: isContrast ? '#ffff00' : '#38bdf8', strokeWidth: 1.6 }),
+                  h('path', { d: 'M13 24 Q17 15 22 20 Q27 15 31 24 Q26 22 22 25 Q18 22 13 24 Z', fill: isContrast ? '#ffff00' : '#a5b4fc' }),
+                  h('path', { d: 'M16 14 A9 9 0 0 1 28 14', fill: 'none', stroke: isContrast ? '#ffffff' : '#22d3ee', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                  h('path', { d: 'M12 11 A14 14 0 0 1 32 11', fill: 'none', stroke: isContrast ? '#ffff00' : '#818cf8', strokeWidth: 1.6, strokeLinecap: 'round', strokeOpacity: 0.85 }),
+                  h('circle', { cx: 22, cy: 31, r: 2.2, fill: isContrast ? '#ffff00' : '#34d399' })
+                )
+              ),
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
+                  h('span', { className: 'rounded-full px-2.5 py-0.5 text-[0.625rem] font-black uppercase tracking-[0.16em] ' + (isContrast ? 'bg-black text-yellow-300 border border-yellow-300' : 'bg-cyan-400/15 text-cyan-100 border border-cyan-300/30') },
+                    t('stem.echolocation.subject_badge', 'Science · Bio-Acoustics & Sonar Studio')),
+                  h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-bold ' + (isContrast ? 'bg-black text-white border border-white' : 'bg-indigo-400/20 text-indigo-100 border border-indigo-300/30') },
+                    activeSpeciesLabel)
+                ),
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { className: 'text-xl', 'aria-hidden': 'true' }, '\uD83E\uDD87'),
+                  h('span', { className: 'text-lg sm:text-xl font-black text-white tracking-tight' }, t('stem.echolocation.echolocation_lab', 'Echolocation Lab'))),
+                h('div', { className: 'text-[0.75rem] mt-0.5 ' + (isContrast ? 'text-white' : 'text-indigo-100/90') }, t('stem.echolocation.see_the_world_through_sound_bat_sonar_', 'See the world through sound \u2014 bat sonar vision, sound wave physics, Doppler effect & acoustic ecology'))
+              )
+            ),
+            // Live Telemetry Pills (Quest Progress)
+            h('div', { className: 'flex flex-wrap gap-2 lg:justify-end shrink-0' },
+              h('div', { className: 'echo-telemetry-pill' },
+                h('span', { 'aria-hidden': 'true' }, '\uD83E\uDD87'),
+                h('span', null, t('stem.echolocation.pill_cave', 'Cave: ') + (d.caveMapped ? '\u2713' : '\u2014'))
+              ),
+              h('div', { className: 'echo-telemetry-pill' },
+                h('span', { 'aria-hidden': 'true' }, '\uD83E\uDD8B'),
+                h('span', null, t('stem.echolocation.pill_moths', 'Moths: ') + (d.mothsCaught || 0) + '/10')
+              ),
+              h('div', { className: 'echo-telemetry-pill' },
+                h('span', { 'aria-hidden': 'true' }, '\uD83C\uDF0A'),
+                h('span', null, t('stem.echolocation.pill_doppler', 'Doppler: ') + (d.dopplerCorrect || 0) + '/5')
+              )
+            )
+          )
         ),
 
         // Tab bar
-        h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': t('stem.echolocation.echolocation_lab_sections', 'Echolocation Lab sections') },
+        h('div', { className: 'echo-tabbar flex gap-1.5 flex-wrap p-1.5 rounded-xl border ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-slate-900/80 border-slate-700' : 'bg-slate-100/90 border-slate-200')), role: 'tablist', 'aria-label': t('stem.echolocation.echolocation_lab_sections', 'Echolocation Lab sections') },
           TABS.map(function(tb, ti) {
             var active = tab === tb.id;
             return h('button', {
@@ -5359,7 +5486,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         tab === 'biology' && renderBiologyTab(),
         tab === 'ecology' && renderEcologyTab(),
         tab === 'sweepHunt' && (function() {
-          var iq = d.sweepHunt || { fmin: 40, fmax: 100, sweepMs: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          var rawIq = (d.sweepHunt && typeof d.sweepHunt === 'object' && !Array.isArray(d.sweepHunt)) ? d.sweepHunt : {};
+          var iq = {
+            fmin: (typeof rawIq.fmin === 'number' && isFinite(rawIq.fmin)) ? clamp(rawIq.fmin, 10, 200) : 40,
+            fmax: (typeof rawIq.fmax === 'number' && isFinite(rawIq.fmax)) ? clamp(rawIq.fmax, 10, 200) : 100,
+            sweepMs: (typeof rawIq.sweepMs === 'number' && isFinite(rawIq.sweepMs)) ? clamp(rawIq.sweepMs, 1, 100) : 50,
+            hypothesis: typeof rawIq.hypothesis === 'string' ? rawIq.hypothesis : '',
+            stuckRevealed: !!rawIq.stuckRevealed,
+            understood: !!rawIq.understood,
+            explanation: typeof rawIq.explanation === 'string' ? rawIq.explanation : '',
+            log: Array.isArray(rawIq.log) ? rawIq.log : []
+          };
           function setIQ(patch) { upd('sweepHunt', Object.assign({}, iq, patch)); }
           var bandwidth = iq.fmax - iq.fmin;
           var category;
@@ -5368,48 +5505,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           else if (bandwidth >= 30) category = 'mixed';
           else category = 'narrow';
           var cMeta = {
-            cf:     { label: t('stem.echolocation.cf_constant_frequency', '🎵 CF (constant-frequency)'),     color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.echolocation.long_narrow_band_call_horseshoe_bat_st', 'Long narrow-band call. Horseshoe-bat style. Detects fluttering prey.') },
-            fm:     { label: t('stem.echolocation.fm_chirp_sweep', '〽️ FM (chirp/sweep)'),            color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.echolocation.short_broadband_sweep_most_microbats_e', 'Short broadband sweep. Most microbats. Excellent range/distance.') },
-            mixed:  { label: t('stem.echolocation.mixed_cf_fm', '🎶 Mixed CF-FM'),                 color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.echolocation.long_tailed_bat_style_long_cf_terminal', 'Long-tailed bat style. Long CF + terminal FM chirp.') },
-            narrow: { label: t('stem.echolocation.narrow_short_tone', '🔉 Narrow short tone'),           color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.echolocation.limited_band_less_useful_for_echolocat', 'Limited band. Less useful for echolocation.') }
+            cf:     { label: t('stem.echolocation.cf_constant_frequency', '🎵 CF (constant-frequency)'),     color: isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#7c3aed'), bg: isDark ? 'rgba(124,58,237,0.18)' : '#f5f3ff', border: isContrast ? '#ffff00' : '#c4b5fd', desc: t('stem.echolocation.long_narrow_band_call_horseshoe_bat_st', 'Long narrow-band call. Horseshoe-bat style. Detects fluttering prey.') },
+            fm:     { label: t('stem.echolocation.fm_chirp_sweep', '〽️ FM (chirp/sweep)'),            color: isContrast ? '#ffff00' : (isDark ? '#fca5a5' : '#b91c1c'), bg: isDark ? 'rgba(185,28,28,0.18)' : '#fef2f2', border: isContrast ? '#ffff00' : '#fca5a5', desc: t('stem.echolocation.short_broadband_sweep_most_microbats_e', 'Short broadband sweep. Most microbats. Excellent range/distance.') },
+            mixed:  { label: t('stem.echolocation.mixed_cf_fm', '🎶 Mixed CF-FM'),                 color: isContrast ? '#ffff00' : (isDark ? '#67e8f9' : '#0e7490'), bg: isDark ? 'rgba(14,116,144,0.18)' : '#ecfeff', border: isContrast ? '#ffff00' : '#67e8f9', desc: t('stem.echolocation.long_tailed_bat_style_long_cf_terminal', 'Long-tailed bat style. Long CF + terminal FM chirp.') },
+            narrow: { label: t('stem.echolocation.narrow_short_tone', '🔉 Narrow short tone'),           color: isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#b45309'), bg: isDark ? 'rgba(180,83,9,0.18)' : '#fffbeb', border: isContrast ? '#ffff00' : '#fcd34d', desc: t('stem.echolocation.limited_band_less_useful_for_echolocat', 'Limited band. Less useful for echolocation.') }
           }[category];
-          return h('div', { className: 'p-4 rounded-xl bg-white border border-purple-300' },
-            h('h3', { className: 'text-sm font-black text-purple-700 mb-1' }, t('stem.echolocation.sonar_sweep_discovery', '🎵 Sonar sweep discovery')),
-            h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.echolocation.adjust_min_max_frequency_and_sweep_dur', 'Adjust min/max frequency and sweep duration. Widget classifies call type into 4 discrete categories used by real bats. No score, no reveal.')),
-            h('div', { className: 'mb-3 p-3 rounded text-center', style: { background: isContrast ? '#000000' : cMeta.bg, border: '2px solid ' + cMeta.border } },
+          // Live spectrogram path (freq kHz vs time ms)
+          var spX0 = 44, spX1 = 356, spY0 = 14, spY1 = 96;
+          var spW = spX1 - spX0, spH = spY1 - spY0;
+          var yHi = spY1 - ((Math.max(iq.fmin, iq.fmax) - 10) / 190) * spH;
+          var yLo = spY1 - ((Math.min(iq.fmin, iq.fmax) - 10) / 190) * spH;
+          var xEnd = spX0 + Math.max(8, (iq.sweepMs / 100) * spW);
+          var sweepPath = category === 'mixed'
+            ? ('M ' + spX0 + ' ' + yHi.toFixed(1) + ' L ' + (spX0 + (xEnd - spX0) * 0.65).toFixed(1) + ' ' + yHi.toFixed(1) + ' Q ' + (spX0 + (xEnd - spX0) * 0.85).toFixed(1) + ' ' + ((yHi + yLo) / 2).toFixed(1) + ' ' + xEnd.toFixed(1) + ' ' + yLo.toFixed(1))
+            : ('M ' + spX0 + ' ' + yHi.toFixed(1) + ' Q ' + ((spX0 + xEnd) / 2).toFixed(1) + ' ' + ((yHi + yLo) / 2 + (yLo - yHi) * 0.15).toFixed(1) + ' ' + xEnd.toFixed(1) + ' ' + yLo.toFixed(1));
+          return h('div', { className: 'echo-sweep-panel p-4 rounded-xl border ' + (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-slate-800/80 border-purple-700/60 text-slate-100' : 'bg-white border-purple-300 text-slate-800')) },
+            h('h3', { className: 'text-sm font-black mb-1 ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-purple-300' : 'text-purple-700')) }, t('stem.echolocation.sonar_sweep_discovery', '🎵 Sonar sweep discovery')),
+            h('p', { className: 'text-[0.75rem] mb-3 leading-relaxed ' + (isContrast ? 'text-white' : (isDark ? 'text-slate-300' : 'text-slate-700')) }, t('stem.echolocation.adjust_min_max_frequency_and_sweep_dur', 'Adjust min/max frequency and sweep duration. Widget classifies call type into 4 discrete categories used by real bats. No score, no reveal.')),
+            h('div', { className: 'mb-3 p-3 rounded-xl text-center', style: { background: isContrast ? '#000000' : cMeta.bg, border: '2px solid ' + cMeta.border } },
               h('div', { className: 'text-base font-black', style: { color: cMeta.color } }, cMeta.label),
-              h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, cMeta.desc),
-              h('div', { className: 'text-[0.625rem] text-slate-600 mt-1 font-mono' }, 'BW = ' + bandwidth + ' kHz, dur = ' + iq.sweepMs + ' ms')
+              h('div', { className: 'text-[0.6875rem] mt-1 ' + (isContrast ? 'text-white' : (isDark ? 'text-slate-200' : 'text-slate-700')) }, cMeta.desc),
+              h('div', { className: 'text-[0.625rem] mt-1 font-mono ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-slate-300' : 'text-slate-600')) }, 'BW = ' + bandwidth + ' kHz, dur = ' + iq.sweepMs + ' ms')
             ),
-            h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+            // Live Call Spectrogram SVG
+            h('div', { className: 'mb-3 rounded-xl p-2 border ' + (isContrast ? 'bg-black border-white' : 'bg-slate-950 border-slate-700') },
+              h('svg', { viewBox: '0 0 380 120', 'aria-hidden': 'true', focusable: 'false', className: 'w-full', style: { maxHeight: 132, display: 'block' } },
+                h('rect', { x: spX0, y: spY0, width: spW, height: spH, fill: isContrast ? '#000000' : '#0b1120', stroke: isContrast ? '#ffffff' : '#334155', strokeWidth: 1 }),
+                [50, 100, 150].map(function(fk) {
+                  var gy = spY1 - ((fk - 10) / 190) * spH;
+                  return h('g', { key: fk },
+                    h('line', { x1: spX0, y1: gy, x2: spX1, y2: gy, stroke: isContrast ? '#64748b' : 'rgba(148,163,184,0.2)', strokeDasharray: '3 3' }),
+                    h('text', { x: spX0 - 6, y: gy + 3, textAnchor: 'end', fontSize: 10, fill: '#cbd5e1' }, fk + 'k')
+                  );
+                }),
+                h('path', { d: sweepPath, fill: 'none', stroke: isContrast ? '#ffff00' : cMeta.color, strokeWidth: 4, strokeLinecap: 'round' }),
+                h('circle', { cx: spX0, cy: yHi, r: 4, fill: isContrast ? '#ffff00' : '#38bdf8' }),
+                h('circle', { cx: xEnd, cy: yLo, r: 4, fill: isContrast ? '#ffffff' : '#f472b6' }),
+                h('text', { x: spX0, y: 114, fontSize: 10, fill: '#cbd5e1' }, '0 ms'),
+                h('text', { x: Math.round((spX0 + spX1) / 2), y: 114, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, t('stem.echolocation.spec_time_axis', 'Call Spectrogram (Time ms)')),
+                h('text', { x: spX1, y: 114, textAnchor: 'end', fontSize: 10, fill: '#cbd5e1' }, '100 ms')
+              )
+            ),
+            // Starter Call Presets
+            h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-3', role: 'group', 'aria-label': t('stem.echolocation.sweep_presets_group', 'Bat call type presets') },
+              h('span', { className: 'text-[0.6875rem] font-bold ' + (isContrast ? 'text-white' : (isDark ? 'text-slate-200' : 'text-slate-700')) }, t('stem.echolocation.call_presets', 'Try a call:')),
+              [
+                { label: t('stem.echolocation.preset_cf', 'Horseshoe CF'), fmin: 78, fmax: 84, sweepMs: 65 },
+                { label: t('stem.echolocation.preset_fm', 'Microbat FM'), fmin: 30, fmax: 110, sweepMs: 8 },
+                { label: t('stem.echolocation.preset_mixed', 'Mixed CF-FM'), fmin: 40, fmax: 85, sweepMs: 45 },
+                { label: t('stem.echolocation.preset_narrow', 'Short Narrow'), fmin: 50, fmax: 62, sweepMs: 12 }
+              ].map(function(cp) {
+                return h('button', {
+                  key: cp.label, type: 'button',
+                  onClick: function() { setIQ({ fmin: cp.fmin, fmax: cp.fmax, sweepMs: cp.sweepMs }); },
+                  className: 'echo-preset-chip px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border transition-all ' + (isDark ? 'bg-slate-900 text-purple-200 border-purple-600/60 hover:bg-purple-900/50' : 'bg-purple-50 text-purple-800 border-purple-300 hover:bg-purple-100')
+                }, cp.label);
+              })
+            ),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3' },
               [{ k: 'fmin', l: 'Min freq (kHz)', mn: 10, mx: 200, st: 1 },
                { k: 'fmax', l: 'Max freq (kHz)', mn: 10, mx: 200, st: 1 },
                { k: 'sweepMs', l: 'Sweep (ms)',  mn: 1,  mx: 100, st: 1 }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'sh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-purple-700' }, iq[s.k])),
+                  h('label', { htmlFor: 'sh-' + s.k, className: 'block text-[0.6875rem] font-bold ' + (isContrast ? 'text-white' : (isDark ? 'text-slate-200' : 'text-slate-700')) }, s.l + ': ', h('span', { className: 'font-mono ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-purple-300' : 'text-purple-700')) }, iq[s.k])),
                   h('input', { id: 'sh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                    className: 'w-full', 'aria-label': s.l }));
+                    className: 'w-full accent-purple-500', 'aria-label': s.l }));
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap mb-3' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ mn: iq.fmin, mx: iq.fmax, dur: iq.sweepMs, c: category }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.echolocation.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ fmin: 40, fmax: 100, sweepMs: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.echolocation.reset', '↺ Reset'))
+              h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ mn: iq.fmin, mx: iq.fmax, dur: iq.sweepMs, c: category }]).slice(-8) }); }, className: 'px-2.5 py-1 rounded text-[0.6875rem] font-bold border ' + (isContrast ? 'bg-black text-yellow-300 border-yellow-300' : (isDark ? 'bg-slate-700 text-slate-100 border-slate-500' : 'bg-slate-100 text-slate-700 border-slate-300')) }, t('stem.echolocation.log', '📋 Log')),
+              h('button', { type: 'button', onClick: function() { setIQ({ fmin: 40, fmax: 100, sweepMs: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2.5 py-1 rounded text-[0.6875rem] font-semibold border ' + (isContrast ? 'bg-black text-white border-white' : (isDark ? 'bg-slate-800 text-slate-200 border-slate-600' : 'bg-white text-slate-600 border-slate-300')) }, t('stem.echolocation.reset', '↺ Reset'))
+            ),
+            iq.log && iq.log.length > 0 && h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
+              iq.log.map(function(entry, li) {
+                return h('span', { key: li, className: 'px-2 py-0.5 rounded-full text-[0.625rem] font-mono font-bold border ' + (isContrast ? 'bg-black text-yellow-300 border-yellow-300' : (isDark ? 'bg-slate-900 text-cyan-200 border-cyan-700/60' : 'bg-slate-100 text-slate-700 border-slate-300')) },
+                  entry.mn + '–' + entry.mx + ' kHz · ' + entry.dur + 'ms → ' + String(entry.c).toUpperCase());
+              })
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.echolocation.hypothesis_input', 'Sonar call-type hypothesis'), placeholder: t('stem.echolocation.hypothesis_when_does_the_call_become_f', 'Hypothesis: When does the call become FM vs CF?'),
-              className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300 mb-3' }, t('stem.echolocation.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed mb-3' },
+              className: 'w-full text-[0.75rem] border rounded p-2 font-mono leading-snug mb-3 ' + (isContrast ? 'bg-black text-white border-yellow-300' : (isDark ? 'bg-slate-900 text-slate-100 border-slate-600' : 'bg-white text-slate-800 border-slate-300')), rows: 3 }),
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2.5 py-1 rounded text-[0.6875rem] font-bold border mb-3 ' + (isContrast ? 'bg-black text-yellow-300 border-yellow-300' : (isDark ? 'bg-amber-900/40 text-amber-200 border-amber-600' : 'bg-amber-50 text-amber-800 border-amber-300')) }, t('stem.echolocation.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded border text-[0.6875rem] leading-relaxed mb-3 ' + (isContrast ? 'bg-black text-white border-yellow-300' : (isDark ? 'bg-amber-900/30 border-amber-700 text-amber-100' : 'bg-amber-50 border-amber-200 text-slate-700')) },
               h('ul', { className: 'list-disc pl-5 space-y-1' },
                 h('li', null, t('stem.echolocation.bats_use_cf_for_cluttered_environments', 'Bats use CF for cluttered environments, FM for open. Investigate why.')),
                 h('li', null, t('stem.echolocation.find_two_settings_producing_the_same_c', 'Find two settings producing the same category.')))),
-            h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-              h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
+            h('div', { className: 'p-3 rounded border ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-emerald-900/30 border-emerald-700' : 'bg-emerald-50 border-emerald-200')) },
+              h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold cursor-pointer ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-emerald-200' : 'text-emerald-800')) },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                 t('stem.echolocation.i_understand_explain_in_own_words', 'I understand — explain in own words')),
               iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.echolocation.explanation_input', 'Sonar call-type explanation'), placeholder: t('stem.echolocation.explain_why_call_shape_bandwidth_durat', 'Explain why call shape (bandwidth + duration) determines suitability for different prey.'),
-                className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-            h('div', { className: 'mt-2 text-[0.625rem] italic text-slate-500' }, t('stem.echolocation.design_note_discrete_4_category_sonar_', 'Design note: discrete 4-category sonar marker; no detection-rate score; no reveal — by design.'))
+                className: 'w-full text-[0.75rem] border rounded p-2 font-mono leading-snug mt-2 ' + (isContrast ? 'bg-black text-white border-yellow-300' : (isDark ? 'bg-slate-900 text-slate-100 border-emerald-600' : 'bg-white text-slate-800 border-emerald-300')), rows: 4 })),
+            h('div', { className: 'mt-2 text-[0.625rem] italic ' + (isContrast ? 'text-white' : (isDark ? 'text-slate-300' : 'text-slate-500')) }, t('stem.echolocation.design_note_discrete_4_category_sonar_', 'Design note: discrete 4-category sonar marker; no detection-rate score; no reveal — by design.'))
           );
         })()
       );

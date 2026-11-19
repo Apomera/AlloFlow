@@ -924,6 +924,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     return dt.getFullYear() + '-' + m + '-' + dd;
   }
 
+  // Bespoke Cephalopod Biology & Camouflage Studio CSS + High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-cephalopodlab-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-cephalopodlab-studio-css';
+    st.textContent = [
+      '.cl-hero-deck { margin: 14px 16px 8px; padding: 16px 18px; border-radius: 18px; background: linear-gradient(130deg, #0c1432 0%, #1e1b4b 52%, #0f172a 100%); border: 1px solid rgba(167,139,250,0.38); color: #f8fafc; box-shadow: 0 14px 32px -20px rgba(10,10,31,0.85); min-width: 0; }',
+      '.cl-hero-top { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; min-width: 0; }',
+      '.cl-emblem-box { width: 56px; height: 56px; border-radius: 15px; background: linear-gradient(135deg, rgba(167,139,250,0.28), rgba(15,23,42,0.92)); border: 1.5px solid rgba(196,181,253,0.55); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 16px rgba(15,23,42,0.55); }',
+      '.cl-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(167,139,250,0.22); border: 1px solid rgba(196,181,253,0.48); color: #ede9fe; font-size: 10px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.cl-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(167,139,250,0.22); }',
+      '.cl-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(15,23,42,0.72); border: 1px solid rgba(167,139,250,0.34); color: #f5f3ff; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.cl-pathway-strip { margin-top: 12px; padding: 8px 10px; border-radius: 12px; background: rgba(15,23,42,0.68); border: 1px solid rgba(167,139,250,0.26); display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); align-items: center; gap: 6px; }',
+      '.cl-pathway-stage { padding: 7px 10px; border-radius: 9px; text-align: center; background: rgba(15,23,42,0.72); border: 1.5px solid #475569; min-width: 0; }',
+      '.cl-pathway-stage[data-active="true"] { background: rgba(139,92,246,0.3); border-color: #c4b5fd; }',
+      '.cl-pathway-arrow { color: #a78bfa; font-weight: 900; font-size: 14px; user-select: none; }',
+      '@media (max-width: 640px) { .cl-pathway-strip { grid-template-columns: 1fr; } .cl-pathway-arrow { display: none; } }',
+      '.cl-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(167,139,250,0.22); }',
+      '.cl-starter-label { font-size: 10.5px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; color: #ddd6fe; }',
+      '.cl-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(15,23,42,0.78); border: 1px solid rgba(167,139,250,0.38); color: #f5f3ff; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.cl-starter-chip:hover:not(:disabled) { background: rgba(139,92,246,0.28); border-color: #c4b5fd; color: #ffffff; }',
+      '.cl-starter-chip[data-active="true"] { background: #5b21b6; border-color: #c4b5fd; color: #ffffff; }',
+      '.cl-hero-deck button:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-emblem-box, .theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-subject-badge, .theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-telemetry-pill, .theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-pathway-strip, .theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-pathway-stage { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-pathway-arrow { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="cephalopodLab"] .cl-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   window.StemLab.registerTool('cephalopodLab', {
     icon: '🐙',
     label: 'Cephalopod Lab',
@@ -966,11 +999,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       var dayAbandonDialogRef = React.useRef(null);
       var dayAbandonCancelRef = React.useRef(null);
       var dayAbandonAppRef = React.useRef(null);
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setLabToolData = ctx.setToolData;
       var awardXP = function(n) { if (ctx.awardXP) ctx.awardXP('cephalopodLab', n); };
 
-      var d = labToolData.cephalopodLab || defaultState();
+      var _rawCl = labToolData.cephalopodLab;
+      var d = (_rawCl && typeof _rawCl === 'object' && !Array.isArray(_rawCl)) ? _rawCl : defaultState();
       function setCL(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.cephalopodLab) || defaultState();
@@ -1222,23 +1256,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           subtitle ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, maxWidth: 720 } }, subtitle) : null);
       }
 
-      // ─── Hero header (matches Kitchen Lab / Printing Press pattern) ───
+      // ─── Hero header (Bespoke Cephalopod Biology & Camouflage Studio Deck) ───
       function renderHeader() {
-        return h('div', { style: { padding: '24px 20px 12px', borderBottom: '1px solid rgba(99,102,241,0.18)' } },
-          h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' } },
-            h('div', { 'aria-hidden': 'true',
-              style: { width: 56, height: 56, borderRadius: '50%',
-                background: 'rgba(99,102,241,0.22)', border: '2px solid rgba(167,139,250,0.7)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 28, flexShrink: 0, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' } }, '🐙'),
-            h('div', { style: { flex: 1, minWidth: 240 } },
-              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' } },
-                h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, __alloT('stem.cephalopodlab.cephalopod_lab', 'Cephalopod Lab')),
-                h('div', { style: { fontSize: 10, fontWeight: 700, color: '#c4b5fd', background: 'rgba(167,139,250,0.12)',
-                    border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  TAB_GROUPS.length + ' areas · ' + TAB_SECTION_COUNT + ' sections')),
-              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
-                __alloT('stem.cephalopodlab.evidence_based_cephalopod_biology', 'Evidence-based cephalopod biology: dynamic skin, distributed neural control, hunting strategies, diverse life histories, and deep evolutionary history.')))));
+        var hdrGroup = groupOfSection(section);
+        var clLockedOrQuiz = section === 'quiz' || section === 'challenges' || !!(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked));
+        var clStage = (section === 'hunt' || section === 'evasion' || section === 'day' || section === 'jet' || section === 'defenseMech') ? 'behavior'
+          : (section === 'camo' || section === 'camoHunt' || section === 'skin' || section === 'biolux') ? 'skin'
+          : 'neural';
+        var clEmblemUri = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46 46" fill="none"><ellipse cx="23" cy="17" rx="11" ry="10" fill="rgba(139,92,246,0.34)" stroke="#c4b5fd" stroke-width="1.6"/><circle cx="19" cy="18" r="2.1" fill="#f8fafc"/><circle cx="27" cy="18" r="2.1" fill="#f8fafc"/><circle cx="19" cy="18" r="1" fill="#0f172a"/><circle cx="27" cy="18" r="1" fill="#0f172a"/><circle cx="23" cy="12" r="1.5" fill="#38bdf8"/><circle cx="17" cy="12" r="1.2" fill="#f472b6"/><circle cx="29" cy="12" r="1.2" fill="#fbbf24"/><path d="M15 25 C12 31 9 34 8 39 M20 26 C18 33 16 36 16 40 M26 26 C28 33 30 36 30 40 M31 25 C34 31 37 34 38 39" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/></svg>');
+        return h('header', { className: 'cl-hero-deck', 'data-cephalopod-hero-deck': 'true' },
+          h('div', { className: 'cl-hero-top' },
+            h('div', { className: 'cl-emblem-box', 'aria-hidden': 'true' },
+              h('img', { src: clEmblemUri, alt: '', width: 38, height: 38, style: { display: 'block', width: 38, height: 38 } })
+            ),
+            h('div', { style: { flex: '1 1 240px', minWidth: 0 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
+                h('span', { className: 'cl-subject-badge' }, __alloT('stem.cephalopodlab.badge_subject', 'Marine Biology · Camouflage & Cognition')),
+                h('span', { style: { fontSize: 10, fontWeight: 700, color: '#ddd6fe', background: 'rgba(167,139,250,0.16)', border: '1px solid rgba(196,181,253,0.34)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  TAB_GROUPS.length + ' areas · ' + TAB_SECTION_COUNT + ' sections')
+              ),
+              h('div', { style: { fontSize: 22, fontWeight: 900, color: '#f5f3ff', letterSpacing: '-0.01em', lineHeight: 1.2 } }, '\uD83D\uDC19 ' + __alloT('stem.cephalopodlab.cephalopod_lab', 'Cephalopod Lab')),
+              h('div', { style: { fontSize: 12.5, color: '#dbeafe', marginTop: 4, lineHeight: 1.5, maxWidth: 740 } },
+                __alloT('stem.cephalopodlab.evidence_based_cephalopod_biology', 'Evidence-based cephalopod biology: dynamic skin, distributed neural control, hunting strategies, diverse life histories, and deep evolutionary history.'))
+            )
+          ),
+          // Live non-spoiler telemetry strip
+          h('div', { className: 'cl-telemetry-strip' },
+            h('span', { className: 'cl-telemetry-pill' }, '\uD83E\uDDED ' + __alloT('stem.cephalopodlab.telemetry_area', 'Area: ') + hdrGroup.label),
+            h('span', { className: 'cl-telemetry-pill' }, '\uD83D\uDC19 ' + SPECIES.length + ' ' + __alloT('stem.cephalopodlab.telemetry_species', 'Species Profiles')),
+            h('span', { className: 'cl-telemetry-pill' }, '\uD83C\uDFAF ' + (d.huntsSuccessful || 0) + ' ' + __alloT('stem.cephalopodlab.telemetry_catches', 'Successful Hunts')),
+            h('span', { className: 'cl-telemetry-pill' }, '\uD83C\uDFA8 ' + __alloT('stem.cephalopodlab.telemetry_skin', 'Chromatophores · Bioluminescence'))
+          ),
+          // Chromatophore & Distributed-Nervous-System Pathway Strip (reactive stage highlight)
+          h('div', {
+            className: 'cl-pathway-strip', role: 'region',
+            'aria-label': __alloT('stem.cephalopodlab.a11y_camouflage_pathway_diagram', 'Cephalopod sensory-motor pathway: camera eyes and distributed neural lobes drive rapid chromatophore and papillae skin patterning to power camouflage, hunting, and evasion')
+          },
+            h('div', { className: 'cl-pathway-stage', 'data-active': clStage === 'neural' ? 'true' : 'false' },
+              h('div', { style: { fontSize: 11.5, fontWeight: 800, color: '#f8fafc' } }, '1. Sense & Neural Plan'),
+              h('div', { style: { fontSize: 10.5, color: '#ddd6fe' } }, 'Optic Lobe · Arm Ganglia')
+            ),
+            h('span', { className: 'cl-pathway-arrow', 'aria-hidden': 'true' }, '\u2192'),
+            h('div', { className: 'cl-pathway-stage', 'data-active': clStage === 'skin' ? 'true' : 'false' },
+              h('div', { style: { fontSize: 11.5, fontWeight: 800, color: '#f8fafc' } }, '2. Dynamic Skin'),
+              h('div', { style: { fontSize: 10.5, color: '#bae6fd' } }, 'Chromatophores · Glow')
+            ),
+            h('span', { className: 'cl-pathway-arrow', 'aria-hidden': 'true' }, '\u2192'),
+            h('div', { className: 'cl-pathway-stage', 'data-active': clStage === 'behavior' ? 'true' : 'false' },
+              h('div', { style: { fontSize: 11.5, fontWeight: 800, color: '#f8fafc' } }, '3. Hunt & Evasion'),
+              h('div', { style: { fontSize: 10.5, color: '#a7f3d0' } }, 'Stealth · Jet · Ink')
+            )
+          ),
+          // One-click Cephalopod Lab Starters (44px touch targets, hidden during quiz/challenges/lock)
+          !clLockedOrQuiz && h('div', { className: 'cl-starter-bar', role: 'group', 'aria-label': __alloT('stem.cephalopodlab.a11y_quick_starters', 'Quick cephalopod lab starters') },
+            h('span', { className: 'cl-starter-label' }, __alloT('stem.cephalopodlab.quick_launch', 'Quick launch:')),
+            [
+              { id: 'hunt', icon: '🎯', label: __alloT('stem.cephalopodlab.hunter_sim', 'Hunter Sim') },
+              { id: 'camo', icon: '🎨', label: __alloT('stem.cephalopodlab.camouflage_lab', 'Camouflage Lab') },
+              { id: 'field', icon: '📖', label: __alloT('stem.cephalopodlab.field_guide', 'Field Guide') },
+              { id: 'skin', icon: '🌈', label: __alloT('stem.cephalopodlab.skin_anatomy', 'Skin Anatomy') },
+              { id: 'biolux', icon: '✨', label: __alloT('stem.cephalopodlab.bioluminescence', 'Bioluminescence') },
+              { id: 'intel', icon: '💡', label: __alloT('stem.cephalopodlab.intelligence_2', 'Intelligence') }
+            ].map(function(st) {
+              return h('button', {
+                key: 'cl-st-' + st.id, type: 'button', className: 'cl-starter-chip',
+                'data-active': section === st.id ? 'true' : 'false',
+                onClick: function() { setSection(st.id); awardXP(1); }
+              }, h('span', { 'aria-hidden': 'true' }, st.icon), h('span', null, st.label));
+            })
+          )
+        );
       }
       function renderTabs() {
         // Two-level navigation plus a global section finder.
@@ -13813,7 +13900,7 @@ function createCLHuntFish(T,index){
           var _ens = function(cb){
             if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
             var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-            var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+            if(window._isDesktopBundledApp===true){cb();return;} var _sri=["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.integrity=_sri[i]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
           };
           _ens(function(){
             try {

@@ -53,8 +53,13 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = element.closest('details:not([open])');
       if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
-      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      if (typeof window.getComputedStyle === 'function') {
+        for (let cur = element; cur && cur !== root; cur = cur.parentElement) {
+          const style = window.getComputedStyle(cur);
+          if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+        }
+      }
+      return true;
     });
     const handleKeyDown = (event) => {
       if (!root.isConnected) return;
@@ -181,6 +186,7 @@ function StorybookExportModal({
 
   return (
     <div
+      role="presentation"
       className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
       onClick={(event) => {
         if (!busy && event.target === event.currentTarget) handleSetShowStorybookExportModalToFalse();
@@ -189,7 +195,7 @@ function StorybookExportModal({
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="bg-white rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] max-w-md w-full overflow-y-auto p-6 animate-in zoom-in-95 duration-300 motion-reduce:animate-none"
+        className="allo-docsuite bg-white rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] max-w-md w-full overflow-y-auto p-6 animate-in zoom-in-95 duration-300 motion-reduce:animate-none"
         role="dialog"
         aria-modal="true"
         aria-labelledby="storybook-export-title"

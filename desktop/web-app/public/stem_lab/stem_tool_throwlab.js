@@ -89,7 +89,9 @@ window.StemLab = window.StemLab || {
       + '--allo-stem-canvas:#000000;--allo-stem-panel:#000000;--allo-stem-deeper:#000000;'
       + '--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;'
       + '--allo-stem-button-bg:#000000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;'
-      + 'background:#000000;}';
+      + 'background:#000000;}'
+      + '.theme-contrast [data-throwlab-root] .throwlab-hero-card,.theme-contrast [data-throwlab-root] .throwlab-mode-band{background:#000000!important;border-color:#ffff00!important;box-shadow:none!important;}'
+      + '.theme-contrast [data-throwlab-root] .throwlab-telemetry-pill{background:#000000!important;border-color:#ffff00!important;color:#ffff00!important;}';
     document.head.appendChild(st);
   })();
 
@@ -5471,17 +5473,65 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
-        // Header — mode-aware title
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          ArrowLeft && h('button', {
-            onClick: function() { setStemLabTool && setStemLabTool(null); },
-            'data-tl-focusable': 'true',
-            'aria-label': __alloT('stem.throwlab.back_to_stem_lab', 'Back to STEAM Lab'),
-            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #f1f5f9)', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
-          }, __alloT('stem.throwlab.back', '← Back')),
-          h('h2', { style: { margin: 0, fontSize: 20 } }, modeMeta.icon + ' ThrowLab — ' + modeMeta.label),
-          h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, __alloT('stem.throwlab.evidence_loop_tagline', 'Build evidence one throw at a time.'))
-        ),
+        // Bespoke Sports Physics & Ballistics Workbench Hero Header
+        (function() {
+          var gravMeta = GRAVITY_PRESETS.filter(function(g) { return g.id === d.gravityId; })[0] || GRAVITY_PRESETS[0];
+          var throwEmblem = h('svg', {
+            width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true',
+            style: { flexShrink: 0, display: 'block' }
+          },
+            h('rect', { x: 1.5, y: 1.5, width: 39, height: 39, rx: 10, fill: 'rgba(2,6,23,0.78)', stroke: 'rgba(251,191,36,0.58)', strokeWidth: 1.5 }),
+            h('line', { x1: 7, y1: 33, x2: 35, y2: 33, stroke: 'rgba(148,163,184,0.55)', strokeWidth: 1.4 }),
+            h('path', { d: 'M9 31 Q20 7 33 25', fill: 'none', stroke: '#fbbf24', strokeWidth: 2.2, strokeDasharray: '3 2.5', strokeLinecap: 'round' }),
+            h('circle', { cx: 21, cy: 16, r: 4.2, fill: '#f97316', stroke: '#fef3c7', strokeWidth: 1.3 }),
+            h('path', { d: 'M18 11 A5.5 5.5 0 0 1 25 11', fill: 'none', stroke: '#38bdf8', strokeWidth: 1.4, strokeLinecap: 'round' }),
+            h('circle', { cx: 33, cy: 25, r: 2.5, fill: '#22c55e' })
+          );
+          var pillStyle = {
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '4px 10px', borderRadius: 999,
+            background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.38)',
+            color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums'
+          };
+          return h('header', {
+            className: 'throwlab-hero-card',
+            style: {
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+              padding: '13px 16px', marginBottom: 14, borderRadius: 16,
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 52%, #172554 100%)',
+              border: '1px solid rgba(251,191,36,0.38)',
+              boxShadow: '0 10px 28px rgba(2,6,23,0.42)'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 240px', flexWrap: 'wrap' } },
+              ArrowLeft && h('button', {
+                onClick: function() { setStemLabTool && setStemLabTool(null); },
+                'data-tl-focusable': 'true',
+                'aria-label': __alloT('stem.throwlab.back_to_stem_lab', 'Back to STEAM Lab'),
+                style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #f1f5f9)', padding: '6px 12px', borderRadius: 10, cursor: 'pointer', fontWeight: 700 }
+              }, __alloT('stem.throwlab.back', '← Back')),
+              throwEmblem,
+              h('div', { style: { minWidth: 0, flex: '1 1 160px' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 3 } },
+                  h('span', { className: 'throwlab-telemetry-pill', style: Object.assign({}, pillStyle, { textTransform: 'uppercase', letterSpacing: '0.05em', color: '#fde68a', borderColor: 'rgba(251,191,36,0.48)' }) },
+                    __alloT('stem.throwlab.subject_badge', 'Physics · Sports Ballistics')),
+                  h('span', { className: 'throwlab-telemetry-pill', style: pillStyle },
+                    gravMeta.icon + ' ' + gravMeta.label + ' (' + gravMeta.g + ' m/s²)')
+                ),
+                h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, color: 'var(--allo-stem-text, #f8fafc)', lineHeight: 1.2 } }, modeMeta.icon + ' ThrowLab — ' + modeMeta.label),
+                h('span', { style: { display: 'block', marginTop: 2, fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, __alloT('stem.throwlab.evidence_loop_tagline', 'Build evidence one throw at a time.'))
+              )
+            ),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', minWidth: 0 } },
+              h('span', { className: 'throwlab-telemetry-pill', style: pillStyle },
+                __alloT('stem.throwlab.telemetry_throws', 'Throws:') + ' ' + (Number(d.throwCount) || 0)),
+              d.mode === 'pitching' && h('span', { className: 'throwlab-telemetry-pill', style: Object.assign({}, pillStyle, { color: '#86efac', borderColor: 'rgba(74,222,128,0.45)' }) },
+                __alloT('stem.throwlab.telemetry_strikes', 'Strikes:') + ' ' + (Number(d.strikeCount) || 0)),
+              (Number(d.windMph) || 0) > 0 && h('span', { className: 'throwlab-telemetry-pill', style: Object.assign({}, pillStyle, { color: '#7dd3fc', borderColor: 'rgba(56,189,248,0.45)' }) },
+                '💨 ' + Math.round(Number(d.windMph) || 0) + ' mph')
+            )
+          );
+        })(),
         h('section', {
           className: 'throwlab-learning-loop',
           'aria-label': __alloT('stem.throwlab.how_the_lab_works', 'How Throw Lab works')
@@ -5517,7 +5567,7 @@ window.StemLab = window.StemLab || {
             }
           },
             h('div', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0 } }, '🏅'),
-            h('div', { style: { flex: 1, minWidth: 220 } },
+            h('div', { style: { flex: '1 1 180px', minWidth: 0 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
                 h('strong', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, __alloT('stem.throwlab.pitch_locker', 'Pitch Locker')),
                 h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, got + ' / ' + total + ' types thrown for strikes'),
@@ -5595,7 +5645,15 @@ window.StemLab = window.StemLab || {
             volleyball: { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)', icon: '🏐', title: __alloT('stem.throwlab.server_s_line_over_a_2_43m_net_in_9_9m', "Server's Line \u2014 over a 2.43 m net, into a 9 × 9 m court"),   hint: __alloT('stem.throwlab.volleyball_learning_goal', 'Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.') }
           };
           var meta = MODE_META[d.mode] || MODE_META.pitching;
+          var launchAngleClamped = Math.max(-15, Math.min(60, Number(d.aimDegV) || 0));
+          var vecRad = launchAngleClamped * Math.PI / 180;
+          var vecLen = 34;
+          var vx2 = 22 + Math.cos(vecRad) * vecLen;
+          var vy2 = 40 - Math.sin(vecRad) * vecLen;
+          var speedDisplay = Math.round(Number(d.speedMph) || 0);
+          var spinDisplay = Math.round(Number(d.spinRpm) || 0);
           return h('div', {
+            className: 'throwlab-mode-band',
             style: {
               margin: '0 0 14px',
               padding: '12px 14px',
@@ -5603,13 +5661,28 @@ window.StemLab = window.StemLab || {
               background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
               border: '1px solid ' + meta.accent + '55',
               borderLeft: '4px solid ' + meta.accent,
-              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap'
             }
           },
-            h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-            h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: 'rgb(' + [16, 8, 0].map(function (s) { return Math.round((parseInt(meta.accent.slice(1), 16) >> s & 255) * 0.55 + 115); }).join(',') + ')', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flex: '1 1 220px', minWidth: 0 } },
+              h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('h3', { style: { color: 'rgb(' + [16, 8, 0].map(function (s) { return Math.round((parseInt(meta.accent.slice(1), 16) >> s & 255) * 0.55 + 115); }).join(',') + ')', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            ),
+            // Live reactive launch-vector schematic SVG (speed, angle, spin)
+            h('svg', {
+              width: 146, height: 56, viewBox: '0 0 146 56', 'aria-hidden': 'true',
+              style: { flexShrink: 0, display: 'block', borderRadius: 8, background: 'rgba(2,6,23,0.6)', border: '1px solid rgba(148,163,184,0.28)' }
+            },
+              h('line', { x1: 12, y1: 42, x2: 72, y2: 42, stroke: 'rgba(148,163,184,0.45)', strokeWidth: 1.2, strokeDasharray: '3 2' }),
+              h('circle', { cx: 22, cy: 40, r: 4, fill: meta.accent }),
+              h('line', { x1: 22, y1: 40, x2: vx2, y2: vy2, stroke: '#fbbf24', strokeWidth: 2.2, strokeLinecap: 'round' }),
+              h('circle', { cx: vx2, cy: vy2, r: 2.5, fill: '#fef3c7' }),
+              h('text', { x: 80, y: 20, fill: '#f8fafc', fontSize: 10, fontWeight: 800 }, speedDisplay + ' mph'),
+              h('text', { x: 80, y: 34, fill: '#93c5fd', fontSize: 10, fontWeight: 700 }, launchAngleClamped.toFixed(1) + '°'),
+              h('text', { x: 80, y: 48, fill: '#fcd34d', fontSize: 10, fontWeight: 700 }, spinDisplay + ' rpm')
             )
           );
         })(),

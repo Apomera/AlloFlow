@@ -368,8 +368,13 @@ function VisualSupportsModal(props) {
         if (element.hidden || element.getAttribute('aria-hidden') === 'true' || element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
         const closedDetails = element.closest('details:not([open])');
         if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
-        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+        if (typeof window.getComputedStyle === 'function') {
+          for (let cur = element; cur && cur !== dialog; cur = cur.parentElement) {
+            const style = window.getComputedStyle(cur);
+            if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+          }
+        }
+        return true;
       });
     };
     const first = getFocusable()[0];
@@ -594,11 +599,11 @@ function VisualSupportsModal(props) {
   }, [pauseAnim]);
 
   return (
-          <div className="fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3" onClick={() => setShowVisualSupports(false)}>
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="visual-supports-title" tabIndex={-1} className="bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3" role="presentation" onClick={() => setShowVisualSupports(false)}>
+            <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="visual-supports-title" tabIndex={-1} className="allo-docsuite bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-purple-600 focus:ring-offset-2" onClick={e => e.stopPropagation()}>
               <div style={{background: 'linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)'}} className="p-4 flex items-center justify-between flex-shrink-0">
                 <div>
-                  <h2 id="visual-supports-title" className="text-white font-bold text-lg">🖼️ {tr('title', 'Visual Supports')}</h2>
+                  <h2 id="visual-supports-title" className="text-white font-bold text-lg"><span aria-hidden="true">🖼️ </span>{tr('title', 'Visual Supports')}</h2>
                   <p className="text-purple-200 text-xs mt-0.5">{tr('subtitle', 'Your saved boards & schedules')}</p>
                 </div>
                 <div className="flex items-center gap-2">

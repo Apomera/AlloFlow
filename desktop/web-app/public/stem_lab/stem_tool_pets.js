@@ -575,7 +575,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '@media (max-width:680px){.petslab-trainer-stage{height:clamp(220px,44vw,300px);min-height:220px;}}',
       '@media (max-width:480px){.petslab-trainer-stage{height:clamp(160px,45vw,220px);min-height:160px;}}',
       '@media (prefers-reduced-motion:reduce){.petslab-menu-tile,.petslab-sim-button,.petslab-care-zone,.petslab-sim-choice,.petslab-meter-fill,.petslab-quiz-progress span{transition:none!important;}.petslab-action-pop{display:none!important;}.petslab-trainer-tail,.petslab-trainer-reward,.petslab-decoder-celeb{animation:none!important;}.petslab-menu-tile:hover,.petslab-sim-button:hover,.petslab-sim-choice:hover{transform:none;}}',
-      '.theme-contrast .petslab-command,.theme-contrast .petslab-start-card,.theme-contrast .petslab-menu-tile{box-shadow:none;}'
+      '.petslab-hero-crest{display:inline-flex;align-items:center;gap:12px;min-width:0;}',
+      '.petslab-hero-emblem{flex:0 0 48px;width:48px;height:48px;border-radius:14px;border:1px solid rgba(251,191,36,.5);background:radial-gradient(circle at 30% 25%,rgba(251,191,36,.28),rgba(24,18,16,.88));display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.35);}',
+      '.petslab-hero-subject-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid rgba(251,191,36,.48);background:rgba(245,158,11,.16);color:#fde68a;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}',
+      '.petslab-quick-presets{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;width:100%;}',
+      '.petslab-quick-btn{min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:11px;border:1px solid rgba(251,191,36,.36);background:rgba(24,18,16,.76);color:#fef3e2;font-size:12px;font-weight:750;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .12s ease;}',
+      '.petslab-quick-btn:hover{background:rgba(245,158,11,.22);border-color:#fbbf24;transform:translateY(-1px);}',
+      '.petslab-quick-btn:focus-visible{outline:3px solid #fde047;outline-offset:2px;}',
+      '.petslab-domain-stage{margin:0 0 14px;padding:12px 14px;border:1px solid rgba(245,158,11,.32);border-radius:14px;background:linear-gradient(155deg,rgba(45,32,24,.94),rgba(18,13,11,.98));box-shadow:0 8px 22px rgba(0,0,0,.22);}',
+      '.petslab-domain-stage-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;}',
+      '.petslab-domain-stage-title{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#fde68a;}',
+      '.petslab-domain-stage-meta{font-size:11px;font-weight:700;color:#e8d5b7;}',
+      '.theme-contrast .petslab-menu-shell,.theme-contrast .petslab-view-boundary{background:#000000!important;color:#ffffff!important;border:2px solid #ffffff!important;}',
+      '.theme-contrast .petslab-command,.theme-contrast .petslab-start-card,.theme-contrast .petslab-menu-tile,.theme-contrast .petslab-menu-finder,.theme-contrast .petslab-domain-stage{box-shadow:none!important;background:#000000!important;border:2px solid #facc15!important;color:#ffffff!important;}',
+      '.theme-contrast .petslab-command-stat,.theme-contrast .petslab-quick-btn{background:#000000!important;border:2px solid #ffffff!important;color:#ffffff!important;}',
+      '.theme-contrast .petslab-quick-btn:hover{background:#facc15!important;color:#000000!important;}',
+      '.theme-contrast .petslab-command-stat-label,.theme-contrast .petslab-hero-subject-pill,.theme-contrast .petslab-domain-stage-title{color:#facc15!important;}',
+      '.theme-contrast .petslab-hero-subject-pill{background:#000000!important;border-color:#facc15!important;}'
     ].join('\n');
     document.head.appendChild(petsWorkspaceStyle);
   }
@@ -3439,7 +3455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   function _renderPets(ctx) {
     var React = ctx.React;
     var h = React.createElement;
-    var d = (ctx.toolData && ctx.toolData['petsLab']) || {};
+    var d = (ctx.toolData && ctx.toolData['petsLab'] && typeof ctx.toolData['petsLab'] === 'object' && !Array.isArray(ctx.toolData['petsLab'])) ? ctx.toolData['petsLab'] : {};
     // `val` may be an updater FUNCTION receiving the current stored value.
     // Required anywhere two writes to one key happen in a single pass off the
     // same render snapshot: ctx.update() stores a plain value, so each call
@@ -6494,9 +6510,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { id: 'completed', label: 'Completed' }
       ];
       var _decoderUnique = canonicalDecoderMasteryCount(decoderMastery);
+      var _petsDonePct = trackableTotal > 0 ? Math.round((completedCount / trackableTotal) * 100) : 0;
+      var _petsRingR = 20;
+      var _petsRingC = 2 * Math.PI * _petsRingR;
+      var _petsRingOff = _petsRingC * (1 - Math.min(1, Math.max(0, _petsDonePct / 100)));
+      var _domainPillars = [
+        { id: 'species', label: __alloT('stem.pets.pillar_species', 'Species Biology'), ids: ['dogs', 'cats', 'smallMammals', 'birds', 'reptiles'], color: '#f59e0b' },
+        { id: 'behavior', label: __alloT('stem.pets.pillar_behavior', 'Behavior & Ethology'), ids: ['training', 'bodyLang', 'sensory'], color: '#38bdf8' },
+        { id: 'health', label: __alloT('stem.pets.pillar_health', 'Nutrition & One Health'), ids: ['nutrition', 'zoonoses', 'lifespan'], color: '#34d399' },
+        { id: 'ethics', label: __alloT('stem.pets.pillar_ethics', 'Genetics & Welfare'), ids: ['genetics', 'welfare', 'service', 'myths'], color: '#c084fc' },
+        { id: 'applied', label: __alloT('stem.pets.pillar_applied', 'Care Sim & Planning'), ids: ['careSim', 'picker', 'cost', 'action'], color: '#fb7185' }
+      ];
+      var _quickBenchPresets = [
+        { id: 'sensory', label: __alloT('stem.pets.preset_sensory', 'Through Their Eyes 3D'), icon: '👁️' },
+        { id: 'careSim', label: __alloT('stem.pets.preset_caresim', 'Pet-Care Week Sim'), icon: '🏡' },
+        { id: 'bodyLang', label: __alloT('stem.pets.preset_bodylang', 'Body Language Decoder'), icon: '🐕' },
+        { id: 'cost', label: __alloT('stem.pets.preset_cost', 'Lifetime Cost Calc'), icon: '💵' },
+        { id: 'diagrams', label: __alloT('stem.pets.preset_diagrams', 'Anatomy & Ethology Diagrams'), icon: '🔬' }
+      ];
       return h('main', { className: 'petslab-menu-shell', 'data-petslab-tool': 'true' },
-        h('header', { className: 'petslab-command', 'data-petslab-mission': 'true', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
-          h('h2', { ref: _viewHeadingRef, tabIndex: -1, className: 'petslab-view-title', style: { margin: 0, fontSize: 22 } }, '🐾 Science of Pets Lab'),
+        h('header', { className: 'petslab-command', 'data-petslab-mission': 'true', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 12 } },
+          h('div', { className: 'petslab-hero-crest' },
+            h('div', { className: 'petslab-hero-emblem', 'aria-hidden': 'true' },
+              h('svg', { viewBox: '0 0 44 44', width: 32, height: 32, 'aria-hidden': 'true' },
+                h('circle', { cx: 22, cy: 22, r: 19, fill: 'none', stroke: '#fbbf24', strokeWidth: 1.4, strokeDasharray: '4 3', opacity: 0.75 }),
+                h('ellipse', { cx: 22, cy: 27, rx: 7.5, ry: 6, fill: '#fde68a' }),
+                h('circle', { cx: 13.5, cy: 19, r: 3.2, fill: '#fbbf24' }),
+                h('circle', { cx: 19, cy: 14.5, r: 3.3, fill: '#fbbf24' }),
+                h('circle', { cx: 25, cy: 14.5, r: 3.3, fill: '#fbbf24' }),
+                h('circle', { cx: 30.5, cy: 19, r: 3.2, fill: '#fbbf24' }),
+                h('path', { d: 'M17 27 H20 L21.4 24.5 L23 29.5 L24.5 27 H27', fill: 'none', stroke: '#451a03', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })
+              )
+            ),
+            h('div', { style: { minWidth: 0 } },
+              h('div', { className: 'petslab-hero-subject-pill' }, __alloT('stem.pets.veterinary_workbench_badge', 'Veterinary & Companion Science · 28-Station Lab')),
+              h('h2', { ref: _viewHeadingRef, tabIndex: -1, className: 'petslab-view-title', style: { margin: 0, fontSize: 22 } }, '🐾 Science of Pets Lab')
+            )
+          ),
+          h('svg', { viewBox: '0 0 54 54', width: 52, height: 52, 'aria-hidden': 'true', style: { flex: '0 0 auto' } },
+            h('circle', { cx: 27, cy: 27, r: _petsRingR, fill: 'rgba(16,11,9,0.55)', stroke: 'rgba(251,191,36,0.24)', strokeWidth: 4 }),
+            h('circle', {
+              cx: 27, cy: 27, r: _petsRingR, fill: 'none',
+              stroke: _petsDonePct >= 75 ? '#84cc16' : '#fbbf24', strokeWidth: 4, strokeLinecap: 'round',
+              strokeDasharray: _petsRingC.toFixed(1), strokeDashoffset: _petsRingOff.toFixed(1),
+              transform: 'rotate(-90 27 27)'
+            }),
+            h('text', { x: 27, y: 31, fill: '#fef3e2', fontSize: 11, fontWeight: 900, textAnchor: 'middle' }, _petsDonePct + '%')
+          ),
           h('div', { className: 'petslab-command-stats' },
             h('div', { className: 'petslab-command-stat' }, h('span', { className: 'petslab-command-stat-label' }, 'Started'), h('strong', { className: 'petslab-command-stat-value' }, visitedCount + ' / ' + trackableTotal)),
             h('div', { className: 'petslab-command-stat' }, h('span', { className: 'petslab-command-stat-label' }, 'Completed'), h('strong', { className: 'petslab-command-stat-value' }, completedCount + ' / ' + trackableTotal)),
@@ -6506,6 +6566,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('strong', { className: 'petslab-command-stat-value', style: { color: _decoderUnique > 0 ? T.accentHi : T.text } }, _decoderUnique + ' / 27')
             ),
             h('div', { className: 'petslab-command-stat' }, h('span', { className: 'petslab-command-stat-label' }, 'Badges'), h('strong', { className: 'petslab-command-stat-value' }, String(Object.keys(badges).length)))
+          ),
+          h('div', { className: 'petslab-quick-presets', role: 'group', 'aria-label': __alloT('stem.pets.quick_launch_stations', 'Quick launch veterinary stations') },
+            _quickBenchPresets.map(function(qp) {
+              return h('button', {
+                key: 'qp-' + qp.id,
+                type: 'button',
+                className: 'petslab-quick-btn',
+                'data-pets-focusable': true,
+                onClick: function() { goToView(qp.id, qp.label); },
+                'aria-label': __alloT('stem.pets.open_station_prefix', 'Open ') + qp.label
+              }, h('span', { 'aria-hidden': 'true' }, qp.icon), h('span', null, qp.label));
+            })
+          )
+        ),
+        h('section', { className: 'petslab-domain-stage', 'aria-label': __alloT('stem.pets.clinical_domain_readiness', 'Companion animal science domain readiness') },
+          h('div', { className: 'petslab-domain-stage-head' },
+            h('span', { className: 'petslab-domain-stage-title' }, '🩺 ' + __alloT('stem.pets.domain_telemetry_title', 'Clinical & Ethology Domain Readiness')),
+            h('span', { className: 'petslab-domain-stage-meta' }, completedCount + ' ' + __alloT('stem.pets.completed_of', 'of') + ' ' + trackableTotal + ' ' + __alloT('stem.pets.modules_completed_label', 'modules completed'))
+          ),
+          h('svg', {
+            viewBox: '0 0 460 118',
+            width: '100%',
+            height: 118,
+            role: 'img',
+            'aria-label': __alloT('stem.pets.domain_readiness_svg_aria', 'Horizontal progress chart across five veterinary and companion-animal science domains showing completed and started modules'),
+            style: { display: 'block', borderRadius: 10, background: 'rgba(16,11,9,0.72)', border: '1px solid rgba(251,191,36,0.22)' }
+          },
+            _domainPillars.map(function(p, idx) {
+              var y = 14 + idx * 21;
+              var doneN = p.ids.filter(function(id) { return !!modulesCompleted[id]; }).length;
+              var seenN = p.ids.filter(function(id) { return !!modulesVisited[id]; }).length;
+              var barW = 228;
+              var doneW = p.ids.length > 0 ? Math.round((doneN / p.ids.length) * barW) : 0;
+              var seenW = p.ids.length > 0 ? Math.round((seenN / p.ids.length) * barW) : 0;
+              return h('g', { key: 'pillar-' + p.id },
+                h('text', { x: 12, y: y + 10, fill: '#fef3e2', fontSize: 10.5, fontWeight: 700 }, p.label),
+                h('rect', { x: 162, y: y + 1, width: barW, height: 11, rx: 5, fill: '#2a1e18', stroke: 'rgba(255,255,255,0.14)', strokeWidth: 1 }),
+                seenW > 0 && h('rect', { x: 162, y: y + 1, width: seenW, height: 11, rx: 5, fill: p.color, opacity: 0.35 }),
+                doneW > 0 && h('rect', { x: 162, y: y + 1, width: doneW, height: 11, rx: 5, fill: p.color }),
+                h('text', { x: 448, y: y + 10, fill: '#fde68a', fontSize: 10.5, fontWeight: 800, textAnchor: 'end' }, doneN + '/' + p.ids.length)
+              );
+            })
           )
         ),
         h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },

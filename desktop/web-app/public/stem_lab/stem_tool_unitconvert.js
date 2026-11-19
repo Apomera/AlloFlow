@@ -2317,7 +2317,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         typeof navigator !== 'undefined' ? navigator.language : null]);
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       // Guess first is the default for a student new to this tool (no saved
       // record yet). The choice is written with the first save, so it never
       // flips in the middle of a session.
@@ -2344,8 +2344,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       };
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
-      var t = ctx.t;
-      var ArrowLeft = ctx.icons.ArrowLeft;
+      var t = typeof ctx.t === 'function' ? ctx.t : function(k, fb) { return fb != null ? fb : k; };
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
@@ -3813,16 +3813,23 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           if (tickable) for (var i = 1; i < Math.round(ratio); i++) ticks.push(X0 + BW * i / ratio);
           var ratioText = fmtN(ratio);
           var desc = fill(t('stem.unitconvert.size_desc', 'One {big} equals {ratio} {small}. One {small} is 1/{ratio} of a {big}.'), { big: unitShort(cmp.big), small: unitShort(cmp.small), ratio: ratioText });
-          return h('figure', { className: 'mt-3 rounded-xl border bg-white p-3', 'data-unit-size-model': true },
-            h('figcaption', { className: 'text-sm font-bold text-slate-800' }, t('stem.unitconvert.size_title', 'How big is one of each unit?')),
-            h('svg', { viewBox: '0 0 ' + W + ' 86', width: '100%', role: 'img', 'aria-labelledby': 'uc-size-title uc-size-desc', className: 'mt-2', style: { maxWidth: 520 } },
+          var bigFill = isContrast ? '#000000' : (isDarkUI ? '#0b2a33' : '#cffafe');
+          var bigStroke = isContrast ? '#ffff00' : (isDarkUI ? '#22d3ee' : '#0e7490');
+          var smallFill = isContrast ? '#00ff00' : (isDarkUI ? '#818cf8' : '#4338ca');
+          var labelFill = isContrast ? '#ffffff' : (isDarkUI ? '#f1f5f9' : '#0f172a');
+          return h('figure', { className: 'mt-3 rounded-xl border bg-white p-3 shadow-sm', 'data-unit-size-model': true },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('figcaption', { className: 'text-sm font-bold text-slate-800' }, t('stem.unitconvert.size_title', 'How big is one of each unit?')),
+              h('span', { className: 'rounded-full px-2.5 py-0.5 text-xs font-extrabold border', style: isContrast ? { background: '#000000', color: '#ffff00', borderColor: '#ffff00', fontVariantNumeric: 'tabular-nums' } : isDarkUI ? { background: '#0b2a33', color: '#67e8f9', borderColor: '#0e7490', fontVariantNumeric: 'tabular-nums' } : { background: '#ecfeff', color: '#0e7490', borderColor: '#a5f3fc', fontVariantNumeric: 'tabular-nums' } }, '1 ' + unitShort(cmp.big) + ' = ' + ratioText + ' ' + unitShort(cmp.small))
+            ),
+            h('svg', { viewBox: '0 0 ' + W + ' 88', width: '100%', role: 'img', 'aria-labelledby': 'uc-size-title uc-size-desc', className: 'mt-2', style: { maxWidth: 520, display: 'block' } },
               h('title', { id: 'uc-size-title' }, t('stem.unitconvert.size_title', 'How big is one of each unit?')),
               h('desc', { id: 'uc-size-desc' }, desc),
-              h('rect', { x: X0, y: 8, width: BW, height: 24, fill: isDarkUI ? '#0b2a33' : '#cffafe', stroke: isDarkUI ? '#22d3ee' : '#0e7490', strokeWidth: 2 }),
-              ticks.map(function(x, k) { return h('line', { key: k, x1: x, x2: x, y1: 8, y2: 32, stroke: isDarkUI ? '#22d3ee' : '#0e7490', strokeWidth: 1 }); }),
-              h('text', { x: X0, y: 46, fontSize: 11, fill: isDarkUI ? '#f1f5f9' : '#0f172a', fontWeight: 700 }, '1 ' + unitShort(cmp.big)),
-              h('rect', { x: X0, y: 54, width: smallW, height: 20, fill: isDarkUI ? '#818cf8' : '#4338ca' }),
-              h('text', { x: Math.min(X0 + smallW + 6, W - 60), y: 68, fontSize: 11, fill: isDarkUI ? '#f1f5f9' : '#0f172a', fontWeight: 700 }, '1 ' + unitShort(cmp.small))
+              h('rect', { x: X0, y: 8, width: BW, height: 24, rx: 4, fill: bigFill, stroke: bigStroke, strokeWidth: 2 }),
+              ticks.map(function(x, k) { return h('line', { key: k, x1: x, x2: x, y1: 8, y2: 32, stroke: bigStroke, strokeWidth: 1 }); }),
+              h('text', { x: X0, y: 47, fontSize: 11, fill: labelFill, fontWeight: 700 }, '1 ' + unitShort(cmp.big)),
+              h('rect', { x: X0, y: 55, width: Math.max(4, smallW), height: 20, rx: 3, fill: smallFill }),
+              h('text', { x: Math.min(X0 + Math.max(4, smallW) + 6, W - 64), y: 69, fontSize: 11, fill: labelFill, fontWeight: 700 }, '1 ' + unitShort(cmp.small))
             ),
             h('p', { className: 'mt-1 text-sm text-slate-800' }, desc),
             !tickable && h('p', { className: 'text-xs text-slate-700' }, t('stem.unitconvert.size_too_many', 'There are too many small units to draw each one, so only one is shown to scale.'))
@@ -4322,6 +4329,34 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   onClick: askTutor,
                   className: 'min-h-[2.75rem] px-4 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-100 transition-all active:scale-[0.97]'
                 }, t('stem.unitconvert.tutor_2', '🧠 Tutor'))
+              ),
+
+              // Quick starter conversions (placed after #unitconvert-value to preserve keyboard tab-stop budget)
+              h('div', { className: 'mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-center gap-1.5' },
+                h('span', { className: 'text-xs font-bold text-slate-600' }, t('stem.unitconvert.quick_presets', 'Quick conversions:')),
+                [
+                  { cat: 'length', from: 'm', to: 'cm', val: 1, tag: '1 m → cm' },
+                  { cat: 'length', from: 'km', to: 'mi', val: 5, tag: '5 km → mi' },
+                  { cat: 'weight', from: 'kg', to: 'lb', val: 1, tag: '1 kg → lb' },
+                  { cat: 'temperature', from: '°C', to: '°F', val: 20, tag: '20 °C → °F' },
+                  { cat: 'volume', from: 'gal', to: 'L', val: 1, tag: '1 gal → L' },
+                  { cat: 'time', from: 'hr', to: 'sec', val: 1, tag: '1 hr → sec' }
+                ].map(function(pr) {
+                  var active = d.category === pr.cat && d.fromUnit === pr.from && d.toUnit === pr.to && Number(conversionValue) === pr.val;
+                  return h('button', {
+                    key: pr.tag, type: 'button', 'aria-pressed': active,
+                    onClick: function() {
+                      stemBeep && stemBeep(520, 0.05);
+                      upd({ category: pr.cat, fromUnit: pr.from, toUnit: pr.to, value: pr.val, valueDraft: null, conversionRevealSignature: null });
+                    },
+                    className: 'min-h-[2.75rem] px-3 py-1.5 rounded-full text-xs font-bold border transition',
+                    style: isContrast
+                      ? { background: '#000000', color: active ? '#00ff00' : '#ffff00', borderColor: active ? '#00ff00' : '#ffff00', fontVariantNumeric: 'tabular-nums' }
+                      : active
+                        ? { background: isDarkUI ? '#0e7490' : '#0e7490', color: '#ffffff', borderColor: '#0e7490', fontVariantNumeric: 'tabular-nums' }
+                        : { background: isDarkUI ? '#1e293b' : '#f8fafc', color: isDarkUI ? '#e2e8f0' : '#0f172a', borderColor: isDarkUI ? '#475569' : '#cbd5e1', fontVariantNumeric: 'tabular-nums' }
+                  }, pr.tag);
+                })
               )
             ),
 
@@ -4348,18 +4383,21 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   return val - 273.15;
                 };
                 var thermo = function(val, unit, color) {
-                  var pct = Math.min(100, Math.max(2, ((toCelsius(val, unit) + 50) / 150) * 100));
+                  var pct = Math.min(100, Math.max(4, ((toCelsius(val, unit) + 50) / 150) * 100));
                   return h('div', { key: unit + color, className: 'text-center' },
-                    h('p', { className: 'text-xs font-bold mb-1', style: { color: isDarkUI ? '#f1f5f9' : '#0f172a' } }, formatUnitNumber(val, 4) + ' ' + unit),
-                    h('div', { className: 'relative w-8 h-28 mx-auto bg-slate-200 rounded-full overflow-hidden' },
-                      h('div', { className: 'absolute bottom-0 left-0 right-0 rounded-full transition-all duration-700', style: { backgroundColor: color, height: pct + '%' } })
+                    h('p', { className: 'text-xs font-bold mb-1.5', style: { color: isContrast ? '#ffff00' : (isDarkUI ? '#f1f5f9' : '#0f172a'), fontVariantNumeric: 'tabular-nums' } }, formatUnitNumber(val, 4) + ' ' + unit),
+                    h('div', { className: 'relative w-9 h-28 mx-auto rounded-full overflow-hidden border-2', style: { background: isContrast ? '#000000' : (isDarkUI ? '#0f172a' : '#e2e8f0'), borderColor: isContrast ? '#ffffff' : (isDarkUI ? '#64748b' : '#94a3b8') } },
+                      h('div', { className: 'absolute bottom-0 left-0 right-0 rounded-full transition-all duration-700', style: { backgroundColor: isContrast ? '#ffff00' : color, height: pct + '%' } }),
+                      [25, 50, 75].map(function(tk) {
+                        return h('div', { key: tk, 'aria-hidden': 'true', style: { position: 'absolute', left: 0, right: 0, bottom: tk + '%', height: 1, background: isContrast ? '#ffffff' : 'rgba(15,23,42,0.22)' } });
+                      })
                     ),
-                    h('div', { className: 'w-8 h-8 rounded-full mx-auto mt-1', style: { backgroundColor: color } })
+                    h('div', { className: 'w-9 h-9 rounded-full mx-auto mt-1 border-2', style: { backgroundColor: isContrast ? '#ffff00' : color, borderColor: isContrast ? '#ffffff' : 'transparent' } })
                   );
                 };
                 return [
                   thermo(conversionValue, d.fromUnit, isDarkUI ? '#22d3ee' : '#0e7490'),
-                  h('span', { key: 'arr', className: 'text-2xl text-slate-600 mt-8', 'aria-hidden': 'true' }, '→'),
+                  h('span', { key: 'arr', className: 'text-2xl mt-8', style: { color: isContrast ? '#ffff00' : (isDarkUI ? '#cbd5e1' : '#475569') }, 'aria-hidden': 'true' }, '→'),
                   thermo(result, d.toUnit, isDarkUI ? '#a5b4fc' : '#4338ca')
                 ];
               })()
@@ -5532,6 +5570,140 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           : tab === 'everyday' ? renderEveryday()
           : tab === 'chem' ? renderChem()
           : renderEstimate();
+        var mpLabelsRef = React.useRef(null);
+        mpLabelsRef.current = {
+          exampleText: t('stem.unitconvert.prefix_example', 'Example: {example}'),
+          footerText: t('stem.unitconvert.prefix_footer', 'These prefixes step by 1,000. Centi (10⁻²) and deci (10⁻¹) sit in between.'),
+          examples: { pico: t('stem.unitconvert.prefix_ex_pico', 'pm = bond lengths'), nano: t('stem.unitconvert.prefix_ex_nano', 'nm = wavelengths of light'), micro: t('stem.unitconvert.prefix_ex_micro', 'µm = bacteria'), milli: t('stem.unitconvert.prefix_ex_milli', 'mm = grains of sand'), base: t('stem.unitconvert.prefix_ex_base', 'meter, second, gram, ampere'), kilo: t('stem.unitconvert.prefix_ex_kilo', 'km = walking distance'), mega: t('stem.unitconvert.prefix_ex_mega', 'Mm = continents'), giga: t('stem.unitconvert.prefix_ex_giga', 'Gm = Sun to Earth'), tera: t('stem.unitconvert.prefix_ex_tera', 'Tm = Sun to Jupiter') }
+        };
+        var mpCanvasRef = React.useCallback(function(cvEl) {
+          if (!cvEl) {
+            try { if (window.__alloMetricPrefixCleanup) window.__alloMetricPrefixCleanup(); } catch (e) {}
+            return;
+          }
+          if (cvEl._mpCleanup) cvEl._mpCleanup();
+          else if (cvEl._mpAnim) { cancelAnimationFrame(cvEl._mpAnim); cvEl._mpAnim = null; }
+          try { if (window.__alloMetricPrefixCleanup && window.__alloMetricPrefixCleanup !== cvEl._mpCleanup) window.__alloMetricPrefixCleanup(); } catch (e) {}
+          var c2 = cvEl.getContext('2d');
+          if (!c2) return;
+          var W = cvEl.offsetWidth || 600;
+          var H = cvEl.offsetHeight || 180;
+          cvEl.width = W * 2; cvEl.height = H * 2;
+          if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
+          else c2.scale(2, 2);
+          var start = performance.now();
+          var alive = true;
+          var reducedMotion = false;
+          var ro = null;
+          try { reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+          function isMetricPrefixHidden() { return typeof document !== 'undefined' && !!document.hidden; }
+          function cancelMetricPrefixFrame() {
+            if (cvEl._mpAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(cvEl._mpAnim);
+            cvEl._mpAnim = null;
+          }
+          function scheduleMetricPrefixFrame() {
+            if (!alive || reducedMotion || cvEl._mpAnim || isMetricPrefixHidden()) return;
+            if (typeof requestAnimationFrame !== 'function') return;
+            cvEl._mpAnim = requestAnimationFrame(drawMp);
+          }
+          function cleanupMetricPrefixCanvas() {
+            alive = false;
+            cancelMetricPrefixFrame();
+            if (ro) ro.disconnect();
+            if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onMetricPrefixVisibilityChange);
+            if (window.__alloMetricPrefixCleanup === cvEl._mpCleanup) window.__alloMetricPrefixCleanup = null;
+            cvEl._mpCleanup = null;
+            cvEl._mpRO = null;
+          }
+          function onMetricPrefixVisibilityChange() {
+            if (!alive) return;
+            if (!cvEl.isConnected) { cleanupMetricPrefixCanvas(); return; }
+            if (isMetricPrefixHidden()) cancelMetricPrefixFrame();
+            else { cancelMetricPrefixFrame(); drawMp(); }
+          }
+          function resizeMetricPrefixCanvas() {
+            if (!alive || !cvEl.isConnected) { cleanupMetricPrefixCanvas(); return; }
+            cancelMetricPrefixFrame();
+            W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 180;
+            cvEl.width = W * 2; cvEl.height = H * 2;
+            if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
+            else c2.scale(2, 2);
+            drawMp();
+          }
+          cvEl._mpCleanup = cleanupMetricPrefixCanvas;
+          try { window.__alloMetricPrefixCleanup = cvEl._mpCleanup; } catch (e) {}
+          if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onMetricPrefixVisibilityChange);
+          var prefixes = [
+            { sym: 'p', name: 'pico', exp: -12, color: '#a855f7' },
+            { sym: 'n', name: 'nano', exp: -9, color: '#3b82f6' },
+            { sym: 'µ', name: 'micro', exp: -6, color: '#22d3ee' },
+            { sym: 'm', name: 'milli', exp: -3, color: '#86efac' },
+            { sym: '', name: 'base', exp: 0, color: '#fff' },
+            { sym: 'k', name: 'kilo', exp: 3, color: '#fde047' },
+            { sym: 'M', name: 'mega', exp: 6, color: '#fb923c' },
+            { sym: 'G', name: 'giga', exp: 9, color: '#fb7185' },
+            { sym: 'T', name: 'tera', exp: 12, color: '#dc2626' }
+          ];
+          function drawMp() {
+            if (!alive) return;
+            cvEl._mpAnim = null;
+            if (!cvEl.isConnected) { cleanupMetricPrefixCanvas(); return; }
+            if (isMetricPrefixHidden()) { cancelMetricPrefixFrame(); return; }
+            var labels = mpLabelsRef.current || { exampleText: 'Example: {example}', footerText: '', examples: {} };
+            var t = reducedMotion ? 8 : (performance.now() - start) / 1000;
+            c2.fillStyle = '#0c1a2e';
+            c2.fillRect(0, 0, W, H);
+            var cellW = (W - 30) / prefixes.length;
+            var blink = Math.floor((t * 0.5) % prefixes.length);
+            prefixes.forEach(function(p, i) {
+              var x = 15 + i * cellW;
+              var y = H * 0.2;
+              var sel = i === blink;
+              c2.save();
+              if (sel) { c2.shadowColor = p.color; c2.shadowBlur = 16; }
+              c2.fillStyle = p.color;
+              c2.globalAlpha = sel ? 1 : 0.7;
+              c2.fillRect(x, y, cellW - 4, H * 0.5);
+              c2.restore();
+              c2.fillStyle = sel ? '#0c1a2e' : (p.exp === 0 ? '#0c1a2e' : 'rgba(0,0,0,0.7)');
+              c2.font = 'bold 14px serif';
+              c2.textAlign = 'center';
+              c2.fillText(p.sym || '—', x + cellW / 2, y + 22);
+              c2.font = 'bold 9px sans-serif';
+              c2.fillText(p.name, x + cellW / 2, y + 38);
+              c2.font = 'bold 10px monospace';
+              c2.fillText('10' + String(p.exp).split('').map(function(ch) { return ch === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'.charAt(Number(ch)); }).join(''), x + cellW / 2, y + 54);
+            });
+            // Selected info
+            var cur = prefixes[blink];
+            c2.fillStyle = cur.color;
+            c2.font = 'bold 12px sans-serif';
+            c2.textAlign = 'center';
+            var examples = {
+              'pico': 'pm = bond lengths',
+              'nano': 'nm = wavelengths',
+              'micro': 'µm = bacteria',
+              'milli': 'mm = grains of sand',
+              'base': 'meter, second, gram, ampere',
+              'kilo': 'km = walking distance',
+              'mega': 'Mm = continents',
+              'giga': 'Gm = Sun-Earth',
+              'tera': 'Tm = Jupiter-Sun'
+            };
+            c2.fillText(labels.exampleText.split('{example}').join(labels.examples[cur.name] || examples[cur.name] || ''), W / 2, H - 24);
+            c2.fillStyle = 'rgba(0,0,0,0.85)';
+            c2.fillRect(8, H - 14, W - 16, 12);
+            c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#93c5fd'; c2.textAlign = 'center';
+            c2.fillText(labels.footerText, W / 2, H - 5);
+            scheduleMetricPrefixFrame();
+          }
+          drawMp();
+          if (typeof ResizeObserver === 'function') {
+            ro = new ResizeObserver(resizeMetricPrefixCanvas);
+            cvEl._mpRO = ro;
+            ro.observe(cvEl);
+          }
+        }, []);
         var prefixPanel = (
           // ═══ METRIC PREFIXES ═══
           h('div', { className: 'mt-5 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
@@ -5548,137 +5720,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', {
                 role: 'img', tabIndex: 0, 'aria-label': t('stem.unitconvert.prefix_scale_desc', 'Metric prefixes from small to large: pico 10⁻¹², nano 10⁻⁹, micro 10⁻⁶, milli 10⁻³, the base unit 10⁰, kilo 10³, mega 10⁶, giga 10⁹ and tera 10¹². Each step is 1,000 times the one before. The highlight moves from one prefix to the next.'),
-                ref: function(cvEl) {
-                  if (!cvEl) {
-                    try { if (window.__alloMetricPrefixCleanup) window.__alloMetricPrefixCleanup(); } catch (e) {}
-                    return;
-                  }
-                  if (cvEl._mpCleanup) cvEl._mpCleanup();
-                  else if (cvEl._mpAnim) { cancelAnimationFrame(cvEl._mpAnim); cvEl._mpAnim = null; }
-                  try { if (window.__alloMetricPrefixCleanup && window.__alloMetricPrefixCleanup !== cvEl._mpCleanup) window.__alloMetricPrefixCleanup(); } catch (e) {}
-                  var c2 = cvEl.getContext('2d');
-                  if (!c2) return;
-                  // Translated once here: inside drawMp the name t is the clock.
-                  var mpExampleText = t('stem.unitconvert.prefix_example', 'Example: {example}');
-                  var mpFooterText = t('stem.unitconvert.prefix_footer', 'These prefixes step by 1,000. Centi (10⁻²) and deci (10⁻¹) sit in between.');
-                  var mpExamples = { pico: t('stem.unitconvert.prefix_ex_pico', 'pm = bond lengths'), nano: t('stem.unitconvert.prefix_ex_nano', 'nm = wavelengths of light'), micro: t('stem.unitconvert.prefix_ex_micro', 'µm = bacteria'), milli: t('stem.unitconvert.prefix_ex_milli', 'mm = grains of sand'), base: t('stem.unitconvert.prefix_ex_base', 'meter, second, gram, ampere'), kilo: t('stem.unitconvert.prefix_ex_kilo', 'km = walking distance'), mega: t('stem.unitconvert.prefix_ex_mega', 'Mm = continents'), giga: t('stem.unitconvert.prefix_ex_giga', 'Gm = Sun to Earth'), tera: t('stem.unitconvert.prefix_ex_tera', 'Tm = Sun to Jupiter') };
-                  var W = cvEl.offsetWidth || 600;
-                  var H = cvEl.offsetHeight || 180;
-                  cvEl.width = W * 2; cvEl.height = H * 2;
-                  if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
-                  else c2.scale(2, 2);
-                  var start = performance.now();
-                  var alive = true;
-                  var reducedMotion = false;
-                  var ro = null;
-                  try { reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
-                  function isMetricPrefixHidden() { return typeof document !== 'undefined' && !!document.hidden; }
-                  function cancelMetricPrefixFrame() {
-                    if (cvEl._mpAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(cvEl._mpAnim);
-                    cvEl._mpAnim = null;
-                  }
-                  function scheduleMetricPrefixFrame() {
-                    if (!alive || reducedMotion || cvEl._mpAnim || isMetricPrefixHidden()) return;
-                    if (typeof requestAnimationFrame !== 'function') return;
-                    cvEl._mpAnim = requestAnimationFrame(drawMp);
-                  }
-                  function cleanupMetricPrefixCanvas() {
-                    alive = false;
-                    cancelMetricPrefixFrame();
-                    if (ro) ro.disconnect();
-                    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onMetricPrefixVisibilityChange);
-                    if (window.__alloMetricPrefixCleanup === cvEl._mpCleanup) window.__alloMetricPrefixCleanup = null;
-                    cvEl._mpCleanup = null;
-                    cvEl._mpRO = null;
-                  }
-                  function onMetricPrefixVisibilityChange() {
-                    if (!alive) return;
-                    if (!cvEl.isConnected) { cleanupMetricPrefixCanvas(); return; }
-                    if (isMetricPrefixHidden()) cancelMetricPrefixFrame();
-                    else { cancelMetricPrefixFrame(); drawMp(); }
-                  }
-                  function resizeMetricPrefixCanvas() {
-                    if (!alive || !cvEl.isConnected) { cleanupMetricPrefixCanvas(); return; }
-                    cancelMetricPrefixFrame();
-                    W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 180;
-                    cvEl.width = W * 2; cvEl.height = H * 2;
-                    if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
-                    else c2.scale(2, 2);
-                    drawMp();
-                  }
-                  cvEl._mpCleanup = cleanupMetricPrefixCanvas;
-                  try { window.__alloMetricPrefixCleanup = cvEl._mpCleanup; } catch (e) {}
-                  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onMetricPrefixVisibilityChange);
-                  var prefixes = [
-                    { sym: 'p', name: 'pico', exp: -12, color: '#a855f7' },
-                    { sym: 'n', name: 'nano', exp: -9, color: '#3b82f6' },
-                    { sym: 'µ', name: 'micro', exp: -6, color: '#22d3ee' },
-                    { sym: 'm', name: 'milli', exp: -3, color: '#86efac' },
-                    { sym: '', name: 'base', exp: 0, color: '#fff' },
-                    { sym: 'k', name: 'kilo', exp: 3, color: '#fde047' },
-                    { sym: 'M', name: 'mega', exp: 6, color: '#fb923c' },
-                    { sym: 'G', name: 'giga', exp: 9, color: '#fb7185' },
-                    { sym: 'T', name: 'tera', exp: 12, color: '#dc2626' }
-                  ];
-                  function drawMp() {
-                    if (!alive) return;
-                    cvEl._mpAnim = null;
-                    if (!cvEl.isConnected) { cleanupMetricPrefixCanvas(); return; }
-                    if (isMetricPrefixHidden()) { cancelMetricPrefixFrame(); return; }
-                    var t = reducedMotion ? 8 : (performance.now() - start) / 1000;
-                    c2.fillStyle = '#0c1a2e';
-                    c2.fillRect(0, 0, W, H);
-                    var cellW = (W - 30) / prefixes.length;
-                    var blink = Math.floor((t * 0.5) % prefixes.length);
-                    prefixes.forEach(function(p, i) {
-                      var x = 15 + i * cellW;
-                      var y = H * 0.2;
-                      var sel = i === blink;
-                      c2.save();
-                      if (sel) { c2.shadowColor = p.color; c2.shadowBlur = 16; }
-                      c2.fillStyle = p.color;
-                      c2.globalAlpha = sel ? 1 : 0.7;
-                      c2.fillRect(x, y, cellW - 4, H * 0.5);
-                      c2.restore();
-                      c2.fillStyle = sel ? '#0c1a2e' : (p.exp === 0 ? '#0c1a2e' : 'rgba(0,0,0,0.7)');
-                      c2.font = 'bold 14px serif';
-                      c2.textAlign = 'center';
-                      c2.fillText(p.sym || '—', x + cellW / 2, y + 22);
-                      c2.font = 'bold 9px sans-serif';
-                      c2.fillText(p.name, x + cellW / 2, y + 38);
-                      c2.font = 'bold 10px monospace';
-                      c2.fillText('10' + String(p.exp).split('').map(function(ch) { return ch === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'.charAt(Number(ch)); }).join(''), x + cellW / 2, y + 54);
-                    });
-                    // Selected info
-                    var cur = prefixes[blink];
-                    c2.fillStyle = cur.color;
-                    c2.font = 'bold 12px sans-serif';
-                    c2.textAlign = 'center';
-                    var examples = {
-                      'pico': 'pm = bond lengths',
-                      'nano': 'nm = wavelengths',
-                      'micro': 'µm = bacteria',
-                      'milli': 'mm = grains of sand',
-                      'base': 'meter, second, gram, ampere',
-                      'kilo': 'km = walking distance',
-                      'mega': 'Mm = continents',
-                      'giga': 'Gm = Sun-Earth',
-                      'tera': 'Tm = Jupiter-Sun'
-                    };
-                    c2.fillText(mpExampleText.split('{example}').join(mpExamples[cur.name] || examples[cur.name] || ''), W / 2, H - 24);
-                    c2.fillStyle = 'rgba(0,0,0,0.85)';
-                    c2.fillRect(8, H - 14, W - 16, 12);
-                    c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#93c5fd'; c2.textAlign = 'center';
-                    c2.fillText(mpFooterText, W / 2, H - 5);
-                    scheduleMetricPrefixFrame();
-                  }
-                  drawMp();
-                  if (typeof ResizeObserver === 'function') {
-                    ro = new ResizeObserver(resizeMetricPrefixCanvas);
-                    cvEl._mpRO = ro;
-                    ro.observe(cvEl);
-                  }
-                },
+                ref: mpCanvasRef,
                 style: { width: '100%', height: '100%', display: 'block' }
               })
             )
@@ -5686,16 +5728,34 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         );
 
         // ── RENDER ──
+        var metroEmblem = h('svg', {
+          width: 36, height: 36, viewBox: '0 0 36 36', 'aria-hidden': 'true',
+          style: { flexShrink: 0, display: 'block' }
+        },
+          h('rect', { x: 1.5, y: 1.5, width: 33, height: 33, rx: 9, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.52)', stroke: isContrast ? '#ffff00' : 'rgba(103,232,249,0.52)', strokeWidth: 1.5 }),
+          h('rect', { x: 6, y: 10, width: 24, height: 7, rx: 2, fill: isContrast ? '#000000' : 'rgba(34,211,238,0.24)', stroke: isContrast ? '#ffff00' : '#67e8f9', strokeWidth: 1.4 }),
+          h('line', { x1: 11, y1: 10, x2: 11, y2: 14, stroke: isContrast ? '#ffff00' : '#a5f3fc', strokeWidth: 1.2 }),
+          h('line', { x1: 16, y1: 10, x2: 16, y2: 15.5, stroke: isContrast ? '#ffff00' : '#a5f3fc', strokeWidth: 1.2 }),
+          h('line', { x1: 21, y1: 10, x2: 21, y2: 14, stroke: isContrast ? '#ffff00' : '#a5f3fc', strokeWidth: 1.2 }),
+          h('line', { x1: 26, y1: 10, x2: 26, y2: 15.5, stroke: isContrast ? '#ffff00' : '#a5f3fc', strokeWidth: 1.2 }),
+          h('path', { d: 'M8 24 L28 24 M24 21 L28 24 L24 27 M12 21 L8 24 L12 27', fill: 'none', stroke: isContrast ? '#00ff00' : '#fbbf24', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })
+        );
         return h('div', { className: 'max-w-5xl mx-auto outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1', onKeyDown: handleKey, tabIndex: -1, 'data-unitconvert-root': true, 'data-uc-theme': isDarkUI ? 'dark' : undefined,
           style: isDarkUI ? { background: '#0f172a', color: '#e2e8f0', colorScheme: 'dark', borderRadius: 12, padding: 10 } : undefined },
 
           h('style', null, css),
 
-          // Header: one line (back, title, status chips, badges, AI).
-          h('section', { 'data-unitconvert-command': 'true', className: 'mb-3 overflow-hidden rounded-2xl border border-teal-300/40 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 text-white shadow-xl' },
-            h('div', { className: 'flex flex-wrap items-center gap-2 px-3 py-2 sm:px-4' },
-              h('button', { type: 'button', onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); }, className: 'shrink-0 min-h-[2.75rem] min-w-[2.75rem] rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-teal-300', 'aria-label': t('stem.unitconvert.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-              h('h3', { className: 'text-lg font-black tracking-tight sm:text-xl' }, t('stem.unitconvert.unit_converter', '📏 Unit Converter')),
+          // Header: one line (back, emblem, title, subject pill, 3 status chips, badges, AI).
+          h('section', {
+            'data-unitconvert-command': 'true',
+            className: 'mb-3 overflow-hidden rounded-2xl border border-teal-300/40 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 text-white shadow-xl',
+            style: isContrast ? { background: '#000000', border: '2px solid #ffff00', color: '#ffff00' } : undefined
+          },
+            h('div', { className: 'flex flex-wrap items-center gap-2 px-3 py-2.5 sm:px-4' },
+              h('button', { type: 'button', onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); }, className: 'shrink-0 min-h-[2.75rem] min-w-[2.75rem] rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-teal-300', style: isContrast ? { background: '#000000', borderColor: '#ffff00', color: '#ffff00' } : undefined, 'aria-label': t('stem.unitconvert.back', 'Back to tools') }, ArrowLeft ? h(ArrowLeft, { size: 18 }) : '←'),
+              metroEmblem,
+              h('h3', { className: 'text-lg font-black tracking-tight sm:text-xl', style: isContrast ? { color: '#ffff00' } : undefined }, t('stem.unitconvert.unit_converter', '📏 Unit Converter')),
+              h('span', { className: 'rounded-full border px-2 py-0.5 text-[0.6875rem] font-extrabold uppercase tracking-wider', style: isContrast ? { background: '#000000', color: '#00ff00', borderColor: '#00ff00' } : { background: 'rgba(14,116,144,0.45)', color: '#cffafe', borderColor: 'rgba(103,232,249,0.38)' } }, t('stem.unitconvert.subject_badge', 'Metrology Studio')),
               h('ul', { className: 'flex flex-wrap items-center gap-1.5', 'aria-label': t('stem.unitconvert.status_chips', 'Current activity, measurement and grade') },
                 [
                   { id: 'focus', label: t('stem.unitconvert.metric_focus', 'Focus'), value: TAB_LABELS[tab] },
@@ -5703,11 +5763,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   // One grade label everywhere: the same band name as the path.
                   { id: 'level', label: t('stem.unitconvert.metric_grade', 'Grade'), value: PATH_BAND_NAME[pathBand] || '' }
                 ].map(function(chip) {
-                  return h('li', { key: chip.id, 'data-hero-chip': chip.id, className: 'rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-bold text-white' },
+                  return h('li', { key: chip.id, 'data-hero-chip': chip.id, className: 'rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-bold text-white', style: isContrast ? { background: '#000000', borderColor: '#ffffff', color: '#ffffff' } : undefined },
                     h('span', { className: 'sr-only' }, chip.label + ': '), chip.value);
                 })),
-              earnedCount > 0 && h('button', { type: 'button', 'aria-expanded': !!showBadges, onClick: function() { upd('showBadges', !showBadges); }, className: 'min-h-[2.75rem] rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-amber-100' }, fill(t('stem.unitconvert.badges_button', '🏅 Badges {n}/{total}'), { n: earnedCount, total: BADGES.length })),
-              aiOK && h('button', { type: 'button', onClick: askTutor, 'aria-label': tutorLoading ? t('stem.unitconvert.tutor_thinking', 'AI Tutor thinking') : t('stem.unitconvert.ask_ai_tutor', 'Ask AI Tutor'), 'aria-busy': !!tutorLoading, className: 'min-h-[2.75rem] rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-violet-100' }, t('stem.unitconvert.ai', '🧠 AI'))
+              earnedCount > 0 && h('button', { type: 'button', 'aria-expanded': !!showBadges, onClick: function() { upd('showBadges', !showBadges); }, className: 'min-h-[2.75rem] rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-amber-100', style: isContrast ? { background: '#000000', borderColor: '#ffff00', color: '#ffff00' } : undefined }, fill(t('stem.unitconvert.badges_button', '🏅 Badges {n}/{total}'), { n: earnedCount, total: BADGES.length })),
+              aiOK && h('button', { type: 'button', onClick: askTutor, 'aria-label': tutorLoading ? t('stem.unitconvert.tutor_thinking', 'AI Tutor thinking') : t('stem.unitconvert.ask_ai_tutor', 'Ask AI Tutor'), 'aria-busy': !!tutorLoading, className: 'min-h-[2.75rem] rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-violet-100', style: isContrast ? { background: '#000000', borderColor: '#ffff00', color: '#ffff00' } : undefined }, t('stem.unitconvert.ai', '🧠 AI'))
             )
           ),
 
@@ -5793,7 +5853,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               }
             },
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-              h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { flex: '1 1 180px', minWidth: 0 } },
                 h('h3', { style: { color: introHeadColor, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
                 h('p', { className: 'mt-2 text-sm leading-relaxed' + onHostInk }, meta.start),
                 h('details', { className: 'math-learning-note' },

@@ -919,6 +919,7 @@
         chipId === "other" && /* @__PURE__ */ React.createElement(
           "textarea",
           {
+            "aria-label": t("scientific.loopback_other_label") || "Reason for looping back",
             value: otherText,
             onChange: function(e) {
               setOtherText(e.target.value);
@@ -1331,6 +1332,7 @@
       "input",
       {
         type: "text",
+        "aria-label": t("scientific.wondering_input_label") || "Add a wondering question",
         value: adding,
         onChange: function(e) {
           setAdding(e.target.value);
@@ -1467,6 +1469,7 @@
     ), /* @__PURE__ */ React.createElement(ModelTimeline, { t, snaps }), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 6px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("scientific.draft_model_label") || "Draft your current model"), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("scientific.draft_model_label") || "Draft your current model",
         value: draft,
         onChange: function(e) {
           setDraft(e.target.value);
@@ -1506,7 +1509,7 @@
           }
         }
       ), c);
-    })), /* @__PURE__ */ React.createElement("label", { style: { display: "block", marginTop: "10px", fontSize: "11px", color: "#475569", fontWeight: 700 } }, t("scientific.known_unknowns_label") || "What you do NOT know yet (be honest):"), /* @__PURE__ */ React.createElement(
+    })), /* @__PURE__ */ React.createElement("label", { style: { display: "block", marginTop: "10px", fontSize: "11px", color: "#475569", fontWeight: 700 } }, t("scientific.known_unknowns_label") || "What you do NOT know yet (be honest):", /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: unk,
@@ -1524,12 +1527,13 @@
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
+          fontWeight: 400,
           fontFamily: "inherit",
           resize: "vertical",
           minHeight: "50px"
         }
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", display: "flex", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", display: "flex", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -1642,7 +1646,7 @@
         /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: "#475569", lineHeight: 1.4 } }, /* @__PURE__ */ React.createElement("em", null, "Fits when:"), " ", m.fits),
         /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: "#b91c1c", lineHeight: 1.4 } }, /* @__PURE__ */ React.createElement("em", null, "Doesn't fit when:"), " ", m.doesntFit)
       );
-    }))), method && /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b" } }, t("scientific.why_method_fits") || "Why does THIS method fit MY question?"), /* @__PURE__ */ React.createElement(
+    }))), method && /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b" } }, t("scientific.why_method_fits") || "Why does THIS method fit MY question?", /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: whyFits,
@@ -1660,11 +1664,12 @@
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
+          fontWeight: 400,
           fontFamily: "inherit",
           resize: "vertical"
         }
       }
-    ), /* @__PURE__ */ React.createElement("label", { style: { display: "block", marginTop: "10px", fontSize: "12px", fontWeight: 700, color: "#1e293b" } }, t("scientific.what_cant_tell") || "What this method CAN'T tell you:"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("label", { style: { display: "block", marginTop: "10px", fontSize: "12px", fontWeight: 700, color: "#1e293b" } }, t("scientific.what_cant_tell") || "What this method CAN'T tell you:", /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: cantTell,
@@ -1682,11 +1687,12 @@
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
+          fontWeight: 400,
           fontFamily: "inherit",
           resize: "vertical"
         }
       }
-    )), /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "11px", color: "#64748b", fontStyle: "italic" } }, t("scientific.plan_no_ai_note") || "There's no AI helper on this stage by design \u2014 picking a method is your call."));
+    ))), /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "11px", color: "#64748b", fontStyle: "italic" } }, t("scientific.plan_no_ai_note") || "There's no AI helper on this stage by design \u2014 picking a method is your call."));
   }
   function GatherStage(props) {
     var t = props.t;
@@ -1748,6 +1754,7 @@
     ), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 8px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("scientific.add_evidence_label") || "Log an evidence card"), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("scientific.add_evidence_label") || "Log an evidence card",
         value: addingDraft.text,
         onChange: function(e) {
           setAddingDraft(Object.assign({}, addingDraft, { text: e.target.value }));
@@ -1982,7 +1989,7 @@
     ));
   }
   function TextareaCard(props) {
-    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, props.label), props.help && /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, props.label, props.help && /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: "4px 0", fontSize: "11px", fontWeight: 400, color: "#475569", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: props.value,
@@ -1999,12 +2006,13 @@
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
+          fontWeight: 400,
           fontFamily: "inherit",
           resize: "vertical",
           minHeight: "60px"
         }
       }
-    ));
+    )));
   }
   function ReviseShareStage(props) {
     var t = props.t;
@@ -2120,9 +2128,10 @@
         primitives,
         pair: EXEMPLAR_PAIRS.revise_share
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 6px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("scientific.revised_model_label") || "Revised model (becomes vN+1 snapshot)"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 6px", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, t("scientific.revised_model_help") || "What changed in your thinking, and why? Save a new snapshot."), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 6px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("scientific.revised_model_label") || "Revised model (becomes vN+1 snapshot)"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 6px", fontSize: "11px", color: "#475569", lineHeight: 1.5 } }, t("scientific.revised_model_help") || "What changed in your thinking, and why? Save a new snapshot."), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("scientific.revised_model_label") || "Revised model (becomes vN+1 snapshot)",
         value: revised,
         onChange: function(e) {
           setRevised(e.target.value);
@@ -2168,6 +2177,7 @@
     )), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("scientific.revised_unknowns_label") || "What is still unknown at this version",
         value: revUnk,
         onChange: function(e) {
           setRevUnk(e.target.value);
@@ -2197,10 +2207,11 @@
         rows: 3,
         max: 800
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 6px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("scientific.claims_label") || "Your claims (\u22652; label each honestly)"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, t("scientific.claims_help") || "Claims should be ABOUT what you investigated. Label EACH yourself before AI questions your labels."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "6px", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 6px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("scientific.claims_label") || "Your claims (\u22652; label each honestly)"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", fontSize: "11px", color: "#475569", lineHeight: 1.5 } }, t("scientific.claims_help") || "Claims should be ABOUT what you investigated. Label EACH yourself before AI questions your labels."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "6px", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
+        "aria-label": t("scientific.claim_input_label") || "New investigation claim",
         value: adding,
         onChange: function(e) {
           setAdding(e.target.value);

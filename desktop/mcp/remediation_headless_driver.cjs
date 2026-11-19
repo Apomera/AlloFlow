@@ -38,6 +38,7 @@ const NarrationPlanner = require('./remediation_narration_plan.cjs');
 const Verification = require('./remediation_verification.cjs');
 const AccessibleHtmlEdit = require('./accessible_html_edit.cjs');
 const ScanCorrections = require('./scan_reading_corrections.cjs');
+const ChromiumPdf = require('./remediation_chromium_pdf.cjs');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 // Kept beside the renderer's own constant and asserted equal in
@@ -533,6 +534,188 @@ function vendorAssetUrl(name) {
   return 'http://127.0.0.1' + VENDOR_BOOT_PATH + encoded;
 }
 
+// ── Offline local OS substitute-font resolver (Stage 7 + Stage 6b AcroForm) ──
+// Zero vendored font binaries and zero redistribution: resolves the exact 36
+// metric-compatible CDN substitute font URLs from doc_pipeline_source.jsx
+// against the host machine's own installed TrueType fonts in memory.
+const MAX_LOCAL_FONT_BYTES = 16 * 1024 * 1024;
+const REQUIRED_TTF_TABLES = Object.freeze(['head', 'hhea', 'maxp', 'hmtx', 'loca', 'glyf']);
+
+function buildSubstituteFontRoutes() {
+  const routes = new Map();
+  const addMirrors = (family, style, urls) => {
+    const spec = Object.freeze({ family, style });
+    for (const url of urls) routes.set(url, spec);
+  };
+  const styles = ['reg', 'bold', 'italic', 'bolditalic'];
+  for (const style of styles) {
+    const libName = 'LiberationSans-' + (style === 'reg' ? 'Regular' : style === 'bold' ? 'Bold' : style === 'italic' ? 'Italic' : 'BoldItalic') + '.ttf';
+    addMirrors('sans', style, [
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/' + libName,
+      'https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/' + libName,
+    ]);
+    const tinosName = style === 'reg' ? '400Regular/Tinos_400Regular.ttf'
+      : style === 'bold' ? '700Bold/Tinos_700Bold.ttf'
+        : style === 'italic' ? '400Regular_Italic/Tinos_400Regular_Italic.ttf'
+          : '700Bold_Italic/Tinos_700Bold_Italic.ttf';
+    addMirrors('times', style, [
+      'https://cdn.jsdelivr.net/npm/@expo-google-fonts/tinos@0.4.2/' + tinosName,
+      'https://unpkg.com/@expo-google-fonts/tinos@0.4.2/' + tinosName,
+    ]);
+    const serifName = 'DejaVuSerif' + (style === 'reg' ? '' : style === 'bold' ? '-Bold' : style === 'italic' ? '-Italic' : '-BoldItalic') + '.ttf';
+    addMirrors('serif', style, [
+      'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37/ttf/' + serifName,
+      'https://unpkg.com/dejavu-fonts-ttf@2.37/ttf/' + serifName,
+    ]);
+    const monoName = 'DejaVuSansMono' + (style === 'reg' ? '' : style === 'bold' ? '-Bold' : style === 'italic' ? '-Oblique' : '-BoldOblique') + '.ttf';
+    addMirrors('mono', style, [
+      'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37/ttf/' + monoName,
+      'https://unpkg.com/dejavu-fonts-ttf@2.37/ttf/' + monoName,
+    ]);
+  }
+  // Stage 6b AcroForm appearance redraws & LatinExt/Greek/Cyrillic OCR text layer.
+  addMirrors('sans', 'reg', [
+    'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/hinted/ttf/NotoSans-Regular.ttf',
+    'https://fastly.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/hinted/ttf/NotoSans-Regular.ttf',
+  ]);
+  addMirrors('sans', 'bold', [
+    'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/hinted/ttf/NotoSans-Bold.ttf',
+    'https://fastly.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/hinted/ttf/NotoSans-Bold.ttf',
+  ]);
+  return routes;
+}
+const SUBSTITUTE_FONT_ROUTES = buildSubstituteFontRoutes();
+
+const LOCAL_FONT_CANDIDATES = Object.freeze({
+  'sans:reg': Object.freeze(['LiberationSans-Regular.ttf', 'Arimo-Regular.ttf', 'arial.ttf', 'Arial.ttf', 'DejaVuSans.ttf']),
+  'sans:bold': Object.freeze(['LiberationSans-Bold.ttf', 'Arimo-Bold.ttf', 'arialbd.ttf', 'Arial Bold.ttf', 'DejaVuSans-Bold.ttf']),
+  'sans:italic': Object.freeze(['LiberationSans-Italic.ttf', 'Arimo-Italic.ttf', 'ariali.ttf', 'Arial Italic.ttf', 'DejaVuSans-Oblique.ttf']),
+  'sans:bolditalic': Object.freeze(['LiberationSans-BoldItalic.ttf', 'Arimo-BoldItalic.ttf', 'arialbi.ttf', 'Arial Bold Italic.ttf', 'DejaVuSans-BoldOblique.ttf']),
+  'times:reg': Object.freeze(['LiberationSerif-Regular.ttf', 'Tinos-Regular.ttf', 'times.ttf', 'Times New Roman.ttf', 'DejaVuSerif.ttf']),
+  'times:bold': Object.freeze(['LiberationSerif-Bold.ttf', 'Tinos-Bold.ttf', 'timesbd.ttf', 'Times New Roman Bold.ttf', 'DejaVuSerif-Bold.ttf']),
+  'times:italic': Object.freeze(['LiberationSerif-Italic.ttf', 'Tinos-Italic.ttf', 'timesi.ttf', 'Times New Roman Italic.ttf', 'DejaVuSerif-Italic.ttf']),
+  'times:bolditalic': Object.freeze(['LiberationSerif-BoldItalic.ttf', 'Tinos-BoldItalic.ttf', 'timesbi.ttf', 'Times New Roman Bold Italic.ttf', 'DejaVuSerif-BoldItalic.ttf']),
+  'serif:reg': Object.freeze(['DejaVuSerif.ttf', 'georgia.ttf', 'Georgia.ttf', 'LiberationSerif-Regular.ttf', 'times.ttf', 'Times New Roman.ttf']),
+  'serif:bold': Object.freeze(['DejaVuSerif-Bold.ttf', 'georgiab.ttf', 'Georgia Bold.ttf', 'LiberationSerif-Bold.ttf', 'timesbd.ttf', 'Times New Roman Bold.ttf']),
+  'serif:italic': Object.freeze(['DejaVuSerif-Italic.ttf', 'georgiai.ttf', 'Georgia Italic.ttf', 'LiberationSerif-Italic.ttf', 'timesi.ttf', 'Times New Roman Italic.ttf']),
+  'serif:bolditalic': Object.freeze(['DejaVuSerif-BoldItalic.ttf', 'georgiaz.ttf', 'Georgia Bold Italic.ttf', 'LiberationSerif-BoldItalic.ttf', 'timesbi.ttf', 'Times New Roman Bold Italic.ttf']),
+  'mono:reg': Object.freeze(['LiberationMono-Regular.ttf', 'Cousine-Regular.ttf', 'DejaVuSansMono.ttf', 'cour.ttf', 'Courier New.ttf', 'consola.ttf']),
+  'mono:bold': Object.freeze(['LiberationMono-Bold.ttf', 'Cousine-Bold.ttf', 'DejaVuSansMono-Bold.ttf', 'courbd.ttf', 'Courier New Bold.ttf', 'consolab.ttf']),
+  'mono:italic': Object.freeze(['LiberationMono-Italic.ttf', 'Cousine-Italic.ttf', 'DejaVuSansMono-Oblique.ttf', 'couri.ttf', 'Courier New Italic.ttf', 'consolai.ttf']),
+  'mono:bolditalic': Object.freeze(['LiberationMono-BoldItalic.ttf', 'Cousine-BoldItalic.ttf', 'DejaVuSansMono-BoldOblique.ttf', 'courbi.ttf', 'Courier New Bold Italic.ttf', 'consolaz.ttf']),
+});
+
+function localFontRootsForPlatform(platform = process.platform, env = process.env) {
+  if (platform === 'win32') {
+    const winDir = (env && env.WINDIR) || 'C:\\Windows';
+    return [{ dir: path.join(winDir, 'Fonts'), boundary: path.join(winDir, 'Fonts') }];
+  }
+  if (platform === 'darwin') {
+    return [
+      { dir: '/System/Library/Fonts/Supplemental', boundary: '/System/Library/Fonts' },
+      { dir: '/Library/Fonts', boundary: '/Library/Fonts' },
+    ];
+  }
+  return [
+    { dir: '/usr/share/fonts/truetype/liberation', boundary: '/usr/share/fonts' },
+    { dir: '/usr/share/fonts/truetype/liberation2', boundary: '/usr/share/fonts' },
+    { dir: '/usr/share/fonts/truetype/croscore', boundary: '/usr/share/fonts' },
+    { dir: '/usr/share/fonts/truetype/dejavu', boundary: '/usr/share/fonts' },
+    { dir: '/usr/share/fonts/liberation', boundary: '/usr/share/fonts' },
+    { dir: '/usr/share/fonts/dejavu', boundary: '/usr/share/fonts' },
+  ];
+}
+
+// Stage 7 writes /FontFile2 and subsets via glyf/loca: ONLY TrueType outlines
+// (00 01 00 00 or 'true') are valid. CFF OpenType ('OTTO') and TrueType
+// collections ('ttcf') MUST be rejected to avoid PDF/UA-1 ISO 32000-1 §9.9 violations.
+function validateTrueTypeFontBuffer(buf) {
+  if (!Buffer.isBuffer(buf) || buf.length < 12 || buf.length > MAX_LOCAL_FONT_BYTES) return false;
+  const sfntVersion = buf.readUInt32BE(0);
+  const isTrueType = sfntVersion === 0x00010000 || sfntVersion === 0x74727565; // 00 01 00 00 or 'true'
+  if (!isTrueType) return false;
+  const numTables = buf.readUInt16BE(4);
+  if (numTables < REQUIRED_TTF_TABLES.length || 12 + numTables * 16 > buf.length) return false;
+  const found = new Set();
+  let os2Offset = -1;
+  let os2Length = 0;
+  for (let i = 0; i < numTables; i++) {
+    const off = 12 + i * 16;
+    const tag = buf.subarray(off, off + 4).toString('latin1');
+    const tblOffset = buf.readUInt32BE(off + 8);
+    const tblLength = buf.readUInt32BE(off + 12);
+    if (tblOffset > buf.length || tblLength > buf.length || tblOffset + tblLength > buf.length) return false;
+    found.add(tag);
+    if (tag === 'OS/2') {
+      os2Offset = tblOffset;
+      os2Length = tblLength;
+    }
+  }
+  for (const req of REQUIRED_TTF_TABLES) {
+    if (!found.has(req)) return false;
+  }
+  if (os2Offset >= 0 && os2Length >= 10) {
+    const fsType = buf.readUInt16BE(os2Offset + 8);
+    if ((fsType & 0x0002) !== 0) return false; // Restricted License embedding forbidden
+  }
+  return true;
+}
+
+const localSubstituteFontCache = new Map();
+
+function isPathContainedInRoot(realCandidate, realBoundary, platform = process.platform) {
+  const norm = (p) => (platform === 'win32' ? p.toLowerCase() : p);
+  const sepChar = platform === 'win32' ? '\\' : '/';
+  const cand = norm(realCandidate);
+  const bound = norm(realBoundary);
+  const sep = bound.endsWith(sepChar) ? '' : sepChar;
+  return cand.startsWith(bound + sep);
+}
+
+function resolveLocalSubstituteFont(family, style, options) {
+  const key = String(family || '') + ':' + String(style || '');
+  const candidates = LOCAL_FONT_CANDIDATES[key];
+  if (!candidates) return null;
+  const useCache = !(options && options.roots);
+  if (useCache && localSubstituteFontCache.has(key)) return localSubstituteFontCache.get(key);
+
+  const platform = (options && options.platform) || process.platform;
+  const roots = (options && options.roots) || localFontRootsForPlatform(platform);
+  let resolved = null;
+  for (const entry of roots) {
+    const dir = typeof entry === 'string' ? entry : entry.dir;
+    const boundary = typeof entry === 'string' ? entry : (entry.boundary || entry.dir);
+    let realDir;
+    let realBoundary;
+    try {
+      realDir = fs.realpathSync(dir);
+      realBoundary = fs.realpathSync(boundary);
+    } catch (_) {
+      continue;
+    }
+    for (const basename of candidates) {
+      if (!basename || basename.includes('/') || basename.includes('\\') || basename.includes('..')) continue;
+      const candidatePath = path.join(realDir, basename);
+      let realCandidate;
+      try {
+        realCandidate = fs.realpathSync(candidatePath);
+        if (!isPathContainedInRoot(realCandidate, realBoundary, platform)) continue;
+        const st = fs.statSync(realCandidate);
+        if (!st.isFile() || st.size < 12 || st.size > MAX_LOCAL_FONT_BYTES) continue;
+        const bytes = fs.readFileSync(realCandidate);
+        if (!validateTrueTypeFontBuffer(bytes)) continue;
+        resolved = { bytes, filePath: realCandidate, family, style };
+        break;
+      } catch (_) {
+        continue;
+      }
+    }
+    if (resolved) break;
+  }
+  if (useCache) localSubstituteFontCache.set(key, resolved);
+  return resolved;
+}
+
 async function installVendorRuntime(page, options) {
   const o = options || {};
   const bundle = loadVendorBundle();
@@ -565,6 +748,36 @@ async function installVendorRuntime(page, options) {
     }
     if (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost' || parsed.hostname === '[::1]') {
       return route.abort();
+    }
+    if (route.request().method() === 'GET' && !parsed.search && !parsed.hash) {
+      const subSpec = SUBSTITUTE_FONT_ROUTES.get(parsed.href);
+      if (subSpec) {
+        const localFont = resolveLocalSubstituteFont(subSpec.family, subSpec.style);
+        if (localFont && localFont.bytes) {
+          return route.fulfill({
+            status: 200,
+            contentType: 'font/ttf',
+            headers: {
+              'Access-Control-Allow-Origin': 'http://127.0.0.1',
+              'X-Content-Type-Options': 'nosniff',
+              'Cache-Control': 'no-store',
+            },
+            body: localFont.bytes,
+          });
+        }
+        if (strict) {
+          return route.fulfill({
+            status: 404,
+            contentType: 'text/plain; charset=utf-8',
+            headers: {
+              'Access-Control-Allow-Origin': 'http://127.0.0.1',
+              'Cache-Control': 'no-store',
+            },
+            body: 'local substitute font not found',
+          });
+        }
+        return route.continue();
+      }
     }
     return strict ? route.abort() : route.continue();
   });
@@ -882,13 +1095,13 @@ async function withTransportGate(state, signal, operation) {
   }
 }
 
-async function geminiGenerateLocked({ apiKey, model, parts, log, signal, transportState }) {
+async function geminiGenerateLocked({ apiKey, model, parts, log, signal, transportState, baseUrl }) {
   // Key travels in the x-goog-api-key header, never the URL (2026-08-28): AI Studio now
   // issues AQ.-prefixed Authentication Keys that Google rejects on the legacy ?key= query
   // path (400 "API key not valid" / 401 ACCESS_TOKEN_TYPE_UNSUPPORTED), and headers also
   // keep the credential out of proxy logs and copied diagnostics. Matches gemini_api_module
   // and the remediation_verify_key probe, which already authenticated this way.
-  const url = geminiBase() + '/' + model + ':generateContent';
+  const url = (baseUrl || geminiBase()) + '/' + model + ':generateContent';
   const state = transportState || null;
   if (signal && signal.aborted) return { ok: false, error: abortEnvelope() };
   if (state && state.throttled) {
@@ -1448,14 +1661,18 @@ function createDriver(options) {
     // the pipeline's calls instead of Gemini. No key is required and no Gemini request is made
     // — the prompts (which carry document-derived content) go to the client conversation.
     const modelBridge = typeof runOpts.modelBridge === 'function' ? runOpts.modelBridge : null;
+    const explicitBaseUrl = typeof runOpts.geminiBase === 'string' && runOpts.geminiBase.trim() ? runOpts.geminiBase.trim() : null;
+    const explicitApiKey = typeof runOpts.apiKey === 'string' && runOpts.apiKey.trim() ? runOpts.apiKey.trim() : null;
     let apiKey = null;
     let providerTransport = null;
-    const transportConfig = modelBridge ? null : resolveModelTransportConfig();
+    const transportConfig = (modelBridge || explicitBaseUrl || explicitApiKey) ? null : resolveModelTransportConfig();
     if (modelBridge) {
       log('model transport: agent bridge — the MCP client\'s model answers pipeline calls (no Gemini key, no Gemini egress)');
-    } else if (transportConfig.backend !== 'gemini') {
+    } else if (transportConfig && transportConfig.backend !== 'gemini') {
       providerTransport = createProviderTransport(transportConfig, { log });
       log('model transport: ' + providerTransport.label + (transportConfig.cloud ? ' (key from ' + transportConfig.keySource + ')' : ' (local endpoint, no key required)'));
+    } else if (explicitApiKey) {
+      apiKey = explicitApiKey;
     } else {
       const resolved = resolveGeminiApiKey();
       apiKey = resolved.key;
@@ -1542,7 +1759,7 @@ function createDriver(options) {
       if (modelBridge) return bridgeCall('text', prompt, parts);
       if (providerTransport) return trackTransport(() => providerTransport.call({ kind: 'text', prompt, parts, signal: runOpts.signal, transportState }));
       return trackTransport(() => geminiCallWithFallback({
-        apiKey, model: DEFAULT_MODEL, parts, log: rlog,
+        apiKey, baseUrl: explicitBaseUrl, model: DEFAULT_MODEL, parts, log: rlog,
         signal: runOpts.signal, transportState,
       }));
     });
@@ -1562,7 +1779,7 @@ function createDriver(options) {
       if (modelBridge) return bridgeCall('vision', visionPrompt, parts);
       if (providerTransport) return trackTransport(() => providerTransport.call({ kind: 'vision', prompt: visionPrompt, parts, signal: runOpts.signal, transportState }));
       return trackTransport(() => geminiCallWithFallback({
-        apiKey, model: DEFAULT_MODEL, log: rlog, parts,
+        apiKey, baseUrl: explicitBaseUrl, model: DEFAULT_MODEL, log: rlog, parts,
         signal: runOpts.signal, transportState,
       }));
     });
@@ -1665,26 +1882,80 @@ function createDriver(options) {
     return { page, context };
   }
 
-  function readPdfBase64(filePath) {
+  const MAX_DOC_BYTES = 200 * 1024 * 1024;
+
+  function readValidatedInputBytes(filePath) {
+    if (!selfTestInputs.has(filePath) && typeof o.readInputFile !== 'function') {
+      const st = fs.lstatSync(filePath);
+      if (st.isSymbolicLink()) throw new Error('Input file must not be a symlink: ' + filePath);
+      if (!st.isFile()) throw new Error('Input path is not a regular file: ' + filePath);
+      if (st.size > MAX_DOC_BYTES) {
+        throw new Error('File exceeds the ' + Math.round(MAX_DOC_BYTES / 1024 / 1024) + 'MB limit: ' + filePath);
+      }
+    }
     const bytes = readInputFile(filePath);
+    if (bytes.length > MAX_DOC_BYTES) {
+      throw new Error('File exceeds the ' + Math.round(MAX_DOC_BYTES / 1024 / 1024) + 'MB limit: ' + filePath);
+    }
+    return bytes;
+  }
+
+  function readPdfBase64(filePath) {
+    const bytes = readValidatedInputBytes(filePath);
     if (bytes.length < 5 || bytes.subarray(0, 5).toString('latin1') !== '%PDF-') {
       throw new Error('Not a PDF (missing %PDF- header): ' + filePath);
     }
     return bytes.toString('base64');
   }
 
-  // PDF, DOCX, or PPTX — the pipeline's audit + extraction phases sniff the kind from the
-  // fileName they already receive (office files get the deterministic mammoth/pptx route).
+  // Supported local document inputs matching requireDocPath / listBatchInputs:
+  // PDF, Office/Spreadsheet (DOCX/PPTX/XLSX/XLSB/ODS ZIP or legacy XLS OLE2),
+  // raster images (PNG/JPEG/WebP), and plain-text family (MD/TXT/CSV/TSV).
   function readDocBase64(filePath) {
     if (/\.pdf$/i.test(filePath)) return readPdfBase64(filePath);
-    const bytes = readInputFile(filePath);
-    if (/\.(docx|pptx)$/i.test(filePath)) {
+    const bytes = readValidatedInputBytes(filePath);
+    if (/\.(docx|pptx|xlsx|xlsm|xlsb|ods)$/i.test(filePath)) {
       if (bytes.length < 4 || bytes.subarray(0, 2).toString('latin1') !== 'PK') {
-        throw new Error('Not a valid Office file (missing ZIP header): ' + filePath);
+        throw new Error('Not a valid Office/spreadsheet file (missing ZIP header): ' + filePath);
       }
       return bytes.toString('base64');
     }
-    throw new Error('Unsupported file type (need .pdf, .docx, or .pptx): ' + filePath);
+    if (/\.xls$/i.test(filePath)) {
+      const isOle2 = bytes.length >= 8
+        && bytes[0] === 0xD0 && bytes[1] === 0xCF && bytes[2] === 0x11 && bytes[3] === 0xE0
+        && bytes[4] === 0xA1 && bytes[5] === 0xB1 && bytes[6] === 0x1A && bytes[7] === 0xE1;
+      const isZip = bytes.length >= 4 && bytes.subarray(0, 2).toString('latin1') === 'PK';
+      if (!isOle2 && !isZip) {
+        throw new Error('Not a valid Excel .xls file (missing OLE2 header): ' + filePath);
+      }
+      return bytes.toString('base64');
+    }
+    if (/\.png$/i.test(filePath)) {
+      const isPng = bytes.length >= 8
+        && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47
+        && bytes[4] === 0x0D && bytes[5] === 0x0A && bytes[6] === 0x1A && bytes[7] === 0x0A;
+      if (!isPng) throw new Error('Not a valid PNG image (missing PNG header): ' + filePath);
+      return bytes.toString('base64');
+    }
+    if (/\.jpe?g$/i.test(filePath)) {
+      const isJpeg = bytes.length >= 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+      if (!isJpeg) throw new Error('Not a valid JPEG image (missing JPEG header): ' + filePath);
+      return bytes.toString('base64');
+    }
+    if (/\.webp$/i.test(filePath)) {
+      const isWebp = bytes.length >= 12
+        && bytes.subarray(0, 4).toString('latin1') === 'RIFF'
+        && bytes.subarray(8, 12).toString('latin1') === 'WEBP';
+      if (!isWebp) throw new Error('Not a valid WebP image (missing RIFF/WEBP header): ' + filePath);
+      return bytes.toString('base64');
+    }
+    if (/\.(md|markdown|txt|csv|tsv)$/i.test(filePath)) {
+      if (bytes.length === 0 || bytes.includes(0)) {
+        throw new Error('Not a valid UTF-8 text document: ' + filePath);
+      }
+      return bytes.toString('base64');
+    }
+    throw new Error('Unsupported file type: ' + filePath);
   }
 
   // Rendered ONCE per run, before the pipeline page exists, rather than lazily inside the vision
@@ -1695,7 +1966,7 @@ function createDriver(options) {
     // A provider other than Gemini answers the document audit from rendered pages: only Gemini
     // accepts a whole PDF as an inline part, so image mode is forced (and logged) rather than
     // sending the other providers a blob they would reject.
-    if (visionMode !== 'images' && !runOpts.modelBridge && /\.pdf$/i.test(runOpts.fileName || '')) {
+    if (visionMode !== 'images' && !runOpts.modelBridge && !runOpts.geminiBase && /\.pdf$/i.test(runOpts.fileName || '')) {
       const transport = resolveModelTransportConfig();
       if (transport.backend !== 'gemini') {
         (runOpts.onLog || log)('vision mode forced to "images": ' + transport.backend + ' receives rendered pages, not inline PDFs');
@@ -1843,7 +2114,7 @@ function createDriver(options) {
   // functions, so behavior parity with the app is by construction, not by reimplementation.
   // (.txt rides the text branch — a strict superset of the browser's list.)
   function textFamilyKind(fileName) {
-    if (/\.(xlsx|xls|xlsb|ods)$/i.test(fileName || '')) return 'sheet';
+    if (/\.(xlsx|xlsm|xls|xlsb|ods)$/i.test(fileName || '')) return 'sheet';
     if (/\.(md|markdown|csv|tsv|txt)$/i.test(fileName || '')) return 'text';
     return null;
   }
@@ -1863,7 +2134,7 @@ function createDriver(options) {
           let textValue;
           if (textFamily === 'sheet') {
             const cs = await p0.convertXlsxToMarkdownTables(b64, { fileName });
-            textValue = '# ' + String(fileName || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + ((cs && cs.text) || '')
+            textValue = '# ' + String(fileName || 'Spreadsheet').replace(/\.(xlsx|xlsm|xls|xlsb|ods)$/i, '') + '\n\n' + ((cs && cs.text) || '')
               + ((cs && cs.truncatedRows) ? ('\n\n*Note: ' + cs.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
           } else {
             textValue = new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
@@ -1907,7 +2178,7 @@ function createDriver(options) {
     const b64 = readDocBase64(opts.filePath);
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
-    return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
+    const runOut = await withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
       page.evaluate(async ({ b64: _rawB64, scanReadingFn, scanLayerCautionFn, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily, sourceCoverageFn, candidateRejectionFn, candidateRejectionSchema, verificationEvidenceFn }) => {
         const pipeline = window.__mcpPipeline;
         // Text-family conversion — same mirror of the browser intake as audit()'s evaluate.
@@ -1916,7 +2187,7 @@ function createDriver(options) {
           let textValue;
           if (textFamily === 'sheet') {
             const cs = await pipeline.convertXlsxToMarkdownTables(_rawB64, { fileName });
-            textValue = '# ' + String(fileName || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + ((cs && cs.text) || '')
+            textValue = '# ' + String(fileName || 'Spreadsheet').replace(/\.(xlsx|xlsm|xls|xlsb|ods)$/i, '') + '\n\n' + ((cs && cs.text) || '')
               + ((cs && cs.truncatedRows) ? ('\n\n*Note: ' + cs.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
           } else {
             textValue = new TextDecoder().decode(Uint8Array.from(atob(_rawB64), (c) => c.charCodeAt(0)));
@@ -2509,6 +2780,52 @@ function createDriver(options) {
         auditorCount: HEADLESS_AUDITOR_COUNT,
       })
     );
+    // Opt-in clean rebuild (e.g. non-PDF inputs or explicit clean_rebuild mode):
+    // runs on the Node side AFTER withRunPage closes so Chromium's print-to-PDF
+    // engine never nests inside an active page.evaluate. PDF original_layout runs
+    // keep their exact visual-layout output untouched.
+    if (opts.exportMode === 'clean_rebuild'
+      && opts.taggedPdf !== false
+      && runOut
+      && !runOut.taggedPdfB64
+      && typeof runOut.accessibleHtml === 'string'
+      && runOut.accessibleHtml.trim()
+      && !runOut.activeContentDetected
+      && !(runOut.verdict && runOut.verdict.level === 'review')
+      && !(runOut.contentCoverage && runOut.contentCoverage.reviewRequired)) {
+      try {
+        const stemTitle = fileName.replace(/\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xlsm|xls|xlsb|ods)$/i, '');
+        const htmlTitle = ChromiumPdf.extractHtmlTitle(runOut.accessibleHtml);
+        const title = (htmlTitle && !/^Accessible Document\b/i.test(htmlTitle)) ? htmlTitle : stemTitle;
+        const lang = ChromiumPdf.extractHtmlLang(runOut.accessibleHtml) || 'en';
+        const ts = await renderTypesetTaggedPdf({
+          html: runOut.accessibleHtml,
+          title,
+          lang,
+          preferChromium: opts.preferChromium === true,
+          signal: opts.signal,
+          onLog: opts.onLog,
+        });
+        if (ts && ts.b64 && ts.delivery && ts.delivery.ok) {
+          runOut.taggedPdfB64 = ts.b64;
+          runOut.taggedPdfExportMode = 'clean_rebuild';
+          runOut.taggedPdfDelivery = { ok: true, code: ts.delivery.code || 'verified' };
+          runOut.taggedPdfError = null;
+          runOut.taggedPdfEngine = ts.engine;
+        } else {
+          const code = (ts && ts.delivery && ts.delivery.code) || 'validator-failed';
+          const why = (ts && ts.delivery && ts.delivery.reason) ? ': ' + String(ts.delivery.reason).slice(0, 300) : '';
+          runOut.taggedPdfExportMode = 'clean_rebuild';
+          runOut.taggedPdfDelivery = { ok: false, code };
+          runOut.taggedPdfError = 'tagged_pdf_delivery_unverified (' + code + why + ')';
+        }
+      } catch (tsErr) {
+        runOut.taggedPdfExportMode = 'clean_rebuild';
+        runOut.taggedPdfDelivery = { ok: false, code: 'validator-error' };
+        runOut.taggedPdfError = (tsErr && tsErr.message) || String(tsErr);
+      }
+    }
+    return runOut;
   }
 
   // Loopback static server for verapdf/ with REAL Range (206) support — see VERAPDF_URL_OVERRIDE.
@@ -2684,8 +3001,9 @@ function createDriver(options) {
         }
       }
       const result = await new Promise((resolve, reject) => {
-        const child = spawnProcess(javaBin, args, { env: javaEnv, stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+        const child = spawnProcess(javaBin, args, { env: javaEnv, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
         let stdout = '';
+        let stderr = '';
         let timer = null;
         let forcedFinish = null;
         let settled = false;
@@ -2712,13 +3030,19 @@ function createDriver(options) {
           stdout += String(chunk);
           if (stdout.length > 4 * 1024 * 1024) terminate(new Error('veraPDF output exceeded the bounded limit'));
         });
+        if (child.stderr && typeof child.stderr.on === 'function') {
+          child.stderr.on('data', (chunk) => {
+            stderr = (stderr + String(chunk)).slice(-4096);
+          });
+        }
         child.on('error', (error) => finish(reject, new Error('veraPDF CLI could not start: ' + error.message)));
         child.on('close', (code) => {
           if (terminationError) return finish(reject, terminationError);
           if (settled) return;
           let parsed;
           try { parsed = JSON.parse(stdout); } catch (_) {
-            return finish(reject, new Error('veraPDF CLI returned no valid JSON (exit ' + code + ')'));
+            const errDetail = stderr.replace(/\s+/g, ' ').trim().slice(0, 500);
+            return finish(reject, new Error('veraPDF CLI returned no valid JSON (exit ' + code + (errDetail ? ': ' + errDetail : '') + ')'));
           }
           let evidence;
           try { evidence = Verification.parsePdfUaCliReport(parsed, code); }
@@ -2888,6 +3212,7 @@ function createDriver(options) {
   // means the connector is out of date with the pipeline it ships beside, which is exactly the
   // failure the two 2026-07-28 bugs were.
   const SELFTEST_MARKER = 'AlloFlow connector self test document';
+  const SELFTEST_BODY_LINE = 'This born-digital verification fixture confirms deterministic text extraction and tagged PDF output.';
 
   // A minimal but genuinely valid single-page PDF, built here rather than shipped as a fixture:
   // the MCPB bundle carries server/ and assets/ only, never tests/, so a file dependency would
@@ -2898,16 +3223,58 @@ function createDriver(options) {
     // minified-pdf-lib type detection silently failed and blocked every tagged-PDF export
     // with active_content_scan_unavailable. A selftest that only shipped an untagged page
     // could never catch that class of regression.
-    const body = '/P <</MCID 0>> BDC\nBT /F1 16 Tf 72 700 Td (' + SELFTEST_MARKER + ') Tj ET\nEMC\n';
+    // Includes >= 60 chars of vector text so extractPdfTextDeterministic classifies it as
+    // born-digital (threshold is 50 chars/page) rather than falling back to scanned OCR,
+    // and uses a self-contained Type 3 font + /ToUnicode CMap so every glyph is embedded
+    // offline without fetching external substitute fonts (PDF/UA-1 §7.21.4.1).
+    const body = '/P <</MCID 0>> BDC\nBT /F1 14 Tf 72 700 Td (' + SELFTEST_MARKER + ') Tj 0 -20 Td (' + SELFTEST_BODY_LINE + ') Tj ET\nEMC\n';
+    const glyphStream = '500 0 0 0 500 650 d1\n50 0 400 600 re f\n';
+    const spaceStream = '280 0 0 0 280 650 d1\n';
+    const toUnicodeStream = [
+      '/CIDInit /ProcSet findresource begin',
+      '12 dict begin',
+      'begincmap',
+      '/CIDSystemInfo <</Registry (Adobe) /Ordering (UCS) /Supplement 0>> def',
+      '/CMapName /Adobe-Identity-UCS def',
+      '/CMapType 2 def',
+      '1 begincodespacerange',
+      '<20> <7E>',
+      'endcodespacerange',
+      '1 beginbfrange',
+      '<20> <7E> <0020>',
+      'endbfrange',
+      'endcmap',
+      'CMapName currentdict /CMap defineresource pop',
+      'end',
+      'end\n',
+    ].join('\n');
+    const winAnsiGlyphName = (code) => {
+      if (code === 32) return 'space';
+      if (code === 45) return 'hyphen';
+      if (code === 46) return 'period';
+      if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) return String.fromCharCode(code);
+      return null;
+    };
+    const usedCodes = new Set();
+    for (const ch of (SELFTEST_MARKER + SELFTEST_BODY_LINE)) usedCodes.add(ch.charCodeAt(0));
+    const charProcEntries = [];
+    for (const code of Array.from(usedCodes).sort((a, b) => a - b)) {
+      const name = winAnsiGlyphName(code);
+      if (name) charProcEntries.push('/' + name + ' ' + (code === 32 ? '9' : '8') + ' 0 R');
+    }
+    const widths = Array.from({ length: 126 - 32 + 1 }, (_, i) => (i === 0 ? 280 : 500)).join(' ');
     const objs = [
       null,
       '<</Type/Catalog/Pages 2 0 R/MarkInfo<</Marked true>>/StructTreeRoot 6 0 R>>',
       '<</Type/Pages/Kids[3 0 R]/Count 1>>',
       '<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Resources<</Font<</F1 5 0 R>>>>/Contents 4 0 R/StructParents 0>>',
       '<</Length ' + Buffer.byteLength(body, 'latin1') + '>>\nstream\n' + body + 'endstream',
-      '<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>',
+      '<</Type/Font/Subtype/Type3/FontBBox[0 0 500 650]/FontMatrix[0.001 0 0 0.001 0 0]/CharProcs<<' + charProcEntries.join(' ') + '>>/Encoding/WinAnsiEncoding/FirstChar 32/LastChar 126/Widths[' + widths + ']/ToUnicode 10 0 R>>',
       '<</Type/StructTreeRoot/K 7 0 R/ParentTree<</Nums[0 [7 0 R]]>>>>',
       '<</Type/StructElem/S/P/P 6 0 R/Pg 3 0 R/K[0]>>',
+      '<</Length ' + Buffer.byteLength(glyphStream, 'latin1') + '>>\nstream\n' + glyphStream + 'endstream',
+      '<</Length ' + Buffer.byteLength(spaceStream, 'latin1') + '>>\nstream\n' + spaceStream + 'endstream',
+      '<</Length ' + Buffer.byteLength(toUnicodeStream, 'latin1') + '>>\nstream\n' + toUnicodeStream + 'endstream',
     ];
     let out = '%PDF-1.4\n';
     const offsets = [];
@@ -2944,12 +3311,17 @@ function createDriver(options) {
     if (/Reply with exactly: OK/.test(prompt)) return 'OK';
     if (/accessibility auditor for educational documents/i.test(prompt) || /SLICE CONTEXT/i.test(prompt)) return SELFTEST_AUDIT_PDF;
     if (/Audit this HTML/i.test(prompt)) return SELFTEST_AUDIT_HTML;
-    if (/Return ONLY a JSON array/i.test(prompt)) return JSON.stringify([{ type: 'h1', text: SELFTEST_MARKER, id: 'self-test' }]);
-    if (/Extract ALL text content/i.test(prompt)) return '# ' + SELFTEST_MARKER;
+    if (/Return ONLY a JSON array/i.test(prompt)) {
+      return JSON.stringify([
+        { type: 'h1', text: SELFTEST_MARKER, id: 'self-test' },
+        { type: 'p', text: SELFTEST_BODY_LINE, id: 'self-test-body' },
+      ]);
+    }
+    if (/Extract ALL text content/i.test(prompt)) return '# ' + SELFTEST_MARKER + '\n\n' + SELFTEST_BODY_LINE;
     // HTML-expecting prompts say so explicitly, and several ALSO contain the word "JSON" (as in
     // "do NOT wrap in JSON") — so they must be claimed before the generic JSON rules below.
     if (/raw HTML only|do NOT wrap in JSON|Return the COMPLETE fixed HTML|Return ONLY the fixed fragment/i.test(prompt)) {
-      return '<p>' + SELFTEST_MARKER + '</p>';
+      return '<h1>' + SELFTEST_MARKER + '</h1><p>' + SELFTEST_BODY_LINE + '</p>';
     }
     // Generic well-formed-but-empty JSON for the optional enrichment passes (image inventory,
     // style/palette extraction, ...). Returning HTML to those made them throw a parse error that
@@ -2958,7 +3330,7 @@ function createDriver(options) {
     // Empty-but-valid says "nothing to add" and keeps a real parse failure visible.
     if (/JSON array/i.test(prompt)) return '[]';
     if (/\bJSON\b/i.test(prompt)) return '{}';
-    return '<p>' + SELFTEST_MARKER + '</p>';
+    return '<h1>' + SELFTEST_MARKER + '</h1><p>' + SELFTEST_BODY_LINE + '</p>';
   }
 
   // Which stage a failure belongs to, from the error the pipeline actually threw. Keeps the
@@ -3000,19 +3372,15 @@ function createDriver(options) {
     });
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 
-    // The driver reads both of these per call, so redirecting them for the duration is enough to
-    // keep the run entirely local. Restored in `finally` — a self-test must never leave the
-    // process pointed at a loopback model or holding a fake key.
-    const prevBase = process.env.ALLOFLOW_MCP_GEMINI_BASE;
-    const prevKey = process.env.GEMINI_API_KEY;
-    process.env.ALLOFLOW_MCP_GEMINI_BASE = 'http://127.0.0.1:' + server.address().port + '/v1beta/models';
-    process.env.GEMINI_API_KEY = 'self-test-loopback-key';
+    const loopbackBase = 'http://127.0.0.1:' + server.address().port + '/v1beta/models';
+    const loopbackKey = 'self-test-loopback-key';
 
     rlog('self-test: running the real pipeline against a scripted loopback model (no key, no quota)');
     try {
       selfTestInputs.set(pdfPath, Buffer.from(fixtureBytes));
       const out = await remediate({
         filePath: pdfPath, onLog: o.onLog,
+        geminiBase: loopbackBase, apiKey: loopbackKey,
         targetScore: 100, fixPasses: 0, polishPasses: 0, taggedPdf: true, autoContinue: false,
         // The loopback model is instant and quota-free: exempt the run from quota pacing so the
         // selftest verifies the INSTALL (its advertised 20-60s), not the rate limiter. Deadlines
@@ -3064,6 +3432,8 @@ function createDriver(options) {
         },
         beforeScore: out && out.beforeScore,
         afterScore: out && out.afterScore,
+        ...(!ok && out && out.taggedPdfError ? { taggedPdfError: out.taggedPdfError } : {}),
+        ...(!ok && out && out.taggedPdfDelivery ? { taggedPdfDelivery: out.taggedPdfDelivery } : {}),
         note: ok
           ? 'This install can remediate: real pipeline, real browser, real fixAndVerifyPdf. Only the model was scripted; a live run supplies one through the keyless agent bridge (pdf_remediate_agent_start, your MCP client model, no Gemini key) or through a valid GEMINI_API_KEY for the Gemini tools.'
           : 'The run completed but its output was not usable — see checks for which assertion failed.',
@@ -3079,8 +3449,6 @@ function createDriver(options) {
       };
     } finally {
       selfTestInputs.delete(pdfPath);
-      if (prevBase === undefined) delete process.env.ALLOFLOW_MCP_GEMINI_BASE; else process.env.ALLOFLOW_MCP_GEMINI_BASE = prevBase;
-      if (prevKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = prevKey;
       try { server.close(); } catch (_) {}
       try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}
     }
@@ -3101,10 +3469,472 @@ function createDriver(options) {
   // generation lived INSIDE the PdfAuditView component as download handlers. That was extracted to
   // module scope on 2026-07-29 (view_pdf_audit_source.jsx, `_build*PackageFiles`), and the builders
   // are published as window.AlloModules.AltFormatExports. See exportAltFormat below.
-  const REACT_CDN = 'https://unpkg.com/react@18.3.1/umd/react.production.min.js';
-  const REACT_DOM_CDN = 'https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js';
-  const JSZIP_CDN = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
   const EXPORT_MODULE = 'view_pdf_audit_module.js';
+  // Minimal inert React/ReactDOM surface: view_pdf_audit_module.js destructures hooks at IIFE
+  // top-level, but AltFormatExports and AccessibleOfficeExport are pure DOM/string/ZIP builders
+  // that never mount a React tree. Stubbing locally avoids CDN fetches and keeps exports offline.
+  const OFFLINE_REACT_STUB = [
+    'window.React = window.React || {',
+    '  useState: function (v) { return [typeof v === "function" ? v() : v, function () {}]; },',
+    '  useEffect: function () {},',
+    '  useRef: function (v) { return { current: v }; },',
+    '  useMemo: function (fn) { return fn(); },',
+    '  useCallback: function (fn) { return fn; },',
+    '  useContext: function () { return null; },',
+    '  Fragment: Symbol("Fragment"),',
+    '  createElement: function () { return null; },',
+    '};',
+    'window.ReactDOM = window.ReactDOM || {};',
+  ].join('\n');
+  // Offline JSZip shim backed by desktop/mcp/zip_writer.cjs via exposeFunction('__alloOfflineZip').
+  // Supports file(name, data, opts) for UTF-8 strings, Uint8Array/ArrayBuffer, and { base64: true },
+  // { compression: 'STORE' } (for ODT's uncompressed leading mimetype entry), and generateAsync({ type }).
+  const OFFLINE_JSZIP_SHIM = [
+    'window.JSZip = function OfflineJSZip() {',
+    '  this._entries = [];',
+    '  this._storeFirst = null;',
+    '};',
+    'window.JSZip.prototype.file = function (name, data, opts) {',
+    '  var o = opts || {};',
+    '  var entryName = String(name);',
+    '  if (o.compression === "STORE" && !this._storeFirst) this._storeFirst = entryName;',
+    '  var isBase64 = o.base64 === true;',
+    '  var payload;',
+    '  if (isBase64) {',
+    '    payload = String(data || "");',
+    '  } else if (data instanceof Uint8Array || data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {',
+    '    var bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);',
+    '    var s = "";',
+    '    for (var i = 0; i < bytes.length; i += 8192) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));',
+    '    payload = btoa(s);',
+    '    isBase64 = true;',
+    '  } else {',
+    '    payload = String(data == null ? "" : data);',
+    '  }',
+    '  this._entries.push({ name: entryName, data: payload, isBase64: isBase64 });',
+    '  return this;',
+    '};',
+    'window.JSZip.prototype.generateAsync = async function (opts) {',
+    '  var o = opts || {};',
+    '  var b64 = await window.__alloOfflineZip({ entries: this._entries, storeFirst: this._storeFirst });',
+    '  if (o.type === "base64") return b64;',
+    '  var bin = atob(b64);',
+    '  var out = new Uint8Array(bin.length);',
+    '  for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);',
+    '  if (o.type === "uint8array") return out;',
+    '  return new Blob([out], { type: o.mimeType || "application/zip" });',
+    '};',
+  ].join('\n');
+
+  // Offline OOXML DOCX builder shim implementing the window.docx surface consumed by
+  // AccessibleOfficeExport.build (view_pdf_audit_module.js) and backed by __alloOfflineZip.
+  // Keeps export_accessible_office (both DOCX and ODT) 100% offline under strictOffline.
+  const OFFLINE_DOCX_SHIM = '(' + function () {
+    function xmlEsc(v) {
+      return String(v == null ? '' : v)
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    }
+    function bytesToB64(data) {
+      var bytes = data instanceof ArrayBuffer
+        ? new Uint8Array(data)
+        : (ArrayBuffer.isView(data) ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength) : new Uint8Array(0));
+      var s = '';
+      for (var i = 0; i < bytes.length; i += 8192) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+      return { b64: btoa(s), bytes: bytes };
+    }
+    function sniffImageType(bytes) {
+      if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+        return { ext: 'png', mime: 'image/png' };
+      }
+      if (bytes.length >= 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+        return { ext: 'jpeg', mime: 'image/jpeg' };
+      }
+      if (bytes.length >= 6 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
+        return { ext: 'gif', mime: 'image/gif' };
+      }
+      if (bytes.length >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) {
+        return { ext: 'webp', mime: 'image/webp' };
+      }
+      return { ext: 'png', mime: 'image/png' };
+    }
+    function TextRun(opts) { this._kind = 'text'; this.opts = opts || {}; }
+    function ExternalHyperlink(opts) { this._kind = 'hyperlink'; this.opts = opts || {}; }
+    function ImageRun(opts) { this._kind = 'image'; this.opts = opts || {}; }
+    function FootnoteReferenceRun(id) { this._kind = 'footnoteRef'; this.id = id; }
+    function PageBreak() { this._kind = 'pageBreak'; }
+    function Paragraph(opts) { this._kind = 'paragraph'; this.opts = opts || {}; }
+    function Table(opts) { this._kind = 'table'; this.opts = opts || {}; }
+    function TableRow(opts) { this._kind = 'tableRow'; this.opts = opts || {}; }
+    function TableCell(opts) { this._kind = 'tableCell'; this.opts = opts || {}; }
+    function Document(opts) { this._kind = 'document'; this.opts = opts || {}; }
+    var ImportedXmlComponent = {
+      fromXmlString: function (xml) { return { _kind: 'rawXml', xml: String(xml || '') }; },
+    };
+
+    function buildDocxEntries(docObj) {
+      var opts = (docObj && docObj.opts) || {};
+      var docLang = (opts.styles && opts.styles.default && opts.styles.default.document && opts.styles.default.document.run && opts.styles.default.document.run.language && opts.styles.default.document.run.language.value) || 'en';
+      var title = String(opts.title || 'AlloFlow Document');
+      var creator = String(opts.creator || 'AlloFlow');
+      var rels = [
+        { id: 'rId1', type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles', target: 'styles.xml' },
+        { id: 'rId2', type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering', target: 'numbering.xml' },
+      ];
+      var nextRelId = 3;
+      var footnoteRels = [];
+      var nextFootnoteRelId = 1;
+      var activeRelSink = {
+        add: function (rel) {
+          var id = 'rId' + (nextRelId++);
+          rels.push(Object.assign({ id: id }, rel));
+          return id;
+        },
+      };
+      var hasFootnotes = !!(opts.footnotes && Object.keys(opts.footnotes).length);
+      if (hasFootnotes) {
+        rels.push({ id: 'rId' + (nextRelId++), type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes', target: 'footnotes.xml' });
+      }
+      var mediaEntries = [];
+      var mediaExts = {};
+      var nextImgId = 1;
+      var numRefToId = {};
+      var numConfigs = (opts.numbering && Array.isArray(opts.numbering.config)) ? opts.numbering.config : [];
+      for (var ni = 0; ni < numConfigs.length; ni++) {
+        if (numConfigs[ni] && numConfigs[ni].reference) numRefToId[numConfigs[ni].reference] = ni + 2;
+      }
+
+      function renderInline(item) {
+        if (!item) return '';
+        if (item._kind === 'rawXml') return item.xml;
+        if (item._kind === 'pageBreak') return '<w:r><w:br w:type="page"/></w:r>';
+        if (item._kind === 'footnoteRef') {
+          return '<w:r><w:rPr><w:rStyle w:val="FootnoteReference"/></w:rPr><w:footnoteReference w:id="' + xmlEsc(item.id) + '"/></w:r>';
+        }
+        if (item._kind === 'hyperlink') {
+          var hLink = String((item.opts && item.opts.link) || '');
+          var hKids = Array.isArray(item.opts && item.opts.children) ? item.opts.children.map(renderInline).join('') : '';
+          if (!hLink) return hKids;
+          var rId = activeRelSink.add({ type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink', target: hLink, external: true });
+          return '<w:hyperlink r:id="' + rId + '" w:history="1">' + hKids + '</w:hyperlink>';
+        }
+        if (item._kind === 'image') {
+          var io = item.opts || {};
+          var enc = bytesToB64(io.data);
+          var info = sniffImageType(enc.bytes);
+          var imgIdx = nextImgId++;
+          var target = 'media/image' + imgIdx + '.' + info.ext;
+          mediaEntries.push({ name: 'word/' + target, data: enc.b64, isBase64: true });
+          mediaExts[info.ext] = info.mime;
+          var imgRelId = activeRelSink.add({ type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image', target: target });
+          var wPx = Math.max(1, Math.round((io.transformation && io.transformation.width) || 120));
+          var hPx = Math.max(1, Math.round((io.transformation && io.transformation.height) || 90));
+          var cx = wPx * 9525;
+          var cy = hPx * 9525;
+          var alt = io.altText || {};
+          var altName = xmlEsc(alt.name != null && alt.name !== '' ? alt.name : 'image' + imgIdx);
+          var altDesc = xmlEsc(alt.description != null ? alt.description : (alt.title != null ? alt.title : 'Image'));
+          var altTitle = xmlEsc(alt.title != null ? alt.title : (alt.description != null ? alt.description : 'Image'));
+          return '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">'
+            + '<wp:extent cx="' + cx + '" cy="' + cy + '"/>'
+            + '<wp:docPr id="' + imgIdx + '" name="' + altName + '" descr="' + altDesc + '" title="' + altTitle + '"/>'
+            + '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+            + '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            + '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            + '<pic:nvPicPr><pic:cNvPr id="' + imgIdx + '" name="' + altName + '" descr="' + altDesc + '"/><pic:cNvPicPr/></pic:nvPicPr>'
+            + '<pic:blipFill><a:blip r:embed="' + imgRelId + '"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+            + '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + cx + '" cy="' + cy + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'
+            + '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+        }
+        if (item._kind === 'text') {
+          var o = item.opts || {};
+          if (o.break) return '<w:r><w:br/></w:r>';
+          var rPr = [];
+          if (o.style) rPr.push('<w:rStyle w:val="' + xmlEsc(o.style) + '"/>');
+          if (o.font) rPr.push('<w:rFonts w:ascii="' + xmlEsc(o.font) + '" w:hAnsi="' + xmlEsc(o.font) + '"/>');
+          if (o.bold) rPr.push('<w:b/>');
+          if (o.italics) rPr.push('<w:i/>');
+          if (o.strike) rPr.push('<w:strike/>');
+          if (o.underline) rPr.push('<w:u w:val="single"/>');
+          if (o.highlight) rPr.push('<w:highlight w:val="' + xmlEsc(o.highlight) + '"/>');
+          if (o.size) rPr.push('<w:sz w:val="' + xmlEsc(o.size) + '"/><w:szCs w:val="' + xmlEsc(o.size) + '"/>');
+          if (o.superScript) rPr.push('<w:vertAlign w:val="superscript"/>');
+          else if (o.subScript) rPr.push('<w:vertAlign w:val="subscript"/>');
+          if (o.rightToLeft) rPr.push('<w:rtl/>');
+          if (o.language && o.language.value) rPr.push('<w:lang w:val="' + xmlEsc(o.language.value) + '"/>');
+          return '<w:r>' + (rPr.length ? '<w:rPr>' + rPr.join('') + '</w:rPr>' : '')
+            + '<w:t xml:space="preserve">' + xmlEsc(o.text == null ? '' : o.text) + '</w:t></w:r>';
+        }
+        return '';
+      }
+
+      function renderParagraph(p) {
+        var o = (p && p.opts) || {};
+        var pPr = [];
+        if (o.heading) pPr.push('<w:pStyle w:val="' + xmlEsc(o.heading) + '"/>');
+        if (o.bullet) {
+          pPr.push('<w:numPr><w:ilvl w:val="' + Math.max(0, Number(o.bullet.level || 0)) + '"/><w:numId w:val="1"/></w:numPr>');
+        } else if (o.numbering && o.numbering.reference) {
+          var numId = numRefToId[o.numbering.reference] || 2;
+          pPr.push('<w:numPr><w:ilvl w:val="' + Math.max(0, Number(o.numbering.level || 0)) + '"/><w:numId w:val="' + numId + '"/></w:numPr>');
+        }
+        if (o.bidirectional) pPr.push('<w:bidi/>');
+        if (o.indent) {
+          var indAttrs = [];
+          if (o.indent.left) indAttrs.push('w:left="' + Number(o.indent.left) + '"');
+          if (o.indent.hanging) indAttrs.push('w:hanging="' + Number(o.indent.hanging) + '"');
+          if (indAttrs.length) pPr.push('<w:ind ' + indAttrs.join(' ') + '/>');
+        }
+        if (o.alignment) pPr.push('<w:jc w:val="' + xmlEsc(o.alignment) + '"/>');
+        var kids = Array.isArray(o.children) ? o.children.map(renderInline).join('') : '';
+        return '<w:p>' + (pPr.length ? '<w:pPr>' + pPr.join('') + '</w:pPr>' : '') + kids + '</w:p>';
+      }
+
+      function renderTable(t) {
+        var o = (t && t.opts) || {};
+        var rows = Array.isArray(o.rows) ? o.rows : [];
+        var activeRowSpans = [];
+        var maxCols = 0;
+        var rowsXml = rows.map(function (row) {
+          var ro = (row && row.opts) || {};
+          var trPr = [];
+          if (ro.cantSplit) trPr.push('<w:cantSplit/>');
+          if (ro.tableHeader) trPr.push('<w:tblHeader/>');
+          var cells = Array.isArray(ro.children) ? ro.children : [];
+          var cellsXml = [];
+          var col = 0;
+          function emitCovered() {
+            while (activeRowSpans[col] && activeRowSpans[col].remaining > 0) {
+              var span = activeRowSpans[col];
+              cellsXml.push('<w:tc><w:tcPr>' + (span.colSpan > 1 ? '<w:gridSpan w:val="' + span.colSpan + '"/>' : '') + '<w:vMerge/></w:tcPr><w:p/></w:tc>');
+              span.remaining -= 1;
+              col += span.colSpan;
+            }
+          }
+          for (var ci = 0; ci < cells.length; ci++) {
+            emitCovered();
+            var co = (cells[ci] && cells[ci].opts) || {};
+            var cSpan = Math.max(1, Number(co.columnSpan || 1));
+            var rSpan = Math.max(1, Number(co.rowSpan || 1));
+            var tcPr = [];
+            if (cSpan > 1) tcPr.push('<w:gridSpan w:val="' + cSpan + '"/>');
+            if (rSpan > 1) {
+              tcPr.push('<w:vMerge w:val="restart"/>');
+              activeRowSpans[col] = { remaining: rSpan - 1, colSpan: cSpan };
+            }
+            var bodyXml = Array.isArray(co.children) && co.children.length
+              ? co.children.map(renderBlock).join('')
+              : '<w:p/>';
+            cellsXml.push('<w:tc>' + (tcPr.length ? '<w:tcPr>' + tcPr.join('') + '</w:tcPr>' : '') + bodyXml + '</w:tc>');
+            col += cSpan;
+          }
+          emitCovered();
+          if (col > maxCols) maxCols = col;
+          return '<w:tr>' + (trPr.length ? '<w:trPr>' + trPr.join('') + '</w:trPr>' : '') + cellsXml.join('') + '</w:tr>';
+        }).join('');
+        var gridColW = Math.max(720, Math.floor(9360 / Math.max(1, maxCols)));
+        var tblGridXml = '<w:tblGrid>' + Array.from({ length: Math.max(1, maxCols) }, function () {
+          return '<w:gridCol w:w="' + gridColW + '"/>';
+        }).join('') + '</w:tblGrid>';
+        return '<w:tbl><w:tblPr><w:tblStyle w:val="' + xmlEsc(o.style || 'TableGrid') + '"/>'
+          + '<w:tblW w:w="5000" w:type="pct"/>'
+          + (o.visuallyRightToLeft ? '<w:bidiVisual/>' : '')
+          + '</w:tblPr>' + tblGridXml + rowsXml + '</w:tbl>';
+      }
+
+      function renderBlock(block) {
+        if (!block) return '';
+        if (block._kind === 'paragraph') return renderParagraph(block);
+        if (block._kind === 'table') return renderTable(block);
+        return '';
+      }
+
+      var sections = Array.isArray(opts.sections) ? opts.sections : [];
+      var bodyParts = [];
+      for (var si = 0; si < sections.length; si++) {
+        var sec = sections[si] || {};
+        var secChildren = Array.isArray(sec.children) ? sec.children : [];
+        for (var bi = 0; bi < secChildren.length; bi++) bodyParts.push(renderBlock(secChildren[bi]));
+      }
+      if (!bodyParts.length) bodyParts.push('<w:p><w:r><w:t> </w:t></w:r></w:p>');
+
+      var documentXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+        + '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
+        + ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
+        + ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'
+        + '<w:body>' + bodyParts.join('') + '<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>';
+
+      var headingStyles = [1, 2, 3, 4, 5, 6].map(function (lvl) {
+        var sz = [36, 30, 26, 24, 22, 20][lvl - 1];
+        return '<w:style w:type="paragraph" w:styleId="Heading' + lvl + '">'
+          + '<w:name w:val="heading ' + lvl + '"/>'
+          + '<w:basedOn w:val="Normal"/><w:qFormat/>'
+          + '<w:pPr><w:keepNext/><w:outlineLvl w:val="' + (lvl - 1) + '"/></w:pPr>'
+          + '<w:rPr><w:b/><w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/></w:rPr></w:style>';
+      }).join('');
+      var stylesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+        + '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        + '<w:docDefaults><w:rPrDefault><w:rPr><w:lang w:val="' + xmlEsc(docLang) + '"/></w:rPr></w:rPrDefault><w:pPrDefault/></w:docDefaults>'
+        + '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>'
+        + headingStyles
+        + '<w:style w:type="character" w:styleId="Hyperlink"><w:name w:val="Hyperlink"/><w:rPr><w:color w:val="0563C1"/><w:u w:val="single"/></w:rPr></w:style>'
+        + '<w:style w:type="character" w:styleId="FootnoteReference"><w:name w:val="footnote reference"/><w:rPr><w:vertAlign w:val="superscript"/></w:rPr></w:style>'
+        + '<w:style w:type="table" w:styleId="TableGrid"><w:name w:val="Table Grid"/><w:tblPr><w:tblBorders>'
+        + '<w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>'
+        + '<w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>'
+        + '<w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/>'
+        + '</w:tblBorders></w:tblPr></w:style></w:styles>';
+
+      var abstractNums = [
+        '<w:abstractNum w:abstractNumId="0">' + [0, 1, 2, 3, 4, 5, 6, 7, 8].map(function (l) {
+          return '<w:lvl w:ilvl="' + l + '"><w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val="&#x2022;"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="' + ((l + 1) * 720) + '" w:hanging="360"/></w:pPr></w:lvl>';
+        }).join('') + '</w:abstractNum>',
+      ];
+      var numMappings = ['<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>'];
+      var totalOrdered = Math.max(numConfigs.length, 1);
+      for (var oi = 0; oi < totalOrdered; oi++) {
+        var absId = oi + 1;
+        var nId = oi + 2;
+        abstractNums.push('<w:abstractNum w:abstractNumId="' + absId + '">' + [0, 1, 2, 3, 4].map(function (l) {
+          return '<w:lvl w:ilvl="' + l + '"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%' + (l + 1) + '."/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="' + ((l + 1) * 720) + '" w:hanging="360"/></w:pPr></w:lvl>';
+        }).join('') + '</w:abstractNum>');
+        numMappings.push('<w:num w:numId="' + nId + '"><w:abstractNumId w:val="' + absId + '"/></w:num>');
+      }
+      var numberingXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+        + '<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        + abstractNums.join('') + numMappings.join('') + '</w:numbering>';
+
+      var footnotesXml = null;
+      var footnotesRelsXml = null;
+      if (hasFootnotes) {
+        var prevRelSink = activeRelSink;
+        activeRelSink = {
+          add: function (rel) {
+            var id = 'rId' + (nextFootnoteRelId++);
+            footnoteRels.push(Object.assign({ id: id }, rel));
+            return id;
+          },
+        };
+        var fnBody;
+        try {
+          fnBody = Object.keys(opts.footnotes).map(function (id) {
+            var entry = opts.footnotes[id] || {};
+            var kids = Array.isArray(entry.children) ? entry.children.map(renderBlock).join('') : '<w:p/>';
+            return '<w:footnote w:id="' + xmlEsc(id) + '">' + kids + '</w:footnote>';
+          }).join('');
+        } finally {
+          activeRelSink = prevRelSink;
+        }
+        footnotesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+          + '<w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
+          + ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
+          + ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'
+          + '<w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>'
+          + '<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>'
+          + fnBody + '</w:footnotes>';
+        if (footnoteRels.length) {
+          footnotesRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+            + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            + footnoteRels.map(function (r) {
+              return '<Relationship Id="' + xmlEsc(r.id) + '" Type="' + xmlEsc(r.type) + '" Target="' + xmlEsc(r.target) + '"'
+                + (r.external ? ' TargetMode="External"' : '') + '/>';
+            }).join('') + '</Relationships>';
+        }
+      }
+
+      var docRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+        + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        + rels.map(function (r) {
+          return '<Relationship Id="' + xmlEsc(r.id) + '" Type="' + xmlEsc(r.type) + '" Target="' + xmlEsc(r.target) + '"'
+            + (r.external ? ' TargetMode="External"' : '') + '/>';
+        }).join('') + '</Relationships>';
+
+      var rootRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+        + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>'
+        + '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>'
+        + '</Relationships>';
+
+      var coreXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+        + '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"'
+        + ' xmlns:dc="http://purl.org/dc/elements/1.1/">'
+        + '<dc:title>' + xmlEsc(title) + '</dc:title>'
+        + '<dc:creator>' + xmlEsc(creator) + '</dc:creator>'
+        + '<dc:language>' + xmlEsc(docLang) + '</dc:language>'
+        + '</cp:coreProperties>';
+
+      var mediaDefaultTypes = Object.keys(mediaExts).map(function (ext) {
+        return '<Default Extension="' + xmlEsc(ext) + '" ContentType="' + xmlEsc(mediaExts[ext]) + '"/>';
+      }).join('');
+      var contentTypesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+        + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+        + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+        + '<Default Extension="xml" ContentType="application/xml"/>'
+        + mediaDefaultTypes
+        + '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
+        + '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'
+        + '<Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/>'
+        + (footnotesXml ? '<Override PartName="/word/footnotes.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"/>' : '')
+        + '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>'
+        + '</Types>';
+
+      var entries = [
+        { name: '[Content_Types].xml', data: contentTypesXml, isBase64: false },
+        { name: '_rels/.rels', data: rootRelsXml, isBase64: false },
+        { name: 'docProps/core.xml', data: coreXml, isBase64: false },
+        { name: 'word/document.xml', data: documentXml, isBase64: false },
+        { name: 'word/_rels/document.xml.rels', data: docRelsXml, isBase64: false },
+        { name: 'word/styles.xml', data: stylesXml, isBase64: false },
+        { name: 'word/numbering.xml', data: numberingXml, isBase64: false },
+      ];
+      if (footnotesXml) entries.push({ name: 'word/footnotes.xml', data: footnotesXml, isBase64: false });
+      if (footnotesRelsXml) entries.push({ name: 'word/_rels/footnotes.xml.rels', data: footnotesRelsXml, isBase64: false });
+      for (var mi = 0; mi < mediaEntries.length; mi++) entries.push(mediaEntries[mi]);
+      return entries;
+    }
+
+    window.docx = window.docx || {
+      HeadingLevel: { HEADING_1: 'Heading1', HEADING_2: 'Heading2', HEADING_3: 'Heading3', HEADING_4: 'Heading4', HEADING_5: 'Heading5', HEADING_6: 'Heading6' },
+      AlignmentType: { CENTER: 'center', START: 'start', LEFT: 'left', RIGHT: 'right', BOTH: 'both' },
+      WidthType: { PERCENTAGE: 'pct', DXA: 'dxa', AUTO: 'auto' },
+      LevelFormat: { DECIMAL: 'decimal', BULLET: 'bullet' },
+      LineRuleType: { AUTO: 'auto' },
+      HighlightColor: { YELLOW: 'yellow' },
+      TextRun: TextRun,
+      ExternalHyperlink: ExternalHyperlink,
+      ImageRun: ImageRun,
+      FootnoteReferenceRun: FootnoteReferenceRun,
+      PageBreak: PageBreak,
+      Paragraph: Paragraph,
+      Table: Table,
+      TableRow: TableRow,
+      TableCell: TableCell,
+      Document: Document,
+      ImportedXmlComponent: ImportedXmlComponent,
+      Packer: {
+        toBlob: async function (docObj) {
+          var entries = buildDocxEntries(docObj);
+          var b64 = await window.__alloOfflineZip({ entries: entries, storeFirst: null });
+          var bin = atob(b64);
+          var out = new Uint8Array(bin.length);
+          for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+          return new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        },
+      },
+    };
+  }.toString() + ')();';
+
+  async function installOfflineZipBridge(page) {
+    await page.exposeFunction('__alloOfflineZip', ({ entries, storeFirst }) => {
+      const fileMap = {};
+      for (const entry of (entries || [])) {
+        if (!entry || typeof entry.name !== 'string') continue;
+        fileMap[entry.name] = entry.isBase64 ? Buffer.from(String(entry.data || ''), 'base64') : String(entry.data || '');
+      }
+      return zipFileMap(fileMap, storeFirst || undefined).toString('base64');
+    });
+  }
 
   async function exportAccessibleOffice(opts) {
     const o = opts || {};
@@ -3122,27 +3952,22 @@ function createDriver(options) {
       const page = await context.newPage();
       const pageErrors = [];
       page.on('pageerror', (e) => pageErrors.push(String(e).slice(0, 200)));
-      const strictOffline = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS !== '0';
-      const allowedBootScripts = new Set([REACT_CDN, REACT_DOM_CDN, JSZIP_CDN]);
-      let networkLocked = false;
       await page.route('**/*', (route) => {
         const url = route.request().url();
         if (/^(?:about|blob|data):/i.test(url)) return route.continue();
-        if (!networkLocked && !strictOffline && allowedBootScripts.has(url)) return route.continue();
         return route.abort();
       });
+      await installOfflineZipBridge(page);
       await page.goto('about:blank');
-      rlog('office export: loading React + JSZip + the export module');
-      await page.addScriptTag({ url: REACT_CDN });
-      await page.addScriptTag({ url: REACT_DOM_CDN });
-      await page.addScriptTag({ url: JSZIP_CDN }); // ODT packaging needs it and the module will not fetch it itself
-      await page.waitForFunction(() => !!(window.React && window.ReactDOM && window.JSZip), null, { timeout: 30000 });
+      rlog('office export: loading offline React/JSZip/DOCX shims + export module');
+      await page.addScriptTag({ content: OFFLINE_REACT_STUB });
+      await page.addScriptTag({ content: OFFLINE_JSZIP_SHIM });
+      if (format === 'docx') await page.addScriptTag({ content: OFFLINE_DOCX_SHIM });
       await page.addScriptTag({ path: modulePath });
       await page.waitForFunction(
         () => !!(window.AlloModules && window.AlloModules.AccessibleOfficeExport && typeof window.AlloModules.AccessibleOfficeExport.build === 'function'),
         null, { timeout: 30000 }
       );
-      networkLocked = true;
       const out = await page.evaluate(async ({ html, title, format: fmt }) => {
         const res = await window.AlloModules.AccessibleOfficeExport.build({ html, title, format: fmt });
         if (!res || !res.blob) throw new Error('Office export returned no data');
@@ -3163,9 +3988,8 @@ function createDriver(options) {
   // All three are MODEL-FREE: they restructure HTML that has already been remediated, so no key.
   //
   // The view module is loaded for the same reason the Office export loads it — the builders live
-  // there — but the packaging is done in Node with desktop/mcp/zip_writer.cjs rather than by
-  // pulling JSZip off a CDN. These are the formats a user reaches for when they have no network,
-  // and a CDN dependency would make an offline install quietly unable to produce an ebook.
+  // there — using the offline React stub and Node-side desktop/mcp/zip_writer.cjs rather than
+  // pulling scripts off a CDN, so offline installs can always produce EPUB, DAISY, and BRF.
   const ALT_FORMATS = { epub: 'epub', daisy: 'daisy', brf: 'brf', braille: 'brf' };
 
   async function loadViewModulePage(context, rlog, what) {
@@ -3176,27 +4000,19 @@ function createDriver(options) {
     const page = await context.newPage();
     const pageErrors = [];
     page.on('pageerror', (e) => pageErrors.push(String(e).slice(0, 200)));
-    const strictOffline = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS !== '0';
-    const allowedBootScripts = new Set([REACT_CDN, REACT_DOM_CDN]);
-    let networkLocked = false;
     await page.route('**/*', (route) => {
       const url = route.request().url();
       if (/^(?:about|blob|data):/i.test(url)) return route.continue();
-      if (!networkLocked && !strictOffline && allowedBootScripts.has(url)) return route.continue();
       return route.abort();
     });
     await page.goto('about:blank');
-    rlog(what + ': loading React + the view module');
-    // React is not optional: the module destructures hooks at top level and throws without it.
-    await page.addScriptTag({ url: REACT_CDN });
-    await page.addScriptTag({ url: REACT_DOM_CDN });
-    await page.waitForFunction(() => !!(window.React && window.ReactDOM), null, { timeout: 30000 });
+    rlog(what + ': loading offline React shim + view module');
+    await page.addScriptTag({ content: OFFLINE_REACT_STUB });
     await page.addScriptTag({ path: modulePath });
     await page.waitForFunction(
       () => !!(window.AlloModules && window.AlloModules.AltFormatExports && typeof window.AlloModules.AltFormatExports.epub === 'function'),
       null, { timeout: 30000 }
     );
-    networkLocked = true;
     return { page, pageErrors };
   }
 
@@ -3207,6 +4023,7 @@ function createDriver(options) {
     if (!format) throw new Error("format must be one of: epub, daisy, brf");
     if (!o.html || typeof o.html !== 'string') throw new Error('html is required');
     const title = String(o.title || 'document').replace(/\.\w+$/, '') || 'document';
+    const fileStem = title.replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').replace(/^\.+|\.+$/g, '').slice(0, 120) || 'document';
 
     const b = await getBrowser();
     const context = await b.newContext();
@@ -3219,8 +4036,27 @@ function createDriver(options) {
           return { kind: 'text', brf: r.brf, dropped: r.dropped, grade: r.grade, code: r.code, chars: r.text.length };
         }
         const pkg = fmt === 'epub' ? A.epub(html, { title: ttl }) : A.daisy(html, { title: ttl });
+        const toBase64 = (bytes) => {
+          const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+          let bin = '';
+          for (let i = 0; i < u8.length; i += 8192) bin += String.fromCharCode(...u8.subarray(i, i + 8192));
+          return btoa(bin);
+        };
+        const ipcFiles = {};
+        const preEncoded = pkg && pkg.binaryFiles && typeof pkg.binaryFiles === 'object' ? pkg.binaryFiles : null;
+        for (const [entryName, entryVal] of Object.entries((pkg && pkg.files) || {})) {
+          if (preEncoded && typeof preEncoded[entryName] === 'string') {
+            ipcFiles[entryName] = { __alloBase64: preEncoded[entryName] };
+          } else if (ArrayBuffer.isView(entryVal)) {
+            ipcFiles[entryName] = { __alloBase64: toBase64(new Uint8Array(entryVal.buffer, entryVal.byteOffset, entryVal.byteLength)) };
+          } else if (entryVal instanceof ArrayBuffer) {
+            ipcFiles[entryName] = { __alloBase64: toBase64(new Uint8Array(entryVal)) };
+          } else {
+            ipcFiles[entryName] = entryVal;
+          }
+        }
         return {
-          kind: 'package', files: pkg.files, storeFirst: pkg.storeFirst || null,
+          kind: 'package', files: ipcFiles, storeFirst: pkg.storeFirst || null,
           lang: pkg.lang, uid: pkg.uid,
           headings: typeof pkg.headings === 'number' ? pkg.headings : null,
           validation: pkg.validation || null,
@@ -3234,7 +4070,7 @@ function createDriver(options) {
         const buf = Buffer.from(built.brf, 'ascii');
         rlog('brf: ' + buf.length + ' bytes, grade ' + built.grade + ', ' + built.dropped + ' character(s) dropped');
         return {
-          format: 'brf', fileName: title + '.brf', b64: buf.toString('base64'), bytes: buf.length,
+          format: 'brf', fileName: fileStem + '.brf', b64: buf.toString('base64'), bytes: buf.length,
           grade: built.grade, code: built.code, droppedCharacters: built.dropped,
           sourceCharacters: built.chars, modelFree: true,
           // Surfaced rather than swallowed: characters with no Grade-1 equivalent are gone from
@@ -3246,11 +4082,17 @@ function createDriver(options) {
       }
 
       const errs = ((built.validation && built.validation.issues) || []).filter((i) => i.severity === 'error');
-      const buf = zipFileMap(built.files, built.storeFirst || undefined);
+      const zipFiles = {};
+      for (const [entryName, entryVal] of Object.entries(built.files || {})) {
+        zipFiles[entryName] = (entryVal && typeof entryVal === 'object' && typeof entryVal.__alloBase64 === 'string')
+          ? Buffer.from(entryVal.__alloBase64, 'base64')
+          : entryVal;
+      }
+      const buf = zipFileMap(zipFiles, built.storeFirst || undefined);
       rlog(format + ': ' + Object.keys(built.files).length + ' entries, ' + buf.length + ' bytes'
         + (errs.length ? ', ' + errs.length + ' structural error(s)' : ''));
       return {
-        format, fileName: title + (format === 'epub' ? '.epub' : '-daisy.zip'),
+        format, fileName: fileStem + (format === 'epub' ? '.epub' : '-daisy.zip'),
         b64: buf.toString('base64'), bytes: buf.length,
         entries: Object.keys(built.files), language: built.lang, identifier: built.uid,
         navEntries: typeof built.headings === 'number' ? built.headings : undefined, modelFree: true,
@@ -3298,7 +4140,7 @@ function createDriver(options) {
     const context = await b.newContext();
     try {
       const page = await context.newPage();
-      await installVendorRuntime(page, { loadAxe: true, loadPdfLib: o.loadPdfLib === true });
+      await installVendorRuntime(page, { loadAxe: true, loadPdfLib: o.loadPdfLib === true, loadCore: o.loadCore === true });
       for (const f of MODULE_FILES) await page.addScriptTag({ path: path.join(ASSETS_ROOT, f) });
       await page.waitForFunction(() => !!(window.AlloModules && window.AlloModules.createDocPipeline), null, { timeout: 30000 });
       await page.evaluate((rtlFn) => {
@@ -3425,7 +4267,7 @@ function createDriver(options) {
     const ext = path.extname(fileName).toLowerCase();
     const mime = o.mimeType || MEDIA_MIME[ext];
     if (!mime) throw new Error('Unsupported media type "' + ext + '". Supported: ' + Object.keys(MEDIA_MIME).join(', '));
-    const bytes = readInputFile(o.filePath);
+    const bytes = readValidatedInputBytes(o.filePath);
     (o.onLog || log)('transcribe: ' + fileName + ' (' + Math.round(bytes.length / 1024 / 1024 * 10) / 10 + ' MB, ' + mime + ', mode=' + (o.mode || 'speech') + ')');
     const b64 = bytes.toString('base64');
     return withRunPage(Object.assign({ fileName }, o), (page) =>
@@ -3468,16 +4310,37 @@ function createDriver(options) {
   // which extractor matches which extension.
   async function extractDocumentText(opts) {
     const o = opts || {};
-    const ext = path.extname(o.filePath).toLowerCase();
-    const b64 = readInputFile(o.filePath).toString('base64');
-    (o.onLog || log)('extract: ' + path.basename(o.filePath) + ' (' + ext + ')');
-    return withHtmlPage(false, async (page) => page.evaluate(async ({ data, kind }) => {
+    const fileName = path.basename(o.filePath);
+    const ext = path.extname(fileName).toLowerCase();
+    (o.onLog || log)('extract: ' + fileName + ' (' + ext + ')');
+    if (/\.(md|markdown|txt|csv|tsv)$/i.test(ext)) {
+      const bytes = readValidatedInputBytes(o.filePath);
+      if (bytes.length === 0 || bytes.includes(0)) {
+        throw new Error('Not a valid UTF-8 text document: ' + o.filePath);
+      }
+      const text = bytes.toString('utf8');
+      return {
+        kind: ext.replace('.', ''),
+        text,
+        method: 'utf8-text',
+        error: null,
+        sourceCharCount: text.length,
+        mediaImages: 0,
+        pageCount: null,
+        isScanned: false,
+        pageErrors: null,
+        unmappedGlyphRatio: 0,
+      };
+    }
+    const b64 = readDocBase64(o.filePath);
+    return withHtmlPage(false, async (page) => page.evaluate(async ({ data, kind, fileName: fn }) => {
       const p = window.__mcpPipeline;
       // Each extractor returns its OWN shape. The Office ones use `fullText` (with a `method`
       // field that can be 'failed' plus an `error`), the XLSX one produces markdown. Reading a
       // `text` property that never existed returned empty strings while reporting success — the
       // same object-shape trap as sanitizeStyleForWCAG. Normalise explicitly and carry `method`
       // and `error` through, so a failed extraction cannot masquerade as an empty document.
+      const isSheet = ['.xlsx', '.xlsm', '.xls', '.xlsb', '.ods'].includes(kind);
       const pick = (r) => {
         if (typeof r === 'string') return { text: r, method: null, error: null };
         if (!r || typeof r !== 'object') return { text: '', method: null, error: 'extractor returned nothing usable' };
@@ -3493,7 +4356,7 @@ function createDriver(options) {
           if (c < 0x20 || c === 0xfffd || (c >= 0x7f && c < 0xa0)) unmapped++;
         }
         return {
-          text, method: r.method || (kind === '.pdf' ? 'text-layer' : null), error: r.error || null,
+          text, method: r.method || (kind === '.pdf' ? 'text-layer' : (isSheet ? 'sheetjs' : null)), error: r.error || null,
           sourceCharCount: r.sourceCharCount, mediaImages: (r.mediaImages || []).length || 0,
           pageCount: Number.isFinite(r.pageCount) ? r.pageCount : null,
           isScanned: typeof r.isScanned === 'boolean' ? r.isScanned : null,
@@ -3504,11 +4367,11 @@ function createDriver(options) {
       let raw;
       if (kind === '.docx') raw = await p.extractDocxTextDeterministic(data);
       else if (kind === '.pptx') raw = await p.extractPptxTextDeterministic(data);
-      else if (kind === '.xlsx' || kind === '.xlsm') raw = await p.convertXlsxToMarkdownTables(data, {});
+      else if (isSheet) raw = await p.convertXlsxToMarkdownTables(data, { fileName: fn });
       else if (kind === '.pdf') raw = await p.extractPdfTextDeterministic(data, {});
       else throw new Error('Unsupported extension for deterministic extraction: ' + kind);
       return Object.assign({ kind: kind.replace('.', '') }, pick(raw));
-    }, { data: b64, kind: ext }), o);
+    }, { data: b64, kind: ext, fileName }), o);
   }
 
   async function inspectFormFields(opts) {
@@ -3681,7 +4544,7 @@ function createDriver(options) {
         let figureText = [];
         if (!scanned) { try { figureText = (await pipeline.figureRegionText(b64, html)) || []; } catch (_) { figureText = []; } }
         const contentCoverage = (0, eval)('(' + sourceCoverageFn + ')')({
-          sourceText: scanned ? readingText : det.fullText, outputHtml: html, pages: scanned ? scanReading.pages : null, method: scanned ? (scanReading.method || 'ocr') : 'pdf-text-layer',
+          sourceText: scanned ? readingText : det.fullText, outputHtml: html, pages: scanned ? scanReading.pages : (Array.isArray(det && det.pages) ? det.pages : null), method: scanned ? (scanReading.method || 'ocr') : 'pdf-text-layer',
           pageErrors: [], lowConfidencePages: [], pageRange: null, figureText, furniture,
         });
         // 4. Gates, in the order a run applies them.
@@ -3872,6 +4735,149 @@ function createDriver(options) {
       }, { b64 }));
   }
 
+  async function validatePdfBytesWithModule(pdfBytes, opts) {
+    const o = opts || {};
+    const b64 = (Buffer.isBuffer(pdfBytes) ? pdfBytes : Buffer.from(pdfBytes)).toString('base64');
+    return withHtmlPage(false, async (page) => page.evaluate(async (data) => {
+      const V = window.AlloModules && window.AlloModules.PdfValidator;
+      if (!V || typeof V.validateExportedPdfBytes !== 'function') {
+        return { error: 'view_pdf_validator_module unavailable' };
+      }
+      const bin = atob(data);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return V.validateExportedPdfBytes(bytes);
+    }, b64), Object.assign({}, o, { loadPdfLib: true }));
+  }
+
+  /**
+   * Build a clean-rebuild / typeset tagged PDF from sanitized accessible HTML.
+   *
+   * Pure-Latin HTML uses the fast pdf-lib typeset path (createTypesetTaggedPdf)
+   * unless preferChromium is true. Non-Latin, RTL/BiDi, CJK, Indic, Thai, or
+   * any HTML where createTypesetTaggedPdf drops characters automatically renders
+   * via Playwright Chromium's offline HarfBuzz/BiDi tagged PDF engine with
+   * PDF/UA-1 post-processing (remediation_chromium_pdf.cjs), and every emitted
+   * PDF is byte-validated through view_pdf_validator_module.js.
+   */
+  async function renderTypesetTaggedPdf(opts) {
+    loadVendorBundle();
+    const o = opts || {};
+    const rlog = typeof o.onLog === 'function' ? o.onLog : log;
+    const html = String(o.html || '');
+    if (!html.trim()) throw new Error('renderTypesetTaggedPdf requires non-empty HTML.');
+    const lang = o.lang || ChromiumPdf.extractHtmlLang(html) || 'en';
+    const htmlTitle = ChromiumPdf.extractHtmlTitle(html);
+    const title = (o.title && String(o.title).trim()) || htmlTitle || 'Accessible document';
+    const pdfuaId = (o.pdfuaId === null || o.pdfuaId === 'none' || o.pdfuaId === false) ? null : 1;
+    const scriptInfo = ChromiumPdf.detectNonLatinOrShapingScript(html, lang);
+    let fallbackReason = null;
+
+    if (!o.preferChromium && !scriptInfo.needsChromium) {
+      try {
+        const pdflibOut = await withHtmlPage(false, async (page) => page.evaluate(async ({ html: h, title: t, lang: l }) => {
+          const p = window.__mcpPipeline;
+          if (!p || typeof p.createTypesetTaggedPdf !== 'function') {
+            return { error: 'createTypesetTaggedPdf unavailable' };
+          }
+          const tagged = await p.createTypesetTaggedPdf(
+            { accessibleHtml: h },
+            { title: t, lang: l, subject: 'Prepared with AlloFlow accessibility tools; not a certification of conformance' },
+          );
+          const outBytes = tagged && (tagged.bytes || tagged);
+          const delivery = typeof p.taggedPdfDeliveryVerdict === 'function'
+            ? p.taggedPdfDeliveryVerdict(tagged)
+            : { ok: false, code: 'delivery-verdict-unavailable', reason: 'delivery verdict unavailable' };
+          const dropped = Number(tagged && tagged.summary && tagged.summary.unicodeTypesetWarning && tagged.summary.unicodeTypesetWarning.droppedChars) || 0;
+          let b64 = null;
+          if (outBytes && outBytes.length) {
+            let ob = '';
+            const CH = 0x8000;
+            for (let i = 0; i < outBytes.length; i += CH) {
+              ob += String.fromCharCode.apply(null, Array.from(outBytes.subarray(i, i + CH)));
+            }
+            b64 = btoa(ob);
+          }
+          return {
+            b64,
+            delivery: delivery && typeof delivery === 'object'
+              ? { ok: delivery.ok === true, code: String(delivery.code || ''), reason: String(delivery.reason || '') }
+              : { ok: false, code: 'delivery-verdict-unavailable', reason: '' },
+            dropped,
+            postExportValidator: tagged && tagged.postExportValidator ? tagged.postExportValidator : null,
+            summary: tagged && tagged.summary ? tagged.summary : null,
+          };
+        }, { html, title, lang }), Object.assign({}, o, { loadCore: true }));
+
+        if (pdflibOut && pdflibOut.b64 && pdflibOut.delivery && pdflibOut.delivery.ok && !pdflibOut.dropped) {
+          const bytes = Buffer.from(pdflibOut.b64, 'base64');
+          rlog('typeset tagged PDF (pdflib-typeset): ' + Math.round(bytes.length / 1024) + ' KB');
+          return {
+            bytes,
+            b64: pdflibOut.b64,
+            exportMode: 'clean_rebuild',
+            engine: 'pdflib-typeset',
+            delivery: pdflibOut.delivery,
+            postExportValidator: pdflibOut.postExportValidator,
+            scriptInfo,
+            fallbackReason: null,
+          };
+        }
+        fallbackReason = (pdflibOut && pdflibOut.dropped > 0)
+          ? 'typeset-content-dropped'
+          : ((pdflibOut && pdflibOut.delivery && pdflibOut.delivery.code) || (pdflibOut && pdflibOut.error) || 'pdflib-typeset-failed');
+        rlog('typeset tagged PDF falling back to Chromium (' + fallbackReason + ')');
+      } catch (err) {
+        fallbackReason = 'pdflib-typeset-error: ' + ((err && err.message) || String(err)).slice(0, 120);
+        rlog('typeset tagged PDF falling back to Chromium (' + fallbackReason + ')');
+      }
+    }
+
+    const b = await getBrowser(o.signal);
+    const rendered = await ChromiumPdf.renderHtmlToTaggedPdf(b, html, {
+      title,
+      lang,
+      pdfuaId,
+      signal: o.signal,
+      timeoutMs: o.timeoutMs,
+    });
+    const validator = await validatePdfBytesWithModule(rendered.bytes, { onLog: rlog });
+    let delivery;
+    if (!validator || validator.error) {
+      delivery = {
+        ok: false,
+        code: validator && validator.error ? 'validator-error' : 'validator-unavailable',
+        reason: (validator && validator.error) || 'byte-level exported-PDF validation was unavailable',
+      };
+    } else if (validator.summary && validator.summary.overall === 'PASS') {
+      delivery = { ok: true, code: 'verified', reason: '' };
+    } else {
+      const fails = (validator.checks || [])
+        .filter((c) => c && c.status === 'fail')
+        .map((c) => c.rule || c.label)
+        .filter(Boolean);
+      delivery = {
+        ok: false,
+        code: 'validator-failed',
+        reason: fails.join('; ') || 'byte-level exported-PDF validation did not pass',
+      };
+    }
+    rlog('typeset tagged PDF (chromium-tagged-pdf): ' + Math.round(rendered.bytes.length / 1024) + ' KB, delivery=' + delivery.code);
+    return {
+      bytes: rendered.bytes,
+      b64: rendered.b64,
+      exportMode: 'clean_rebuild',
+      engine: 'chromium-tagged-pdf',
+      delivery,
+      postExportValidator: validator,
+      structuralMarkers: rendered.structuralMarkers,
+      pdfUaFinalization: rendered.pdfUaFinalization,
+      blockedNetworkRequests: rendered.blockedNetworkRequests,
+      scriptInfo,
+      fallbackReason,
+    };
+  }
+
   async function close() {
     if (activeRun) await cancelActiveRun();
     if (verapdfServer) { try { verapdfServer.close(); } catch (_) {} verapdfServer = null; }
@@ -3883,6 +4889,7 @@ function createDriver(options) {
     fixContrast, buildConformanceReport, generateResourcePack, describeImages, transcribeMedia, translateHtml,
     redactDocumentHtml, extractDocumentText, inspectFormFields, applyFormFields, simplifyHtml,
     auditWithBothEngines, htmlDerivatives, accessibleHtmlTool, exportAltFormat, auditHtml, finalizeEdited, readPdfAnnotations,
+    renderTypesetTaggedPdf,
     cancelActiveRun, close,
     takeLastRunDiagnostics: () => lastRunDiagnostics,
     // Test-only surfaces for the agent-bridge end-to-end test: the same scripted replies and
@@ -3890,6 +4897,7 @@ function createDriver(options) {
     // completion without any model. Not part of the tool surface.
     _selfTestScriptedReply: selfTestReply,
     _buildSelfTestPdf: buildSelfTestPdf,
+    _readDocBase64: readDocBase64,
   };
 }
 
@@ -3969,6 +4977,11 @@ module.exports = {
   normalizeVendorAssetBytes,
   readDocumentRuntime,
   verifyDocumentRuntime,
+  SUBSTITUTE_FONT_ROUTES,
+  validateTrueTypeFontBuffer,
+  isPathContainedInRoot,
+  resolveLocalSubstituteFont,
+  ChromiumPdf,
   NORMALIZED_VENDOR_TEXT_PATHS,
   REPO_ROOT,
   ASSETS_ROOT,

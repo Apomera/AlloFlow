@@ -164,7 +164,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _moiT = (ctx && ctx.theme) || {};
       var _moiHC = !!_moiT.isContrast, _moiL = !_moiHC && !_moiT.isDark;
-      var _moi_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _moi_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#3b82f6':'#000000','#0ea5e9':'#000000','#a855f7':'#000000'};
+      var _moi_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _moi_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#3b82f6':'#000000','#0ea5e9':'#000000','#0369a1':'#000000','#a855f7':'#000000'};
       var _moi_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#64748b','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fde68a':'#92400e','#e9d5ff':'#581c87','#fcd34d':'#78350f'}, _moi_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#fde68a':'#ffff00','#e9d5ff':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00'};
       var _moi_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _moi_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#3b82f6':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#2563eb':'#ffff00','#e2e8f0':'#ffff00'};
       var _moiBg = function(h){ return _moiHC ? (_moi_BGH[h]||h) : (_moiL ? (_moi_BGL[h]||h) : h); };
@@ -573,7 +573,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
 
             // Rulers
             (r.importance !== undefined || r.confidence !== undefined || r.readiness !== undefined) ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _moiBg('#0ea5e9'), color: _moiFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📏 The three rulers'),
+              h('div', { style: { background: _moiBg('#0369a1'), color: _moiFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📏 The three rulers'),
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12.5, color: _moiFg('#0f172a') } },
                 h('tbody', null,
                   r.importance !== undefined ? h('tr', null,

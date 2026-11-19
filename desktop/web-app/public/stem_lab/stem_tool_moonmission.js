@@ -11642,19 +11642,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       if (lowPower || window.AlloPostFXEnabled === false) return;
       var ensure = function (cb) {
         if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+        if (window._isDesktopBundledApp === true) { cb(); return; }
         var urls = [
-          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
-          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
-          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
-          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
-          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
-          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js', 'sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj'],
+          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js', 'sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R'],
+          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js', 'sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg'],
+          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js', 'sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs'],
+          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js', 'sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3'],
+          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js', 'sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa']
         ];
         var i = 0;
         (function nextScript() {
           if (i >= urls.length) { cb(); return; }
           var s = document.createElement('script');
-          s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+          s.src = urls[i][0]; s.integrity = urls[i][1]; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer'; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
           document.head.appendChild(s);
         })();
       };
@@ -12014,6 +12015,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     document.head.appendChild(_mmStyle);
   }
 
+  // Moon Mission workbench visual identity, cislunar trajectory ribbon & High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-moonmission-workbench-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-moonmission-workbench-css';
+    st.textContent = [
+      '.mm-hero-bar{position:relative;overflow:hidden;border-radius:16px;border:1px solid rgba(56,189,248,.38);background:linear-gradient(135deg,#020617 0%,#0f172a 54%,#1e1b4b 100%);box-shadow:0 14px 32px rgba(2,6,23,.32);color:#f8fafc}',
+      '.mm-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(56,189,248,.16);border:1px solid rgba(125,211,252,.42);color:#e0f2fe}',
+      '.mm-trajectory-ribbon{margin:0 12px 12px;padding:8px 10px;border-radius:12px;background:rgba(2,6,23,.48);border:1px solid rgba(125,211,252,.25)}',
+      '.mm-starter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border-radius:12px;background:#0f172a;border:1px solid rgba(99,102,241,.42);color:#e2e8f0}',
+      '.mm-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#bae6fd;margin-right:2px}',
+      '.mm-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#1e293b;border:1px solid rgba(125,211,252,.45);color:#f8fafc;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
+      '.mm-starter-chip:hover{background:#312e81;border-color:#7dd3fc;color:#ffffff}',
+      '.mm-starter-chip[aria-pressed="true"]{background:#0284c7;border-color:#bae6fd;color:#ffffff}',
+      '[data-moonmission-tool] button:focus-visible,[data-moonmission-tool] input:focus-visible,[data-moonmission-tool] select:focus-visible{outline:3px solid #38bdf8;outline-offset:2px}',
+      '.theme-contrast .mm-hero-bar,.theme-contrast [data-moonmission-control],.theme-contrast .mm-trajectory-ribbon,.theme-contrast .mm-starter-bar{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .mm-hero-badge{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .mm-starter-label{color:#ffff00!important}',
+      '.theme-contrast .mm-starter-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .mm-starter-chip[aria-pressed="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast [data-moonmission-tool] button:focus-visible,.theme-contrast [data-moonmission-tool] input:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   window.StemLab.registerTool('moonMission', {
     icon: '\uD83D\uDE80',
     label: 'Moon Mission',
@@ -12058,7 +12084,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var gradeLevel = ctx.gradeLevel;
 
       // ── State Management ──
-      var d = (labToolData && labToolData.moonMission) || {};
+      var _rawMm = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData.moonMission : null;
+      var d = (_rawMm && typeof _rawMm === 'object' && !Array.isArray(_rawMm)) ? _rawMm : {};
       // Saved state is user data: an older, hand-edited or corrupted save can hold the
       // wrong TYPE in any key, and the later phases dereference these (the quiz indexes
       // the bank with quizIdx, the debrief calls .toFixed on the landing and entry
@@ -12116,11 +12143,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // geology badges and the 4-sample quest were unreachable). Same class of bug for
       // two log() calls in one handler: the second silently dropped the first.
       function upd(key, val) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var slice = (prev && prev.moonMission) || {};
+          var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var rawSlice = basePrev.moonMission;
+          var slice = (rawSlice && typeof rawSlice === 'object' && !Array.isArray(rawSlice)) ? rawSlice : {};
           var patch = {};
           patch[key] = (typeof val === 'function') ? val(slice[key]) : val;
-          return Object.assign({}, prev, { moonMission: Object.assign({}, slice, patch) });
+          return Object.assign({}, basePrev, { moonMission: Object.assign({}, slice, patch) });
         });
       }
 
@@ -12906,9 +12936,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
       return h('div', { className: 'max-w-5xl mx-auto px-1 space-y-3', role: 'main', 'data-moonmission-tool': 'true', 'aria-label': (phase >= 10 ? t('stem.moonmission.a11y_apollo_moon_mission_simulator_mission_complete', 'Apollo Moon Mission Simulator - Mission complete') : __alloAriaFill(t('stem.moonmission.a11y_apollo_moon_mission_simulator_phase_of_10', 'Apollo Moon Mission Simulator - Phase {value1} of 10: {name}'), { value1: phase + 1, name: activePhase.name })) },
 
-        // Header
-        h('div', { className: 'flex items-center justify-between mb-3 rounded-xl border border-slate-700 p-3 gap-2 flex-wrap', style: { background: '#0f172a', color: '#f8fafc' } },
-          h('div', { className: 'flex items-center gap-2' },
+        // Header — Bespoke Apollo Flight Control Workbench Bar
+        h('div', { className: 'mm-hero-bar flex items-center justify-between mb-3 p-3 gap-2 flex-wrap' },
+          h('div', { className: 'flex items-center gap-2.5 min-w-0' },
             h('button', { onClick: function() {
                 // Tear down the EVA WebGL loop + looping mission audio before leaving — neither stops itself
                 // on unmount, so exiting mid-EVA used to leak a forever-running render loop + ambient sound.
@@ -12916,11 +12946,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 if (evaCanvas && evaCanvas._evaCleanup) evaCanvas._evaCleanup();
                 if (typeof stopMissionAmbient === 'function') stopMissionAmbient();
                 setStemLabTool(null);
-              }, className: 'inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg hover:bg-slate-700 transition-colors', 'aria-label': t('stem.moonmission.back_to_stem_lab', 'Back to STEAM Lab') },
+              }, className: 'inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg border border-white/15 bg-white/10 hover:bg-slate-700 transition-colors shrink-0', 'aria-label': t('stem.moonmission.back_to_stem_lab', 'Back to STEAM Lab') },
               h(ArrowLeft, { size: 18 })
             ),
-            h('div', null,
-              h('h3', { className: 'text-lg font-black text-slate-100 flex items-center gap-2' + onHostInk }, t('stem.moonmission.apollo_moon_mission', '\uD83D\uDE80 Apollo Moon Mission')),
+            h('svg', { width: 44, height: 44, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+              h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : '#020617', stroke: isContrast ? '#00ff00' : 'rgba(125,211,252,0.55)', strokeWidth: 1.8 }),
+              h('circle', { cx: 19, cy: 36, r: 9, fill: isContrast ? '#000000' : '#0284c7', stroke: isContrast ? '#00ff00' : '#7dd3fc', strokeWidth: 1.5 }),
+              h('circle', { cx: 47, cy: 23, r: 6.5, fill: isContrast ? '#000000' : '#cbd5e1', stroke: isContrast ? '#ffffff' : '#f8fafc', strokeWidth: 1.4 }),
+              h('path', { d: 'M19 27 C24 14 42 12 49 17 C55 22 52 34 42 35 C31 36 27 45 19 45', fill: 'none', stroke: isContrast ? '#ffff00' : '#38bdf8', strokeWidth: 2, strokeDasharray: '4 3', strokeLinecap: 'round' }),
+              h('circle', { cx: 35, cy: 17, r: 3, fill: isContrast ? '#00ff00' : '#fbbf24' })
+            ),
+            h('div', { className: 'min-w-0' },
+              h('span', { className: 'mm-hero-badge' }, t('stem.moonmission.hero_badge', 'Aerospace · Apollo Orbital Mechanics')),
+              h('h3', { className: 'text-lg font-black text-slate-100 flex items-center gap-2 mt-0.5' + onHostInk }, t('stem.moonmission.apollo_moon_mission', '\uD83D\uDE80 Apollo Moon Mission')),
               h('p', { className: 'text-[0.6875rem] text-slate-300 -mt-0.5' + onHostInk }, t('stem.moonmission.full_mission_simulation_launch_to_spla', 'Full mission simulation \u2022 Launch to splashdown'))
             )
           ),
@@ -13030,6 +13068,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             )
           ),
+          // Inline SVG Cislunar Trajectory Telemetry Profile
+          (function() {
+            var wpCoords = [
+              [52, 42], [96, 26], [156, 22], [234, 18], [332, 18],
+              [442, 22], [496, 36], [442, 50], [296, 54], [134, 52]
+            ];
+            var phaseNum = (typeof phase === 'number' && isFinite(phase)) ? Math.floor(phase) : 0;
+            var curIdx = Math.min(Math.max(0, phaseNum), 9);
+            var craftPt = phaseNum >= 10 ? [52, 42] : (wpCoords[curIdx] || wpCoords[0]);
+            return h('div', { className: 'mm-trajectory-ribbon' },
+              h('svg', {
+                viewBox: '0 0 560 70', width: '100%', height: 'auto', role: 'img',
+                'aria-label': t('stem.moonmission.cislunar_profile_aria', 'Earth-to-Moon 10-phase orbital mission trajectory showing completed and active legs'),
+                style: { display: 'block', maxHeight: 74 }
+              },
+                h('path', { d: 'M52 36 C160 12 360 12 496 36', fill: 'none', stroke: isContrast ? '#00ff00' : 'rgba(56,189,248,0.55)', strokeWidth: 2, strokeDasharray: '5 4' }),
+                h('path', { d: 'M496 36 C380 58 170 58 52 36', fill: 'none', stroke: isContrast ? '#ffff00' : 'rgba(167,139,250,0.5)', strokeWidth: 2, strokeDasharray: '5 4' }),
+                h('circle', { cx: 38, cy: 36, r: 16, fill: isContrast ? '#000000' : '#0284c7', stroke: isContrast ? '#00ff00' : '#7dd3fc', strokeWidth: 2 }),
+                h('text', { x: 38, y: 65, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#bae6fd', fontSize: 10, fontWeight: 800 }, t('stem.moonmission.svg_earth', 'Earth')),
+                h('circle', { cx: 516, cy: 36, r: 11, fill: isContrast ? '#000000' : '#cbd5e1', stroke: isContrast ? '#ffffff' : '#f8fafc', strokeWidth: 2 }),
+                h('text', { x: 516, y: 65, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#e2e8f0', fontSize: 10, fontWeight: 800 }, t('stem.moonmission.svg_moon', 'Moon')),
+                wpCoords.map(function(pt, wi) {
+                  var done = phase >= 10 || wi < phase;
+                  var activeWp = phase < 10 && wi === phase;
+                  return h('circle', {
+                    key: 'wp-' + wi, cx: pt[0], cy: pt[1], r: activeWp ? 5 : 3.2,
+                    fill: isContrast ? (done ? '#00ff00' : activeWp ? '#ffff00' : '#000000') : (done ? '#34d399' : activeWp ? '#fbbf24' : '#475569'),
+                    stroke: isContrast ? '#ffffff' : '#0f172a', strokeWidth: 1.2
+                  });
+                }),
+                h('circle', { cx: craftPt[0], cy: craftPt[1], r: 7.5, fill: 'none', stroke: isContrast ? '#ffff00' : '#fde047', strokeWidth: 1.8 }),
+                h('text', { x: 280, y: 39, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#94a3b8', fontSize: 10, fontWeight: 700 },
+                  t('stem.moonmission.svg_distance_scale', '384,400 km cislunar trajectory'))
+              )
+            );
+          })(),
           // Flight plan: five cards in one row at every width. On a phone the old two-column
           // grid made three rows with an orphan; the status word hides below sm and the
           // card colour carries it (plus aria-label for readers).
@@ -13046,6 +13120,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               );
             })
           )
+        ),
+
+        // Quick Pre-Launch Flight Profile Presets (Phase 0 only, hidden once mission starts or event active)
+        (phase === 0 && !missionStartTime && !d.activeEvent) && h('div', {
+          className: 'mm-starter-bar',
+          role: 'group',
+          'aria-label': t('stem.moonmission.quick_profiles_aria', 'Quick mission difficulty profiles')
+        },
+          h('span', { className: 'mm-starter-label' }, t('stem.moonmission.quick_profiles_label', 'Flight Profile:')),
+          ['tourist', 'pilot', 'commander'].map(function(diffKey) {
+            var df = DIFFICULTIES[diffKey];
+            if (!df) return null;
+            return h('button', {
+              key: 'mm-diff-' + diffKey,
+              type: 'button',
+              className: 'mm-starter-chip',
+              'aria-pressed': difficulty === diffKey ? 'true' : 'false',
+              onClick: function() {
+                upd('difficulty', diffKey);
+                if (typeof announceToSR === 'function') announceToSR('Mission difficulty set to ' + df.label);
+              }
+            }, df.icon + ' ' + df.label);
+          })
         ),
 
         // ── Mission Event modal (triggered by advancePhase) ──
@@ -15733,19 +15830,20 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                       if (window.AlloPostFXEnabled === false) return;
                       var ensure = function (cb) {
                         if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+                        if (window._isDesktopBundledApp === true) { cb(); return; }
                         var urls = [
-                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
-                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
-                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
-                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
-                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
-                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+                          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js', 'sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj'],
+                          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js', 'sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R'],
+                          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js', 'sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg'],
+                          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js', 'sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs'],
+                          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js', 'sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3'],
+                          ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js', 'sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa']
                         ];
                         var i = 0;
                         (function nextScript() {
                           if (i >= urls.length) { cb(); return; }
                           var s = document.createElement('script');
-                          s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+                          s.src = urls[i][0]; s.integrity = urls[i][1]; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer'; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
                           document.head.appendChild(s);
                         })();
                       };

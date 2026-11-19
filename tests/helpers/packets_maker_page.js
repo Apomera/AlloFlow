@@ -62,7 +62,8 @@ class KeepBlob {
 }
 
 export async function openMaker(options = {}) {
-  const dom = new JSDOM(read('packets-make.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/packets-make.html' });
+  const hash = options && options.hash ? String(options.hash) : '';
+  const dom = new JSDOM(read('packets-make.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/packets-make.html' + hash });
   const w = dom.window, d = w.document;
   const page = { dom, w, d, asked: [], files: [], downloads: [], idb: options.idb === undefined ? fakeIndexedDB() : options.idb };
   w.TextEncoder = TextEncoder;
@@ -86,6 +87,7 @@ export async function openMaker(options = {}) {
   // any grade level). Since 2026-11-16 a true first visit starts at a grade level instead, so the page is opened as a
   // returning browser that kept the earlier choices, which the page honours. options.firstVisit asks for a true first visit.
   if (!(options && options.firstVisit) && !w.localStorage.getItem('alloflow-packets-maker/1')) w.localStorage.setItem('alloflow-packets-maker/1', JSON.stringify({ v: 1, mode: 'pick', shape: 'CVC', stage: '' }));
+  if (options && typeof options.before === 'function') options.before(w);
   for (const script of d.querySelectorAll('script[src]')) w.eval(read(script.getAttribute('src')));
   page.$ = (id) => d.getElementById(id);
   page.seen = (id) => !page.$(id).hidden && !page.$(id).closest('[hidden]');

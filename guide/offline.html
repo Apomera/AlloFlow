@@ -1347,7 +1347,7 @@ html:root[data-allo-theme="easyread"]{--page:#faf8ef;--surface:#fffefa;--surface
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <header class="site-header">
     <div class="site-header__inner">
-      <a class="brand" href="index.html" aria-label="AlloFlow Teacher Guide home">
+      <a class="brand" href="index.html">
         <span class="brand__mark" aria-hidden="true">A</span>
         <span>AlloFlow Teacher Guide</span>
       </a>
@@ -1361,7 +1361,7 @@ html:root[data-allo-theme="easyread"]{--page:#faf8ef;--surface:#fffefa;--surface
     </div>
   </header>
   <div class="page-shell">
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Guide chapters">
       <nav class="chapter-nav" aria-label="Teacher guide chapters">
         <p class="chapter-nav__title">Teacher guide</p>
         <ol>
@@ -6084,14 +6084,21 @@ Do not change firewall, proxy, certificate, device-management, or account settin
     var embedded = embeddedRecords();
     if (embedded) return Promise.resolve(embedded);
     var source = panel.getAttribute('data-search-index') || 'search-index.json';
-    return window.fetch(source, { credentials: 'same-origin' })
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : null;
+    var clearTimer = function () { if (timer !== null) { clearTimeout(timer); timer = null; } };
+    return window.fetch(source, ctrl ? { credentials: 'same-origin', signal: ctrl.signal } : { credentials: 'same-origin' })
       .then(function (response) {
         if (!response.ok) throw new Error('Search index request failed.');
         return response.json();
       })
       .then(function (records) {
+        clearTimer();
         if (!Array.isArray(records)) throw new Error('Search index is not an array.');
         return records.filter(validRecord);
+      }, function (err) {
+        clearTimer();
+        throw err;
       });
   }
 
@@ -6118,7 +6125,8 @@ Do not change firewall, proxy, certificate, device-management, or account settin
     var form = panel.querySelector('[data-guide-search-form]');
     var input = panel.querySelector('[data-guide-search-input]');
     var status = panel.querySelector('[data-guide-search-status]');
-    if (!form || !input || !status) return;
+    var output = panel.querySelector('[data-guide-search-results]');
+    if (!form || !input || !status || !output) return;
 
     loadRecords(panel).then(function (records) {
       var initialQuery = queryFromLocation();
@@ -6260,7 +6268,12 @@ Do not change firewall, proxy, certificate, device-management, or account settin
   var header = d.querySelector('.site-header');
   var headerInner = d.querySelector('.site-header__inner');
   var prefs = {};
-  try { prefs = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) { prefs = {}; }
+  try {
+    var parsedPrefs = JSON.parse(localStorage.getItem(LS) || '{}', function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+    if (parsedPrefs && typeof parsedPrefs === 'object' && !Array.isArray(parsedPrefs)) prefs = parsedPrefs;
+  } catch (e) { prefs = {}; }
   function save() { try { localStorage.setItem(LS, JSON.stringify(prefs)); } catch (e) {} }
 
   var FONTS = [
@@ -6324,19 +6337,25 @@ Do not change firewall, proxy, certificate, device-management, or account settin
 
   function apply() {
     var b = d.body;
-    b.style.fontFamily = prefs.font || '';
-    b.style.lineHeight = prefs.line ? String(prefs.line) : '';
-    b.style.letterSpacing = prefs.letter ? prefs.letter + 'em' : '';
-    root.style.fontSize = prefs.size ? (prefs.size * 100) + '%' : '';
-    if (prefs.theme && prefs.theme !== 'default') root.setAttribute('data-allo-theme', prefs.theme);
+    var sizeNum = Number(prefs.size);
+    var validSize = Number.isFinite(sizeNum) && sizeNum >= 0.5 && sizeNum <= 3;
+    var lineNum = Number(prefs.line);
+    var validLine = Number.isFinite(lineNum) && lineNum >= 1 && lineNum <= 4;
+    var letterNum = Number(prefs.letter);
+    var validLetter = Number.isFinite(letterNum) && letterNum >= 0 && letterNum <= 0.5;
+    b.style.fontFamily = typeof prefs.font === 'string' ? prefs.font : '';
+    b.style.lineHeight = validLine ? String(lineNum) : '';
+    b.style.letterSpacing = validLetter && letterNum > 0 ? letterNum + 'em' : '';
+    root.style.fontSize = validSize ? (sizeNum * 100) + '%' : '';
+    if (typeof prefs.theme === 'string' && prefs.theme && prefs.theme !== 'default') root.setAttribute('data-allo-theme', prefs.theme);
     else root.removeAttribute('data-allo-theme');
     if (prefs.ruler) root.setAttribute('data-allo-ruler', '1');
     else root.removeAttribute('data-allo-ruler');
-    $('rt-font').value = prefs.font || '';
-    $('rt-size').value = prefs.size || 1;
-    $('rt-line').value = prefs.line || 1.6;
-    $('rt-letter').value = prefs.letter || 0;
-    $('rt-theme').value = prefs.theme || 'default';
+    $('rt-font').value = typeof prefs.font === 'string' ? prefs.font : '';
+    $('rt-size').value = validSize ? sizeNum : 1;
+    $('rt-line').value = validLine ? lineNum : 1.6;
+    $('rt-letter').value = validLetter ? letterNum : 0;
+    $('rt-theme').value = typeof prefs.theme === 'string' && prefs.theme ? prefs.theme : 'default';
     $('rt-ruler').setAttribute('aria-pressed', prefs.ruler ? 'true' : 'false');
   }
   function on(id, ev, fn) { var n = $(id); if (n) n.addEventListener(ev, fn); }

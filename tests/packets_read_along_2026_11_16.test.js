@@ -97,18 +97,25 @@ describe('the lesson and the file', () => {
     expect(twice.lesson.title).toBe('Read along');
   });
 
-  it('refuses a recording that is not sound, and says what is missing in words a teacher can act on', () => {
+  it('allows silent/syllable-only and partial-clip passages while refusing non-audio clip URIs', () => {
     const sentences = RA.splitPassage(PASSAGE);
     expect(() => RA.lessonFromReadAlong({ loader, text: '', clips: {} })).toThrow('There is no passage yet.');
-    expect(() => RA.lessonFromReadAlong({ loader, text: PASSAGE, clips: {} })).toThrow('No sentence has a recording yet.');
+    // 2026-11-19 (Wave 3A): 0 clips (silent / syllable-only) builds cleanly with accurate manifest counts.
+    const silent = RA.lessonFromReadAlong({ loader, text: PASSAGE, clips: {} });
+    expect([silent.recorded, silent.missing, silent.pages]).toEqual([0, 7, 2]);
+    const silentBuilt = RA.buildReadAlongPacket({ made: silent, loader });
+    expect(silentBuilt.manifest.speech.recordings.sentences).toBe(0);
+    expect(silentBuilt.manifest.readAlong.recordings).toBe(0);
+    // Partial clips across only page 1 are also allowed cleanly.
+    const half = clipsFor(sentences.slice(0, 4));
+    const partial = RA.lessonFromReadAlong({ loader, text: PASSAGE, clips: half });
+    expect([partial.recorded, partial.missing]).toEqual([4, 3]);
+    // Malformed non-audio URIs are always refused.
     const bad = clipsFor(sentences);
     for (const key of Object.keys(bad)) bad[key] = 'data:text/html;base64,PHNjcmlwdD4=';
-    expect(() => RA.lessonFromReadAlong({ loader, text: PASSAGE, clips: bad })).toThrow('No sentence has a recording yet.');
+    expect(() => RA.lessonFromReadAlong({ loader, text: PASSAGE, clips: bad })).toThrow('A recording must be an audio file.');
     bad[RA.clipKey(sentences[0].text)] = 'javascript:alert(1)';
-    expect(() => RA.lessonFromReadAlong({ loader, text: PASSAGE, clips: bad })).toThrow('No sentence has a recording yet.');
-    // Page 2 with no recording at all: the file is not made, and the reason is said.
-    const half = clipsFor(sentences.slice(0, 4));
-    expect(() => RA.lessonFromReadAlong({ loader, text: PASSAGE, clips: half })).toThrow('A page of the passage has no recording. Make the recordings for every page first.');
+    expect(() => RA.lessonFromReadAlong({ loader, text: PASSAGE, clips: bad })).toThrow('A recording must be an audio file.');
     // One sentence without a recording is allowed: it is shown and not read.
     const most = clipsFor(sentences.slice(0, 6));
     const made = RA.lessonFromReadAlong({ loader, text: PASSAGE, clips: most });
@@ -148,7 +155,8 @@ describe('the read-along activity in a student file', () => {
     const made = adapter.prepare({ lines: [{ text: '  One   line. ', audio: 's1', para: true, html: '<b>x</b>', onclick: 'x' }, { text: 'Two.', audio: 'javascript:1' }], page: 2, pages: 3, lang: 'en', extra: 1 });
     expect(made.item).toEqual({ lines: [{ text: 'One line.', audio: 's1', para: true }, { text: 'Two.', audio: '' }], lang: 'en', page: 2, pages: 3, word: 'One line.', target: 'read' });
     expect(adapter.prepare({ lines: [] }).missing).toEqual(['lines']);
-    expect(adapter.prepare({ lines: [{ text: 'A.', audio: '' }] }).missing).toEqual(['a recording']);
+    // 2026-11-19 (Wave 3A): silent / syllable-only lines with no audio prepare cleanly.
+    expect(adapter.prepare({ lines: [{ text: 'A.', audio: '' }] }).item).toEqual({ lines: [{ text: 'A.', audio: '' }], lang: 'en', page: 1, pages: 1, word: 'A.', target: 'read' });
     expect(adapter.prepare({ lines: [{ text: '', audio: 's1' }] }).missing).toEqual(['text for every line']);
     expect(adapter.prepare({ lines: Array.from({ length: 61 }, () => ({ text: 'A.', audio: 's1' })) }).missing).toEqual(['lines']);
     expect(adapter.prepare({ lines: [{ text: 'A.', audio: 's1' }], lang: '"><script>' }).item.lang).toBe('en');
@@ -183,31 +191,46 @@ describe('the read-along activity in a student file', () => {
       expect(played.map((p) => p[0])).toEqual(sentences.slice(0, 4).map((row) => row.text));
       expect(played.every((p) => p[1] === 1)).toBe(true);
       expect(lines().some((n) => n.hasAttribute('aria-current'))).toBe(false);
-      // Stop in the middle of the page.
+      // Stop in the middle of the page, then resume from that sentence (not sentence 1).
       play.click();
-      await until(() => played.length === 5, 'the page to start again');
+      await until(() => played.length === 6, 'second sentence started');
       play.click();
       expect(play.textContent).toBe('Read to me');
+      const pausedAt = played.length;
+      const resumedSentence = played[pausedAt - 1][0];
       await wait(40);
-      expect(played.length).toBe(5);
-      // Slower, then one sentence pressed: that sentence, at the slower speed.
-      const slower = d.querySelector('[data-read-along-slower]');
+      expect(played.length).toBe(pausedAt);
+      play.click();
+      await until(() => played.length > pausedAt, 'resume from active sentence');
+      expect(played[pausedAt][0]).toBe(resumedSentence);
+      play.click();
+      await wait(30);
+      // Slower via unified Reading tools (Voice speed: Slower) — bespoke Read-Along Slower button removed.
+      expect(d.querySelector('[data-read-along-slower]')).toBeNull();
+      d.querySelector('[data-tools-open]').click();
+      const slower = d.querySelector('[data-tool="speed-1"]');
+      expect(slower.closest('[data-tool-group="speed"]').hidden).toBe(false);
       slower.click();
       expect(slower.getAttribute('aria-pressed')).toBe('true');
+      const beforeLine = played.length;
       lines()[2].click();
-      await until(() => played.length === 6, 'the pressed sentence');
-      expect(played[5]).toEqual(['"Where is it?" he said.', 0.8]);
-      // Nothing on the page says right or wrong, and the page is finished by the student.
+      await until(() => played.length === beforeLine + 1, 'the pressed sentence');
+      expect(played[beforeLine]).toEqual(['"Where is it?" he said.', 0.8]);
+      // Single-tap Next page advances cleanly without a second Next tap; page 2 offers Previous page to re-read page 1.
+      expect(d.querySelector('[data-read-along-prev]')).toBeNull();
+      expect(d.querySelector('[data-read-along-done]').textContent).toBe('Next page');
       d.querySelector('[data-read-along-done]').click();
-      await until(() => d.querySelector('[data-feedback]').textContent === 'Good reading.', 'the page to be finished');
-      const next = d.querySelector('[data-next]');
-      expect(next.hidden || next.disabled).toBe(false);
-      next.click();
       await until(() => d.querySelector('#app h2').textContent === 'Read along: 2 of 2', 'page 2');
       expect(lines()).toHaveLength(3);
+      const prevBtn = d.querySelector('[data-read-along-prev]');
+      expect(prevBtn && prevBtn.textContent).toBe('Previous page');
+      prevBtn.click();
+      await until(() => d.querySelector('#app h2').textContent === 'Read along: 1 of 2', 'back to page 1');
+      // Revisit keeps page 1 interactive and lets the student advance back to page 2.
       d.querySelector('[data-read-along-done]').click();
-      await until(() => d.querySelector('[data-next]') && !d.querySelector('[data-next]').hidden, 'Next');
-      d.querySelector('[data-next]').click();
+      await until(() => d.querySelector('#app h2').textContent === 'Read along: 2 of 2', 'return to page 2');
+      expect(d.querySelector('[data-read-along-done]').textContent).toBe('Finish');
+      d.querySelector('[data-read-along-done]').click();
       await until(() => /You finished/.test(d.querySelector('#app').textContent), 'the end');
       const end = d.querySelector('#app').textContent;
       expect(end).toContain('Practice, not scored: 2 of 2 done.');
@@ -226,7 +249,9 @@ describe('the page says what it is, and shares the voice instead of copying it',
     expect(ENGINE).toContain("'packets_audio_kit.js'");
     expect(read('packets_audio_kit.js')).toContain("'lame.min.js'");
     const doc = new JSDOM(HTML).window.document;
-    expect([...doc.querySelectorAll('script')].map((s) => s.getAttribute('src'))).toEqual(['packets-page.js', 'word_sounds_take_home_loader.js', 'packet_read_along_builder.js', 'syllable_table_en.js', 'packets_voice_engine.js', 'packets-read-along.js']);
+    expect([...doc.querySelectorAll('script')].map((s) => s.getAttribute('src'))).toEqual(['packets-page.js', 'word_sounds_take_home_loader.js', 'packet_read_along_builder.js', 'syllable_table_en.js', 'packets_voice_engine.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-read-along.js']);
+    expect(doc.querySelector('details.proof').textContent).toContain('This page loads sixteen files from this site');
+    expect(doc.querySelector('header .top-link').textContent).toBe('All Packets pages');
   });
 
   it('says it uses an AI voice on this device, that the passage is not uploaded, and that the saved file has no AI', () => {
@@ -333,9 +358,11 @@ function wavBytes(ms = 250) {
   return new Uint8Array(buf);
 }
 
-async function openPage({ encoder = true, table = false } = {}) {
-  const dom = new JSDOM(HTML, { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/packets-read-along.html' });
+async function openPage({ encoder = true, table = false, url = 'https://packets.test/site/packets-read-along.html', stubHandoff = null } = {}) {
+  const dom = new JSDOM(HTML, { runScripts: 'outside-only', pretendToBeVisual: true, url });
   const w = dom.window, d = w.document;
+  if (!w.TextEncoder) w.TextEncoder = TextEncoder;
+  if (!w.TextDecoder) w.TextDecoder = TextDecoder;
   const page = { w, d, dom, asked: [], added: [], spoken: [], saved: [], blobs: [] };
   w.fetch = async (url) => {
     page.asked.push(String(url));
@@ -374,6 +401,11 @@ async function openPage({ encoder = true, table = false } = {}) {
   w.eval(read('packet_read_along_builder.js'));
   if (table) w.eval(read('syllable_table_en.js'));
   w.eval(ENGINE);
+  w.eval(read('packets_verify_core.js'));
+  w.eval(read('packets_reopen.js'));
+  if (stubHandoff) w.AlloPacketHandoff = stubHandoff;
+  else w.eval(read('packets_handoff.js'));
+  w.eval(read('packets_zip.js'));
   w.eval(JS);
   page.$ = (id) => d.getElementById(id);
   page.rows = () => [...d.querySelectorAll('#line-rows .voice-row')].map((row) => ({ text: row.querySelector('.ra-text').textContent, state: row.querySelector('.voice-state').textContent.replace(/\d+\.\d seconds/, 'N seconds'), buttons: [...row.querySelectorAll('button')].map((b) => b.textContent + (b.disabled ? ' (off)' : '')) }));
@@ -389,15 +421,16 @@ describe('the read-along page, run with a stand-in voice', () => {
       expect(page.$('no-parts').hidden).toBe(true);
       expect(page.asked).toEqual([]);
       expect(page.added).toEqual([]);
-      expect(page.$('make-said').textContent).toBe('Type a passage in step 1 and get the voice in step 2 first.');
+      expect(page.$('make-said').textContent).toBe('Type a passage in step 1 first.');
       page.type('f-title', 'The fox');
       page.type('f-text', PASSAGE);
       await page.until(() => page.rows().length === 7, 'the sentences');
       expect(page.$('text-said').textContent).toBe('7 sentences, on 2 pages of the file.');
-      expect(page.rows()[2]).toEqual({ text: '"Where is it?" he said.', state: 'No recording yet.', buttons: ['Make recording (off)'] });
+      expect(page.rows()[2]).toEqual({ text: '"Where is it?" he said.', state: 'No recording yet.', buttons: ['Record', 'Make recording (off)'] });
       expect(page.$('make-all').disabled).toBe(true);
-      expect(page.$('make-said').textContent).toBe('Get the voice in step 2 first.');
-      expect(page.$('save').hidden).toBe(true);
+      // 2026-11-19 (Wave 3A): silent / syllable-only file builds immediately without needing Kokoro.
+      await page.until(() => !page.$('save').hidden, 'silent file ready');
+      expect(page.$('file-sub').textContent).toContain('No recordings yet');
       // Typing sends nothing and loads nothing.
       expect(page.asked).toEqual([]);
       expect(page.added).toEqual([]);
@@ -416,7 +449,7 @@ describe('the read-along page, run with a stand-in voice', () => {
       // Each sentence is said whole, as a sentence (not by the one-word recipe), in the voice chosen, a new recording each time.
       expect(page.spoken.map((s) => s.text)).toEqual(RA.splitPassage(PASSAGE).map((row) => row.text));
       expect(page.spoken.every((s) => s.voice === 'am_adam' && s.speed === 1 && s.word === false && s.force === true)).toBe(true);
-      expect(page.rows()[0]).toEqual({ text: 'The fox ran to the den.', state: 'Recorded, N seconds.', buttons: ['Play', 'Make again'] });
+      expect(page.rows()[0]).toEqual({ text: 'The fox ran to the den.', state: 'Recorded, N seconds.', buttons: ['Play', 'Record', 'Make again', 'Remove'] });
       // The recordings are MP3, made by the app's encoder: an MP3 frame starts each one.
       const clips = Object.values(page.w.AlloPacketReadAlongPage.state.clips);
       expect(clips).toHaveLength(7);
@@ -533,15 +566,16 @@ describe('the reading tools in a read-along file', () => {
       expect(lines().map((n) => n.textContent)).toEqual(['The kite sailed o·ver the trees.', 'Mia looked for it all af·ter·noon.', 'It was red.']);
       // A screen reader reads the sentence, not the parts. A line with no split word needs no label.
       expect(lines().map((n) => n.getAttribute('aria-label'))).toEqual(['The kite sailed over the trees.', 'Mia looked for it all afternoon.', null]);
-      // Slower too, then on to the next page: both stay as chosen.
-      const slower = d.querySelector('[data-read-along-slower]');
-      slower.click();
+      // Voice speed (Slower) in Reading tools too, then single-tap Next page: both stay as chosen AND persist in state.tools across reloads.
+      expect(d.querySelector('[data-read-along-slower]')).toBeNull();
+      d.querySelector('[data-tools-open]').click();
+      d.querySelector('[data-tool="speed-1"]').click();
       d.querySelector('[data-read-along-done]').click();
-      await until(() => d.querySelector('[data-next]') && !d.querySelector('[data-next]').hidden, 'Next');
-      d.querySelector('[data-next]').click();
       await until(() => d.querySelector('#app h2').textContent === 'Read along: 2 of 2', 'page 2');
       expect(d.querySelector('[data-read-along-syllables]').getAttribute('aria-pressed')).toBe('true');
-      expect(d.querySelector('[data-read-along-slower]').getAttribute('aria-pressed')).toBe('true');
+      expect(d.querySelector('[data-tool="speed-1"]').getAttribute('aria-pressed')).toBe('true');
+      const storedRaw = Object.values(Object.fromEntries(Object.keys(dom.window.localStorage).map((k) => [k, dom.window.localStorage.getItem(k)])))[0];
+      expect(JSON.parse(storedRaw).tools).toMatchObject({ speed: 1, syllables: 1 });
       expect(lines().map((n) => n.textContent)).toEqual(['She was hap·py a·gain.', 'Then she went home.', 'The next morn·ing was sun·ny.', 'Ev·ery·bod·y re·mem·bered.']);
       lines()[0].click();
       await until(() => played.length === 1, 'a sentence');
@@ -563,9 +597,9 @@ describe('the reading tools in a read-along file', () => {
       d.querySelector('#app button.primary').click();
       await until(() => d.querySelector('[data-read-along-play]'), 'page 1');
       expect(d.querySelector('[data-read-along-syllables]')).toBeNull();
-      // The tools that mean something on a page of running text are offered; the two for questions are not.
+      // The tools that mean something on a page of running text with recordings are offered; question-only tools are not.
       const shown = [...d.querySelectorAll('[data-tool-group]')].filter((g) => !g.hidden).map((g) => g.getAttribute('data-tool-group'));
-      expect(shown).toEqual(['size', 'colors', 'spacing', 'font', 'focus', 'lens']);
+      expect(shown).toEqual(['size', 'colors', 'spacing', 'font', 'focus', 'lens', 'speed']);
       d.querySelector('[data-tools-open]').click();
       d.querySelector('[data-tool="font-1"]').click();
       expect(d.documentElement.getAttribute('data-lt-font')).toBe('1');
@@ -615,7 +649,7 @@ describe('a read-along file on the other Packets pages', () => {
   const html = RA.buildReadAlongPacket({ made: RA.lessonFromReadAlong({ loader, title: 'The fox', sentences, clips: clipsFor(sentences) }), loader }).html;
 
   it('another maker\'s "Open a file I made" says what it is and where it is made, not "Word Sounds practice"', () => {
-    const SAID = 'This is a read-along. Make a read-along makes it. It cannot open a saved file yet: to change this one, make it again there.';
+    const SAID = 'This is a read-along. Make a read-along makes it, and can open it again.';
     const inWords = reopen.read(html, { verify, wordSounds: ['isolation'], activities: ['isolation'] });
     expect([inWords.ok, inWords.kind, inWords.why, inWords.page]).toEqual([false, 'read', SAID, { href: 'packets-read-along.html', name: 'Make a read-along' }]);
     const inMath = reopen.readMath(html, { verify });
@@ -626,7 +660,7 @@ describe('a read-along file on the other Packets pages', () => {
 
   it('Open a practice file calls it a read-along with pages to listen to, and Add up results never shows an empty group', () => {
     const open = read('packets-open.js');
-    expect(open).toContain("read: { href: 'packets-read-along.html', name: 'Make a read-along', reopens: false },");
+    expect(open).toContain("read: { href: 'packets-read-along.html', name: 'Make a read-along', reopens: true },");
     expect(open).toContain("every(/^read_along$/) ? 'read'");
     expect(open).toContain("kind === 'read' ? 'A read-along'");
     expect(open).toContain("if (about.pages) line.push(count(about.pages, 'page', 'pages') + ' to listen to.');");
@@ -637,5 +671,251 @@ describe('a read-along file on the other Packets pages', () => {
     const parts = verify.readParts(html);
     expect(parts.ok).toBe(true);
     expect(parts.lesson.blocks[0].activity).toBe('read_along');
+  });
+});
+
+describe('Wave 3A: Read-Along full parity (silent mode, teacher mic, reopen, batch .zip, print sheet)', () => {
+  const verify = require('../packets_verify_core.js');
+  const table = require('../syllable_table_en.js');
+  const sure = (word) => { const found = table.lookup(word); return found && !found.check ? found.parts : null; };
+
+  it('silent / syllable-only file hides Read to me and Voice speed while keeping Syllables and Reading tools', async () => {
+    const made = RA.lessonFromReadAlong({ loader, title: 'Silent passage', text: 'The kite sailed over the trees.\n\nEverybody remembered.', clips: {}, syllables: sure });
+    const built = RA.buildReadAlongPacket({ made, loader });
+    expect(built.manifest.speech.recordings.sentences).toBe(0);
+    expect(built.manifest.readAlong.recordings).toBe(0);
+    const dom = new JSDOM(built.html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://packet.test/silent.html' });
+    const d = dom.window.document;
+    const until = async (test, what) => { for (let i = 0; i < 200; i++) { if (test()) return; await new Promise((r) => setTimeout(r, 10)); } throw new Error('Timed out: ' + what); };
+    try {
+      d.getElementById('learner-name').value = 'Sam';
+      d.querySelector('#app button.primary').click();
+      await until(() => d.querySelector('[data-read-along-syllables]'), 'syllables button');
+      expect(d.querySelector('[data-read-along-play]')).toBeNull();
+      expect(d.querySelector('[data-read-along-line]').tagName).toBe('SPAN');
+      d.querySelector('[data-tools-open]').click();
+      expect(d.querySelector('[data-tool-group="speed"]').hidden).toBe(true);
+      d.querySelector('[data-read-along-syllables]').click();
+      expect(d.querySelector('[data-read-along-line="1"]').textContent).toBe('The kite sailed o·ver the trees.');
+    } finally { dom.window.close(); }
+  }, 60000);
+
+  it('teacher mic recording is strictly click-gated, encodes 64 kbps MP3 without downloading Kokoro, and handles denial gracefully', async () => {
+    const page = await openPage({ table: true });
+    let micRequests = 0;
+    let denyNext = false;
+    let activeRecorder = null;
+    try {
+      page.w.navigator.mediaDevices = {
+        getUserMedia: async () => {
+          micRequests++;
+          if (denyNext) { const err = new Error('denied'); err.name = 'NotAllowedError'; throw err; }
+          return { getTracks: () => [{ stop() {} }] };
+        },
+      };
+      page.w.MediaRecorder = class {
+        constructor() { this.state = 'inactive'; this.mimeType = 'audio/webm'; activeRecorder = this; }
+        start() { this.state = 'recording'; }
+        stop() {
+          this.state = 'inactive';
+          if (this.ondataavailable) this.ondataavailable({ data: new page.w.Blob([new Uint8Array([1, 2, 3, 4])], { type: 'audio/webm' }) });
+          if (this.onstop) this.onstop();
+        }
+      };
+      page.w.OfflineAudioContext = class {
+        decodeAudioData(_buf, ok) {
+          const samples = new Float32Array(22050 * 0.4);
+          for (let i = 0; i < samples.length; i++) samples[i] = 0.4 * Math.sin(i / 8);
+          const decoded = { length: samples.length, numberOfChannels: 1, sampleRate: 22050, getChannelData: () => samples };
+          if (ok) ok(decoded);
+          return Promise.resolve(decoded);
+        }
+      };
+
+      page.type('f-title', 'My voice story');
+      page.type('f-text', 'The fox ran fast. It hid in the grass.');
+      await page.until(() => page.rows().length === 2, 'two rows');
+      // Never asks for mic or Kokoro before click!
+      expect(micRequests).toBe(0);
+      expect(page.added).toEqual([]);
+
+      // Click Record on sentence 1 -> starts recording -> click Stop -> encodes MP3 without Kokoro.
+      page.d.querySelector('[data-record="1"]').click();
+      await page.until(() => activeRecorder && activeRecorder.state === 'recording', 'recording started');
+      expect(micRequests).toBe(1);
+      page.d.querySelector('[data-record="1"]').click();
+      await page.until(() => /your voice/.test(page.rows()[0].state), 'teacher clip saved');
+      expect(page.added).toEqual(['packets_audio_kit.js', 'lame.min.js']);
+      expect(page.asked).toEqual([]);
+      const clip = page.w.AlloPacketReadAlongPage.state.clips['The fox ran fast.'];
+      expect(clip.source).toBe('teacher');
+      expect(clip.uri.startsWith('data:audio/mpeg;base64,')).toBe(true);
+      const manifest = JSON.parse(/id="packet-manifest">([\s\S]*?)<\/script>/.exec(page.w.AlloPacketReadAlongPage.state.built.html)[1]);
+      expect(manifest.speech.recordings.made).toContain('recorded by the teacher');
+      expect(manifest.speech.recordings.sentences).toBe(1);
+
+      // Permission denial shows a calm message and never crashes.
+      denyNext = true;
+      page.d.querySelector('[data-record="2"]').click();
+      await page.until(() => /Microphone permission was refused/.test(page.$('make-problem').textContent), 'denial message');
+    } finally { page.dom.window.close(); }
+  }, 60000);
+
+  it('reopens a read-along file reusing unchanged sentence MP3s, supports unified code-name/batch .zip, and prints honoring Syllables', async () => {
+    const css = read('packets-read-along-print.css');
+    expect(css).toContain('@media print');
+    expect(css).toContain('var(--');
+    expect(css).not.toMatch(/:root|@keyframes|@import|url\(|#[0-9a-f]{3}/i);
+
+    const sentences = RA.splitPassage(PASSAGE);
+    const orig = RA.buildReadAlongPacket({
+      made: RA.lessonFromReadAlong({ loader, title: 'The fox', sentences, clips: clipsFor(sentences), voice: 'am_adam', syllables: sure }),
+      loader,
+      learner: 'BlueHeron7',
+    });
+    const back = RA.readBack(verify.readParts(orig.html));
+    expect(back.ok).toBe(true);
+    expect(back.title).toBe('The fox');
+    expect(back.voice).toBe('am_adam');
+    expect(back.learner).toBe('BlueHeron7');
+    expect(back.recordings).toBe(7);
+    expect(RA.splitPassage(back.text)).toEqual(sentences);
+
+    const page = await openPage({ table: true });
+    let printed = 0;
+    page.w.print = () => { printed++; };
+    try {
+      expect(page.w.AlloPacketReadAlongPage.reopen(orig.html, 'The-fox.html')).toBe(true);
+      expect(page.$('f-title').value).toBe('The fox');
+      expect(page.$('f-voice').value).toBe('am_adam');
+      expect(page.$('f-batch-names').value).toBe('BlueHeron7');
+      expect(page.$('batch').open).toBe(true);
+      expect(page.w.AlloPacketReadAlongPage.state.built.name).toBe('The-fox__BlueHeron7.html');
+      expect(page.rows().every((r) => /Recorded/.test(r.state))).toBe(true);
+
+      // Edit 1 sentence with a multisyllable word: the other 6 keep their reopened MP3 clips!
+      page.type('f-text', back.text.replace('The fox came out.', 'The brown fox came out this afternoon.'));
+      await page.until(() => page.rows().some((r) => r.state === 'No recording yet.') && !page.$('save').hidden, 'changed sentence rebuilt');
+      expect(page.rows().filter((r) => /Recorded/.test(r.state))).toHaveLength(6);
+
+      // 2+ code names -> 1-click Save .zip!
+      page.type('f-batch-names', 'BlueHeron7\nRedFox3');
+      expect(page.$('batch-make').hidden).toBe(false);
+      expect(page.$('batch-make').textContent).toBe('Save .zip for 2 students');
+      page.$('batch-make').click();
+      expect(page.$('batch-problem').textContent).toBe('');
+      expect(page.saved.some((s) => s.name === 'The-fox__2-students.zip')).toBe(true);
+
+      // Print on paper honors Syllables!
+      await page.until(() => !page.$('print').hidden && !page.$('print-syl-wrap').hidden, 'print controls');
+      expect(page.$('print').className).not.toContain('btn-primary');
+      page.$('print-syl').checked = true;
+      page.$('print-syl').dispatchEvent(new page.w.Event('change', { bubbles: true }));
+      page.$('print').click();
+      expect(printed).toBe(1);
+      expect(page.$('paper').textContent).toContain('af·ter·noon');
+      expect(page.d.body.classList.contains('paper-on')).toBe(true);
+      expect(page.$('paper').querySelectorAll('.paper-para').length).toBe(2);
+    } finally { page.dom.window.close(); }
+  }, 60000);
+
+  it('Wave 3B: registers readReadAlong in packets_reopen.js, accepts #open-file handoff on boot, and redirects wrong files in 1 click', async () => {
+    const reopenKit = require('../packets_reopen.js');
+    const sentences = RA.splitPassage(PASSAGE);
+    const orig = RA.buildReadAlongPacket({
+      made: RA.lessonFromReadAlong({ loader, title: 'The fox', sentences, clips: clipsFor(sentences), voice: 'am_adam' }),
+      loader,
+      learner: 'BlueHeron7',
+    });
+    const withBuilder = reopenKit.readReadAlong(orig.html, { verify, builder: RA, codeName: RA.codeName });
+    expect(withBuilder.ok).toBe(true);
+    expect(withBuilder.kind).toBe('read');
+    expect(withBuilder.readAlong.recordings).toBe(7);
+    const standalone = reopenKit.readReadAlong(orig.html, { verify });
+    expect(standalone.ok).toBe(true);
+    expect(standalone.readAlong.sentences).toHaveLength(7);
+
+    // Booting packets-read-along.html#open-file takes the handed-off file, clears hash, and loads it.
+    const handed = [];
+    const page = await openPage({
+      url: 'https://packets.test/site/packets-read-along.html#open-file',
+      stubHandoff: {
+        HASH: '#open-file',
+        RESULTS_HASH: '#import-results',
+        take: async () => ({ name: 'The-fox.html', bytes: new TextEncoder().encode(orig.html).buffer }),
+        redirect: async (file, href, hash) => { handed.push({ name: file.name, href, hash }); },
+      },
+    });
+    try {
+      await page.until(() => page.$('f-title').value === 'The fox', 'handed read-along loaded');
+      expect(page.w.location.hash).toBe('');
+      expect(page.$('f-batch-names').value).toBe('BlueHeron7');
+
+      // Dropping a results CSV shows the 1-click redirect link to packets-results.html#import-results.
+      const csv = '\uFEFF"format","session_id"\r\n"alloflow-packet-result/1","S-1"\r\n';
+      expect(page.w.AlloPacketReadAlongPage.reopen(csv, 'ra-res.csv')).toBe(false);
+      expect(page.$('reopen-page').hidden).toBe(false);
+      expect(page.$('reopen-page').getAttribute('href')).toBe('packets-results.html');
+      page.$('reopen-page').dispatchEvent(new page.w.MouseEvent('click', { bubbles: true, cancelable: true }));
+      expect(handed).toEqual([{ name: 'ra-res.csv', href: 'packets-results.html', hash: '#import-results' }]);
+    } finally { page.dom.window.close(); }
+  });
+
+  it('Wave 4A: preserves month/textbook abbreviations in splitPassage and supports Space, Arrow, and R shortcuts in the student player', async () => {
+    expect(RA.splitPassage('Prof. Rivera met Sam on Jan. 5. Look at Fig. 2 on p. 12.')).toEqual([
+      { text: 'Prof. Rivera met Sam on Jan. 5.' },
+      { text: 'Look at Fig. 2 on p. 12.' },
+    ]);
+    // Genuine sentence ends after a time or month still split cleanly.
+    expect(RA.splitPassage('We arrived at 3 p.m. Then we ate.')).toEqual([
+      { text: 'We arrived at 3 p.m.' },
+      { text: 'Then we ate.' },
+    ]);
+
+    const sentences = RA.splitPassage('First line here. Second line here. Third line here.');
+    const clips = Object.fromEntries(sentences.map((s, i) => [RA.clipKey(s.text), 'data:audio/mpeg;base64,' + Buffer.from('CLIP' + i).toString('base64')]));
+    const built = RA.buildReadAlongPacket({ made: RA.lessonFromReadAlong({ loader, title: 'Keys test', sentences, clips }), loader });
+    const played = [];
+    const dom = new JSDOM(built.html, {
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      url: 'https://packet.test/keys.html',
+      beforeParse(w) {
+        w.Audio = class {
+          set src(v) { this._src = v; }
+          get src() { return this._src; }
+          play() { played.push(this._src); return Promise.resolve(); }
+          pause() {}
+        };
+      },
+    });
+    const w = dom.window, d = w.document;
+    try {
+      d.getElementById('learner-name').value = 'Ana';
+      d.querySelector('#app button.primary').click();
+      await new Promise((r) => setTimeout(r, 30));
+      const h2 = d.querySelector('#app h2');
+      h2.focus();
+      // ArrowRight steps to sentence 1, then sentence 2.
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+      expect(played[played.length - 1]).toBe(clips[RA.clipKey(sentences[0].text)]);
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+      expect(played[played.length - 1]).toBe(clips[RA.clipKey(sentences[1].text)]);
+      // R replays the current active sentence (sentence 2).
+      const beforeR = played.length;
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'r', code: 'KeyR', bubbles: true, cancelable: true }));
+      expect(played.length).toBe(beforeR + 1);
+      expect(played[played.length - 1]).toBe(clips[RA.clipKey(sentences[1].text)]);
+      // ArrowLeft steps back to sentence 1.
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true }));
+      expect(played[played.length - 1]).toBe(clips[RA.clipKey(sentences[0].text)]);
+      // Space (when focus is on heading, not a button) starts Read to me and toggles Stop.
+      const playBtn = d.querySelector('[data-read-along-play]');
+      expect(playBtn.textContent).toBe('Read to me');
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
+      expect(playBtn.textContent).toBe('Stop');
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
+      expect(playBtn.textContent).toBe('Read to me');
+    } finally { w.close(); }
   });
 });

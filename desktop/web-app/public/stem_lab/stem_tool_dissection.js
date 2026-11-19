@@ -100,6 +100,25 @@
 .diss-reset-confirm p { margin: 0; font-size: .72rem; line-height: 1.45; }
 .diss-reset-confirm button { min-height: 2.75rem !important; margin: 0 !important; border: 1px solid #991b1b !important; background: #fff !important; color: #7f1d1d !important; }
 .diss-reset-confirm button[data-confirm="true"] { background: #991b1b !important; color: #fff !important; }
+.diss-hero-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.diss-hero-emblem { flex: 0 0 46px; width: 46px; height: 46px; border-radius: 13px; border: 1px solid rgba(8,127,120,0.42); background: linear-gradient(135deg, #0f172a, #115e59); display: grid; place-items: center; box-shadow: 0 6px 16px rgba(15,23,42,0.18); }
+.diss-layer-telemetry { margin-top: .75rem; padding: .6rem .75rem; border-radius: .75rem; border: 1px solid #cbd7e7; background: #0f172a; color: #f8fafc; }
+.diss-layer-telemetry__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #5eead4; }
+.diss-layer-telemetry__meta { color: #cbd5e1; text-transform: none; letter-spacing: 0; font-weight: 700; }
+.diss-quick-bench { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .65rem; }
+.diss-quick-chip { min-height: 2.75rem; display: inline-flex; align-items: center; gap: 6px; padding: .45rem .75rem; border-radius: .65rem; border: 1px solid #94a3b8; background: #ffffff; color: #0f172a; font-size: .78rem; font-weight: 750; cursor: pointer; transition: background .15s ease, border-color .15s ease, transform .12s ease; }
+.diss-quick-chip:hover:not(:disabled) { background: #f0fdfa; border-color: #087f78; transform: translateY(-1px); }
+.diss-quick-chip[aria-pressed="true"] { background: #087f78; border-color: #087f78; color: #ffffff; }
+.dark [data-dissection-root] .diss-quick-chip { background: #1e293b; color: #f1f5f9; border-color: #475569; }
+.dark [data-dissection-root] .diss-quick-chip[aria-pressed="true"] { background: #0d9488; border-color: #2dd4bf; color: #042f2e; }
+.theme-contrast [data-dissection-root] .diss-layer-telemetry,
+[data-dissection-root][data-high-contrast="true"] .diss-layer-telemetry { background: #000000 !important; border: 2px solid #facc15 !important; color: #ffffff !important; }
+.theme-contrast [data-dissection-root] .diss-layer-telemetry__head,
+[data-dissection-root][data-high-contrast="true"] .diss-layer-telemetry__head { color: #facc15 !important; }
+.theme-contrast [data-dissection-root] .diss-quick-chip,
+[data-dissection-root][data-high-contrast="true"] .diss-quick-chip { background: #000000 !important; border: 2px solid #ffffff !important; color: #ffffff !important; }
+.theme-contrast [data-dissection-root] .diss-quick-chip[aria-pressed="true"],
+[data-dissection-root][data-high-contrast="true"] .diss-quick-chip[aria-pressed="true"] { background: #facc15 !important; border-color: #facc15 !important; color: #000000 !important; }
 
 /* Readable reference workbench: same content at every viewport size. */
 .diss-reference-context { padding: .8rem; margin: .65rem 0; border: 1px solid #b6cbdc; border-left: 4px solid #087f78; border-radius: .65rem; background: #f0fdfa; color: #173d48; }
@@ -4407,7 +4426,7 @@
 
       // ── Tool body (dissection) ──
       return (function() {
-var d = labToolData.dissection || {};
+var d = (labToolData && labToolData.dissection && typeof labToolData.dissection === 'object' && !Array.isArray(labToolData.dissection)) ? labToolData.dissection : {};
           var guidedSubmission = dissectionGuidedSubmissionFor(dissectionSaveOwner, d);
 
           // ── Specimen-specific trivia for "Did You Know?" panel ──
@@ -27645,10 +27664,77 @@ var d = labToolData.dissection || {};
 
             React.createElement("section", { className: "diss-mission", "data-dissection-mission": true, "aria-labelledby": "diss-mission-title" },
               React.createElement("div", { className: "diss-mission__main" },
-                React.createElement("p", { className: "diss-mission__eyebrow" }, __alloT('stem.dissection.virtual_biology_laboratory', 'Virtual Biology Laboratory')),
-                React.createElement("h2", { id: "diss-mission-title" }, __alloT('stem.dissection.virtual_dissection_lab', 'Virtual Dissection Lab')),
+                React.createElement("div", { className: "diss-hero-row" },
+                  React.createElement("div", { className: "diss-hero-emblem", "aria-hidden": "true" },
+                    React.createElement("svg", { viewBox: "0 0 40 40", width: 32, height: 32, "aria-hidden": "true" },
+                      React.createElement("circle", { cx: 20, cy: 20, r: 16, fill: "none", stroke: "#5eead4", strokeWidth: 1.5, strokeDasharray: "4 3" }),
+                      React.createElement("ellipse", { cx: 18, cy: 21, rx: 10, ry: 7.5, fill: "rgba(45,212,191,0.22)", stroke: "#99f6e4", strokeWidth: 1.4 }),
+                      React.createElement("ellipse", { cx: 18, cy: 21, rx: 5.5, ry: 4, fill: "rgba(251,191,36,0.28)", stroke: "#fde047", strokeWidth: 1.2 }),
+                      React.createElement("path", { d: "M24 16 L32 8 L34 10 L26 18 Z", fill: "#f8fafc", stroke: "#cbd5e1", strokeWidth: 0.8 }),
+                      React.createElement("path", { d: "M21 19 L25 15", stroke: "#fde047", strokeWidth: 1.6, strokeLinecap: "round" })
+                    )
+                  ),
+                  React.createElement("div", { style: { minWidth: 0, flex: '1 1 200px' } },
+                    React.createElement("p", { className: "diss-mission__eyebrow" }, __alloT('stem.dissection.virtual_biology_laboratory', 'Virtual Biology Laboratory')),
+                    React.createElement("h2", { id: "diss-mission-title" }, __alloT('stem.dissection.virtual_dissection_lab', 'Virtual Dissection Lab'))
+                  )
+                ),
                 React.createElement("p", { className: "diss-mission__copy" }, missionText),
                 React.createElement("p", { className: "diss-mission__context" }, spec.icon + ' ' + spec.name + ' · ' + currentLayerDef.name + ' · ' + exploredCount + '/' + totalOrgansInSpecimen + ' ' + __alloT('stem.dissection.structures_viewed_short', 'structures viewed')),
+                !d.quizMode && !d.practicalMode && (function () {
+                  var layersArr = Array.isArray(spec.layers) ? spec.layers : [];
+                  var layerCount = Math.max(1, layersArr.length);
+                  var segW = Math.floor((436 - (layerCount - 1) * 6) / layerCount);
+                  var covPct = totalOrgansInSpecimen > 0 ? Math.round((exploredCount / totalOrgansInSpecimen) * 100) : 0;
+                  var presetSpecs = ['frog', 'pig', 'earthworm', 'perch', 'sheepHeart'].filter(function (k) { return !!SPECIMENS[k]; });
+                  var presetsLocked = !!(d._incisionAnim && d._incisionAnim.active) || !!(ctx && (ctx.quizLock || ctx.teacherLock));
+                  return React.createElement(React.Fragment, null,
+                    React.createElement("div", { className: "diss-layer-telemetry" },
+                      React.createElement("div", { className: "diss-layer-telemetry__head" },
+                        React.createElement("span", null, "🔬 " + __alloT('stem.dissection.anatomical_depth_strata', 'Anatomical Depth Strata & Exploration')),
+                        React.createElement("span", { className: "diss-layer-telemetry__meta" }, covPct + "% " + __alloT('stem.dissection.structures_inspected_label', 'inspected') + " · " + revealedLayerCount + "/" + layerCount + " " + __alloT('stem.dissection.layers_revealed_short', 'layers'))
+                      ),
+                      React.createElement("svg", {
+                        viewBox: "0 0 460 50",
+                        width: "100%",
+                        height: 50,
+                        role: "img",
+                        "aria-label": __alloT('stem.dissection.depth_strata_svg_aria', 'Anatomical layer progression diagram showing current active layer and revealed layers for the selected specimen'),
+                        style: { display: 'block' }
+                      },
+                        layersArr.map(function (ly, li) {
+                          var x = 12 + li * (segW + 6);
+                          var isCur = li === currentLayerIdx;
+                          var isRev = li <= currentLayerIdx;
+                          var shortName = String(ly.name || ('Layer ' + (li + 1))).slice(0, 14);
+                          return React.createElement("g", { key: "diss-strat-" + ly.id },
+                            React.createElement("rect", {
+                              x: x, y: 6, width: segW, height: 36, rx: 7,
+                              fill: isCur ? "#0d9488" : (isRev ? "#1e293b" : "#0b1220"),
+                              stroke: isCur ? "#fde047" : (isRev ? "#5eead4" : "#475569"),
+                              strokeWidth: isCur ? 2 : 1.2
+                            }),
+                            React.createElement("text", { x: x + segW / 2, y: 21, fill: isCur ? "#ffffff" : "#99f6e4", fontSize: 10, fontWeight: 800, textAnchor: "middle" }, "L" + (li + 1) + (isCur ? " • Active" : "")),
+                            React.createElement("text", { x: x + segW / 2, y: 35, fill: "#f8fafc", fontSize: 10, fontWeight: 700, textAnchor: "middle" }, shortName)
+                          );
+                        })
+                      )
+                    ),
+                    !presetsLocked && React.createElement("div", { className: "diss-quick-bench", role: "group", "aria-label": __alloT('stem.dissection.quick_specimen_presets', 'Quick specimen presets') },
+                      presetSpecs.map(function (sk) {
+                        var sp = SPECIMENS[sk];
+                        var isCurSp = sk === specimen;
+                        return React.createElement("button", {
+                          key: "diss-qp-" + sk,
+                          type: "button",
+                          className: "diss-quick-chip",
+                          "aria-pressed": isCurSp ? "true" : "false",
+                          onClick: function () { selectSpecimen(sk); }
+                        }, React.createElement("span", { "aria-hidden": "true" }, sp.icon), React.createElement("span", null, sp.name));
+                      })
+                    )
+                  );
+                })(),
                 React.createElement("nav", { className: "diss-mission-shortcuts", "aria-label": __alloT('stem.dissection.workspace_shortcuts', 'Lab workspace shortcuts') },
                   React.createElement("button", { type: "button", onClick: function () { focusDissectionTarget('diss-canvas'); } }, __alloT('stem.dissection.go_specimen', 'Go to specimen')),
                   React.createElement("button", { type: "button", onClick: function () {

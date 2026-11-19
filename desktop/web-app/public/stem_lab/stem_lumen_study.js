@@ -89,7 +89,7 @@
     if (!fn || fn._alloQrBlocked) return false;
     if (ctx.isTeacherMode) return true;
     try { if (root && typeof root.__alloAiUsable === 'function') return !!root.__alloAiUsable('text', fn); } catch (_) {}
-    return !(root && root.__alloStudentAiDisabled === true);
+    return !(root && (root.__alloStudentAiDisabled === true || root.__alloAiSecretsLocked === true));
   }
 
   function hasProvider(ctx) {

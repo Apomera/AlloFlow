@@ -1142,16 +1142,16 @@
     var contrast = !!ctx.isContrast || ctx.theme === 'contrast', dark = contrast || !!ctx.isDark;
     var C = {
       bg: dark ? '#0b1220' : '#f8fafc',
-      panel: dark ? '#0f172a' : '#ffffff',
-      border: dark ? '#1e293b' : '#e2e8f0',
-      grid: dark ? '#1e293b' : '#e5e7eb',
-      dead: dark ? '#111827' : '#f1f5f9',
-      live: contrast ? (dark ? '#ffffff' : '#000000') : (dark ? '#34d399' : '#047857'),
-      live2: contrast ? (dark ? '#fde047' : '#1d4ed8') : (dark ? '#22d3ee' : '#0ea5e9'),
-      text: dark ? '#e2e8f0' : '#1e293b',
-      sub: dark ? '#94a3b8' : '#475569',
-      accent: dark ? '#34d399' : '#047857',
-      accentBg: dark ? '#064e3b' : '#d1fae5',
+      panel: contrast ? '#000000' : (dark ? '#0f172a' : '#ffffff'),
+      border: contrast ? '#ffffff' : (dark ? '#1e293b' : '#e2e8f0'),
+      grid: contrast ? '#64748b' : (dark ? '#1e293b' : '#e5e7eb'),
+      dead: contrast ? '#000000' : (dark ? '#111827' : '#f1f5f9'),
+      live: contrast ? '#ffffff' : (dark ? '#34d399' : '#047857'),
+      live2: contrast ? '#fde047' : (dark ? '#22d3ee' : '#0ea5e9'),
+      text: contrast ? '#ffffff' : (dark ? '#e2e8f0' : '#1e293b'),
+      sub: contrast ? '#f8fafc' : (dark ? '#94a3b8' : '#475569'),
+      accent: contrast ? '#fde047' : (dark ? '#34d399' : '#047857'),
+      accentBg: contrast ? '#1e293b' : (dark ? '#064e3b' : '#d1fae5'),
       cursor: '#f59e0b'
     };
 
@@ -1224,8 +1224,8 @@
 
     // ── saved slice (toolData._cellularLab): quests, XP ledger, band, teacher
     //    settings, run log, cards, investigations, missions, practice ──
-    var saved = (ctx.toolData && ctx.toolData._cellularLab && typeof ctx.toolData._cellularLab === 'object') ? ctx.toolData._cellularLab : {};
-    var teacherCfg = saved.teacher && typeof saved.teacher === 'object' ? saved.teacher : {};
+    var saved = (ctx.toolData && ctx.toolData._cellularLab && typeof ctx.toolData._cellularLab === 'object' && !Array.isArray(ctx.toolData._cellularLab)) ? ctx.toolData._cellularLab : {};
+    var teacherCfg = (saved.teacher && typeof saved.teacher === 'object' && !Array.isArray(saved.teacher)) ? saved.teacher : {};
     var isTeacher = ctx.isTeacherMode === true;
     var hostBand = bandFromHost(ctx.gradeBand);
     var band = BANDS.indexOf(teacherCfg.lockBand) !== -1 ? teacherCfg.lockBand : BANDS.indexOf(saved.band) !== -1 ? saved.band : hostBand;
@@ -2116,6 +2116,7 @@
       if (!pngShot) return;
       var w = null;
       try { w = window.open('', '_blank'); } catch (e) { w = null; }
+      try { if (w) w.opener = null; } catch (_) {}
       if (!w || !w.document) { announce(t('stem.cellular.sr_png_blocked', 'The new window was blocked. Save the picture shown under the buttons instead (right-click or long-press it).')); return; }
       var pageLang = escHtml(((typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) || 'en').trim() || 'en');
       var pageDir = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dir === 'rtl') ? ' dir="rtl"' : '';
@@ -2273,10 +2274,52 @@
           btn(t('stem.cellular.btn_jump100', 'Jump +100'), function () { jumpAhead(100); }, { key: 'j100', disabled: !!challengeActive, ariaLabel: t('stem.cellular.btn_jump100_aria', 'Jump ahead 100 generations instantly'), title: challengeActive ? t('stem.cellular.jump_challenge_off', 'Challenges are checked every generation, so use Step or Run.') : undefined }),
           btn(t('stem.cellular.btn_fullscreen', 'Fullscreen'), toggleFullscreenLife, { key: 'fs' }),
           btn(t('stem.cellular.btn_export_png', 'Export PNG'), exportLifePng, { key: 'png' }))));
-      // Live rule card: plain words from the parsed B/S rule, plus Step and explain.
+      // Live rule card: plain words from the parsed B/S rule, visual 0–8 neighbor matrix, plus Step and explain.
       var ruleWords = lifeRuleWords(birthRule, survivalRule);
-      var ruleCard = h('section', { 'data-life-rule-card': 'B' + birthRule + '/S' + survivalRule, 'aria-labelledby': 'cell-rulecard-title', style: { background: dark ? '#17132b' : '#faf5ff', border: '1px solid #a78bfa', borderRadius: '13px', padding: '10px 11px', display: 'flex', flexDirection: 'column', gap: '7px' } },
-        h('h3', { id: 'cell-rulecard-title', style: { margin: 0, fontSize: '12px', fontWeight: 900, color: dark ? '#c4b5fd' : '#6d28d9' } }, fmt(t('stem.cellular.rc_title', 'The rule in plain words: B{b}/S{s}'), { b: birthRule, s: survivalRule })),
+      var bDigits = {}, sDigits = {};
+      String(birthRule || '').split('').forEach(function (ch) { bDigits[ch] = true; });
+      String(survivalRule || '').split('').forEach(function (ch) { sDigits[ch] = true; });
+      var ruleMatrixSvg = h('svg', {
+        viewBox: '0 0 288 52', width: '100%', role: 'img',
+        'aria-label': fmt(t('stem.cellular.rule_matrix_aria', 'Neighbor count rule strip for B{b}/S{s}: counts 0 through 8 showing Birth, Survive, or Both.'), { b: birthRule, s: survivalRule }),
+        style: { display: 'block', width: '100%', maxWidth: '320px', height: 'auto' }
+      },
+        [0, 1, 2, 3, 4, 5, 6, 7, 8].map(function (k) {
+          var keyStr = String(k), isB = !!bDigits[keyStr], isS = !!sDigits[keyStr];
+          var x0 = 2 + k * 31.6;
+          var fill = (isB && isS)
+            ? (contrast ? '#fde047' : (dark ? '#0f766e' : '#0d9488'))
+            : isB
+              ? (contrast ? '#4ade80' : (dark ? '#065f46' : '#047857'))
+              : isS
+                ? (contrast ? '#38bdf8' : (dark ? '#1e3a8a' : '#0369a1'))
+                : (contrast ? '#111827' : (dark ? '#1e293b' : '#f1f5f9'));
+          var stroke = (isB && isS)
+            ? (contrast ? '#ffffff' : '#2dd4bf')
+            : isB
+              ? (contrast ? '#ffffff' : '#34d399')
+              : isS
+                ? (contrast ? '#ffffff' : '#38bdf8')
+                : C.border;
+          var txtColor = (isB || isS)
+            ? (contrast ? '#000000' : '#ffffff')
+            : C.sub;
+          var code = (isB && isS) ? 'B+S' : isB ? 'B' : isS ? 'S' : '·';
+          return h('g', { key: 'rm' + k },
+            h('rect', { x: x0, y: 3, width: 28, height: 44, rx: 6, fill: fill, stroke: stroke, strokeWidth: (isB || isS) ? 1.5 : 1 }),
+            h('text', { x: x0 + 14, y: 20, textAnchor: 'middle', fill: txtColor, style: { fontSize: '11px', fontWeight: 900 } }, keyStr),
+            h('text', { x: x0 + 14, y: 38, textAnchor: 'middle', fill: txtColor, style: { fontSize: '10px', fontWeight: 800 } }, code)
+          );
+        })
+      );
+      var ruleCard = h('section', { 'data-life-rule-card': 'B' + birthRule + '/S' + survivalRule, 'aria-labelledby': 'cell-rulecard-title', style: { background: contrast ? '#000000' : (dark ? '#17132b' : '#faf5ff'), border: '1px solid ' + (contrast ? '#ffffff' : '#a78bfa'), borderRadius: '13px', padding: '10px 11px', display: 'flex', flexDirection: 'column', gap: '7px' } },
+        h('h3', { id: 'cell-rulecard-title', style: { margin: 0, fontSize: '12px', fontWeight: 900, color: contrast ? '#fde047' : (dark ? '#c4b5fd' : '#6d28d9') } }, fmt(t('stem.cellular.rc_title', 'The rule in plain words: B{b}/S{s}'), { b: birthRule, s: survivalRule })),
+        ruleMatrixSvg,
+        h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '10px', fontWeight: 800, color: C.sub } },
+          h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, h('span', { 'aria-hidden': 'true', style: { width: '9px', height: '9px', borderRadius: '2px', background: contrast ? '#4ade80' : '#047857' } }), t('stem.cellular.rm_birth', 'B = Born')),
+          h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, h('span', { 'aria-hidden': 'true', style: { width: '9px', height: '9px', borderRadius: '2px', background: contrast ? '#38bdf8' : '#0369a1' } }), t('stem.cellular.rm_survive', 'S = Survive')),
+          h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, h('span', { 'aria-hidden': 'true', style: { width: '9px', height: '9px', borderRadius: '2px', background: contrast ? '#fde047' : '#0d9488' } }), t('stem.cellular.rm_both', 'B+S = Both'))
+        ),
         h('ul', { style: { margin: 0, paddingLeft: '18px', fontSize: '12px', lineHeight: 1.5, color: C.text } }, h('li', null, ruleWords.birth), h('li', null, ruleWords.survive)),
         h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
           !explainShown && btn(t('stem.cellular.btn_step_explain', 'Step and explain'), openExplain, { key: 'stepExplain', id: 'cell-step-explain', big: true, disabled: running, title: running ? t('stem.cellular.step_explain_paused', 'Pause first, then explain the next step.') : t('stem.cellular.step_explain_title', 'Shows what the next step will do to every square, and why, before it happens.') }),
@@ -4598,14 +4641,59 @@
     var bandOptions = [{ id: 'k5', label: t('stem.cellular.band_k5', 'Grades K–5') }, { id: 'g68', label: t('stem.cellular.band_68', 'Grades 6–8') }, { id: 'g912', label: t('stem.cellular.band_912', 'Grades 9–12') }];
 
     return h('div', { 'data-cellularlab-tool': 'true', 'data-band': band, style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, background: C.bg, borderRadius: 12, fontFamily: 'inherit' } },
-      // header
-      h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
-        (ctx.setStemLabTool ? h('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, 'aria-label': t('stem.cellular.back_aria', 'Back to STEAM Lab'),
-          style: { padding: '6px 10px', minHeight: '32px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, t('stem.cellular.back', '← Back')) : null),
-        h('div', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '🧫'),
-        h('div', null,
-          h('h1', { style: { margin: 0, fontSize: '17px', fontWeight: 800 } }, t('stem.cellular.title', 'Cellular Automaton Lab')),
-          h('div', { style: { fontSize: '11px', color: C.sub } }, t('stem.cellular.subtitle', 'Simple rules, surprising worlds')))
+      // header — bespoke Cellular Automata Workbench hero deck
+      h('header', {
+        style: {
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap',
+          padding: '12px 14px', borderRadius: '14px',
+          border: '1px solid ' + (contrast ? '#ffffff' : (dark ? 'rgba(52,211,153,0.32)' : 'rgba(4,120,87,0.22)')),
+          background: contrast ? '#000000' : (dark
+            ? 'linear-gradient(135deg, rgba(6,78,59,0.52) 0%, rgba(15,23,42,0.96) 58%, rgba(14,116,144,0.28) 100%)'
+            : 'linear-gradient(135deg, #ecfdf5 0%, #ffffff 55%, #f0f9ff 100%)'),
+          boxShadow: contrast ? 'none' : (dark ? '0 10px 28px rgba(0,0,0,0.28)' : '0 8px 24px rgba(4,120,87,0.08)')
+        }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '11px', flexWrap: 'wrap', minWidth: 0 } },
+          (ctx.setStemLabTool ? h('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, 'aria-label': t('stem.cellular.back_aria', 'Back to STEAM Lab'),
+            style: { padding: '6px 10px', minHeight: '32px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, t('stem.cellular.back', '← Back')) : null),
+          h('svg', { viewBox: '0 0 64 64', width: 42, height: 42, 'aria-hidden': 'true', focusable: 'false', style: { flex: '0 0 auto', borderRadius: '10px' } },
+            h('rect', { x: 1, y: 1, width: 62, height: 62, rx: 12, fill: contrast ? '#000000' : (dark ? '#020617' : '#064e3b'), stroke: contrast ? '#fde047' : '#34d399', strokeWidth: 2 }),
+            // 5x5 lattice gridlines
+            [14, 24, 34, 44, 54].map(function (pos) {
+              return h(React.Fragment, { key: 'g' + pos },
+                h('line', { x1: pos, y1: 10, x2: pos, y2: 54, stroke: contrast ? '#64748b' : 'rgba(52,211,153,0.24)', strokeWidth: 1 }),
+                h('line', { x1: 10, y1: pos, x2: 54, y2: pos, stroke: contrast ? '#64748b' : 'rgba(52,211,153,0.24)', strokeWidth: 1 })
+              );
+            }),
+            // Glider trail ghosts
+            h('rect', { x: 16, y: 16, width: 7, height: 7, rx: 1.5, fill: contrast ? '#94a3b8' : '#22d3ee', opacity: 0.35 }),
+            h('rect', { x: 26, y: 26, width: 7, height: 7, rx: 1.5, fill: contrast ? '#94a3b8' : '#22d3ee', opacity: 0.48 }),
+            // Luminous glider cells
+            h('rect', { x: 35, y: 15, width: 8, height: 8, rx: 2, fill: contrast ? '#fde047' : '#34d399' }),
+            h('rect', { x: 45, y: 25, width: 8, height: 8, rx: 2, fill: contrast ? '#fde047' : '#34d399' }),
+            h('rect', { x: 25, y: 35, width: 8, height: 8, rx: 2, fill: contrast ? '#ffffff' : '#6ee7b7' }),
+            h('rect', { x: 35, y: 35, width: 8, height: 8, rx: 2, fill: contrast ? '#ffffff' : '#34d399' }),
+            h('rect', { x: 45, y: 35, width: 8, height: 8, rx: 2, fill: contrast ? '#fde047' : '#22d3ee' }),
+            // Diagonal emergence trajectory arrow
+            h('path', { d: 'M13 48 L22 39', stroke: contrast ? '#fde047' : '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
+            h('path', { d: 'M17 39 L22 39 L22 44', fill: 'none', stroke: contrast ? '#fde047' : '#fbbf24', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+          ),
+          h('div', { style: { minWidth: 0 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+              h('h1', { style: { margin: 0, fontSize: '17px', fontWeight: 800 } }, t('stem.cellular.title', 'Cellular Automaton Lab')),
+              h('span', { style: { fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: '999px', background: C.accentBg, color: contrast ? '#fde047' : (dark ? '#a7f3d0' : '#065f46'), border: '1px solid ' + (contrast ? '#fde047' : (dark ? 'rgba(52,211,153,0.4)' : 'rgba(4,120,87,0.28)')) } }, t('stem.cellular.subject_badge', 'Technology · Math'))
+            ),
+            h('div', { style: { fontSize: '11px', color: C.sub, marginTop: '2px' } }, t('stem.cellular.subtitle', 'Simple rules, surprising worlds'))
+          )
+        ),
+        h('div', { 'aria-label': t('stem.cellular.telemetry_aria', 'Active automaton parameters'), style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
+          h('span', { style: { padding: '4px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, background: C.panel, border: '1px solid ' + C.border, color: C.text } },
+            tab === 'rules' ? fmt(t('stem.cellular.hero_rule_1d', 'Rule {n}'), { n: rule }) : ('B' + birthRule + '/S' + survivalRule)),
+          h('span', { style: { padding: '4px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, background: C.panel, border: '1px solid ' + C.border, color: C.sub } },
+            tab === 'rules' ? (CA_COLS + ' × ' + CA_ROWS + ' 1-D') : (ROWS + ' × ' + COLS + ' 2-D')),
+          h('span', { style: { padding: '4px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, background: C.panel, border: '1px solid ' + C.border, color: C.sub } },
+            (tab === 'rules' ? caWrap : wrap) ? t('stem.cellular.hero_topo_ring', 'Toroidal wrap') : t('stem.cellular.hero_topo_fixed', 'Fixed edges'))
+        )
       ),
       h('section', { 'data-cellularlab-focus-panel': 'true', 'aria-label': t('stem.cellular.focus_aria', 'Cellular Automaton Lab focus panel'),
         style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: '12px',
@@ -4636,7 +4724,7 @@
             onClick: function () { setTab(tb.id); },
             style: { padding: '7px 13px', minHeight: '32px', borderRadius: '9px 9px 0 0', cursor: 'pointer', fontSize: '13px', fontWeight: 800,
               borderTop: '1px solid ' + (active ? C.accent : 'transparent'), borderRight: '1px solid ' + (active ? C.accent : 'transparent'), borderBottom: 'none', borderLeft: '1px solid ' + (active ? C.accent : 'transparent'),
-              background: active ? C.accentBg : 'transparent', color: active ? (dark ? '#a7f3d0' : '#065f46') : C.sub }
+              background: active ? C.accentBg : 'transparent', color: active ? (contrast ? '#fde047' : (dark ? '#a7f3d0' : '#065f46')) : C.sub }
           }, h('span', { 'aria-hidden': 'true' }, tb.icon + ' '), tb.label);
         })
       ),

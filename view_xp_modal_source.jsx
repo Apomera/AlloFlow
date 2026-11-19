@@ -135,7 +135,7 @@ function XPModal({
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetShowXPModalToFalse} role="presentation">
-      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto relative border-4 border-yellow-400 transition-all animate-in zoom-in-95 motion-reduce:animate-none motion-reduce:transition-none" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="xp-modal-title">
+      <div ref={dialogRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto relative border-4 border-yellow-400 transition-all animate-in zoom-in-95 motion-reduce:animate-none motion-reduce:transition-none" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="xp-modal-title">
         <button type="button" onClick={handleSetShowXPModalToFalse} className="absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 bg-slate-100 rounded-full p-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600" aria-label={t?.('common.close') || 'Close'}><X size={16} aria-hidden="true"/></button>
         <div className="text-center mb-6 relative">
           <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-indigo-900 shadow-lg relative">

@@ -1074,14 +1074,15 @@ window.SelHub = window.SelHub || {
   }
   function ccBtn(label, onClick, kind, extra) {
     var styles = {
-      primary:   { bg: '#14b8a6', color: '#fff', border: '#14b8a6' },
+      primary:   { bg: '#0f766e', color: '#fff', border: '#14b8a6' },
       secondary: { bg: 'rgba(20,184,166,0.15)', color: '#5eead4', border: 'rgba(20,184,166,0.50)' },
-      good:      { bg: 'rgba(16,185,129,0.15)', color: '#10b981', border: 'rgba(16,185,129,0.50)' },
+      good:      { bg: 'rgba(16,185,129,0.15)', color: '#34d399', border: 'rgba(16,185,129,0.50)' },
       bad:       { bg: 'rgba(239,68,68,0.10)',  color: '#fca5a5', border: 'rgba(239,68,68,0.40)' },
-      ghost:     { bg: 'rgba(148,163,184,0.08)', color: '#94a3b8', border: 'rgba(148,163,184,0.30)' }
+      ghost:     { bg: 'rgba(148,163,184,0.08)', color: '#cbd5e1', border: 'rgba(148,163,184,0.30)' }
     };
     var s = styles[kind || 'secondary'] || styles.secondary;
     return ccH('button', Object.assign({
+      type: 'button',
       onClick: onClick,
       style: Object.assign({
         padding: '8px 16px', borderRadius: 8, background: s.bg, color: s.color,
@@ -1092,6 +1093,7 @@ window.SelHub = window.SelHub || {
   function ccInput(value, onChange, placeholder, extra) {
     return ccH('input', Object.assign({
       type: 'text', value: value || '', placeholder: placeholder || '',
+      'aria-label': placeholder || '',
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
         width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0',
@@ -1103,6 +1105,7 @@ window.SelHub = window.SelHub || {
   function ccTextarea(value, onChange, placeholder, rows) {
     return ccH('textarea', {
       value: value || '', placeholder: placeholder || '', rows: rows || 3,
+      'aria-label': placeholder || '',
       onChange: function(e) { onChange(e.target.value); },
       style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0',
         background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)',
@@ -1125,7 +1128,7 @@ window.SelHub = window.SelHub || {
     );
   }
   function ccCrisisBanner() {
-    return ccH('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444', marginBottom: 14 } },
+    return ccH('div', { role: 'region', 'aria-label': __alloT('sel.crisiscompanion.ui.crisis_hotlines_aria', 'Crisis support hotlines'), style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444', marginBottom: 14 } },
       ccH('div', { style: { fontSize: 12, color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, __alloT('sel.crisiscompanion.ui.if_you_are_in_crisis_right', '🚨 IF YOU ARE IN CRISIS RIGHT NOW:')),
       ccH('div', { style: { fontSize: 12, color: '#fecaca', lineHeight: 1.6 } },
         __alloT('sel.crisiscompanion.ui.call_or_text', 'Call or text '), ccH('strong', null, '988'), __alloT('sel.crisiscompanion.ui.us_suicide_crisis_lifeline', ' (US Suicide + Crisis Lifeline). '),
@@ -1188,8 +1191,16 @@ window.SelHub = window.SelHub || {
     var setData = props.setData;
     var fs = R_CC.useState({ sign: '', context: '', intensity: 5, whatHelped: '' });
     var form = fs[0]; var setForm = fs[1];
+    var es = R_CC.useState('');
+    var err = es[0]; var setErr = es[1];
     function save() {
-      if (!form.sign.trim()) { alert(__alloT('sel.crisiscompanion.ui.need_a_sign', 'Need a sign.')); return; }
+      if (!form.sign.trim()) {
+        var msg = __alloT('sel.crisiscompanion.ui.need_a_sign', 'Need a sign.');
+        setErr(msg);
+        if (typeof announce === 'function') announce(msg);
+        return;
+      }
+      setErr('');
       var e = Object.assign({ id: cc_id(), date: cc_today(), time: Date.now() }, form);
       setData({ logs: [e].concat(data.logs || []) });
       setForm({ sign: '', context: '', intensity: 5, whatHelped: '' });
@@ -1201,16 +1212,19 @@ window.SelHub = window.SelHub || {
       ccCrisisBanner(),
       ccCard('#fbbf24',
         ccH('div', null,
-          ccInput(form.sign, function(v) { setForm(Object.assign({}, form, { sign: v })); }, __alloT('sel.crisiscompanion.ui.what_sign_showed_up_e_g', 'What sign showed up? (e.g., "felt numb all afternoon", "wanted to disappear")'), { marginBottom: 6 }),
+          ccInput(form.sign, function(v) { if (err) setErr(''); setForm(Object.assign({}, form, { sign: v })); }, __alloT('sel.crisiscompanion.ui.what_sign_showed_up_e_g', 'What sign showed up? (e.g., "felt numb all afternoon", "wanted to disappear")'), { marginBottom: 6 }),
           ccInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, __alloT('sel.crisiscompanion.ui.context_where_what_was_happening', 'Context (where, what was happening)'), { marginBottom: 6 }),
           ccH('div', { style: { marginBottom: 6 } },
             ccH('span', { style: { fontSize: 11, color: '#fbbf24' } }, __alloT('sel.crisiscompanion.ui.intensity', 'Intensity: ')), ccH('strong', { style: { color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10'),
             ccH('input', { type: 'range', min: 1, max: 10, step: 1, value: form.intensity,
+              'aria-label': __alloT('sel.crisiscompanion.ui.intensity_aria', 'Warning sign intensity, 1 to 10'),
+              'aria-valuetext': form.intensity + ' out of 10',
               onChange: function(e) { setForm(Object.assign({}, form, { intensity: parseInt(e.target.value, 10) })); },
               style: { width: '100%', accentColor: '#fbbf24', marginTop: 4 }
             })
           ),
           ccInput(form.whatHelped, function(v) { setForm(Object.assign({}, form, { whatHelped: v })); }, __alloT('sel.crisiscompanion.ui.what_helped_if_anything', 'What helped (if anything)'), { marginBottom: 8 }),
+          err ? ccH('p', { role: 'alert', style: { margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#fecaca', background: 'rgba(185,28,28,0.35)', border: '1px solid #f87171', borderRadius: 6, padding: '6px 10px' } }, err) : null,
           ccBtn(__alloT('sel.crisiscompanion.ui.log_it', '💾 Log it'), save, 'primary')
         )
       ),
@@ -1222,7 +1236,7 @@ window.SelHub = window.SelHub || {
               ccH('strong', { style: { fontSize: 12, color: col } }, '🌡 ' + l.sign + ' (' + l.intensity + '/10)'),
               ccH('div', null,
                 ccH('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 6 } }, cc_relDate(l.date)),
-                ccH('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                ccH('button', { type: 'button', 'aria-label': __alloT('sel.crisiscompanion.ui.remove_entry', 'Remove') + ': ' + l.sign, onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: '#cbd5e1', fontSize: 12, cursor: 'pointer', minWidth: 28, minHeight: 28 } }, '✕')
               )
             ),
             l.context ? ccH('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📍 ' + l.context) : null,
@@ -1287,7 +1301,7 @@ window.SelHub = window.SelHub || {
                 ccH('div', { style: { display: 'flex', gap: 4 } },
                   ccH('span', { style: { fontSize: 10, color: cat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, _selFill(__alloT('sel.crisiscompanion.ui.used_value', 'used {value}'), { value: (s.useCount || 0) })),
                   ccBtn('+1', function() { used(s.id); }, 'good', { padding: '3px 8px', fontSize: 10 }),
-                  ccH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  ccH('button', { type: 'button', 'aria-label': __alloT('sel.crisiscompanion.ui.remove_entry', 'Remove') + ': ' + s.text, onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#cbd5e1', fontSize: 12, cursor: 'pointer', minWidth: 28, minHeight: 28 } }, '✕')
                 )
               );
             })
@@ -1330,7 +1344,7 @@ window.SelHub = window.SelHub || {
           return ccH('div', { key: 'cn-' + c.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #06b6d4' } },
             ccH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
               ccH('strong', { style: { fontSize: 12, color: '#06b6d4' } }, '☎ ' + c.name + (c.role ? ' (' + c.role + ')' : '')),
-              ccH('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+              ccH('button', { type: 'button', 'aria-label': __alloT('sel.crisiscompanion.ui.remove_entry', 'Remove') + ': ' + c.name, onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: '#cbd5e1', fontSize: 12, cursor: 'pointer', minWidth: 28, minHeight: 28 } }, '✕')
             ),
             c.contact ? ccH('div', { style: { fontSize: 12, color: '#e2e8f0', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } }, c.contact) : null,
             c.when ? ccH('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } }, '⏰ ' + c.when) : null
@@ -1347,8 +1361,16 @@ window.SelHub = window.SelHub || {
     var setData = props.setData;
     var fs = R_CC.useState({ what: '', helped: '', didntHelp: '', tellSelf: '' });
     var form = fs[0]; var setForm = fs[1];
+    var es = R_CC.useState('');
+    var err = es[0]; var setErr = es[1];
     function save() {
-      if (!form.what.trim()) { alert(__alloT('sel.crisiscompanion.ui.need_a_brief_description', 'Need a brief description.')); return; }
+      if (!form.what.trim()) {
+        var msg = __alloT('sel.crisiscompanion.ui.need_a_brief_description', 'Need a brief description.');
+        setErr(msg);
+        if (typeof announce === 'function') announce(msg);
+        return;
+      }
+      setErr('');
       var n = Object.assign({ id: cc_id(), date: cc_today() }, form);
       setData({ notes: [n].concat(data.notes || []) });
       setForm({ what: '', helped: '', didntHelp: '', tellSelf: '' });
@@ -1359,13 +1381,14 @@ window.SelHub = window.SelHub || {
       ccCrisisBanner(),
       ccCard('#10b981',
         ccH('div', null,
-          ccInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, __alloT('sel.crisiscompanion.ui.what_happened_brief', 'What happened? (brief)'), { marginBottom: 6 }),
+          ccInput(form.what, function(v) { if (err) setErr(''); setForm(Object.assign({}, form, { what: v })); }, __alloT('sel.crisiscompanion.ui.what_happened_brief', 'What happened? (brief)'), { marginBottom: 6 }),
           ccTextarea(form.helped, function(v) { setForm(Object.assign({}, form, { helped: v })); }, __alloT('sel.crisiscompanion.ui.what_helped', '✓ What helped'), 2),
           ccH('div', { style: { height: 6 } }),
           ccTextarea(form.didntHelp, function(v) { setForm(Object.assign({}, form, { didntHelp: v })); }, __alloT('sel.crisiscompanion.ui.what_didn_t_help_or_made', '✗ What didn\'t help (or made it worse)'), 2),
           ccH('div', { style: { height: 6 } }),
           ccTextarea(form.tellSelf, function(v) { setForm(Object.assign({}, form, { tellSelf: v })); }, __alloT('sel.crisiscompanion.ui.what_i_want_future_me_to', '💌 What I want future-me to remember from this'), 3),
           ccH('div', { style: { height: 8 } }),
+          err ? ccH('p', { role: 'alert', style: { margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#fecaca', background: 'rgba(185,28,28,0.35)', border: '1px solid #f87171', borderRadius: 6, padding: '6px 10px' } }, err) : null,
           ccBtn(__alloT('sel.crisiscompanion.ui.save', '💾 Save'), save, 'primary')
         )
       ),
@@ -1376,7 +1399,7 @@ window.SelHub = window.SelHub || {
               ccH('strong', { style: { fontSize: 12, color: '#10b981' } }, '🌅 ' + n.what),
               ccH('div', null,
                 ccH('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 6 } }, cc_relDate(n.date)),
-                ccH('button', { onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+                ccH('button', { type: 'button', 'aria-label': __alloT('sel.crisiscompanion.ui.remove_entry', 'Remove') + ': ' + n.what, onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: '#cbd5e1', fontSize: 12, cursor: 'pointer', minWidth: 28, minHeight: 28 } }, '✕')
               )
             ),
             n.helped ? ccH('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6 } }, ccH('strong', { style: { color: '#10b981' } }, __alloT('sel.crisiscompanion.ui.helped', '✓ Helped: ')), n.helped) : null,
@@ -1417,7 +1440,7 @@ window.SelHub = window.SelHub || {
         items.map(function(i) {
           return ccH('div', { key: 'hi-' + i.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #fbbf24', display: 'flex', justifyContent: 'space-between' } },
             ccH('span', { style: { fontSize: 12, color: '#cbd5e1' } }, '💛 ' + i.text),
-            ccH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
+            ccH('button', { type: 'button', 'aria-label': __alloT('sel.crisiscompanion.ui.remove_entry', 'Remove') + ': ' + i.text, onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: '#cbd5e1', fontSize: 12, cursor: 'pointer', minWidth: 28, minHeight: 28 } }, '✕')
           );
         })
       ) : null

@@ -109,21 +109,25 @@ module.exports = {
     var runSyllables = function (withPrompt) {
       var mine = ++token;
       delivered = false; busy = true; setState();
+      var gap = typeof ctx.soundGap === 'function' ? ctx.soundGap() : 350;
       var steps = (withPrompt ? [{ id: item.promptAudio, gap: 200, hi: -1 }] : [])
-        .concat(item.units.map(function (id, i) { return { id: id, gap: i < item.units.length - 1 ? 350 : 0, hi: i }; }));
+        .concat(item.units.map(function (id, i) { return { id: id, gap: i < item.units.length - 1 ? gap : 0, hi: i }; }));
       var i = 0;
-      var step = function () {
-        if (mine !== token || !ctx.root.isConnected) return;
-        if (i >= steps.length) { busy = false; delivered = true; highlight(-1); setState(); return; }
-        var s = steps[i++];
-        highlight(s.hi);
-        ctx.play(s.id).then(function (ok) {
-          if (mine !== token) return;
-          if (!ok) { busy = false; highlight(-1); setState(); return; }
-          win.setTimeout(step, s.gap || 0);
-        });
-      };
-      step();
+      return new Promise(function (resolve) {
+        var finish = function (ok) { busy = false; if (ok) delivered = true; highlight(-1); setState(); resolve(ok); };
+        var step = function () {
+          if (mine !== token || !ctx.root.isConnected) { resolve(false); return; }
+          if (i >= steps.length) { finish(true); return; }
+          var s = steps[i++];
+          highlight(s.hi);
+          ctx.play(s.id).then(function (ok) {
+            if (mine !== token) { resolve(false); return; }
+            if (!ok) { finish(false); return; }
+            win.setTimeout(step, s.gap || 0);
+          });
+        };
+        step();
+      });
     };
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.syllable_blending_prompt }));
     var row = ctx.el('div', { class: 'row', 'aria-hidden': 'true', dir: 'ltr' });
@@ -163,13 +167,14 @@ module.exports = {
       list.appendChild(box);
     });
     // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number, once the syllables are not playing.
-    hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ auto: false, ready: function () { return !busy; },
+    hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ ready: function () { return !busy; },
       list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
     if (hear) ctx.root.appendChild(hear.node);
     ctx.root.appendChild(list);
     setState();
-    if (!ctx.isDone()) runSyllables(!ctx.skipDirections);
+    var opening = !ctx.isDone() ? runSyllables(!ctx.skipDirections) : null;
     return {
+      opening: opening,
       // The R key: the question and the syllables again (the choices wait for them, as on the button).
       replay: function () { if (!ctx.isDone()) runSyllables(true); },
       reveal: function () {

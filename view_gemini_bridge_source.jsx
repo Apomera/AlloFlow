@@ -142,7 +142,15 @@ function _useBridgeDialogFocus(open, onClose) {
     if (stack) stack.push(trapEntry);
     const getFocusable = () => Array.from(dialog.querySelectorAll(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((node) => !node.hasAttribute('hidden') && node.getAttribute('aria-hidden') !== 'true' && node.style.display !== 'none' && node.style.visibility !== 'hidden');
+    )).filter((node) => {
+      if (node.hasAttribute('hidden') || node.getAttribute('aria-hidden') === 'true' || node.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      if (!(node.style.display !== 'none')) return false;
+      for (let cur = node; cur && cur !== dialog; cur = cur.parentElement) {
+        const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(cur) : null;
+        if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+      }
+      return true;
+    });
     const focusTarget = getFocusable()[0] || dialog;
     const focusFrame = typeof window !== 'undefined' && window.requestAnimationFrame
       ? window.requestAnimationFrame(() => focusTarget.focus())
@@ -173,6 +181,7 @@ function _useBridgeDialogFocus(open, onClose) {
       if (event.defaultPrevented) return;
       if (stack && stack.length && stack[stack.length - 1] !== trapEntry) return;
       if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         if (typeof onCloseRef.current === 'function') {
           event.preventDefault();
           event.stopPropagation();
@@ -384,7 +393,7 @@ function BridgeSendModal(props) {
           role="dialog" aria-modal="true" aria-label={t('common.bridge_mode_send_panel')}
           style={{position:'fixed',inset:0,zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',background:_bt.overlay,backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)'}}
           onClick={(e) => { if (e.target === e.currentTarget) closeBridgeSendModal(); }}
-          onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); closeBridgeSendModal(); } }}
+          onKeyDown={(e) => { if (e.key === 'Escape') { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; e.preventDefault(); closeBridgeSendModal(); } }}
         >
           <div
             data-help-key="bridge_send_modal_panel"
@@ -1663,7 +1672,7 @@ function BridgeMessageModal(props) {
           role="dialog" aria-modal="true" aria-label={t('common.bridge_message_display')}
           style={{position:'fixed',inset:0,zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',background: bridgeProjectionMode ? 'rgba(0,0,0,0.95)' : _dt.overlay,backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',transition:'background 0.3s'}}
           onClick={(e) => { if (e.target === e.currentTarget) closeBridgeMessageModal(); }}
-          onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); closeBridgeMessageModal(); } }}
+          onKeyDown={(e) => { if (e.key === 'Escape') { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; e.preventDefault(); closeBridgeMessageModal(); } }}
         >
           <div
             data-help-key="bridge_message_modal_panel"

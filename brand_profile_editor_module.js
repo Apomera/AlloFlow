@@ -128,7 +128,15 @@ function BrandProfileEditor(props) {
     if (cancel) cancel.focus();else dialog.focus();
     const getFocusable = function () {
       return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(function (el) {
-        return !el.closest('[hidden], [inert], [aria-hidden="true"]');
+        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+          for (let node = el; node && node !== dialog.parentElement; node = node.parentElement) {
+            const st = window.getComputedStyle(node);
+            if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+            if (node === dialog) break;
+          }
+        }
+        return true;
       });
     };
     const onKeyDown = function (event) {
@@ -149,7 +157,7 @@ function BrandProfileEditor(props) {
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
       } else if (event.shiftKey && document.activeElement === first) {
@@ -231,8 +239,14 @@ function BrandProfileEditor(props) {
         if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
         const closedDetails = el.closest('details:not([open])');
         if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
-        const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-        return !st || st.display !== 'none' && st.visibility !== 'hidden';
+        if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+          for (let node = el; node && node !== dialog.parentElement; node = node.parentElement) {
+            const st = window.getComputedStyle(node);
+            if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+            if (node === dialog) break;
+          }
+        }
+        return true;
       });
     };
     const onKeyDown = function (event) {
@@ -472,6 +486,11 @@ function BrandProfileEditor(props) {
     if (!api) return;
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    if (typeof file.size === 'number' && file.size > 2 * 1024 * 1024) {
+      addToast(t('brand.import_too_large', 'Brand profile file exceeds the 2 MB safety limit.'), 'error');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = function () {
       const res = api.importBrandProfile(String(reader.result || ''));
@@ -553,13 +572,13 @@ function BrandProfileEditor(props) {
   const headingFont = draft.fonts && draft.fonts.heading || draft.fonts && draft.fonts.body || 'inherit';
   const bodyFont = draft.fonts && draft.fonts.body || 'inherit';
   return /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4",
+    className: "fixed inset-0 z-[260] bg-black/50 flex items-center justify-center p-4",
     role: "presentation",
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
     ref: dialogRef,
     tabIndex: -1,
-    className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden",
+    className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "brand-settings-title",
@@ -586,6 +605,7 @@ function BrandProfileEditor(props) {
   }, t('brand.unavailable', 'Brand Profile module not loaded.')) : /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col lg:flex-row flex-1 min-h-0 overflow-y-auto lg:overflow-hidden"
   }, /*#__PURE__*/React.createElement("aside", {
+    "aria-label": t('brand.profiles_list', 'Saved brand profiles'),
     className: "w-full lg:w-56 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50 flex flex-col max-h-56 lg:max-h-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "p-3 flex flex-col gap-2 border-b border-slate-200"
@@ -609,7 +629,7 @@ function BrandProfileEditor(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-2"
   }, profiles.length === 0 ? /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-500 p-2"
+    className: "text-xs text-slate-600 p-2"
   }, t('brand.empty', 'No brand profiles yet. Create one to brand your documents and PDFs.')) : profiles.map(function (p) {
     const isActive = p.id === activeId;
     const isEditing = p.id === draft.id;
@@ -647,14 +667,14 @@ function BrandProfileEditor(props) {
       onClick: function (event) {
         requestRemove(event, p.id, p.name);
       },
-      className: "inline-flex min-h-6 items-center text-[11px] text-red-600 hover:underline"
+      className: "inline-flex min-h-6 items-center text-[11px] text-red-700 hover:underline"
     }, t('brand.delete', 'Delete'))));
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-5 min-w-0"
   }, /*#__PURE__*/React.createElement("label", {
     className: "block mb-4"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wide text-slate-500"
+    className: "text-xs font-bold uppercase tracking-wide text-slate-600"
   }, t('brand.name', 'Profile name')), /*#__PURE__*/React.createElement("input", {
     value: draft.name,
     "aria-label": t('brand.name', 'Profile name'),
@@ -663,11 +683,11 @@ function BrandProfileEditor(props) {
     },
     maxLength: 80,
     placeholder: t('brand.name_ph', 'e.g. King Middle School'),
-    className: "mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-400 outline-none"
+    className: "mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
   })), /*#__PURE__*/React.createElement("div", {
     className: "mb-4"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wide text-slate-500"
+    className: "text-xs font-bold uppercase tracking-wide text-slate-600"
   }, t('brand.colors', 'Colors')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-2 mt-1"
   }, COLOR_FIELDS.map(function (f) {
@@ -705,7 +725,7 @@ function BrandProfileEditor(props) {
   }, "\u2728 ", t('brand.autofix', 'Auto-fix contrast'))), /*#__PURE__*/React.createElement("label", {
     className: "block mb-4"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wide text-slate-500"
+    className: "text-xs font-bold uppercase tracking-wide text-slate-600"
   }, t('brand.font', 'Body font')), /*#__PURE__*/React.createElement("select", {
     value: bodyFont,
     "aria-label": t('brand.font', 'Body font'),
@@ -718,7 +738,7 @@ function BrandProfileEditor(props) {
         });
       });
     },
-    className: "mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 bg-white outline-none focus:ring-2 focus:ring-blue-400"
+    className: "mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 bg-white focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
   }, FONT_CHOICES.concat(FONT_CHOICES.some(function (x) {
     return x.value === bodyFont;
   }) ? [] : [{
@@ -732,7 +752,7 @@ function BrandProfileEditor(props) {
   }))), /*#__PURE__*/React.createElement("div", {
     className: "mb-4"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wide text-slate-500"
+    className: "text-xs font-bold uppercase tracking-wide text-slate-600"
   }, t('brand.logo', 'Logo (optional)')), /*#__PURE__*/React.createElement("div", {
     className: "mt-1 flex items-start gap-3"
   }, draft.logo && safeRasterLogoSrc(draft.logo.src) ? /*#__PURE__*/React.createElement("img", {
@@ -767,11 +787,11 @@ function BrandProfileEditor(props) {
       setLogoAlt(e.target.value);
     },
     placeholder: t('brand.logo_alt_ph', 'Logo alt text (required) — describe the logo'),
-    className: "mt-1 w-full px-2 py-1 border border-slate-300 rounded text-xs text-slate-800 outline-none focus:ring-2 focus:ring-blue-400"
+    className: "mt-1 w-full px-2 py-1 border border-slate-300 rounded text-xs text-slate-800 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-3 mb-2"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wide text-slate-500"
+    className: "text-xs font-bold uppercase tracking-wide text-slate-600"
   }, t('brand.header', 'Header band')), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('brand.header_text', 'Header text'),
     value: draft.header.text,
@@ -782,7 +802,7 @@ function BrandProfileEditor(props) {
     },
     maxLength: 200,
     placeholder: t('brand.header_ph', 'Header text (e.g. school name)'),
-    className: "mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-400"
+    className: "mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
   }), /*#__PURE__*/React.createElement("label", {
     className: "flex items-center gap-2 mt-1 text-xs text-slate-600"
   }, /*#__PURE__*/React.createElement("input", {
@@ -794,7 +814,7 @@ function BrandProfileEditor(props) {
       });
     }
   }), " ", t('brand.header_logo', 'Show logo in header'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wide text-slate-500"
+    className: "text-xs font-bold uppercase tracking-wide text-slate-600"
   }, t('brand.footer', 'Footer band')), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('brand.footer_text', 'Footer text'),
     value: draft.footer.text,
@@ -805,7 +825,7 @@ function BrandProfileEditor(props) {
     },
     maxLength: 200,
     placeholder: t('brand.footer_ph', 'Footer text (e.g. © School 2026)'),
-    className: "mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-400"
+    className: "mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
   }), /*#__PURE__*/React.createElement("label", {
     className: "flex items-center gap-2 mt-1 text-xs text-slate-600"
   }, /*#__PURE__*/React.createElement("input", {
@@ -817,11 +837,12 @@ function BrandProfileEditor(props) {
       });
     }
   }), " ", t('brand.footer_page', 'Show page numbers'))))), /*#__PURE__*/React.createElement("aside", {
+    "aria-label": t('brand.preview_panel', 'Live brand preview'),
     className: "w-full lg:w-72 shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-3"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wide text-slate-500"
+    className: "text-xs font-bold uppercase tracking-wide text-slate-600"
   }, t('brand.preview', 'Preview')), /*#__PURE__*/React.createElement("div", {
     className: "mt-1 rounded-lg overflow-hidden border border-slate-200",
     style: {
@@ -925,7 +946,7 @@ function BrandProfileEditor(props) {
     },
     className: "w-full min-h-11 px-3 py-1.5 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800 transition-colors motion-reduce:transition-none"
   }, t('brand.set_active', 'Set as active brand')))))), deleteRequest && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4",
+    className: "fixed inset-0 z-[270] bg-black/60 flex items-center justify-center p-4",
     role: "presentation",
     onClick: function (event) {
       event.stopPropagation();
@@ -940,32 +961,7 @@ function BrandProfileEditor(props) {
     onClick: function (event) {
       event.stopPropagation();
     },
-    onKeyDown: function (event) {
-      if (event.defaultPrevented) return;
-      event.stopPropagation();
-      if (event.key === 'Escape') {
-        if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
-        event.preventDefault();
-        closeDeleteDialog();
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
-      if (!focusable.length) {
-        event.preventDefault();
-        return;
-      }
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    },
-    className: "w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+    className: "allo-docsuite w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
   }, /*#__PURE__*/React.createElement("h3", {
     id: "brand-delete-dialog-title",
     className: "text-lg font-bold text-slate-900"
@@ -978,11 +974,11 @@ function BrandProfileEditor(props) {
     type: "button",
     "data-safe-default": "true",
     onClick: closeDeleteDialog,
-    className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 focus:ring-2 focus:ring-blue-500"
   }, t('common.cancel', 'Cancel')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: confirmRemove,
-    className: "min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+    className: "min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
   }, t('brand.delete', 'Delete'))))));
 }
 window.AlloModules = window.AlloModules || {};

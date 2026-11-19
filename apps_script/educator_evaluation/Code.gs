@@ -95,9 +95,8 @@ function doPost(e) {
   // dispatcher would add a needless cross-origin/CSRF surface.
   return jsonOutput_({ ok: false, code: 'method_not_allowed', error: 'HTTP mutation is disabled. Use the authenticated district portal.' });
 }function include(filename) {
-  var allowed = { Portal: true };
-  if (!allowed[String(filename || '')]) throw eeError_('denied', 'Template include denied.');
-  return HtmlService.createHtmlOutputFromFile(String(filename)).getContent();
+  if (String(filename || '') !== 'Portal') throw eeError_('denied', 'Template include denied.');
+  return HtmlService.createHtmlOutputFromFile('Portal').getContent();
 }
 
 /**
@@ -736,7 +735,7 @@ function assertNotificationJournalHeadroom_() {
 }
 
 function notificationValidateOperationEntry_(entry, token, actor, teacherId, target) {
-  if (!entry || entry.key !== notificationOperationKey_(token) || entry.reviewTokenHash !== hashText_(token) || entry.actorEmail !== actor.email || entry.actorRole !== actor.role || entry.teacherId !== teacherId || entry.target !== target || !notificationAuditEntryMatchesScope_(entry.auditEntry, token, actor, teacherId, target)) {
+  if (!entry || entry.key !== notificationOperationKey_(token) || !timingSafeHashEq_(entry.reviewTokenHash, hashText_(token)) || entry.actorEmail !== actor.email || entry.actorRole !== actor.role || entry.teacherId !== teacherId || entry.target !== target || !notificationAuditEntryMatchesScope_(entry.auditEntry, token, actor, teacherId, target)) {
     throw eeError_('review_required', 'This notification review is unavailable for the current actor, educator, or target.');
   }
   return entry;
@@ -2344,8 +2343,12 @@ function getPortalSetupHealth() {
     if (!teacherIdsWithMember[t.id]) withoutMember++;
     if (!teacherIdsWithAssignment[t.id]) withoutAssignment++;
   });
-  var folderOk = false;
-  try { DriveApp.getFolderById(props.getProperty('EE_FOLDER_ID')); folderOk = true; } catch (folderErr) {}
+  var folderOk = false, folderPrivate = false;
+  try {
+    var folderObj = DriveApp.getFolderById(props.getProperty('EE_FOLDER_ID'));
+    folderOk = true;
+    folderPrivate = isDriveItemPrivate_(folderObj);
+  } catch (folderErr) {}
   var effectiveOwner = '';
   try { effectiveOwner = normalizeEmail_(Session.getEffectiveUser().getEmail()); } catch (ownerErr) {}
   var bootstrapAdmin = normalizeEmail_(props.getProperty('EE_BOOTSTRAP_ADMIN'));
@@ -2369,6 +2372,7 @@ function getPortalSetupHealth() {
       allowedDomain: normalizeDomain_(props.getProperty('EE_ALLOWED_DOMAIN')) || '',
       webAppUrlConfigured: !!(configMap_().webAppUrl || safePortalUrl_(ScriptApp.getService().getUrl() || '')),
       repositoryFolderAccessible: folderOk,
+      repositoryFolderPrivate: folderPrivate,
       workspaceMetadataIntact: !!state.metadataExists,
       workspaceRevision: state.revision,
       memberCounts: counts,
@@ -3770,7 +3774,7 @@ function getPortalArtifactOperationOutcome(request) {
       if (journal.entries[i].key === key) entry = journal.entries[i];
       else if (journal.entries[i].stage !== 'completed') blocked = true;
     }
-    if (entry && (entry.reviewTokenHash !== hashText_(token) || entry.kind !== kind || entry.actorEmail !== actor.email || entry.actorRole !== 'admin')) {
+    if (entry && (!timingSafeHashEq_(entry.reviewTokenHash, hashText_(token)) || entry.kind !== kind || entry.actorEmail !== actor.email || entry.actorRole !== 'admin')) {
       throw eeError_('review_required', 'This artifact review is unavailable for the current administrator.');
     }
     if (blocked) return { ok: true, status: 'blocked' };
@@ -4998,7 +5002,7 @@ function requireTeacherAccess_(actor, teacherId) {
 }
 
 function accessibleTeacherIds_(actor, workspace) {
-  var ids = {};
+  var ids = Object.create(null);
   var teachers = workspace.teachers || [];
   if (actor.role === 'admin') {
     for (var i = 0; i < teachers.length; i++) ids[teachers[i].id] = true;
@@ -5221,11 +5225,11 @@ function mergeTeacherProfiles_(merged, incoming, actor, allowed) {
     }
   }
 }function mergeRecords_(current, incoming, actor, allowed, kind, frameworkVersion, teachers) {
-  var inactiveTeacherIds = {};
+  var inactiveTeacherIds = Object.create(null);
   (teachers || []).forEach(function (t) { if (t.active === false) inactiveTeacherIds[t.id] = true; });
   var result = clone_(current || []);
   var oldById = indexById_(current || []);
-  var seen = {};
+  var seen = Object.create(null);
   for (var i = 0; i < incoming.length; i++) {
     var next = incoming[i];
     if (seen[next.id]) throw eeError_('bad_workspace', 'Duplicate record id.');
@@ -5872,6 +5876,7 @@ function sanitizeWorkspace_(raw) {
   assertUniqueIds_(result.walkthroughs, 'walkthrough');
   assertUniqueIds_(result.observations, 'formal observation');
   assertUniqueIds_(result.spms, 'SPM');
+  assertUniqueIds_(result.comments, 'comment');
   assertUniqueIds_(result.releaseRegistry, 'released summary');
   return result;
 }
@@ -5912,9 +5917,23 @@ function sanitizeSnapshot_(v) { v=requireObject_(v,'snapshot'); return { id:safe
 
 /* ---------------------------- persistence ------------------------------ */
 
+function isDriveItemPrivate_(item) {
+  if (!item) return false;
+  try {
+    if (typeof item.getSharingAccess === 'function' && typeof DriveApp !== 'undefined' && DriveApp.Access && DriveApp.Access.PRIVATE) {
+      if (item.getSharingAccess() !== DriveApp.Access.PRIVATE) return false;
+    }
+    if (typeof item.isShareableByEditors === 'function' && item.isShareableByEditors()) return false;
+    if (typeof item.getEditors === 'function' && item.getEditors().length) return false;
+    if (typeof item.getViewers === 'function' && item.getViewers().length) return false;
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
 function repositoryConfigured_() { var p=PropertiesService.getScriptProperties(),state=p.getProperty('EE_SETUP_STATE'); return (state==='ready'||state==='recovery_required')&&!!(p.getProperty('EE_ALLOWED_DOMAIN')&&p.getProperty('EE_SPREADSHEET_ID')&&p.getProperty('EE_WORKSPACE_FILE_ID')&&p.getProperty('EE_PENDING_COMMIT_FILE_ID')); }
 function repositorySpreadsheet_() { var id=PropertiesService.getScriptProperties().getProperty('EE_SPREADSHEET_ID'); if(!id)throw eeError_('not_configured','Repository spreadsheet is not configured.'); return SpreadsheetApp.openById(id); }
-function readWorkspaceState_(options) { var p=PropertiesService.getScriptProperties(); var id=p.getProperty('EE_WORKSPACE_FILE_ID'); if(!id)throw eeError_('not_configured','Workspace file is not configured.'); var raw=DriveApp.getFileById(id).getBlob().getDataAsString('UTF-8'); if(raw.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('corrupt','Stored workspace exceeds its limit.'); var workspace; try{workspace=sanitizeStoredWorkspace_(JSON.parse(raw));}catch(err){throw eeError_('corrupt','Stored workspace failed validation.');} var sheet=repositorySpreadsheet_().getSheetByName('Workspace'); var revision=0,exists=false; if(sheet&&sheet.getLastRow()>=2){var row=sheet.getRange(2,1,1,6).getValues()[0],parsedRevision=Number(row[1]);if(String(row[0])!=='workspace'||String(row[2])!==id||Math.floor(parsedRevision)!==parsedRevision||parsedRevision<0||sheetLogicalCell_(row[3])!==hashText_(raw))throw eeError_('corrupt','Workspace metadata integrity check failed; an administrator must restore a matching reviewed backup.');revision=parsedRevision;exists=true;} return {workspace:workspace,revision:revision,metadataExists:exists}; }
+function readWorkspaceState_(options) { var p=PropertiesService.getScriptProperties(); var id=p.getProperty('EE_WORKSPACE_FILE_ID'); if(!id)throw eeError_('not_configured','Workspace file is not configured.'); var wsFile=DriveApp.getFileById(id); if(!isDriveItemPrivate_(wsFile))throw eeError_('storage_not_private','Private evaluation workspace storage could not be verified. Review Drive sharing permissions.'); var raw=wsFile.getBlob().getDataAsString('UTF-8'); if(raw.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('corrupt','Stored workspace exceeds its limit.'); var workspace; try{workspace=sanitizeStoredWorkspace_(JSON.parse(raw));}catch(err){throw eeError_('corrupt','Stored workspace failed validation.');} var sheet=repositorySpreadsheet_().getSheetByName('Workspace'); var revision=0,exists=false; if(sheet&&sheet.getLastRow()>=2){var row=sheet.getRange(2,1,1,6).getValues()[0],parsedRevision=Number(row[1]);if(String(row[0])!=='workspace'||String(row[2])!==id||Math.floor(parsedRevision)!==parsedRevision||parsedRevision<0||sheetLogicalCell_(row[3])!==hashText_(raw))throw eeError_('corrupt','Workspace metadata integrity check failed; an administrator must restore a matching reviewed backup.');revision=parsedRevision;exists=true;} return {workspace:workspace,revision:revision,metadataExists:exists}; }
 function sanitizeStoredWorkspace_(raw) { var copy=clone_(raw); var audit=Array.isArray(copy.audit)?copy.audit.slice(-EE_MAX_AUDIT):[]; copy.audit=[]; var clean=sanitizeWorkspace_(copy); clean.audit=audit.map(sanitizeAuditObject_); return clean; }
 function sheetSafeCell_(value){if(typeof value!=='string')return value;return /^(?:[\t\r]|[\u0000-\u0020]*[=+\-@])/.test(value)?"'"+value:value;}
 function sheetSafeRow_(row){if(!Array.isArray(row))throw eeError_('bad_request','Spreadsheet row must be an array.');return row.map(sheetSafeCell_);}
@@ -6196,8 +6215,8 @@ function newId_(prefix){return prefix+'-'+Utilities.getUuid().replace(/-/g,'');}
 function hashText_(text){var bytes=Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,String(text),Utilities.Charset.UTF_8);return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/g,'');}
 function mapLimited_(v,max,fn){if(!Array.isArray(v))throw eeError_('bad_workspace','Workspace collection must be an array.');if(v.length>max)throw eeError_('too_large','Workspace collection exceeds its record limit.');var out=[];for(var i=0;i<v.length;i++)out.push(fn(v[i]));return out;}
 function validateJsonTree_(v,depth){if(depth>EE_MAX_DEPTH)throw eeError_('bad_workspace','Workspace nesting is too deep.');if(Array.isArray(v)){for(var i=0;i<v.length;i++)validateJsonTree_(v[i],depth+1);return;}if(isPlainObject_(v)){var keys=Object.keys(v);for(var j=0;j<keys.length;j++){if(keys[j]==='__proto__'||keys[j]==='prototype'||keys[j]==='constructor')throw eeError_('bad_workspace','Unsafe object key.');validateJsonTree_(v[keys[j]],depth+1);}return;}if(v!==null&&['string','number','boolean'].indexOf(typeof v)===-1)throw eeError_('bad_workspace','Unsupported workspace value.');}
-function assertUniqueIds_(items,label){var seen={};for(var i=0;i<items.length;i++){if(seen[items[i].id])throw eeError_('bad_workspace','Duplicate '+label+' id.');seen[items[i].id]=true;}}
-function indexById_(items){var out={};for(var i=0;i<items.length;i++)out[items[i].id]=items[i];return out;}
+function assertUniqueIds_(items,label){var seen=Object.create(null);for(var i=0;i<items.length;i++){if(seen[items[i].id])throw eeError_('bad_workspace','Duplicate '+label+' id.');seen[items[i].id]=true;}}
+function indexById_(items){var out=Object.create(null);for(var i=0;i<items.length;i++)out[items[i].id]=items[i];return out;}
 function findById_(items,id){for(var i=0;i<items.length;i++)if(items[i].id===id)return items[i];return null;}
 function replaceById_(items,next){for(var i=0;i<items.length;i++)if(items[i].id===next.id){items[i]=next;return;}items.push(next);}
 function filterByTeacher_(items,ids,isTeacherList){items=items||[];return items.filter(function(item){return !!ids[isTeacherList?item.id:item.teacherId];});}

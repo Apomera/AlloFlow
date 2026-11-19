@@ -72,6 +72,7 @@
     words.forEach(function (word) {
       var entry = own && Object.prototype.hasOwnProperty.call(own, word) ? own[word] : null;
       var picture = entry && entry.picture;
+      if (picture && picture.none) { out[word] = null; return; }
       if (picture && isPicture(picture.dataUri)) { out[word] = { uri: picture.dataUri, set: 'own', credit: picture.credit || null }; return; }
       var got = symbols && typeof symbols.get === 'function' && symbols.has(word) ? symbols.get(word) : null;
       out[word] = got && got.svg ? { uri: svgUri(got.svg), set: got.set || 'mulberry', credit: null } : null;
@@ -114,6 +115,19 @@
       if (text != null) node.textContent = text;
       return node;
     }
+    function syncOptionClasses() {
+      if (!view) return;
+      Array.prototype.forEach.call(view.querySelectorAll('.pc-radio input'), function (input) {
+        if (input.parentNode) input.parentNode.classList.toggle('is-on', !!input.checked);
+      });
+    }
+    function syncRadioValue(name, value) {
+      if (!view) return;
+      Array.prototype.forEach.call(view.querySelectorAll('input[name="pc-' + name + '"]'), function (input) {
+        input.checked = String(input.value) === String(value);
+      });
+      syncOptionClasses();
+    }
     function radios(name, legend, rows) {
       var set = el('fieldset', 'pc-field');
       set.appendChild(el('legend', '', legend));
@@ -122,7 +136,21 @@
         var label = el('label', 'radio pc-radio'), input = el('input');
         input.type = 'radio'; input.name = 'pc-' + name; input.value = String(row[0]);
         input.checked = String(options[name]) === String(row[0]);
-        input.addEventListener('change', function () { if (input.checked) { options[name] = name === 'size' ? sizeOf(input.value) : input.value; draw(); } });
+        label.classList.toggle('is-on', input.checked);
+        input.addEventListener('change', function () {
+          if (!input.checked) return;
+          options[name] = name === 'size' ? sizeOf(input.value) : input.value;
+          syncOptionClasses();
+          if (name === 'shows' && options.shows !== 'word' && state && !state.pictures && (state.symbols || state.own)) {
+            state.pictures = true;
+            var mine = ++run;
+            note = '';
+            draw();
+            gather(mine).then(function () { if (mine === run) { busy = false; draw(); } });
+            return;
+          }
+          draw();
+        });
         label.appendChild(input);
         label.appendChild(el('span', '', row[1]));
         box.appendChild(label);
@@ -166,7 +194,8 @@
       body.appendChild(nodes.picturesNote);
       var lines = el('label', 'radio pc-radio pc-check'), box = el('input');
       box.type = 'checkbox'; box.id = 'pc-lines'; box.checked = options.lines;
-      box.addEventListener('change', function () { options.lines = box.checked; draw(); });
+      lines.classList.toggle('is-on', box.checked);
+      box.addEventListener('change', function () { options.lines = box.checked; syncOptionClasses(); draw(); });
       lines.appendChild(box);
       lines.appendChild(el('span', '', TEXT.lines));
       body.appendChild(lines);
@@ -242,8 +271,9 @@
       nodes.print.disabled = busy || !words.length;
       nodes.options.hidden = !words.length;
       nodes.tip.hidden = !words.length;
-      nodes.shows.hidden = !state.pictures;
-      nodes.picturesNote.textContent = !state.pictures ? TEXT.picturesOff : options.shows !== 'word' ? TEXT.noPictureShowsWord : '';
+      var canShowPictures = !!(state.pictures || state.symbols || state.own);
+      nodes.shows.hidden = !canShowPictures;
+      nodes.picturesNote.textContent = !canShowPictures ? TEXT.picturesOff : options.shows !== 'word' ? TEXT.noPictureShowsWord : '';
       nodes.said.textContent = said();
       if (busy || !words.length) return;
       if (options.pages !== 'list') cardPages(words).forEach(function (sheet) { nodes.sheets.appendChild(sheet); });
@@ -280,7 +310,9 @@
         loadPictures: s.loadPictures || null, own: s.own || null,
         creditLine: typeof s.creditLine === 'function' ? s.creditLine : root && root.AlloPacketMyWords && root.AlloPacketMyWords.creditLine };
       pictures = {}; busy = false; note = '';
-      if (!state.pictures && options.shows !== 'both') options.shows = 'both';
+      options.shows = state.pictures ? 'both' : (state.symbols || state.own ? 'word' : 'both');
+      syncRadioValue('shows', options.shows);
+      syncOptionClasses();
       opener = doc.activeElement && doc.activeElement !== doc.body ? doc.activeElement : opener;
       view.hidden = false;
       doc.body.classList.add('pc-on');

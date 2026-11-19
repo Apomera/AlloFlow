@@ -323,8 +323,13 @@ function VisualSupportsModal(props) {
         if (element.hidden || element.getAttribute("aria-hidden") === "true" || element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
         const closedDetails = element.closest("details:not([open])");
         if (closedDetails && !(element.tagName === "SUMMARY" && element.parentElement === closedDetails)) return false;
-        const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
-        return !style || style.display !== "none" && style.visibility !== "hidden";
+        if (typeof window.getComputedStyle === "function") {
+          for (let cur = element; cur && cur !== dialog; cur = cur.parentElement) {
+            const style = window.getComputedStyle(cur);
+            if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+          }
+        }
+        return true;
       });
     };
     const first = getFocusable()[0];
@@ -555,7 +560,7 @@ function VisualSupportsModal(props) {
     } catch (e) {
     }
   }, [pauseAnim]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3", onClick: () => setShowVisualSupports(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "visual-supports-title", tabIndex: -1, className: "bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)" }, className: "p-4 flex items-center justify-between flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "visual-supports-title", className: "text-white font-bold text-lg" }, "\u{1F5BC}\uFE0F ", tr("title", "Visual Supports")), /* @__PURE__ */ React.createElement("p", { className: "text-purple-200 text-xs mt-0.5" }, tr("subtitle", "Your saved boards & schedules"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3", role: "presentation", onClick: () => setShowVisualSupports(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "visual-supports-title", tabIndex: -1, className: "allo-docsuite bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-purple-600 focus:ring-offset-2", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)" }, className: "p-4 flex items-center justify-between flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "visual-supports-title", className: "text-white font-bold text-lg" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F5BC}\uFE0F "), tr("title", "Visual Supports")), /* @__PURE__ */ React.createElement("p", { className: "text-purple-200 text-xs mt-0.5" }, tr("subtitle", "Your saved boards & schedules"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

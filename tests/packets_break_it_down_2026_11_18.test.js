@@ -45,8 +45,12 @@ describe('Break it Down in the app\'s look', () => {
       expect(tile.querySelector('[data-seg-icon="sound"][aria-hidden="true"]')).not.toBeNull();
       expect(tile.style.borderRadius).toBe('50%');
     }
-    // Every tile has its own color.
-    expect(new Set(tiles.map((t) => t.style.backgroundColor)).size).toBe(tiles.length);
+    // Every tile follows the active Reading Tools theme via CSS variables (no hardcoded hex/rgb fill or ink).
+    for (const tile of tiles) {
+      expect(tile.style.background).toBe('var(--soft)');
+      expect(tile.style.color).toBe('var(--ink)');
+      expect(tile.style.borderColor).toBe('var(--accent)');
+    }
     for (const [i, box] of p.boxes().entries()) {
       expect(box.getAttribute('aria-label')).toBe('Box ' + (i + 1) + ', empty');
       expect(box.querySelector('[data-seg-icon="drop"][aria-hidden="true"]')).not.toBeNull();
@@ -131,5 +135,70 @@ describe('Break it Down in the app\'s look', () => {
     const { html } = await build();
     expect(html).not.toMatch(/https?:\/\//i);
     expect(html).not.toMatch(/<(?:iframe|object|embed|link|base|img|audio|video|svg)\b/i);
+  });
+
+  it('chips and boxes follow every Reading Tools theme with no hardcoded colors and pass AA contrast in all 8 palettes', async () => {
+    const built = await build({ showLetters: true });
+    const p = await start(built.html);
+    const tile = p.tiles()[0];
+    // Idle tray tile uses --soft / --ink / --accent.
+    expect([tile.style.background, tile.style.color, tile.style.borderColor]).toEqual(['var(--soft)', 'var(--ink)', 'var(--accent)']);
+    // Picked tray tile flips to --accent / --accent-ink; empty boxes highlight with --soft / --accent.
+    tile.click();
+    expect([tile.style.background, tile.style.color, tile.style.borderColor]).toEqual(['var(--accent)', 'var(--accent-ink)', 'var(--accent)']);
+    expect([p.boxes()[0].style.background, p.boxes()[0].style.color, p.boxes()[0].style.borderColor]).toEqual(['var(--soft)', 'var(--accent)', 'var(--accent)']);
+    // Placed box adopts --soft / --ink / --accent.
+    p.boxes()[0].click();
+    expect([p.boxes()[0].style.background, p.boxes()[0].style.color, p.boxes()[0].style.borderColor]).toEqual(['var(--soft)', 'var(--ink)', 'var(--accent)']);
+    // Submit a deliberately wrong arrangement to verify retry ("bad") box uses --warn-bg / --warn (not dark #1d2433 on dark themes).
+    const remaining = p.tiles();
+    p.boxes()[1].click(); // empty -> no-op
+    remaining[remaining.length - 1].click(); p.boxes()[1].click();
+    const rem2 = p.tiles();
+    rem2[rem2.length - 1].click(); p.boxes()[2].click();
+    p.button('Check').click();
+    const checkedBoxes = p.boxes();
+    const badBoxes = checkedBoxes.filter((b) => b.getAttribute('aria-label').includes('check this one'));
+    if (badBoxes.length) {
+      for (const b of badBoxes) {
+        expect([b.style.background, b.style.color, b.style.borderColor]).toEqual(['var(--warn-bg)', 'var(--warn)', 'var(--warn)']);
+      }
+      // Second wrong attempt triggers reveal(), which must set --ok-bg / --ok / --ok on every box.
+      p.button('Check').click();
+    }
+    for (const b of p.boxes()) {
+      expect([b.style.background, b.style.color, b.style.borderColor]).toEqual(['var(--ok-bg)', 'var(--ok)', 'var(--ok)']);
+    }
+    // Verify the embedded CSS defines all 8 theme palettes (default light, OS dark, colors 1..6) with >= 4.5:1 AA contrast for every state pair.
+    const css = p.d.querySelector('style').textContent;
+    const parseVars = (block) => Object.fromEntries([...block.matchAll(/(--[a-z-]+):([^;}\s]+)/g)].map((m) => [m[1], m[2]]));
+    const hexToRgb = (hex) => {
+      const h = hex.replace('#', '');
+      const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+      return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255);
+    };
+    const lum = (hex) => {
+      const [r, g, b] = hexToRgb(hex).map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const ratio = (a, b) => { const [l1, l2] = [lum(a), lum(b)].sort((x, y) => y - x); return (l1 + 0.05) / (l2 + 0.05); };
+    const themes = [
+      ['default-light', /:root\{([^}]+)\}/.exec(css)[1]],
+      ['os-dark', /prefers-color-scheme:dark\)\{:root\{([^}]+)\}/.exec(css)[1]],
+      ...[1, 2, 3, 4, 5, 6].map((n) => ['colors-' + n, new RegExp('\\[data-lt-colors="' + n + '"\\]\\{([^}]+)\\}').exec(css)[1]]),
+    ];
+    for (const [label, block] of themes) {
+      const v = parseVars(block);
+      expect(ratio(v['--ink'], v['--soft']), label + ' idle chip ink/soft').toBeGreaterThanOrEqual(4.5);
+      expect(ratio(v['--accent-ink'], v['--accent']), label + ' held chip accent-ink/accent').toBeGreaterThanOrEqual(4.5);
+      expect(ratio(v['--accent'], v['--soft']), label + ' holding empty box accent/soft').toBeGreaterThanOrEqual(4.5);
+      expect(ratio(v['--muted'], v['--card']), label + ' empty box muted/card').toBeGreaterThanOrEqual(4.5);
+      expect(ratio(v['--warn'], v['--warn-bg']), label + ' retry box warn/warn-bg').toBeGreaterThanOrEqual(4.5);
+      expect(ratio(v['--ok'], v['--ok-bg']), label + ' reveal box ok/ok-bg').toBeGreaterThanOrEqual(4.5);
+    }
+    // Adapter source itself must contain zero hardcoded hex/rgb fills or ink.
+    const src = require('node:fs').readFileSync('word_sounds_take_home/adapters/segmentation.js', 'utf8');
+    const codeLines = src.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+    expect(codeLines).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i);
   });
 });

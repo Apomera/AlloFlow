@@ -3375,14 +3375,29 @@
             // rule keeps high-contrast yellow from being flattened by the first.
             el('style', null,
               '#cyber-defense-region{--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-canvas:#0f172a;}' +
-              '.theme-contrast #cyber-defense-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-canvas:#000000;}' +
-              '.theme-contrast #cyber-defense-region .cyberd-xp{background:#000!important;border:1px solid #ffff00;box-shadow:none!important;}'),
+              '.theme-contrast #cyber-defense-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-canvas:#000000;background:#000000!important;border:2px solid #ffffff!important;}' +
+              '.theme-contrast #cyber-defense-region .cyberd-shell-header{background:#000000!important;border-bottom:2px solid #ffffff!important;}' +
+              '.theme-contrast #cyber-defense-region .cyberd-title{background:none!important;-webkit-text-fill-color:#ffff00!important;color:#ffff00!important;filter:none!important;}' +
+              '.theme-contrast #cyber-defense-region .cyberd-learning-brief,.theme-contrast #cyber-defense-region .cyberd-reflection-card{background:#000000!important;border:2px solid #ffffff!important;}' +
+              '.theme-contrast #cyber-defense-region .cyberd-xp{background:#000!important;border:1px solid #ffff00;color:#ffff00!important;box-shadow:none!important;}'),
             // Header
             el('div', { className: 'cyberd-shell-header', style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
               el('button', { onClick: function() { if (cyberTab === 'password') { _cyberPasswordSample = ''; upd({ pwInput: '', pwShowPassword: false, pwBruteAnim: null, pwBreachResult: null }); } ctx.setStemLabTool(null); }, 'aria-label': t('stem.cyberdefense.back_to_stem_tools', 'Back to STEM tools'), title: t('stem.cyberdefense.back', 'Back'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '8px 12px', minWidth: 44, minHeight: 44, cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
-              el('div', { className: 'cyberd-header-icon', 'aria-hidden': true, style: { fontSize: 28, filter: 'drop-shadow(0 0 8px rgba(244,63,94,0.6))' } }, '\uD83D\uDEE1\uFE0F'),
+              el('div', { className: 'cyberd-header-icon', 'aria-hidden': true },
+                el('svg', { viewBox: '0 0 64 64', width: 38, height: 38, 'aria-hidden': 'true', focusable: 'false' },
+                  el('path', { d: 'M32 5 L54 14 V31 C54 45 44.5 54.5 32 59 C19.5 54.5 10 45 10 31 V14 Z', fill: '#111827', stroke: '#818cf8', strokeWidth: 2.5 }),
+                  el('path', { d: 'M32 11 L48 18 V31 C48 41.5 41 49 32 53 C23 49 16 41.5 16 31 V18 Z', fill: 'rgba(99,102,241,0.18)', stroke: '#38bdf8', strokeWidth: 1.4 }),
+                  el('circle', { cx: 32, cy: 29, r: 6.5, fill: '#0f172a', stroke: '#34d399', strokeWidth: 2 }),
+                  el('path', { d: 'M32 35.5 V43 M22 25 L26 27 M42 25 L38 27', stroke: '#34d399', strokeWidth: 2, strokeLinecap: 'round' }),
+                  el('circle', { cx: 20, cy: 24, r: 2, fill: '#fb7185' }),
+                  el('circle', { cx: 44, cy: 24, r: 2, fill: '#fbbf24' })
+                )
+              ),
               el('div', { style: { minWidth: 0 } },
-                el('h2', { className: 'cyberd-title', style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #f43f5e, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 8px rgba(168,85,247,0.35))' } }, 'Cyber Defense Lab'),
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                  el('h2', { className: 'cyberd-title', style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #f43f5e, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 8px rgba(168,85,247,0.35))' } }, 'Cyber Defense Lab'),
+                  el('span', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '2px 8px', borderRadius: 999, background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(129,140,248,0.45)', color: '#c7d2fe' } }, t('stem.cyberdefense.subject_badge', 'Technology · Cybersecurity'))
+                ),
                 el('p', { className: 'cyberd-title-subtitle', style: { margin: '2px 0 0', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, cyberTabs.filter(function(tab) { return tab.id === cyberTab; })[0].label + ' \u2022 Hands-on safety practice')
               ),
               el('div', { className: 'cyberd-header-controls' + (cyberTab === 'phish' ? '' : ' cyberd-header-controls--compact'), style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
@@ -3831,10 +3846,49 @@
                     pwStrength.patterns.map(function(reason, ri) {
                       return el('li', { key: ri, style: { color: '#fbbf24', fontSize: 12, lineHeight: 1.5 } }, '\u26a0 ' + t('stem.cyberdefense.pattern_found', 'Pattern found:') + ' ' + reason);
                     })),
-                  // Strength bar
+                  // Strength bar + Logarithmic Entropy Tier SVG Gauge
                   el('div', { role: 'meter', 'aria-label': t('stem.cyberdefense.sample_strength', 'Sample strength'), 'aria-valuemin': 0, 'aria-valuemax': 5, 'aria-valuenow': pwStrength.score, 'aria-valuetext': pwInput ? pwStrength.label : t('stem.cyberdefense.empty', 'Empty'), style: { width: '100%', height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                     el('div', { style: { width: (pwStrength.score / 5 * 100) + '%', height: '100%', borderRadius: 5, background: pwStrength.color, transition: 'all 0.5s ease-out', boxShadow: '0 0 10px ' + pwStrength.color + '60' } })
                   ),
+                  (function () {
+                    var estBits = pwInput ? Math.min(100, Math.max(0, Math.round(pwStrength.entropy || (pwStrength.score * 16)))) : 0;
+                    var markerX = 16 + (estBits / 100) * 528;
+                    return el('div', { style: { marginTop: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(2,6,23,0.42)', border: '1px solid rgba(148,163,184,0.18)' } },
+                      el('svg', {
+                        viewBox: '0 0 560 66', width: '100%', role: 'img',
+                        'aria-label': t('stem.cyberdefense.entropy_gauge_aria', 'Password entropy scale from 0 to 100 bits across four resistance zones') + ': ' + estBits + ' ' + t('stem.cyberdefense.bits_label', 'bits'),
+                        style: { display: 'block', width: '100%', height: 'auto' }
+                      },
+                        el('rect', { x: 16, y: 20, width: 148, height: 16, rx: 4, fill: 'rgba(239,68,68,0.34)', stroke: '#f87171', strokeWidth: 1 }),
+                        el('rect', { x: 166, y: 20, width: 100, height: 16, fill: 'rgba(245,158,11,0.32)', stroke: '#fbbf24', strokeWidth: 1 }),
+                        el('rect', { x: 268, y: 20, width: 120, height: 16, fill: 'rgba(56,189,248,0.28)', stroke: '#38bdf8', strokeWidth: 1 }),
+                        el('rect', { x: 390, y: 20, width: 154, height: 16, rx: 4, fill: 'rgba(34,197,94,0.32)', stroke: '#4ade80', strokeWidth: 1 }),
+                        el('text', { x: 90, y: 52, textAnchor: 'middle', fill: '#fca5a5', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_weak', '<28b Weak')),
+                        el('text', { x: 216, y: 52, textAnchor: 'middle', fill: '#fde68a', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_fair', '28–48b Fair')),
+                        el('text', { x: 328, y: 52, textAnchor: 'middle', fill: '#7dd3fc', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_strong', '48–70b Strong')),
+                        el('text', { x: 467, y: 52, textAnchor: 'middle', fill: '#86efac', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_resilient', '70b+ Resilient')),
+                        pwInput && el('g', null,
+                          el('line', { x1: markerX, y1: 12, x2: markerX, y2: 39, stroke: '#ffffff', strokeWidth: 2.5 }),
+                          el('polygon', { points: (markerX - 6) + ',8 ' + (markerX + 6) + ',8 ' + markerX + ',15', fill: pwStrength.color, stroke: '#ffffff', strokeWidth: 1 }),
+                          el('text', { x: Math.min(510, Math.max(52, markerX)), y: 12, textAnchor: 'middle', fill: '#f8fafc', style: { fontSize: '10px', fontWeight: 900 } }, estBits + 'b')
+                        )
+                      ),
+                      el('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 8 } },
+                        el('span', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, t('stem.cyberdefense.compare_samples', 'Compare demo samples:')),
+                        [
+                          { id: 'weak', label: t('stem.cyberdefense.sample_weak_lbl', 'Predictable (8 chars)'), sample: 'abc12345' },
+                          { id: 'passphrase', label: t('stem.cyberdefense.sample_phrase_lbl', '4-word passphrase'), sample: 'maple-orbit-candle-reef' },
+                          { id: 'long', label: t('stem.cyberdefense.sample_long_lbl', 'Long mixed sample'), sample: 'K9#river!Mint42$plume' }
+                        ].map(function (sp) {
+                          return el('button', {
+                            key: sp.id, type: 'button',
+                            onClick: function () { setPasswordSample(sp.sample, { pwShowPassword: true, pwBruteAnim: null, pwBreachResult: null }); },
+                            style: { padding: '4px 9px', borderRadius: 999, border: '1px solid rgba(129,140,248,0.35)', background: 'rgba(99,102,241,0.14)', color: '#c7d2fe', fontSize: 10.5, fontWeight: 700, cursor: 'pointer' }
+                          }, sp.label);
+                        })
+                      )
+                    );
+                  })(),
                   // Illustrative search-space estimate
                   el('div', { style: { marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Search-space estimate after pattern checks (10B guesses/sec):'),
@@ -3948,9 +4002,39 @@
                     style: { width: 180, accentColor: '#6366f1' } }),
                   el('span', { style: { color: '#a5b4fc', fontSize: 16, fontWeight: 900, fontFamily: 'monospace', minWidth: 28, textAlign: 'center' } }, caesarShift)
                 ),
-                // Letter mapping visualization
+                // Letter mapping visualization + Interactive Dual-Ring Cipher Wheel SVG
                 cipherMode !== 'xor' && el('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' } },
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Letter Mapping'),
+                  el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 } },
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' } }, t('stem.cyberdefense.letter_mapping', 'Letter Mapping & Cipher Ring')),
+                    el('div', { style: { color: '#fcd34d', fontSize: 11, fontWeight: 800 } }, cipherMode === 'caesar' ? ('A \u2192 ' + String.fromCharCode((caesarShift % 26) + 65) + ' (+' + caesarShift + ')') : 'A \u2194 Z (Mirror)')
+                  ),
+                  (function () {
+                    var anchors = [0, 3, 6, 9, 12, 15, 18, 21, 24];
+                    var cx = 110, cy = 82, rOut = 64, rIn = 42;
+                    return el('svg', {
+                      viewBox: '0 0 220 164', width: '100%', role: 'img',
+                      'aria-label': cipherMode === 'caesar'
+                        ? t('stem.cyberdefense.wheel_caesar_aria', 'Caesar cipher wheel diagram with shift') + ' ' + caesarShift
+                        : t('stem.cyberdefense.wheel_atbash_aria', 'Atbash mirror cipher wheel diagram reversing A through Z'),
+                      style: { display: 'block', maxWidth: 240, margin: '0 auto 10px', height: 'auto' }
+                    },
+                      el('circle', { cx: cx, cy: cy, r: rOut + 12, fill: 'rgba(15,23,42,0.72)', stroke: 'rgba(148,163,184,0.32)', strokeWidth: 1.5 }),
+                      el('circle', { cx: cx, cy: cy, r: rIn + 10, fill: 'rgba(99,102,241,0.16)', stroke: '#818cf8', strokeWidth: 1.5 }),
+                      el('circle', { cx: cx, cy: cy, r: 22, fill: '#0b1120', stroke: '#fbbf24', strokeWidth: 1.5 }),
+                      el('text', { x: cx, y: cy + 4, textAnchor: 'middle', fill: '#fde68a', style: { fontSize: '11px', fontWeight: 900 } }, cipherMode === 'caesar' ? ('+' + caesarShift) : 'A\u2194Z'),
+                      anchors.map(function (idx) {
+                        var ang = (idx / 26) * Math.PI * 2 - Math.PI / 2;
+                        var ox = cx + Math.cos(ang) * rOut, oy = cy + Math.sin(ang) * rOut;
+                        var ix = cx + Math.cos(ang) * rIn, iy = cy + Math.sin(ang) * rIn;
+                        var plainCh = String.fromCharCode(65 + idx);
+                        var mappedCh = cipherMode === 'caesar' ? String.fromCharCode(((idx + caesarShift) % 26) + 65) : String.fromCharCode(90 - idx);
+                        return el('g', { key: 'wh-' + idx },
+                          el('text', { x: ox, y: oy + 4, textAnchor: 'middle', fill: '#cbd5e1', style: { fontSize: '10px', fontWeight: 800, fontFamily: 'monospace' } }, plainCh),
+                          el('text', { x: ix, y: iy + 4, textAnchor: 'middle', fill: idx === 0 ? '#fde047' : '#a5b4fc', style: { fontSize: '10px', fontWeight: 900, fontFamily: 'monospace' } }, mappedCh)
+                        );
+                      })
+                    );
+                  })(),
                   el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' } },
                     'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(letter, li) {
                       var mapped;
@@ -4863,7 +4947,11 @@
                               h.hotSeat ? 'yes' : 'no',
                               (h.players || []).join('; '),
                               h.reflection || ''
-                            ].map(function(v) { var s = String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',');
+                            ].map(function(v) {
+                              var raw = String(v == null ? '' : v);
+                              var s = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
+                              return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+                            }).join(',');
                           });
                           var csv = header.join(',') + '\n' + rows.join('\n');
                           try {
@@ -4917,10 +5005,15 @@
                           onChange: function(ev) {
                             var file = ev.target.files && ev.target.files[0];
                             if (!file) return;
+                            if (Number(file.size) > 2 * 1024 * 1024) {
+                              if (ctx.addToast) ctx.addToast('War Room backup files are limited to 2 MB.', 'error');
+                              ev.target.value = '';
+                              return;
+                            }
                             var reader = new FileReader();
                             reader.onload = async function(e2) {
                               try {
-                                var parsed = JSON.parse(e2.target.result);
+                                var parsed = JSON.parse(e2.target.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
                                 if (!parsed || parsed._tool !== 'cyberDefense/warRoom') {
                                   if (ctx.addToast) ctx.addToast('Not a War Room backup file', 'info'); return;
                                 }
@@ -5806,6 +5899,7 @@
                       onClick: function() {
                         try {
                           var w = window.open('', '_blank', 'width=720,height=900');
+                          try { if (w) w.opener = null; } catch (_) {}
                           if (!w) { if (ctx.addToast) ctx.addToast('Pop-up blocked \u2014 allow pop-ups to print', 'info'); return; }
                           // HTML-escape helper — safeguards against AI-generated content or player names with special chars
                           var esc = function(s) {
@@ -5862,9 +5956,9 @@
                               '<div class="stat"><b>' + esc(warRoomRank.label) + '</b>Rank</div>' +
                             '</div>' +
                             '<h2>Kill Chain</h2>' +
-                            '<table><thead><tr><th>Rd</th><th>Stage</th><th>Red Team Move</th><th>Outcome</th><th>Defenses Played</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+                            '<table><thead><tr><th scope="col">Rd</th><th scope="col">Stage</th><th scope="col">Red Team Move</th><th scope="col">Outcome</th><th scope="col">Defenses Played</th></tr></thead><tbody>' + rows + '</tbody></table>' +
                             (achievementRows ? '<h2>Achievements Earned</h2><ul>' + achievementRows + '</ul>' : '') +
-                            (teamRows ? '<h2>Team Scoreboard</h2><table><thead><tr><th>Player</th><th>Rounds</th><th>Mitigated</th><th>Detected</th></tr></thead><tbody>' + teamRows + '</tbody></table>' : '') +
+                            (teamRows ? '<h2>Team Scoreboard</h2><table><thead><tr><th scope="col">Player</th><th scope="col">Rounds</th><th scope="col">Mitigated</th><th scope="col">Detected</th></tr></thead><tbody>' + teamRows + '</tbody></table>' : '') +
                             '<h2>Reflection Questions</h2>' +
                             '<ol style="font-size:12px;line-height:1.6;">' +
                               '<li>Which kill-chain stage was hardest to defend, and why?</li>' +

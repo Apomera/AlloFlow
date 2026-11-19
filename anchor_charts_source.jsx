@@ -31,7 +31,7 @@ function _ac_aiUsable(kind, fn) {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
 }
 const _ac_sanitizeUntrusted = (val) => String(val == null ? '' : val).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '');
 const _ac_fenceUntrusted = (tag, val) => '<UNTRUSTED_' + tag + '>\n' + _ac_sanitizeUntrusted(val) + '\n</UNTRUSTED_' + tag + '>';
@@ -71,15 +71,20 @@ const _ac_feedbackIsEarlier = (feedback, answers) => {
 // (no graceful raw-fallback because PNG export is non-critical — print still works).
 const _loadHtml2Canvas = (() => {
   let pending = null;
+  const HTML2CANVAS_CDN_URL = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+  const HTML2CANVAS_CDN_INTEGRITY = 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H';
   return () => {
     if (typeof window === 'undefined') return Promise.reject(new Error('no window'));
     if (window.html2canvas) return Promise.resolve(window.html2canvas);
+    if (window._isDesktopBundledApp === true) return Promise.reject(new Error('PNG export library unavailable in offline desktop mode'));
     if (pending) return pending;
     pending = new Promise((resolve, reject) => {
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      s.src = HTML2CANVAS_CDN_URL;
+      s.integrity = HTML2CANVAS_CDN_INTEGRITY;
       s.async = true;
       s.crossOrigin = 'anonymous';
+      s.referrerPolicy = 'no-referrer';
       s.onload = () => {
         if (window.html2canvas) resolve(window.html2canvas);
         else reject(new Error('html2canvas not on window after load'));
@@ -304,7 +309,7 @@ const AnchorChartSection = React.memo((props) => {
               type="text"
               value={label}
               onChange={updateLabel}
-              className="ac-section-label w-full bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dashed border-slate-300 focus:border-slate-600 py-0.5"
+              className="ac-section-label w-full bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-700 focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dashed border-slate-300 focus:border-slate-600 py-0.5"
               style={{
                 fontFamily: 'inherit', fontWeight: 700,
                 fontSize: '1.375rem',
@@ -344,7 +349,7 @@ const AnchorChartSection = React.memo((props) => {
                       value={studentAnswers[idx] || ''}
                       onChange={(e) => onStudentAnswerChange(idx, e.target.value)}
                       placeholder={t("placeholders.type_answer_here")}
-                      className="flex-1 min-w-0 bg-white/70 outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b-2 border-dotted py-0.5 px-1"
+                      className="flex-1 min-w-0 bg-white/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-700 focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b-2 border-dotted py-0.5 px-1"
                       style={{
                         fontFamily: 'inherit',
                         fontSize: '1.125rem',
@@ -366,14 +371,14 @@ const AnchorChartSection = React.memo((props) => {
                         type="text"
                         value={b}
                         onChange={(e) => updateBullet(idx, e.target.value)}
-                        className="flex-1 min-w-0 bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dotted border-slate-200 focus:border-slate-400 py-0.5"
+                        className="flex-1 min-w-0 bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-700 focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dotted border-slate-200 focus:border-slate-400 py-0.5"
                         style={{ fontFamily: 'inherit', fontSize: '1.125rem', color: '#2d3748' }}
                         aria-label={`Bullet ${idx + 1}`}
                       />
                       <button
                         type="button"
                         onClick={() => removeBullet(idx)}
-                        className="inline-flex min-h-6 min-w-6 items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1 rounded"
+                        className="inline-flex min-h-6 min-w-6 items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 text-slate-600 hover:text-red-700 text-xs px-1 rounded"
                         aria-label={`Remove bullet ${idx + 1} from ${label || `section ${sectionIndex + 1}`}`}
                       >✕</button>
                     </>
@@ -415,7 +420,7 @@ const AnchorChartSection = React.memo((props) => {
                       onChange={(e) => setIconPromptDraft(e.target.value)}
                       onBlur={commitIconPrompt}
                       placeholder="Describe the icon (e.g., 'a friendly dragon doodle')"
-                      className="flex-1 bg-white/80 outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]"
+                      className="flex-1 bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-700 focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]"
                       aria-label="Icon prompt"
                     />
                     {onRegenIcon ? (
@@ -436,7 +441,7 @@ const AnchorChartSection = React.memo((props) => {
                         value={refinePrompt}
                         onChange={(e) => setRefinePrompt(e.target.value)}
                         placeholder={tx('anchor_chart.refine_icon_placeholder', "Refine icon with AI (e.g., 'make it blue', 'add a gear')")}
-                        className="flex-1 bg-white/80 outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]"
+                        className="flex-1 bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-700 focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border border-slate-300 focus:border-slate-500 rounded px-2 py-1 text-[12px]"
                         aria-label={t('a11y.refine_icon_prompt', 'Refine icon prompt') || 'Refine icon prompt'}
                       />
                       <button
@@ -840,7 +845,17 @@ const AnchorChartView = React.memo((props) => {
     const dialog = interactiveDialogRef.current;
     if (!dialog) return;
     const focusable = Array.from(dialog.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'))
-      .filter((el) => !el.disabled && !el.hidden && !el.closest('[inert]') && el.getAttribute('aria-hidden') !== 'true');
+      .filter((el) => {
+        if (!el || el.disabled || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]') || el.getAttribute('aria-hidden') === 'true') return false;
+        if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+          for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+            const cs = window.getComputedStyle(cur);
+            if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+            if (cur === dialog) break;
+          }
+        }
+        return true;
+      });
     if (!focusable.length) {
       e.preventDefault();
       dialog.focus();
@@ -1120,7 +1135,7 @@ const AnchorChartView = React.memo((props) => {
               value={title}
               onChange={handleTitleChange}
               placeholder={tx('a11y.chart_title', 'Chart title')}
-              className="ac-title w-full text-center bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dashed border-amber-300 focus:border-amber-600 py-1"
+              className="ac-title w-full text-center bg-transparent focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dashed border-amber-300 focus:border-amber-600 py-1"
               style={{ fontSize: '2.625rem', color: '#7a4a1e' }}
               aria-label={tx('a11y.chart_title', 'Chart title')}
             />
@@ -1358,10 +1373,10 @@ const AnchorChartView = React.memo((props) => {
               onChange={(e) => setRubricDraft(e.target.value)}
               placeholder={tx('anchor_chart.response_rubric_placeholder', 'What should students demonstrate? List the key concepts, facts, or explanations you will look for.')}
               rows={6}
-              className="w-full border-2 border-slate-300 focus:border-fuchsia-500 rounded-lg p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-fuchsia-600 focus:ring-offset-1"
+              className="w-full border-2 border-slate-300 focus:border-fuchsia-500 rounded-lg p-3 text-sm leading-relaxed focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-fuchsia-600 focus:ring-offset-1"
               aria-label={tx('anchor_chart.response_rubric', 'Response criteria / key concepts')}
             />
-            <div className="text-[11px] text-slate-500 italic mt-1">
+            <div className="text-[11px] text-slate-600 italic mt-1">
               {tx('anchor_chart.response_rubric_tip', 'List the ideas students should explain. AI feedback is a suggestion for review.')}
             </div>
             <details data-anchor-student-preview className="mt-3 rounded-lg border border-slate-300 bg-slate-50 p-3"><summary className="cursor-pointer text-sm font-bold text-slate-900">{tx('anchor_chart.student_preview', 'Student preview')}</summary><p className="mt-2 text-xs text-slate-700">{tx('anchor_chart.preview_note', 'Preview only. Your reference answers stay hidden and no student work is changed.')}</p>{sections.map((section,index)=><div key={section.id||index} className="mt-2 rounded border border-slate-300 bg-white p-2"><p className="font-semibold text-slate-900">{section.label}</p><p className="mt-1 rounded border border-dashed border-slate-400 p-2 text-sm text-slate-600">{tx('anchor_chart.preview_answer', 'Blank answer field for the student')}</p></div>)}</details>

@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AlloFlow Tutor Link</title>
 <!--
@@ -32,13 +34,20 @@
 -->
 <style>
   body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 8px 10px; background: #eef2fb; color: #24304f; font-size: 12px; }
-  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; margin-right: 6px; vertical-align: baseline; }
-  .dot.on { background: #22c55e; }
+  h1 { display: inline; font-size: inherit; font-weight: 700; margin: 0; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #64748b; margin-right: 6px; vertical-align: baseline; }
+  .dot.on { background: #15803d; }
+  .skip-link { position: absolute; left: -9999px; top: 4px; z-index: 9999; background: #1e3a8a; color: #fff; padding: 6px 10px; border-radius: 6px; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { left: 6px; }
+  :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
 </style>
 </head>
 <body>
-  <div><span id="dot" class="dot"></span><strong id="pluginTitle">AlloFlow tutor link</strong></div>
-  <div id="status">Connecting to CODAP…</div>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <main id="main-content" tabindex="-1">
+    <div><span id="dot" class="dot" aria-hidden="true"></span><h1 id="pluginTitle">AlloFlow tutor link</h1></div>
+    <div id="status" role="status" aria-live="polite">Connecting to CODAP…</div>
+  </main>
 
 <script src="vendor/iframe-phone.js"></script>
 <script>

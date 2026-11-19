@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
-<title>Present and export word cards</title>
+<title>Present &amp; print word cards</title>
 <meta name="description" content="Present vocabulary and word-sound cards on screen, import or switch card pictures, or save an HTML file or a PowerPoint slide deck in your browser. Runs without AI. No account.">
 <link rel="icon" type="image/svg+xml" href="packets-mark.svg">
 <link rel="stylesheet" href="packets.css">
@@ -14,7 +14,6 @@
 <link rel="stylesheet" href="packets-present-export.css">
 <script src="packets-page.js" defer></script>
 <script src="word_sounds_take_home_loader.js" defer></script>
-<script src="packets_handoff.js" defer></script>
 <script src="packets_my_words.js" defer></script>
 <script src="packets_vocab_bank_en.js" defer></script>
 <script src="word_sounds_phonemes_en.js" defer></script>
@@ -49,45 +48,67 @@
   <div class="wrap wrap-narrow proof-body">
     <ul>
       <li>Nothing is generated when you make a file or when a student uses it. The spoken sounds were recorded ahead of time with two AI voices (Kokoro and Google Gemini). Some meanings were checked and corrected ahead of time with AI help, not by a person.</li>
+      <li>This page loads twenty files from this site: the page itself, three stylesheets (<code>packets.css</code>, <code>packets-make.css</code>, <code>packets-present-export.css</code>), fifteen scripts (<code>packets-page.js</code>, <code>word_sounds_take_home_loader.js</code>, <code>packets_my_words.js</code>, <code>packets_vocab_bank_en.js</code>, <code>word_sounds_phonemes_en.js</code>, <code>word_sounds_core.js</code>, <code>word_sounds_pronunciations.js</code>, <code>word_sounds_symbols_en.js</code>, <code>packets_vocab_media.js</code>, <code>word_picture_matcher.js</code>, <code>word_practice_annotation_assets.js</code>, <code>word_practice_core.js</code>, <code>word_practice_media.js</code>, <code>word_practice_ui.js</code>, <code>packets-present-export.js</code>) and the icon in the browser tab. PowerPoint export loads one more script from this site (<code>vendor/pptxgenjs-3.12.0.bundle.js</code>) only when you ask for slides.</li>
       <li>Your word list, imported pictures, and exported HTML or PowerPoint files are built inside this browser tab. Nothing is uploaded.</li>
       <li>There are no cookies and nothing to sign in to.</li>
       <li>On this device the page can read saved words from My words and keep your last export choices locally unless you clear them below.</li>
     </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
   </div>
 </details>
 </header>
 
 <main id="main" class="maker">
   <div class="wrap">
-    <h1>Present and export word cards</h1>
+    <h1>Present &amp; print word cards</h1>
     <p class="scope">Present word cards on a projector, import or switch card pictures, or save an offline HTML file, a sheet to print, or a PowerPoint slide deck, including one picture card per slide.</p>
 
     <noscript><p class="note note-problem">This page needs JavaScript to present and export word cards. Nothing is sent anywhere.</p></noscript>
 
     <section class="pe-starters" aria-labelledby="starters-heading">
-      <h2 id="starters-heading">Ready-made word sets</h2>
-      <p class="pe-starters-note">Start with a pre-loaded set (meanings, examples, sound spellings, and picture matching) or type your own words below.</p>
+      <h2 id="starters-heading">Word sets and printable sheets</h2>
+      <p class="pe-starters-note">Start with a ready-made set or saved maker words (pictures match automatically), or type your own words below.</p>
       <div class="pe-starter-row">
-        <button type="button" class="btn btn-small" data-starter="short-vowels">Short vowels with pictures</button>
-        <button type="button" class="btn btn-small" data-starter="blends-digraphs">Blends and digraphs</button>
-        <button type="button" class="btn btn-small" data-starter="science-math">Science and math vocabulary</button>
-        <button type="button" class="btn btn-small" data-starter="academic">Academic study words</button>
-        <button type="button" class="btn btn-small" data-starter="earth-space">Earth and space</button>
-        <button type="button" class="btn btn-small" data-starter="civics-geography">Civics and geography</button>
-        <button type="button" class="btn btn-small" data-starter="literary-craft">Story and poetry craft</button>
-        <button type="button" class="btn btn-small" id="pe-fill-pictures">Match built-in pictures</button>
-        <a class="btn btn-small" id="pe-find-online" href="packets-pictures.html#from=present">Find more pictures online</a>
-        <button type="button" class="btn btn-small" id="pe-load-my-words" hidden>Load saved My words</button>
-        <button type="button" class="btn btn-small" id="pe-load-vocab-words" hidden>Load words from Vocabulary maker</button>
-        <button type="button" class="btn btn-small" id="pe-load-ws-words" hidden>Load words from Word Sounds maker</button>
-        <button type="button" class="btn btn-small" id="pe-export-flashcards">Print 2-sided flashcards</button>
-        <button type="button" class="btn btn-small" id="pe-export-frayer">Print Frayer study sheets</button>
-        <button type="button" class="btn btn-small" id="pe-export-sorting-cards">Print cut-out sorting cards</button>
-        <button type="button" class="btn btn-small" id="pe-export-worksheet">Print cloze and matching worksheet</button>
-        <button type="button" class="btn btn-small" id="pe-export-bingo">Print classroom Bingo boards</button>
-        <button type="button" class="btn btn-small" id="pe-export-loop-cards">Print I Have, Who Has cards</button>
-        <button type="button" class="btn btn-small" id="pe-export-word-wall">Print classroom Word Wall cards</button>
-        <button type="button" class="btn btn-small" id="pe-open-symbol-runner">Practice short words in Symbol Runner</button>
+        <div class="pe-control">
+          <label for="pe-word-source">Load words</label>
+          <select id="pe-word-source">
+            <optgroup label="Ready-made word sets">
+              <option value="starter:short-vowels">Short vowels with pictures</option>
+              <option value="starter:blends-digraphs">Blends and digraphs</option>
+              <option value="starter:science-math">Science and math vocabulary</option>
+              <option value="starter:academic">Academic study words</option>
+              <option value="starter:earth-space">Earth and space</option>
+              <option value="starter:civics-geography">Civics and geography</option>
+              <option value="starter:literary-craft">Story and poetry craft</option>
+            </optgroup>
+            <optgroup id="pe-saved-group" label="From this browser" hidden>
+              <option id="pe-load-my-words" value="saved:my-words" hidden>My saved words</option>
+              <option id="pe-load-vocab-words" value="saved:vocab" hidden>Words from Vocabulary maker</option>
+              <option id="pe-load-ws-words" value="saved:word-sounds" hidden>Words from Word Sounds maker</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="pe-control">
+          <label for="pe-sheet-type">Print a classroom sheet</label>
+          <div class="pe-sheet-row">
+            <select id="pe-sheet-type">
+              <option value="flashcards">2-sided flashcards</option>
+              <option value="frayer">Frayer study sheets</option>
+              <option value="sorting-cards">Cut-out sorting cards</option>
+              <option value="worksheet">Cloze and matching worksheet</option>
+              <option value="bingo">Classroom Bingo boards</option>
+              <option value="loop-cards">I Have, Who Has cards</option>
+              <option value="word-wall">Classroom Word Wall cards</option>
+            </select>
+            <button type="button" class="btn btn-small" id="pe-sheet-download">Download</button>
+          </div>
+        </div>
+        <div class="pe-links">
+          <a class="btn btn-text btn-small" id="pe-find-online" href="packets-pictures.html#from=present">Find more pictures online</a>
+          <button type="button" class="btn btn-text btn-small" id="pe-open-symbol-runner">Practice in Symbol Runner</button>
+        </div>
       </div>
       <p id="pe-status" class="pe-status" role="status" aria-live="polite"></p>
     </section>
@@ -108,5 +129,12 @@
     </details>
   </div>
 </main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
 </body>
 </html>

@@ -89,7 +89,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   function shareBase() {
     try {
       var loc = window.location, host = loc.hostname || '';
-      if (/(^|\.)alloflow/i.test(host) || /\.pages\.dev$/i.test(host) || /\.web\.app$/i.test(host)) return loc.origin + loc.pathname;
+      if (/^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host)) return loc.origin + loc.pathname;
     } catch (_) {}
     return 'https://alloflow-cdn.pages.dev/app/';
   }
@@ -145,7 +145,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       var pathname = loc.pathname || '';
       var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
       var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
-      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      var isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled) return new URL(path, loc.href).toString();
       if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
     } catch (_) {}
@@ -484,13 +484,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   var osdPromise = null;
   function loadOsd() {
     if (typeof window.OpenSeadragon === 'function') return Promise.resolve(window.OpenSeadragon);
+    if (window._isDesktopBundledApp === true) return Promise.reject(new Error('offline-desktop'));
     if (osdPromise) return osdPromise;
     osdPromise = new Promise(function (resolve, reject) {
       var done = false;
       var timer = setTimeout(function () { if (!done) { done = true; osdPromise = null; reject(new Error('timeout')); } }, 20000);
       try {
         var s = document.createElement('script');
-        s.src = OSD_BASE + 'openseadragon.min.js'; s.async = true; s.crossOrigin = 'anonymous';
+        s.src = OSD_BASE + 'openseadragon.min.js'; s.async = true; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer';
+        s.integrity = 'sha384-Vh4b5HGyvDGMp6lVeYZe1zCqqyhS8oLTUC4SKIWmOuYH7nEuWiGIpSACopwLu9UD';
         s.onload = function () { if (done) return; done = true; clearTimeout(timer); if (typeof window.OpenSeadragon === 'function') resolve(window.OpenSeadragon); else { osdPromise = null; reject(new Error('no global')); } };
         s.onerror = function () { if (done) return; done = true; clearTimeout(timer); osdPromise = null; reject(new Error('script error')); };
         document.head.appendChild(s);
@@ -524,10 +526,30 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   // failure in v2.0. The chip tokens are for the slabs that float over the image,
   // and are deliberately opaque: over an arbitrary photograph a translucent chip
   // has no computable contrast ratio and no guaranteed one either.
+  // Scoped micro-interactions & optical observatory polish (respects reduced motion)
+  (function () {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || document.getElementById('allo-zoomgallery-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-zoomgallery-css';
+    st.textContent = [
+      '#allo-zoom-gallery .zg-card { transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }',
+      '#allo-zoom-gallery .zg-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgba(2,6,23,0.45); }',
+      '#allo-zoom-gallery button:focus-visible, #allo-zoom-gallery select:focus-visible, #allo-zoom-gallery input:focus-visible, #allo-zoom-gallery textarea:focus-visible { outline: 3px solid #f59e0b !important; outline-offset: 2px !important; }',
+      '@media (prefers-reduced-motion: reduce) { #allo-zoom-gallery .zg-card { transition: none !important; transform: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
+  var ZG_COLLECTIONS = {
+    earthrise: 'space', farside: 'space', bootprint: 'space', pillars: 'space', carina: 'space', saturn: 'space', curiosity: 'space', solarflare: 'space', 'iss-cupola': 'space',
+    'apollo-cm': 'museum', 'wright-flyer': 'museum', 'chicago-1892': 'museum',
+    'snowflake-342': 'micro', 'snowflake-1205': 'micro', 'fan-coral': 'micro'
+  };
+
   function palette(theme) {
-    if (theme === 'light') return { bg: '#f8fafc', panel: '#ffffff', panel2: '#f1f5f9', line: '#64748b', text: '#0f172a', dim: '#475569', accent: '#1d4ed8', accentBtn: '#1d4ed8', accentFg: '#ffffff', ok: '#047857', warn: '#92400e', selBg: '#dbeafe', selFg: '#1e3a8a', pin: '#b45309', stage: '#111827', chip: '#0f172a', chipFg: '#f1f5f9', chipLine: '#94a3b8', chipLink: '#bae6fd' };
-    if (theme === 'contrast') return { bg: '#000000', panel: '#000000', panel2: '#0a0a0a', line: '#fbbf24', text: '#ffffff', dim: '#ffffff', accent: '#fbbf24', accentBtn: '#fbbf24', accentFg: '#000000', ok: '#00ff66', warn: '#ffff00', selBg: '#fbbf24', selFg: '#000000', pin: '#ffff00', stage: '#000000', chip: '#000000', chipFg: '#ffffff', chipLine: '#fbbf24', chipLink: '#ffff00' };
-    return { bg: '#0f172a', panel: '#1e293b', panel2: '#273449', line: '#334155', text: '#e2e8f0', dim: '#94a3b8', accent: '#38bdf8', accentBtn: '#0369a1', accentFg: '#ffffff', ok: '#4ade80', warn: '#fbbf24', selBg: '#0c4a6e', selFg: '#e0f2fe', pin: '#f59e0b', stage: '#000000', chip: '#0f172a', chipFg: '#f1f5f9', chipLine: '#94a3b8', chipLink: '#bae6fd' };
+    if (theme === 'light') return { bg: '#f8fafc', heroBg: 'linear-gradient(135deg, #eff6ff 0%, #f8fafc 60%, #f0f9ff 100%)', panel: '#ffffff', panel2: '#f1f5f9', line: '#64748b', softLine: '#cbd5e1', text: '#0f172a', dim: '#475569', accent: '#1d4ed8', accentBtn: '#1d4ed8', accentFg: '#ffffff', ok: '#047857', warn: '#92400e', selBg: '#dbeafe', selFg: '#1e3a8a', pin: '#b45309', stage: '#111827', chip: '#0f172a', chipFg: '#f1f5f9', chipLine: '#94a3b8', chipLink: '#bae6fd' };
+    if (theme === 'contrast') return { bg: '#000000', heroBg: '#000000', panel: '#000000', panel2: '#0a0a0a', line: '#fbbf24', softLine: '#fbbf24', text: '#ffffff', dim: '#ffffff', accent: '#fbbf24', accentBtn: '#fbbf24', accentFg: '#000000', ok: '#00ff66', warn: '#ffff00', selBg: '#fbbf24', selFg: '#000000', pin: '#ffff00', stage: '#000000', chip: '#000000', chipFg: '#ffffff', chipLine: '#fbbf24', chipLink: '#ffff00' };
+    return { bg: '#0b1120', heroBg: 'linear-gradient(135deg, #172554 0%, #0f172a 58%, #082f49 100%)', panel: '#162033', panel2: '#1e293b', line: '#475569', softLine: '#334155', text: '#f1f5f9', dim: '#cbd5e1', accent: '#38bdf8', accentBtn: '#0369a1', accentFg: '#ffffff', ok: '#4ade80', warn: '#fbbf24', selBg: '#0c4a6e', selFg: '#e0f2fe', pin: '#f59e0b', stage: '#000000', chip: '#0f172a', chipFg: '#f1f5f9', chipLine: '#94a3b8', chipLink: '#bae6fd' };
   }
 
   window.StemLab.registerTool('zoomGallery', {
@@ -606,6 +628,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       var descTextId = descId + '-text';
       var _customUrl = React.useState(''); var customUrl = _customUrl[0], setCustomUrl = _customUrl[1];
       var _customErr = React.useState(''); var customErr = _customErr[0], setCustomErr = _customErr[1];
+      var _coll = React.useState('all'); var collectionFilter = _coll[0], setCollectionFilter = _coll[1];
       var _reflect = React.useRef(Math.floor(Math.random() * 5));
       var stageRef = React.useRef(null);
       var wrapRef = React.useRef(null);
@@ -736,10 +759,29 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             : I('chal_est_off', { factor: Math.round(fE).toLocaleString('en-US'), dec: (Math.round(Math.log(fE) / Math.LN10 * 10) / 10).toString() }));
         }
         if ((chalLocked != null && measuredM) || chalReveal) lines.push(approx ? I('chal_answer_approx', { ans: fmtLen(ch.answerMetres) }) : I('chal_answer', { ans: fmtLen(ch.answerMetres) }));
+        // Compact log-proportional comparison bar SVG when an estimate & measurement exist
+        var gaugeEl = null;
+        if (chalLocked != null && measuredM) {
+          var vals = [chalLocked, measuredM, ch.answerMetres];
+          var maxV = Math.max.apply(null, vals) || 1;
+          var barRow = function (lbl, val, col, y) {
+            var w = Math.max(8, Math.min(148, (val / maxV) * 148));
+            return h('g', { key: lbl },
+              h('text', { x: 4, y: y + 9, fill: P.dim, fontSize: 9, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, lbl),
+              h('rect', { x: 64, y: y, width: 148, height: 11, rx: 4, fill: P.bg, stroke: P.softLine, strokeWidth: 1 }),
+              h('rect', { x: 64, y: y, width: w, height: 11, rx: 4, fill: col })
+            );
+          };
+          gaugeEl = h('svg', { viewBox: '0 0 220 56', style: { width: '100%', height: 'auto', display: 'block', marginTop: 6 }, role: 'img', 'aria-label': t('stem.zoomGallery.scale_comparison_aria', 'Scale comparison: estimate, measurement, and accepted value') },
+            barRow('Estimate', chalLocked, P.pin, 4),
+            barRow('Measured', measuredM, P.accent, 22),
+            barRow('Accepted', ch.answerMetres, P.ok, 40)
+          );
+        }
         return h('div', { style: { marginTop: 4 } },
-          h('h3', { style: { margin: '0 0 4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, I('chal_heading')),
+          h('h3', { style: { margin: '0 0 4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, '📏 ' + I('chal_heading')),
           h('div', { style: card },
-            h('p', { style: { margin: '0 0 6px' } }, ch.ask),
+            h('p', { style: { margin: '0 0 6px', fontWeight: 600 } }, ch.ask),
             chalLocked == null ? h('div', null,
               h('label', { style: { display: 'block', fontSize: '0.71875rem', color: P.dim } }, t('stem.zoomGallery.chal_estimate_label', INL.chal_estimate_label),
                 h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginTop: 4 } },
@@ -747,7 +789,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); chalLockIn(); } },
                     'aria-label': t('stem.zoomGallery.chal_estimate_label', INL.chal_estimate_label) + ' (' + (ch.unit === 'ly' ? t('stem.zoomGallery.chal_unit_ly', INL.chal_unit_ly) : t('stem.zoomGallery.chal_unit_km', INL.chal_unit_km)) + ')',
                     style: { flex: '1 1 90px', minWidth: 0, padding: '6px 8px', borderRadius: 8, border: '1px solid ' + P.line, background: P.bg, color: P.text, fontSize: '0.8125rem' } }),
-                  h('span', { style: { fontSize: '0.75rem', color: P.text } }, ch.unit === 'ly' ? t('stem.zoomGallery.chal_unit_ly', INL.chal_unit_ly) : t('stem.zoomGallery.chal_unit_km', INL.chal_unit_km)))),
+                  h('span', { style: { fontSize: '0.75rem', color: P.text, fontWeight: 700 } }, ch.unit === 'ly' ? t('stem.zoomGallery.chal_unit_ly', INL.chal_unit_ly) : t('stem.zoomGallery.chal_unit_km', INL.chal_unit_km)))),
               h('div', { style: { display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' } },
                 h('button', { type: 'button', onClick: chalLockIn, style: goBtn }, I('chal_lock')),
                 !chalReveal ? h('button', { type: 'button', onClick: function () { setChalReveal(true); }, style: btnBase }, I('chal_show_answer')) : null),
@@ -755,7 +797,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             : h('div', null,
               h('p', { style: { margin: '0 0 6px', fontSize: '0.78125rem' } }, I('chal_locked', { est: fmtLen(chalLocked) })),
               h('details', { style: { fontSize: '0.71875rem', color: P.dim, marginBottom: 6 } }, h('summary', { style: { cursor: 'pointer' } }, I('chal_hint_label')), h('p', { style: { margin: '4px 0 0' } }, ch.hint)),
-              lines.length ? h('div', { role: 'status', style: Object.assign({}, card, { borderColor: P.accent, fontSize: '0.78125rem' }) }, lines.map(function (l, i) { return h('p', { key: i, style: { margin: i ? '6px 0 0' : 0 } }, l); })) : null,
+              lines.length ? h('div', { role: 'status', style: Object.assign({}, card, { borderColor: P.accent, fontSize: '0.78125rem' }) }, lines.map(function (l, i) { return h('p', { key: i, style: { margin: i ? '6px 0 0' : 0 } }, l); }), gaugeEl) : null,
               h('div', { style: { display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' } },
                 !lines.length ? h('button', { type: 'button', onClick: function () { setChalReveal(true); }, style: btnBase }, I('chal_show_answer')) : null,
                 h('button', { type: 'button', onClick: function () { setChalLocked(null); setChalReveal(false); setChalGuess(''); chalCountedRef.current = false; }, style: btnBase }, I('chal_reset'))))));
@@ -1111,12 +1153,16 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         if (!/^https:\/\/\S+/i.test(url)) { setCustomErr(W('custom_err_url')); return; }
         var base = { id: 'custom', emoji: '🖼️', name: W('custom_name'), source: '', credit: W('custom_credit'), link: url, meta: url, notice: W('custom_notice'), wonder: W('custom_wonder') };
         if (/info\.json(\?|$)/i.test(url)) {
-          fetch(url, { mode: 'cors' }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (info) {
+          var zgCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          var zgTimer = zgCtrl ? setTimeout(function () { zgCtrl.abort(); }, 12000) : null;
+          var clearZgTimer = function () { if (zgTimer !== null) { clearTimeout(zgTimer); zgTimer = null; } };
+          fetch(url, zgCtrl ? { mode: 'cors', signal: zgCtrl.signal } : { mode: 'cors' }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (info) {
+            clearZgTimer();
             if (!info || !info.width || !info.height) throw new Error('bad info');
             setCustomItem(Object.assign(base, { type: 'iiif', cors: true, width: info.width, height: info.height, src: url.replace(/\/info\.json.*$/i, '') }));
             setNote('custom', { notice: '', wonder: '', feedback: '', pins: [] });
             openImage('custom');
-          }).catch(function () { setCustomErr(W('custom_err_iiif')); });
+          }).catch(function () { clearZgTimer(); setCustomErr(W('custom_err_iiif')); });
           return;
         }
         setCustomItem(Object.assign(base, { type: 'image', cors: false, src: url }));
@@ -1189,52 +1235,145 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       // The zoom trio carries a single glyph each, so it needs an explicit size
       // or it reads as three cramped specks next to a worded button.
       var zoomBtn = Object.assign({}, chipBtn, { minWidth: 38, minHeight: 34, padding: '4px 8px', fontSize: '0.9375rem', lineHeight: 1 });
-      var card = { background: P.panel2, border: '1px solid ' + P.line, borderRadius: 10, padding: '9px 11px', fontSize: '0.8125rem', lineHeight: 1.5, color: P.text };
-      var ta = { width: '100%', minHeight: 84, background: P.bg, border: '1px solid ' + P.line, color: P.text, borderRadius: 8, padding: '8px 10px', fontSize: '0.8125rem', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' };
+      var card = { background: P.panel2, border: '1px solid ' + P.line, borderRadius: 10, padding: '10px 12px', fontSize: '0.8125rem', lineHeight: 1.5, color: P.text };
+      var ta = { width: '100%', minHeight: 88, background: P.bg, border: '1px solid ' + P.line, color: P.text, borderRadius: 8, padding: '8px 10px', fontSize: '0.8125rem', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' };
+
+      // Live observatory stats computed from saved notes
+      var observedCount = 0, totalPins = 0, totalNotes = 0;
+      IMAGES.forEach(function (it) {
+        var n = savedNotes[it.id];
+        if (!n) return;
+        var hasN = !!((n.notice || '').trim() || (n.wonder || '').trim() || (n.feedback || '').trim());
+        var pc = (n.pins && n.pins.length) || 0;
+        if (hasN || pc) observedCount++;
+        if (hasN) totalNotes++;
+        totalPins += pc;
+      });
+
+      function removePinAt(idx) {
+        if (!current || !mem || !mem.pins) return;
+        var nextPins = mem.pins.filter(function (_, i) { return i !== idx; });
+        setNote(current.id, { pins: nextPins });
+        say(W('pin_removed_sr', { n: idx + 1 }));
+      }
+
+      // Optical reticle fallback SVG behind exhibition thumbnails
+      function renderOpticalBackdrop(emoji, hasScale) {
+        return h('svg', {
+          viewBox: '0 0 240 124', 'aria-hidden': 'true', focusable: 'false',
+          style: { position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }
+        },
+          h('rect', { width: 240, height: 124, fill: theme === 'contrast' ? '#000000' : '#090f1d' }),
+          h('circle', { cx: 120, cy: 62, r: 44, fill: 'none', stroke: theme === 'contrast' ? '#fbbf24' : 'rgba(56,189,248,0.28)', strokeWidth: 1, strokeDasharray: '4 4' }),
+          h('circle', { cx: 120, cy: 62, r: 22, fill: 'none', stroke: theme === 'contrast' ? '#ffffff' : 'rgba(148,163,184,0.25)', strokeWidth: 1 }),
+          h('line', { x1: 60, y1: 62, x2: 180, y2: 62, stroke: 'rgba(148,163,184,0.2)', strokeWidth: 1 }),
+          h('line', { x1: 120, y1: 14, x2: 120, y2: 110, stroke: 'rgba(148,163,184,0.2)', strokeWidth: 1 }),
+          hasScale ? h('line', { x1: 18, y1: 108, x2: 66, y2: 108, stroke: P.accent, strokeWidth: 2 }) : null
+        );
+      }
 
       function renderPicker() {
-        return h('div', null,
-          h('p', { style: { fontSize: '0.8125rem', color: P.dim, margin: '0 0 10px', lineHeight: 1.5 } }, W('picker_heading')),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 } },
-            IMAGES.map(function (s) {
+        var FILTERS = [
+          { id: 'all', label: t('stem.zoomGallery.coll_all', 'All Artifacts') + ' (' + IMAGES.length + ')' },
+          { id: 'space', label: '🌌 ' + t('stem.zoomGallery.coll_space', 'Space & Cosmos') },
+          { id: 'museum', label: '🏛️ ' + t('stem.zoomGallery.coll_museum', 'Museum & Maps') },
+          { id: 'micro', label: '❄️ ' + t('stem.zoomGallery.coll_micro', 'Micro & Nature') },
+          { id: 'scale', label: '📏 ' + t('stem.zoomGallery.coll_scale', 'Scale Challenges') }
+        ];
+        var list = IMAGES.filter(function (s) {
+          if (collectionFilter === 'all') return true;
+          if (collectionFilter === 'scale') return !!s.scale;
+          return ZG_COLLECTIONS[s.id] === collectionFilter;
+        });
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('p', { style: { fontSize: '0.8125rem', color: P.dim, margin: 0, lineHeight: 1.5 } }, W('picker_heading')),
+          // Collection filter bar
+          h('div', { role: 'group', 'aria-label': t('stem.zoomGallery.filter_collection', 'Filter gallery by collection'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            FILTERS.map(function (f) {
+              var sel = collectionFilter === f.id;
+              return h('button', {
+                key: f.id, type: 'button', 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function () { setCollectionFilter(f.id); },
+                style: Object.assign({}, btnBase, {
+                  borderRadius: 999, padding: '6px 12px', fontSize: '0.75rem',
+                  background: sel ? P.accentBtn : P.panel,
+                  color: sel ? P.accentFg : P.text,
+                  borderColor: sel ? P.accentBtn : P.line
+                })
+              }, f.label);
+            })
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(216px, 1fr))', gap: 12 } },
+            list.map(function (s) {
               var thumbUrl = s.thumb || (s.type === 'iiif' ? s.src + '/full/320,/0/default.jpg' : null);
-              return h('button', { key: s.id, type: 'button', onClick: function () { openImage(s.id); },
+              var n = savedNotes[s.id];
+              var pinCnt = (n && n.pins && n.pins.length) || 0;
+              var hasObs = !!(n && ((n.notice || '').trim() || (n.wonder || '').trim()));
+              var resLabel = (s.width && s.height) ? (s.width.toLocaleString('en-US') + '×' + s.height.toLocaleString('en-US')) : '';
+              return h('button', { key: s.id, type: 'button', className: 'zg-card', onClick: function () { openImage(s.id); },
                 'aria-label': imgText(s, 'name'),
-                // A column so the badge sits on the card's own bottom edge; with
-                // captions of different lengths the badges were landing at a
-                // different height in every card.
-                style: { background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: '0 0 10px', cursor: 'pointer', textAlign: 'left', color: P.text, font: 'inherit', overflow: 'hidden', display: 'flex', flexDirection: 'column' } },
-                thumbUrl ? h('img', { src: thumbUrl, alt: '', loading: 'lazy', style: { display: 'block', width: '100%', height: 120, objectFit: 'cover', background: '#000' },
-                  onError: function (e) { try { e.currentTarget.style.display = 'none'; } catch (_) {} } }) : null,
-                h('div', { style: { fontWeight: 700, fontSize: '0.8125rem', margin: '8px 12px 3px' } }, s.emoji + ' ' + imgText(s, 'name')),
-                h('div', { style: { fontSize: '0.6875rem', color: P.dim, lineHeight: 1.4, margin: '0 12px' } }, imgText(s, 'meta') + ' · ' + s.source),
-                h('span', { style: { display: 'inline-block', alignSelf: 'flex-start', marginTop: 'auto', fontSize: '0.625rem', fontWeight: 700, color: P.accent, border: '1px solid ' + P.accent, borderRadius: 999, padding: '1px 7px', margin: 'auto 12px 0' } }, s.type === 'iiif' ? W('badge_deep') : W('badge_photo'))
+                style: { background: P.panel, border: '1px solid ' + (hasObs ? P.ok : P.line), borderRadius: 14, padding: '0 0 11px', cursor: 'pointer', textAlign: 'left', color: P.text, font: 'inherit', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: theme === 'contrast' ? 'none' : '0 4px 12px -6px rgba(2,6,23,0.28)' } },
+                // Visual thumbnail frame with optical reticle backdrop
+                h('div', { style: { position: 'relative', width: '100%', height: 124, background: '#090f1d', overflow: 'hidden' } },
+                  renderOpticalBackdrop(s.emoji, !!s.scale),
+                  thumbUrl ? h('img', { src: thumbUrl, alt: '', loading: 'lazy', style: { position: 'relative', zIndex: 1, display: 'block', width: '100%', height: '100%', objectFit: 'cover' },
+                    onError: function (e) { try { e.currentTarget.style.display = 'none'; } catch (_) {} } }) : null
+                ),
+                h('div', { style: { fontWeight: 800, fontSize: '0.84rem', margin: '10px 12px 4px', lineHeight: 1.3 } }, s.emoji + ' ' + imgText(s, 'name')),
+                h('div', { style: { fontSize: '0.71875rem', color: P.dim, lineHeight: 1.45, margin: '0 12px 10px' } }, imgText(s, 'meta') + ' · ' + s.source),
+                // Metadata pill footer (aligned cleanly to bottom of card)
+                h('div', { style: { marginTop: 'auto', padding: '0 12px', display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' } },
+                  h('span', { style: { display: 'inline-block', fontSize: '0.625rem', fontWeight: 700, color: P.accent, border: '1px solid ' + P.accent, borderRadius: 999, padding: '1px 7px' } }, s.type === 'iiif' ? W('badge_deep') : W('badge_photo')),
+                  s.scale ? h('span', { style: { display: 'inline-block', fontSize: '0.625rem', fontWeight: 700, color: P.pin, border: '1px solid ' + P.pin, borderRadius: 999, padding: '1px 7px' } }, '📏 ' + t('stem.zoomGallery.badge_scale', 'scale')) : null,
+                  hasObs ? h('span', { style: { display: 'inline-block', fontSize: '0.625rem', fontWeight: 700, color: P.ok, border: '1px solid ' + P.ok, borderRadius: 999, padding: '1px 7px' } }, '✓ ' + (pinCnt ? pinCnt + '📍' : t('stem.zoomGallery.badge_noted', 'noted'))) : null,
+                  resLabel ? h('span', { style: { marginLeft: 'auto', fontSize: '0.625rem', color: P.dim, fontFamily: 'ui-monospace, SFMono-Regular, monospace' } }, resLabel) : null
+                )
               );
             })
           ),
-          h('div', { style: { marginTop: 14, background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: '0.8125rem', color: P.text } }, W('custom_heading')),
-            h('p', { style: { margin: '0 0 8px', fontSize: '0.71875rem', color: P.dim, lineHeight: 1.45 } }, W('custom_help')),
+          h('div', { style: { marginTop: 4, background: P.panel, border: '1px solid ' + P.line, borderRadius: 14, padding: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: '0.84rem', fontWeight: 800, color: P.text } }, '🔗 ' + W('custom_heading')),
+            h('p', { style: { margin: '0 0 10px', fontSize: '0.75rem', color: P.dim, lineHeight: 1.5 } }, W('custom_help')),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('input', { type: 'url', value: customUrl, placeholder: W('custom_placeholder'), 'aria-label': t('stem.zoomGallery.custom_input_aria', WIN.custom_input_aria),
                 onChange: function (e) { setCustomUrl(e.target.value); },
                 onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); openCustom(); } },
-                style: { flex: '1 1 260px', background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '7px 9px', fontSize: '0.8125rem' } }),
+                style: { flex: '1 1 260px', minWidth: 0, background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '8px 10px', fontSize: '0.8125rem' } }),
               h('button', { type: 'button', onClick: openCustom, style: goBtn }, W('custom_open'))
             ),
-            customErr ? h('div', { role: 'alert', style: { color: P.warn, fontSize: '0.71875rem', marginTop: 6 } }, customErr) : null
+            customErr ? h('div', { role: 'alert', style: { color: P.warn, fontSize: '0.75rem', marginTop: 6, fontWeight: 600 } }, customErr) : null
           )
         );
       }
 
       function renderCoach() {
-        if (!current || !mem) return h('div', { style: card }, W('intro_card'));
+        if (!current || !mem) return h('div', { style: card },
+          h('div', { style: { fontWeight: 800, marginBottom: 4, color: P.text } }, '🔭 ' + t('stem.zoomGallery.coach_ready', 'Notice → Wonder → Coach')),
+          h('div', null, W('intro_card'))
+        );
+        var doneNotice = !!(mem.notice || '').trim();
+        var doneWonder = !!(mem.wonder || '').trim();
+        var doneCoach = !!mem.feedback;
         var tabBtn = function (key, label) {
           var sel = step === key;
-          var done = key === 'notice' ? !!(mem.notice || '').trim() : key === 'wonder' ? !!(mem.wonder || '').trim() : !!mem.feedback;
+          var done = key === 'notice' ? doneNotice : key === 'wonder' ? doneWonder : doneCoach;
           return h('button', { key: key, role: 'tab', 'aria-selected': sel ? 'true' : 'false', onClick: function () { setStep(key); },
-            style: Object.assign({}, btnBase, { flex: 1, padding: '6px 4px', fontSize: '0.71875rem', background: sel ? P.selBg : P.panel2, color: sel ? P.selFg : (done ? P.ok : P.dim), borderColor: sel ? P.accent : P.line }) }, label);
+            style: Object.assign({}, btnBase, { flex: 1, padding: '7px 4px', fontSize: '0.71875rem', background: sel ? P.selBg : P.panel2, color: sel ? P.selFg : (done ? P.ok : P.dim), borderColor: sel ? P.accent : (done ? P.ok : P.line) }) },
+            (done && !sel ? '✓ ' : '') + label);
         };
+        var pinChips = (mem.pins && mem.pins.length) ? h('div', { key: 'pins', style: { display: 'flex', flexDirection: 'column', gap: 5 } },
+          h('div', { style: { fontSize: '0.71875rem', fontWeight: 700, color: P.dim } }, '📍 ' + W('pins_heading') + ' (' + mem.pins.length + ')'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5 } },
+            mem.pins.map(function (p, i) {
+              return h('span', { key: i, style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.6875rem', padding: '2px 7px', borderRadius: 999, background: P.bg, border: '1px solid ' + P.line, color: P.text } },
+                h('span', { style: { fontWeight: 800, color: P.pin } }, '#' + (i + 1)),
+                h('span', null, Math.round(p.x * 100) + '%, ' + Math.round(p.y * 100) + '% · ' + p.z + '×'),
+                h('button', { type: 'button', onClick: function () { removePinAt(i); }, 'aria-label': W('pin_remove', { n: i + 1 }), title: W('pin_remove', { n: i + 1 }),
+                  style: { border: 'none', background: 'transparent', color: P.dim, cursor: 'pointer', fontWeight: 800, padding: '0 2px', lineHeight: 1 } }, '×')
+              );
+            })
+          )
+        ) : null;
         var body;
         if (step === 'notice') {
           body = [
@@ -1244,7 +1383,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 speakBtn('notice', imgText(current, 'notice'), W('read_prompt')))),
             h('textarea', { key: 'ta', value: mem.notice, 'aria-label': t('stem.zoomGallery.notice_label', WIN.notice_label), placeholder: W('notice_placeholder'), style: ta,
               onChange: function (e) { setNote(current.id, { notice: e.target.value }); } }),
-            pinsText(mem) ? h('div', { key: 'pins', style: { fontSize: '0.75rem', color: P.dim, lineHeight: 1.5, whiteSpace: 'pre-wrap' } }, h('b', null, W('pins_heading')), '\n' + pinsText(mem)) : null,
+            pinChips,
             h('button', { key: 'go', type: 'button', style: goBtn, onClick: function () { if ((mem.notice || '').trim()) bumpSlice('noticedCount'); setStep('wonder'); } }, W('to_wonder'))
           ];
         } else if (step === 'wonder') {
@@ -1271,10 +1410,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               speakBtn('feedback', mem.feedback) ? h('div', { style: { marginTop: 8 } }, speakBtn('feedback', mem.feedback)) : null) : null,
             h('div', { key: 'row', style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
               h('button', { type: 'button', style: btnBase, onClick: copyNotes }, copied || W('copy_notes')),
-              h('span', { style: { fontSize: '0.65625rem', color: P.dim } }, I('notes_saved')))
+              h('span', { style: { fontSize: '0.6875rem', color: P.dim } }, I('notes_saved')))
           ];
         }
+        var doneCount = (doneNotice ? 1 : 0) + (doneWonder ? 1 : 0) + (doneCoach ? 1 : 0);
         return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          // Micro progress bar across the 3 Notice-Wonder-Coach stages
+          h('div', { style: { height: 5, borderRadius: 999, background: P.bg, border: '1px solid ' + P.softLine, overflow: 'hidden' }, 'aria-hidden': 'true' },
+            h('div', { style: { width: Math.round((doneCount / 3) * 100) + '%', height: '100%', background: P.ok, transition: 'width 0.2s ease' } })
+          ),
           h('div', { role: 'tablist', 'aria-label': t('stem.zoomGallery.steps_aria', WIN.steps_aria), style: { display: 'flex', gap: 4 } }, tabBtn('notice', W('step_notice')), tabBtn('wonder', W('step_wonder')), tabBtn('coach', W('step_coach'))),
           body
         );
@@ -1287,46 +1431,54 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         else if (imgState !== 'open') stageMsg = W('loading', { name: imgText(current, 'name') });
       }
 
-      return h('div', { ref: wrapRef, className: 'flex flex-col gap-3 animate-in fade-in duration-300',
+      return h('div', { id: 'allo-zoom-gallery', ref: wrapRef, className: 'flex flex-col gap-3 animate-in fade-in duration-300',
         // The fullscreen target the gallery's button resolves with closest().
         'data-allo-fs-stage': 'true',
         // Painted ground: the host card is white in both themes, and these inks assume slate.
-        style: { background: P.bg, color: P.text, borderRadius: 14, padding: 14, minWidth: 0 } },
-        h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
-          typeof setStemLabTool === 'function' && h('button', { onClick: returnToCatalog, type: 'button', style: btnBase, 'aria-label': t('stem.zoomGallery.back_to_tools', INL.back_to_tools) },
-            ArrowLeft ? h(ArrowLeft, { size: 14, style: { display: 'inline', verticalAlign: '-2px', marginRight: 4 } }) : null, t('stem.zoomGallery.back_to_tools', INL.back_to_tools)),
-          h('h2', { style: { margin: 0, fontSize: '1.0625rem', fontWeight: 700, color: P.text, flex: '1 1 auto' } }, I('title')),
-          current ? h('button', { type: 'button', style: btnBase, onClick: backToGallery }, W('back_gallery')) : null,
-          current && current.id !== 'custom' ? h('button', { type: 'button', style: btnBase, onClick: copyLink, title: t('stem.zoomGallery.copy_link_title', INL.copy_link_title), 'aria-label': t('stem.zoomGallery.copy_link_title', INL.copy_link_title) },
-            linkState === 'copied' ? '✓ ' + I('link_copied') : I('copy_link')) : null,
-          h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: P.dim } },
-            h('span', { className: 'sr-only' }, t('stem.zoomGallery.select_label', WIN.select_label)),
-            h('select', { value: current && current.id !== 'custom' ? current.id : '', 'aria-label': t('stem.zoomGallery.select_label', WIN.select_label),
-              onChange: function (e) { if (e.target.value) openImage(e.target.value); },
-              // Narrower once an image is open: the row then also carries Gallery,
-              // Copy link and Fullscreen, and the full image name is in the credit
-              // bar. Measured 2026-09-13: one line at 1366 px, two from 1280 down.
-              style: { background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '6px 8px', fontSize: '0.8125rem', maxWidth: current ? 'min(30vw, 260px)' : '46vw' } },
-              h('option', { value: '' }, W('select_placeholder')),
-              IMAGES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + imgText(s, 'name')); }))),
-          h('button', { type: 'button', style: btnBase, onClick: function () { openPopout(current && current.id); }, title: t('stem.zoomGallery.pop_out_title', INL.pop_out_title), 'aria-label': t('stem.zoomGallery.pop_out_title', INL.pop_out_title) }, I('pop_out')),
-          // Labelled by the shared binder, which keeps the accessible name, the
-          // pressed state and the glyph in step with the real fullscreen state --
-          // including an Escape exit. Before this the button read "Fullscreen"
-          // even while the gallery filled the screen.
-          current && typeof window.__alloStemFS === 'function' ? h('button', {
-            type: 'button', style: btnBase,
-            'data-allo-fs-btn': 'true',
-            'aria-pressed': 'false',
-            'aria-label': t('stem.zoomGallery.fullscreen_enter', INL.fullscreen_enter),
-            'data-fs-out': t('stem.zoomGallery.fullscreen_enter', INL.fullscreen_enter),
-            'data-fs-in': I('fullscreen_exit'),
-            ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
-            onClick: toggleFullscreen
-          }, h('span', { 'aria-hidden': 'true' }, '⛶'), ' ', I('fullscreen_label')) : null
+        style: { background: P.bg, color: P.text, borderRadius: 16, padding: 16, minWidth: 0, border: '1px solid ' + P.line } },
+        // Observatory Workbench Hero Header
+        h('div', { style: { background: P.heroBg, border: '1px solid ' + P.line, borderRadius: 14, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 } },
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
+            typeof setStemLabTool === 'function' && h('button', { onClick: returnToCatalog, type: 'button', style: btnBase, 'aria-label': t('stem.zoomGallery.back_to_tools', INL.back_to_tools) },
+              ArrowLeft ? h(ArrowLeft, { size: 14, style: { display: 'inline', verticalAlign: '-2px', marginRight: 4 } }) : null, t('stem.zoomGallery.back_to_tools', INL.back_to_tools)),
+            h('div', { style: { flex: '1 1 200px', minWidth: 0 } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 } },
+                h('h2', { style: { margin: 0, fontSize: '1.125rem', fontWeight: 900, color: P.text, letterSpacing: '-0.01em' } }, I('title')),
+                h('span', { style: { fontSize: '0.6875rem', fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: P.panel, color: P.accent, border: '1px solid ' + P.accent } },
+                  current ? (current.source || t('stem.zoomGallery.custom_badge', 'Custom Image')) : t('stem.zoomGallery.observatory_badge', 'Deep-Zoom Observatory'))
+              )
+            ),
+            current ? h('button', { type: 'button', style: btnBase, onClick: backToGallery }, W('back_gallery')) : null,
+            current && current.id !== 'custom' ? h('button', { type: 'button', style: btnBase, onClick: copyLink, title: t('stem.zoomGallery.copy_link_title', INL.copy_link_title), 'aria-label': t('stem.zoomGallery.copy_link_title', INL.copy_link_title) },
+              linkState === 'copied' ? '✓ ' + I('link_copied') : I('copy_link')) : null,
+            h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: P.dim } },
+              h('span', { className: 'sr-only' }, t('stem.zoomGallery.select_label', WIN.select_label)),
+              h('select', { value: current && current.id !== 'custom' ? current.id : '', 'aria-label': t('stem.zoomGallery.select_label', WIN.select_label),
+                onChange: function (e) { if (e.target.value) openImage(e.target.value); },
+                style: { background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '6px 8px', fontSize: '0.8125rem', maxWidth: current ? 'min(30vw, 250px)' : '46vw' } },
+                h('option', { value: '' }, W('select_placeholder')),
+                IMAGES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + imgText(s, 'name')); }))),
+            h('button', { type: 'button', style: btnBase, onClick: function () { openPopout(current && current.id); }, title: t('stem.zoomGallery.pop_out_title', INL.pop_out_title), 'aria-label': t('stem.zoomGallery.pop_out_title', INL.pop_out_title) }, I('pop_out')),
+            current && typeof window.__alloStemFS === 'function' ? h('button', {
+              type: 'button', style: btnBase,
+              'data-allo-fs-btn': 'true',
+              'aria-pressed': 'false',
+              'aria-label': t('stem.zoomGallery.fullscreen_enter', INL.fullscreen_enter),
+              'data-fs-out': t('stem.zoomGallery.fullscreen_enter', INL.fullscreen_enter),
+              'data-fs-in': I('fullscreen_exit'),
+              ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+              onClick: toggleFullscreen
+            }, h('span', { 'aria-hidden': 'true' }, '⛶'), ' ', I('fullscreen_label')) : null
+          ),
+          !current ? h('p', { style: { margin: 0, fontSize: '0.8125rem', color: P.dim, lineHeight: 1.55 } }, I('blurb')) : null,
+          // Live metric pills strip
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: '0.71875rem', color: P.dim } },
+            h('span', { style: { padding: '2px 9px', borderRadius: 999, background: P.panel, border: '1px solid ' + P.softLine, color: P.text, fontWeight: 700 } }, '🖼️ ' + observedCount + '/' + IMAGES.length + ' ' + t('stem.zoomGallery.metric_observed', 'observed')),
+            h('span', { style: { padding: '2px 9px', borderRadius: 999, background: P.panel, border: '1px solid ' + P.softLine, color: P.text, fontWeight: 700 } }, '📍 ' + totalPins + ' ' + t('stem.zoomGallery.metric_pins', 'pins')),
+            h('span', { style: { padding: '2px 9px', borderRadius: 999, background: P.panel, border: '1px solid ' + P.softLine, color: P.text, fontWeight: 700 } }, '📝 ' + totalNotes + ' ' + t('stem.zoomGallery.metric_notes', 'notes')),
+            h('span', { style: { marginLeft: 'auto', fontSize: '0.71875rem', color: P.dim } }, aiOn ? '✨ ' + I('ai_inline_on') : '🌱 ' + I('ai_inline_off'))
+          )
         ),
-        !current ? h('p', { style: { margin: 0, fontSize: '0.8125rem', color: P.dim, lineHeight: 1.55 } }, I('blurb')) : null,
-        h('div', { style: { fontSize: '0.71875rem', color: P.dim } }, aiOn ? '✨ ' + I('ai_inline_on') : '🌱 ' + I('ai_inline_off')),
         popupState === 'blocked' ? h('p', { role: 'alert', style: { margin: 0, fontSize: '0.75rem', color: P.warn } }, I('blocked_note')) : null,
         linkState === 'failed' && current ? h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
           h('span', { style: { fontSize: '0.71875rem', color: P.dim } }, I('link_failed')),

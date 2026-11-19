@@ -2,6 +2,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { webcrypto } from 'node:crypto';
+import { deflateRawSync } from 'node:zlib';
 import { TextDecoder, TextEncoder } from 'node:util';
 import { JSDOM } from 'jsdom';
 
@@ -108,12 +109,14 @@ const weekly = (learner = 'BlueHeron7', n = 6) => WEEKS.slice(0, n).map((day, i)
 // The page in jsdom (as tests/packets_results_page.test.js opens it)
 // ---------------------------------------------------------------------------
 function openPage(options = {}) {
-  const dom = new JSDOM(read('packets-results.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/packets-results.html' });
+  const dom = new JSDOM(read('packets-results.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: options.url || 'https://packets.test/site/packets-results.html' });
   const w = dom.window, d = w.document;
   opened.push(w);
   const page = { w, d, files: [], downloads: [], reached: [] };
   w.TextEncoder = TextEncoder;
   w.TextDecoder = TextDecoder;
+  if (typeof globalThis.DecompressionStream === 'function') w.DecompressionStream = globalThis.DecompressionStream;
+  if (typeof globalThis.ReadableStream === 'function') w.ReadableStream = globalThis.ReadableStream;
   Object.defineProperty(w.crypto, 'subtle', { configurable: true, value: webcrypto.subtle });
   for (const name of ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource']) w[name] = function () { page.reached.push(name); throw new Error(name + ' was called'); };
   w.Blob = class { constructor(parts, opts) { this.body = parts.join(''); this.type = opts && opts.type; } };
@@ -122,7 +125,13 @@ function openPage(options = {}) {
   w.HTMLAnchorElement.prototype.click = function () { page.downloads.push({ name: this.getAttribute('download'), body: page.files[page.files.length - 1].body }); };
   w.HTMLElement.prototype.scrollIntoView = function () {};
   if (options.before) options.before(w);
-  for (const script of d.querySelectorAll('script[src]')) w.eval(read(script.getAttribute('src')));
+  for (const script of d.querySelectorAll('script[src]')) {
+    if (options.stubHandoff && script.getAttribute('src') === 'packets_handoff.js') {
+      w.AlloPacketHandoff = options.stubHandoff;
+      continue;
+    }
+    w.eval(read(script.getAttribute('src')));
+  }
   page.$ = (id) => d.getElementById(id);
   page.seen = (id) => !page.$(id).hidden && !page.$(id).closest('[hidden]');
   page.state = () => ['state-empty', 'state-check', 'state-results'].filter((id) => page.seen(id)).join(' ');
@@ -540,5 +549,235 @@ describe('a paused check: its seconds paused, and problems set aside are never c
     // A pause is a note that changes how to read the score: its dot has a ring.
     expect(page.measure(MATH).querySelectorAll('.chart-ring')).toHaveLength(1);
     expect(read('packets-results.js')).toContain("paused: 'paused; the problem on screen at each pause was set aside and not counted',");
+  });
+
+  it('registers read_along cleanly, guards drawLearner against unknown activities, and keeps Word Sounds Present-Export link beside Vocab misses', async () => {
+    const readAlongResult = practice({ sid: 'ra-1', answers: [{ activity: 'read_along', word: 'The fox ran.', target: 'read', picks: ['read'], missed: false }] });
+    readAlongResult.items[0].practice = 'read';
+    const parsedRa = await one(jsonOf(readAlongResult), 'ra.json');
+    expect(parsedRa.byActivity[0]).toMatchObject({ activity: 'read_along', name: 'Read along', strand: 'read_along' });
+
+    const page = openPage();
+    const vocabMiss = practice({ sid: 'vm-1', learner: 'BlueHeron7', answers: [{ activity: 'vocab_meaning', word: 'habitat', target: 'home', picks: ['cloud'], missed: true }] });
+    const wsMiss = practice({ sid: 'wm-1', learner: 'BlueHeron7', answers: [{ activity: 'isolation', word: 'ship', target: 'sh', picks: ['s'], missed: true }] });
+    const wsMiss2 = practice({ sid: 'wm-2', learner: 'RedFox4', answers: [{ activity: 'isolation', word: 'ship', target: 'sh', picks: ['s'], missed: true }] });
+    const unknownMiss = practice({ sid: 'um-1', learner: 'BlueHeron7', answers: [{ activity: 'custom_other_activity', word: 'alpha', target: 'a', picks: ['b'], missed: true }] });
+    await page.add([vocabMiss, wsMiss, wsMiss2, unknownMiss]);
+    const groupHrefs = [...page.d.querySelectorAll('#group-missed a')].map((a) => a.getAttribute('href'));
+    expect(groupHrefs).toContain('packets-present-export.html#words=habitat');
+    expect(groupHrefs).toContain('packets-present-export.html#words=ship');
+    expect(groupHrefs.some((h) => /alpha/.test(h))).toBe(false);
+    page.learner('BlueHeron7');
+    const learnerHrefs = page.links().map((a) => a.getAttribute('href'));
+    expect(learnerHrefs).toContain('packets-present-export.html#words=habitat');
+    expect(learnerHrefs).toContain('packets-present-export.html#words=ship');
+    expect(learnerHrefs.some((h) => /rehearse=.*alpha/.test(h))).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Wave 2B: .zip ingestion, #import-results handoff, progressive folds, remove+undo, manual merge, beforeunload
+// ---------------------------------------------------------------------------
+function makeZip(entries) {
+  const enc = new TextEncoder();
+  const locals = [];
+  const centrals = [];
+  let offset = 0;
+  for (const entry of entries) {
+    const nameBytes = enc.encode(entry.name);
+    const raw = typeof entry.data === 'string' ? enc.encode(entry.data) : new Uint8Array(entry.data);
+    const method = entry.method === 8 ? 8 : 0;
+    const body = method === 8 ? new Uint8Array(deflateRawSync(raw)) : raw;
+    const declaredSize = entry.fakeSize != null ? entry.fakeSize : raw.length;
+    const local = new Uint8Array(30 + nameBytes.length + body.length);
+    const lv = new DataView(local.buffer);
+    lv.setUint32(0, 0x04034b50, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint16(6, 0x0800, true);
+    lv.setUint16(8, method, true);
+    lv.setUint32(18, body.length, true);
+    lv.setUint32(22, declaredSize, true);
+    lv.setUint16(26, nameBytes.length, true);
+    local.set(nameBytes, 30);
+    local.set(body, 30 + nameBytes.length);
+    locals.push(local);
+
+    const central = new Uint8Array(46 + nameBytes.length);
+    const cv = new DataView(central.buffer);
+    cv.setUint32(0, 0x02014b50, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0x0800, true);
+    cv.setUint16(10, method, true);
+    cv.setUint32(20, body.length, true);
+    cv.setUint32(24, declaredSize, true);
+    cv.setUint16(28, nameBytes.length, true);
+    cv.setUint32(42, offset, true);
+    central.set(nameBytes, 46);
+    centrals.push(central);
+    offset += local.length;
+  }
+  const cdStart = offset;
+  let cdSize = 0;
+  for (const c of centrals) cdSize += c.length;
+  const eocd = new Uint8Array(22);
+  const ev = new DataView(eocd.buffer);
+  ev.setUint32(0, 0x06054b50, true);
+  ev.setUint16(8, entries.length, true);
+  ev.setUint16(10, entries.length, true);
+  ev.setUint32(12, cdSize, true);
+  ev.setUint32(16, cdStart, true);
+  const total = offset + cdSize + 22;
+  const out = new Uint8Array(total);
+  let pos = 0;
+  for (const l of locals) { out.set(l, pos); pos += l.length; }
+  for (const c of centrals) { out.set(c, pos); pos += c.length; }
+  out.set(eocd, pos);
+  return out;
+}
+
+describe('Wave 2B: direct .zip ingestion, #import-results handoff, folds, remove+undo, manual merge, and beforeunload', () => {
+  it('unpackZip reads STORE and DEFLATE CSV/JSON entries, skips macOS metadata, and blocks nested zips and forged zip-bombs', async () => {
+    const csvA = csvOf(practice({ sid: 'z-1', learner: 'BlueHeron7', day: '2026-11-03' }));
+    const jsonB = jsonOf(practice({ sid: 'z-2', learner: 'RedFox3', day: '2026-11-10' }));
+    const archive = makeZip([
+      { name: '__MACOSX/._a.csv', data: 'junk' },
+      { name: 'class/.DS_Store', data: 'junk' },
+      { name: 'class/a.csv', data: csvA, method: 0 },
+      { name: 'class/b.json', data: jsonB, method: 8 },
+      { name: 'class/nested.zip', data: 'PK\x03\x04' },
+    ]);
+    const unpacked = await reader.unpackZip(archive, { name: 'class-results.zip' });
+    expect(unpacked.why).toBe('');
+    expect(unpacked.entries.map((e) => e.name)).toEqual(['class/a.csv', 'class/b.json']);
+    expect(unpacked.skipped.some((r) => r.name === 'class/nested.zip' && /nested \.zip/i.test(r.why))).toBe(true);
+
+    // Forged header claiming 100 bytes for a 2.5 MB DEFLATE payload is aborted mid-stream.
+    const bombPayload = new Uint8Array(reader.MAX_BYTES + 1024);
+    const bombZip = makeZip([{ name: 'bomb.csv', data: bombPayload, method: 8, fakeSize: 100 }]);
+    const bombOut = await reader.unpackZip(bombZip, { name: 'bomb.zip' });
+    expect(bombOut.entries).toHaveLength(0);
+    expect(bombOut.skipped[0].why).toMatch(/larger than 2 MB/i);
+
+    // Dropping the .zip directly onto packets-results.html reads both student files seamlessly.
+    const page = openPage();
+    const zipFile = new page.w.File([archive], 'class-results.zip', { type: 'application/zip', lastModified: LAST_CHANGED });
+    await page.drop([zipFile]);
+    if (page.state() === 'state-check') page.$('show-results').click();
+    expect(page.state()).toBe('state-results');
+    expect(page.$('results-line').textContent).toContain('2 results from 2 students');
+  });
+
+  it('auto-ingests a handed-off results file via #import-results and clears the hash cleanly', async () => {
+    const csvA = csvOf(practice({ sid: 'ho-1', learner: 'BlueHeron7', day: '2026-11-12' }));
+    const page = openPage({
+      url: 'https://packets.test/site/packets-results.html#import-results',
+      stubHandoff: {
+        RESULTS_HASH: '#import-results',
+        take: async () => ({ name: 'handed.csv', bytes: new TextEncoder().encode(csvA).buffer, type: 'text/csv', lastModified: LAST_CHANGED }),
+      },
+    });
+    for (let i = 0; i < 400 && page.state() !== 'state-results'; i++) await new Promise((r) => setTimeout(r, 10));
+    expect(page.state()).toBe('state-results');
+    expect(page.$('results-line').textContent).toContain('1 result from 1 student');
+    expect(page.w.location.hash).toBe('');
+  });
+
+  it('folds Goal & aim line and Add a paper score by default, supports Remove + Undo, manual merge, and beforeunload only on unsaved edits', async () => {
+    const page = openPage();
+    await page.add([
+      practice({ sid: 'u-1', learner: 'BlueHeron7', day: '2026-11-03' }),
+      practice({ sid: 'u-2', learner: 'BlueHeron7', day: '2026-11-10' }),
+      practice({ sid: 'u-3', learner: 'SilverFox9', day: '2026-11-10' }),
+    ]);
+
+    // Before any edit, beforeunload does not trigger.
+    const evClean = new page.w.Event('beforeunload', { cancelable: true });
+    page.w.dispatchEvent(evClean);
+    expect(evClean.defaultPrevented).toBe(false);
+
+    page.learner('BlueHeron7');
+    const card = page.measure('Hearing sounds');
+    expect(card.querySelector('details.goal-fold').open).toBe(false);
+    expect(page.d.querySelector('details.paper-fold').open).toBe(false);
+
+    // Setting a goal marks unsavedEdits -> beforeunload prompts when keep is off.
+    page.type(card.querySelector('input.goal-input:not(.goal-date)'), '80');
+    const evDirty = new page.w.Event('beforeunload', { cancelable: true });
+    page.w.dispatchEvent(evDirty);
+    expect(evDirty.defaultPrevented).toBe(true);
+
+    // Saving the bundle clears unsavedEdits -> beforeunload stays quiet.
+    page.$('save-bundle').click();
+    const evSaved = new page.w.Event('beforeunload', { cancelable: true });
+    page.w.dispatchEvent(evSaved);
+    expect(evSaved.defaultPrevented).toBe(false);
+
+    // Row Remove + Undo restores the exact removed session.
+    const every = [...page.$('learner-body').querySelectorAll(':scope > .table-scroll table')].pop();
+    const removeBtn = every.querySelector('button.row-remove');
+    removeBtn.click();
+    expect(page.$('results-line').textContent).toContain('2 results');
+    expect(page.seen('results-undo')).toBe(true);
+    page.$('results-undo-btn').click();
+    expect(page.$('results-line').textContent).toContain('3 results');
+    expect(page.seen('results-undo')).toBe(false);
+
+    // Manual "Combine with another name" merges two distinct names (BlueHeron7 + SilverFox9).
+    page.$('open-check').click();
+    const fold = page.$('manual-merge');
+    expect(fold.hidden).toBe(false);
+    fold.open = true;
+    page.choose(page.$('merge-from'), 'silverfox9');
+    page.choose(page.$('merge-into'), 'blueheron7');
+    page.$('merge-go').click();
+    expect(page.$('said').textContent).toContain('counted as one student');
+    page.$('show-results').click();
+    expect(page.$('results-line').textContent).toContain('3 results from 1 student');
+  });
+
+  it('Wave 3B: guards Symbol Runner #rehearse= links for Stroop/subitize/flanker/math modes and non-alphanumeric tokens', async () => {
+    const stroopMiss = practice({
+      sid: 'sr-stroop-1',
+      learner: 'BlueHeron7',
+      packetId: 'symbol-runner-color_word_stroop-12345678',
+      title: 'Color Stroop',
+      answers: [pick('symbol_runner', 'RED', 'blue', ['red'], true)],
+    });
+    const invalidTokMiss = practice({
+      sid: 'sr-badtok-1',
+      learner: 'BlueHeron7',
+      packetId: 'symbol-runner-custom-12345678',
+      title: 'Arrows',
+      answers: [pick('symbol_runner', '←', '←', ['→'], true)],
+    });
+    const plainMiss = practice({
+      sid: 'sr-plain-1',
+      learner: 'RedFox3',
+      packetId: 'symbol-runner-confusable_letters-12345678',
+      title: 'Confusable letters',
+      answers: [pick('symbol_runner', 'b', 'b', ['d'], true), pick('symbol_runner', '13', '13', ['31'], true)],
+    });
+
+    const page = openPage();
+    await page.add([stroopMiss, invalidTokMiss, plainMiss]);
+
+    // Group view: Stroop routes to #mode=color_word_stroop (NOT #rehearse=blue), arrow token is omitted, plain b/13 emit #rehearse=13,b.
+    const groupHrefs = [...page.d.querySelectorAll('#group-missed a')].map((a) => a.getAttribute('href'));
+    expect(groupHrefs).toContain('packets-symbol-runner.html#mode=color_word_stroop');
+    expect(groupHrefs.some((h) => /#rehearse=.*blue/i.test(h))).toBe(false);
+    expect(groupHrefs.some((h) => /#rehearse=.*%E2%86%90/i.test(h))).toBe(false);
+    expect(groupHrefs.some((h) => /^packets-symbol-runner\.html#rehearse=/.test(h) && /b/.test(h) && /13/.test(h))).toBe(true);
+
+    // Individual learner (BlueHeron7 has only Stroop + invalid arrow token): emits #mode=color_word_stroop and ZERO #rehearse=.
+    page.learner('BlueHeron7');
+    const blueHrefs = [...page.$('learner-body').querySelectorAll('a.nav-new-tab')].map((a) => a.getAttribute('href'));
+    expect(blueHrefs).toContain('packets-symbol-runner.html#mode=color_word_stroop');
+    expect(blueHrefs.some((h) => /packets-symbol-runner\.html#rehearse=/.test(h))).toBe(false);
+
+    // Individual learner (RedFox3 has plain valid symbols): emits #rehearse=b,13.
+    page.learner('RedFox3');
+    const foxHrefs = [...page.$('learner-body').querySelectorAll('a.nav-new-tab')].map((a) => a.getAttribute('href'));
+    expect(foxHrefs).toContain('packets-symbol-runner.html#rehearse=b%2C13');
   });
 });

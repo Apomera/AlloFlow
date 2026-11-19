@@ -20,6 +20,7 @@ const createTTS = deps => {
     state,
     // { queue, botQueue, urlCache, rateLimitedUntil }
     apiKey,
+    getApiKey,
     GEMINI_MODELS,
     AVAILABLE_VOICES,
     _isCanvasEnv,
@@ -37,6 +38,14 @@ const createTTS = deps => {
     // React callback
     setShowKokoroOfferModal
   } = deps;
+  const _getApiKey = () => {
+    try {
+      const live = typeof getApiKey === 'function' ? getApiKey() : apiKey;
+      return typeof live === 'string' ? live : live ? String(live) : '';
+    } catch (_) {
+      return typeof apiKey === 'string' ? apiKey : '';
+    }
+  };
 
   // The managed AI v1 contract permits reviewed text inference only. These
   // legacy speech routes bypass AIProvider, so enforce its media denial at
@@ -191,7 +200,8 @@ const createTTS = deps => {
   // 400). Either way the cloud leg is unusable and keyless routing — local
   // Kokoro reroute + skip-doomed-calls — must engage.
   const _cloudKeyUsable = () => {
-    if (!apiKey || apiKey === 'desktop-user-provided') return false;
+    const liveKey = _getApiKey();
+    if (!liveKey || liveKey === 'desktop-user-provided') return false;
     if (typeof window !== 'undefined' && window.__ttsGeminiAuthFailed) return false;
     return true;
   };
@@ -568,12 +578,13 @@ const createTTS = deps => {
           try {
             const fetchStartedAt = Date.now();
             _assertCloudTtsAllowed();
+            const liveKey = _getApiKey();
             const response = await awaitTtsHardDeadline(fetch(url, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                ...(apiKey ? {
-                  'x-goog-api-key': apiKey
+                ...(liveKey ? {
+                  'x-goog-api-key': liveKey
                 } : {})
               },
               body: JSON.stringify(payload),
@@ -2070,6 +2081,10 @@ const createTTS = deps => {
         for (let botAttempt = 0; botAttempt < botCanvasMaxAttempts; botAttempt++) {
           try {
             const botCanvasGeminiVoice = _resolveGeminiVoice(voiceName);
+            const canvasCacheKey = JSON.stringify([String(text || ''), botCanvasGeminiVoice, _directLanguage, 'natural-rate-v1', _directModel]);
+            if (state.urlCache && state.urlCache.has(canvasCacheKey)) {
+              return state.urlCache.get(canvasCacheKey);
+            }
             const ttsResult = await fetchTTSBytes(text, botCanvasGeminiVoice, speed, _directLanguage, _directSignal, 'interactive', _directModel);
             if (ttsResult) {
               const {
@@ -2079,7 +2094,9 @@ const createTTS = deps => {
               const blob = new Blob([wavBuffer], {
                 type: 'audio/wav'
               });
-              return URL.createObjectURL(blob);
+              const url = URL.createObjectURL(blob);
+              _cacheSet(canvasCacheKey, url);
+              return url;
             }
             throw new Error('fetchTTSBytes returned empty result');
           } catch (e) {
@@ -2280,7 +2297,7 @@ const createTTS = deps => {
           console.log(`[TTS-Bot] ⏳ Waiting ${backoffDelay}ms before retry...`);
           await waitForTtsDelay(backoffDelay, _directSignal);
         }
-        const queuedTask = state.botQueue.then(async () => {
+        const queuedTask = (state.botQueue || Promise.resolve()).then(async () => {
           _assertCloudTtsAllowed();
           console.log("[TTS-Bot] 🔄 Queue slot acquired, making API call...");
           const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${_directModel}:generateContent`;
@@ -2329,15 +2346,17 @@ const createTTS = deps => {
               once: true
             });
           } catch (_) {}
+          const fetchStartedAt = Date.now();
           let response;
           try {
             _assertCloudTtsAllowed();
+            const liveKey = _getApiKey();
             response = await awaitTtsHardDeadline(fetch(url, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                ...(apiKey ? {
-                  'x-goog-api-key': apiKey
+                ...(liveKey ? {
+                  'x-goog-api-key': liveKey
                 } : {})
               },
               body: JSON.stringify(payload),
@@ -2361,6 +2380,7 @@ const createTTS = deps => {
             } catch (_) {}
           }
           console.log("[TTS-Bot] API response HTTP status:", response.status);
+          const remainingBodyMs = () => Math.max(1, TTS_FETCH_TIMEOUT_INTERACTIVE_MS - (Date.now() - fetchStartedAt));
           if (!response.ok) {
             if (response.status === 429) {
               state.rateLimitedUntil = Date.now() + 60000;
@@ -2371,7 +2391,12 @@ const createTTS = deps => {
               console.warn(`[TTS-Bot] ❌ Transient error (${response.status}). Will retry...`);
               throw new Error(`TTS Transient Error (${response.status})`);
             }
-            const errorBody = await response.text().catch(() => '');
+            const errorBody = await awaitTtsHardDeadline(response.text().catch(() => ''), remainingBodyMs(), () => {
+              fetchTimedOut = true;
+              try {
+                fetchController.abort();
+              } catch (_) {}
+            }, 'Direct TTS error body timed out', _directSignal).catch(() => '');
             if (response.status === 400 && !state.ttsTemperatureUnsupported && /temperature/i.test(errorBody)) {
               state.ttsTemperatureUnsupported = true;
               console.warn('[TTS-Bot] API rejected temperature param — disabled; retry will go without it.');
@@ -2390,7 +2415,12 @@ const createTTS = deps => {
             httpError.code = 'tts-http-error';
             throw httpError;
           }
-          const data = await response.json();
+          const data = await awaitTtsHardDeadline(response.json(), remainingBodyMs(), () => {
+            fetchTimedOut = true;
+            try {
+              fetchController.abort();
+            } catch (_) {}
+          }, 'Direct TTS JSON body timed out', _directSignal);
           if (data.promptFeedback?.blockReason) {
             console.error("[TTS-Bot] ❌ Content blocked by the provider.");
             throw new Error(`TTS Content Blocked: ${data.promptFeedback.blockReason}`);
@@ -2414,7 +2444,7 @@ const createTTS = deps => {
           };
         });
         state.botQueue = queuedTask.catch(() => {});
-        const ttsResult = await queuedTask;
+        const ttsResult = await awaitTtsHardDeadline(queuedTask, TTS_FETCH_TIMEOUT_INTERACTIVE_MS + 15000, null, 'Direct TTS queue wait timed out', _directSignal);
         if (!ttsResult) {
           throw new Error("[TTS-Bot] fetchTTSBytes returned no audio data");
         }
@@ -2433,14 +2463,40 @@ const createTTS = deps => {
         if (_isDirectAbortError(e) || _isManagedTtsBlocked(e)) throw e;
         if (typeof window !== 'undefined' && window.__ttsGeminiAuthFailed) return null;
         lastError = e;
-        if (e.message?.includes('Missing API Key')) {
+        const errMsg = String(e?.message || '');
+        if (errMsg.includes('Missing API Key')) {
           console.error("[TTS-Bot] ❌ Missing API Key, aborting.");
           throw e;
+        }
+        if (errMsg.includes('429') || errMsg.includes('Rate Limited')) {
+          console.warn('[TTS-Bot] Stopping retries during 429 cooldown.');
+          break;
         }
         if (attempt < maxRetries) {
           console.warn(`[TTS-Bot] ⚠️ Attempt ${attempt + 1} failed, will retry with backoff...`, _ttsDiagnosticCode(e));
         }
       }
+    }
+    // If an on-device engine is already loaded, fall back to it cleanly instead of failing.
+    try {
+      if (typeof window !== 'undefined' && window._kokoroTTS?.ready && !_directSignal?.aborted) {
+        const kokoroUrl = await window._kokoroTTS.speak(text, {
+          speed,
+          voice: voiceName,
+          signal: _directSignal
+        });
+        if (kokoroUrl) return kokoroUrl;
+      }
+      if (typeof window !== 'undefined' && window._piperTTS?.ready && window._piperTTS.supportsLanguage?.(_directLanguage) && !_directSignal?.aborted) {
+        const piperUrl = await window._piperTTS.speak(text, {
+          speed,
+          language: _directLanguage,
+          signal: _directSignal
+        });
+        if (piperUrl) return piperUrl;
+      }
+    } catch (localErr) {
+      if (_isDirectAbortError(localErr)) throw localErr;
     }
     console.error("[TTS-Bot] ❌ All retries exhausted after backoff:", _ttsDiagnosticCode(lastError));
     throw lastError;

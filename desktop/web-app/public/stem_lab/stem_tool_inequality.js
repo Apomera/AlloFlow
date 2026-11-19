@@ -1323,24 +1323,28 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Keyboard shortcuts ──
+      var iqKeyHandlerRef = React.useRef(null);
+      iqKeyHandlerRef.current = function(e) {
+        // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
+        var iqRoot = document.querySelector('[data-inequality-root]');
+        if (!iqRoot || !e.target || !iqRoot.contains(e.target)) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        var key = e.key.toLowerCase();
+        if (key === '1') { e.preventDefault(); upd('graphMode', '1d'); trackMode('1d'); }
+        if (key === '2') { e.preventDefault(); upd('graphMode', '2d'); trackMode('2d'); }
+        if (key === 'q') { e.preventDefault(); iqStartQuiz(); }
+        if (key === '?' || (e.shiftKey && e.key === '/')) { e.preventDefault(); askAI(); }
+        if (key === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
+        if (key === 'c') { e.preventDefault(); upd('showCoach', !showCoach); }
+      };
       React.useEffect(function() {
         function handleKey(e) {
-          // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
-          var iqRoot = document.querySelector('[data-inequality-root]');
-          if (!iqRoot || !e.target || !iqRoot.contains(e.target)) return;
-          if (e.ctrlKey || e.metaKey || e.altKey) return;
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-          var key = e.key.toLowerCase();
-          if (key === '1') { e.preventDefault(); upd('graphMode', '1d'); trackMode('1d'); }
-          if (key === '2') { e.preventDefault(); upd('graphMode', '2d'); trackMode('2d'); }
-          if (key === 'q') { e.preventDefault(); iqStartQuiz(); }
-          if (key === '?' || (e.shiftKey && e.key === '/')) { e.preventDefault(); askAI(); }
-          if (key === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
-          if (key === 'c') { e.preventDefault(); upd('showCoach', !showCoach); }
+          if (typeof iqKeyHandlerRef.current === 'function') iqKeyHandlerRef.current(e);
         }
         window.addEventListener('keydown', handleKey);
         return function() { window.removeEventListener('keydown', handleKey); };
-      });
+      }, []);
 
       // ── Earned badges ──
       var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
@@ -1424,28 +1428,38 @@ window.StemLab = window.StemLab || {
         var sx = function(x) { return pad + ((x - R.min) / (R.max - R.min)) * (W - 2 * pad); };
         var vis = function(x) { return x >= R.min && x <= R.max; };
         var csx = function(x) { return sx(Math.max(R.min, Math.min(R.max, x))); };
-        var ink = isDark ? '#f0abfc' : '#a21caf', mark = '#d946ef', hollow = isDark ? '#0f172a' : '#ffffff';
-        var tickInk = isDark ? '#94a3b8' : '#64748b', axisInk = isDark ? '#e2e8f0' : '#1e293b';
+        var ink = isContrast ? '#ffff00' : (isDark ? '#f0abfc' : '#86198f');
+        var mark = isContrast ? '#00ff00' : '#d946ef';
+        var hollow = isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff');
+        var tickInk = isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569');
+        var axisInk = isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a');
+        var gridInk = isContrast ? '#333333' : (isDark ? '#1e293b' : '#f1f5f9');
         var span = R.max - R.min, tickStep = Math.max(1, Math.ceil(span / 40));
         var lblStep = Math.max(tickStep, Math.ceil(span / 20 / tickStep) * tickStep);
         var kids = [], v = (ineq && ineq.v) || 'x';
+        var gradId = 'iqBandGrad_' + (o.id || 'main');
+        kids.push(h('defs', { key: 'defs' },
+          h('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: mark, stopOpacity: isContrast ? '0.32' : '0.24' }),
+            h('stop', { offset: '100%', stopColor: isContrast ? '#00ff00' : '#a855f7', stopOpacity: isContrast ? '0.16' : '0.07' }))));
         var band = function(key, x0, x1) {
           var a = csx(x0), b = csx(x1);
-          if (b - a > 0.5) kids.push(h('rect', { key: key, x: a, y: 25, width: b - a, height: 50, fill: 'rgba(217,70,239,0.14)', rx: 4 }));
+          if (b - a > 0.5) kids.push(h('rect', { key: key, x: a, y: 26, width: b - a, height: 48, fill: 'url(#' + gradId + ')', rx: 6 }));
         };
         var seg = function(key, x0, x1, gapL, gapR) {
           var a = csx(x0) + (gapL && vis(x0) ? 8 : 0), b = csx(x1) - (gapR && vis(x1) ? 8 : 0);
-          if (b - a > 0.5) kids.push(h('line', { key: key, x1: a, y1: 50, x2: b, y2: 50, stroke: mark, strokeWidth: 3.5 }));
+          if (b - a > 0.5) kids.push(h('line', { key: key, x1: a, y1: 50, x2: b, y2: 50, stroke: mark, strokeWidth: 4.5, strokeLinecap: 'round' }));
         };
         var arrow = function(key, right) {
-          var e = right ? W - pad : pad, s = right ? -10 : 10;
-          kids.push(h('polygon', { key: key, points: e + ',50 ' + (e + s) + ',43 ' + (e + s) + ',57', fill: mark }));
+          var e = right ? W - pad : pad, s = right ? -11 : 11;
+          kids.push(h('polygon', { key: key, points: e + ',50 ' + (e + s) + ',42 ' + (e + s) + ',58', fill: mark }));
         };
         var dot = function(key, x, closed, text, labelY) {
-          var y = labelY || 20, sym = closed ? '● ' : '○ ';
+          var y = labelY || 19, sym = closed ? '● ' : '○ ';
           if (vis(x)) {
-            kids.push(h('circle', { key: key, cx: sx(x), cy: 50, r: 6, fill: closed ? mark : hollow, stroke: mark, strokeWidth: 2.5, strokeDasharray: o.dashedDot ? '3,2' : undefined }));
-            if (text) kids.push(h('text', { key: key + 't', x: sx(x), y: y, textAnchor: 'middle', fill: ink, style: { fontSize: '10px', fontWeight: 'bold' } }, sym + text));
+            kids.push(h('circle', { key: key + 'halo', cx: sx(x), cy: 50, r: 10.5, fill: mark, opacity: isContrast ? 0.25 : 0.16 }));
+            kids.push(h('circle', { key: key, cx: sx(x), cy: 50, r: 6.5, fill: closed ? mark : hollow, stroke: mark, strokeWidth: 2.8, strokeDasharray: o.dashedDot ? '3,2' : undefined }));
+            if (text) kids.push(h('text', { key: key + 't', x: Math.max(pad + 18, Math.min(W - pad - 18, sx(x))), y: y, textAnchor: 'middle', fill: ink, style: { fontSize: '10px', fontWeight: 'bold' } }, sym + text));
             return;
           }
           // Off-screen boundary: a chevron at the edge it lies beyond, with its value.
@@ -1459,15 +1473,19 @@ window.StemLab = window.StemLab || {
           dot(key + 'd', b, closed, text, labelY);
         };
         var bt = function(x, t) { return v + ' = ' + endText(x, t); };
-        kids.push(h('line', { key: 'axis', x1: pad, y1: 50, x2: W - pad, y2: 50, stroke: '#94a3b8', strokeWidth: 2 }));
+        // Subtle vertical grid lines
+        for (var g = Math.ceil(R.min / lblStep) * lblStep; g <= R.max; g += lblStep) {
+          kids.push(h('line', { key: 'vg' + g, x1: sx(g), y1: 24, x2: sx(g), y2: 74, stroke: gridInk, strokeWidth: 1 }));
+        }
+        kids.push(h('line', { key: 'axis', x1: pad, y1: 50, x2: W - pad, y2: 50, stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 2.2 }));
         for (var n = Math.ceil(R.min / tickStep) * tickStep; n <= R.max; n += tickStep) {
           var isOrigin = n === 0, showLbl = isOrigin || n % lblStep === 0;
           kids.push(h('g', { key: 'tk' + n },
-            h('line', { x1: sx(n), y1: isOrigin ? 38 : 43, x2: sx(n), y2: isOrigin ? 62 : 57, stroke: isOrigin ? axisInk : '#94a3b8', strokeWidth: isOrigin ? 2 : 1, opacity: showLbl ? 1 : 0.45 }),
-            showLbl && h('text', { x: sx(n), y: 85, textAnchor: 'middle', fill: isOrigin ? axisInk : tickInk, style: { fontSize: isOrigin ? '11px' : '9px', fontWeight: isOrigin ? 'bold' : 'normal' } }, n)));
+            h('line', { x1: sx(n), y1: isOrigin ? 36 : 43, x2: sx(n), y2: isOrigin ? 64 : 57, stroke: isOrigin ? axisInk : (isContrast ? '#ffff00' : '#94a3b8'), strokeWidth: isOrigin ? 2.2 : 1, opacity: showLbl ? 1 : 0.45 }),
+            showLbl && h('text', { x: sx(n), y: 86, textAnchor: 'middle', fill: isOrigin ? axisInk : tickInk, style: { fontSize: isOrigin ? '11px' : '10px', fontWeight: isOrigin ? 'bold' : 'normal' } }, n)));
         }
-        kids.push(h('polygon', { key: 'axr', points: (W - pad) + ',50 ' + (W - pad - 8) + ',45 ' + (W - pad - 8) + ',55', fill: '#94a3b8' }));
-        kids.push(h('polygon', { key: 'axl', points: pad + ',50 ' + (pad + 8) + ',45 ' + (pad + 8) + ',55', fill: '#94a3b8' }));
+        kids.push(h('polygon', { key: 'axr', points: (W - pad) + ',50 ' + (W - pad - 8) + ',45 ' + (W - pad - 8) + ',55', fill: isContrast ? '#ffff00' : '#94a3b8' }));
+        kids.push(h('polygon', { key: 'axl', points: pad + ',50 ' + (pad + 8) + ',45 ' + (pad + 8) + ',55', fill: isContrast ? '#ffff00' : '#94a3b8' }));
         if (ineq && ineq.allReals) {
           band('all', R.min, R.max); seg('alls', R.min, R.max); arrow('alla', true); arrow('allb', false);
         } else if (ineq && ineq.compound && !ineq.empty) {
@@ -1475,21 +1493,22 @@ window.StemLab = window.StemLab || {
           if (ineq.hi >= R.min && ineq.lo <= R.max) seg('cs', ineq.lo, ineq.hi, true, true);
           var close = vis(ineq.lo) && vis(ineq.hi) && sx(ineq.hi) - sx(ineq.lo) < 56;
           dot('clo', ineq.lo, ineq.op1.includes('='), bt(ineq.lo, ineq.loText));
-          if (ineq.hi !== ineq.lo) dot('chi', ineq.hi, ineq.op2.includes('='), bt(ineq.hi, ineq.hiText), close ? 10 : 20);
+          if (ineq.hi !== ineq.lo) dot('chi', ineq.hi, ineq.op2.includes('='), bt(ineq.hi, ineq.hiText), close ? 11 : 19);
         } else if (ineq && !ineq.compound && !ineq.emptySet && ineq.op) {
           ray('r1', ineq.val, ineq.op.includes('>'), ineq.op.includes('='), bt(ineq.val, ineq.valText));
           // Union case (|x - c| > b, "or", x != n): draw the RIGHT ray too.
           ineq.absRight && (function() {
             var near = vis(ineq.val) && vis(ineq.absRight.val) && sx(ineq.absRight.val) - sx(ineq.val) < 56;
-            ray('r2', ineq.absRight.val, true, ineq.absRight.op.includes('='), ineq.ne ? '' : bt(ineq.absRight.val, ineq.absRight.valText), near ? 10 : 20);
+            ray('r2', ineq.absRight.val, true, ineq.absRight.op.includes('='), ineq.ne ? '' : bt(ineq.absRight.val, ineq.absRight.valText), near ? 11 : 19);
           })();
         }
         if (o.dotOnly && isFinite(o.dotOnly.x)) dot('only', o.dotOnly.x, !!o.dotOnly.closed, v + ' = ' + iqNumFmt(o.dotOnly.x));
         if (o.testVal != null && isFinite(o.testVal) && vis(o.testVal)) {
           var tx = sx(o.testVal), tcol = o.testOk ? okInk : badInk;
           kids.push(h('g', { key: 'tv' },
-            h('line', { x1: tx, y1: 25, x2: tx, y2: 75, stroke: tcol, strokeWidth: 2, strokeDasharray: '4,2' }),
-            h('text', { x: tx, y: 118, textAnchor: 'middle', fill: tcol, style: { fontSize: '10px', fontWeight: 'bold' } }, (o.testOk ? '✅ ' : '❌ ') + o.testVal)));
+            h('line', { x1: tx, y1: 24, x2: tx, y2: 76, stroke: tcol, strokeWidth: 2.2, strokeDasharray: '4,2' }),
+            h('circle', { cx: tx, cy: 50, r: 4, fill: tcol }),
+            h('text', { x: Math.max(pad + 18, Math.min(W - pad - 18, tx)), y: 120, textAnchor: 'middle', fill: tcol, style: { fontSize: '10px', fontWeight: 'bold' } }, (o.testOk ? '✅ ' : '❌ ') + o.testVal)));
         }
         var pick = o.onPick ? function(e) {
           var box = e.currentTarget.getBoundingClientRect();
@@ -1498,7 +1517,7 @@ window.StemLab = window.StemLab || {
           o.onPick(Math.max(R.min, Math.min(R.max, Math.round(x))));
         } : undefined;
         return h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': o.label, 'data-inequality-graph': o.id || 'main', onClick: pick, style: pick ? { cursor: 'crosshair' } : undefined,
-          className: 'w-full rounded-xl border-2 shadow-sm ' + (isDark ? 'bg-slate-900 border-fuchsia-800' : 'bg-white border-fuchsia-200') }, kids);
+          className: 'w-full rounded-xl border-2 shadow-sm ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-slate-900 border-fuchsia-700' : 'bg-white border-fuchsia-200')) }, kids);
       };
 
       // ── Coordinate plane drawing, shared by one inequality and systems ──
@@ -1508,43 +1527,60 @@ window.StemLab = window.StemLab || {
       var CIRCLED = ['①', '②', '③'];
       var render2DPlane = function(cons, o) {
         o = o || {};
-        var kids = [], tickInk = isDark ? '#94a3b8' : '#64748b', ink = isDark ? '#e2e8f0' : '#1e293b';
+        var kids = [];
+        var tickInk = isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569');
+        var ink = isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a');
+        var axisStroke = isContrast ? '#ffff00' : (isDark ? '#94a3b8' : '#334155');
+        var gridStroke = isContrast ? '#333333' : (isDark ? '#1e293b' : '#e2e8f0');
+        var hatchId = 'iqPlaneHatch_' + (o.id || 'single');
+        kids.push(h('defs', { key: 'pdefs' },
+          h('pattern', { id: hatchId, width: 10, height: 10, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
+            h('path', { d: 'M0 0 V10', stroke: isContrast ? '#00ff00' : '#c026d3', strokeWidth: 1.5, opacity: isContrast ? 0.35 : 0.22 }))));
         for (var gi = gRange.xMin; gi <= gRange.xMax; gi++) {
-          kids.push(h('line', { key: 'gx' + gi, x1: toGX(gi), y1: pad2, x2: toGX(gi), y2: H2 - pad2, stroke: gi === 0 ? (isDark ? '#94a3b8' : '#475569') : (isDark ? '#1e293b' : '#e2e8f0'), strokeWidth: gi === 0 ? 2 : 0.5 }));
-          kids.push(h('line', { key: 'gy' + gi, x1: pad2, y1: toGY(gi), x2: W2 - pad2, y2: toGY(gi), stroke: gi === 0 ? (isDark ? '#94a3b8' : '#475569') : (isDark ? '#1e293b' : '#e2e8f0'), strokeWidth: gi === 0 ? 2 : 0.5 }));
+          kids.push(h('line', { key: 'gx' + gi, x1: toGX(gi), y1: pad2, x2: toGX(gi), y2: H2 - pad2, stroke: gi === 0 ? axisStroke : gridStroke, strokeWidth: gi === 0 ? 2 : 0.7 }));
+          kids.push(h('line', { key: 'gy' + gi, x1: pad2, y1: toGY(gi), x2: W2 - pad2, y2: toGY(gi), stroke: gi === 0 ? axisStroke : gridStroke, strokeWidth: gi === 0 ? 2 : 0.7 }));
           if (gi !== 0 && gi % 2 === 0) {
-            kids.push(h('text', { key: 'xl' + gi, x: toGX(gi), y: toGY(0) + 14, textAnchor: 'middle', fill: tickInk, style: { fontSize: '8px' } }, gi));
-            kids.push(h('text', { key: 'yl' + gi, x: toGX(0) - 10, y: toGY(gi) + 3, textAnchor: 'end', fill: tickInk, style: { fontSize: '8px' } }, gi));
+            kids.push(h('text', { key: 'xl' + gi, x: toGX(gi), y: toGY(0) + 14, textAnchor: 'middle', fill: tickInk, style: { fontSize: '10px' } }, gi));
+            kids.push(h('text', { key: 'yl' + gi, x: toGX(0) - 9, y: toGY(gi) + 3, textAnchor: 'end', fill: tickInk, style: { fontSize: '10px' } }, gi));
           }
         }
+        // Subtle quadrant labels
+        kids.push(h('text', { key: 'q1', x: W2 - pad2 - 14, y: pad2 + 14, fill: tickInk, opacity: 0.45, style: { fontSize: '10px', fontWeight: 'bold' } }, 'I'));
+        kids.push(h('text', { key: 'q2', x: pad2 + 8, y: pad2 + 14, fill: tickInk, opacity: 0.45, style: { fontSize: '10px', fontWeight: 'bold' } }, 'II'));
+        kids.push(h('text', { key: 'q3', x: pad2 + 8, y: H2 - pad2 - 8, fill: tickInk, opacity: 0.45, style: { fontSize: '10px', fontWeight: 'bold' } }, 'III'));
+        kids.push(h('text', { key: 'q4', x: W2 - pad2 - 18, y: H2 - pad2 - 8, fill: tickInk, opacity: 0.45, style: { fontSize: '10px', fontWeight: 'bold' } }, 'IV'));
         var region = cons.length ? iqRegion(cons, gRange) : [];
-        if (region.length >= 3) kids.push(h('polygon', { key: 'region', 'data-inequality-region': 'true', points: region.map(function(p) { return toGX(p[0]) + ',' + toGY(p[1]); }).join(' '), fill: 'rgba(217,70,239,0.16)' }));
+        if (region.length >= 3) {
+          var ptsStr = region.map(function(p) { return toGX(p[0]) + ',' + toGY(p[1]); }).join(' ');
+          kids.push(h('polygon', { key: 'region', 'data-inequality-region': 'true', points: ptsStr, fill: isContrast ? 'rgba(0,255,0,0.16)' : 'rgba(217,70,239,0.16)' }));
+          kids.push(h('polygon', { key: 'regionHatch', points: ptsStr, fill: 'url(#' + hatchId + ')' }));
+        }
         cons.forEach(function(k, i) {
           var sg = iqSegment(k, gRange);
           if (!sg) return;
-          var col = cons.length > 1 ? PLANE_COLORS[i % 3] : '#d946ef';
-          kids.push(h('line', { key: 'bl' + i, 'data-inequality-boundary': 'true', x1: toGX(sg[0][0]), y1: toGY(sg[0][1]), x2: toGX(sg[1][0]), y2: toGY(sg[1][1]), stroke: col, strokeWidth: 2.5, strokeDasharray: k.rel.indexOf('=') >= 0 ? 'none' : '6,4' }));
+          var col = isContrast ? (i === 0 ? '#00ff00' : '#ffff00') : (cons.length > 1 ? PLANE_COLORS[i % 3] : '#d946ef');
+          kids.push(h('line', { key: 'bl' + i, 'data-inequality-boundary': 'true', x1: toGX(sg[0][0]), y1: toGY(sg[0][1]), x2: toGX(sg[1][0]), y2: toGY(sg[1][1]), stroke: col, strokeWidth: 2.8, strokeDasharray: k.rel.indexOf('=') >= 0 ? 'none' : '6,4' }));
           if (cons.length > 1) {
             var ex = toGX(sg[1][0]), ey = toGY(sg[1][1]), sx0 = toGX(sg[0][0]), sy0 = toGY(sg[0][1]), len = Math.sqrt((ex - sx0) * (ex - sx0) + (ey - sy0) * (ey - sy0)) || 1;
-            kids.push(h('text', { key: 'bn' + i, x: ex + (sx0 - ex) * 14 / len + 6, y: ey + (sy0 - ey) * 14 / len, fill: col, style: { fontSize: '13px', fontWeight: 'bold' } }, o.labels ? o.labels[i] : CIRCLED[i % 3]));
+            kids.push(h('text', { key: 'bn' + i, x: Math.max(pad2 + 6, Math.min(W2 - pad2 - 14, ex + (sx0 - ex) * 16 / len + 6)), y: Math.max(pad2 + 12, Math.min(H2 - pad2 - 6, ey + (sy0 - ey) * 16 / len)), fill: col, style: { fontSize: '13px', fontWeight: 'bold' } }, o.labels ? o.labels[i] : CIRCLED[i % 3]));
           }
         });
         (o.corners || []).forEach(function(c, i) {
           if (c.x < gRange.xMin || c.x > gRange.xMax || c.y < gRange.yMin || c.y > gRange.yMax) return;
-          kids.push(h('circle', { key: 'cn' + i, cx: toGX(c.x), cy: toGY(c.y), r: 4, fill: c.strict ? (isDark ? '#0f172a' : '#ffffff') : ink, stroke: ink, strokeWidth: 1.5 }));
-          kids.push(h('text', { key: 'cl' + i, x: toGX(c.x) + 6, y: toGY(c.y) - 6, fill: ink, style: { fontSize: '11px', fontWeight: 'bold' } }, String.fromCharCode(65 + i)));
+          kids.push(h('circle', { key: 'cn' + i, cx: toGX(c.x), cy: toGY(c.y), r: 5, fill: c.strict ? (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')) : ink, stroke: ink, strokeWidth: 1.8 }));
+          kids.push(h('text', { key: 'cl' + i, x: Math.min(W2 - pad2 - 12, toGX(c.x) + 7), y: Math.max(pad2 + 12, toGY(c.y) - 6), fill: ink, style: { fontSize: '11px', fontWeight: 'bold' } }, String.fromCharCode(65 + i)));
         });
         (o.points || []).forEach(function(p, i) {
           var px = toGX(p.x), py = toGY(p.y), col = p.ok ? okInk : badInk;
           if (p.x < gRange.xMin || p.x > gRange.xMax || p.y < gRange.yMin || p.y > gRange.yMax) return;
           // Shape as well as colour: a filled dot inside, a cross outside.
           kids.push(p.ok
-            ? h('circle', { key: 'tp' + i, cx: px, cy: py, r: 5, fill: col, stroke: isDark ? '#0f172a' : '#ffffff', strokeWidth: 1.5 })
+            ? h('circle', { key: 'tp' + i, cx: px, cy: py, r: 5.5, fill: col, stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 1.8 })
             : h('path', { key: 'tp' + i, d: 'M' + (px - 5) + ',' + (py - 5) + ' L' + (px + 5) + ',' + (py + 5) + ' M' + (px - 5) + ',' + (py + 5) + ' L' + (px + 5) + ',' + (py - 5), stroke: col, strokeWidth: 2.5 }));
-          if (p.label) kids.push(h('text', { key: 'tpl' + i, x: px + 8, y: py - 6, fill: col, style: { fontSize: '9px', fontWeight: 'bold' } }, p.label));
+          if (p.label) kids.push(h('text', { key: 'tpl' + i, x: Math.min(W2 - pad2 - 42, px + 8), y: Math.max(pad2 + 12, py - 6), fill: col, style: { fontSize: '10px', fontWeight: 'bold' } }, p.label));
         });
-        kids.push(h('text', { key: 'axx', x: W2 - pad2 + 5, y: toGY(0) + 4, fill: isDark ? '#94a3b8' : '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'));
-        kids.push(h('text', { key: 'axy', x: toGX(0) + 5, y: pad2 - 5, fill: isDark ? '#94a3b8' : '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'y'));
+        kids.push(h('text', { key: 'axx', x: W2 - pad2 + 5, y: toGY(0) + 4, fill: axisStroke, style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'));
+        kids.push(h('text', { key: 'axy', x: toGX(0) + 5, y: pad2 - 5, fill: axisStroke, style: { fontSize: '11px', fontWeight: 'bold' } }, 'y'));
         if (!cons.length) kids.push(h('text', { key: 'empty', x: W2 / 2, y: H2 / 2, textAnchor: 'middle', fill: tickInk, style: { fontSize: '12px' } }, __alloT('stem.inequality.plane_enter_prompt', 'Enter an inequality such as y > 2x + 1 or 2x + 3y ≤ 6')));
         var pick = o.onPick ? function(e) {
           var box = e.currentTarget.getBoundingClientRect();
@@ -1554,7 +1590,7 @@ window.StemLab = window.StemLab || {
           o.onPick(Math.round(gRange.xMin + (px - pad2) / (W2 - 2 * pad2) * (gRange.xMax - gRange.xMin)), Math.round(gRange.yMax - (py - pad2) / (H2 - 2 * pad2) * (gRange.yMax - gRange.yMin)));
         } : undefined;
         return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, role: 'img', 'aria-label': o.label, 'data-inequality-plane': o.id || 'single', onClick: pick, style: { maxWidth: 420, cursor: pick ? 'crosshair' : undefined },
-          className: 'w-full rounded-xl border-2 shadow-sm ' + (isDark ? 'bg-slate-900 border-fuchsia-800' : 'bg-white border-fuchsia-200') }, kids);
+          className: 'w-full rounded-xl border-2 shadow-sm ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-slate-900 border-fuchsia-700' : 'bg-white border-fuchsia-200')) }, kids);
       };
 
       // ── Explore, 1D ──
@@ -2069,17 +2105,23 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'mt-1 text-sm font-semibold text-white' }, inequalityNext)
                 )
               ),
-              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
-                [
-                  { label: __alloT('stem.inequality.metric_view', 'View'), value: inequalityModeLabel },
-                  { label: __alloT('stem.inequality.metric_tests', 'Tests'), value: String(testCount) },
-                  { label: __alloT('stem.inequality.metric_solved', 'Solved'), value: String(solverCount) }
-                ].map(function(metric) {
-                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
-                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-fuchsia-200' }, metric.label)
-                  );
-                })
+              h('div', { className: 'space-y-2 lg:w-[22rem]' },
+                h('div', { className: 'grid grid-cols-3 gap-2' },
+                  [
+                    { label: __alloT('stem.inequality.metric_view', 'View'), value: inequalityModeLabel },
+                    { label: __alloT('stem.inequality.metric_tests', 'Tests'), value: String(testCount) },
+                    { label: __alloT('stem.inequality.metric_solved', 'Solved'), value: String(solverCount) }
+                  ].map(function(metric) {
+                    return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-2.5 text-center' },
+                      h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                      h('div', { className: 'mt-0.5 text-[0.625rem] font-bold uppercase tracking-wider text-fuchsia-200' }, metric.label)
+                    );
+                  })
+                ),
+                h('div', { className: 'rounded-xl border border-white/15 bg-black/25 px-3 py-2 flex items-center justify-between gap-2' },
+                  h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-fuchsia-200' }, __alloT('stem.inequality.active_set', 'Active set')),
+                  h('code', { className: 'text-xs font-mono font-bold text-white truncate', title: (d.expr || 'x > 3') + (intervalStr ? ' \u00B7 ' + intervalStr : '') }, (d.expr || 'x > 3') + (ineq && intervalStr ? ' \u00B7 ' + intervalStr : ''))
+                )
               )
             ),
             h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': __alloT('stem.inequality.a11y_inequality_reasoning_pathway', 'Inequality reasoning pathway') },
@@ -2173,16 +2215,16 @@ window.StemLab = window.StemLab || {
               margin: '0 0 12px',
               padding: '12px 14px',
               borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-              border: '1px solid ' + meta.accent + '55',
-              borderLeft: '4px solid ' + meta.accent,
+              background: isContrast ? '#000000' : (isDark ? '#1e293b' : 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)'),
+              border: '1px solid ' + (isContrast ? '#ffff00' : meta.accent + '55'),
+              borderLeft: '4px solid ' + (isContrast ? '#00ff00' : meta.accent),
               display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
             }
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-            h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('div', { style: { flex: 1, minWidth: 200 } },
+              h('h3', { style: { color: isContrast ? '#ffff00' : (isDark ? '#f0abfc' : meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: isContrast ? '#fde047' : (isDark ? '#cbd5e1' : '#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -2257,7 +2299,25 @@ window.StemLab = window.StemLab || {
 
         // ── Test-a-Value panel ──
         exploring && h('div', { className: 'mt-3 bg-sky-50 rounded-lg p-3 border border-sky-200' },
-          h('p', { className: 'text-[0.6875rem] font-bold text-sky-700 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA ' + __alloT('stem.inequality.test_a_value', 'Test a Value')),
+          h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
+            h('p', { className: 'text-[0.6875rem] font-bold text-sky-700 uppercase tracking-wider' }, '\uD83E\uDDEA ' + __alloT('stem.inequality.test_a_value', 'Test a Value')),
+            ineq && (function() {
+              var bnd = ineq.compound ? ineq.lo : (typeof ineq.val === 'number' ? ineq.val : 0);
+              var probes = [Math.round((bnd - 2) * 10) / 10, Math.round(bnd * 10) / 10, Math.round((bnd + 2) * 10) / 10];
+              if (probes.indexOf(0) === -1) probes.push(0);
+              return h('div', { className: 'flex items-center gap-1 flex-wrap' },
+                h('span', { className: 'text-[0.6875rem] font-semibold text-sky-800' }, __alloT('stem.inequality.quick_probes', 'Quick probe:')),
+                probes.map(function(pv) {
+                  return h('button', {
+                    key: String(pv),
+                    type: 'button',
+                    onClick: function() { upd('testVal', String(pv)); },
+                    className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-mono font-bold bg-white text-sky-800 border border-sky-600 hover:bg-sky-100 transition-colors cursor-pointer'
+                  }, 'x=' + pv);
+                })
+              );
+            })()
+          ),
           h('div', { className: 'flex flex-wrap items-center gap-2' },
             h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},
               type: 'number', step: 'any', value: testVal, placeholder: __alloT('stem.inequality.enter_a_number', 'Enter a number\u2026'),
@@ -2396,8 +2456,19 @@ window.StemLab = window.StemLab || {
 
         // ── Step-by-Step Solver ──
         h('div', { className: 'mt-3 bg-teal-50 rounded-lg p-3 border border-teal-200', 'data-inequality-solver': 'true' },
-          h('p', { className: 'text-[0.6875rem] font-bold text-teal-800 uppercase tracking-wider mb-2' }, '🧠 ' + __alloT('stem.inequality.step_by_step_solver', 'Step-by-Step Solver')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-teal-800 uppercase tracking-wider mb-1.5' }, '🧠 ' + __alloT('stem.inequality.step_by_step_solver', 'Step-by-Step Solver')),
           h('p', { className: 'text-[0.6875rem] text-teal-800 italic mb-2' }, __alloT('stem.inequality.solver_hint_wide', 'Enter an inequality such as 3x - 7 ≥ 5, 5 > 2x + 1, 2(x + 3) < x + 10, x/2 ≤ 4 or -3 < 2x + 1 ≤ 7.')),
+          h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-2' },
+            h('span', { className: 'text-[0.6875rem] font-bold text-teal-800' }, __alloT('stem.inequality.solver_try_chip', 'Try:')),
+            ['3x - 7 >= 5', '-2x + 4 < 10', '2(x + 3) < x + 10', '-3 < 2x + 1 <= 7'].map(function(ex) {
+              return h('button', {
+                key: ex,
+                type: 'button',
+                onClick: function() { upd('solverExpr', ex); },
+                className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-mono font-bold bg-white text-teal-800 border border-teal-700 hover:bg-teal-100 transition-colors cursor-pointer'
+              }, ex.replace(/>=/g, '≥').replace(/<=/g, '≤'));
+            })
+          ),
           h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
             h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},
               type: 'text', value: solverExpr, placeholder: '3x - 7 ≥ 5',

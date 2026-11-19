@@ -144,12 +144,13 @@ describe('O2 Choices: Easy, Medium, All', () => {
     expect(html).toContain('id="choice-level-field" hidden');
     // One short line under the field (a phone shows it whole); what each level does is folded away.
     // 2026-11-16: "Medium matches the AlloFlow app." is gone: Blend Sounds now shows 6 at Medium, the app shows 4.
-    expect(html).toContain('<span class="hint" id="choice-level-hint">How many answers to choose from.</span>');
+    // 2026-11-19 (Wave 2B): choice-level details are flattened into step 2's #about-levels fold.
+    expect(html).toContain('<span class="hint" id="choice-level-hint">How many answers to choose from: Easy (fewer), Medium (usual), or All. Details are under About these levels in step 2.</span>');
     expect(html).not.toContain('Medium matches');
-    expect(html).toMatch(/<details class="why" id="choice-level-why">\s*<summary>What each level does<\/summary>\s*<ul>\s*<li>Easy: 3 choices[^<]*<\/li>\s*<li>Medium: 4 choices in Find Sounds and Rhyme Time, 6 in Blend Sounds;[^<]*<\/li>\s*<li>All: every choice[^<]*<\/li>/);
+    expect(html).toMatch(/<details class="why stage-key" id="about-levels">[\s\S]*?<p class="stage-key-head">Answer choices \(Step 1\)<\/p>\s*<ul class="stage-key-list">\s*<li>Easy: 3 choices[^<]*<\/li>\s*<li>Medium: 4 choices in Find Sounds and Rhyme Time, 6 in Blend Sounds;[^<]*<\/li>\s*<li>All: every choice[^<]*<\/li>/);
     const js = readFileSync('packets-make.js', 'utf8');
-    // 2026-11-18 (owner): and Break it Down, whose Easy shows the word's sounds and one more.
-    expect(js).toContain("var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting', 'segmentation'];");
+    // 2026-11-18 (owner): Break it Down; 2026-11-19 (Wave 8B): Sight & Spell (orthography) Easy letter bank.
+    expect(js).toContain("var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting', 'segmentation', 'orthography'];");
     expect(js).toContain("choices: 'medium',");
     expect(js).toContain("var leveled = state.activities.some(function (id) { return CHOICE_ACTIVITIES.indexOf(id) >= 0; });");
     expect(js).toContain("show('choice-level-field', leveled);");
@@ -182,22 +183,20 @@ describe('O3 Listen, then Choose', () => {
     const seen = [];
     for (const block of made.lesson.blocks) {
       for (let i = 0; i < block.items.length; i++) {
-        if (i === 0 && block.activity === 'segmentation') {
-          // 2026-11-18 (owner: a first-time player got stuck in Break it Down), deliberately: one tile per sound, as in
-          // the app. Picking a tile up plays it and commits nothing until it is put in a box, so it needs no Listen of
-          // its own (a Listen + Choose pair is for a choice that answers when pressed).
+        if (i === 0 && (block.activity === 'segmentation' || block.activity === 'mapping')) {
+          // 2026-11-18 (segmentation) & 2026-11-19 (mapping): one tile per sound, as in the app. Picking a tile up plays
+          // its sound and commits nothing until placed in a box, so it needs no separate Listen button (Listen + Choose
+          // pairs remain for choices that answer immediately when pressed).
           const tiles = [...t.d.querySelectorAll('#app ul.row > li')];
-          expect(tiles.length, 'segmentation').toBeGreaterThan(1);
+          expect(tiles.length, block.activity).toBeGreaterThan(1);
           for (const li of tiles) {
             const buttons = li.querySelectorAll('button');
-            expect(buttons.length, 'segmentation: one tile').toBe(1);
-            expect(buttons[0].classList.contains('primary') && buttons[0].hasAttribute('aria-pressed'), 'segmentation').toBe(true);
+            expect(buttons.length, block.activity + ': one tile').toBe(1);
+            expect(buttons[0].classList.contains('primary') && buttons[0].hasAttribute('aria-pressed'), block.activity).toBe(true);
           }
           seen.push(block.activity);
         } else if (i === 0) {
-          const pairs = block.activity === 'mapping'
-            ? [...t.d.querySelectorAll('#app ul.row > li')].filter((li) => li.querySelectorAll('button').length === 2)
-            : [...t.d.querySelectorAll('#app li.choice')];
+          const pairs = [...t.d.querySelectorAll('#app li.choice')];
           expect(pairs.length, block.activity).toBeGreaterThan(1);
           for (const li of pairs) {
             const [a, b] = li.querySelectorAll('button');

@@ -86,6 +86,39 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Math Manipulatives workbench polish, starter chips & Light/Dark/Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-manip-workbench-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-manip-workbench-css';
+    st.textContent = [
+      '.manip-starter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border-radius:12px;background:#fff7ed;border:1px solid #fdba74}',
+      '.manip-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#9a3412;margin-right:2px}',
+      '.manip-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#ffffff;border:1px solid #fb923c;color:#9a3412;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
+      '.manip-starter-chip:hover{background:#ffedd5;border-color:#ea580c;color:#7c2d12}',
+      '.manip-starter-chip[aria-pressed="true"]{background:#c2410c;border-color:#9a3412;color:#ffffff}',
+      '.manip-pv-stage{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.88);border:1px solid #fdba74}',
+      '.manip-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(15,23,42,.56);border:1px solid rgba(253,186,116,.4);color:#ffedd5}',
+      '.manip-telemetry-pill strong{color:#fde68a;font-weight:900}',
+      '.theme-dark .manip-starter-bar{background:rgba(15,23,42,.78);border-color:rgba(251,146,60,.45)}',
+      '.theme-dark .manip-starter-label{color:#fed7aa}',
+      '.theme-dark .manip-starter-chip{background:#1e293b;border-color:rgba(251,146,60,.55);color:#ffedd5}',
+      '.theme-dark .manip-starter-chip:hover{background:#334155;border-color:#fb923c;color:#ffffff}',
+      '.theme-dark .manip-starter-chip[aria-pressed="true"]{background:#ea580c;border-color:#fed7aa;color:#ffffff}',
+      '.theme-dark .manip-pv-stage{background:rgba(15,23,42,.86);border-color:rgba(251,146,60,.45)}',
+      '[data-manipulatives-command] button:focus-visible,.manip-starter-bar button:focus-visible{outline:3px solid #ea580c;outline-offset:2px}',
+      '.theme-contrast [data-manipulatives-command]{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .manip-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .manip-telemetry-pill strong{color:#00ff00!important}',
+      '.theme-contrast .manip-starter-bar,.theme-contrast .manip-pv-stage{background:#000000!important;border:2px solid #ffffff!important;color:#ffffff!important}',
+      '.theme-contrast .manip-starter-label{color:#ffff00!important}',
+      '.theme-contrast .manip-starter-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .manip-starter-chip[aria-pressed="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast [data-manipulatives-command] button:focus-visible,.theme-contrast .manip-starter-bar button:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-manipulatives')) return;
@@ -674,44 +707,53 @@ window.StemLab = window.StemLab || {
       // Student AI-off: no window.callGemini alias; null unless text AI is usable, so the Tutor button hides.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
 
       // ── State ──
-      var ld = ctx.toolData || {};
-      var _m = ld._manipulatives || {};
+      var ld = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var _rawM = ld._manipulatives;
+      var _m = (_rawM && typeof _rawM === 'object' && !Array.isArray(_rawM)) ? _rawM : {};
       var upd = function(obj) {
         if (typeof ctx.setToolData === 'function') {
           ctx.setToolData(function(prev) {
-            var current = (prev && prev._manipulatives) || {};
+            var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var rawCur = basePrev._manipulatives;
+            var current = (rawCur && typeof rawCur === 'object' && !Array.isArray(rawCur)) ? rawCur : {};
             var changes = typeof obj === 'function' ? obj(current) : obj;
             changes = Object.assign({}, changes);
             if (changes.b10 && !Object.prototype.hasOwnProperty.call(changes, 'b10Trade')) changes.b10Trade = null;
             if (changes.b10 && !Object.prototype.hasOwnProperty.call(changes, 'b10Feedback')) changes.b10Feedback = null;
             var mn = Object.assign({}, current, changes);
-            return Object.assign({}, prev, { _manipulatives: mn });
+            return Object.assign({}, basePrev, { _manipulatives: mn });
           });
         }
       };
 
-      var manipMode = _m.mode || 'blocks';
-      var score = _m.score || { correct: 0, total: 0 };
+      var manipMode = typeof _m.mode === 'string' && _m.mode ? _m.mode : 'blocks';
+      var score = (_m.score && typeof _m.score === 'object' && !Array.isArray(_m.score)) ? { correct: Number(_m.score.correct) || 0, total: Number(_m.score.total) || 0 } : { correct: 0, total: 0 };
       var soundEnabled = _m.soundEnabled != null ? _m.soundEnabled : true;
-      var earnedBadges = _m.earnedBadges || {};
+      var earnedBadges = (_m.earnedBadges && typeof _m.earnedBadges === 'object' && !Array.isArray(_m.earnedBadges)) ? _m.earnedBadges : {};
       var showBadgesPanel = _m.showBadgesPanel || false;
-      var streak = _m.streak || 0;
-      var modesVisited = _m.modesVisited || {};
-      var regroupCount = _m.regroupCount || 0;
-      var blocksSolved = _m.blocksSolved || 0;
-      var abacusSolved = _m.abacusSolved || 0;
-      var slideSolved = _m.slideSolved || 0;
-      var quizSolved = _m.quizSolved || 0;
-      var aiInsight = _m.aiInsight || '';
-      var aiLoading = _m.aiLoading || false;
+      var streak = Number(_m.streak) || 0;
+      var modesVisited = (_m.modesVisited && typeof _m.modesVisited === 'object' && !Array.isArray(_m.modesVisited)) ? _m.modesVisited : {};
+      var regroupCount = Number(_m.regroupCount) || 0;
+      var blocksSolved = Number(_m.blocksSolved) || 0;
+      var abacusSolved = Number(_m.abacusSolved) || 0;
+      var slideSolved = Number(_m.slideSolved) || 0;
+      var quizSolved = Number(_m.quizSolved) || 0;
+      var aiInsight = typeof _m.aiInsight === 'string' ? _m.aiInsight : '';
+      var aiLoading = !!_m.aiLoading;
 
       // ═══ BASE-10 BLOCKS STATE ═══
-      var b10 = _m.b10 || { ones: 0, tens: 0, hundreds: 0, thousands: 0 };
+      var rawB10 = (_m.b10 && typeof _m.b10 === 'object' && !Array.isArray(_m.b10)) ? _m.b10 : {};
+      var b10 = {
+        ones: Math.max(0, Math.floor(Number(rawB10.ones) || 0)),
+        tens: Math.max(0, Math.floor(Number(rawB10.tens) || 0)),
+        hundreds: Math.max(0, Math.floor(Number(rawB10.hundreds) || 0)),
+        thousands: Math.max(0, Math.floor(Number(rawB10.thousands) || 0))
+      };
       var b10Challenge = _m.b10Challenge || null;
       var b10Feedback = _m.b10Feedback || null;
       var regroupFlash = _m.regroupFlash || null;
@@ -1333,14 +1375,32 @@ window.StemLab = window.StemLab || {
         h('section', { 'data-manipulatives-command': 'true', className: 'overflow-hidden rounded-2xl border border-orange-300/40 bg-gradient-to-br from-slate-950 via-orange-950 to-amber-950 text-white shadow-xl' },
           h('div', { className: 'p-4 sm:p-5' },
             h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
-              h('div', { className: 'min-w-0' },
-                h('div', { className: 'flex items-center gap-2' },
+              h('div', { className: 'min-w-0 flex-1' },
+                h('div', { className: 'flex items-center gap-3' },
                   h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-orange-300', 'aria-label': __alloT('stem.manipulatives.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-orange-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-orange-100 ring-1 ring-orange-200/30' }, 'Representation studio')
+                  h('svg', { width: 44, height: 44, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+                    h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.62)', stroke: isContrast ? '#00ff00' : 'rgba(253,186,116,0.6)', strokeWidth: 1.8 }),
+                    h('rect', { x: 10, y: 18, width: 22, height: 22, rx: 3, fill: isContrast ? '#000000' : '#f97316', stroke: isContrast ? '#ffff00' : '#ffedd5', strokeWidth: 1.5 }),
+                    h('line', { x1: 17, y1: 18, x2: 17, y2: 40, stroke: isContrast ? '#ffff00' : '#ffedd5', strokeWidth: 1, opacity: 0.75 }),
+                    h('line', { x1: 25, y1: 18, x2: 25, y2: 40, stroke: isContrast ? '#ffff00' : '#ffedd5', strokeWidth: 1, opacity: 0.75 }),
+                    h('line', { x1: 10, y1: 25, x2: 32, y2: 25, stroke: isContrast ? '#ffff00' : '#ffedd5', strokeWidth: 1, opacity: 0.75 }),
+                    h('line', { x1: 10, y1: 33, x2: 32, y2: 33, stroke: isContrast ? '#ffff00' : '#ffedd5', strokeWidth: 1, opacity: 0.75 }),
+                    h('rect', { x: 37, y: 16, width: 8, height: 26, rx: 2, fill: isContrast ? '#000000' : '#38bdf8', stroke: isContrast ? '#00ff00' : '#e0f2fe', strokeWidth: 1.5 }),
+                    h('rect', { x: 48, y: 34, width: 8, height: 8, rx: 2, fill: isContrast ? '#000000' : '#34d399', stroke: isContrast ? '#ffffff' : '#d1fae5', strokeWidth: 1.5 }),
+                    h('path', { d: 'M12 49 H54', stroke: isContrast ? '#ffffff' : 'rgba(253,186,116,0.75)', strokeWidth: 2, strokeLinecap: 'round' })
+                  ),
+                  h('div', { className: 'min-w-0' },
+                    h('span', { className: 'rounded-full bg-orange-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-orange-100 ring-1 ring-orange-200/30' }, __alloT('stem.manipulatives.hero_badge', 'Representation Studio · K–5 CRA')),
+                    h('h3', { className: 'mt-1 text-xl font-black tracking-tight sm:text-2xl' }, __alloT('stem.manipulatives.math_manipulatives', '\uD83E\uDDEE Math Manipulatives'))
+                  )
                 ),
-                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, __alloT('stem.manipulatives.math_manipulatives', '\uD83E\uDDEE Math Manipulatives')),
-                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-orange-100' }, 'Make number relationships visible, then connect concrete models to pictures and equations.'),
-                h('p', { className: 'mt-2 text-sm text-white' }, manipNext)
+                h('p', { className: 'mt-2 max-w-2xl text-sm leading-6 text-orange-100' }, 'Make number relationships visible, then connect concrete models to pictures and equations.'),
+                h('p', { className: 'mt-1.5 text-sm text-white' }, manipNext),
+                h('div', { className: 'mt-2.5 flex flex-wrap items-center gap-1.5' },
+                  h('span', { className: 'manip-telemetry-pill' }, __alloT('stem.manipulatives.pill_explored', 'Explored'), ' ', h('strong', null, String(Object.keys(modesVisited).length) + '/12')),
+                  regroupCount > 0 && h('span', { className: 'manip-telemetry-pill' }, __alloT('stem.manipulatives.pill_regroups', 'Regroups'), ' ', h('strong', null, String(regroupCount))),
+                  streak > 0 && h('span', { className: 'manip-telemetry-pill' }, '🔥 ', h('strong', null, String(streak)))
+                )
               ),
               h('div', { className: 'hidden sm:grid grid-cols-3 gap-2 lg:w-[22rem]' },
                 [
@@ -1454,6 +1514,31 @@ window.StemLab = window.StemLab || {
           );
         })(),
 
+        // One-Click Starter Models (hidden during Quiz / Challenge Hub / active Base-10 challenge)
+        (manipMode !== 'quiz' && manipMode !== 'challenges' && !b10Challenge) && h('div', {
+          className: 'manip-starter-bar',
+          role: 'group',
+          'aria-label': __alloT('stem.manipulatives.starter_models_aria', 'Starter manipulative models')
+        },
+          h('span', { className: 'manip-starter-label' }, __alloT('stem.manipulatives.starter_models_label', 'Quick Models:')),
+          [
+            { id: 'ms-14', label: __alloT('stem.manipulatives.starter_regroup_14', '🧱 Regroup 14 Ones'), active: manipMode === 'blocks' && b10.ones === 14 && b10.tens === 0, run: function() { upd({ mode: 'blocks', b10: { ones: 14, tens: 0, hundreds: 0, thousands: 0 }, b10Challenge: null, b10Feedback: null, b10AddMode: false, b10Addends: null }); } },
+            { id: 'ms-245', label: __alloT('stem.manipulatives.starter_build_245', '🧱 Build 245'), active: manipMode === 'blocks' && totalValue === 245, run: function() { upd({ mode: 'blocks', b10: { ones: 5, tens: 4, hundreds: 2, thousands: 0 }, b10Challenge: null, b10Feedback: null, b10AddMode: false, b10Addends: null }); } },
+            { id: 'ms-tf', label: __alloT('stem.manipulatives.starter_ten_frame', '🔟 Ten Frames'), active: manipMode === 'tenFrame', run: function() { switchMode('tenFrame'); } },
+            { id: 'ms-zp', label: __alloT('stem.manipulatives.starter_zero_pairs', '🔴 Zero Pairs'), active: manipMode === 'counters', run: function() { switchMode('counters'); } },
+            { id: 'ms-pb', label: __alloT('stem.manipulatives.starter_pattern_blocks', '⬡ Fraction Shapes'), active: manipMode === 'patternBlocks', run: function() { switchMode('patternBlocks'); } },
+            { id: 'ms-fb', label: __alloT('stem.manipulatives.starter_frac_bars', '▭ Fraction Bars'), active: manipMode === 'fracBars', run: function() { switchMode('fracBars'); } }
+          ].map(function(st) {
+            return h('button', {
+              key: st.id,
+              type: 'button',
+              className: 'manip-starter-chip',
+              'aria-pressed': st.active ? 'true' : 'false',
+              onClick: function() { if (soundEnabled) sfxClick(); st.run(); }
+            }, st.label);
+          })
+        ),
+
         // ── Topic-accent hero band per mode ──
         (function() {
           var MODE_META = {
@@ -1481,7 +1566,8 @@ window.StemLab = window.StemLab || {
             help:          { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\u2753', title: __alloT('stem.manipulatives.help_faq_2', 'Help & FAQ'),                                              hint: __alloT('stem.manipulatives.quick_reference_answers_to_common_stud', 'Quick-reference answers to common student and teacher questions, plus keyboard shortcuts, accessibility info, and how to contact AlloFlow support.') },
             standards:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCDC', title: __alloT('stem.manipulatives.ccss_standards_browser', 'CCSS Standards Browser'),                                      hint: __alloT('stem.manipulatives.common_core_state_standards_for_mathem', 'Common Core State Standards for Mathematics, K\u20135. Browse by grade, see which manipulative addresses each standard, and jump straight to it.') },
             library:       { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDCDA', title: __alloT('stem.manipulatives.library_saved_constructions', 'Library \u2014 saved constructions'),                          hint: __alloT('stem.manipulatives.every_manipulative_s_current_state_can', 'Every manipulative\u2019s current state can be named, saved, and reopened later. Useful for setting up class examples in advance, or for students to return to in-progress work.') },
-            teacher:       { accent: '#0f172a', soft: 'rgba(15,23,42,0.10)',   icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', title: __alloT('stem.manipulatives.teacher_dashboard_progress_planning', 'Teacher Dashboard \u2014 progress + planning'),          hint: __alloT('stem.manipulatives.per_student_progress_badges_earned_mod', 'Per-student progress (badges earned, modes visited, streak best, problems solved). Quick lesson-plan templates aligned to CCSS. Export progress as CSV/JSON.') }
+            teacher:       { accent: '#0f172a', soft: 'rgba(15,23,42,0.10)',   icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', title: __alloT('stem.manipulatives.teacher_dashboard_progress_planning', 'Teacher Dashboard \u2014 progress + planning'),          hint: __alloT('stem.manipulatives.per_student_progress_badges_earned_mod', 'Per-student progress (badges earned, modes visited, streak best, problems solved). Quick lesson-plan templates aligned to CCSS. Export progress as CSV/JSON.') },
+            inquiry:       { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDD2C', title: __alloT('stem.manipulatives.math_inquiry_title', 'Math Inquiry \u2014 investigate place-value patterns'), hint: __alloT('stem.manipulatives.math_inquiry_hint', 'Test hypotheses about regrouping, equivalence, and base-ten structure by logging representations and explaining your evidence.') }
           };
           var meta = MODE_META[manipMode] || MODE_META.blocks;
           // the band is a light tint in every theme; mid accents read 2.5-4:1 as title ink, so the title takes a -700/-800 step
@@ -1604,7 +1690,40 @@ window.StemLab = window.StemLab || {
                 (b10.thousands > 0 || b10.hundreds > 0 || b10.tens > 0) && b10.ones > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
                 renderBlock3D('#ea580c', '#fb923c', 10, 10, b10.ones, 1, 1),
                 totalValue === 0 && h('span', { className: 'text-sm text-slate-600 italic' }, __alloT('stem.manipulatives.no_blocks', 'no blocks'))
-              )
+              ),
+              // Bespoke Place-Value ×10 Relationship Diagram SVG
+              (function() {
+                var pvCols = [
+                  { k: 'thousands', lbl: __alloT('stem.manipulatives.pv_th', '1,000s'), val: b10.thousands, mult: 1000, fill: '#db2777', cx: 52 },
+                  { k: 'hundreds',  lbl: __alloT('stem.manipulatives.pv_h', '100s'),   val: b10.hundreds,  mult: 100,  fill: '#2563eb', cx: 158 },
+                  { k: 'tens',      lbl: __alloT('stem.manipulatives.pv_t', '10s'),    val: b10.tens,      mult: 10,   fill: '#059669', cx: 264 },
+                  { k: 'ones',      lbl: __alloT('stem.manipulatives.pv_o', '1s'),     val: b10.ones,      mult: 1,    fill: '#ea580c', cx: 368 }
+                ];
+                return h('div', { className: 'manip-pv-stage' },
+                  h('svg', {
+                    viewBox: '0 0 420 74', width: '100%', height: 'auto', role: 'img',
+                    'aria-label': __alloT('stem.manipulatives.pv_diagram_aria', 'Place-value chart showing thousands, hundreds, tens, and ones counts with times-ten regrouping arrows'),
+                    style: { display: 'block', maxHeight: 82 }
+                  },
+                    [105, 211, 316].map(function(ax, idx) {
+                      return h('g', { key: 'pv-arr-' + idx },
+                        h('line', { x1: ax + 14, y1: 30, x2: ax - 12, y2: 30, stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 1.8 }),
+                        h('path', { d: 'M' + (ax - 8) + ' 26 L' + (ax - 14) + ' 30 L' + (ax - 8) + ' 34', fill: 'none', stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                        h('text', { x: ax + 1, y: 21, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#64748b', fontSize: 10, fontWeight: 800 }, '×10')
+                      );
+                    }),
+                    pvCols.map(function(col) {
+                      var tradeReady = col.k !== 'thousands' && col.val >= 10;
+                      return h('g', { key: 'pv-' + col.k },
+                        h('rect', { x: col.cx - 38, y: 10, width: 76, height: 42, rx: 10, fill: isContrast ? '#000000' : (col.val > 0 ? col.fill : '#f1f5f9'), stroke: isContrast ? (tradeReady ? '#ffff00' : '#00ff00') : (tradeReady ? '#a855f7' : col.fill), strokeWidth: tradeReady ? 2.5 : 1.5, opacity: isContrast ? 1 : (col.val > 0 ? 0.94 : 0.7) }),
+                        h('text', { x: col.cx, y: 29, textAnchor: 'middle', fill: isContrast ? '#ffffff' : (col.val > 0 ? '#ffffff' : '#334155'), fontSize: 14, fontWeight: 900 }, String(col.val)),
+                        h('text', { x: col.cx, y: 45, textAnchor: 'middle', fill: isContrast ? '#ffff00' : (col.val > 0 ? '#f8fafc' : '#475569'), fontSize: 10, fontWeight: 700 }, col.lbl),
+                        tradeReady && h('text', { x: col.cx, y: 67, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#7e22ce', fontSize: 10, fontWeight: 900 }, __alloT('stem.manipulatives.pv_trade_ready', '10→1 ready'))
+                      );
+                    })
+                  )
+                );
+              })()
             ),
             h('div', { className: 'flex items-center justify-center gap-4 mb-3 text-[0.6875rem] font-bold text-slate-600' },
               h('span', null, __alloT('stem.manipulatives.cube_1000', '\u25A0 Cube = 1000')), h('span', null, __alloT('stem.manipulatives.flat_100', '\u25AC Flat = 100')), h('span', null, __alloT('stem.manipulatives.rod_10', '\u2503 Rod = 10')), h('span', null, __alloT('stem.manipulatives.unit_1', '\u25AA Unit = 1'))
@@ -2530,14 +2649,31 @@ window.StemLab = window.StemLab || {
               checkBadges({ hcPrimesShown: true });
             },
               className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-violet-600 text-white hover:bg-violet-700' }, __alloT('stem.manipulatives.show_primes', '🔢 Show primes')),
-            h('button', { onClick: function() {
-              var f = parseInt(prompt('Highlight multiples of which number?', '7') || '0', 10);
-              if (!f || f < 2 || f > 99) return;
-              var nh = {};
-              for (var k = f; k <= 100; k += f) nh[k] = true;
-              upd({ hundredsHighlight: nh });
-            },
-              className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, __alloT('stem.manipulatives.multiples_of_n', '× Multiples of n')),
+            h('div', { className: 'inline-flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded px-1.5 py-0.5' },
+              h('input', {
+                type: 'number', min: 2, max: 99,
+                value: _m.hundredsMultipleN == null ? '7' : _m.hundredsMultipleN,
+                'aria-label': __alloT('stem.manipulatives.aria_multiple_factor', 'Number to highlight multiples of (2 to 99)'),
+                onChange: function(e) { upd({ hundredsMultipleN: e.target.value }); },
+                onKeyDown: function(e) {
+                  if (e.key !== 'Enter') return;
+                  var f = parseInt(_m.hundredsMultipleN == null ? '7' : _m.hundredsMultipleN, 10);
+                  if (!f || f < 2 || f > 99) return;
+                  var nh = {};
+                  for (var k = f; k <= 100; k += f) nh[k] = true;
+                  upd({ hundredsHighlight: nh });
+                },
+                className: 'w-12 px-1.5 py-1 rounded border border-indigo-300 bg-white text-slate-900 text-xs font-bold text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600'
+              }),
+              h('button', { type: 'button', onClick: function() {
+                var f = parseInt(_m.hundredsMultipleN == null ? '7' : _m.hundredsMultipleN, 10);
+                if (!f || f < 2 || f > 99) return;
+                var nh = {};
+                for (var k = f; k <= 100; k += f) nh[k] = true;
+                upd({ hundredsHighlight: nh });
+              },
+                className: 'transition-colors px-2.5 py-1 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' }, __alloT('stem.manipulatives.multiples_of_n', '× Multiples of n'))
+            ),
             h('button', { onClick: function() {
               // Sieve of Eratosthenes step: highlight all composites
               var nh = {};
@@ -3872,11 +4008,21 @@ window.StemLab = window.StemLab || {
           document.body.appendChild(a); a.click(); document.body.removeChild(a);
         };
         var importConstr = function(file) {
+          if (!file) return;
+          if (file.size > 5 * 1024 * 1024) {
+            if (addToast) addToast('Library file exceeds the 5 MB limit.', 'error');
+            return;
+          }
           var rdr = new FileReader();
           rdr.onload = function() {
             try {
-              var parsed = JSON.parse(rdr.result);
-              upd({ savedConstructions: Object.assign({}, savedConstructions, parsed) });
+              var parsed = JSON.parse(rdr.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
+              if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid library');
+              var merged = Object.assign({}, savedConstructions);
+              Object.keys(parsed).forEach(function(k) {
+                if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') merged[k] = parsed[k];
+              });
+              upd({ savedConstructions: merged });
               if (addToast) addToast('📥 Imported library.', 'success');
             } catch (e) {
               if (addToast) addToast('Could not parse library file.', 'error');

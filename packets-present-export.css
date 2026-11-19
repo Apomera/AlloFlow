@@ -22,7 +22,48 @@
 .pe-starter-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+}
+
+.pe-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: min(14rem, 100%);
+  max-width: 100%;
+}
+
+.pe-control label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pe-control select {
+  min-height: 2.5rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.pe-sheet-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
+}
+
+.pe-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  margin-left: auto;
 }
 
 .pe-status {
@@ -51,5 +92,38 @@
 @media (max-width: 44rem) {
   .pe-starters {
     padding: 0.85rem 0.9rem;
+  }
+  .pe-links {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  /* WordPractice mounts an intentionally light slide/card editor (.awp, color-scheme: light).
+     Reset inherited packets.css dark custom properties inside the host so headings, legends,
+     and links keep full contrast against the light .awp canvas. */
+  #present-export-host {
+    color-scheme: light;
+    --ink: #0f172a;
+    --text: #1e293b;
+    --muted: #475569;
+    --line: #d7dee8;
+    --line-strong: #64748b;
+    --bg: #f7faf9;
+    --surface: #ffffff;
+    --accent: #3730a3;
+    --accent-dark: #2a2580;
+    --accent-soft: #eef0fb;
+    --on-accent: #ffffff;
+    --note: #f1f5f9;
+    color: var(--text);
+  }
+}
+
+@media (forced-colors: active) {
+  .pe-starters,
+  .pe-control select,
+  #present-export-host .awp-inline-dialog {
+    border-color: CanvasText;
   }
 }

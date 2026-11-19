@@ -16,7 +16,7 @@ function _mathAiUsable(kind, fn) {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
 }
 const _mathAuthoredHints = (steps) => {
   const texts = (Array.isArray(steps) ? steps : []).map(step => step && typeof step === 'object' ? String(step.explanation || step.latex || '').trim() : '').filter(Boolean);

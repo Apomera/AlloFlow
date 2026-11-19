@@ -15077,13 +15077,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           var ensure = function (cb) {
             if (effectsDisposed) return;
             if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            if (window._isDesktopBundledApp === true) { cb(); return; }
             var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+            var _sri = ['sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj','sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R','sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg','sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs','sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3','sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa'];
             var i = 0;
             (function nextScript() {
               if (effectsDisposed) return;
               if (i >= u.length) { cb(); return; }
               var script = document.createElement('script');
               script.src = u[i];
+              script.integrity = _sri[i];
+              script.crossOrigin = 'anonymous';
+              script.referrerPolicy = 'no-referrer';
               ambientScripts.push(script);
               function settled() {
                 var scriptIndex = ambientScripts.indexOf(script);
@@ -17839,6 +17844,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+
+  // Bespoke Sustainable Fisheries & Maritime Studio CSS + High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-fisherlab-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-fisherlab-studio-css';
+    st.textContent = [
+      '.fl-hero-identity { display: flex; align-items: flex-start; gap: 14px; min-width: 0; margin-bottom: 10px; }',
+      '.fl-emblem-box { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, rgba(14,165,233,0.28), rgba(6,45,53,0.94)); border: 1.5px solid rgba(125,211,252,0.52); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 6px 18px rgba(2,12,27,0.5); }',
+      '.fl-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(16,185,129,0.2); border: 1px solid rgba(110,231,183,0.48); color: #a7f3d0; font-size: 10px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.fl-cycle-strip { margin-top: 14px; padding: 8px 10px; border-radius: 12px; background: rgba(2,22,38,0.68); border: 1px solid rgba(125,211,252,0.28); }',
+      '.fl-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(125,211,252,0.22); }',
+      '.fl-starter-label { font-size: 10.5px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; color: #bae6fd; }',
+      '.fl-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(3,21,35,0.78); border: 1px solid rgba(125,211,252,0.38); color: #f0f9ff; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.fl-starter-chip:hover:not(:disabled) { background: rgba(14,165,233,0.28); border-color: #7dd3fc; color: #ffffff; }',
+      '.fl-starter-chip:focus-visible, [data-fisherlab-command="true"] button:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="fisherLab"] [data-fisherlab-command="true"] { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="fisherLab"] .fl-emblem-box, .theme-contrast [data-stem-tool-shell="fisherLab"] .fl-subject-badge, .theme-contrast [data-stem-tool-shell="fisherLab"] .fl-cycle-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="fisherLab"] .fl-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="fisherLab"] .fl-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('fisherLab', {
     label: 'FisherLab: Boating & Fishing Sim',
     title: 'FisherLab: Boating & Fishing Sim',
@@ -17859,7 +17887,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     if (!h && React) h = React.createElement;
     var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
 
-    var stateInit = loadState();
+    var rawStateInit = loadState();
+    var stateInit = (rawStateInit && typeof rawStateInit === 'object' && !Array.isArray(rawStateInit)) ? rawStateInit : {};
     var accessibilityHook = useState(getCoreAccessibilityPreferences(stateInit.a11y));
     var accessibilityPreferences = accessibilityHook[0], setAccessibilityPreferences = accessibilityHook[1];
     var tabHook = useState('home');
@@ -20248,8 +20277,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         },
           h('div', { className: 'fl-brief-grid' },
             h('div', { style: { minWidth: 0 } },
-              h('div', { style: Object.assign({}, headerStyle, { color: '#a7f3d0', marginBottom: 6 }) }, 'FisherLab Harbor Briefing'),
-              h('h2', { id: 'fl-command-title', style: { margin: '0 0 8px', fontSize: 'clamp(28px, 3.2vw, 42px)', lineHeight: 1.08, color: '#f8fafc', fontWeight: 900 } }, 'Read the water. Make your call.'),
+              h('div', { className: 'fl-hero-identity' },
+                h('div', { className: 'fl-emblem-box', 'aria-hidden': 'true' },
+                  h('svg', { viewBox: '0 0 48 48', width: 38, height: 38, fill: 'none' },
+                    h('circle', { cx: 24, cy: 24, r: 19, stroke: '#7dd3fc', strokeWidth: 1.5, opacity: 0.85 }),
+                    h('path', { d: 'M9 30 Q16 25 24 30 T39 30', stroke: '#38bdf8', strokeWidth: 2, strokeLinecap: 'round' }),
+                    h('path', { d: 'M12 36 Q18 32 24 36 T36 36', stroke: '#34d399', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.85 }),
+                    h('path', { d: 'M16 20 C21 14 29 14 34 20 C29 24 21 24 16 20 Z', fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
+                    h('polygon', { points: '16,20 11,16 11,24', fill: '#34d399' }),
+                    h('circle', { cx: 29, cy: 19, r: 1.4, fill: '#082f49' }),
+                    h('polygon', { points: '24,6 26.5,11 21.5,11', fill: '#fde68a' })
+                  )
+                ),
+                h('div', { style: { minWidth: 0, flex: '1 1 220px' } },
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                    h('span', { className: 'fl-subject-badge' }, __alloT('stem.fisherlab.badge_subject', 'Marine Ecology · Sustainable Fisheries')),
+                    h('span', { style: Object.assign({}, headerStyle, { color: '#a7f3d0', marginBottom: 0 }) }, __alloT('stem.fisherlab.harbor_briefing', 'FisherLab Harbor Briefing'))
+                  ),
+                  h('h2', { id: 'fl-command-title', style: { margin: '0 0 6px', fontSize: 'clamp(24px, 3vw, 38px)', lineHeight: 1.1, color: '#f8fafc', fontWeight: 900 } }, __alloT('stem.fisherlab.hero_title', 'Read the water. Make your call.'))
+                )
+              ),
               h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.55, color: '#dbeafe', maxWidth: 660 } },
                 isMaineCurriculum ? 'Pilot a skiff, investigate your catch, and explain the evidence behind your decisions. Start with a guided voyage, or try a quick science warmup below.' :
                   'Start with the regional core voyage, or warm up with its chart-planning schematic, traffic rule, species guide, and instructional regulation profile.'),
@@ -20257,9 +20304,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 [
                   'Region: ' + (activeRegion.label || region),
                   isMaineCurriculum ? 'Next roadmap item: ' + (nextMission ? nextMission.title : 'Open water practice') : 'Regional voyage: ' + activeMission.title,
-                  isMaineCurriculum ? 'Roadmap evidence: ' + missionProgress + '%' : 'Core voyage: ' + (regionalCoreComplete ? 'complete' : 'ready')
+                  isMaineCurriculum ? 'Roadmap evidence: ' + missionProgress + '%' : 'Core voyage: ' + (regionalCoreComplete ? 'complete' : 'ready'),
+                  caughtCount + ' ' + __alloT('stem.fisherlab.telemetry_species_obs', 'species observed') + ' · ' + TABS.length + ' ' + __alloT('stem.fisherlab.telemetry_sections', 'sections')
                 ].map(function(label, idx) {
-                  var colors = ['#bae6fd', '#fde68a', '#bbf7d0'];
+                  var colors = ['#bae6fd', '#fde68a', '#bbf7d0', '#e0f2fe'];
                   return h('span', {
                     key: label,
                     style: {
@@ -20268,13 +20316,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       minHeight: 28,
                       padding: '5px 9px',
                       borderRadius: 8,
-                      background: 'rgba(2,6,23,0.42)',
-                      border: '1px solid rgba(226,232,240,0.16)',
-                      color: colors[idx],
+                      background: 'rgba(2,6,23,0.48)',
+                      border: '1px solid rgba(226,232,240,0.2)',
+                      color: colors[idx] || '#e0f2fe',
                       fontSize: 11,
                       fontWeight: 800
                     }
                   }, label);
+                })
+              ),
+              // Sustainable Fisheries Stewardship Cycle Schematic (inline SVG, >=10.5px labels)
+              h('div', { className: 'fl-cycle-strip' },
+                h('svg', {
+                  viewBox: '0 0 580 58', role: 'img',
+                  'aria-label': __alloT('stem.fisherlab.a11y_stewardship_cycle_diagram', 'Sustainable fisheries workflow: plot nautical charts and safe navigation, sample and identify marine species, then apply harvest regulations and log field evidence'),
+                  style: { width: '100%', maxHeight: 60, height: 'auto', display: 'block' }
+                },
+                  h('line', { x1: 174, y1: 29, x2: 208, y2: 29, stroke: '#38bdf8', strokeWidth: 2 }),
+                  h('line', { x1: 372, y1: 29, x2: 406, y2: 29, stroke: '#34d399', strokeWidth: 2 }),
+                  h('rect', { x: 8, y: 7, width: 166, height: 44, rx: 10, fill: 'rgba(14,165,233,0.24)', stroke: '#38bdf8', strokeWidth: 1.5 }),
+                  h('text', { x: 91, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '1. Chart & Navigate'),
+                  h('text', { x: 91, y: 41, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'Buoys · COLREGS · Tides'),
+                  h('rect', { x: 208, y: 7, width: 164, height: 44, rx: 10, fill: 'rgba(16,185,129,0.22)', stroke: '#34d399', strokeWidth: 1.5 }),
+                  h('text', { x: 290, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '2. Sample & Identify'),
+                  h('text', { x: 290, y: 41, textAnchor: 'middle', fill: '#a7f3d0', fontSize: 10.5 }, 'Species · Habitat · Gear'),
+                  h('rect', { x: 406, y: 7, width: 166, height: 44, rx: 10, fill: 'rgba(251,191,36,0.22)', stroke: '#fbbf24', strokeWidth: 1.5 }),
+                  h('text', { x: 489, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '3. Steward & Log'),
+                  h('text', { x: 489, y: 41, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'Regs · Release · Journal')
+                )
+              ),
+              // One-click Maritime Workflow Starters (44px touch targets, hidden under lock)
+              !(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked)) && h('div', { className: 'fl-starter-bar', role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_quick_starters', 'Quick fisheries lab starters') },
+                h('span', { className: 'fl-starter-label' }, __alloT('stem.fisherlab.quick_launch', 'Quick launch:')),
+                [
+                  { id: 'sim', icon: '⛵', label: __alloT('stem.fisherlab.starter_sim', '3D Harbor Sim') },
+                  { id: 'chart', icon: '🗺️', label: __alloT('stem.fisherlab.starter_chart', 'Nautical Chart') },
+                  { id: 'species', icon: '🐟', label: __alloT('stem.fisherlab.starter_species', 'Species Guide') },
+                  { id: 'buoyage', icon: '⚓', label: __alloT('stem.fisherlab.starter_buoyage', 'Buoyage') },
+                  { id: 'regs', icon: '📜', label: __alloT('stem.fisherlab.starter_regs', 'Regional Regs') },
+                  { id: 'journal', icon: '📓', label: __alloT('stem.fisherlab.starter_journal', 'Field Journal') }
+                ].map(function(st) {
+                  return h('button', {
+                    key: 'fl-st-' + st.id, type: 'button', className: 'fl-starter-chip',
+                    onClick: function() { setTab(st.id); flAnnounce(st.label + ' section open'); }
+                  }, h('span', { 'aria-hidden': 'true' }, st.icon), h('span', null, st.label));
                 })
               )
             ),
@@ -20294,7 +20379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('text', { x: 132, y: 82, fill: '#ffedd5', fontSize: 12, fontWeight: 800 }, 'Buoys'),
                 h('text', { x: 244, y: 30, fill: '#dcfce7', fontSize: 12, fontWeight: 800 }, 'Grounds'),
                 h('text', { x: 18, y: 22, fill: '#bae6fd', fontSize: 11 }, buoyageCheck.ruleLabel),
-                h('text', { x: 322, y: 174, fill: '#bae6fd', fontSize: 9, fontWeight: 900, textAnchor: 'end' }, 'SCHEMATIC ONLY')
+                h('text', { x: 322, y: 174, fill: '#bae6fd', fontSize: 10, fontWeight: 900, textAnchor: 'end' }, 'SCHEMATIC ONLY')
               ),
               h('div', { className: 'fl-brief-stats' },
                 [

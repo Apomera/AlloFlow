@@ -29,24 +29,42 @@ const WolframProvider = (() => {
     }
 
     /**
-     * Check if Wolfram is available (has API key + not in Canvas)
+     * Check if Wolfram is available (has API key + not in Canvas or Desktop offline)
      */
     function isAvailable() {
-        // Canvas blocks external APIs
-        if (typeof window !== 'undefined' && window._isCanvasEnv) return false;
+        // Canvas, bundled Desktop offline builds, secrets lock, student AI lock, or restrictive managed policy block external APIs
+        if (typeof window !== 'undefined' && (
+            window._isCanvasEnv || window._isDesktopBundledApp === true || window.__ALLOFLOW_DESKTOP_OFFLINE__ === true ||
+            window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true ||
+            (window.ALLOFLOW_MANAGED_AI_POLICY != null && (window.ALLOFLOW_MANAGED_AI_POLICY.version !== 1 || window.ALLOFLOW_MANAGED_AI_POLICY.allowExternalSearch !== true))
+        )) return false;
         return !!getApiKey();
     }
 
+    async function fetchWolfram(url) {
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timer = controller ? setTimeout(() => controller.abort(), 10000) : null;
+        try {
+            return await fetch(url, {
+                credentials: 'omit',
+                referrerPolicy: 'no-referrer',
+                signal: controller ? controller.signal : undefined,
+            });
+        } finally {
+            if (timer) clearTimeout(timer);
+        }
+    }
+
     /**
-     * Quick answer query — returns a short text response
-     * Example: query("solve 2x + 5 = 13") → "x = 4"
+     * Quick answer query - returns a short text response
+     * Example: query("solve 2x + 5 = 13") -> "x = 4"
      */
     async function query(input) {
         if (!isAvailable()) return null;
         const appId = getApiKey();
         try {
             const url = `${SHORT_URL}?appid=${encodeURIComponent(appId)}&i=${encodeURIComponent(input)}`;
-            const res = await fetch(url);
+            const res = await fetchWolfram(url);
             if (!res.ok) {
                 console.warn('[Wolfram] Query failed:', res.status);
                 return null;
@@ -59,7 +77,7 @@ const WolframProvider = (() => {
     }
 
     /**
-     * Full query with pods — returns structured result
+     * Full query with pods - returns structured result
      * Useful for step-by-step solutions and detailed answers
      */
     async function fullQuery(input) {
@@ -67,7 +85,7 @@ const WolframProvider = (() => {
         const appId = getApiKey();
         try {
             const url = `${BASE_URL}/query?appid=${encodeURIComponent(appId)}&input=${encodeURIComponent(input)}&format=plaintext&output=json`;
-            const res = await fetch(url);
+            const res = await fetchWolfram(url);
             if (!res.ok) return null;
             const data = await res.json();
             return data.queryresult || null;
@@ -97,10 +115,12 @@ const WolframProvider = (() => {
             const wolframNum = parseFloat(String(wolframAnswer).replace(/[^0-9.\-]/g, ''));
 
             let correct = false;
-            if (!isNaN(studentNum) && !isNaN(wolframNum)) {
+            if (!studentNorm) {
+                correct = false;
+            } else if (!isNaN(studentNum) && !isNaN(wolframNum)) {
                 correct = Math.abs(studentNum - wolframNum) < 0.01;
             } else {
-                correct = studentNorm === wolframNorm || wolframNorm.includes(studentNorm);
+                correct = studentNorm === wolframNorm || (wolframNorm.includes('=') && wolframNorm.split('=').pop() === studentNorm);
             }
 
             return {

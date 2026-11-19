@@ -159,9 +159,8 @@ function OutlineView(props) {
                                             addToast(t('concept_map.view_3d_failed') || 'The 3D view could not load here. The outline still works.', 'error');
                                         }
                                     }}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50"
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50"
                                     title={t('concept_map.toolbar.view_3d_tooltip') || 'See this organizer as an orbitable 3D view (depth = strand)'}
-                                    aria-label={t('concept_map.toolbar.view_3d_tooltip') || 'View in 3D'}
                                 >
                                     🧊 {t('concept_map.toolbar.view_3d') || 'View in 3D'}
                                 </button>
@@ -245,7 +244,7 @@ function OutlineView(props) {
                                             onBlur={(e) => { if (conceptCompositionRef.current === e.currentTarget) conceptCompositionRef.current = null; }}
                                             onKeyDown={handleConceptKeyDown}
                                             placeholder={t('concept_map.setup.add_concept_placeholder')}
-                                            className="px-3 py-2 rounded-xl border-2 border-indigo-600 text-sm focus:border-indigo-400 outline-none w-32 bg-slate-50 focus:bg-white transition-colors"
+                                            className="px-3 py-2 rounded-xl border-2 border-indigo-600 text-sm focus:border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 w-32 bg-slate-50 focus:bg-white transition-colors"
                                         />
                                         <button
                                             type="button" style={controlSize} data-outline-add-concept disabled={!canAddConcept}

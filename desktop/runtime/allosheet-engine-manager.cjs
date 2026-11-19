@@ -479,28 +479,112 @@ function inspectExtractedTree(root, limits) {
   return { entryCount, extractedBytes };
 }
 
+const MAX_DOWNLOAD_REDIRECTS = 5;
+
+function isPrivateOrLoopbackHost(hostname) {
+  const host = String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '');
+  if (!host) return true;
+  if (host === 'localhost' || host.endsWith('.localhost') || host === 'metadata.google.internal') return true;
+  if (host === '::1' || host === '::' || host === '0:0:0:0:0:0:0:1' || host === '0:0:0:0:0:0:0:0') return true;
+  if (/^(?:fc|fd)[0-9a-f]{2}:/i.test(host) || /^fe[89ab][0-9a-f]:/i.test(host)) return true;
+  const v4Mapped = host.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  const ip = v4Mapped ? v4Mapped[1] : host;
+  const octets = ip.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (octets) {
+    const a = Number(octets[1]);
+    const b = Number(octets[2]);
+    if (a === 0 || a === 10 || a === 127) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true;
+  }
+  return false;
+}
+
+function validateArchiveDownloadUrl(rawUrl, isRedirect = false) {
+  let parsed;
+  try {
+    parsed = new URL(String(rawUrl || ''));
+  } catch {
+    throw new Error(isRedirect
+      ? 'The Grist Desktop download returned an invalid redirect URL.'
+      : 'The Grist Desktop download URL is invalid.');
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new Error(isRedirect
+      ? 'The Grist Desktop download redirected away from HTTPS.'
+      : 'The Grist Desktop download URL must use HTTPS.');
+  }
+  if (parsed.username || parsed.password) {
+    throw new Error('The Grist Desktop download URL must not contain embedded credentials.');
+  }
+  if (isPrivateOrLoopbackHost(parsed.hostname)) {
+    throw new Error('The Grist Desktop download URL points to a private or loopback host.');
+  }
+  return parsed.toString();
+}
+
+async function cancelResponseBodyQuietly(response) {
+  try {
+    if (response && response.body && typeof response.body.cancel === 'function') {
+      await response.body.cancel();
+    }
+  } catch {
+    // Ignore body cancellation errors during cleanup.
+  }
+}
+
 async function defaultDownloadArchive({ url, destinationPath, signal, maxBytes, expectedBytes, onProgress, fetchImpl }) {
   if (typeof fetchImpl !== 'function') throw new Error('No HTTPS download implementation is available.');
-  const response = await fetchImpl(url, {
-    method: 'GET',
-    redirect: 'follow',
-    signal,
-    headers: { Accept: 'application/zip' },
-  });
+  let currentUrl = validateArchiveDownloadUrl(url, false);
+  let response = null;
+  for (let hop = 0; hop <= MAX_DOWNLOAD_REDIRECTS; hop += 1) {
+    response = await fetchImpl(currentUrl, {
+      method: 'GET',
+      redirect: 'manual',
+      signal,
+      headers: { Accept: 'application/zip' },
+    });
+    const status = response && Number(response.status);
+    if (status === 301 || status === 302 || status === 303 || status === 307 || status === 308) {
+      await cancelResponseBodyQuietly(response);
+      if (hop >= MAX_DOWNLOAD_REDIRECTS) {
+        throw new Error('The Grist Desktop download exceeded the maximum number of redirects.');
+      }
+      const location = response.headers && typeof response.headers.get === 'function'
+        ? response.headers.get('location')
+        : '';
+      if (!location) {
+        throw new Error('The Grist Desktop download returned a redirect without a Location header.');
+      }
+      let nextUrl;
+      try {
+        nextUrl = new URL(location, currentUrl).toString();
+      } catch {
+        throw new Error('The Grist Desktop download returned an invalid redirect URL.');
+      }
+      currentUrl = validateArchiveDownloadUrl(nextUrl, true);
+      continue;
+    }
+    break;
+  }
   if (!response || !response.ok || !response.body) {
+    await cancelResponseBodyQuietly(response);
     throw new Error(`Grist Desktop download failed (HTTP ${response && response.status ? response.status : 'unknown'}).`);
   }
   if (response.url) {
-    const finalUrl = new URL(response.url);
-    if (finalUrl.protocol !== 'https:') throw new Error('The Grist Desktop download redirected away from HTTPS.');
+    validateArchiveDownloadUrl(response.url, true);
   }
   const statedLength = Number(response.headers && response.headers.get && response.headers.get('content-length'));
   if (Number.isFinite(statedLength) && statedLength > maxBytes) {
+    await cancelResponseBodyQuietly(response);
     throw new Error('The Grist Desktop archive exceeds the download size limit.');
   }
 
   const handle = await fs.promises.open(destinationPath, 'wx', 0o600);
   let written = 0;
+  let completed = false;
   try {
     for await (const rawChunk of response.body) {
       if (signal && signal.aborted) {
@@ -514,7 +598,9 @@ async function defaultDownloadArchive({ url, destinationPath, signal, maxBytes, 
       await handle.write(chunk);
       if (onProgress) onProgress(written, statedLength || expectedBytes || null);
     }
+    completed = true;
   } finally {
+    if (!completed) await cancelResponseBodyQuietly(response);
     await handle.close();
   }
   if (written < 1) throw new Error('The Grist Desktop download was empty.');
@@ -1453,7 +1539,9 @@ module.exports = {
   LOOPBACK_HOST,
   allocateLoopbackPort,
   createAlloSheetEngineManager,
+  defaultDownloadArchive,
   sha256File,
+  validateArchiveDownloadUrl,
   validateAsarEntrypoint,
   validateManifest,
   validateRelativeTarget,

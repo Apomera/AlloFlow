@@ -238,4 +238,25 @@ describe('the computer-voice page, run with a stand-in voice', () => {
     expect(page.$('make-all').disabled).toBe(true);
     expect(page.$('voice-making').hidden).toBe(true);
   }, 60000);
+
+  it('compresses Kokoro WAV recordings to MP3 before saving to My words when lame.min.js is available', async () => {
+    const page = await openVoicePage({ hash: '#words=zib' });
+    const prevAppend = page.d.head.appendChild;
+    page.d.head.appendChild = function (node) {
+      if (node && node.tagName === 'SCRIPT' && node.getAttribute('src') === 'lame.min.js') {
+        page.w.eval(read('lame.min.js'));
+        setTimeout(() => node.onload && node.onload(), 0);
+        return node;
+      }
+      return prevAppend.call(this, node);
+    };
+    page.$('get-voice').click();
+    await page.until(() => /The voice is ready/.test(page.$('voice-said').textContent), 'the voice');
+    page.$('make-all').click();
+    await page.until(() => /made and kept in My words/.test(page.$('make-said').textContent), 'the MP3 recording');
+    const zib = await page.w.AlloPacketMyWords.get('zib');
+    expect(zib.clip.dataUri.startsWith('data:audio/mpeg;base64,')).toBe(true);
+    expect(zib.clip.ms).toBe(250);
+    expect(zib.clip.bytes).toBeLessThan(wavBytes().length);
+  }, 60000);
 });

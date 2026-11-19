@@ -38,7 +38,17 @@
       const truncated = text.substring(0, 3000);
       const audioData = await callTTS(truncated, selectedVoice || 'Puck', 1);
       if (typeof audioData === 'string') {
-        const cleanSrc = audioData.trim();
+        let cleanSrc = audioData.trim();
+        if (/^blob:/i.test(cleanSrc)) {
+          try {
+            const resp = await fetch(cleanSrc);
+            if (resp && resp.ok) {
+              const audioBlob = await resp.blob();
+              const dataUrl = await _alloBlobToDataUrl(audioBlob);
+              if (typeof dataUrl === 'string') cleanSrc = dataUrl.trim();
+            }
+          } catch (_) {}
+        }
         if (/^data:audio\/[a-z0-9.+-]+(?:;[a-z0-9=._+-]+)*,[a-z0-9+/=%_\s-]+$/i.test(cleanSrc)) {
           const safeLabel = _escAudioHtml(label || '');
           const safeSrc = _escAudioHtml(cleanSrc);
@@ -630,6 +640,13 @@
     let ctx = null;
     try {
       ctx = new AC();
+      if (ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+        await Promise.race([
+          ctx.resume().catch(() => {}),
+          new Promise((resolve) => setTimeout(resolve, 1500))
+        ]);
+      }
+      if (ctx.state === 'suspended') return blob;
       const bytes = await blob.arrayBuffer();
       const decoded = await ctx.decodeAudioData(bytes.slice(0));
       const dest = ctx.createMediaStreamDestination();
@@ -643,11 +660,25 @@
         recorder.onerror = (ev) => reject((ev && ev.error) || new Error('encode'));
         recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType }));
       });
+      const maxWaitMs = Math.max(5000, Math.ceil((Number(decoded.duration) || 0) * 1000) + 5000);
+      let waitTimer = null;
+      let timedOut = false;
       recorder.start();
       src.start();
-      await new Promise((resolve) => { src.onended = resolve; });
+      await new Promise((resolve) => {
+        const finish = () => {
+          if (waitTimer) { clearTimeout(waitTimer); waitTimer = null; }
+          resolve();
+        };
+        src.onended = finish;
+        waitTimer = setTimeout(() => { timedOut = true; try { src.stop(); } catch (_) {} finish(); }, maxWaitMs);
+      });
       if (recorder.state !== 'inactive') recorder.stop();
-      const compressed = await done;
+      if (timedOut) return blob;
+      const compressed = await Promise.race([
+        done,
+        new Promise((resolve) => setTimeout(() => resolve(null), 3000))
+      ]);
       if (compressed && compressed.size > 0 && compressed.size < blob.size * 0.92) return compressed;
     } catch (e) {
       console.warn('[Export] Audio compression skipped:', e && e.message ? e.message : e);
@@ -805,7 +836,7 @@
               const zVal = resp ? String(resp.value || '').trim() : '';
               let zLabel = '';
               if (zVal) {
-                const placeBtn = act.querySelector('[data-venn-place-zone="' + zVal + '"]');
+                const placeBtn = Array.from(act.querySelectorAll('[data-venn-place-zone]')).find((b) => b.getAttribute('data-venn-place-zone') === zVal);
                 zLabel = (placeBtn && placeBtn.getAttribute('data-venn-zone-label')) || zVal;
               }
               const cTxt = String((btn ? btn.textContent : card.textContent) || '').replace(/\s+/g, ' ').trim();
@@ -1084,17 +1115,23 @@
       const raw = ((root && root.getAttribute && root.getAttribute('lang')) || (root && root.querySelector && root.querySelector('html[lang]') && root.querySelector('html[lang]').getAttribute('lang')) || '').toLowerCase();
       const code = raw.split('-')[0];
       const map = { en: 'English', es: 'Spanish', fr: 'French', de: 'German', pt: 'Portuguese', it: 'Italian', ar: 'Arabic', zh: 'Chinese', ja: 'Japanese', ko: 'Korean', vi: 'Vietnamese', ru: 'Russian', uk: 'Ukrainian', hi: 'Hindi', bn: 'Bengali', ur: 'Urdu', fa: 'Persian', he: 'Hebrew', tr: 'Turkish', pl: 'Polish', nl: 'Dutch', sv: 'Swedish', no: 'Norwegian', da: 'Danish', fi: 'Finnish', el: 'Greek', ro: 'Romanian', id: 'Indonesian', ms: 'Malay', th: 'Thai', tl: 'Tagalog' };
-      return map[code] || raw || undefined;
+      return (Object.prototype.hasOwnProperty.call(map, code) ? map[code] : '') || raw || undefined;
     } catch (e) { return undefined; }
   };
   const _alloFetchAudioBlob = async (audioUrl) => {
     if (!audioUrl || typeof audioUrl !== 'string') return null;
+    const useTimeout = !/^(?:blob|data):/i.test(audioUrl) && typeof AbortController !== 'undefined';
+    const ctrl = useTimeout ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), 20000) : null;
     try {
-      const resp = await fetch(audioUrl);
+      const resp = await fetch(audioUrl, ctrl ? { signal: ctrl.signal } : undefined);
       if (!resp.ok) return null;
       const blob = await resp.blob();
       return blob && blob.size > 0 ? blob : null;
     } catch (e) { return null; }
+    finally {
+      if (timer !== null) clearTimeout(timer);
+    }
   };
   const _alloCallExportTTS = async (callTTS, text, voice, language) => {
     try {
@@ -1623,18 +1660,23 @@
           // callTTS returns a blob: object URL for Gemini/Kokoro/Piper in this app.
           // Fetch it and convert to a base64 data: URL so the clip embeds in the
           // file and plays fully offline after download. data: URLs work too.
+          let _fetchTimer = null;
           try {
-            const _resp = await fetch(au);
+            const _ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+            if (_ctrl) _fetchTimer = setTimeout(() => { try { _ctrl.abort(); } catch (_) {} }, 15000);
+            const _resp = await fetch(au, _ctrl ? { signal: _ctrl.signal } : undefined);
+            if (!_resp.ok) throw new Error('HTTP ' + _resp.status);
             _blob = await _resp.blob();
             if (compressAudio && _blob) {
               if (progress) progress.update(progressState.done, progressState.total, 'Compressing audio for sentence ' + (k + 1) + ' of ' + audioJobs.length + '...');
               _blob = await _alloCompressAudioBlob(_blob);
             }
             dataUrl = await _alloBlobToDataUrl(_blob);
-          } catch (e) { dataUrl = au.indexOf('data:') === 0 ? au : null; }
+          } catch (e) { dataUrl = au.indexOf('data:audio/') === 0 ? au : null; }
+          finally { if (_fetchTimer) clearTimeout(_fetchTimer); }
           if (au.indexOf('blob:') === 0) { try { URL.revokeObjectURL(au); } catch (e) {} }
         }
-        if (dataUrl && typeof dataUrl === 'string' && dataUrl.indexOf('data:') === 0) {
+        if (dataUrl && typeof dataUrl === 'string' && dataUrl.indexOf('data:audio/') === 0) {
           const a = doc.createElement('audio'); a.setAttribute('preload', 'none'); a.setAttribute('data-ka-s', String(job.item.idx)); a.src = dataUrl;
           job.abox.appendChild(a);
           embeddedCount++;

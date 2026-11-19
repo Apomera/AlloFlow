@@ -240,21 +240,22 @@ function normalizeLayout(raw, taken, studentSet) {
   var id = typeof raw.id === "string" && raw.id.trim() ? raw.id.trim() : null;
   if (!id || taken[id]) return null;
   taken[id] = 1;
-  var idsTaken = {};
+  var idsTaken = /* @__PURE__ */ Object.create(null);
   var seats = (Array.isArray(raw.seats) ? raw.seats : []).map(function(s) {
     return normalizeSeat(s, idsTaken);
   }).filter(Boolean).slice(0, 60);
   var furniture = (Array.isArray(raw.furniture) ? raw.furniture : []).map(function(f) {
     return normalizeFurniture(f, idsTaken);
   }).filter(Boolean).slice(0, 30);
-  var seatSet = {};
+  var seatSet = /* @__PURE__ */ Object.create(null);
   seats.forEach(function(s) {
     seatSet[s.id] = 1;
   });
   var assignments = {};
   if (raw.assignments && typeof raw.assignments === "object") {
-    var used = {};
+    var used = /* @__PURE__ */ Object.create(null);
     Object.keys(raw.assignments).forEach(function(seatId) {
+      if (seatId === "__proto__" || seatId === "constructor" || seatId === "prototype") return;
       var name = raw.assignments[seatId];
       if (seatSet[seatId] && typeof name === "string" && name && studentSet[name] && !used[name]) {
         assignments[seatId] = name;
@@ -773,6 +774,7 @@ function _useSeatingFocusTrap(rootRef, active, onEscape) {
       var topTrap = trapStack && trapStack[trapStack.length - 1];
       if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === "function" && topTrap.root.contains(root))) return;
       if (event.key === "Escape") {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof onEscapeRef.current === "function") onEscapeRef.current();
@@ -828,7 +830,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   LL_CUR.lang = uiLang;
   LL_CUR.cache = _llCacheRef.current;
   React.useEffect(function() {
-    if (uiLang === "English" || typeof window === "undefined" || typeof window.callGemini !== "function" || window.callGemini._alloQrBlocked || window.__alloStudentAiDisabled === true || typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text", window.callGemini)) return void 0;
+    if (uiLang === "English" || typeof window === "undefined" || typeof window.callGemini !== "function" || window.callGemini._alloQrBlocked || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text", window.callGemini)) return void 0;
     var cache = _llCacheRef.current[uiLang] || {}, attempted = _llAttemptedRef.current[uiLang] || {};
     var missing = Object.keys(STR_REG).filter(function(k) {
       return !cache[k] && !attempted[k];
@@ -1237,7 +1239,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   );
   if (!isOpen) return null;
   const btn = "px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none disabled:opacity-40";
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-2 sm:p-4", onClick: onClose }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-2 sm:p-4", role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: panelRef,
@@ -1246,7 +1248,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       "aria-modal": "true",
       "aria-label": tr("Seating Chart"),
       onClick: (e) => e.stopPropagation(),
-      className: "bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden"
+      className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden"
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/70" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, "\u{1FA91}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h2", { className: "text-base font-black text-slate-800 truncate" }, tr("Seating Chart"), rosterKey && rosterKey.className ? " \u2014 " + rosterKey.className : ""), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, tr("Charts and constraints stay on this device inside your roster. Nothing is sent anywhere."))), layout && /* @__PURE__ */ React.createElement(
       "select",
@@ -1472,11 +1474,11 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       const gap = gaps.some((g) => g.id === c.id);
       return /* @__PURE__ */ React.createElement("div", { key: c.id, className: "flex items-start gap-1.5 rounded-lg px-2 py-1.5 text-[11px] " + (unmet ? "bg-amber-50 border border-amber-200" : "bg-slate-50") }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, /* @__PURE__ */ React.createElement("b", null, constraintTypeLabel(c.type)), ": ", c.students.map(displayNameOf).join(" + "), c.type === "fixed_seat" && seatNumberOf[c.seatId] ? " \u2192 " + tr("Seat {n}", { n: seatNumberOf[c.seatId] }) : "", unmet && /* @__PURE__ */ React.createElement("span", { className: "block text-amber-700" }, tr("unmet in current arrangement")), gap && /* @__PURE__ */ React.createElement("span", { className: "block text-sky-700" }, tr("add a {kind} to the map for this to work", { kind: furnitureLabel(CONSTRAINT_TYPES.filter((s) => s.type === c.type)[0].anchor) }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeConstraint(c.id), "aria-label": tr("Remove constraint"), className: "text-slate-600 hover:text-rose-600 font-bold" }, "\u2715"));
     }), !seating.constraints.length && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, tr("None yet."))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5 bg-slate-50 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("select", { value: cType, onChange: (e) => setCType(e.target.value), "aria-label": tr("Constraint type"), className: "w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white" }, CONSTRAINT_TYPES.map((ct) => /* @__PURE__ */ React.createElement("option", { key: ct.type, value: ct.type }, constraintTypeLabel(ct.type)))), /* @__PURE__ */ React.createElement("select", { value: cA, onChange: (e) => setCA(e.target.value), "aria-label": tr("Student"), className: "w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("Student"), "\u2026"), studentNames.map((n2) => /* @__PURE__ */ React.createElement("option", { key: n2, value: n2 }, displayNameOf(n2)))), (CONSTRAINT_TYPES.filter((ct) => ct.type === cType)[0] || {}).pair && /* @__PURE__ */ React.createElement("select", { value: cB, onChange: (e) => setCB(e.target.value), "aria-label": tr("Second student"), className: "w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("Second student"), "\u2026"), studentNames.filter((n2) => n2 !== cA).map((n2) => /* @__PURE__ */ React.createElement("option", { key: n2, value: n2 }, displayNameOf(n2)))), cType === "fixed_seat" && /* @__PURE__ */ React.createElement("select", { value: cSeat, onChange: (e) => setCSeat(e.target.value), "aria-label": tr("Seat"), className: "w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("Seat"), "\u2026"), sortedSeats.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.id, value: s.id }, tr("Seat {n}", { n: seatNumberOf[s.id] })))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addConstraint, disabled: !cA, className: btn + " w-full bg-indigo-600 text-white hover:bg-indigo-700" }, "\uFF0B ", tr("Add constraint")))), lastSolve && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg px-2.5 py-2 text-[11px] " + (lastSolve.violations.length ? "bg-amber-50 text-amber-800" : "bg-emerald-50 text-emerald-800") }, lastSolve.violations.length ? tr("{n} constraints could not be fully satisfied \u2014 they are marked in the list above.", { n: lastSolve.violations.length }) : "\u2713 " + tr("All constraints satisfied."))), Object.keys(groups).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "p-2.5 border-t border-slate-100 flex flex-wrap gap-2" }, Object.keys(groups).map((gid) => /* @__PURE__ */ React.createElement("span", { key: gid, className: "inline-flex items-center gap-1 text-[10px] font-bold text-slate-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "w-2.5 h-2.5 rounded-full inline-block", style: { background: groups[gid] && groups[gid].color || "#94a3b8" } }), groups[gid] && groups[gid].name || gid)))))),
-    confirmState && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[220] bg-black/40 flex items-center justify-center p-4", onClick: () => setConfirmState(null) }, /* @__PURE__ */ React.createElement("div", { ref: confirmRef, tabIndex: -1, role: "alertdialog", "aria-modal": "true", "aria-label": confirmState.message, onClick: (e) => e.stopPropagation(), className: "bg-white rounded-xl shadow-2xl p-5 max-w-sm w-full" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700 font-medium" }, confirmState.message), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-end mt-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", autoFocus: true, "data-safe-default": "true", onClick: () => setConfirmState(null), className: btn + " min-h-11 bg-slate-100 text-slate-700 hover:bg-slate-200" }, t && t("common.cancel") || tr("Cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    confirmState && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[220] bg-black/40 flex items-center justify-center p-4", role: "presentation", onClick: () => setConfirmState(null) }, /* @__PURE__ */ React.createElement("div", { ref: confirmRef, tabIndex: -1, role: "alertdialog", "aria-modal": "true", "aria-label": confirmState.message, onClick: (e) => e.stopPropagation(), className: "allo-docsuite bg-white rounded-xl shadow-2xl p-5 max-w-sm w-full" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700 font-medium" }, confirmState.message), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-end mt-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", autoFocus: true, "data-safe-default": "true", onClick: () => setConfirmState(null), className: btn + " min-h-11 bg-slate-100 text-slate-700 hover:bg-slate-200" }, t && t("common.cancel") || tr("Cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       const fn = confirmState.onYes;
       setConfirmState(null);
       if (fn) fn();
-    }, className: btn + " min-h-11 bg-rose-600 text-white hover:bg-rose-700" }, tr("Yes, continue")))))
+    }, className: btn + " min-h-11 bg-rose-700 text-white hover:bg-rose-800" }, tr("Yes, continue")))))
   ));
 }
 

@@ -4343,14 +4343,20 @@
       function customSymbolReport(input, pictureMap) {
         var parts = Array.isArray(input)
           ? input
-          : String(input == null ? '' : input).split(/[\s,;|\r\n]+/);
+          : String(input == null ? '' : input).replace(/^\uFEFF/, '').split(/\r?\n/).map(function (line) {
+              return line.replace(/^\s*(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '');
+            }).join('\n').split(/[\s,;|\r\n]+/);
         var out = [], skipped = [];
         var seen = Object.create(null);
         for (var i = 0; i < parts.length; i++) {
           var raw = parts[i];
-          var s = typeof raw === 'object' && raw !== null ? String(raw.answer || raw.display || '').trim() : String(raw == null ? '' : raw).trim();
+          var s = typeof raw === 'object' && raw !== null ? String(raw.answer || raw.display || '').trim() : String(raw == null ? '' : raw).replace(/^\uFEFF/, '').trim();
           try { s = s.normalize('NFC'); } catch (_) {}
           if (!s) continue;
+          if (!CUSTOM_OK.test(s)) {
+            var stripped = s.replace(/^["'\u201c\u201d\u2018\u2019(\[{]+|["'\u201c\u201d\u2018\u2019)\]}.,!?:;]+$/g, '');
+            if (stripped && CUSTOM_OK.test(stripped)) s = stripped;
+          }
           if (s.length > 16) { skipped.push({ text: s, why: 'long' }); continue; }
           if (!CUSTOM_OK.test(s)) { skipped.push({ text: s, why: 'characters' }); continue; }
           var key = s.toLowerCase();
@@ -4766,6 +4772,7 @@
 
       function injectRunnerStyles(doc) {
         if (!doc || !doc.head || doc.getElementById('allo-symbol-runner-styles')) return;
+        if (doc.documentElement && doc.documentElement.hasAttribute('data-sr-css')) return;
         var s = doc.createElement('style');
         s.id = 'allo-symbol-runner-styles';
         s.textContent = [
@@ -4828,6 +4835,13 @@
           '.asr-ran-cell{min-height:46px;border-radius:8px;border:2px solid #334155;background:#0f172a;color:#f8fafc;display:grid;place-items:center;font-weight:800;font-size:18px;padding:4px 2px;text-align:center;line-height:1.1}',
           '.asr-ran-cell[data-active="true"]{border-color:#facc15;background:#1e1b4b;box-shadow:0 0 0 2px #facc15}',
           '.asr-ran-cell[data-done="true"]{border-color:#15803d;background:#052e16;color:#bbf7d0}',
+          '.asr-ran-cell[data-stroop-ink="red"]{color:#ef4444}',
+          '.asr-ran-cell[data-stroop-ink="blue"]{color:#3b82f6}',
+          '.asr-ran-cell[data-stroop-ink="green"]{color:#22c55e}',
+          '.asr-ran-cell[data-stroop-ink="gold"]{color:#facc15}',
+          '.asr-sz{margin:0 3px;font-size:13px}',
+          '.asr-sz-sm{font-size:9px}',
+          '.asr-sz-lg{font-size:19px}',
           '.asr-hc .asr-ran-cell{background:#000;color:#ff0;border-color:#ff0}',
           '.asr-hc .asr-ran-cell[data-active="true"]{background:#ff0;color:#000}',
           '.asr-legend{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;font-size:12px;color:#cbd5e1;font-weight:700}',
@@ -5518,7 +5532,8 @@
               cell.setAttribute('data-active', absIdx === curIdx ? 'true' : 'false');
               cell.setAttribute('data-done', absIdx < curIdx ? 'true' : 'false');
               if (qItem.category === 'color_stroop') {
-                cell.style.color = qItem.stroopInk || '#f8fafc';
+                var inkKey = String(qItem.answer || '').toLowerCase();
+                if (inkKey === 'red' || inkKey === 'blue' || inkKey === 'green' || inkKey === 'gold') cell.setAttribute('data-stroop-ink', inkKey);
                 cell.textContent = (qItem.stroopShape || '') + ' ' + (qItem.stroopWord || qItem.display);
               } else if (qItem.dots > 0) {
                 // A dot pattern as on a dice face (3 by 3), not a row to count one by one; a printed digit stays beside it.
@@ -5529,8 +5544,8 @@
                 [['left', 'leftScale'], ['right', 'rightScale']].forEach(function (side) {
                   var n = doc.createElement('span');
                   n.textContent = qItem.sizePair[side[0]];
-                  n.style.fontSize = Math.round(13 * (Number(qItem.sizePair[side[1]]) || 1)) + 'px';
-                  n.style.margin = '0 3px';
+                  var sc = Number(qItem.sizePair[side[1]]) || 1;
+                  n.className = 'asr-sz ' + (sc < 0.85 ? 'asr-sz-sm' : sc > 1.15 ? 'asr-sz-lg' : 'asr-sz-md');
                   cell.appendChild(n);
                 });
               } else if (qItem.category === 'flanker' && typeof qItem.flankerCenter === 'number') {
@@ -5799,6 +5814,13 @@
 
         function onKeyDown(e) {
           if (destroyed || !current) return;
+          if (e.target === typeInput) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleAnswerAttempt(typeInput.value);
+            }
+            return;
+          }
           if (e.key === 'ArrowLeft') {
             e.preventDefault();
             setAimLane(Math.max(0, aimLane - 1));
@@ -5809,14 +5831,8 @@
             setAimLane(Math.min(2, aimLane + 1));
             return;
           }
-          if (e.target === typeInput) {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleAnswerAttempt(typeInput.value);
-            }
-            return;
-          }
           if (e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.target && e.target.closest && e.target.closest('button, summary, select, a[href], textarea, input')) return;
           if (/^[A-Za-z0-9]$/.test(e.key)) {
             e.preventDefault();
             keyBuffer += e.key;
@@ -6517,12 +6533,13 @@
     if (!AC || !OAC || !blob || typeof blob.arrayBuffer !== 'function') return Promise.reject(new Error('audio decoding unavailable'));
     return blob.arrayBuffer().then(function (buf) {
       var ctx = new AC();
-      return new Promise(function (res, rej) { ctx.decodeAudioData(buf, res, rej); }).then(function (audio) {
-        try { ctx.close(); } catch (_) {}
-        var off = new OAC(1, Math.max(1, Math.ceil(audio.duration * 16000)), 16000), src = off.createBufferSource();
-        src.buffer = audio; src.connect(off.destination); src.start(0);
-        return off.startRendering().then(function (out) { return out.getChannelData(0).slice(); });
-      });
+      return new Promise(function (res, rej) { ctx.decodeAudioData(buf, res, rej); })
+        .finally(function () { try { Promise.resolve(ctx.close()).catch(function () {}); } catch (_) {} })
+        .then(function (audio) {
+          var off = new OAC(1, Math.max(1, Math.ceil(audio.duration * 16000)), 16000), src = off.createBufferSource();
+          src.buffer = audio; src.connect(off.destination); src.start(0);
+          return off.startRendering().then(function (out) { return out.getChannelData(0).slice(); });
+        });
     });
   }
   function SymbolRunnerReadAloud(props) {
@@ -7071,12 +7088,22 @@
     function handleFileUpload(e) {
       var file = e.target.files && e.target.files[0];
       if (!file) return;
+      if (Number(file.size) > 10 * 1024 * 1024) {
+        setPanelStatus('Image exceeds 10 MB limit.');
+        try { e.target.value = ''; } catch (_) {}
+        return;
+      }
       var reader = new FileReader();
       reader.onload = function () {
+        var dataUrl = String(reader.result || '');
+        if (!/^data:image\/(png|jpe?g|gif|webp|avif);base64,/i.test(dataUrl)) {
+          setPanelStatus('Choose a PNG, JPEG, GIF, WebP, or AVIF image.');
+          return;
+        }
         var key = targetPicSym || (runnerCore ? (runnerCore.buildModePool(modeId, customText, pictures)[0] || {}).answer : 'a');
         if (!key) return;
         var next = Object.assign({}, pictures);
-        next[key] = { src: String(reader.result || ''), alt: key, credit: 'Custom imported image' };
+        next[key] = { src: dataUrl, alt: key, credit: 'Custom imported image' };
         setPictures(next);
         setPanelStatus(tt('math_fluency.symbol_runner_pic_added', 'Picture added for "{sym}".', { sym: key }));
       };

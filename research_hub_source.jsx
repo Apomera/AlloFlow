@@ -109,8 +109,12 @@
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
+  function safeJsonReviver(key, val) {
+    return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : val;
+  }
+
   function safeJsonClone(value) {
-    try { return JSON.parse(JSON.stringify(value)); } catch (_) { return null; }
+    try { return JSON.parse(JSON.stringify(value), safeJsonReviver); } catch (_) { return null; }
   }
 
   function utf8ByteLength(value) {
@@ -1021,7 +1025,7 @@
 
   function parsePortfolioImport(input) {
     var payload = input;
-    try { if (typeof payload === 'string') payload = JSON.parse(payload); }
+    try { if (typeof payload === 'string') payload = JSON.parse(payload, safeJsonReviver); }
     catch (_) { return { ok: false, errors: ['The selected file is not valid JSON.'], journal: null }; }
     if (!isPlainRecord(payload)) return { ok: false, errors: ['The selected JSON must contain an object.'], journal: null };
     var record = null;
@@ -1033,7 +1037,7 @@
     } else if (format === 'alloflow-inquiry-portfolio') record = payload.journal;
     else if (payload.original) record = payload.original;
     else if (payload.raw && typeof payload.raw === 'string') {
-      try { record = JSON.parse(payload.raw); } catch (_) { return { ok: false, errors: ['Recovery data contains invalid JSON.'], journal: null, format: 'recovery' }; }
+      try { record = JSON.parse(payload.raw, safeJsonReviver); } catch (_) { return { ok: false, errors: ['Recovery data contains invalid JSON.'], journal: null, format: 'recovery' }; }
     } else record = payload;
     var normalized = normalizeImportedPortfolioRecord(record);
     normalized.format = format;
@@ -1849,6 +1853,7 @@
           onChange={function (e) { setReasoning(e.target.value); }}
           rows={2}
           maxLength={400}
+          aria-label={t('research_hub.exemplar_pair_reasoning_label') || 'Explain which example is stronger and why'}
           placeholder={t('research_hub.exemplar_pair_reasoning_placeholder') || 'In 1–2 sentences: which is stronger, and what makes it stronger?'}
           style={{
             width: '100%', boxSizing: 'border-box',
@@ -2258,8 +2263,8 @@
         if (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) return false;
         return true;
       };
-      var rawAiText = (ai && typeof ai.generateText === 'function') ? ai.generateText.bind(ai) : null;
-      var aiText = _isUsableAiFn('text', rawAiText) ? rawAiText : null;
+      var rawAiTextFn = (ai && typeof ai.generateText === 'function') ? ai.generateText : null;
+      var aiText = _isUsableAiFn('text', rawAiTextFn) ? rawAiTextFn.bind(ai) : null;
       var usableLegacy = !aiText && _isUsableAiFn('text', onCallGemini);
       if (!aiText && !usableLegacy) {
         return { ok: false, blocked: true, blockedReason: 'no_compatible_backend', traceId: traceId, latencyMs: 0 };
@@ -3177,7 +3182,7 @@
             gap: '12px', flexWrap: 'wrap',
             borderRadius: '20px 20px 0 0',
           }}>
-            <style>{'.theme-contrast [data-help-key="research_hub"] [role="dialog"], .theme-contrast [data-help-key="research_hub"] [role="note"], .theme-contrast [data-help-key="research_hub"] [data-research-method-pack], .theme-contrast [data-help-key="research_hub"] [data-research-lane-match], .theme-contrast [data-help-key="research_hub"] details { background: #000000 !important; background-image: none !important; color: #ffff00 !important; border-color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] [role="dialog"] > div:first-of-type { background: #000000 !important; background-image: none !important; border-bottom: 2px solid #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] :is(span, p, div, h2, h3, strong):not(button):not(button *) { color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) { background: #000000 !important; background-image: none !important; color: #00ff00 !important; border-color: #00ff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) * { color: #00ff00 !important; }'}</style>
+            <style>{'.theme-contrast [data-help-key="research_hub"] [role="dialog"], .theme-contrast [data-help-key="research_hub"] [role="note"], .theme-contrast [data-help-key="research_hub"] [data-research-method-pack], .theme-contrast [data-help-key="research_hub"] [data-research-lane-match], .theme-contrast [data-help-key="research_hub"] [data-research-question-coach], .theme-contrast [data-help-key="research_hub"] [data-research-question-coach] div, .theme-contrast [data-help-key="research_hub"] :is(input, textarea, select, label), .theme-contrast [data-help-key="research_hub"] details { background: #000000 !important; background-image: none !important; color: #ffff00 !important; border-color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] [data-research-method-pack] * { background: transparent !important; background-image: none !important; } .theme-contrast [data-help-key="research_hub"] [role="dialog"] > div:first-of-type { background: #000000 !important; background-image: none !important; border-bottom: 2px solid #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] :is(span, p, div, h2, h3, strong):not(button):not(button *) { color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) { background: #000000 !important; background-image: none !important; color: #00ff00 !important; border-color: #00ff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) * { color: #00ff00 !important; }'}</style>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span aria-hidden="true" style={{ fontSize: '28px' }}>{'\u{1F50D}'}</span>
               <div>
@@ -3195,7 +3200,7 @@
               <CostMeter t={t} used={journal.aiCallCount || 0} cap={MAX_AI_CALLS_PER_SESSION} />
               <DevLevelSelector t={t} value={journal.devLevel} onChange={setDevLevel} />
               {isTeacherMode && typeof props.onOpenAlloSheet === 'function' && (
-                <button type="button" onClick={function () { setResearchAlloOpen(true); }} aria-label="Review Research Hub summaries in AlloSheet" style={{ minHeight: '44px', background: 'rgba(15,23,42,0.5)', color: '#fff', border: '1px solid rgba(255,255,255,0.45)', borderRadius: '999px', padding: '6px 12px', cursor: 'pointer', fontSize: '11px', fontWeight: 800 }}>Review in AlloSheet</button>
+                <button type="button" onClick={function () { setResearchAlloOpen(true); }} aria-label="Review in AlloSheet — Research Hub summaries" style={{ minHeight: '44px', background: 'rgba(15,23,42,0.5)', color: '#fff', border: '1px solid rgba(255,255,255,0.45)', borderRadius: '999px', padding: '6px 12px', cursor: 'pointer', fontSize: '11px', fontWeight: 800 }}>Review in AlloSheet</button>
               )}
               {educatorView && isTeacherMode && (
                 <button
@@ -3245,7 +3250,7 @@
               <div data-research-exit-hint="true" role="status" aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '12px', border: '1px solid #bfdbfe', background: '#eff6ff', color: '#1e3a8a' }}>
                 <span aria-hidden="true" style={{ fontSize: '16px' }}>{'💾'}</span>
                 <div style={{ flex: 1, fontSize: '11px', lineHeight: 1.5 }}><strong>Your Research Hub stayed open.</strong> Clicking outside no longer closes it, so downloads, resource packs, and saved files are less likely to interrupt your work. Use Close or press Escape when you are finished.</div>
-                <button type="button" onClick={function () { setShowExitHint(false); }} aria-label="Dismiss saved-work reminder" style={{ border: '1px solid #bfdbfe', borderRadius: '8px', background: '#fff', color: '#1e40af', padding: '5px 8px', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }}>Got it</button>
+                <button type="button" onClick={function () { setShowExitHint(false); }} aria-label="Got it — dismiss saved-work reminder" style={{ border: '1px solid #bfdbfe', borderRadius: '8px', background: '#fff', color: '#1e40af', padding: '5px 8px', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }}>Got it</button>
               </div>
             )}
             {journal.loadWarning && (
@@ -3467,7 +3472,6 @@
                         data-research-lane={pack.laneId}
                         data-help-key={'research_hub_method_' + pack.id}
                         onClick={function () { selectMethodPack(pack.id); }}
-                        aria-label={'Open ' + pack.label + ' inquiry approach'}
                         style={{
                           padding: '16px', borderRadius: '14px',
                           border: '1px solid ' + pack.border,
@@ -3479,26 +3483,26 @@
                         onMouseEnter={function (e) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; }}
                         onMouseLeave={function (e) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
                           <span aria-hidden="true" style={{ fontSize: '30px' }}>{pack.icon}</span>
-                          <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>{pack.label}</h4>
+                          <span style={{ display: 'block' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              <span style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>{pack.label}</span>
                               {researchMethodMatch && researchMethodMatch.packId === pack.id && <span style={{ borderRadius: '999px', padding: '2px 6px', background: '#4f46e5', color: '#fff', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Approach match</span>}
                               {selectedBefore && <span style={{ borderRadius: '999px', padding: '2px 6px', background: '#dcfce7', color: '#166534', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Current approach</span>}
-                            </div>
-                            <p style={{ margin: '2px 0 0', fontSize: '10px', fontWeight: 800, color: pack.color }}>{pack.family}</p>
-                          </div>
-                        </div>
-                        <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>{pack.blurb}</p>
-                        <div style={{ padding: '8px 9px', borderRadius: '9px', background: 'rgba(255,255,255,0.78)', border: '1px solid ' + pack.border }}>
-                          <div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.45px', color: pack.color }}>What rigor looks like</div>
-                          <div style={{ marginTop: '2px', fontSize: '10px', lineHeight: 1.45, color: '#475569' }}>{pack.rigor}</div>
-                        </div>
-                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748b' }}>{pack.bestFor}</span>
+                            </span>
+                            <span style={{ display: 'block', margin: '2px 0 0', fontSize: '10px', fontWeight: 800, color: pack.color }}>{pack.family}</span>
+                          </span>
+                        </span>
+                        <span style={{ display: 'block', margin: 0, fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>{pack.blurb}</span>
+                        <span style={{ display: 'block', width: '100%', padding: '8px 9px', borderRadius: '9px', background: 'rgba(255,255,255,0.78)', border: '1px solid ' + pack.border }}>
+                          <span style={{ display: 'block', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.45px', color: pack.color }}>What rigor looks like</span>
+                          <span style={{ display: 'block', marginTop: '2px', fontSize: '10px', lineHeight: 1.45, color: '#475569' }}>{pack.rigor}</span>
+                        </span>
+                        <span style={{ marginTop: 'auto', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#475569' }}>{pack.bestFor}</span>
                           <span style={{ fontSize: '10px', fontWeight: 900, color: pack.color }}>Open approach {'→'}</span>
-                        </div>
+                        </span>
                         {lane && lane._placeholder && (
                           <span style={{
                             alignSelf: 'flex-start',

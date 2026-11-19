@@ -19,7 +19,7 @@
   // Usable AI? True for a blocked host fn too if checked by typeof alone (2026-11-03 AI-off sweep).
   var _selAiUsable = function (kind, fn) {
     try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+    return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
   };
   // Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
   var _selStudentDeviceVoice = function (text, rate) {
@@ -2132,7 +2132,7 @@
         function aiUsable(ctx, fn) {
           if (ctx.aiAvailable === false) return false;
           try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {}
-          return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+          return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
         }
         // Dark-base hexes, remapped for the host theme. A tool may pass its own fg/bg/bd.
         function themeMappers(theme) {
@@ -2888,11 +2888,17 @@
             var modalId = showClearSelConfirm ? 'sel-clear-data-confirm-modal' : (showSharePacket ? 'sel-share-packet-modal' : (showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal'));
             var modal = document.getElementById(modalId);
             if (!modal) return;
-            var focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            var allCandidates = modal.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+            var focusable = Array.prototype.filter.call(allCandidates, function(el) {
+              if (!el || el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+              if (el.closest && el.closest('[hidden], [inert]')) return false;
+              return (el.offsetParent !== null) || (typeof el.getClientRects === 'function' && el.getClientRects().length > 0);
+            });
             if (focusable.length === 0) return;
             var first = focusable[0];
             var last = focusable[focusable.length - 1];
-            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            if (!modal.contains(document.activeElement)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
+            else if (e.shiftKey && (document.activeElement === first || document.activeElement === modal)) { e.preventDefault(); last.focus(); }
             else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
           }
         }
@@ -3668,11 +3674,22 @@
       // only because that is where the sweep put it, and both hubs are loaded
       // eagerly at boot (AlloFlowANTI.txt), so it is always present here. The
       // fallback keeps stub harnesses that define no getter working.
+      var _selFallbackAudioCtx = null;
+      function _selIsGlobalMuted() {
+        try {
+          if (typeof window.__alloIsGlobalMuted === 'function') return !!window.__alloIsGlobalMuted();
+          return window._alloGlobalMute === true;
+        } catch (_) { return false; }
+      }
       function selBeep(freq, dur, vol) {
+        if (_selIsGlobalMuted()) return;
         try {
           var ctx = (window.StemLab && typeof window.StemLab.audioContext === 'function')
             ? window.StemLab.audioContext()
-            : new (window.AudioContext || window.webkitAudioContext)();
+            : (_selFallbackAudioCtx && _selFallbackAudioCtx.state !== 'closed'
+                ? _selFallbackAudioCtx
+                : (_selFallbackAudioCtx = new (window.AudioContext || window.webkitAudioContext)()));
+          if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') { try { ctx.resume().catch(function () {}); } catch (_) {} }
           var osc = ctx.createOscillator();
           var gain = ctx.createGain();
           osc.connect(gain); gain.connect(ctx.destination);
@@ -3695,6 +3712,7 @@
           // One Escape, one step back: a dialog (the hub's or a tool's) that handled it
           // already; closing the tool or hub as well ejected students mid-activity.
           if (e.key === 'Escape') {
+            if (e.isComposing || e.keyCode === 229) return;
             if (e.defaultPrevented || showEphemeralExplainer || showForEducators || showClearSelConfirm || showSharePacket) return;
             // Focus in a host dialog over the hub (the project Save) owns this Escape.
             var hubRoot = document.querySelector('[role="dialog"][aria-label="SEL Hub"]');
@@ -3712,7 +3730,7 @@
         }
         document.addEventListener('keydown', handleKeyDown);
         return function() { document.removeEventListener('keydown', handleKeyDown); };
-      });
+      }, [showSelHub, showEphemeralExplainer, showForEducators, showClearSelConfirm, showSharePacket, selHubTool]);
 
       // The hub is a full-screen aria-modal dialog, but only its inner dialogs kept focus: after its
       // last control Tab went to <body> and on to the page hidden behind it, and closing it left focus
@@ -4875,7 +4893,7 @@
           h('button', {
             onClick: function() { if (typeof window.AlloToggleTheme === 'function') { window.AlloToggleTheme(); setTimeout(function() { setSelToolData(function(p) { return Object.assign({}, p); }); }, 50); } },
             'data-sel-focus': 'theme',
-            'aria-label': __alloT('sel.hub.ui.theme_aria', 'Toggle theme (light / dark / high contrast)'),
+            'aria-label': (isContrast ? __alloT('sel.hub.ui.theme_contrast_short', 'Hi-Con') : isDark ? __alloT('sel.hub.ui.theme_dark_short', 'Dark') : __alloT('sel.hub.ui.theme_light_short', 'Light')) + ' — ' + __alloT('sel.hub.ui.theme_aria', 'Toggle theme (light / dark / high contrast)'),
             title: isContrast ? __alloT('sel.hub.ui.theme_contrast', 'High Contrast') : isDark ? __alloT('sel.hub.ui.theme_dark', 'Dark Mode') : __alloT('sel.hub.ui.theme_light', 'Light Mode'),
             style: { background: isContrast ? '#000000' : 'rgba(15,23,42,0.38)', border: isContrast ? '2px solid #00ff00' : '1px solid rgba(255,255,255,0.28)', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 36 }
           }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { display: isCompact ? 'none' : 'inline', fontSize: 10, fontWeight: 700 } }, isContrast ? __alloT('sel.hub.ui.theme_contrast_short', 'Hi-Con') : isDark ? __alloT('sel.hub.ui.theme_dark_short', 'Dark') : __alloT('sel.hub.ui.theme_light_short', 'Light'))),
@@ -4999,7 +5017,7 @@
         if (announceToSR) announceToSR('Your SEL data has been cleared from this device.');
       };
       var clearSelDataConfirmModal = showClearSelConfirm && h('div', {
-        role: 'dialog',
+        role: 'alertdialog',
         'aria-modal': 'true',
         'aria-labelledby': 'sel-clear-data-confirm-title',
         'aria-describedby': 'sel-clear-data-confirm-description',
@@ -5035,10 +5053,11 @@
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid ' + _t.border } },
             h('h2', { id: 'sel-for-educators-title', style: { margin: 0, fontSize: 16, fontWeight: 800 } }, '\uD83C\uDF93 For Educators'),
             h('button', {
+              type: 'button',
               'data-primary-action': 'true',
               onClick: function() { setShowForEducators(false); alloRestoreOrFocusSelHubStart(); },
               'aria-label': 'Close For Educators guide',
-              style: { background: 'none', border: 'none', color: _t.text, cursor: 'pointer', fontSize: 18, padding: 4 }
+              style: { background: 'none', border: 'none', color: _t.text, cursor: 'pointer', fontSize: 18, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8 }
             }, '\u2715')
           ),
           h('div', { style: { flex: 1, overflow: 'auto', padding: '16px 24px', fontSize: 13, color: _t.text } },
@@ -5102,10 +5121,11 @@
                   'Choose saved checkpoints and what each one can share. AlloHaven will only show the details selected here.')
               ),
               h('button', {
+                type: 'button',
                 'data-primary-action': 'true',
                 onClick: function() { setShowSharePacket(false); alloRestoreOrFocusSelHubStart(); },
                 'aria-label': 'Close SEL Share Packet builder',
-                style: { background: 'none', border: 'none', color: _t.text, cursor: 'pointer', fontSize: 18, padding: 4 }
+                style: { background: 'none', border: 'none', color: _t.text, cursor: 'pointer', fontSize: 18, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8 }
               }, '\u2715')
             ),
             h('div', { style: { flex: 1, overflow: 'auto', padding: isCompact ? '14px' : '18px 20px' } },
@@ -5938,7 +5958,6 @@
                       openSelToolById(card.tool.id, card.tool.label);
                     }
                   },
-                  'aria-label': card.label + ': ' + card.desc,
                   style: {
                     textAlign: 'left',
                     padding: isCompact ? '10px 12px' : '12px',
@@ -5971,7 +5990,7 @@
               h('span', null, __alloT('sel.hub.ui.storage_notice', 'Some SEL work is stored on this device. AI features use your configured service. Choose what to save or share, especially on a shared device.')),
               h('button', {
                 onClick: requestProjectSave,
-                'aria-label': __alloT('sel.hub.ui.save_now_aria', 'Save or export SEL work now'),
+                title: __alloT('sel.hub.ui.save_now_aria', 'Save or export SEL work now'),
                 style: { border: '1px solid ' + _t.accent, background: _t.accent, color: _t.accentText, borderRadius: 8, padding: '6px 10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', minHeight: 44 }
               }, __alloT('sel.hub.ui.save_now', 'Save now'))
             )
@@ -6455,7 +6474,7 @@
                 ];
                 return h('div', { role: 'region', 'aria-label': 'Station Builder', style: { padding: '12px 14px', borderRadius: 10, border: '1px solid ' + _t.pinkAccent, background: isContrast ? '#000000' : 'rgba(236, 72, 153, 0.04)', display: 'flex', flexDirection: 'column', gap: 10 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
-                    h('div', { style: { fontSize: 14, fontWeight: 800, color: _t.accentSoftText } }, '🧑‍🏫 Station Builder'),
+                    h('h3', { style: { margin: 0, fontSize: 14, fontWeight: 800, color: _t.accentSoftText } }, '🧑‍🏫 Station Builder'),
                     h('button', {
                       onClick: function () { discardBuilderDraft(); alloRestoreOrFocusSelHubStart(); },
                       'aria-label': 'Cancel station builder',
@@ -6501,7 +6520,7 @@
                   }),
                   // Teacher note
                   h('label', { htmlFor: 'sel-station-note-input', style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'Instructions learners will see (optional)'),
-                  h('textarea', { 'aria-label': 'Teacher note', id: 'sel-station-note-input',
+                  h('textarea', { id: 'sel-station-note-input',
                     value: builderNote,
                     onChange: function (ev) { setBuilderNote(ev.target.value); },
                     placeholder: 'Optional teacher note (instructions students see when they activate this station)',
@@ -6915,7 +6934,9 @@
           // Tools hide AI controls on this, never on typeof callGemini (a blocked fn is truthy).
           aiAvailable: _selAiOn,
           callTTS: typeof callTTS === 'function' ? function selSpeakTTS(text, voice, speed) {
+            if (_selIsGlobalMuted()) return Promise.resolve(null);
             return callTTS(text, voice, speed).then(function(url) {
+              if (_selIsGlobalMuted()) return null;
               if (url) { var a = new Audio(url); a.play().catch(function() {}); }
               else _selStudentDeviceVoice(text, speed);
               return url;

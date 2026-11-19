@@ -315,7 +315,17 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       }
       if (e.key !== 'Tab') return;
       const focusable = Array.from(currentDialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'))
-        .filter((el) => !el.disabled && !el.hidden && !el.closest('[inert]') && el.getAttribute('aria-hidden') !== 'true');
+        .filter((el) => {
+          if (!el || el.disabled || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]') || el.getAttribute('aria-hidden') === 'true') return false;
+          if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+            for (let cur = el; cur && cur !== currentDialog.parentElement; cur = cur.parentElement) {
+              const cs = window.getComputedStyle(cur);
+              if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+              if (cur === currentDialog) break;
+            }
+          }
+          return true;
+        });
       if (!focusable.length) {
         e.preventDefault();
         currentDialog.focus();
@@ -481,7 +491,17 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     if (e.key !== 'Tab') return;
     if (!dialog) return;
     const focusable = Array.from(dialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'))
-      .filter((el) => !el.disabled && !el.hidden && !el.closest('[inert]') && el.getAttribute('aria-hidden') !== 'true');
+      .filter((el) => {
+        if (!el || el.disabled || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]') || el.getAttribute('aria-hidden') === 'true') return false;
+        if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+          for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+            const cs = window.getComputedStyle(cur);
+            if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+            if (cur === dialog) break;
+          }
+        }
+        return true;
+      });
     if (!focusable.length) {
       e.preventDefault();
       dialog.focus();
@@ -499,7 +519,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   };
   if (!isOpen) return null;
   return (
-    <div className={cx('fixed inset-0 z-[300] backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300', styles.overlay)}>
+    <div role="presentation" className={cx('fixed inset-0 z-[300] backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300', styles.overlay)}>
       <div
         ref={dialogRef}
         className={cx('rounded-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto relative transform transition-all motion-reduce:transition-none animate-in motion-reduce:animate-none zoom-in-95 duration-300', styles.dialog)}
@@ -513,7 +533,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         <button
             type="button"
             onClick={onClose}
-            className={cx('absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none', styles.secondary, styles.focusOffset)}
+            className={cx('absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none', styles.secondary, styles.focusOffset)}
             aria-label={t('common.close')}
         >
             <X size={20} aria-hidden="true" />
@@ -803,8 +823,8 @@ const DraftFeedbackInterface = React.memo(({
       <div className="max-w-4xl mx-auto p-8 text-center animate-in motion-reduce:animate-none zoom-in duration-500">
         <div className="mb-8 relative inline-block">
             <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse motion-reduce:animate-none" aria-hidden="true"></div>
-            <Trophy size={120} className="text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto" />
-            <div className="absolute -top-4 -right-12 bg-white border-2 border-yellow-400 text-yellow-600 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md">
+            <Trophy size={120} className="text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto" aria-hidden="true" />
+            <div className="absolute -top-4 -right-12 bg-white border-2 border-amber-500 text-amber-800 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md">
                 {t('mastery.mastery_achieved')}
             </div>
         </div>

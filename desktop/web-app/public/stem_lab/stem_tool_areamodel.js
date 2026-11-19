@@ -913,38 +913,61 @@ window.StemLab = window.StemLab || {
         bg: '#000000', card: '#000000', card2: '#000000', ink: '#ffffff', sub: '#ffffff', border: '#ffffff', ctrl: '#ffffff',
         accent: '#ffff00', btn: '#ffff00', btnInk: '#000000', btn2: '#000000', btn2Ink: '#ffffff',
         ok: '#66ff99', okBg: '#000000', bad: '#ffaaaa', badBg: '#000000', info: '#99ccff', infoBg: '#000000', warn: '#ffff00', warnBg: '#000000',
-        stroke: '#ffffff', cell: '#000000', cellOn: '#ffff00', cellBorder: '#ffffff', inputBg: '#000000', svgBg: '#000000'
+        stroke: '#ffffff', cell: '#000000', cellOn: '#ffff00', cellBorder: '#ffffff', inputBg: '#000000', svgBg: '#000000',
+        heroBg: '#000000', heroBorder: '#ffff00', heroInk: '#ffff00', heroSub: '#ffffff', heroPillBg: '#000000', heroPillBorder: '#00ff00', heroPillInk: '#00ff00',
+        chipBg: '#000000', chipBorder: '#ffffff', chipInk: '#ffffff', chipActiveBg: '#000000', chipActiveBorder: '#ffff00', chipActiveInk: '#ffff00'
       } : isDark ? {
-        bg: '#0f172a', card: '#1e293b', card2: '#273449', ink: '#f1f5f9', sub: '#cbd5e1', border: '#475569', ctrl: '#94a3b8',
+        bg: '#0f172a', card: '#1e293b', card2: '#162033', ink: '#f1f5f9', sub: '#cbd5e1', border: '#334155', ctrl: '#94a3b8',
         accent: '#fbbf24', btn: '#f59e0b', btnInk: '#0f172a', btn2: '#334155', btn2Ink: '#f1f5f9',
         ok: '#86efac', okBg: '#052e16', bad: '#fca5a5', badBg: '#450a0a', info: '#93c5fd', infoBg: '#172554', warn: '#fcd34d', warnBg: '#422006',
-        stroke: '#e2e8f0', cell: '#334155', cellOn: '#fbbf24', cellBorder: '#94a3b8', inputBg: '#0f172a', svgBg: '#1e293b'
+        stroke: '#e2e8f0', cell: '#334155', cellOn: '#fbbf24', cellBorder: '#94a3b8', inputBg: '#0f172a', svgBg: '#1e293b',
+        heroBg: 'linear-gradient(135deg, #1e293b 0%, #2e1f0e 52%, #1e1b4b 100%)', heroBorder: '#b45309', heroInk: '#fef3c7', heroSub: '#e2e8f0', heroPillBg: 'rgba(15,23,42,0.72)', heroPillBorder: 'rgba(251,191,36,0.45)', heroPillInk: '#fde68a',
+        chipBg: '#1e293b', chipBorder: '#475569', chipInk: '#e2e8f0', chipActiveBg: '#451a03', chipActiveBorder: '#fbbf24', chipActiveInk: '#fde68a'
       } : {
-        bg: '#ffffff', card: '#fffbeb', card2: '#f8fafc', ink: '#0f172a', sub: '#475569', border: '#e7d7b1', ctrl: '#64748b',
+        bg: '#ffffff', card: '#fffdf7', card2: '#f8fafc', ink: '#0f172a', sub: '#475569', border: '#e7d7b1', ctrl: '#64748b',
         accent: '#92400e', btn: '#b45309', btnInk: '#ffffff', btn2: '#f1f5f9', btn2Ink: '#0f172a',
         ok: '#166534', okBg: '#dcfce7', bad: '#991b1b', badBg: '#fee2e2', info: '#1e40af', infoBg: '#dbeafe', warn: '#92400e', warnBg: '#fef3c7',
-        stroke: '#0f172a', cell: '#fef3c7', cellOn: '#b45309', cellBorder: '#b45309', inputBg: '#ffffff', svgBg: '#ffffff'
+        stroke: '#0f172a', cell: '#fef3c7', cellOn: '#b45309', cellBorder: '#b45309', inputBg: '#ffffff', svgBg: '#ffffff',
+        heroBg: 'linear-gradient(135deg, #78350f 0%, #92400e 52%, #b45309 100%)', heroBorder: '#78350f', heroInk: '#ffffff', heroSub: '#fef3c7', heroPillBg: 'rgba(15,23,42,0.34)', heroPillBorder: 'rgba(254,243,199,0.42)', heroPillInk: '#fef3c7',
+        chipBg: '#ffffff', chipBorder: '#d6c39c', chipInk: '#0f172a', chipActiveBg: '#fef3c7', chipActiveBorder: '#b45309', chipActiveInk: '#78350f'
       };
       var FILLS = ['#93c5fd', '#a7f3d0', '#fde68a', '#fbcfe8', '#c4b5fd', '#fdba74', '#99f6e4', '#d9f99d', '#bae6fd', '#fecaca', '#e9d5ff', '#fef08a'];
       function btnStyle(kind, disabled) {
         var s = kind === 'primary'
-          ? { background: C.btn, color: C.btnInk, border: '2px solid ' + C.btn, borderRadius: 10, minHeight: 44, padding: '6px 14px', fontWeight: 800, fontSize: 13, cursor: 'pointer' }
+          ? { background: C.btn, color: C.btnInk, border: '2px solid ' + C.btn, borderRadius: 10, minHeight: 44, padding: '6px 14px', fontWeight: 800, fontSize: 13, cursor: 'pointer', boxShadow: isContrast ? 'none' : '0 2px 6px rgba(180,83,9,0.22)' }
           : { background: C.btn2, color: C.btn2Ink, border: '1px solid ' + C.ctrl, borderRadius: 10, minHeight: 36, padding: '4px 10px', fontWeight: 700, fontSize: 12, cursor: 'pointer' };
         // The host's contrast theme paints every button black, so black ink on a "yellow" button is blank. An inset ring keeps primary and selected buttons apart.
         if (isContrast && kind === 'primary') { s.background = '#000000'; s.color = '#ffff00'; s.border = '2px solid #ffff00'; s.boxShadow = 'inset 0 0 0 3px #ffff00'; }
         if (disabled) { s.opacity = 0.6; s.cursor = 'not-allowed'; }
         return s;
       }
+      function presetChipStyle(active, disabled) {
+        var s = {
+          background: active ? C.chipActiveBg : C.chipBg,
+          color: active ? C.chipActiveInk : C.chipInk,
+          border: (active ? '2px solid ' : '1px solid ') + (active ? C.chipActiveBorder : C.chipBorder),
+          borderRadius: 999,
+          minHeight: 40,
+          padding: '5px 12px',
+          fontSize: 12,
+          fontWeight: 800,
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          opacity: disabled ? 0.55 : 1,
+          fontVariantNumeric: 'tabular-nums'
+        };
+        if (isContrast && active) s.boxShadow = 'inset 0 0 0 2px #ffff00';
+        return s;
+      }
       var inputStyle = { background: C.inputBg, color: C.ink, border: '2px solid ' + C.ctrl, borderRadius: 8, minHeight: 40, padding: '4px 8px', fontSize: 16, fontWeight: 700 };
-      var cardStyle = { background: C.card, color: C.ink, border: '1px solid ' + C.border, borderRadius: 14, padding: 12 };
+      var cardStyle = { background: C.card, color: C.ink, border: '1px solid ' + C.border, borderRadius: 14, padding: 12, boxShadow: isContrast ? 'none' : (isDark ? '0 4px 16px rgba(2,6,23,0.32)' : '0 2px 10px rgba(146,64,14,0.06)') };
       function noteStyle(kind) {
         var map = { ok: [C.ok, C.okBg], bad: [C.bad, C.badBg], info: [C.info, C.infoBg], warn: [C.warn, C.warnBg] }[kind] || [C.ink, C.card2];
         return { color: map[0], background: map[1], border: '1px solid ' + map[0], borderRadius: 10, padding: '8px 10px', fontSize: 13, fontWeight: 700, lineHeight: 1.45 };
       }
 
       // ── State via toolData._areamodel ──
-      var ld = ctx.toolData || {};
-      var _a = ld._areamodel || {};
+      var ld = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var _a = (ld._areamodel && typeof ld._areamodel === 'object' && !Array.isArray(ld._areamodel)) ? ld._areamodel : {};
       var upd = function(obj) {
         if (typeof ctx.setToolData === 'function') {
           ctx.setToolData(function(prev) {
@@ -1038,15 +1061,16 @@ window.StemLab = window.StemLab || {
       }
       var challenge = validChallenge(_a.challenge);
       var answer = _a.answer == null ? '' : String(_a.answer);
-      var ansParts = _a.ansParts || { A: '', B: '', C: '' };
-      var feedback = _a.feedback || null;
+      var ansParts = (_a.ansParts && typeof _a.ansParts === 'object' && !Array.isArray(_a.ansParts)) ? _a.ansParts : { A: '', B: '', C: '' };
+      var feedback = (_a.feedback && typeof _a.feedback === 'object') ? _a.feedback : null;
       var _gl = (ctx.gradeLevel || '').toLowerCase();
       var _gradeDefaultDiff = /6th|7th|8th|9th|10|11|12|high/.test(_gl) ? 'hard' : /3rd|4th|5th/.test(_gl) ? 'medium' : 'easy';
       var difficulty = ['easy', 'medium', 'hard'].indexOf(_a.difficulty) >= 0 ? _a.difficulty : _gradeDefaultDiff;
-      var score = _a.score || { correct: 0, total: 0 };
-      var streak = _a.streak || 0;
-      var bestStreak = _a.bestStreak || 0;
-      var badges = _a.badges || {};
+      var _rawScore = (_a.score && typeof _a.score === 'object' && !Array.isArray(_a.score)) ? _a.score : {};
+      var score = { correct: Math.max(0, Number(_rawScore.correct) || 0), total: Math.max(0, Number(_rawScore.total) || 0) };
+      var streak = Math.max(0, Number(_a.streak) || 0);
+      var bestStreak = Math.max(0, Number(_a.bestStreak) || 0);
+      var badges = (_a.badges && typeof _a.badges === 'object' && !Array.isArray(_a.badges)) ? _a.badges : {};
       var swapped = !!_a.swapped;
       var multiDims = (function(md) {
         md = md && typeof md === 'object' ? md : {};
@@ -1902,32 +1926,48 @@ window.StemLab = window.StemLab || {
         var pre = opts.idPrefix || 'am-partial';
         var sel = opts.selected;
         var looks = opts.regionLook ? bm.boxes.map(function(bx) { return opts.regionLook(bx); }) : null;
+        var tickColor = isContrast ? '#ffff00' : C.ctrl;
         return h('svg', { viewBox: '0 0 ' + g.vbW + ' ' + g.vbH, role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc',
-            style: opts.fit ? { width: '100%', height: 'auto', display: 'block', background: C.svgBg } : { width: '100%', maxHeight: 340, background: C.svgBg },
+            style: opts.fit ? { width: '100%', height: 'auto', display: 'block', background: C.svgBg, borderRadius: 10 } : { width: '100%', maxHeight: 340, background: C.svgBg, borderRadius: 10 },
             'data-partial-model': true, 'data-across': g.across ? 'true' : undefined },
           h('title', { id: pre + '-title' }, opts.title || t('stem.areamodel.partial_rectangles', 'Tens-and-ones area model')),
           h('desc', { id: pre + '-desc' }, opts.desc || ''),
+          // Outer blueprint frame + dimension guide brackets along top & left
+          h('rect', { x: 63, y: 38, width: g.totW + 4, height: g.totH + 4, rx: 4, fill: 'none', stroke: tickColor, strokeWidth: 1, strokeDasharray: '4 3', opacity: isContrast ? 0.9 : 0.55 }),
+          h('line', { x1: 65, y1: 32, x2: 65 + g.totW, y2: 32, stroke: tickColor, strokeWidth: 1.25 }),
+          h('line', { x1: 65, y1: 29, x2: 65, y2: 35, stroke: tickColor, strokeWidth: 1.25 }),
+          h('line', { x1: 65 + g.totW, y1: 29, x2: 65 + g.totW, y2: 35, stroke: tickColor, strokeWidth: 1.25 }),
+          h('line', { x1: 60, y1: 40, x2: 60, y2: 40 + g.totH, stroke: tickColor, strokeWidth: 1.25 }),
+          h('line', { x1: 57, y1: 40, x2: 63, y2: 40, stroke: tickColor, strokeWidth: 1.25 }),
+          h('line', { x1: 57, y1: 40 + g.totH, x2: 63, y2: 40 + g.totH, stroke: tickColor, strokeWidth: 1.25 }),
           bm.boxes.map(function(bx) {
             var r = g.box(bx);
             if (!r.w || !r.h) return null;
             var lit = opts.litBoxes && opts.litBoxes.indexOf(bx.index) >= 0;
             var lk = looks ? looks[bx.index] : null;
-            return h('rect', { key: 'r' + bx.index, x: r.x, y: r.y, width: r.w, height: r.h,
+            return h('rect', { key: 'r' + bx.index, x: r.x, y: r.y, width: r.w, height: r.h, rx: 3,
               fill: lk && lk.fill ? lk.fill : FILLS[bx.index % FILLS.length], stroke: lk && lk.stroke ? lk.stroke : C.stroke,
-              strokeWidth: sel === bx.index || lit ? 4 : (lk && lk.sw ? lk.sw : 1), strokeDasharray: lk && lk.dash ? lk.dash : undefined,
+              strokeWidth: sel === bx.index || lit ? 4 : (lk && lk.sw ? lk.sw : 1.5), strokeDasharray: lk && lk.dash ? lk.dash : undefined,
               'data-partial-region': bx.index, 'data-selected': sel === bx.index, 'data-region-state': lk ? lk.state : undefined,
               onClick: opts.onSelect ? function() { opts.onSelect(bx.index); } : undefined, style: { cursor: opts.onSelect ? 'pointer' : 'default' } });
+          }),
+          // Subtle inner highlight border for the selected or active region
+          bm.boxes.map(function(bx) {
+            var r = g.box(bx);
+            var lit = opts.litBoxes && opts.litBoxes.indexOf(bx.index) >= 0;
+            if (!r.w || !r.h || (sel !== bx.index && !lit) || r.w < 12 || r.h < 12) return null;
+            return h('rect', { key: 'rh' + bx.index, x: r.x + 3, y: r.y + 3, width: r.w - 6, height: r.h - 6, rx: 2, fill: 'none', stroke: isContrast ? '#00ff00' : '#ffffff', strokeWidth: 1.5, opacity: 0.85, style: { pointerEvents: 'none' } });
           }),
           // The area printed inside its own region, sized to fit; a region too small for it is left blank.
           looks && bm.boxes.map(function(bx) {
             var r = g.box(bx), lk = looks[bx.index];
             if (!r.w || !r.h || !lk || !lk.text) return null;
             var size = Math.min(18, r.h * 0.5, r.w / Math.max(1, String(lk.text).length * 0.62));
-            if (size < 9) return null;
+            if (size < 10) return null;
             return h('text', { key: 'rv' + bx.index, x: r.x + r.w / 2, y: r.y + r.h / 2 + size * 0.35, textAnchor: 'middle', fill: lk.ink || '#0f172a', fontSize: size, fontWeight: 900, 'data-region-text': bx.index, style: { pointerEvents: 'none' } }, lk.text);
           }),
-          g.xParts.map(function(p, j) { return g.xw[j] ? h('text', { key: 'ct' + j, x: 65 + g.xs[j] + g.xw[j] / 2, y: 26, textAnchor: 'middle', fill: C.ink, fontSize: fs, fontWeight: 800 }, fmt(p.v)) : null; }),
-          g.yParts.map(function(p, i) { return g.yh[i] ? h('text', { key: 'rt' + i, x: 58, y: 45 + g.ys[i] + g.yh[i] / 2, textAnchor: 'end', fill: C.ink, fontSize: fs, fontWeight: 800 }, fmt(p.v)) : null; }),
+          g.xParts.map(function(p, j) { return g.xw[j] ? h('text', { key: 'ct' + j, x: 65 + g.xs[j] + g.xw[j] / 2, y: 24, textAnchor: 'middle', fill: C.ink, fontSize: fs, fontWeight: 800 }, fmt(p.v)) : null; }),
+          g.yParts.map(function(p, i) { return g.yh[i] ? h('text', { key: 'rt' + i, x: 54, y: 45 + g.ys[i] + g.yh[i] / 2, textAnchor: 'end', fill: C.ink, fontSize: fs, fontWeight: 800 }, fmt(p.v)) : null; }),
           opts.extra || null,
           g.notToScale && !opts.noteOutside && h('text', { x: 65, y: g.noteY, fill: C.sub, fontSize: 12, fontWeight: 700 }, t('stem.areamodel.not_to_scale', 'Some thin parts are drawn wider than scale so you can see them.')));
       }
@@ -1983,7 +2023,35 @@ window.StemLab = window.StemLab || {
         };
         var Grid = gridMemo(React);
         var rowLabelStyle = { height: cellPx, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, borderRadius: 4 };
-        return h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+        var arrayPresets = [
+          { r: 3, c: 4, tag: '3 × 4' },
+          { r: 4, c: 6, tag: '4 × 6' },
+          { r: 5, c: 7, tag: '5 × 7' },
+          { r: 6, c: 6, tag: '6 × 6' },
+          { r: 8, c: 9, tag: '8 × 9' },
+          { r: 10, c: 12, tag: '10 × 12' }
+        ];
+        var shapeWord = rows === cols
+          ? t('stem.areamodel.shape_square', 'Square array')
+          : cols > rows
+            ? t('stem.areamodel.shape_wide', 'Wide rectangle')
+            : t('stem.areamodel.shape_tall', 'Tall rectangle');
+        return h('div', { style: Object.assign({}, cardStyle, { background: C.bg, display: 'flex', flexDirection: 'column', gap: 10 }) },
+          // Starter presets + live array telemetry bar
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 10px', borderRadius: 10, background: C.card, border: '1px solid ' + C.border } },
+            !lockDims && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, minWidth: 0 } },
+              h('span', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: C.sub } }, t('stem.areamodel.starter_arrays', 'Quick arrays:')),
+              arrayPresets.map(function(pr) {
+                var isCur = dims.rows === pr.r && dims.cols === pr.c && !swapped;
+                return h('button', {
+                  key: pr.tag, type: 'button', 'aria-pressed': isCur,
+                  onClick: function() { sfxClick(); upd(clearDone({ dims: { rows: pr.r, cols: pr.c }, swapped: false, highlight: { rows: 0, cols: 0 }, dimsDraft: null })); },
+                  style: presetChipStyle(isCur, false)
+                }, pr.tag);
+              })),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginLeft: 'auto' } },
+              h('span', { style: { fontSize: 12, fontWeight: 800, color: C.accent, background: C.bg, border: '1px solid ' + C.border, borderRadius: 999, padding: '3px 9px', fontVariantNumeric: 'tabular-nums' } }, rows + ' × ' + cols + (hideProducts ? ' = ?' : ' = ' + (rows * cols))),
+              h('span', { style: { fontSize: 11, fontWeight: 700, color: C.sub, background: C.card2, border: '1px solid ' + C.border, borderRadius: 999, padding: '3px 9px' } }, shapeWord))),
           h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: C.ink, minHeight: 32, cursor: 'pointer' } },
             h('input', { type: 'checkbox', checked: showSkipCount, onChange: function() { sfxClick(); upd({ showSkipCount: !showSkipCount }); }, style: { width: 20, height: 20 } }),
             t('stem.areamodel.skip_count_overlay_multiplication_as_r', '🔢 Skip-count overlay (multiplication as repeated addition)')),
@@ -2035,15 +2103,30 @@ window.StemLab = window.StemLab || {
             fillMode ? h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 6 } }, boxInput(side === 'L' ? boxDefs[0] : boxDefs[1], a + ' × ' + count))
               : h('div', { style: { fontSize: 15, fontWeight: 800, color: C.ink, marginTop: 4 } }, '= ' + (hideProducts ? '?' : prod)));
         }
+        var splitPresets = [];
+        var halfSplit = Math.floor(bAll / 2);
+        if (halfSplit >= 1 && halfSplit < bAll) splitPresets.push({ val: halfSplit, label: t('stem.areamodel.split_half', 'Half') + ' (' + halfSplit + ' + ' + (bAll - halfSplit) + ')' });
+        if (bAll > 5 && halfSplit !== 5) splitPresets.push({ val: 5, label: t('stem.areamodel.split_five', 'By 5') + ' (5 + ' + (bAll - 5) + ')' });
+        if (bAll > 10 && bAll % 10 !== 0) {
+          var tens = bAll - (bAll % 10);
+          if (tens >= 1 && tens < bAll && tens !== halfSplit && tens !== 5) splitPresets.push({ val: tens, label: t('stem.areamodel.split_tens', 'Tens + ones') + ' (' + tens + ' + ' + (bAll % 10) + ')' });
+        }
         return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
-          h('div', { style: Object.assign({}, cardStyle, { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }) },
-            h('label', { htmlFor: 'am-split', style: { fontSize: 13, fontWeight: 800, color: C.ink } }, t('stem.areamodel.split_at_column', 'Split at column:')),
-            h('input', { id: 'am-split', type: 'range', min: '1', max: String(bAll - 1), value: leftCols, disabled: fillMode,
-              onChange: function(e) { if (fillMode) return; upd(clearDone({ splitAt: parseInt(e.target.value, 10) })); },
-              'aria-label': t('stem.areamodel.split_at_column_position', 'Split at column position'),
-              'aria-valuetext': fill(t('stem.areamodel.split_valuetext', '{l} columns and {r} columns'), { l: leftCols, r: rightCols }),
-              style: { flex: 1, minHeight: 32, accentColor: C.btn } }),
-            h('span', { style: { fontFamily: 'monospace', fontSize: 14, fontWeight: 800, color: C.ink } }, leftCols + ' | ' + rightCols)),
+          h('div', { style: Object.assign({}, cardStyle, { display: 'flex', flexDirection: 'column', gap: 8 }) },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+              h('label', { htmlFor: 'am-split', style: { fontSize: 13, fontWeight: 800, color: C.ink } }, t('stem.areamodel.split_at_column', 'Split at column:')),
+              h('input', { id: 'am-split', type: 'range', min: '1', max: String(bAll - 1), value: leftCols, disabled: fillMode,
+                onChange: function(e) { if (fillMode) return; upd(clearDone({ splitAt: parseInt(e.target.value, 10) })); },
+                'aria-label': t('stem.areamodel.split_at_column_position', 'Split at column position'),
+                'aria-valuetext': fill(t('stem.areamodel.split_valuetext', '{l} columns and {r} columns'), { l: leftCols, r: rightCols }),
+                style: { flex: 1, minWidth: 120, minHeight: 32, accentColor: C.btn } }),
+              h('span', { style: { fontFamily: 'monospace', fontSize: 14, fontWeight: 800, color: C.ink } }, leftCols + ' | ' + rightCols)),
+            !fillMode && splitPresets.length > 0 && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 } },
+              h('span', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: C.sub } }, t('stem.areamodel.quick_splits', 'Quick splits:')),
+              splitPresets.map(function(sp) {
+                var isPicked = leftCols === sp.val;
+                return h('button', { key: 'sp' + sp.val, type: 'button', 'aria-pressed': isPicked, onClick: function() { sfxClick(); upd(clearDone({ splitAt: sp.val })); }, style: presetChipStyle(isPicked, false) }, sp.label);
+              }))),
           h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', alignItems: 'flex-start' } },
               piece('L', leftCols, leftProduct, FILLS[0]),
@@ -2318,10 +2401,26 @@ window.StemLab = window.StemLab || {
         var topParts = across ? bm.rows : bm.cols, sideP = across ? bm.cols : bm.rows;
         function boxAt(top, side) { return across ? bm.boxes[top * bm.cols.length + side] : bm.boxes[side * bm.cols.length + top]; }
         var thStyle = { padding: 8, fontSize: 14, fontWeight: 800, color: C.ink, background: C.card, border: '1px solid ' + C.border };
+        var multiPresets = [
+          { a: 23, b: 14, tag: '23 × 14' },
+          { a: 36, b: 25, tag: '36 × 25' },
+          { a: 125, b: 6, tag: '125 × 6' },
+          { a: 4.5, b: 2.4, tag: '4.5 × 2.4' }
+        ];
         return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
-          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 } },
             factorInput('a', t('stem.areamodel.factor_a', 'Factor A'), a, chOpen && inCh),
             factorInput('b', t('stem.areamodel.factor_b', 'Factor B'), b, chOpen && inCh)),
+          !(chOpen && inCh) && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 } },
+            h('span', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: C.sub } }, t('stem.areamodel.starter_models', 'Starter models:')),
+            multiPresets.map(function(mp) {
+              var isPicked = multiDims.a === mp.a && multiDims.b === mp.b && !custom;
+              return h('button', {
+                key: mp.tag, type: 'button', 'aria-pressed': isPicked,
+                onClick: function() { sfxClick(); upd(clearDone({ multiDims: { a: mp.a, b: mp.b }, multiDraft: null, cuts: null, partialSelection: null })); },
+                style: presetChipStyle(isPicked, false)
+              }, mp.tag);
+            })),
           chOpen && inCh && h('p', { style: { fontSize: 12, color: C.sub } }, t('stem.areamodel.factors_locked', 'The factors are locked while this challenge is open. Start a new challenge or skip it to change them.')),
           h('div', { style: Object.assign({}, cardStyle, { background: C.bg, display: 'flex', flexDirection: 'column', gap: 8 }), 'data-partial-card': true },
             inCh && promptBlock(),
@@ -2727,7 +2826,7 @@ window.StemLab = window.StemLab || {
         parts.push(h('text', { key: 'tot', x: x0, y: top + Hh + 24, fill: C.sub, fontSize: 13, fontWeight: 700 }, t('stem.areamodel.div_scale_caption', 'Drawn to scale: every chunk is as wide as its number of groups.')));
         var desc = fill(t('stem.areamodel.div_scale_desc', 'Drawn to scale: a rectangle {d} units tall with an area of {n}. The chunks {list} sit side by side, each as wide as its number of groups, so the long side is {q} units plus a remainder strip {r} ÷ {d} of a unit wide.'),
           { d: d, n: n, list: chunks.join(', '), q: chunks.reduce(function(s, c) { return s + c; }, 0), r: left });
-        return h('svg', { viewBox: '0 0 ' + Math.ceil(x0 + sc.w + 130) + ' ' + Math.ceil(top + Hh + 36), role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc', style: { width: '100%', maxHeight: 340, background: C.svgBg }, 'data-division-model': true, 'data-div-scaled': true },
+        return h('svg', { viewBox: '0 0 ' + Math.max(Math.ceil(x0 + sc.w + 130), 460) + ' ' + Math.ceil(top + Hh + 36), role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc', style: { width: '100%', maxHeight: 340, background: C.svgBg, borderRadius: 10 }, 'data-division-model': true, 'data-div-scaled': true },
           h('title', { id: pre + '-title' }, t('stem.areamodel.div_scale_title', 'Division area model, drawn to scale')),
           h('desc', { id: pre + '-desc' }, desc),
           parts);
@@ -2764,7 +2863,7 @@ window.StemLab = window.StemLab || {
         var desc = opts.done
           ? fill(t('stem.areamodel.div_svg_desc_done', 'An area model for {n} ÷ {d}. The chunks {list} fill the rectangle, so the missing side is their sum, with {r} left over.'), { n: n, d: d, list: list, r: left })
           : fill(t('stem.areamodel.div_svg_desc', 'An open rectangle with an area of {n} and one side of {d}. The other side is unknown. Chunks taken so far: {list}. {left} is not covered yet.'), { n: n, d: d, list: list, left: left });
-        return h('svg', { viewBox: '0 0 ' + Math.max(W, 320) + ' ' + (top + Hh + 40), role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc', style: { width: '100%', maxHeight: 300, background: C.svgBg }, 'data-division-model': true },
+        return h('svg', { viewBox: '0 0 ' + Math.max(W, 460) + ' ' + (top + Hh + 40), role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc', style: { width: '100%', maxHeight: 300, background: C.svgBg, borderRadius: 10 }, 'data-division-model': true },
           h('title', { id: pre + '-title' }, t('stem.areamodel.div_svg_title', 'Open area model for division')),
           h('desc', { id: pre + '-desc' }, desc),
           parts);
@@ -4081,21 +4180,56 @@ window.StemLab = window.StemLab || {
 
       // ══════════ RENDER ══════════
       var tabIds = visibleModes;
+      var areaEmblem = h('svg', {
+        width: 40, height: 40, viewBox: '0 0 40 40', 'aria-hidden': 'true',
+        style: { flexShrink: 0, display: 'block' }
+      },
+        h('rect', { x: 2, y: 2, width: 36, height: 36, rx: 9, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.34)', stroke: isContrast ? '#ffff00' : 'rgba(254,243,199,0.55)', strokeWidth: 1.5 }),
+        h('rect', { x: 8, y: 8, width: 14, height: 14, rx: 2, fill: isContrast ? '#ffff00' : '#fbbf24', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.2 }),
+        h('rect', { x: 23, y: 8, width: 9, height: 14, rx: 2, fill: isContrast ? '#00ff00' : '#38bdf8', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.2 }),
+        h('rect', { x: 8, y: 23, width: 14, height: 9, rx: 2, fill: isContrast ? '#00ffff' : '#34d399', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.2 }),
+        h('rect', { x: 23, y: 23, width: 9, height: 9, rx: 2, fill: isContrast ? '#ffffff' : '#c4b5fd', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.2 })
+      );
+      var heroBtnStyle = isContrast
+        ? Object.assign(btnStyle('secondary'), { minWidth: 40, minHeight: 40, borderColor: '#ffff00', color: '#ffff00', background: '#000000' })
+        : { background: 'rgba(15,23,42,0.44)', color: '#ffffff', border: '1px solid rgba(254,243,199,0.38)', borderRadius: 10, minWidth: 40, minHeight: 40, padding: '6px 11px', fontWeight: 800, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4 };
       return h('div', { 'data-areamodel-root': 'true', className: 'w-full max-w-7xl mx-auto',
-          style: { display: 'flex', flexDirection: 'column', gap: 12, padding: 12, background: C.bg, color: C.ink, borderRadius: 16 } },
-        // Header
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
-          h('button', { type: 'button', onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); }, 'aria-label': t('stem.areamodel.back', 'Back'), style: Object.assign(btnStyle('secondary'), { minWidth: 40, minHeight: 40 }) },
-            ArrowLeft ? h(ArrowLeft, { size: 18 }) : '←'),
-          h('h2', { style: { fontSize: 18, fontWeight: 900, color: C.accent, margin: 0 } }, t('stem.areamodel.area_model', '🟧 Area Model')),
-          h('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
-            bestStreak > 0 && h('span', { style: { fontSize: 12, color: C.sub } }, fill(t('stem.areamodel.best_streak', 'Best streak: {n}'), { n: bestStreak })),
-            h('span', { 'aria-label': fill(t('stem.areamodel.score_label', 'Score: {c} correct out of {n} challenges'), { c: score.correct, n: score.total }), style: { fontSize: 13, fontWeight: 800, color: C.ink } }, score.correct + '/' + score.total),
+          style: { display: 'flex', flexDirection: 'column', gap: 12, padding: 12, background: C.bg, color: C.ink, borderRadius: 16, minWidth: 0 } },
+        // Bespoke Area Model Studio Workbench Hero Header
+        h('div', {
+          style: {
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap',
+            padding: '12px 14px', borderRadius: 16,
+            background: C.heroBg, border: (isContrast ? '2px solid ' : '1px solid ') + C.heroBorder,
+            boxShadow: isContrast ? 'none' : (isDark ? '0 8px 24px rgba(2,6,23,0.45)' : '0 8px 24px rgba(120,53,15,0.22)'),
+            color: C.heroInk, minWidth: 0
+          }
+        },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', minWidth: 0, flex: '1 1 200px' } },
+            h('button', { type: 'button', onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); }, 'aria-label': t('stem.areamodel.back', 'Back'), style: heroBtnStyle },
+              ArrowLeft ? h(ArrowLeft, { size: 18 }) : '←'),
+            areaEmblem,
+            h('div', { style: { minWidth: 0, flex: '1 1 140px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 2 } },
+                h('span', { style: { fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '2px 8px', borderRadius: 999, background: C.heroPillBg, color: C.heroPillInk, border: '1px solid ' + C.heroPillBorder } },
+                  t('stem.areamodel.subject_badge', 'Mathematics · Area Studio')),
+                h('span', { style: { fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 999, background: C.heroPillBg, color: C.heroSub, border: '1px solid ' + C.heroPillBorder } },
+                  BAND_NAMES[band])),
+              h('h2', { style: { fontSize: 19, fontWeight: 900, color: C.heroInk, margin: 0, lineHeight: 1.2 } }, t('stem.areamodel.area_model', '🟧 Area Model')),
+              h('p', { style: { fontSize: 12, fontWeight: 600, color: C.heroSub, margin: '2px 0 0', lineHeight: 1.35 } },
+                t('stem.areamodel.studio_subtitle', 'Visual multiplication, partial products, division chunks, fractions & algebra tiles')))),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', minWidth: 0 } },
+            bestStreak > 0 && h('span', { style: { fontSize: 12, fontWeight: 800, color: C.heroPillInk, background: C.heroPillBg, border: '1px solid ' + C.heroPillBorder, borderRadius: 10, padding: '5px 9px', fontVariantNumeric: 'tabular-nums' } },
+              fill(t('stem.areamodel.best_streak', 'Best streak: {n}'), { n: bestStreak })),
+            h('span', {
+              'aria-label': fill(t('stem.areamodel.score_label', 'Score: {c} correct out of {n} challenges'), { c: score.correct, n: score.total }),
+              style: { fontSize: 13, fontWeight: 900, color: C.heroInk, background: C.heroPillBg, border: '1px solid ' + C.heroPillBorder, borderRadius: 10, padding: '5px 10px', fontVariantNumeric: 'tabular-nums' }
+            }, score.correct + '/' + score.total),
             h('button', { type: 'button',
               onClick: function() { var next = !muted; upd({ muted: next }); if (!next) { setTimeout(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); } say(next ? t('stem.areamodel.sound_muted', 'Sound muted') : t('stem.areamodel.sound_on', 'Sound on')); },
               'aria-label': t('stem.areamodel.sound_effects', 'Sound effects'), 'aria-pressed': !muted,
               title: muted ? t('stem.areamodel.sound_off_title', 'Sounds are off') : t('stem.areamodel.sound_on_title', 'Sounds are on'),
-              style: Object.assign(btnStyle('secondary'), { minWidth: 40 }) }, h('span', { 'aria-hidden': 'true' }, muted ? '🔇' : '🔊')),
+              style: heroBtnStyle }, h('span', { 'aria-hidden': 'true' }, muted ? '🔇' : '🔊')),
             h('button', { type: 'button',
               onClick: function() {
                 sfxClick();
@@ -4105,11 +4239,11 @@ window.StemLab = window.StemLab || {
                 say(t('stem.areamodel.reset_done', 'Area model reset to its starting values.'));
               },
               'aria-label': t('stem.areamodel.reset_everything', 'Reset everything'), title: t('stem.areamodel.reset_all_dimensions_and_challenges', 'Reset all dimensions and challenges'),
-              style: btnStyle('secondary') }, t('stem.areamodel.reset', '↺ Reset')))),
+              style: heroBtnStyle }, t('stem.areamodel.reset', '↺ Reset')))),
 
         // Settings (level, predict first) wait behind one disclosure; related tools sit beside it.
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'flex-start' } },
-          h('details', { 'data-areamodel-settings': true, style: Object.assign({}, cardStyle, { padding: '2px 10px', flex: '1 1 260px', minWidth: 0 }) },
+          h('details', { 'data-areamodel-settings': true, style: Object.assign({}, cardStyle, { padding: '2px 10px', flex: '1 1 200px', minWidth: 0 }) },
             h('summary', { style: { cursor: 'pointer', fontSize: 13, fontWeight: 800, color: C.ink, padding: '11px 0', lineHeight: '18px' } },
               fill(t('stem.areamodel.settings_summary', 'Settings: {level}'), { level: BAND_NAMES[band] })),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', padding: '4px 0 8px' } },
@@ -4128,7 +4262,7 @@ window.StemLab = window.StemLab || {
         renderPath(),
 
         // Mode tabs: the level's core activities first, then "More"
-        h('div', { role: 'tablist', 'aria-label': t('stem.areamodel.area_model_modes', 'Area Model modes'), 'data-tab-order': tabIds.join(','), style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: 4, borderRadius: 12, background: C.card, border: '1px solid ' + C.border } },
+        h('div', { role: 'tablist', 'aria-label': t('stem.areamodel.area_model_modes', 'Area Model modes'), 'data-tab-order': tabIds.join(','), style: { display: 'flex', flexWrap: 'wrap', gap: 5, padding: 6, borderRadius: 14, background: C.card, border: '1px solid ' + C.border, boxShadow: isContrast ? 'none' : (isDark ? '0 3px 12px rgba(2,6,23,0.3)' : '0 2px 8px rgba(146,64,14,0.06)') } },
           tabOrder.map(function(id) { return { id: id }; }).map(function(m, tabIndex) {
             // Teacher-hidden tabs drop out; arrow keys move among the visible ones.
             var pos = tabIds.indexOf(m.id);
@@ -4138,7 +4272,7 @@ window.StemLab = window.StemLab || {
             var n = tabIds.length;
             var firstMore = coreModes.indexOf(m.id) < 0 && (pos === 0 || coreModes.indexOf(tabIds[pos - 1]) >= 0);
             return h(React.Fragment, { key: m.id },
-              firstMore && pos > 0 && h('span', { 'aria-hidden': 'true', 'data-tab-more': true, style: { flexBasis: '100%', fontSize: 12, fontWeight: 800, color: C.sub, padding: '4px 6px 0' } }, t('stem.areamodel.tabs_more', 'More activities')),
+              firstMore && pos > 0 && h('span', { 'aria-hidden': 'true', 'data-tab-more': true, style: { flexBasis: '100%', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: C.sub, padding: '6px 6px 2px', borderTop: '1px dashed ' + C.border, marginTop: 2 } }, t('stem.areamodel.tabs_more', 'More activities')),
               h('button', { id: 'stem-areamodel-tab-' + m.id, type: 'button',
               role: 'tab', 'aria-selected': active,
               'aria-controls': 'stem-areamodel-panel-' + m.id,
@@ -4157,8 +4291,11 @@ window.StemLab = window.StemLab || {
                 upd({ viewMode: tabIds[next] });
               },
               onClick: function() { sfxClick(); upd({ viewMode: m.id }); },
-              style: { flex: '1 1 120px', minHeight: 40, padding: '6px 8px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer',
-                background: active ? C.bg : 'transparent', color: active ? C.accent : C.ink, border: active ? '2px solid ' + C.accent : '2px solid transparent' }
+              style: { flex: '1 1 112px', minWidth: 0, minHeight: 42, padding: '6px 10px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                background: active ? (isContrast ? '#000000' : C.bg) : 'transparent',
+                color: active ? C.accent : C.ink,
+                border: active ? '2px solid ' + C.accent : '2px solid transparent',
+                boxShadow: active ? (isContrast ? 'inset 0 0 0 2px #ffff00' : (isDark ? '0 2px 8px rgba(0,0,0,0.35)' : '0 2px 8px rgba(180,83,9,0.14)')) : 'none' }
             }, h('span', { 'aria-hidden': 'true' }, m.icon + ' '), m.label, coreModes.indexOf(m.id) >= 0 ? h('span', { className: 'sr-only' }, ' ' + t('stem.areamodel.tab_recommended', '(fits your level)')) : null,
               isTeacher && hiddenModes[m.id] ? h('span', { style: { fontSize: 11, fontWeight: 600 } }, ' ' + t('stem.areamodel.tab_hidden_note', '(hidden from students)')) : null));
           })),
@@ -4170,14 +4307,14 @@ window.StemLab = window.StemLab || {
           'aria-labelledby': 'stem-areamodel-tab-' + viewMode,
           tabIndex: 0,
           'data-areamodel-focus': 'true',
-          style: { display: 'flex', flexDirection: 'column', gap: 12, padding: 12, borderRadius: 16, background: C.card2, border: '1px solid ' + C.border }
+          style: { display: 'flex', flexDirection: 'column', gap: 12, padding: 12, borderRadius: 16, background: C.card2, border: '1px solid ' + C.border, minWidth: 0 }
         },
           h('p', { style: { fontSize: 15, fontWeight: 800, color: C.ink, margin: 0 } }, heroText),
           // The question sits above the model (Partial Products and Word Problems place it inside their model card).
           viewMode !== 'multidigit' && viewMode !== 'word' && promptBlock(),
-          h('div', { style: { padding: '10px 12px', borderRadius: 12, borderLeft: '4px solid ' + C.accent, background: C.bg, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
-            h('div', { 'aria-hidden': 'true', style: { fontSize: 28 } }, MODE_ICONS[viewMode]),
-            h('div', { style: { flex: 1, minWidth: 220 } },
+          h('div', { style: { padding: '11px 13px', borderRadius: 12, border: '1px solid ' + C.border, borderLeft: '4px solid ' + C.accent, background: C.bg, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: isContrast ? 'none' : (isDark ? '0 2px 10px rgba(2,6,23,0.28)' : '0 2px 8px rgba(146,64,14,0.05)') } },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: 24, width: 42, height: 42, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.card, border: '1px solid ' + C.border, flexShrink: 0 } }, MODE_ICONS[viewMode]),
+            h('div', { style: { flex: '1 1 180px', minWidth: 0 } },
               h('h3', { style: { color: C.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.25 } }, meta.title),
               h('p', { style: { marginTop: 6, fontSize: 14, color: C.ink } }, meta.start),
               h('details', { className: 'math-learning-note', style: { marginTop: 4 } },
@@ -4186,7 +4323,7 @@ window.StemLab = window.StemLab || {
           chOpen && !chHere && h('p', { style: noteStyle('warn') }, t('stem.areamodel.hidden_note', 'Products are hidden while a challenge is open.')),
 
           // Rows / columns controls (basic + distributive)
-          (viewMode === 'basic' || viewMode === 'distributive') && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+          (viewMode === 'basic' || viewMode === 'distributive') && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 } },
             ['rows', 'cols'].map(function(which) {
               var val = dims[which];
               var draft = _a.dimsDraft && _a.dimsDraft[which] != null ? String(_a.dimsDraft[which]) : null;

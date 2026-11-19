@@ -68,6 +68,23 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
   // end contrast theme fixes
+  // Hero deck & preset polish CSS (non-HC + HC-compatible, separate from allo-machinelab-hc-extra-css)
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-machinelab-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-machinelab-polish-css';
+    st.textContent =
+      '.ml-hero-deck{position:relative;overflow:hidden;}' +
+      '.ml-hero-brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 280px;}' +
+      '.ml-hero-emblem{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}' +
+      '.ml-hero-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}' +
+      '.ml-hero-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.35;white-space:nowrap;}' +
+      '.ml-preset-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;padding-top:10px;}' +
+      '.ml-preset-lbl{font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-right:2px;}' +
+      '.ml-preset-btn{padding:5px 10px;min-height:28px;border-radius:999px;font-size:11px;font-weight:700;cursor:pointer;transition:transform .12s,border-color .15s,background-color .15s;}' +
+      '.ml-preset-btn:hover{transform:translateY(-1px);}';
+    document.head.appendChild(st);
+  })();
   // ═══════════════════════════════════════════════════════════════════
   // PURE MATH — no DOM, no React, no state. Everything the student is
   // graded on comes from here, which is what makes it testable.
@@ -7298,10 +7315,14 @@ window.StemLab = window.StemLab || {
       };
 
       // ── State init guard ──
-      if (!labToolData || !labToolData.machineLab) {
+      var _rawMlObj = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData) &&
+        labToolData.machineLab && typeof labToolData.machineLab === 'object' && !Array.isArray(labToolData.machineLab))
+        ? labToolData.machineLab : null;
+      if (!_rawMlObj) {
         if (typeof setLabToolData === 'function') {
           setLabToolData(function (prev) {
-            return Object.assign({}, prev, { machineLab: defaultState() });
+            var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            return Object.assign({}, safePrev, { machineLab: defaultState() });
           });
         }
         return h('div', {
@@ -7315,7 +7336,7 @@ window.StemLab = window.StemLab || {
       // restore through ctx.toolSnapshots, or a build that added a control.
       // Without this the tool renders a wall of "—" and unset sliders while
       // looking like it loaded fine, which is worse than crashing.
-      var d = labToolData.machineLab;
+      var d = _rawMlObj;
       var _defaults = defaultState();
       for (var _dk in _defaults) {
         if (Object.prototype.hasOwnProperty.call(_defaults, _dk) && d[_dk] === undefined) {
@@ -7325,8 +7346,8 @@ window.StemLab = window.StemLab || {
       }
       // The OS setting is honoured unless the student has said otherwise.
       var reducedMotion = (d.motionPref === 'off') ? true : ((d.motionPref === 'on') ? false : !!osReducedMotion);
-      var provenCount = Object.keys(d.provenBenches || {}).length;
-      var firedCount = (d.machinesFired || []).length;
+      var provenCount = (d.provenBenches && typeof d.provenBenches === 'object' && !Array.isArray(d.provenBenches)) ? Object.keys(d.provenBenches).length : 0;
+      var firedCount = Array.isArray(d.machinesFired) ? d.machinesFired.length : 0;
 
       // A score belongs to the prediction and physics that produced it. Keep
       // the old shot in the history (and let the stale-flight banner explain
@@ -7344,11 +7365,12 @@ window.StemLab = window.StemLab || {
       };
       var upd = function (key, val) {
         setLabToolData(function (prev) {
-          var cur = (prev && prev.machineLab) || {};
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var cur = (safePrev.machineLab && typeof safePrev.machineLab === 'object' && !Array.isArray(safePrev.machineLab)) ? safePrev.machineLab : {};
           var next = Object.assign({}, cur);
           next[key] = val;
           if (RANGE_RESULT_KEYS[key]) next.rangeResult = null;
-          return Object.assign({}, prev, { machineLab: next });
+          return Object.assign({}, safePrev, { machineLab: next });
         });
       };
       // upd() computes its value from the `d` captured at render time, which is
@@ -7356,8 +7378,9 @@ window.StemLab = window.StemLab || {
       // later and would write a counter read before the click. This reads prev.
       var bumpGl = function () {
         setLabToolData(function (prev) {
-          var cur = (prev && prev.machineLab) || {};
-          return Object.assign({}, prev, {
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var cur = (safePrev.machineLab && typeof safePrev.machineLab === 'object' && !Array.isArray(safePrev.machineLab)) ? safePrev.machineLab : {};
+          return Object.assign({}, safePrev, {
             machineLab: Object.assign({}, cur, { glTick: (cur.glTick || 0) + 1 })
           });
         });
@@ -7365,8 +7388,9 @@ window.StemLab = window.StemLab || {
 
       var updMulti = function (patch) {
         setLabToolData(function (prev) {
-          var cur = (prev && prev.machineLab) || {};
-          return Object.assign({}, prev, { machineLab: Object.assign({}, cur, patch) });
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var cur = (safePrev.machineLab && typeof safePrev.machineLab === 'object' && !Array.isArray(safePrev.machineLab)) ? safePrev.machineLab : {};
+          return Object.assign({}, safePrev, { machineLab: Object.assign({}, cur, patch) });
         });
       };
 
@@ -11957,7 +11981,7 @@ window.StemLab = window.StemLab || {
               ? __alloT('stem.machinelab.show_bars', 'Show bars')
               : __alloT('stem.machinelab.show_table', 'Show table'))
           ]),
-          d.ledgerAsTable ? table : bars,
+          d.ledgerAsTable ? h('div', { key: 'tblwrap', style: { overflowX: 'auto', maxWidth: '100%' } }, table) : bars,
           h('p', {
             key: 'eff',
             style: { margin: '8px 0 0', fontSize: 12, color: T.dim }
@@ -11986,7 +12010,7 @@ window.StemLab = window.StemLab || {
              fmt(100 * s.eta, 1) + '%.') : null,
           // Bars alone are a picture. The table is always reachable, and the
           // numbers are announced regardless of which view is on screen.
-          !d.ledgerAsTable ? h('div', { key: 'srtbl', style: srOnlyStyle }, table) : null
+          !d.ledgerAsTable ? h('div', { key: 'srtbl', style: Object.assign({}, srOnlyStyle, { left: 0, top: 0, whiteSpace: 'normal', clipPath: 'inset(50%)' }) }, table) : null
         ], key || 'ledger');
       }
 
@@ -15105,7 +15129,7 @@ window.StemLab = window.StemLab || {
                 // Course-by-course text equivalent of the wall picture. Always
                 // in the markup so a screen-reader user is never told less than
                 // a sighted one; the toggle only controls visual bulk.
-                h('div', { style: d.wallAsTable ? null : srOnlyStyle },
+                h('div', { style: d.wallAsTable ? { overflowX: 'auto', maxWidth: '100%' } : Object.assign({}, srOnlyStyle, { left: 0, top: 0, whiteSpace: 'normal', clipPath: 'inset(50%)' }) },
                   h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: T.text } }, [
                     h('caption', { key: 'cap', style: srOnlyStyle },
                       __alloT('stem.machinelab.wall_caption', 'Condition of each course, counting up from the ground')),
@@ -16655,7 +16679,7 @@ window.StemLab = window.StemLab || {
       function aiPanel() {
         // Student AI-off: the panel renders only when text AI is usable.
         var _aiFn = ctx.callGemini, _aiOk = false;
-        try { _aiOk = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') ? !!window.__alloAiUsable('text', _aiFn) : !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true); } catch (_) {}
+        try { _aiOk = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') ? !!window.__alloAiUsable('text', _aiFn) : !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)); } catch (_) {}
         if (!(ctx.aiAvailable !== false && typeof _aiFn === 'function' && !_aiFn._alloQrBlocked && (!!ctx.isTeacherMode || _aiOk))) return null;
         var LEVELS = [
           { id: 'grade2', band: 'k2', label: __alloT('stem.machinelab.lv_g2', 'Grade 2') },
@@ -16818,6 +16842,33 @@ window.StemLab = window.StemLab || {
         : (view === 'learn') ? renderLearn()
         : renderMachines();
 
+      var workshopPresets = [
+        {
+          id: 'lever_4_1',
+          label: __alloT('stem.machinelab.hero_preset_lever', '4:1 Lever Bench'),
+          active: view === 'machines' && bench.id === 'lever' && d.leverEffortArm === 4 && d.leverLoadArm === 1,
+          patch: { view: 'machines', bench: 'lever', leverEffortArm: 4, leverLoadArm: 1, leverLoad: 200, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false, shopMotionProgress: null, shopClueBench: null }
+        },
+        {
+          id: 'pulley_4x',
+          label: __alloT('stem.machinelab.hero_preset_pulley', '4-Strand Pulley'),
+          active: view === 'machines' && bench.id === 'pulley' && d.pulleySegments === 4,
+          patch: { view: 'machines', bench: 'pulley', pulleySegments: 4, pulleyLoad: 240, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false, shopMotionProgress: null, shopClueBench: null }
+        },
+        {
+          id: 'trebuchet_build',
+          label: __alloT('stem.machinelab.hero_preset_trebuchet', 'Trebuchet Build'),
+          active: view === 'build' && machineId === 'trebuchet',
+          patch: { view: 'build', machine: 'trebuchet' }
+        },
+        {
+          id: 'range_test',
+          label: __alloT('stem.machinelab.hero_preset_range', '3D Test Range'),
+          active: view === 'range',
+          patch: { view: 'range' }
+        }
+      ];
+
       return h('div', {
         style: {
           background: T.bg, color: T.text, padding: 16,
@@ -16825,34 +16876,84 @@ window.StemLab = window.StemLab || {
         }
       }, [
         tutorial,
-        h('div', { key: 'hd', style: {
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16,
-          flexWrap: 'wrap', marginBottom: 12, padding: '15px 17px', borderRadius: 16,
+        h('div', { key: 'hd', className: 'ml-hero-deck', style: {
+          marginBottom: 12, padding: '15px 17px', borderRadius: 16,
           border: '1px solid ' + T.border,
-          background: isContrast ? T.card : (isDark ? 'linear-gradient(135deg,#1e293b,#2b2115)' : 'linear-gradient(135deg,#ffffff,#fff7ed)'),
-          boxShadow: isDark ? '0 12px 28px rgba(0,0,0,.18)' : '0 12px 28px rgba(15,23,42,.07)'
+          background: isContrast ? T.card : (isDark ? 'linear-gradient(135deg,#111827 0%,#1e293b 52%,#332110 100%)' : 'linear-gradient(135deg,#ffffff 0%,#fffbeb 58%,#ffedd5 100%)'),
+          boxShadow: isDark ? '0 12px 28px rgba(0,0,0,.24)' : '0 12px 28px rgba(15,23,42,.08)'
         } }, [
-          h('div', { key: 'copy' }, [
-            h('div', { key: 'ey', style: { marginBottom: 3, fontSize: 9, fontWeight: 850, letterSpacing: 1.6, textTransform: 'uppercase', color: T.accent } },
-              __alloT('stem.machinelab.engineering_studio', 'Interactive engineering studio')),
-            h('h2', { key: 'h', style: { margin: 0, fontSize: 24, fontWeight: 850, color: T.text } },
-              '⚙️ ' + __alloT('stem.machinelab.title', 'Machine Lab')),
-            h('p', { key: 's', style: { margin: '4px 0 0', fontSize: 13, color: T.muted } },
-              __alloT('stem.machinelab.subtitle', 'Six simple machines. One idea: trade distance for force.'))
-          ]),
-          h('div', { key: 'progress', style: { minWidth: 175, flex: '0 1 230px' } }, [
-            h('div', { key: 'txt', style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: T.muted } }, [
-              h('span', { key: 'l' }, __alloT('stem.machinelab.mission_progress', 'Bench progress')),
-              h('span', { key: 'v', style: { color: T.accent } }, provenCount + ' / 6')
+          h('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' } }, [
+            h('div', { key: 'copy', className: 'ml-hero-brand' }, [
+              h('div', { key: 'emblem', className: 'ml-hero-emblem', style: {
+                background: isContrast ? T.bg : (isDark ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.88)'),
+                border: '1.5px solid ' + T.accent
+              } },
+                h('svg', { width: 34, height: 34, viewBox: '0 0 36 36', fill: 'none', 'aria-hidden': 'true', focusable: 'false' },
+                  h('circle', { cx: 13, cy: 14, r: 6, stroke: T.accent, strokeWidth: 2.2 }),
+                  h('circle', { cx: 13, cy: 14, r: 2.1, fill: T.accent }),
+                  h('path', { d: 'M13 5.5V7.5 M13 20.5V22.5 M4.5 14H6.5 M19.5 14H21.5 M7 8L8.5 9.5 M17.5 18.5L19 20 M19 8L17.5 9.5 M8.5 18.5L7 20', stroke: T.accent, strokeWidth: 1.9, strokeLinecap: 'round' }),
+                  h('path', { d: 'M5 29H31 M16 29L20 22L24 29Z', stroke: T.text, strokeWidth: 2, strokeLinejoin: 'round' }),
+                  h('path', { d: 'M9 24L31 19', stroke: T.effort, strokeWidth: 2.4, strokeLinecap: 'round' }),
+                  h('rect', { x: 25, y: 12, width: 6.5, height: 6.5, rx: 1.2, stroke: T.load, fill: T.load, fillOpacity: 0.25, strokeWidth: 1.8 })
+                )
+              ),
+              h('div', { key: 'text', style: { minWidth: 0 } }, [
+                h('div', { key: 'ey', style: { marginBottom: 3, fontSize: 10, fontWeight: 850, letterSpacing: 1.4, textTransform: 'uppercase', color: T.accent } },
+                  __alloT('stem.machinelab.engineering_studio', 'Interactive engineering studio')),
+                h('h2', { key: 'h', style: { margin: 0, fontSize: 23, fontWeight: 850, color: T.text, lineHeight: 1.15 } },
+                  __alloT('stem.machinelab.title', 'Machine Lab')),
+                h('p', { key: 's', style: { margin: '4px 0 0', fontSize: 13, color: T.muted } },
+                  __alloT('stem.machinelab.subtitle', 'Six simple machines. One idea: trade distance for force.')),
+                h('div', { key: 'pills', className: 'ml-hero-pills' }, [
+                  h('span', { key: 'st', className: 'ml-hero-pill', style: { background: T.card, border: '1px solid ' + T.border, color: T.text } },
+                    __alloT('stem.machinelab.hero_station', 'Station') + ': ' + bench.label),
+                  h('span', { key: 'eng', className: 'ml-hero-pill', style: { background: T.card, border: '1px solid ' + T.border, color: T.text } },
+                    __alloT('stem.machinelab.hero_engine', 'Engine') + ': ' + machineLabel(machineId)),
+                  h('span', { key: 'lv', className: 'ml-hero-pill', style: { background: T.card, border: '1px solid ' + T.border, color: T.accent } },
+                    BAND_LABELS[band])
+                ])
+              ])
             ]),
-            h('div', {
-              key: 'track', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 6,
-              'aria-valuenow': provenCount, 'aria-label': __alloT('stem.machinelab.bench_progress_aria', 'Simple-machine benches proven'),
-              style: { height: 8, overflow: 'hidden', borderRadius: 999, background: T.bg, border: '1px solid ' + T.border }
-            }, h('div', { style: { width: (100 * provenCount / 6) + '%', height: '100%', background: T.accent } })),
-            h('div', { key: 'sub', style: { marginTop: 5, fontSize: 10, color: T.muted, textAlign: 'right' } },
-              firedCount + ' / 3 ' + __alloT('stem.machinelab.machines_fired', 'machines fired'))
-          ])
+            h('div', { key: 'progress', style: { minWidth: 175, flex: '0 1 230px' } }, [
+              h('div', { key: 'txt', style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: T.muted } }, [
+                h('span', { key: 'l' }, __alloT('stem.machinelab.mission_progress', 'Bench progress')),
+                h('span', { key: 'v', style: { color: T.accent } }, provenCount + ' / 6')
+              ]),
+              h('div', {
+                key: 'track', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 6,
+                'aria-valuenow': provenCount, 'aria-label': __alloT('stem.machinelab.bench_progress_aria', 'Simple-machine benches proven'),
+                style: { height: 8, overflow: 'hidden', borderRadius: 999, background: T.bg, border: '1px solid ' + T.border }
+              }, h('div', { style: { width: (100 * provenCount / 6) + '%', height: '100%', background: T.accent } })),
+              h('div', { key: 'sub', style: { marginTop: 5, fontSize: 10, color: T.muted, textAlign: 'right' } },
+                firedCount + ' / 3 ' + __alloT('stem.machinelab.machines_fired', 'machines fired'))
+            ])
+          ]),
+          h('div', {
+            key: 'presets',
+            className: 'ml-preset-row',
+            role: 'group',
+            'aria-label': __alloT('stem.machinelab.hero_presets_aria', 'Quick workshop presets'),
+            style: { borderTop: '1px solid ' + T.border }
+          }, [
+            h('span', { key: 'lbl', className: 'ml-preset-lbl', style: { color: T.muted } },
+              __alloT('stem.machinelab.hero_presets_label', 'Quick start'))
+          ].concat(workshopPresets.map(function (pr) {
+            return h('button', {
+              key: pr.id,
+              type: 'button',
+              className: 'ml-preset-btn',
+              'aria-pressed': pr.active ? 'true' : 'false',
+              onClick: function () {
+                updMulti(pr.patch);
+                announceToSR(pr.label);
+              },
+              style: {
+                background: pr.active ? T.accent : T.card,
+                color: pr.active ? T.accentInk : T.text,
+                border: '1px solid ' + (pr.active ? T.accent : T.border)
+              }
+            }, pr.label);
+          })))
         ]),
 
         bandPicker(),

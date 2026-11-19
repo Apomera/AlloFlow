@@ -18,8 +18,9 @@ describe('Anchor Charts keyboard reorder and focus accessibility', () => {
     expect(source).toContain("'polite'");
   });
 
-  it('keeps visible focus rings on every outline-suppressed editor field', () => {
-    expect(source.match(/outline-none/g)).toHaveLength(7);
+  it('keeps visible focus outlines and rings on every editor field without suppressing outlines', () => {
+    expect(source.match(/outline-none/g) || []).toHaveLength(0);
+    expect(source.match(/focus-visible:outline-2/g)).toHaveLength(7);
     expect(source.match(/focus:ring-2/g)).toHaveLength(7);
     expect(source.match(/focus:ring-offset-1/g)).toHaveLength(7);
   });

@@ -273,11 +273,15 @@
 
     // Link annotations (PDF/UA-1 §7.18.5 + §7.18): each needs /Contents (the
     // alternate description) and /StructParent (reachability from the tree).
+    // Annotated pages also need /Tabs /S (§7.18.3) so keyboard tab order follows structure.
     var linkAnnotsTotal = 0, linkAnnotsWithContents = 0, linkAnnotsWithStructParent = 0;
+    var pagesWithAnnots = 0, pagesWithAnnotsTabsS = 0;
     try {
       for (var lp = 0; lp < pages.length; lp++) {
         var lAnnots = resolve(pages[lp].node.get(nm('Annots')));
-        if (!lAnnots || typeof lAnnots.size !== 'function') continue;
+        if (!lAnnots || typeof lAnnots.size !== 'function' || lAnnots.size() === 0) continue;
+        pagesWithAnnots++;
+        if (String(pages[lp].node.get(nm('Tabs')) || '') === '/S') pagesWithAnnotsTabsS++;
         for (var la = 0; la < lAnnots.size(); la++) {
           var annot = resolve(lAnnots.get(la));
           if (!annot || !annot.get) continue;
@@ -289,13 +293,14 @@
       }
     } catch (_) { /* best-effort */ }
 
-    // XMP metadata text — for the declaration-consistency rule. The pipeline
-    // writes its XMP uncompressed; a filtered stream (foreign PDFs) is
+    // XMP metadata text — for the declaration-consistency rule + §7.1 t8/t10 checks.
+    // The pipeline writes its XMP uncompressed; a filtered stream (foreign PDFs) is
     // reported honestly as unreadable rather than guessed at.
-    var xmpText = '', xmpUnreadable = false;
+    var xmpText = '', xmpUnreadable = false, hasMetadataStream = false;
     try {
       var metaStream = resolve(catalog.get(nm('Metadata')));
       if (metaStream) {
+        hasMetadataStream = true;
         var metaFilter = metaStream.dict && metaStream.dict.get ? metaStream.dict.get(nm('Filter')) : null;
         var metaBytes = metaStream.contents || (metaStream.getContents && metaStream.getContents());
         if (metaFilter) xmpUnreadable = true;
@@ -303,6 +308,9 @@
       }
     } catch (_) { xmpUnreadable = true; }
     var uaDeclaredInXmp = xmpText.indexOf('<pdfuaid:part>1</pdfuaid:part>') !== -1;
+    var xmpDcTitleMatch = xmpText.match(/<dc:title\b[^>]*>([\s\S]*?)<\/dc:title>/i);
+    var xmpDcTitleText = xmpDcTitleMatch ? xmpDcTitleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+    var hasParentTree = !!(stRoot && stRoot.get && resolve(stRoot.get(nm('ParentTree'))));
 
     // Walk the structure tree.
     var _pageIndex = new Map();
@@ -337,6 +345,7 @@
     function pass(rule, ok, detail) { checks.push({ rule: rule, status: ok ? 'pass' : 'fail', detail: detail || '' }); }
 
     pass('StructTreeRoot present', !!stRoot);
+    pass('StructTreeRoot has /ParentTree', hasParentTree, hasParentTree ? 'present' : '(missing)');
     pass('MarkInfo /Marked true', String(markedRaw) === 'true');
     pass('Primary language set (/Lang)', !!langRaw, langRaw ? String(langRaw) : '');
     pass('Structure tree has content (rootK not null)', elems.length > 0, elems.length + ' elements');
@@ -367,9 +376,19 @@
     pass('Link annotations reachable from the tag tree (/StructParent)',
       linkAnnotsTotal === 0 || linkAnnotsWithStructParent === linkAnnotsTotal,
       linkAnnotsTotal === 0 ? '0 link annotations' : linkAnnotsWithStructParent + '/' + linkAnnotsTotal + ' with /StructParent');
+    pass('Pages with annotations set /Tabs /S (PDF/UA 7.18.3)',
+      pagesWithAnnots === 0 || pagesWithAnnotsTabsS === pagesWithAnnots,
+      pagesWithAnnots === 0 ? '0 annotated pages' : pagesWithAnnotsTabsS + '/' + pagesWithAnnots + ' annotated pages with /Tabs /S');
     pass('Table/list containment (TH/TD in TR, TR in Table, LI in L, Lbl/LBody in LI)',
       containment.bad.length === 0,
       containment.checked === 0 ? 'no table/list structure' : (containment.bad.length === 0 ? containment.checked + ' containment edges OK' : 'bad: ' + containment.bad.join('; ')));
+    pass('XMP metadata stream present (/Metadata, PDF/UA 7.1)',
+      hasMetadataStream,
+      hasMetadataStream ? (xmpUnreadable ? 'present (compressed)' : 'present') : '(missing)');
+    pass('XMP dc:title non-empty (PDF/UA 7.1)',
+      xmpUnreadable ? true : (hasMetadataStream && !!xmpDcTitleText),
+      xmpUnreadable ? 'XMP stream is compressed/unreadable — checked externally via veraPDF instead'
+        : (xmpDcTitleText ? xmpDcTitleText.slice(0, 80) : '(missing/empty)'));
     // The evidence-based declaration contract: a pdfuaid:part=1 claim in the
     // XMP must be backed by zero orphaned content leaves. A WITHHELD claim is
     // a PASS (that's the honesty design working) — the detail says why.
@@ -401,11 +420,16 @@
       isEncrypted: isEncrypted,
       catalogChecks: {
         hasStructTreeRoot: !!stRoot,
+        hasParentTree: hasParentTree,
+        hasMetadataStream: hasMetadataStream,
+        xmpDcTitle: xmpDcTitleText || null,
         marked: String(markedRaw),
         lang: langRaw ? String(langRaw) : null,
         docTitle: docTitle ? String(docTitle).slice(0, 200) : null,
         displayDocTitle: displayDocTitle ? String(displayDocTitle) : null,
         hasOutline: !!outlines,
+        pagesWithAnnots: pagesWithAnnots,
+        pagesWithAnnotsTabsS: pagesWithAnnotsTabsS,
         fontsTotal: fontsTotal,
         fontsEmbedded: fontsEmbedded,
       },

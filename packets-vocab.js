@@ -13,11 +13,14 @@
   'use strict';
 
   var LOOKUP_PAGE = 'packets-vocab-lookup.html';
+  var PICTURES_PAGE = 'packets-pictures.html';
   var STORE_KEY = 'alloflow-packets-vocab/1';
   var EDITS_KEY = 'alloflow-packets-vocab-edits/1';
   var TRY_PAGE = 'packets-try.html';
   var MAX_TYPED = 2400;
   var MAX_STUDENTS = 40;
+  var MAX_REOPEN_BYTES = 60 * 1024 * 1024;
+  var MAX_ROSTER_BYTES = 256 * 1024;
   var MAX_KEPT = 2000;     // words whose changes are kept; the oldest go first
   var LARGE_FILE_BYTES = 10e6;
   var LARGE_FILE_SAID = 'This file is over 10 MB. Some email and school platforms block large files, and older phones open them slowly. Choose fewer words, turn off Recordings of the words, or leave out picture questions to make it smaller.';
@@ -71,15 +74,33 @@
   // 2026-11-13 (teacher-journey L7): on a phone each word's buttons wait behind one Change button (packets-vocab.css);
   // the words whose Change is open, kept open when the rows are drawn again. On a wider screen the buttons are always there.
   var changing = {};
-  var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null;
+  var buildTimer = 0, buildRun = 0, built = null, fileUrl = '';
   var wordsTimer = 0;
-  // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js, word_picture_matcher.js).
-  var media = null, symbols = null, art = null, matcher = null, pictureState = 'idle', heard = null, pendingPicWord = '';
+  // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js, word_picture_matcher.js, packets_my_words.js).
+  var media = null, symbols = null, art = null, matcher = null, myWords = null, pictureState = 'idle', heard = null, pendingPicWord = '';
+  var myPictures = {}, myPicSyncRun = 0;
   var previewOmit = {}, previewSlot = {}, previewSession = null, inPreviewAction = false;
+  function stopPreviewSession() {
+    if (previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
+  }
   function resetPreview(stopSession) {
     previewOmit = {};
     previewSlot = {};
-    if (stopSession && previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
+    if (stopSession) stopPreviewSession();
+  }
+  function activePreviewOmits() {
+    var activeActs = {};
+    typesNow().forEach(function (id) {
+      var t = builder.TYPES.filter(function (x) { return x.id === id; })[0];
+      if (t) activeActs[t.activity] = true;
+    });
+    var rowKeys = {};
+    rows.forEach(function (r) { if (r && r.key) rowKeys[r.key] = true; });
+    return Object.keys(previewOmit).filter(function (k) {
+      var bar = k.indexOf('|');
+      if (bar < 0) return false;
+      return !!activeActs[k.slice(0, bar)] && !!rowKeys[k.slice(bar + 1)];
+    });
   }
 
   function defaults() { return { words: '', types: ['meaning', 'word'], mode: 'practice', title: '', readAloud: true, voices: true, diagrams: false, repeatMissed: false, codeName: '' }; }
@@ -111,12 +132,29 @@
     var saved = null;
     try { saved = JSON.parse(window.localStorage.getItem(EDITS_KEY) || 'null'); } catch (_) { saved = null; }
     if (!isObject(saved) || saved.v !== 1) return freshEdits();
-    return { v: 1, words: isObject(saved.words) ? saved.words : {}, senses: isObject(saved.senses) ? saved.senses : {} };
+    var out = { v: 1, words: isObject(saved.words) ? saved.words : {}, senses: isObject(saved.senses) ? saved.senses : {} };
+    Object.keys(out.words).forEach(function (k) {
+      var w = out.words[k];
+      if (isObject(w) && w.customPicture) {
+        var uri = typeof w.customPicture === 'string' ? w.customPicture : (isObject(w.customPicture) && typeof w.customPicture.dataUri === 'string' ? w.customPicture.dataUri : '');
+        if (uri && !myPictures[k]) myPictures[k] = { dataUri: uri, credit: { own: true }, legacy: true };
+      }
+    });
+    return out;
   }
   function keepEdits() {
     var keys = Object.keys(edits.words);
     if (keys.length > MAX_KEPT) keys.sort(function (a, b) { return (edits.words[a].at || 0) - (edits.words[b].at || 0); }).slice(0, keys.length - MAX_KEPT).forEach(function (k) { delete edits.words[k]; });
-    try { window.localStorage.setItem(EDITS_KEY, JSON.stringify(edits)); } catch (_) { /* kept for this visit only */ }
+    // Keep only lightweight text edits in localStorage; binary pictures live in AlloPacketMyWords IndexedDB.
+    var cleanWords = {};
+    Object.keys(edits.words).forEach(function (k) {
+      var src = edits.words[k];
+      if (!isObject(src)) return;
+      var copy = {};
+      Object.keys(src).forEach(function (field) { if (field !== 'customPicture') copy[field] = src[field]; });
+      if (Object.keys(copy).length) cleanWords[k] = copy;
+    });
+    try { window.localStorage.setItem(EDITS_KEY, JSON.stringify({ v: 1, words: cleanWords, senses: edits.senses })); } catch (_) { /* kept for this visit only */ }
   }
   function wordEdit(key) {
     if (!isObject(edits.words[key])) edits.words[key] = {};
@@ -124,12 +162,74 @@
     return edits.words[key];
   }
   function senseEdit(id) { if (!isObject(edits.senses[id])) edits.senses[id] = {}; return edits.senses[id]; }
+  function effectiveEdits() {
+    var mergedWords = {};
+    Object.keys(edits.words).forEach(function (k) {
+      var src = edits.words[k];
+      if (!isObject(src)) return;
+      var copy = Object.assign({}, src);
+      delete copy.customPicture;
+      mergedWords[k] = copy;
+    });
+    Object.keys(myPictures).forEach(function (k) {
+      var pic = myPictures[k];
+      if (!pic || !pic.dataUri) return;
+      mergedWords[k] = Object.assign({}, mergedWords[k] || {}, { customPicture: { dataUri: pic.dataUri } });
+    });
+    return { v: 1, words: mergedWords, senses: edits.senses };
+  }
+  function migrateLegacyPictures() {
+    if (!myWords || typeof myWords.available !== 'function' || typeof myWords.putMedia !== 'function') return;
+    var legacyKeys = Object.keys(myPictures).filter(function (k) { return myPictures[k] && myPictures[k].legacy; });
+    if (!legacyKeys.length) return;
+    myWords.available().then(function (ok) {
+      if (!ok) return;
+      var migrated = false;
+      return Promise.all(legacyKeys.map(function (k) {
+        var pic = myPictures[k];
+        return myWords.putMedia(k, { picture: { dataUri: pic.dataUri, credit: { own: true } } }).then(function () {
+          if (myPictures[k]) delete myPictures[k].legacy;
+          if (edits && edits.words && edits.words[k]) delete edits.words[k].customPicture;
+          migrated = true;
+        }, function () {});
+      })).then(function () { if (migrated) keepEdits(); });
+    });
+  }
+  function syncMyPictures() {
+    if (!myWords || typeof myWords.getManyMedia !== 'function') return Promise.resolve();
+    var words = listNow().words;
+    var keys = words.map(function (w) { return builder.keyOf(w); }).filter(Boolean);
+    if (!keys.length) return Promise.resolve();
+    var run = ++myPicSyncRun;
+    return myWords.getManyMedia(keys).then(function (found) {
+      if (run !== myPicSyncRun || !isObject(found)) return;
+      var changedAny = false;
+      keys.forEach(function (k) {
+        var mk = typeof myWords.normalizeMediaKey === 'function' ? myWords.normalizeMediaKey(k) : k;
+        var entry = found[mk] || found[k] || null;
+        var hasPic = !!(entry && entry.picture && !entry.picture.none && typeof entry.picture.dataUri === 'string' && entry.picture.dataUri);
+        if (hasPic) {
+          if (!myPictures[k] || myPictures[k].dataUri !== entry.picture.dataUri) {
+            myPictures[k] = { dataUri: entry.picture.dataUri, credit: entry.picture.credit || { own: true }, stored: true };
+            changedAny = true;
+          }
+        } else if (myPictures[k] && myPictures[k].stored) {
+          delete myPictures[k];
+          changedAny = true;
+        }
+      });
+      if (changedAny) {
+        redraft();
+        if (step === 3) { drawStep3(); makeSoon(30); }
+      }
+    }, function () {});
+  }
 
   // ---------------------------------------------------------------------------
   // The rows: one for each word, made again after every change
   // ---------------------------------------------------------------------------
   function listNow() { return builder.parseWords(state.words); }
-  function redraft() { rows = builder.draftRows({ words: listNow().words, bank: bankState === 'ready' ? bank : null, edits: edits, pictures: symbols, diagrams: !!state.diagrams, matcher: matcher, art: art }); }
+  function redraft() { rows = builder.draftRows({ words: listNow().words, bank: bankState === 'ready' ? bank : null, edits: effectiveEdits(), pictures: symbols, diagrams: !!state.diagrams, matcher: matcher, art: art }); }
   function rowOf(key) { return rows.filter(function (r) { return r.key === key; })[0] || null; }
   function changed() {
     keepEdits();
@@ -275,7 +375,8 @@
     if (row.own) {
       // "again" only after a lookup: a meaning the teacher typed was not looked up (2026-11-13, teacher-journey pass).
       var look = el('a', 'btn btn-small', row.net ? 'Look it up online again' : 'Look it up online');
-      look.href = LOOKUP_PAGE + '#word=' + encodeURIComponent(row.word);
+      var otherMissing = rows.filter(function (r) { return r.own && !r.def && r.key !== row.key; }).map(function (r) { return r.word; });
+      look.href = LOOKUP_PAGE + '#word=' + encodeURIComponent(row.word) + (otherMissing.length ? '&more=' + encodeURIComponent(otherMissing.join(',')) : '');
       look.setAttribute('data-lookup', row.key);
       box.appendChild(add(el('p', 'v-own'), look, el('span', 'hint', ' Opens a page that sends only this word to a free online dictionary, after you allow it.')));
     }
@@ -303,8 +404,8 @@
         });
         var words = el('span', '');
         words.appendChild(doc.createTextNode((s.pos ? s.pos + ': ' : '') + s.def));
-        if (k === 0) words.appendChild(el('span', 'radio-sub', 'The usual school meaning.' + (s.checked ? ' Checked.' : '')));
-        else if (s.checked) words.appendChild(el('span', 'radio-sub', 'Checked.'));
+        if (k === 0) words.appendChild(el('span', 'radio-sub', 'The usual school meaning.' + (s.checked ? ' ' + 'AI-checked' + '.' : '')));
+        else if (s.checked) words.appendChild(el('span', 'radio-sub', 'AI-checked' + '.'));
         add(label, radio, words);
         label.classList.toggle('is-on', radio.checked);
         group.appendChild(label);
@@ -364,10 +465,18 @@
     }
     return box;
   }
+  function rowPriority(r) {
+    if (r.problems.some(Boolean) || !r.def || r.wrong.length < builder.WRONG) return 0;
+    if ((!r.own && !r.checked) || (r.own && r.net && !r.net.changed)) return 1;
+    return 2;
+  }
   function drawRows() {
     var host = $('rows');
     host.textContent = '';
-    rows.forEach(function (row) { host.appendChild(drawRow(row)); });
+    // Float rows needing a look and unchecked meanings to the top ("Read these first"), preserving list order within each group.
+    var ordered = rows.map(function (row, idx) { return { row: row, prio: rowPriority(row), idx: idx }; })
+      .sort(function (a, b) { return a.prio - b.prio || a.idx - b.idx; });
+    ordered.forEach(function (entry) { host.appendChild(drawRow(entry.row)); });
     var notYet = rows.filter(function (r) { return !r.own && !r.checked; }).length;
     var look = rows.filter(function (r) { return r.problems.some(Boolean) || !r.def || r.wrong.length < builder.WRONG; }).length;
     var parts = [capital(count(rows.length, 'word')) + '.'];
@@ -445,10 +554,21 @@
       }, (row.customPicture ? 'Change picture for ' : 'Choose a picture for ') + row.word);
       chooseBtn.setAttribute('data-choose-pic', row.key);
       tools.appendChild(chooseBtn);
+      var nw = myWords && typeof myWords.normalizeWord === 'function' ? myWords.normalizeWord(row.word) : '';
+      if (nw) {
+        var findLink = el('a', 'btn btn-small', 'Find a picture');
+        findLink.href = PICTURES_PAGE + '#word=' + encodeURIComponent(nw) + '&from=vocab';
+        findLink.target = '_blank';
+        findLink.rel = 'noopener';
+        findLink.setAttribute('data-find-pic', row.key);
+        findLink.appendChild(el('span', 'sr-only', ' (opens in a new tab)'));
+        tools.appendChild(findLink);
+      }
       if (row.customPicture) {
         var rmBtn = button('Remove my picture', 'btn-small', function () {
-          var w = wordEdit(row.key);
-          delete w.customPicture;
+          delete myPictures[row.key];
+          if (edits.words[row.key]) delete edits.words[row.key].customPicture;
+          if (myWords && typeof myWords.putMedia === 'function') myWords.putMedia(row.key, { picture: null }).catch(function () {});
           setText('custom-pic-said', 'Removed your picture for ' + row.word + '.');
           changed();
         }, 'Remove my picture for ' + row.word);
@@ -654,7 +774,6 @@
     buildRun++;
     built = null;
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
-    dropBatch();
     show('summary', false);
     show('size-warn', false);
     show('try', false);
@@ -703,7 +822,7 @@
     var go = function (clips) {
       if (run !== buildRun) return { html: null, said: 'Cancelled.' };
       var result;
-      try { result = buildWith(state.codeName, types, clips); } catch (error) {
+      try { result = buildWith('', types, clips); } catch (error) {
         var msg = 'The file could not be put together (' + (said(error) || 'no reason was given') + '). Your words and changes are still here.';
         problem(msg);
         return { html: null, said: msg };
@@ -846,14 +965,45 @@
     var safe = String(title || 'vocabulary').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'vocabulary';
     return safe + tail;
   }
+  function drawSummaryRows() {
+    if (!built || !built.summaryBase) return;
+    var data = built.summaryBase.slice();
+    if (built.codeName) data.push(['Code name', built.codeName]);
+    data.push(['File', built.name + ', ' + fileSize(built.bytes) + '.']);
+    var host = $('summary-rows');
+    host.textContent = '';
+    data.forEach(function (row) { host.appendChild(el('dt', '', row[0])); host.appendChild(el('dd', '', row[1])); });
+  }
+  function applySingleCodeName() {
+    if (!built || !built.baseHtml) return;
+    var single = activeSingleCode();
+    state.codeName = single;
+    var html = single ? builder.withCodeName(built.baseHtml, single) : built.baseHtml;
+    var blob = new Blob([html], { type: 'text/html' });
+    if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+    built.html = html;
+    built.codeName = single;
+    built.name = fileName(built.lesson.title, (single ? '__' + single : '') + '.html');
+    built.bytes = blob.size;
+    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
+    drawSummaryRows();
+    setText('summary-facts', capital(count(built.total, 'question')) + '. ' + (state.mode === 'check' ? 'A check.' : 'Practice.') + ' ' + fileSize(built.bytes) + '.');
+    setText('size-warn', built.bytes >= LARGE_FILE_BYTES ? LARGE_FILE_SAID : '');
+    show('size-warn', built.bytes >= LARGE_FILE_BYTES);
+    if (fileUrl) {
+      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
+      show('try', true);
+      var handoff = window.AlloPacketHandoff;
+      if (!inPreviewAction && handoff && typeof handoff.hostPreview === 'function') {
+        if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
+        else previewSession = handoff.hostPreview({ url: fileUrl, html: built.html, describe: describePreview, onAction: onPreviewAction });
+      }
+    }
+  }
   function drawResult(result, types, notes) {
     types = types || state.types;
     show('making', false);
-    var blob = new Blob([result.html], { type: 'text/html' });
     var lesson = result.lesson;
-    built = { html: result.html, name: fileName(lesson.title, (state.codeName ? '__' + builder.codeName(state.codeName) : '') + '.html'), bytes: blob.size, lesson: lesson,
-      coded: state.mode === 'check' && codeNow().length >= 4 };
-    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     var q = builder.questions(rows, types);
     // A check's sample question (2026-11-13) is not one of the questions: it is not scored.
     var scored = function (b) { return b.items.filter(function (it) { return !it.practice; }).length; };
@@ -881,27 +1031,33 @@
     setText('voices-line', !state.readAloud ? 'Read aloud is off, so the file has no recordings.' : !state.voices ? 'Off: the device voice reads every word.'
       : clips.length ? capital(count(clips.length, 'word')) + ' in this file have a recording, about ' + fileSize(clipBytes) + '.' : 'No word in this file has a recording made ahead of time.');
     data.push(['Title', lesson.title]);
-    if (state.codeName) data.push(['Code name', builder.codeName(state.codeName)]);
-    data.push(['File', built.name + ', ' + fileSize(built.bytes) + '.']);
-    var host = $('summary-rows');
-    host.textContent = '';
-    data.forEach(function (row) { host.appendChild(el('dt', '', row[0])); host.appendChild(el('dd', '', row[1])); });
-    setText('summary-facts', capital(count(total, 'question')) + '. ' + (state.mode === 'check' ? 'A check.' : 'Practice.') + ' ' + fileSize(built.bytes) + '.');
-    setText('size-warn', built.bytes >= LARGE_FILE_BYTES ? LARGE_FILE_SAID : '');
-    show('size-warn', built.bytes >= LARGE_FILE_BYTES);
+    built = { baseHtml: result.html, html: result.html, name: fileName(lesson.title, '.html'), bytes: 0, lesson: lesson, total: total, summaryBase: data, codeName: '',
+      coded: state.mode === 'check' && codeNow().length >= 4 };
+    applySingleCodeName();
     // The list of what is in the file sits under the choices (2026-11-16), so questions left out are said here too, by the Save button.
     setText('left-note-text', left.length ? capital(count(left.length, 'question')) + (left.length === 1 ? ' was' : ' were') + ' left out.' : '');
     show('left-note', left.length > 0);
-    show('summary', true);
-    if (fileUrl) {
-      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
-      show('try', true);
-      var handoff = window.AlloPacketHandoff;
-      if (!inPreviewAction && handoff && typeof handoff.hostPreview === 'function') {
-        if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
-        else previewSession = handoff.hostPreview({ url: fileUrl, html: built.html, describe: describePreview, onAction: onPreviewAction });
+    var sumBox = $('summary');
+    var pNote = $('preview-note');
+    var omitCount = activePreviewOmits().length;
+    if (omitCount > 0 && sumBox) {
+      if (!pNote) {
+        pNote = el('p', 'note');
+        pNote.id = 'preview-note';
+        sumBox.appendChild(pNote);
       }
+      pNote.textContent = capital(count(omitCount, 'question')) + ' removed in Preview. ';
+      var restore = el('button', 'btn btn-text btn-small', 'Restore');
+      restore.type = 'button';
+      restore.id = 'preview-restore';
+      restore.addEventListener('click', function () { resetPreview(false); make(); });
+      pNote.appendChild(restore);
+      pNote.hidden = false;
+    } else if (pNote) {
+      pNote.hidden = true;
+      pNote.textContent = '';
     }
+    show('summary', true);
     show('save', true);
     setText('making-said', 'The file is ready: ' + count(total, 'question') + ', ' + fileSize(built.bytes) + '.');
     drawBatch();
@@ -926,13 +1082,21 @@
     $('after-save').focus();
   }
 
-  // "Make one for each student": the file above with each code name in its manifest, in one .zip file.
+  // Unified code-name / batch .zip fold: 1 line puts that code name in the single file above; 2-40 lines saves a .zip in 1 click.
+  function cleanRosterLine(raw) {
+    var s = String(raw || '').replace(/^\uFEFF/, '').trim();
+    if (!s) return '';
+    s = s.replace(/^(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '').trim();
+    var col = s.indexOf('\t') >= 0 ? s.split('\t')[0] : (s.indexOf(',') >= 0 ? s.split(',')[0] : s);
+    return col.trim().replace(/^["']+|["']+$/g, '').trim();
+  }
   function batchList() {
     var seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
-    String($('f-batch-names').value || '').split(/\r?\n/).forEach(function (line) {
+    String(($('f-batch-names') && $('f-batch-names').value) || '').replace(/^\uFEFF/, '').split(/\r?\n/).forEach(function (line) {
       if (!line.trim()) return;
-      var name = builder.codeName(line);
-      if (!name) { out.unusable.push(line.trim().slice(0, 40)); return; }
+      var cleaned = cleanRosterLine(line);
+      var name = builder.codeName(cleaned);
+      if (!name) { out.unusable.push((cleaned || line.trim()).slice(0, 40)); return; }
       var key = name.toLowerCase();
       if (seen[key]) { if (out.twice.indexOf(name) < 0) out.twice.push(name); return; }
       seen[key] = true;
@@ -941,66 +1105,116 @@
     });
     return out;
   }
+  function activeSingleCode() {
+    var list = batchList();
+    return list.names.length === 1 ? list.names[0] : '';
+  }
   function drawBatch() {
     var list = batchList(), n = list.names.length, parts = [];
-    if (!n) parts.push('Type or paste the code names, one on each line.');
-    else parts.push(count(n, 'file') + (built ? ', about ' + fileSize(n * built.bytes) + ' in all.' : '. The size shows here once the file above is ready.'));
+    var btn = $('batch-make');
+    if (n === 0) {
+      parts.push('Leave empty so each student types a code name at the start.');
+      if (btn) btn.hidden = true;
+    } else if (n === 1) {
+      parts.push('Using ' + list.names[0] + ' in the file above' + (built ? ' (' + built.name + ')' : '') + '. Add another line to save a .zip.');
+      if (btn) btn.hidden = true;
+    } else {
+      parts.push(count(n, 'file') + (built ? ', about ' + fileSize(n * built.bytes) + ' in all.' : '. The size shows here once the file above is ready.'));
+      if (btn) {
+        btn.hidden = false;
+        btn.textContent = 'Save .zip for ' + n + ' students';
+      }
+    }
     if (list.over) parts.push('Not used: ' + count(list.over, 'more code name') + '. At most ' + MAX_STUDENTS + ' go in one .zip file.');
     if (list.twice.length) parts.push('Listed more than once, used once: ' + list.twice.join(', ') + '.');
     if (list.unusable.length) parts.push('Not used, because a code name needs a letter or a number: ' + list.unusable.join(', ') + '.');
-    if (batchFile) parts = ['Ready: ' + count(batchFile.count, 'file') + ' in one .zip file, ' + fileSize(batchFile.bytes) + '.'];
     setText('batch-said', parts.join(' '));
   }
-  function dropBatch() {
-    if (batchFile && batchFile.url) { try { URL.revokeObjectURL(batchFile.url); } catch (_) {} }
-    batchFile = null;
-    show('batch-save', false);
-  }
-  function makeBatch() {
+  function saveBatchZip() {
     setText('batch-problem', '');
-    dropBatch();
     var list = batchList();
-    if (!list.names.length) { setText('batch-problem', 'Type at least one code name.'); return; }
-    if (!built) { setText('batch-problem', 'The file above is not ready yet.'); return; }
+    if (list.names.length < 2) { setText('batch-problem', 'Type at least 2 code names to save a .zip file.'); return; }
+    if (!built || !built.baseHtml) { setText('batch-problem', 'The file above is not ready yet.'); return; }
     if (!window.AlloPacketZip || typeof window.AlloPacketZip.create !== 'function') { setText('batch-problem', 'This page could not load the part that makes .zip files. Load the page again.'); return; }
     try {
       var zip = window.AlloPacketZip.create(), encoder = new TextEncoder();
       list.names.forEach(function (name) {
-        zip.add(fileName(built.lesson.title, '__' + name + '.html'), encoder.encode(builder.withCodeName(built.html, name)));
+        zip.add(fileName(built.lesson.title, '__' + name + '.html'), encoder.encode(builder.withCodeName(built.baseHtml, name)));
       });
       var parts = zip.finish();
-      batchFile = { parts: parts, bytes: zip.bytes, count: list.names.length, name: fileName(built.lesson.title, '__' + list.names.length + '-students.zip'), url: '' };
-    } catch (error) { setText('batch-problem', 'The .zip file could not be made (' + said(error) + ').'); return; }
-    show('batch-save', true);
-    drawBatch();
+      var zipName = fileName(built.lesson.title, '__' + list.names.length + '-students.zip');
+      var url = URL.createObjectURL(new Blob(parts, { type: 'application/zip' }));
+      download(url, zipName);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      setText('batch-said', 'Saved ' + zipName + ' (' + fileSize(zip.bytes) + '). Each file\'s name ends with the student\'s code name. Send each student their own file.');
+    } catch (error) {
+      setText('batch-problem', 'The .zip file could not be made (' + said(error) + ').');
+    }
   }
-  function saveBatch() {
-    if (!batchFile) return;
-    if (!batchFile.url) { try { batchFile.url = URL.createObjectURL(new Blob(batchFile.parts, { type: 'application/zip' })); } catch (_) { batchFile.url = ''; } }
-    if (!batchFile.url) { setText('batch-problem', 'This browser cannot save files from a page.'); return; }
-    download(batchFile.url, batchFile.name);
-    setText('batch-said', 'Saved ' + batchFile.name + '. Each file\'s name ends with the student\'s code name. Send each student their own file.');
+  function loadRosterFile(file) {
+    setText('batch-problem', '');
+    if (!file) return;
+    if (file.size > MAX_ROSTER_BYTES) { setText('batch-problem', 'That text file is too large. Choose a plain .txt list of code names.'); return; }
+    if (typeof FileReader !== 'function') { setText('batch-problem', 'This browser cannot read local files here.'); return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      var input = $('f-batch-names');
+      if (input) input.value = String(reader.result || '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+      applySingleCodeName();
+      drawBatch();
+    };
+    reader.onerror = function () { setText('batch-problem', 'This browser could not read that file.'); };
+    reader.readAsText(file);
   }
 
   // ---------------------------------------------------------------------------
   // "Open a file I made"
   // ---------------------------------------------------------------------------
-  function reopenNote(line, notes) {
+  var reopenPending = null;
+  function reopenNote(line, notes, page) {
     setText('reopen-line', line);
     var list = $('reopen-list');
     list.textContent = '';
     (notes || []).forEach(function (text) { list.appendChild(el('li', '', text)); });
+    var link = $('reopen-page');
+    if (link) {
+      if (page && page.href) { link.setAttribute('href', page.href); link.textContent = 'Open ' + page.name; }
+      link.hidden = !(page && page.href);
+    }
     show('reopen-note', true);
     $('reopen-note').focus();
   }
-  function reopen(textOfFile) {
+  function reopen(textOfFile, sourceName, rawBytes) {
+    reopenPending = null;
     var verify = window.AlloPacketVerify;
-    var parts = verify && typeof verify.readParts === 'function' ? verify.readParts(textOfFile) : null;
-    if (!parts) { reopenNote('This page could not read the file. Load the page again.'); return; }
-    if (parts.kind === 'results') { reopenNote('This is a results file, not a file made here. Add up results reads it.'); return; }
-    if (bankState === 'loading') { reopenNote('The word list is still loading. Wait a moment, then open the file again.'); return; }
-    var back = builder.readBack(parts);
-    if (!back.ok) { reopenNote(parts.ok ? 'This file was not made on this page. Open it on the page that made it.' : 'This is not a file made with this page. Choose the .html file you saved in step 3.'); return; }
+    var reopenKit = window.AlloPacketReopen;
+    var handoff = window.AlloPacketHandoff;
+    var bytes = rawBytes || (typeof TextEncoder === 'function' ? new TextEncoder().encode(String(textOfFile || '')).buffer : null);
+    var fileName = String(sourceName || 'the file').slice(0, 120);
+    if (reopenKit && typeof reopenKit.readVocab === 'function') {
+      if (bankState === 'loading') { reopenNote('The word list is still loading. Wait a moment, then open the file again.'); return; }
+      var checked = reopenKit.readVocab(bytes || textOfFile, { verify: verify, builder: builder, codeName: builder.codeName });
+      if (!checked.ok) {
+        var pageHref = checked.page ? checked.page.href : '';
+        if (pageHref && bytes) {
+          reopenPending = {
+            file: { name: fileName, bytes: bytes },
+            href: pageHref,
+            hash: pageHref === 'packets-results.html' ? ((handoff && handoff.RESULTS_HASH) || '#import-results') : ((handoff && handoff.HASH) || '#open-file'),
+          };
+        }
+        reopenNote(checked.why || 'This is not a file made with this page. Choose the .html file you saved in step 3.', [], checked.page);
+        return;
+      }
+      var back = checked.vocab;
+    } else {
+      var parts = verify && typeof verify.readParts === 'function' ? verify.readParts(textOfFile) : null;
+      if (!parts) { reopenNote('This page could not read the file. Load the page again.'); return; }
+      if (parts.kind === 'results') { reopenNote('This is a results file, not a file made here. Add up results reads it.'); return; }
+      if (bankState === 'loading') { reopenNote('The word list is still loading. Wait a moment, then open the file again.'); return; }
+      var back = builder.readBack(parts);
+      if (!back.ok) { reopenNote(parts.ok ? 'This file was not made on this page. Open it on the page that made it.' : 'This is not a file made with this page. Choose the .html file you saved in step 3.'); return; }
+    }
     resetPreview(true);
     state.words = back.words.join('\n');
     if (back.types.length) state.types = back.types;
@@ -1009,9 +1223,16 @@
     state.readAloud = back.readAloud;
     state.voices = back.voices !== false;
     state.diagrams = !!back.diagrams;
-    (back.noPicture || []).forEach(function (word) { wordEdit(builder.keyOf(word)).noPicture = true; });
+    state.repeatMissed = back.mode !== 'check' && !!back.repeatMissed;
+    var noPicSet = {};
+    (back.noPicture || []).forEach(function (word) { noPicSet[builder.keyOf(word)] = true; });
+    (back.words || []).forEach(function (word) {
+      var key = builder.keyOf(word);
+      if (noPicSet[key]) wordEdit(key).noPicture = true;
+      else if (edits.words && edits.words[key] && edits.words[key].noPicture) delete edits.words[key].noPicture;
+    });
     state.codeName = back.learner;
-    $('f-code-name').value = back.learner;
+    if ($('f-batch-names')) $('f-batch-names').value = back.learner || '';
     Object.keys(back.senses).forEach(function (key) { if (!/^own:/.test(back.senses[key])) wordEdit(key).sense = back.senses[key]; });
     back.rows.forEach(function (r) {
       var key = builder.keyOf(r.word), w = wordEdit(key);
@@ -1027,10 +1248,11 @@
     keepEdits();
     remember();
     $('f-words').value = state.words;
+    syncMyPictures();
     var notes = [capital(count(back.words.length, 'word')) + ', ' + (back.mode === 'check' ? 'a check' : 'practice') + '.'];
     if (back.mode === 'check') notes.push('A check keeps its wrong answers sealed, so they come from your changes kept on this device, or from the word list.');
     if (back.teacherCode) notes.push('A teacher code cannot be read back from a file. Set it again in step 3.');
-    if (back.learner) { notes.push('It was made for ' + back.learner + '. That code name is filled in at step 3.'); $('code-name-box').open = true; }
+    if (back.learner) { notes.push('It was made for ' + back.learner + '. That code name is filled in at step 3.'); if ($('batch')) $('batch').open = true; }
     reopenNote('Opened ' + (back.title || 'the file') + '.', notes);
     goTo(1, true);
   }
@@ -1045,7 +1267,7 @@
       stop = stopAtStep1();
       if (stop) { target = 1; setText('step-1-problem', stop); }
     }
-    if (target !== 3) { clearTimeout(buildTimer); resetPreview(true); clearBuilt(); show('making', false); }
+    if (target !== 3) { clearTimeout(buildTimer); stopPreviewSession(); clearBuilt(); show('making', false); }
     var stayed = target !== wanted && target === step;
     step = target;
     editing = null;
@@ -1059,7 +1281,7 @@
     doc.title = (name ? name + ': ' : '') + 'Make vocabulary practice, step ' + step + ' of 3';
     if (step === 1) { if ($('f-words').value !== state.words) $('f-words').value = state.words; drawWords(); }
     if (step === 2) { redraft(); drawRows(); setText('step-2-problem', ''); }
-    if (step === 3) { redraft(); drawStep3(); makeSoon(30); }
+    if (step === 3) { redraft(); drawStep3(); syncMyPictures(); makeSoon(30); }
     if (!quiet && !stayed) {
       var heading = $('step-' + step + '-title');
       if (heading) { heading.focus(); if (typeof heading.scrollIntoView === 'function') heading.scrollIntoView({ block: 'start' }); }
@@ -1078,11 +1300,12 @@
   // A file handed over by "Change this file" on Open a practice file (packets-open.html, packets_handoff.js): taken
   // once and deleted, then opened as if chosen here, when the word list is no longer loading.
   var handed = null;
+  var pendingRehearseStep2 = false;
   function openHanded() {
     if (handed === null || bankState === 'loading') return;
-    var text = handed;
+    var item = handed;
     handed = null;
-    reopen(text);
+    reopen(item.text, item.name, item.bytes);
   }
   function takeHanded() {
     var handoff = window.AlloPacketHandoff;
@@ -1090,7 +1313,7 @@
     try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
     handoff.take().then(function (file) {
       if (!file) { reopenNote('The file is not here any more. Choose it with Open a file I made.'); return; }
-      handed = new TextDecoder('utf-8').decode(file.bytes);
+      handed = { text: new TextDecoder('utf-8').decode(file.bytes), name: file.name, bytes: file.bytes };
       openHanded();
     }, function () { reopenNote('This browser could not hand the file over. Choose it with Open a file I made.'); });
   }
@@ -1111,6 +1334,7 @@
       if (ok) drawCredits();
       if (step === 1) drawWords();
       if (step === 2) { redraft(); drawRows(); }
+      if (pendingRehearseStep2) { pendingRehearseStep2 = false; goTo(2, true); }
       openHanded();
     };
     var started;
@@ -1150,41 +1374,81 @@
       pendingPicWord = '';
       this.value = '';
       if (!file || !targetKey) return;
-      if (file.size > 300 * 1024) {
-        setText('custom-pic-said', 'That picture is too large. Choose an image under 300 KB.');
-        return;
-      }
-      if (typeof FileReader !== 'function') {
-        setText('custom-pic-said', 'This browser cannot read local image files.');
-        return;
-      }
-      var reader = new FileReader();
-      reader.onload = function () {
-        var uri = String(reader.result || '');
-        var safe = typeof builder.validCustomDataUri === 'function' ? builder.validCustomDataUri(uri, art) : (/^data:image\/(png|jpeg|svg\+xml);base64,/i.test(uri) ? uri : '');
+      var finish = function (safe) {
         if (!safe) {
-          setText('custom-pic-said', 'Could not use that image. Choose a PNG, JPEG or SVG file.');
+          setText('custom-pic-said', 'Could not use that image. Choose a PNG, JPEG, GIF, WebP or SVG file.');
           return;
         }
-        var w = wordEdit(targetKey);
-        w.customPicture = { dataUri: safe };
-        delete w.noPicture;
+        myPictures[targetKey] = { dataUri: safe, credit: { own: true } };
+        if (edits.words[targetKey]) {
+          delete edits.words[targetKey].customPicture;
+          delete edits.words[targetKey].noPicture;
+        }
         var row = rowOf(targetKey);
-        setText('custom-pic-said', 'Added picture for ' + (row ? row.word : targetKey) + '.');
-        changed();
+        var label = row ? row.word : targetKey;
+        var persist = myWords && typeof myWords.putMedia === 'function'
+          ? myWords.putMedia(targetKey, { picture: { dataUri: safe, credit: { own: true } } }).then(function () {
+            if (myPictures[targetKey]) myPictures[targetKey].stored = true;
+          }, function () {})
+          : Promise.resolve();
+        persist.then(function () {
+          setText('custom-pic-said', 'Added picture for ' + label + '.');
+          changed();
+        });
       };
-      reader.onerror = function () {
-        setText('custom-pic-said', 'This browser could not read that image.');
+      var fallbackRead = function () {
+        if (file.size > 300 * 1024) {
+          setText('custom-pic-said', 'That picture is too large. Choose a smaller picture.');
+          return;
+        }
+        if (typeof FileReader !== 'function') {
+          setText('custom-pic-said', 'This browser cannot read local image files.');
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function () {
+          var uri = String(reader.result || '');
+          var safe = typeof builder.validCustomDataUri === 'function' ? builder.validCustomDataUri(uri, art) : (/^data:image\/(png|jpeg|svg\+xml);base64,/i.test(uri) ? uri : '');
+          finish(safe);
+        };
+        reader.onerror = function () { setText('custom-pic-said', 'This browser could not read that image.'); };
+        reader.readAsDataURL(file);
       };
-      reader.readAsDataURL(file);
+      if (myWords && typeof myWords.resizeToDataUri === 'function' && typeof file.slice === 'function') {
+        myWords.resizeToDataUri(file).then(function (uri) {
+          var safe = typeof builder.validCustomDataUri === 'function' ? builder.validCustomDataUri(uri, art) : uri;
+          finish(safe);
+        }, function (err) {
+          if (err && (err.code === 'not_a_picture' || err.code === 'picture_too_big')) {
+            setText('custom-pic-said', said(err) || 'Could not use that image.');
+          } else {
+            fallbackRead();
+          }
+        });
+      } else {
+        fallbackRead();
+      }
     });
     // A meaning saved on the lookup page in another tab: read the changes again.
     window.addEventListener('storage', function (e) { if (e.key !== EDITS_KEY) return; edits = recallEdits(); redraft(); if (step === 1) drawWords(); if (step === 2) drawRows(); if (step === 3) { drawStep3(); makeSoon(30); } });
     $('f-code').addEventListener('input', function () { makeSoon(400); });
-    $('f-code-name').addEventListener('input', function () { state.codeName = this.value.slice(0, 40); makeSoon(400); });
-    $('f-batch-names').addEventListener('input', function () { dropBatch(); drawBatch(); });
-    $('batch-make').addEventListener('click', makeBatch);
-    $('batch-save').addEventListener('click', saveBatch);
+    if ($('code-show')) $('code-show').addEventListener('click', function () {
+      var input = $('f-code'), shown = input.type === 'text';
+      input.type = shown ? 'password' : 'text';
+      this.setAttribute('aria-pressed', String(!shown));
+      this.textContent = shown ? 'Show' : 'Hide';
+      this.setAttribute('aria-label', shown ? 'Show the teacher code' : 'Hide the teacher code');
+    });
+    $('f-batch-names').addEventListener('input', function () { setText('batch-problem', ''); applySingleCodeName(); drawBatch(); });
+    $('batch-make').addEventListener('click', saveBatchZip);
+    if ($('batch-load') && $('batch-file')) {
+      $('batch-load').addEventListener('click', function () { $('batch-file').value = ''; $('batch-file').click(); });
+      $('batch-file').addEventListener('change', function () {
+        var file = this.files && this.files[0];
+        this.value = '';
+        loadRosterFile(file);
+      });
+    }
     $('next-1').addEventListener('click', function () { goTo(2); });
     $('back-2').addEventListener('click', function () { goTo(1); });
     $('next-2').addEventListener('click', function () { goTo(3); });
@@ -1196,21 +1460,40 @@
       var file = this.files && this.files[0];
       this.value = '';
       if (!file) return;
-      if (file.size > 20 * 1024 * 1024) { reopenNote('This file is too large to be a file made here.'); return; }
-      var reader = new FileReader();
-      reader.onload = function () { reopen(String(reader.result || '')); };
-      reader.onerror = function () { reopenNote('This browser could not read the file.'); };
-      reader.readAsText(file);
+      if (file.size > MAX_REOPEN_BYTES) { reopenNote('This file is too large to be a file made here.'); return; }
+      var done = function (buf) {
+        var text = typeof TextDecoder === 'function' ? new TextDecoder('utf-8').decode(buf) : '';
+        reopen(text, file.name, buf);
+      };
+      if (typeof file.arrayBuffer === 'function') {
+        file.arrayBuffer().then(done, function () { reopenNote('This browser could not read the file.'); });
+      } else {
+        var reader = new FileReader();
+        reader.onload = function () { reopen(String(reader.result || ''), file.name); };
+        reader.onerror = function () { reopenNote('This browser could not read the file.'); };
+        reader.readAsText(file);
+      }
     });
+    if ($('reopen-page')) {
+      $('reopen-page').addEventListener('click', function (event) {
+        var handoff = window.AlloPacketHandoff;
+        if (!reopenPending || !handoff || typeof handoff.redirect !== 'function') return;
+        event.preventDefault();
+        var target = reopenPending;
+        reopenPending = null;
+        handoff.redirect(target.file, target.href, target.hash).catch(function () { $('reopen-page').click(); });
+      });
+    }
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
       resetPreview(true);
       state = defaults();
       $('f-words').value = '';
       $('f-title').value = '';
-      $('f-code-name').value = '';
+      if ($('f-batch-names')) $('f-batch-names').value = '';
       if ($('f-diagrams')) $('f-diagrams').checked = false;
       setText('custom-pic-said', '');
+      show('rehearse-note', false);
       goTo(1, true);
       setText('forget-said', 'Done. Your choices are back to how they started.');
     });
@@ -1228,12 +1511,12 @@
   function applyRehearseHash() {
     var hash = String(window.location && window.location.hash ? window.location.hash : '');
     var match = /^#rehearse=(.+)$/i.exec(hash);
-    if (!match) return false;
+    if (!match) return 0;
     var parsed = '';
     try { parsed = decodeURIComponent(match[1]); } catch (_) { parsed = match[1]; }
     var unique = [];
-    parsed.split(/[\s,;]+/).forEach(function (raw) {
-      var word = String(raw || '').trim();
+    parsed.split(/[,;\r\n]+/).forEach(function (raw) {
+      var word = String(raw || '').replace(/\s+/g, ' ').trim();
       if (!word) return;
       var low = word.toLowerCase();
       if (unique.every(function (x) { return x.toLowerCase() !== low; }) && unique.length < 40) unique.push(word);
@@ -1245,7 +1528,7 @@
       drawWords();
     }
     try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
-    return unique.length > 0;
+    return unique.length;
   }
 
   function start() {
@@ -1268,10 +1551,11 @@
     var sym = window.AlloModules && window.AlloModules.WordSoundsSymbols;
     art = window.AlloPacketBuilder && typeof window.AlloPacketBuilder.svgRefusal === 'function' ? window.AlloPacketBuilder : null;
     matcher = window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher) || null;
+    myWords = window.AlloPacketMyWords && typeof window.AlloPacketMyWords.getManyMedia === 'function' ? window.AlloPacketMyWords : null;
     symbols = media && art && sym && typeof sym.has === 'function' && typeof sym.file === 'function' && typeof sym.get === 'function' ? sym : null;
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_work) setText('csv-label', loader.DEFAULT_LABELS.save_work);
     wire();
-    applyRehearseHash();
+    var rehearseCount = applyRehearseHash();
     // "#check-mode" / "#practice-mode" (the front door's cards) start on that kind of file, whatever was remembered.
     var kindHash = /^#(check|practice)-mode$/i.exec(String(window.location && window.location.hash || ''));
     if (kindHash) {
@@ -1280,8 +1564,23 @@
     }
     show('reopen', !!(window.AlloPacketVerify && typeof window.AlloPacketVerify.readParts === 'function' && typeof FileReader === 'function'));
     show('loading', false);
+    if (myWords) {
+      migrateLegacyPictures();
+      if (typeof myWords.onChange === 'function') myWords.onChange(function (change) { if (!change || !change.here) syncMyPictures(); });
+    }
     startBank();
-    goTo(1, true);
+    if (rehearseCount >= 4) {
+      setText('rehearse-note', 'Loaded ' + count(rehearseCount, 'missed word') + ' from results. Review the questions below, or change the word list in step 1.');
+      show('rehearse-note', true);
+      if (bankState === 'loading') { pendingRehearseStep2 = true; goTo(1, true); }
+      else goTo(2, true);
+    } else {
+      if (rehearseCount > 0) {
+        reopenNote('Loaded ' + count(rehearseCount, 'missed word') + ' from results. Add ' + count(4 - rehearseCount, 'more word') + ' so each question has 4 choices.', []);
+      }
+      goTo(1, true);
+    }
+    syncMyPictures();
     takeHanded();
   }
 

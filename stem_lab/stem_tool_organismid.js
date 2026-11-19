@@ -628,6 +628,359 @@
       );
     }
 
+    function renderSpecimenPlate(node) {
+      if (!node) return null;
+      var col = node.tier ? tierColor(node.tier) : C.accent;
+      var n = node.name;
+      var chainNames = lineageOf(n).map(function (x) { return x.name; });
+      var isFungi = chainNames.indexOf('Fungi') !== -1;
+      var isPlant = chainNames.indexOf('Plantae') !== -1;
+      var bg = C.raised;
+      var stroke = C.text;
+      var muted = C.muted;
+      var acc = C.accent;
+
+      var inner;
+      var caption = 'Morphology & diagnostic trait plate';
+
+      if (n === 'Amanita' || n === 'Amanitaceae') {
+        caption = 'Volva cup at base + white gills + ring';
+        inner = [
+          // Cap
+          h('path', { key: 'cap', d: 'M82 62 C82 28 198 28 198 62 Z', fill: col, fillOpacity: 0.22, stroke: col, strokeWidth: 2 }),
+          // White gills
+          h('path', { key: 'gills', d: 'M86 62 L194 62', stroke: stroke, strokeWidth: 1.5, strokeDasharray: '4 3' }),
+          // Stalk
+          h('rect', { key: 'stalk', x: 130, y: 62, width: 20, height: 52, rx: 4, fill: bg, stroke: stroke, strokeWidth: 1.8 }),
+          // Annulus ring
+          h('path', { key: 'ring', d: 'M122 80 Q140 89 158 80', fill: 'none', stroke: col, strokeWidth: 2.2 }),
+          // Volva cup at base
+          h('path', { key: 'volva', d: 'M118 102 C116 122 126 128 140 128 C154 128 164 122 162 102 L152 108 L140 103 L128 108 Z', fill: col, fillOpacity: 0.3, stroke: col, strokeWidth: 2 }),
+          // Callout lines & labels (well inside 280x144)
+          h('line', { key: 'l1', x1: 186, y1: 58, x2: 212, y2: 46, stroke: muted, strokeWidth: 1 }),
+          h('text', { key: 't1', x: 215, y: 49, fill: stroke, fontSize: 9, fontWeight: '700' }, 'White gills'),
+          h('line', { key: 'l2', x1: 158, y1: 81, x2: 212, y2: 78, stroke: muted, strokeWidth: 1 }),
+          h('text', { key: 't2', x: 215, y: 81, fill: stroke, fontSize: 9, fontWeight: '700' }, 'Ring skirt'),
+          h('line', { key: 'l3', x1: 162, y1: 114, x2: 212, y2: 114, stroke: col, strokeWidth: 1.3 }),
+          h('text', { key: 't3', x: 215, y: 117, fill: col, fontSize: 9.5, fontWeight: '800' }, 'Volva cup')
+        ];
+      } else if (n === 'Agaricus' || n === 'Agaricaceae') {
+        caption = 'Chocolate-brown gills, clean base (no volva)';
+        inner = [
+          h('path', { key: 'cap', d: 'M86 66 C86 30 194 30 194 66 Z', fill: acc, fillOpacity: 0.2, stroke: stroke, strokeWidth: 2 }),
+          h('path', { key: 'gills', d: 'M90 66 Q140 74 190 66', fill: '#7c4a2d', fillOpacity: 0.5, stroke: stroke, strokeWidth: 1.5 }),
+          h('rect', { key: 'stalk', x: 130, y: 66, width: 20, height: 54, rx: 5, fill: bg, stroke: stroke, strokeWidth: 1.8 }),
+          h('line', { key: 'gnd', x1: 102, y1: 120, x2: 178, y2: 120, stroke: muted, strokeWidth: 1.2, strokeDasharray: '4 3' }),
+          h('line', { key: 'l1', x1: 184, y1: 68, x2: 206, y2: 56, stroke: muted, strokeWidth: 1 }),
+          h('text', { key: 't1', x: 208, y: 59, fill: stroke, fontSize: 9, fontWeight: '700' }, 'Brown gills'),
+          h('line', { key: 'l2', x1: 152, y1: 112, x2: 206, y2: 108, stroke: acc, strokeWidth: 1.2 }),
+          h('text', { key: 't2', x: 208, y: 111, fill: acc, fontSize: 9, fontWeight: '800' }, 'No volva')
+        ];
+      } else if (n === 'Lycoperdon') {
+        caption = 'Cut-open check: uniform interior vs hidden cap';
+        inner = [
+          h('circle', { key: 'a', cx: 88, cy: 74, r: 34, fill: acc, fillOpacity: 0.16, stroke: acc, strokeWidth: 2 }),
+          h('text', { key: 'at', x: 88, y: 77, textAnchor: 'middle', fill: stroke, fontSize: 9, fontWeight: '700' }, 'Uniform'),
+          h('text', { key: 'al', x: 88, y: 124, textAnchor: 'middle', fill: acc, fontSize: 9, fontWeight: '800' }, 'Puffball'),
+          h('circle', { key: 'b', cx: 192, cy: 74, r: 34, fill: C.DEADLY, fillOpacity: 0.12, stroke: C.DEADLY, strokeWidth: 2, strokeDasharray: '4 3' }),
+          h('path', { key: 'bcap', d: 'M172 72 C172 52 212 52 212 72 Z', fill: C.DEADLY, fillOpacity: 0.3, stroke: C.DEADLY, strokeWidth: 1.5 }),
+          h('rect', { key: 'bst', x: 186, y: 72, width: 12, height: 24, rx: 3, fill: bg, stroke: C.DEADLY, strokeWidth: 1.5 }),
+          h('text', { key: 'bl', x: 192, y: 124, textAnchor: 'middle', fill: C.DEADLY, fontSize: 9, fontWeight: '800' }, 'Amanita egg')
+        ];
+      } else if (n === 'Morchella' || n === 'Gyromitra' || n === 'Ascomycota') {
+        caption = 'Cross-section: hollow morel vs chambered brain cap';
+        inner = [
+          h('path', { key: 'm1', d: 'M72 98 L72 64 C72 32 108 32 108 64 L108 98 Z', fill: acc, fillOpacity: 0.15, stroke: acc, strokeWidth: 2 }),
+          h('path', { key: 'm1i', d: 'M82 94 L82 64 C82 46 98 46 98 64 L98 94 Z', fill: bg, stroke: acc, strokeWidth: 1.3, strokeDasharray: '3 2' }),
+          h('text', { key: 'mt', x: 90, y: 118, textAnchor: 'middle', fill: acc, fontSize: 9, fontWeight: '800' }, 'Hollow (Morchella)'),
+          h('path', { key: 'g1', d: 'M162 66 C158 34 218 32 214 66 C214 78 202 80 198 98 L178 98 C174 80 162 78 162 66 Z', fill: C.DEADLY, fillOpacity: 0.18, stroke: C.DEADLY, strokeWidth: 2 }),
+          h('path', { key: 'g1i', d: 'M172 56 Q188 46 204 56 M174 68 Q188 76 202 68', fill: 'none', stroke: C.DEADLY, strokeWidth: 1.6 }),
+          h('text', { key: 'gt', x: 188, y: 118, textAnchor: 'middle', fill: C.DEADLY, fontSize: 9, fontWeight: '800' }, 'Chambered (Gyromitra)')
+        ];
+      } else if (n === 'Danaus' || n === 'Limenitis' || n === 'Nymphalidae' || n === 'Lepidoptera') {
+        caption = 'Mimicry tell: Viceroy carries an extra black hindwing line';
+        var showLine = n !== 'Danaus';
+        inner = [
+          // Left & right forewings
+          h('path', { key: 'fw1', d: 'M136 68 C108 30 56 30 62 66 C66 84 102 82 136 74 Z', fill: '#f97316', fillOpacity: 0.45, stroke: stroke, strokeWidth: 2 }),
+          h('path', { key: 'fw2', d: 'M144 68 C172 30 224 30 218 66 C214 84 178 82 144 74 Z', fill: '#f97316', fillOpacity: 0.45, stroke: stroke, strokeWidth: 2 }),
+          // Left & right hindwings
+          h('path', { key: 'hw1', d: 'M136 76 C106 78 74 96 86 116 C98 128 128 112 136 86 Z', fill: '#fb923c', fillOpacity: 0.45, stroke: stroke, strokeWidth: 2 }),
+          h('path', { key: 'hw2', d: 'M144 76 C174 78 206 96 194 116 C182 128 152 112 144 86 Z', fill: '#fb923c', fillOpacity: 0.45, stroke: stroke, strokeWidth: 2 }),
+          // Body + antennae
+          h('rect', { key: 'bd', x: 136, y: 56, width: 8, height: 42, rx: 4, fill: stroke }),
+          h('path', { key: 'ant', d: 'M138 56 Q128 40 120 38 M142 56 Q152 40 160 38', fill: 'none', stroke: stroke, strokeWidth: 1.5 }),
+          // Viceroy postmedian line
+          showLine ? h('path', { key: 'vl1', d: 'M92 94 Q112 104 126 98', fill: 'none', stroke: stroke, strokeWidth: 2.6 }) : null,
+          showLine ? h('path', { key: 'vl2', d: 'M188 94 Q168 104 154 98', fill: 'none', stroke: stroke, strokeWidth: 2.6 }) : null,
+          h('text', { key: 'lbl', x: 140, y: 135, textAnchor: 'middle', fill: col, fontSize: 9, fontWeight: '800' },
+            n === 'Danaus' ? 'Monarch: veins radiate without cross-bar' : 'Viceroy: extra black line crosses hindwing')
+        ];
+      } else if (n === 'Latrodectus' || n === 'Loxosceles' || n === 'Arachnida') {
+        caption = 'Arachnid morphology: 8 jointed legs, 2 body segments, no antennae';
+        inner = [
+          h('circle', { key: 'ceph', cx: 124, cy: 70, r: 13, fill: col, fillOpacity: 0.25, stroke: stroke, strokeWidth: 2 }),
+          h('ellipse', { key: 'abd', cx: 158, cy: 70, rx: 22, ry: 17, fill: col, fillOpacity: 0.35, stroke: col, strokeWidth: 2 }),
+          h('path', { key: 'hg', d: 'M152 64 L164 64 L158 70 L164 76 L152 76 L158 70 Z', fill: col }),
+          // 8 jointed legs
+          h('path', { key: 'legs', d: 'M118 60 L92 36 L68 48 M120 65 L86 56 L62 72 M120 75 L86 84 L62 98 M118 80 L94 106 L72 114 M130 60 L146 34 L172 30 M132 64 L158 44 L192 44 M132 76 L158 96 L192 96 M130 80 L146 106 L172 110', fill: 'none', stroke: stroke, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          h('text', { key: 't1', x: 140, y: 133, textAnchor: 'middle', fill: stroke, fontSize: 9, fontWeight: '700' }, '8 jointed legs · 2 segments · 0 antennae')
+        ];
+      } else if (n === 'Squamata' || n === 'Elapidae' || n === 'Viperidae' || n === 'Micrurus' || n === 'Crotalus') {
+        caption = 'Banded warning pattern — color rhymes fail across regions';
+        inner = [
+          h('path', { key: 's1', d: 'M42 96 C66 42 112 42 138 78 C164 114 206 112 232 62', fill: 'none', stroke: stroke, strokeWidth: 16, strokeLinecap: 'round' }),
+          h('path', { key: 's2', d: 'M42 96 C66 42 112 42 138 78 C164 114 206 112 232 62', fill: 'none', stroke: col, strokeWidth: 11, strokeLinecap: 'round', strokeDasharray: '14 14' }),
+          h('circle', { key: 'eye', cx: 234, cy: 59, r: 2.5, fill: bg }),
+          h('text', { key: 't1', x: 140, y: 128, textAnchor: 'middle', fill: col, fontSize: 9, fontWeight: '800' }, 'GBIF ranks Squamata as Class · Never handle wild snakes')
+        ];
+      } else if (n === 'Hapalochlaena' || n === 'Conus' || n === 'Pterois' || n === 'Tetraodontidae' || n === 'Physalia' || n === 'Mollusca' || n === 'Cnidaria') {
+        caption = 'Marine hazard specimen — observe only from a safe distance';
+        inner = [
+          h('ellipse', { key: 'm', cx: 140, cy: 54, rx: 32, ry: 22, fill: col, fillOpacity: 0.22, stroke: col, strokeWidth: 2 }),
+          h('circle', { key: 'r1', cx: 126, cy: 52, r: 5, fill: 'none', stroke: C.INFO, strokeWidth: 2 }),
+          h('circle', { key: 'r2', cx: 152, cy: 48, r: 5, fill: 'none', stroke: C.INFO, strokeWidth: 2 }),
+          h('circle', { key: 'r3', cx: 140, cy: 62, r: 4, fill: 'none', stroke: C.INFO, strokeWidth: 2 }),
+          h('path', { key: 'arms', d: 'M116 70 Q94 94 76 104 M128 74 Q114 102 106 116 M140 76 Q140 104 140 118 M152 74 Q166 102 174 116 M164 70 Q186 94 204 104', fill: 'none', stroke: col, strokeWidth: 2.2, strokeLinecap: 'round' }),
+          h('text', { key: 't1', x: 140, y: 134, textAnchor: 'middle', fill: stroke, fontSize: 9, fontWeight: '700' }, 'Marine defense anatomy · Observe without contact')
+        ];
+      } else if (isPlant && (n === 'Apiaceae' || n === 'Daucus' || n === 'Cicuta' || n === 'Conium' || n === 'Heracleum')) {
+        caption = 'Compound umbel flower head — shared by carrot & deadly hemlock';
+        inner = [
+          // Main stem
+          h('line', { key: 'st', x1: 140, y1: 122, x2: 140, y2: 64, stroke: acc, strokeWidth: 2.5 }),
+          // Umbel spokes
+          h('path', { key: 'umb', d: 'M140 66 L94 42 M140 66 L116 34 M140 66 L140 30 M140 66 L164 34 M140 66 L186 42', stroke: acc, strokeWidth: 1.6 }),
+          [94, 116, 140, 164, 186].map(function (cx, idx) {
+            var cy = [40, 32, 28, 32, 40][idx];
+            return h('circle', { key: 'fl-' + idx, cx: cx, cy: cy, r: 9, fill: col, fillOpacity: 0.25, stroke: col, strokeWidth: 1.5 });
+          }),
+          // Lacy leaf
+          h('path', { key: 'lf', d: 'M140 94 L106 86 M140 98 L174 90 M118 89 L112 78 M162 93 L168 82', stroke: acc, strokeWidth: 1.5, strokeLinecap: 'round' }),
+          h('text', { key: 't1', x: 140, y: 136, textAnchor: 'middle', fill: col, fontSize: 9, fontWeight: '800' }, 'Umbrella cluster (umbel) · High-risk family')
+        ];
+      } else if (isPlant) {
+        caption = 'Botanical foliage & floral trait sketch';
+        inner = [
+          h('line', { key: 'st', x1: 140, y1: 120, x2: 140, y2: 34, stroke: acc, strokeWidth: 2.4 }),
+          h('path', { key: 'l1', d: 'M140 96 C104 94 86 76 92 64 C112 66 128 76 140 96 Z', fill: acc, fillOpacity: 0.22, stroke: acc, strokeWidth: 1.8 }),
+          h('path', { key: 'l2', d: 'M140 96 C176 94 194 76 188 64 C168 66 152 76 140 96 Z', fill: acc, fillOpacity: 0.22, stroke: acc, strokeWidth: 1.8 }),
+          h('path', { key: 'fl', d: 'M126 56 C126 32 154 32 154 56 L146 66 L134 66 Z', fill: col, fillOpacity: 0.28, stroke: col, strokeWidth: 2 }),
+          h('text', { key: 't1', x: 140, y: 135, textAnchor: 'middle', fill: stroke, fontSize: 9, fontWeight: '700' }, node.common || node.name)
+        ];
+      } else if (isFungi && !(node.kids && node.kids.length)) {
+        caption = 'Fungal fruiting body morphology (cap, gills/pores, stalk)';
+        inner = [
+          h('path', { key: 'cap', d: 'M84 68 C86 30 194 30 196 68 Z', fill: col, fillOpacity: 0.24, stroke: col, strokeWidth: 2 }),
+          h('path', { key: 'under', d: 'M88 68 Q140 76 192 68', fill: 'none', stroke: stroke, strokeWidth: 1.5, strokeDasharray: '4 3' }),
+          h('rect', { key: 'st', x: 130, y: 68, width: 20, height: 50, rx: 5, fill: bg, stroke: stroke, strokeWidth: 1.8 }),
+          h('text', { key: 't1', x: 140, y: 135, textAnchor: 'middle', fill: stroke, fontSize: 9, fontWeight: '700' }, 'No wild fungus can be cleared from a photo')
+        ];
+      } else {
+        // Higher clade / branching phylogenetic mini-tree
+        var kids = (node.kids || []).slice(0, 4);
+        caption = 'Taxonomic branch overview (' + kids.length + ' shown child branch' + (kids.length === 1 ? '' : 'es') + ')';
+        inner = [
+          h('rect', { key: 'root', x: 18, y: 54, width: 88, height: 28, rx: 7, fill: col, fillOpacity: 0.2, stroke: col, strokeWidth: 1.8 }),
+          h('text', { key: 'rt', x: 62, y: 71, textAnchor: 'middle', fill: stroke, fontSize: 9.5, fontWeight: '800' }, node.name.slice(0, 12)),
+          kids.map(function (kid, ki) {
+            var ky = kids.length === 1 ? 68 : (22 + ki * (92 / Math.max(1, kids.length - 1)));
+            var kcol = kid.tier ? tierColor(kid.tier) : acc;
+            return h('g', { key: kid.name },
+              h('path', { d: 'M106 68 C132 68 134 ' + ky + ' 156 ' + ky, fill: 'none', stroke: kcol, strokeWidth: 1.8 }),
+              h('circle', { cx: 158, cy: ky, r: 4, fill: kcol }),
+              h('text', { x: 168, y: ky + 3, fill: stroke, fontSize: 9.5, fontWeight: '700' }, kid.name.slice(0, 15))
+            );
+          }),
+          h('text', { key: 'cl', x: 140, y: 136, textAnchor: 'middle', fill: muted, fontSize: 8.5, fontWeight: '700' }, 'Rank: ' + (RANK_LABEL[node.rank] || node.rank) + ' · Branches are conventions')
+        ];
+      }
+
+      return h('figure', { className: 'oid-plate', style: { background: C.raised, borderColor: C.border } },
+        h('svg', { viewBox: '0 0 280 144', role: 'img', 'aria-label': node.name + ' morphology plate: ' + caption },
+          h('rect', { x: 1, y: 1, width: 278, height: 142, rx: 8, fill: C.panel, stroke: C.border, strokeWidth: 1 }),
+          inner
+        ),
+        h('figcaption', { className: 'oid-plate-cap', style: { color: C.muted } }, caption)
+      );
+    }
+
+    function renderLookalikeDiagram(edge) {
+      var col = tierColor(edge.tier);
+      var safeName = (edge.safe && edge.safe[0]) || '';
+      var isFungus = /portobello|puffball|paddy|honey|morel|chanterelle/i.test(safeName);
+      var isPlant = /carrot|onion|comfrey|parsnip/i.test(safeName);
+      var isButterfly = /monarch/i.test(safeName);
+      var isSnake = /snake/i.test(safeName);
+      return h('svg', {
+        className: 'oid-edge-viz',
+        viewBox: '0 0 360 66',
+        'aria-hidden': 'true',
+        focusable: 'false'
+      },
+        h('rect', { x: 1, y: 1, width: 358, height: 64, rx: 8, fill: C.raised, stroke: C.border, strokeWidth: 1 }),
+        // Left specimen glyph
+        isButterfly ? h('g', null,
+          h('path', { d: 'M58 34 C44 16 26 18 32 34 C30 46 46 48 58 38 Z', fill: '#f97316', fillOpacity: 0.45, stroke: C.text, strokeWidth: 1.4 }),
+          h('path', { d: 'M62 34 C76 16 94 18 88 34 C90 46 74 48 62 38 Z', fill: '#f97316', fillOpacity: 0.45, stroke: C.text, strokeWidth: 1.4 })
+        ) : isSnake ? h('path', { d: 'M28 42 C42 20 62 20 74 36 C82 46 92 42 98 28', fill: 'none', stroke: C.accent, strokeWidth: 6, strokeLinecap: 'round', strokeDasharray: '8 6' })
+          : isPlant ? h('g', null,
+              h('line', { x1: 60, y1: 54, x2: 60, y2: 26, stroke: C.accent, strokeWidth: 2 }),
+              h('path', { d: 'M60 28 L42 18 M60 28 L60 15 M60 28 L78 18', stroke: C.accent, strokeWidth: 1.6 }),
+              h('circle', { cx: 60, cy: 17, r: 5, fill: C.accent, fillOpacity: 0.35 })
+            )
+          : h('g', null,
+              h('path', { d: 'M38 34 C38 14 82 14 82 34 Z', fill: C.accent, fillOpacity: 0.25, stroke: C.accent, strokeWidth: 1.8 }),
+              h('rect', { x: 55, y: 34, width: 10, height: 20, rx: 3, fill: C.panel, stroke: C.text, strokeWidth: 1.4 })
+            ),
+        h('text', { x: 106, y: 29, fill: C.text, fontSize: 9.5, fontWeight: '700' }, safeName.slice(0, 18)),
+        h('text', { x: 106, y: 44, fill: C.muted, fontSize: 8.5 }, 'Superficial match'),
+        // Center comparison divider
+        h('line', { x1: 180, y1: 12, x2: 180, y2: 54, stroke: C.border, strokeWidth: 1, strokeDasharray: '3 3' }),
+        h('circle', { cx: 180, cy: 33, r: 10, fill: C.panel, stroke: col, strokeWidth: 1.6 }),
+        h('text', { x: 180, y: 36, textAnchor: 'middle', fill: col, fontSize: 9, fontWeight: '900' }, 'VS'),
+        // Right specimen glyph (with diagnostic highlight ring)
+        isButterfly ? h('g', null,
+          h('path', { d: 'M234 34 C220 16 202 18 208 34 C206 46 222 48 234 38 Z', fill: '#f97316', fillOpacity: 0.45, stroke: C.text, strokeWidth: 1.4 }),
+          h('path', { d: 'M238 34 C252 16 270 18 264 34 C266 46 250 48 238 38 Z', fill: '#f97316', fillOpacity: 0.45, stroke: C.text, strokeWidth: 1.4 }),
+          h('line', { x1: 214, y1: 40, x2: 230, y2: 40, stroke: col, strokeWidth: 2.2 }),
+          h('line', { x1: 242, y1: 40, x2: 258, y2: 40, stroke: col, strokeWidth: 2.2 })
+        ) : isSnake ? h('path', { d: 'M204 42 C218 20 238 20 250 36 C258 46 268 42 274 28', fill: 'none', stroke: col, strokeWidth: 6, strokeLinecap: 'round', strokeDasharray: '8 6' })
+          : isPlant ? h('g', null,
+              h('line', { x1: 236, y1: 54, x2: 236, y2: 26, stroke: col, strokeWidth: 2 }),
+              h('path', { d: 'M236 28 L218 18 M236 28 L236 15 M236 28 L254 18', stroke: col, strokeWidth: 1.6 }),
+              h('circle', { cx: 236, cy: 17, r: 5, fill: col, fillOpacity: 0.4 })
+            )
+          : h('g', null,
+              h('path', { d: 'M214 32 C214 12 258 12 258 32 Z', fill: col, fillOpacity: 0.28, stroke: col, strokeWidth: 1.8 }),
+              h('rect', { x: 231, y: 32, width: 10, height: 18, rx: 3, fill: C.panel, stroke: C.text, strokeWidth: 1.4 }),
+              isFungus ? h('path', { d: 'M225 46 C225 56 247 56 247 46', fill: 'none', stroke: col, strokeWidth: 2 }) : null
+            ),
+        h('text', { x: 274, y: 29, fill: col, fontSize: 9.5, fontWeight: '800' }, ((edge.danger && edge.danger[0]) || '').slice(0, 15)),
+        h('text', { x: 274, y: 44, fill: C.muted, fontSize: 8.5 }, edge.tier + ' risk')
+      );
+    }
+
+    function renderExampleSpecimenSvg(exampleId) {
+      var acc = C.accent;
+      var stk = C.text;
+      var inner;
+      if (exampleId === 'bird') {
+        inner = [
+          h('ellipse', { key: 'b', cx: 56, cy: 48, rx: 22, ry: 14, fill: acc, fillOpacity: 0.25, stroke: stk, strokeWidth: 1.8 }),
+          h('circle', { key: 'h', cx: 78, cy: 36, r: 9, fill: acc, fillOpacity: 0.25, stroke: stk, strokeWidth: 1.8 }),
+          h('path', { key: 'bk', d: 'M86 34 L98 37 L86 40 Z', fill: C.MILD, stroke: stk, strokeWidth: 1.2 }),
+          h('path', { key: 'w', d: 'M42 46 Q56 32 70 46', fill: 'none', stroke: acc, strokeWidth: 2 }),
+          h('path', { key: 'l', d: 'M52 62 L50 76 M62 62 L64 76', stroke: stk, strokeWidth: 1.8 })
+        ];
+      } else if (exampleId === 'insect') {
+        inner = [
+          h('circle', { key: 'h', cx: 34, cy: 44, r: 8, fill: acc, fillOpacity: 0.3, stroke: stk, strokeWidth: 1.6 }),
+          h('ellipse', { key: 't', cx: 52, cy: 44, rx: 11, ry: 9, fill: acc, fillOpacity: 0.25, stroke: stk, strokeWidth: 1.6 }),
+          h('ellipse', { key: 'a', cx: 76, cy: 44, rx: 15, ry: 10, fill: acc, fillOpacity: 0.2, stroke: stk, strokeWidth: 1.6 }),
+          h('path', { key: 'ant', d: 'M28 38 L16 26 M28 50 L16 62', stroke: stk, strokeWidth: 1.4 }),
+          h('path', { key: 'legs', d: 'M46 35 L40 20 M52 35 L52 18 M58 35 L66 20 M46 53 L40 68 M52 53 L52 70 M58 53 L66 68', stroke: stk, strokeWidth: 1.5 })
+        ];
+      } else if (exampleId === 'arachnid') {
+        inner = [
+          h('circle', { key: 'c', cx: 46, cy: 44, r: 10, fill: C.CONTACT, fillOpacity: 0.25, stroke: stk, strokeWidth: 1.6 }),
+          h('ellipse', { key: 'a', cx: 70, cy: 44, rx: 15, ry: 12, fill: C.CONTACT, fillOpacity: 0.3, stroke: stk, strokeWidth: 1.6 }),
+          h('path', { key: 'legs', d: 'M40 36 L22 20 M44 34 L34 16 M48 34 L56 16 M52 36 L70 20 M40 52 L22 68 M44 54 L34 72 M48 54 L56 72 M52 52 L70 68', stroke: stk, strokeWidth: 1.5 })
+        ];
+      } else if (exampleId === 'fern') {
+        inner = [
+          h('path', { key: 's', d: 'M55 76 Q54 44 58 14', fill: 'none', stroke: acc, strokeWidth: 2.2 }),
+          h('path', { key: 'f', d: 'M55 62 L32 54 M55 62 L78 54 M55 48 L30 38 M55 48 L80 38 M56 34 L38 26 M56 34 L74 26', stroke: acc, strokeWidth: 2, strokeLinecap: 'round' }),
+          h('circle', { key: 'sp1', cx: 40, cy: 44, r: 2, fill: C.MILD }),
+          h('circle', { key: 'sp2', cx: 70, cy: 44, r: 2, fill: C.MILD })
+        ];
+      } else if (exampleId === 'fungus') {
+        inner = [
+          h('path', { key: 'c', d: 'M24 46 C26 16 84 16 86 46 Z', fill: C.MILD, fillOpacity: 0.28, stroke: stk, strokeWidth: 1.8 }),
+          h('rect', { key: 'st', x: 48, y: 46, width: 14, height: 28, rx: 4, fill: C.panel, stroke: stk, strokeWidth: 1.6 })
+        ];
+      } else if (exampleId === 'moss') {
+        inner = [
+          h('path', { key: 'm', d: 'M18 68 C26 48 84 48 92 68 Z', fill: acc, fillOpacity: 0.35, stroke: acc, strokeWidth: 1.8 }),
+          h('path', { key: 's', d: 'M40 54 L38 28 M56 50 L56 22 M72 54 L74 30', stroke: stk, strokeWidth: 1.5 }),
+          h('ellipse', { key: 'c1', cx: 38, cy: 26, rx: 3, ry: 5, fill: C.MILD }),
+          h('ellipse', { key: 'c2', cx: 56, cy: 20, rx: 3, ry: 5, fill: C.MILD }),
+          h('ellipse', { key: 'c3', cx: 74, cy: 28, rx: 3, ry: 5, fill: C.MILD })
+        ];
+      } else {
+        inner = [
+          h('circle', { key: 'l', cx: 48, cy: 42, r: 18, fill: acc, fillOpacity: 0.14, stroke: acc, strokeWidth: 2 }),
+          h('line', { key: 'h', x1: 62, y1: 56, x2: 80, y2: 74, stroke: acc, strokeWidth: 3.5, strokeLinecap: 'round' }),
+          h('text', { key: 'q', x: 48, y: 47, textAnchor: 'middle', fill: stk, fontSize: 16, fontWeight: '800' }, '?')
+        ];
+      }
+      return h('svg', {
+        className: 'oid-example-svg',
+        viewBox: '0 0 110 88',
+        'aria-hidden': 'true',
+        focusable: 'false'
+      },
+        h('rect', { x: 1, y: 1, width: 108, height: 86, rx: 10, fill: C.raised, stroke: C.border, strokeWidth: 1 }),
+        inner
+      );
+    }
+
+    function renderDichotomousKeySvg(route, example) {
+      if (example.id === 'field') return null;
+      var steps = [
+        { id: 'feathers', label: 'Feathers?', yesOut: 'Bird', x: 58 },
+        { id: 'legs', label: 'Jointed legs?', yesOut: '6 vs 8 legs', x: 162 },
+        { id: 'fronds', label: 'Fronds?', yesOut: 'Fern', x: 274 },
+        { id: 'cap', label: 'Cap & stalk?', yesOut: 'Mushroom', x: 382 },
+        { id: 'capsules', label: 'Cushion?', yesOut: 'Moss', x: 488 }
+      ];
+      var answered = {};
+      (route.path || []).forEach(function (st) { answered[st.question] = st.answer; });
+      var activeQ = route.question;
+      return h('figure', { className: 'oid-key-diagram', style: { background: C.raised, borderColor: C.border } },
+        h('svg', {
+          viewBox: '0 0 560 140',
+          role: 'img',
+          'aria-label': 'Visual dichotomous key flowchart showing current progress through the teaching key. Current status: ' + (route.question || route.result || 'Start')
+        },
+          // Connecting horizontal "No" spine
+          steps.slice(0, -1).map(function (st, idx) {
+            var next = steps[idx + 1];
+            var q = OBSERVATION_KEY[st.id].question;
+            var wentNo = answered[q] === 'no';
+            return h('g', { key: 'sp-' + st.id },
+              h('line', { x1: st.x + 42, y1: 42, x2: next.x - 42, y2: 42, stroke: wentNo ? C.accent : C.border, strokeWidth: wentNo ? 2.6 : 1.5 }),
+              h('text', { x: (st.x + next.x) / 2, y: 34, textAnchor: 'middle', fill: wentNo ? C.accent : C.muted, fontSize: 8.5, fontWeight: '800' }, 'No')
+            );
+          }),
+          steps.map(function (st) {
+            var q = OBSERVATION_KEY[st.id].question;
+            var ans = answered[q];
+            var isCur = activeQ === q || (st.id === 'legs' && (activeQ === OBSERVATION_KEY.six.question || activeQ === OBSERVATION_KEY.eight.question));
+            var wentYes = ans === 'yes';
+            var nodeStroke = isCur ? C.accent : (ans ? C.accent : C.border);
+            var nodeFill = isCur ? C.accent : (ans ? C.panel : C.panel);
+            var labelFill = isCur ? C.accentText : C.text;
+            var outActive = wentYes || (st.id === 'legs' && (route.result === 'Insect example' || route.result === 'Arachnid example'));
+            var outText = st.id === 'legs' && route.result === 'Insect example' ? 'Insect'
+              : st.id === 'legs' && route.result === 'Arachnid example' ? 'Arachnid'
+              : st.yesOut;
+            return h('g', { key: st.id },
+              h('rect', { x: st.x - 42, y: 24, width: 84, height: 36, rx: 8, fill: nodeFill, stroke: nodeStroke, strokeWidth: isCur ? 2.4 : 1.4 }),
+              h('text', { x: st.x, y: 45, textAnchor: 'middle', fill: labelFill, fontSize: 9.5, fontWeight: '800' }, st.label),
+              // Downward Yes branch
+              h('line', { x1: st.x, y1: 60, x2: st.x, y2: 92, stroke: outActive ? C.accent : C.border, strokeWidth: outActive ? 2.6 : 1.3, strokeDasharray: outActive ? undefined : '3 3' }),
+              h('text', { x: st.x + 12, y: 79, fill: outActive ? C.accent : C.muted, fontSize: 8.5, fontWeight: '800' }, 'Yes'),
+              h('rect', { x: st.x - 36, y: 92, width: 72, height: 28, rx: 14, fill: outActive ? C.accent : C.panel, stroke: outActive ? C.accent : C.border, strokeWidth: outActive ? 2 : 1.2 }),
+              h('text', { x: st.x, y: 109, textAnchor: 'middle', fill: outActive ? C.accentText : C.muted, fontSize: 9.5, fontWeight: '800' }, outText)
+            );
+          })
+        ),
+        h('figcaption', { className: 'oid-plate-cap', style: { color: C.muted } },
+          route.question ? 'Active step highlighted in the branching key.' : ('Key endpoint reached: ' + route.result))
+      );
+    }
+
     function renderDetail() {
       var node = NODE_BY_NAME[selectedName];
       if (!node) return null;
@@ -643,6 +996,7 @@
         h('h2', { id: 'oid-detail-heading', tabIndex: -1, 'data-oid-focus': true, className: 'oid-detail-name' + (node.rank === 'genus' ? ' is-latin' : '') }, node.name),
         h('p', { className: 'oid-detail-rank', style: { color: C.muted } },
           (RANK_LABEL[node.rank] || node.rank) + (node.common ? ' · ' + node.common : '')),
+        renderSpecimenPlate(node),
         h('button', { id: 'oid-show-in-tree', type: 'button', className: 'oid-show-in-tree',
           onClick: showSelectedBranch,
           style: { background: C.raised, borderColor: C.controlBorder, color: C.text }
@@ -757,15 +1111,35 @@
 
     // ── Lookalikes view ─────────────────────────────────────────────────────
     function renderLookalikesView() {
+      var tierFilter = d.lookalikeTierFilter || 'ALL';
+      var shownEdges = tierFilter === 'ALL' ? EDGES : EDGES.filter(function (e) { return e.tier === tierFilter; });
       return h('div', { className: 'oid-view' },
         h('p', { className: 'oid-intro', style: { color: C.muted } },
           __alloT('stem.organismid.lookalikes_intro', 'Pairs that fool people. Read the tell, then find both in the tree — several of these pairs are not even close relatives, which is the whole lesson.')),
-        h('ul', { className: 'oid-edges' }, EDGES.map(function (edge, i) {
+        h('div', { className: 'oid-filter-bar', role: 'group', 'aria-label': __alloT('stem.organismid.filter_lookalikes', 'Filter lookalike pairs by hazard tier') },
+          ['ALL', 'DEADLY', 'CONTACT', 'MILD', 'INFO'].map(function (tierKey) {
+            var active = tierFilter === tierKey;
+            var count = tierKey === 'ALL' ? EDGES.length : EDGES.filter(function (e) { return e.tier === tierKey; }).length;
+            var tCol = tierKey === 'ALL' ? C.accent : tierColor(tierKey);
+            return h('button', {
+              key: tierKey, type: 'button', className: 'oid-filter-chip',
+              'aria-pressed': active ? 'true' : 'false',
+              onClick: function () { patchState({ lookalikeTierFilter: tierKey }, (tierKey === 'ALL' ? 'All' : tierKey) + ' lookalike pairs shown'); },
+              style: {
+                background: active ? C.raised : C.panel,
+                borderColor: active ? tCol : C.border,
+                color: active ? C.text : C.muted
+              }
+            }, (tierKey === 'ALL' ? __alloT('stem.organismid.filter_all', 'All pairs') : tierKey) + ' (' + count + ')');
+          })
+        ),
+        h('ul', { className: 'oid-edges' }, shownEdges.map(function (edge, i) {
           var color = tierColor(edge.tier);
           return h('li', {
-            key: i, className: 'oid-edge',
-            style: { background: C.panel, borderColor: C.border, color: C.text }
+            key: edge.safe[0] + '-' + i, className: 'oid-edge',
+            style: { background: C.panel, borderColor: C.border, borderTopColor: color, color: C.text }
           },
+            h('div', { className: 'oid-edge-viz-wrap' }, renderLookalikeDiagram(edge)),
             h('div', { className: 'oid-edge-side' },
               h('span', { className: 'oid-edge-label', style: { color: C.muted } }, __alloT('stem.organismid.often_taken_for', 'Often taken for')),
               h('span', { className: 'oid-edge-common' }, edge.safe[0]),
@@ -905,8 +1279,12 @@
               __alloT('stem.organismid.observation_example_changed','{example} selected. {prompt}').replace('{example}',nextExample.name).replace('{prompt}',prompt));
           }},
             OBSERVATION_EXAMPLES.map(function(e){return h('option',{key:e.id,value:e.id},e.name);})),
-          h('p',{id:'oid-observation-example-evidence','data-example-evidence':true},example.evidence),
+          h('div', { className: 'oid-example-preview', style: { background: C.raised, borderColor: C.border } },
+            renderExampleSpecimenSvg(example.id),
+            h('p', { id: 'oid-observation-example-evidence', 'data-example-evidence': true, style: { margin: 0, flex: '1 1 220px', minWidth: 0 } }, example.evidence)
+          ),
           example.id==='field'?h('label',null,'Observation title',h('input',{type:'text',maxLength:100,value:d.observationSubject||'',style:inputStyle,onChange:function(e){patchState({observationSubject:e.target.value});}})):null,
+          renderDichotomousKeySvg(route, example),
           h('ol',null,route.path.map(function(step,i){return h('li',{key:i},step.question+' '+(step.answer==='unsure'?'Not sure':step.answer));})),
           h('section',{id:'oid-observation-step',role:'region',tabIndex:-1,'data-oid-focus':true,
             'aria-labelledby':'oid-observation-step-title','aria-describedby':'oid-observation-example-evidence oid-observation-step-help'},
@@ -992,7 +1370,10 @@
     else if (activeView === 'photo') body = renderPhotoView();
     else body = renderTreeView();
 
-    return h('main', {
+      var seenCount = Object.keys((d && d.seen) || {}).length;
+      var journalCount = observationJournal(d && d.observationJournal).length;
+
+      return h('main', {
       className: 'organism-id-lab',
       'aria-label': __alloT('stem.organismid.aria_main', 'Taxonomy Explorer'),
       style: { background: C.bg, color: C.text, '--oid-focus': C.focus, '--oid-border': C.border, '--oid-muted': C.muted }
@@ -1002,7 +1383,12 @@
         h('div', { className: 'oid-hero-copy' },
           h('p', { className: 'oid-kicker' }, __alloT('stem.organismid.kicker', 'CLASSIFICATION')),
           h('h1', null, __alloT('stem.organismid.title', 'Taxonomy Explorer')),
-          h('p', null, __alloT('stem.organismid.subtitle', 'How biologists sort life into boxes, why the boxes keep moving, and why a lookalike can be the difference between dinner and a liver transplant.')))
+          h('p', null, __alloT('stem.organismid.subtitle', 'How biologists sort life into boxes, why the boxes keep moving, and why a lookalike can be the difference between dinner and a liver transplant.')),
+          h('div', { className: 'oid-hero-pills', role: 'list', 'aria-label': __alloT('stem.organismid.aria_stats', 'Field taxonomy summary') },
+            h('span', { className: 'oid-hero-pill', role: 'listitem' }, seenCount + '/' + ALL_NODES.length + ' ' + __alloT('stem.organismid.stat_taxa', 'taxa explored')),
+            h('span', { className: 'oid-hero-pill', role: 'listitem' }, EDGES.length + ' ' + __alloT('stem.organismid.stat_pairs', 'lookalike pairs')),
+            h('span', { className: 'oid-hero-pill', role: 'listitem' }, journalCount + ' ' + __alloT('stem.organismid.stat_notes', 'field notes'))
+          ))
       ),
 
       // Not keyed for runtime translation on purpose — see the i18n policy at the
@@ -1058,9 +1444,22 @@
       // the lightest stop) and 9.11:1 at best -- all clear AA. The other 28
       // "incomplete" nodes are the caret/dot glyphs, which axe skips as non-text.
       '.oid-hero-icon{display:grid;place-items:center;width:64px;height:64px;flex:0 0 64px;border:1px solid rgba(255,255,255,.4);border-radius:16px;background:rgba(255,255,255,.14);font-size:34px}',
-      '.oid-hero-copy{flex:1 1 14em;min-width:0;overflow-wrap:anywhere}.oid-kicker{margin:0;font-size:11px;font-weight:900;letter-spacing:.14em;opacity:.85}',
+      '.oid-hero-copy{flex:1 1 14em;min-width:0;overflow-wrap:anywhere}.oid-kicker{margin:0;font-size:11px;font-weight:900;letter-spacing:.14em;opacity:.9}',
       '.oid-hero h1{margin:2px 0 4px;font-size:clamp(24px,4vw,38px);line-height:1.1}',
-      '.oid-hero p{margin:0;max-width:720px;font-size:14px;opacity:.93}',
+      '.oid-hero p{margin:0;max-width:720px;font-size:14px;opacity:.95}',
+      '.oid-hero-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}',
+      '.oid-hero-pill{display:inline-flex;align-items:center;padding:3px 10px;border:1px solid rgba(255,255,255,.38);border-radius:999px;background:rgba(0,0,0,.22);color:#ffffff;font-size:11px;font-weight:800}',
+      '.oid-plate{margin:0 0 12px;padding:8px;border:1px solid;border-radius:11px}',
+      '.oid-plate svg{display:block;width:100%;height:auto}',
+      '.oid-plate-cap{margin:6px 2px 0;font-size:11px;line-height:1.4;font-weight:600}',
+      '.oid-filter-bar{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}',
+      '.oid-filter-chip{min-height:36px;padding:5px 12px;border:1px solid;border-radius:999px;font-size:12px;font-weight:750;transition:border-color .15s,background .15s}',
+      '.oid-edge-viz-wrap{grid-column:1/-1;margin-bottom:4px}',
+      '.oid-edge-viz{display:block;width:100%;max-width:440px;height:auto}',
+      '.oid-example-preview{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:10px 0 12px;padding:10px 12px;border:1px solid;border-radius:10px}',
+      '.oid-example-svg{width:110px;height:88px;flex:0 0 110px;display:block}',
+      '.oid-key-diagram{margin:10px 0 12px;padding:10px;border:1px solid;border-radius:11px}',
+      '.oid-key-diagram svg{display:block;width:100%;height:auto}',
       '.oid-safety{display:block;margin:14px 0 0;padding:11px 13px;border:1px solid;border-left-width:5px;border-radius:10px;font-size:13px}',
       '.oid-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 16px}',
       '.oid-tab{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:8px 14px;border:1px solid;border-radius:10px;font-size:13px;font-weight:700}',
@@ -1139,6 +1538,9 @@
       '.oid-footer{margin:16px 0 0;text-align:center;font-size:10px}',
       '@media(max-width:900px){.oid-explorer{grid-template-columns:1fr}.oid-detail{position:static}}',
       '@media(max-width:620px){.organism-id-lab{padding:11px}.oid-hero{align-items:flex-start;padding:15px}.oid-edge{grid-template-columns:1fr}.oid-edge-vs{justify-items:start}.oid-lineage li{flex-wrap:wrap}.oid-node{grid-template-columns:9px minmax(0,1fr)}.oid-node-rank{grid-column:2}}',
+      '@media(prefers-reduced-motion:reduce){.organism-id-lab *{transition:none!important}}',
+      '.theme-contrast .oid-hero{background:#000000!important;border:2px solid #facc15;box-shadow:none;color:#ffff00}',
+      '.theme-contrast .oid-hero-pill{background:#000000!important;border-color:#facc15;color:#ffff00}',
       '@media(forced-colors:active){.organism-id-lab *{forced-color-adjust:auto}.oid-hero{background:Canvas;color:CanvasText}.oid-tier-dot,.oid-swatch{border:1px solid CanvasText}}'
     ].join('\n');
     document.head.appendChild(style);

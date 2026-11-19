@@ -4,11 +4,11 @@
 function AiBackendSettingsView(props) {
   const { GEMINI_MODELS, Settings, X, _isCanvasEnv, aiBackendModalRef, openCanvasRecoveryManager, setShowAIBackendModal, t } = props;
   return (
-<div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300" onClick={() => setShowAIBackendModal(false)} aria-label={t('common.close') || 'Close'}>
-          <div ref={aiBackendModalRef} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-canvas-title" onClick={e => e.stopPropagation()}>
-            <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
+<div role="presentation" onKeyDown={(e) => { if (e.key === 'Escape' && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) { e.preventDefault(); setShowAIBackendModal(false); } }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
+          <div ref={aiBackendModalRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-canvas-title" onClick={e => e.stopPropagation()}>
+            <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none z-10" aria-label={t('common.close') || "Close"}><X size={20} aria-hidden="true"/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
-                <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600"/></div>
+                <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600" aria-hidden="true"/></div>
                 <h3 id="ai-backend-canvas-title" className="font-black text-lg">{t('canvas_settings.title') || 'AI Settings & Diagnostics'}</h3>
             </div>
             <div className="space-y-4">
@@ -19,17 +19,20 @@ function AiBackendSettingsView(props) {
                     Serper.dev IS the transport the search chain uses. */}
                 <AllobotSearchSettings t={t} />
                 {((() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()) ? (<div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('common.optional_parenthetical') || '(optional)'}</span></label>
+                    <label htmlFor="ai-canvas-wolfram" className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('common.optional_parenthetical') || '(optional)'}</span></label>
                     <input
                         id="ai-canvas-wolfram" aria-label={t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID'}
                         type="text"
                         placeholder={t('canvas_settings.wolfram_placeholder') || 'XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)'}
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()}
                         onChange={(e) => {
-                            const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                            localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, wolframAppId: e.target.value }));
+                            try {
+                                const parsed = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+                                const current = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+                                localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, wolframAppId: e.target.value }));
+                            } catch (_) {}
                         }}
-                        className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
+                        className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-1 text-sm font-medium text-slate-700"
                     />
                     <p className="text-[11px] text-slate-600 mt-1">{t('canvas_settings.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.'}</p>
                 </div>) : null}
@@ -117,7 +120,7 @@ function LmsAuditBannerView(props) {
                 name = rawName || name;
               }
               return (
-                <button key={i} onClick={async () => {
+                <button type="button" key={i} onClick={async () => {
                   const documentIntakeEpoch = startNewPdfAudit();
                   const fetchController = typeof AbortController !== 'undefined' ? new AbortController() : null;
                   lmsAuditFetchControllerRef.current = fetchController;

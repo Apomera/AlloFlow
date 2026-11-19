@@ -59,13 +59,13 @@ jobs:
             desktop/package-lock.json
       - name: Install web app dependencies (react-scripts for the bundle build)
         working-directory: desktop/web-app
-        run: npm ci --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install desktop dependencies (electron, electron-builder)
         working-directory: desktop
         run: npm ci --no-audit --no-fund
-      - name: Audit desktop dependencies
+      - name: Audit desktop and web-app dependencies
         working-directory: desktop
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high && npm --prefix web-app audit --audit-level=high
       - name: Use prerelease version for beta channel
         if: github.event_name == 'workflow_dispatch' && inputs.channel == 'beta'
         working-directory: desktop
@@ -169,13 +169,13 @@ jobs:
             desktop/package-lock.json
       - name: Install web app dependencies (react-scripts for the bundle build)
         working-directory: desktop/web-app
-        run: npm ci --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install desktop dependencies (electron, electron-builder)
         working-directory: desktop
         run: npm ci --no-audit --no-fund
-      - name: Audit desktop dependencies
+      - name: Audit desktop and web-app dependencies
         working-directory: desktop
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high && npm --prefix web-app audit --audit-level=high
       - name: Use prerelease version for beta channel
         if: github.event_name == 'workflow_dispatch' && inputs.channel == 'beta'
         working-directory: desktop

@@ -186,6 +186,51 @@
     return 'Metadata verification returned an unexpected response.';
   }
 
+  function isDesktopOffline() {
+    var scopes = [root];
+    try { if (root.opener && root.opener !== root) scopes.push(root.opener); } catch (_) {}
+    for (var i = 0; i < scopes.length; i += 1) {
+      try {
+        if (scopes[i] && (scopes[i]._isDesktopBundledApp === true || scopes[i].__ALLOFLOW_DESKTOP_OFFLINE__ === true)) {
+          return true;
+        }
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  function isManagedSearchDisabled() {
+    var scopes = [root];
+    try { if (root.opener && root.opener !== root) scopes.push(root.opener); } catch (_) {}
+    for (var i = 0; i < scopes.length; i += 1) {
+      try {
+        var managed = scopes[i] && scopes[i].ALLOFLOW_MANAGED_AI_POLICY;
+        if (managed != null && (managed.version !== 1 || managed.allowExternalSearch !== true)) {
+          return true;
+        }
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  async function fetchJsonWithTimeout(requestUrl, timeoutMs) {
+    var controller = typeof root.AbortController === 'function' ? new root.AbortController() : null;
+    var timer = controller ? root.setTimeout(function () { try { controller.abort(); } catch (_) {} }, timeoutMs) : null;
+    try {
+      var opts = {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        headers: { Accept: 'application/json' },
+        referrerPolicy: 'no-referrer',
+      };
+      if (controller) opts.signal = controller.signal;
+      return await root.fetch(requestUrl, opts);
+    } finally {
+      if (timer != null) root.clearTimeout(timer);
+    }
+  }
+
   async function search(query, options) {
     options = options || {};
     var safeQuery = clean(redactString(query), MAX_QUERY_CHARS);
@@ -194,12 +239,16 @@
     var requested = Number(options.maxResults);
     var maxResults = Number.isFinite(requested) ? Math.max(1, Math.min(requested, MAX_RESULTS)) : DEFAULT_RESULTS;
     if (safeQuery.length < 3) throw new Error('Enter at least three characters for a source search.');
+    if (isDesktopOffline()) throw new Error('Web source search is disabled in offline Desktop mode.');
+    if (isManagedSearchDisabled()) throw new Error('Web source search is disabled by managed organization policy.');
     if (root.navigator && root.navigator.onLine === false) throw new Error('This window is offline. Web source search is unavailable.');
 
     var started = Date.now();
     var provider = findExistingProvider();
     if (provider) {
       var providerResult = await provider.search(safeQuery, maxResults, searchQuery);
+      if (providerResult && providerResult.policyBlocked) throw new Error('Web source search is disabled by managed organization policy.');
+      if (providerResult && providerResult.privacyBlocked) throw new Error('This search query was blocked by privacy guardrails.');
       var providerRows = normalizeResults(providerResult && providerResult.results, providerResult && providerResult.source || 'Web search');
       return {
         ok: true,
@@ -219,13 +268,7 @@
       + 'q=' + encodeURIComponent(searchQuery) + '&num=' + String(maxResults);
     var response;
     try {
-      response = await root.fetch(requestUrl, {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'omit',
-        headers: { Accept: 'application/json' },
-        referrerPolicy: 'no-referrer',
-      });
+      response = await fetchJsonWithTimeout(requestUrl, 12000);
     } catch (error) {
       throw new Error('The web-search service could not be reached. Check your connection or search proxy.');
     }
@@ -249,6 +292,8 @@
     options = options || {};
     var safe = safeUrl(url);
     if (!safe) throw new Error('Only an HTTP or HTTPS source URL can be verified.');
+    if (isDesktopOffline()) throw new Error('Metadata verification is disabled in offline Desktop mode.');
+    if (isManagedSearchDisabled()) throw new Error('Metadata verification is disabled by managed organization policy.');
     if (root.navigator && root.navigator.onLine === false) throw new Error('This window is offline. Metadata verification is unavailable.');
     var endpoint = metadataProxyUrl();
     if (!/^https:\/\//i.test(endpoint)) throw new Error('A secure metadata proxy is not configured.');
@@ -256,13 +301,7 @@
     var started = Date.now();
     var response;
     try {
-      response = await root.fetch(requestUrl, {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'omit',
-        headers: { Accept: 'application/json' },
-        referrerPolicy: 'no-referrer',
-      });
+      response = await fetchJsonWithTimeout(requestUrl, 10000);
     } catch (_) {
       throw new Error('The metadata service could not be reached.');
     }

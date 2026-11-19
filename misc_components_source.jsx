@@ -240,7 +240,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
               type="text"
               value={val}
               onChange={handleChange}
-              onKeyDown={(e) => { if (e.key === 'Enter' && placeBankPick()) e.preventDefault(); }}
+              onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && placeBankPick()) e.preventDefault(); }}
               readOnly={status === 'success'}
               className={`
                   min-h-11 text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all motion-reduce:transition-none outline-none focus:ring-2 focus-visible:ring-2 focus:ring-indigo-400 rounded-t
@@ -2168,6 +2168,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                             placeholder={t('word_sounds.image_refine_placeholder') || 'e.g., make it cuter, add a banana'}
                                                                             className="flex-1 min-h-11 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                                                                             onKeyDown={(e) => {
+                                                                                if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
                                                                                 if (e.key === 'Enter' && onRefineImage && imageRefinementInputs[idx]) {
                                                                                     if (!_wsAiUsable('images', onRefineImage)) {
                                                                                         setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });

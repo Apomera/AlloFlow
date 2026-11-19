@@ -260,22 +260,7 @@
         </ol>
         <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
         <p id="after-code" hidden>The answers screen inside the file opens with your teacher code. This page has not kept the code.</p>
-        <details class="why" id="learner-tip">
-          <summary>Fill in a student's code name for them</summary>
-          <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
-        </details>
       </div>
-
-
-      <details class="why code-box" id="code-name-box">
-        <summary>Put a student's code name in the file</summary>
-        <div class="field">
-          <label for="f-code-name">Student's code name</label>
-          <span class="hint" id="code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
-          <input type="text" id="f-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="code-name-hint code-name-said">
-          <span class="hint" id="code-name-said" role="status"></span>
-        </div>
-      </details>
 
       <div class="summary summary-list" id="summary-list">
         <h3>What is in the file</h3>
@@ -283,25 +268,28 @@
       </div>
 
       <details class="batch" id="batch">
-        <summary>Make one for each student</summary>
+        <summary>Put student code names in the file</summary>
         <div class="batch-body">
-          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name. In Google Classroom, where one assignment gives every student the same file, the single file above is simpler: each student types a code name at the start.</p>
+          <p class="hint">Type 1 code name to put it into the file above, or 2 to 40 (one per line) to save one file per student in a .zip. In Google Classroom, where one assignment gives every student the same file, leave this empty and each student types a code name at the start.</p>
           <div class="field">
             <label for="f-batch-names">Code names, one on each line</label>
             <span class="hint" id="batch-names-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
-            <textarea id="f-batch-names" rows="6" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
+            <textarea id="f-batch-names" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
           </div>
-          <details class="why" id="batch-more">
-            <summary>More choices</summary>
+          <p class="row">
+            <button type="button" class="btn btn-small" id="batch-load">Load list from a .txt file</button>
+            <input type="file" id="batch-file" accept=".txt,text/plain" aria-label="A text file of code names" hidden>
+          </p>
+          <div id="batch-rotate-wrap" class="block" hidden>
             <label class="radio"><input type="checkbox" id="f-batch-rotate" aria-describedby="batch-rotate-hint"> <span>Give students versions A, B and C in turn</span></label>
             <span class="hint" id="batch-rotate-hint">The first student gets A, the second B, the third C, then A again. Students who sit together then have different problems.</span>
-          </details>
+          </div>
           <p id="batch-said" class="result-sub" role="status"></p>
           <p class="row batch-row">
-            <button type="button" class="btn" id="batch-make">Make the files</button>
-            <button type="button" class="btn" id="batch-save" hidden>Save the .zip file</button>
+            <button type="button" class="btn" id="batch-make" hidden>Save .zip</button>
           </p>
           <p id="batch-problem" class="actions-note" role="alert"></p>
+          <p class="hint" id="learner-tip-line">Sharing by web link instead? Add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
         </div>
       </details>
     </section>

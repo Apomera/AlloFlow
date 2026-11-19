@@ -105,7 +105,24 @@ function runCli(cli, args, env = {}, logFile) {
   return { exitCode: result.status, signal: result.signal };
 }
 
-function executeValidation({ reportDir, run = runCli, capture = () => captureIdentity(ROOT, [...manifest.unit, ...manifest.browser, ...manifest.identityInputs]) }) {
+function parseWorkerCount(value, source) {
+  const n = Number(String(value).trim());
+  if (!Number.isInteger(n) || n < 1 || n > 16) {
+    throw new Error('Invalid worker count from ' + source + ': ' + value + ' (expected integer 1..16)');
+  }
+  return n;
+}
+
+function resolveMaxWorkers(explicit) {
+  if (explicit !== undefined && explicit !== null) return parseWorkerCount(explicit, '--max-workers');
+  if (process.env.REMEDIATION_VALIDATION_WORKERS !== undefined && String(process.env.REMEDIATION_VALIDATION_WORKERS).trim() !== '') {
+    return parseWorkerCount(process.env.REMEDIATION_VALIDATION_WORKERS, 'REMEDIATION_VALIDATION_WORKERS');
+  }
+  return 2;
+}
+
+function executeValidation({ reportDir, maxWorkers, run = runCli, capture = () => captureIdentity(ROOT, [...manifest.unit, ...manifest.browser, ...manifest.identityInputs]) }) {
+  const workers = resolveMaxWorkers(maxWorkers);
   fs.mkdirSync(reportDir, { recursive: true });
   const unitReport = path.join(reportDir, 'unit.json'), browserReport = path.join(reportDir, 'browser.json');
   const summaryFile = path.join(reportDir, 'summary.json');
@@ -157,8 +174,8 @@ function executeValidation({ reportDir, run = runCli, capture = () => captureIde
     if (!summary.identity.before.gitHead) throw new Error('Git revision is unavailable before validation');
     if (Object.values(summary.identity.before.inputSha256).some(hash => hash === null)) throw new Error('A required validation input is missing');
     if (JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'dev-tools/remediation_validation.json'), 'utf8'))) !== JSON.stringify(manifest)) throw new Error('Suite manifest changed before validation started');
-    runPhase('unit', 'node_modules/vitest/vitest.mjs', ['run', ...manifest.unit, '--pool=threads', '--maxWorkers=2', '--allowOnly=false', '--testTimeout=30000', '--hookTimeout=30000', '--reporter=dot', '--reporter=json', '--outputFile=' + unitReport]);
-    runPhase('browser', 'node_modules/@playwright/test/cli.js', ['test', ...manifest.browser, '--project=chromium', '--forbid-only', '--retries=0', '--workers=2', '--reporter=line,json', '--output=' + path.join(reportDir, 'browser-artifacts')], {
+    runPhase('unit', 'node_modules/vitest/vitest.mjs', ['run', ...manifest.unit, '--pool=threads', '--maxWorkers=' + workers, '--allowOnly=false', '--testTimeout=30000', '--hookTimeout=30000', '--reporter=dot', '--reporter=json', '--outputFile=' + unitReport]);
+    runPhase('browser', 'node_modules/@playwright/test/cli.js', ['test', ...manifest.browser, '--project=chromium', '--forbid-only', '--retries=0', '--workers=' + workers, '--reporter=line,json', '--output=' + path.join(reportDir, 'browser-artifacts')], {
       PLAYWRIGHT_JSON_OUTPUT_FILE: browserReport,
     });
   } catch (error) {
@@ -186,11 +203,29 @@ function executeValidation({ reportDir, run = runCli, capture = () => captureIde
 
 function main(args = process.argv.slice(2)) {
   if (args.length === 1 && args[0] === '--list') { validateManifest(); console.log(JSON.stringify(manifest, null, 2)); return; }
-  if (args.length && (args.length !== 2 || args[0] !== '--report-dir' || !args[1])) throw new Error('Usage: remediation_validation.cjs [--list | --report-dir PATH]');
-  return executeValidation({ reportDir: path.resolve(ROOT, args[1] || 'test-results/remediation-validation') });
+  let reportDirArg = null;
+  let maxWorkers;
+  for (let i = 0; i < args.length; i += 1) {
+    const a = args[i];
+    if (a === '--report-dir') {
+      if (i + 1 >= args.length || !args[i + 1]) throw new Error('Usage: remediation_validation.cjs [--list | [--report-dir PATH] [--max-workers=N]]');
+      reportDirArg = args[++i];
+    } else if (a.startsWith('--max-workers=')) {
+      maxWorkers = a.slice('--max-workers='.length);
+    } else if (a === '--max-workers') {
+      if (i + 1 >= args.length || !args[i + 1]) throw new Error('Usage: remediation_validation.cjs [--list | [--report-dir PATH] [--max-workers=N]]');
+      maxWorkers = args[++i];
+    } else {
+      throw new Error('Usage: remediation_validation.cjs [--list | [--report-dir PATH] [--max-workers=N]]');
+    }
+  }
+  return executeValidation({
+    reportDir: path.resolve(ROOT, reportDirArg || 'test-results/remediation-validation'),
+    maxWorkers,
+  });
 }
 
-module.exports = { manifest, validateManifest, summarizeUnit, summarizeBrowser, executeValidation, main };
+module.exports = { manifest, validateManifest, summarizeUnit, summarizeBrowser, executeValidation, resolveMaxWorkers, main };
 if (require.main === module) {
   try { main(); } catch (error) { console.error('[remediation-validation] ' + error.message); process.exitCode = 1; }
 }

@@ -200,10 +200,15 @@
       };
       try {
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
-        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
+        var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+        var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 15000) : null;
+        var fetchOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
+        if (ctrl) fetchOpts.signal = ctrl.signal;
+        fetch(SUBMIT_URL, fetchOpts)
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
           .then(function (res) { if (res.ok && res.j && res.j.ok && res.j.storage === 'private') showThanks(); else showSendFailure(); })
-          .catch(function () { showSendFailure(); });
+          .catch(function () { showSendFailure(); })
+          .finally(function () { if (timer) clearTimeout(timer); });
       } catch (_) { showSendFailure(); }
     };
     var first = $('allo-ic-suggest'); if (first) first.focus();

@@ -6186,7 +6186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               var reader=new FileReader();
               reader.onload=function(){
                 if(input._anatomyImportRead!==generation || !input.isConnected)return;
-                try {finishRead(parseAnatomyStudyPacket(JSON.parse(reader.result),knownStructureIds),t('stem.anatomy.study_import_preview_ready','Preview ready. Review the counts, then merge to add this work.'));}
+                try {finishRead(parseAnatomyStudyPacket(JSON.parse(reader.result,function(k,v){return(k==='__proto__'||k==='constructor'||k==='prototype')?undefined:v;}),knownStructureIds),t('stem.anatomy.study_import_preview_ready','Preview ready. Review the counts, then merge to add this work.'));}
                 catch(error){finishRead(null,t('stem.anatomy.study_import_failed','Import failed. ')+studyImportErrorMessage(error));}
               };
               reader.onerror=function(){finishRead(null,t('stem.anatomy.study_import_read_failed','Import failed: the file could not be read.'));};reader.readAsText(file);
@@ -11948,7 +11948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         function renderAtlasPathwayHandoff(atlasId) {
           var handoff = ATLAS_PATHWAY_HANDOFFS[atlasId];
           if (!handoff) return null;
-          return h('div', {
+          return h('div', { role: 'group',
             className: 'anatomy-scale-continuation',
             'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: handoff.label }),
             'data-anatomy-pathway-from': atlasId,
@@ -12054,7 +12054,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var focusSteps = ATLAS_STEP_FOCUS[atlasId];
           var focusItems = focusSteps && focusSteps[regionalAtlasStep];
           if (!focusItems) return null;
-          return h('div', {
+          return h('div', { role: 'group',
             className: 'anatomy-atlas-focus',
             'data-anatomy-step-focus': atlasId,
             'aria-label': 'Current structures: ' + focusItems.join(', ')
@@ -12300,7 +12300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               [{ symbol: 'O₂−', label: heartCopy.oxygen_poor, color: '#1d4ed8' }, { symbol: 'O₂+', label: heartCopy.oxygen_rich, color: '#b91c1c' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-heart-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); })
             ),
             regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'aortic_stenosis', role: 'note' }, h('div', null, h('strong', null, heartCopy.clinical_title), h('p', null, heartCopy.clinical_change)), h('div', null, h('strong', null, heartCopy.clinical_effect_heading), h('p', null, heartCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, heartCopy.clinical_note))),
-            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'heart', 'data-scale-continuation': 'alveoli', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: heartCopy.handoff_label }) }, h('p', null, h('strong', null, heartCopy.handoff_lead), heartCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-heart-handoff': true, onClick: openHeartExchange }, heartCopy.handoff_button))
+            h('div', { role: 'group', className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'heart', 'data-scale-continuation': 'alveoli', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: heartCopy.handoff_label }) }, h('p', null, h('strong', null, heartCopy.handoff_lead), heartCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-heart-handoff': true, onClick: openHeartExchange }, heartCopy.handoff_button))
           );
         }
 
@@ -12822,7 +12822,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'pulmonary_edema', role: 'note' },
               h('div', null, h('strong', null, alveolusCopy.clinical_title), h('p', null, alveolusCopy.clinical_change)), h('div', null, h('strong', null, alveolusCopy.clinical_effect_heading), h('p', null, alveolusCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, alveolusCopy.clinical_note))
             ),
-            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'alveoli', 'data-scale-continuation': 'heart', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: alveolusCopy.handoff_label }) },
+            h('div', { role: 'group', className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'alveoli', 'data-scale-continuation': 'heart', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: alveolusCopy.handoff_label }) },
               h('p', null, h('strong', null, alveolusCopy.handoff_lead), alveolusCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-alveolus-handoff': true, onClick: openAlveolusHeart }, alveolusCopy.handoff_button))
           );
         }
@@ -13060,7 +13060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               [{ symbol: 'B', label: kneeCopy.bone, color: '#b45309' }, { symbol: 'C', label: kneeCopy.cartilage, color: '#0e7490' }, { symbol: 'F', label: kneeCopy.force, color: '#dc2626' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-knee-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); })
             ),
             regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'acl_tear', role: 'note' }, h('div', null, h('strong', null, kneeCopy.clinical_title), h('p', null, kneeCopy.clinical_change)), h('div', null, h('strong', null, kneeCopy.clinical_effect_heading), h('p', null, kneeCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, kneeCopy.clinical_note))),
-            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'patella', 'data-scale-continuation': 'biceps', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: kneeCopy.handoff_label }) }, h('p', null, h('strong', null, kneeCopy.handoff_lead), kneeCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-knee-handoff': true, onClick: openKneeMuscle }, kneeCopy.handoff_button))
+            h('div', { role: 'group', className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'patella', 'data-scale-continuation': 'biceps', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: kneeCopy.handoff_label }) }, h('p', null, h('strong', null, kneeCopy.handoff_lead), kneeCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-knee-handoff': true, onClick: openKneeMuscle }, kneeCopy.handoff_button))
           );
         }
 
@@ -13317,7 +13317,7 @@ muscleRoute(0, 'M22 72 C94 72 160 69 218 101 C239 111 264 111 292 102', '#7c3aed
             h('div', { className: 'anatomy-muscle-orientation anatomy-muscle-mechanism-note', role: 'note', 'data-anatomy-muscle-mechanism-caption': true }, h('strong', null, muscleCopy.mechanism_heading), h('p', null, muscleIonText([muscleCopy.mechanism_terminal, muscleCopy.mechanism_end_plate, muscleCopy.mechanism_calcium, muscleCopy.mechanism_sarcomere][regionalAtlasStep]))),
             h('div', { className: 'anatomy-muscle-flow-key', role: 'list', 'aria-label': muscleCopy.flow_key, 'data-anatomy-visual-key': 'biceps' }, [{ symbol: 'N', label: muscleCopy.neural, color: '#7c3aed' }, { symbol: 'Ca', label: muscleCopy.calcium, color: '#0369a1' }, { symbol: 'M', label: muscleCopy.contraction, color: '#be185d' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-muscle-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); })),
             regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'myasthenia_gravis', role: 'note' }, h('div', null, h('strong', null, muscleCopy.clinical_title), h('p', null, muscleCopy.clinical_change)), h('div', null, h('strong', null, muscleCopy.clinical_effect_heading), h('p', null, muscleCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, muscleCopy.clinical_note))),
-            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'biceps', 'data-scale-continuation': 'patella', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: muscleCopy.handoff_label }) }, h('p', null, h('strong', null, muscleCopy.handoff_lead), muscleCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-muscle-handoff': true, onClick: openMuscleKnee }, muscleCopy.handoff_button))
+            h('div', { role: 'group', className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'biceps', 'data-scale-continuation': 'patella', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: muscleCopy.handoff_label }) }, h('p', null, h('strong', null, muscleCopy.handoff_lead), muscleCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-muscle-handoff': true, onClick: openMuscleKnee }, muscleCopy.handoff_button))
           );
         }
 
@@ -13557,7 +13557,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
             h('div', { className: 'anatomy-liver-mechanism-note', role: 'note', 'data-anatomy-liver-mechanism-caption': true }, h('strong', null, liverCopy.mechanism_heading), h('p', null, [liverCopy.mechanism_portal, liverCopy.mechanism_exchange, liverCopy.mechanism_return, liverCopy.mechanism_bile][regionalAtlasStep])),
             h('div', { className: 'anatomy-liver-flow-key', role: 'list', 'aria-label': liverCopy.flow_key, 'data-anatomy-visual-key': 'liver' }, [{ symbol: 'P', label: liverCopy.portal, color: '#7c3aed' }, { symbol: 'S', label: liverCopy.exchange, color: '#dc2626' }, { symbol: 'V', label: liverCopy.venous, color: '#2563eb' }, { symbol: 'B', label: liverCopy.bile, color: '#047857' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-liver-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); })),
             regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'hepatic_fibrosis', role: 'note' }, h('div', null, h('strong', null, liverCopy.clinical_title), h('p', null, liverCopy.clinical_change)), h('div', null, h('strong', null, liverCopy.clinical_effect_heading), h('p', null, liverCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, liverCopy.clinical_note))),
-            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'liver', 'data-scale-continuation': 'sm_intestine', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: liverCopy.handoff_label }) }, h('p', null, h('strong', null, liverCopy.handoff_lead), liverCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-liver-handoff': true, onClick: openLiverVillus }, liverCopy.handoff_button))
+            h('div', { role: 'group', className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'liver', 'data-scale-continuation': 'sm_intestine', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: liverCopy.handoff_label }) }, h('p', null, h('strong', null, liverCopy.handoff_lead), liverCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-liver-handoff': true, onClick: openLiverVillus }, liverCopy.handoff_button))
           );
         }
 
@@ -13609,7 +13609,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
               }, regionalAtlasPlaying ? 'Pause absorption' : 'Play absorption'),
               renderAtlasClinicalToggle('sm_intestine')
             ),
-            h('div', { className: 'anatomy-scale-path', 'aria-label': __alloT('stem.anatomy.a11y_scale_progression_body_region_to_intestinal_wal', 'Scale progression: body region to intestinal wall to villus microanatomy') },
+            h('div', { role: 'group', className: 'anatomy-scale-path', 'aria-label': __alloT('stem.anatomy.a11y_scale_progression_body_region_to_intestinal_wal', 'Scale progression: body region to intestinal wall to villus microanatomy') },
               h('span', null, 'Body region'),
               h('span', { className: 'anatomy-scale-arrow', 'aria-hidden': 'true' }, '→'),
               h('span', null, 'Intestinal wall'),
@@ -13790,7 +13790,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
               }, regionalAtlasPlaying ? 'Pause repair' : 'Play repair'),
               renderAtlasClinicalToggle('epidermis')
             ),
-            h('div', { className: 'anatomy-scale-path', 'aria-label': __alloT('stem.anatomy.a11y_scale_progression_body_surface_to_skin_layers_t', 'Scale progression: body surface to skin layers to wound repair zone') },
+            h('div', { role: 'group', className: 'anatomy-scale-path', 'aria-label': __alloT('stem.anatomy.a11y_scale_progression_body_surface_to_skin_layers_t', 'Scale progression: body surface to skin layers to wound repair zone') },
               h('span', null, 'Body surface'),
               h('span', { className: 'anatomy-scale-arrow', 'aria-hidden': 'true' }, '→'),
               h('span', null, 'Skin layers'),
@@ -13992,7 +13992,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                 h('h3', { id: 'anatomy-mastery-map-title' }, t('stem.anatomy.progress_map_title', 'Whole-body study progress')),
                 h('p', null, t('stem.anatomy.progress_map_help', 'Choose a collection to study. These counts summarize your confidence and review plan; they do not establish mastery.'))
               ),
-              h('div', { className: 'anatomy-mastery-totals', 'aria-label': __alloT('stem.anatomy.a11y_whole_body_confidence_totals', 'Whole-body confidence totals') },
+              h('div', { role: 'group', className: 'anatomy-mastery-totals', 'aria-label': __alloT('stem.anatomy.a11y_whole_body_confidence_totals', 'Whole-body confidence totals') },
                 h('span', null, wholeBodyMasteredCount + '/' + wholeBodyEligibleCount + ' got it'),
                 h('span', null, wholeBodyReviewCount + ' to review')
               )
@@ -14027,7 +14027,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                 );
               })
             ),
-            h('div', { className: 'anatomy-mastery-legend', 'aria-label': t('stem.anatomy.progress_legend', 'Confidence status legend') },
+            h('div', { role: 'group', className: 'anatomy-mastery-legend', 'aria-label': t('stem.anatomy.progress_legend', 'Confidence status legend') },
               h('span', null, '\u2713 Got it'), h('span', null, '! Review'), h('span', null, '~ Learning'), h('span', null, '\u25CB Unseen')
             )
           );
@@ -16793,7 +16793,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                       clinicalScaleJourneyActive && h('span', { className: 'anatomy-scale-clinical-focus' }, formatAnatomyStudyText(t('stem.anatomy.scale_clinical_focus', 'Clinical focus: {name}.'), { name: '\u2068' + (selectedClinicalConcept ? selectedClinicalConcept.label : selectedClinicalAtlasPack.focusLabel) + '\u2069' }))
                     ),
                     h('h4', { className: 'anatomy-scale-more-title' }, t('stem.anatomy.scale_more', 'More ways to explore')),
-                    h('div', { className: 'anatomy-scale-journey-buttons', 'aria-label': __alloT('stem.anatomy.a11y_additional_scale_destinations', 'Additional scale destinations') },
+                    h('div', { role: 'group', className: 'anatomy-scale-journey-buttons', 'aria-label': __alloT('stem.anatomy.a11y_additional_scale_destinations', 'Additional scale destinations') },
                       h('button', { type: 'button', 'data-anatomy-scale-lab': 'dissection', onClick: function() { openAnatomyScaleDestination('dissection', 'dissection', {}, 'Dissection Lab'); } }, t('stem.anatomy.scale_dissection', 'Organ dissection')),
                       h('button', { type: 'button', 'data-anatomy-scale-lab': 'cell', onClick: function() { openAnatomyScaleDestination('cell', 'cell', { mode: 'microdissection', _cellPicked: true, _cellCategory: 'interactive' }, 'Cell Microdissection'); } }, t('stem.anatomy.scale_microdissection', 'Cell microdissection')),
                       h('button', { type: 'button', 'data-anatomy-scale-lab': 'microbiology', onClick: function() { openAnatomyScaleDestination('microbiology', 'microbiology', { tab: 'microscope' }, 'Microscope Lab'); } }, t('stem.anatomy.scale_microscope', 'Microscope'))
@@ -17486,7 +17486,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                 h('div', { className: 'anatomy-cards-panel bg-white rounded-xl border-2 border-teal-200 p-4 space-y-3', 'data-anatomy-flashcards': flashcardScope, 'data-anatomy-card-context':flashcardContext, 'data-anatomy-card-revision':String(flashcardRevision), 'data-anatomy-current-card':flashcardPool[flashcardIdx] ? flashcardPool[flashcardIdx].id : '', 'data-anatomy-card-flipped':flashcardFlipped ? 'true' : 'false' },
                   h('div', { className: 'anatomy-card-heading' },
                     h('h4', { id:'anatomy-flashcards-title', tabIndex:-1, className: 'font-bold text-teal-800 text-sm' }, t('stem.anatomy.anatomy_flashcards', '\uD83C\uDCCF Anatomy Flashcards')),
-                    h('div', { className: 'anatomy-card-position' }, h('span', null, t('stem.anatomy.card_flow_position', 'Card')), h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700', 'aria-label': t('stem.anatomy.flashcard_progress', 'Flashcard progress') }, flashcardPool.length > 0 ? (flashcardIdx + 1) + '/' + flashcardPool.length : '0/0'))
+                    h('div', { className: 'anatomy-card-position' }, h('span', null, t('stem.anatomy.card_flow_position', 'Card')), h('span', { role: 'note', className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700', 'aria-label': t('stem.anatomy.flashcard_progress', 'Flashcard progress') }, flashcardPool.length > 0 ? (flashcardIdx + 1) + '/' + flashcardPool.length : '0/0'))
                   ),
                   h('p', { className: 'text-xs text-slate-600 mb-2' }, sys.name + ' · ' + t('stem.anatomy.flashcard_recall_prompt', 'Recall the function, reveal it, then rate your confidence.')),
                   h('div', { className: 'anatomy-flashcard-deck-controls', role: 'group', 'aria-label': t('stem.anatomy.flashcard_deck', 'Flashcard deck') },
@@ -18066,7 +18066,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                     h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' }, MODALITY_PANELS.map(function(panel) {
                       var panelState = Object.assign({ region: region, plane: plane, slice: sliceValue, showLabels: false, showCrosshair: false, annotations: [] }, panel.state);
                       return h('figure', { key: panel.id, className: 'rounded-lg border border-slate-300 bg-white overflow-hidden m-0', 'data-anatomy-modality-panel': panel.id },
-                        h('canvas', { width: 640, height: 480, className: 'w-full h-auto block bg-slate-950', 'aria-label': panel.title + ' ' + region + ' ' + plane,
+                        h('canvas', { role: 'img', width: 640, height: 480, className: 'w-full h-auto block bg-slate-950', 'aria-label': panel.title + ' ' + region + ' ' + plane,
                           ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, panelState); } }),
                         h('figcaption', { className: 'p-2' },
                           h('strong', { className: 'block text-xs text-slate-900' }, panel.title),

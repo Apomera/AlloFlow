@@ -962,7 +962,7 @@ window.StemLab = window.StemLab || {
     // Teacher exports: CSV rows, a file download, and printing through a new window that holds
     // the content (window.print() on the tool's own page is ignored in Gemini Canvas).
     function csvText(rows) {
-      return rows.map(function (r) { return r.map(function (v) { var s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(','); }).join('\n');
+      return rows.map(function (r) { return r.map(function (v) { var s = String(v == null ? '' : v); if (typeof v !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s) && !Number.isFinite(Number(s))) s = "'" + s; return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(','); }).join('\n');
     }
     function downloadText(name, text, mime) {
       try {
@@ -976,6 +976,7 @@ window.StemLab = window.StemLab || {
     function printReport(title, rows, extra) {
       var w = null;
       try { w = window.open('', '_blank'); } catch (e) { w = null; }
+      try { if (w) w.opener = null; } catch (_) {}
       if (!w || !w.document) return false;
       w.document.open();
       w.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + esc(title) + '</title><style>body{font-family:system-ui,sans-serif;margin:24px;color:#0f172a;background:#fff}table{border-collapse:collapse}th,td{border:1px solid #64748b;padding:4px 8px;text-align:left}pre{white-space:pre-wrap}</style></head><body><h1>' + esc(title) + '</h1><table><tbody>' +

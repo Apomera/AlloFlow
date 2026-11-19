@@ -2144,7 +2144,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
     const rawUrl = backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : descriptor.backend === backend ? descriptor.baseUrl : config.backend === backend ? config.baseUrl : '';
     let origin = '';
     try { const url = new URL(rawUrl); if (['https:', 'http:'].includes(url.protocol)) origin = url.origin; } catch (_) {}
-    return { backend, label: names[backend] || 'Other AI', origin, active: Boolean(tag || descriptor.backend || typeof active === 'string'), managed: window.ALLOFLOW_MANAGED_AI_POLICY != null };
+    return { backend, label: Object.prototype.hasOwnProperty.call(names, backend) ? names[backend] : 'Other AI', origin, active: Boolean(tag || descriptor.backend || typeof active === 'string'), managed: window.ALLOFLOW_MANAGED_AI_POLICY != null };
   };
   window.AlloFlowChatPrivacy = Object.freeze({
     destination,
@@ -2248,7 +2248,7 @@ const AllobotEvidence = (() => {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
       return Boolean(window.__alloAiUsable(kind, fn));
     }
-    return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true);
+    return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true));
   }
   function _evSanitizeUntrusted(value) {
     return String(value == null ? '' : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]+>/gi, '[redacted-tag]');
@@ -2260,7 +2260,7 @@ const AllobotEvidence = (() => {
     const request = plan(userText);
     if (!request) return null;
     const base = { ...request, sources: [], checkedAt: new Date().toISOString() };
-    const backend = window.AlloFlowChatPrivacy.destination(deps.callGemini).backend;
+    const backend = window.AlloFlowChatPrivacy?.destination?.(deps.callGemini)?.backend || config().backend || 'gemini';
     if (config().allobotWebSearch === false || (backend !== 'gemini' && config().allobotWebSearch !== true)) return { ...base, status: 'disabled' };
     const managed = window.ALLOFLOW_MANAGED_AI_POLICY;
     if (managed != null && (managed.version !== 1 || managed.allowExternalSearch !== true)) return { ...base, query: undefined, status: 'managed-disabled' };
@@ -2626,7 +2626,7 @@ const _udlChatAiUsable = (kind, fn) => {
   if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
     return Boolean(window.__alloAiUsable(kind, fn));
   }
-  return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true);
+  return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true));
 };
 const _udlChatSanitizeUntrusted = value => String(value == null ? '' : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]+>/gi, '[redacted-tag]');
 const _udlChatFenceUntrusted = (tag, value) => '<' + tag + '>\n' + _udlChatSanitizeUntrusted(value) + '\n</' + tag + '>';
@@ -4683,8 +4683,8 @@ Find the BEST matching feature for the user's question. Return JSON:
 Return ONLY JSON.`;
                         const ragResult = await callGemini(ragPrompt, true);
                         const parsed = JSON.parse(cleanJson(ragResult));
-                        if (parsed.helpKey) {
-                            const targetEl = document.querySelector(`[data-help-key="${parsed.helpKey}"]`);
+                        if (parsed.helpKey && typeof parsed.helpKey === 'string') {
+                            const targetEl = Array.from(document.querySelectorAll('[data-help-key]')).find((el) => el.getAttribute('data-help-key') === parsed.helpKey);
                             if (targetEl && performHighlight) {
                                 performHighlight(parsed.helpKey);
                             }

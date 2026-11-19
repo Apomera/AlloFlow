@@ -1440,7 +1440,12 @@ var TITRATION_SUBSTRATE_CSS =
   '[data-stem-theme=light] [data-titration-instance] .text-slate-400.text-slate-400,[data-stem-theme=light] [data-titration-instance] .text-slate-500.text-slate-500{color:#94a3b8!important}' +
   '[data-stem-theme=light] [data-titration-instance] .text-cyan-400.text-cyan-400{color:#22d3ee!important}' +
   '[data-stem-theme=light] [data-titration-instance] .text-amber-400.text-amber-400{color:#fbbf24!important}' +
-  '[data-stem-theme=light] [data-titration-instance] .text-rose-400.text-rose-400{color:#fb7185!important}';
+  '[data-stem-theme=light] [data-titration-instance] .text-rose-400.text-rose-400{color:#fb7185!important}' +
+  '[data-titration-instance] .titr-subject-badge{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:9999px;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#67e8f9;background:rgba(6,182,212,0.16);border:1px solid rgba(34,211,238,0.42)}' +
+  '[data-titration-instance] .titr-telemetry-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;font-size:11px;font-weight:700;color:#cbd5e1;background:rgba(15,23,42,0.68);border:1px solid rgba(148,163,184,0.32)}' +
+  '[data-titration-instance] .titr-telemetry-pill strong{color:#f8fafc;font-weight:800}' +
+  '.theme-contrast [data-titration-instance] .titr-subject-badge,.theme-contrast [data-titration-instance] .titr-telemetry-pill{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}' +
+  '.theme-contrast [data-titration-instance] .titr-telemetry-pill strong{color:#ffff00!important}';
 
 function titrationReferencePH(progress) {
   var p = Math.max(0, Math.min(1, Number(progress) || 0));
@@ -4065,12 +4070,12 @@ window.StemLab.registerTool('titrationLab', {
     // Student AI-off: null unless text AI is usable, so the AI tutor panel hides.
     var _aiUsable = function (kind, fn) {
       try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-      return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
     };
     var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
     var gradeLevel = ctx.gradeLevel;
 
-var d = (labToolData && labToolData.titrationLab) || {};
+var d = (labToolData && labToolData.titrationLab && typeof labToolData.titrationLab === 'object' && !Array.isArray(labToolData.titrationLab)) ? labToolData.titrationLab : {};
 
 // Send only changed fields: delayed callbacks must not replay an older lab snapshot.
 var upd = function (k, v) {
@@ -5209,11 +5214,23 @@ if (!safetyChecked) {
     },
       React.createElement("div", {
         className: "px-6 py-4 text-center",
-        style: { background:'rgba(0,0,0,0.4)', borderBottom:'1px solid ' + stationBorders[safetyStation] }
+        style: { background:'rgba(0,0,0,0.42)', borderBottom:'1px solid ' + stationBorders[safetyStation] }
       },
-        React.createElement("div", { style: { fontSize:'28px', marginBottom:'4px' } }, "\u26A0\uFE0F"),
+        React.createElement("div", { className: "flex items-center justify-center gap-2 mb-2 flex-wrap" },
+          React.createElement("span", { className: "titr-subject-badge" }, "Chemistry · Analytical Safety"),
+          React.createElement("span", { className: "titr-telemetry-pill" }, "Station: ", React.createElement("strong", null, safetyStation + "/4"))
+        ),
+        React.createElement("div", { className: "inline-flex items-center justify-center mb-1.5", "aria-hidden": "true" },
+          React.createElement("svg", { viewBox: "0 0 48 48", width: 42, height: 42, "aria-hidden": "true", focusable: "false" },
+            React.createElement("path", { d: "M24 4L40 10V23C40 33.5 33 41 24 44C15 41 8 33.5 8 23V10L24 4Z", fill: "rgba(15,23,42,0.85)", stroke: stationDefs[safetyStation-1].color, strokeWidth: 2 }),
+            React.createElement("path", { d: "M15 21C15 18 17.5 16 20.5 16H27.5C30.5 16 33 18 33 21V24C33 26.5 31 28.5 28.5 28.5H26.5L24 25.5L21.5 28.5H19.5C17 28.5 15 26.5 15 24V21Z", fill: "rgba(34,211,238,0.22)", stroke: "#67e8f9", strokeWidth: 1.8 }),
+            React.createElement("circle", { cx: 19.5, cy: 22, r: 2, fill: "#fde68a" }),
+            React.createElement("circle", { cx: 28.5, cy: 22, r: 2, fill: "#fde68a" }),
+            React.createElement("path", { d: "M21 34L23.5 36.5L28 31.5", fill: "none", stroke: "#34d399", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round" })
+          )
+        ),
         React.createElement("h2", { className: "text-xl font-black tracking-tight", style: { color: stationDefs[safetyStation-1].color } }, __alloT('stem.titration.lab_safety_briefing', "Lab Safety Briefing")),
-        React.createElement("p", { className: "text-[0.6875rem] mt-1", style: { color: 'rgba(255,255,255,0.5)' } },
+        React.createElement("p", { className: "text-[0.6875rem] mt-1", style: { color: 'rgba(226,232,240,0.82)' } },
           "Complete all 4 safety stations before entering the Virtual " + preset.acidName.split(' ')[0] + " Lab")
       ),
 
@@ -6028,30 +6045,95 @@ return React.createElement("div", {
 
   React.createElement("div", {
 
-    className: "rounded-2xl p-5 border",
+    className: "rounded-2xl p-5 border shadow-lg",
 
-    style: Object.assign({}, glass, { background: 'linear-gradient(135deg, #021a2b 0%, #0a2540 50%, #0c1e35 100%)', borderColor: 'rgba(6,182,212,0.25)' })
+    style: Object.assign({}, glass, { background: 'linear-gradient(135deg, #021a2b 0%, #0a2540 50%, #0c1e35 100%)', borderColor: 'rgba(6,182,212,0.32)' })
 
   },
 
-    React.createElement("div", { className: "flex items-center justify-between mb-2" },
+    React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-3" },
 
-      React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.back_3', "Back"),
+      React.createElement("div", { className: "flex items-center gap-3 min-w-0 flex-1" },
+        React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.back_3', "Back"),
+          onClick: function () { setStemLabTool(null); },
+          className: "min-h-[44px] px-2.5 rounded-xl border border-cyan-500/30 bg-slate-900/50 text-xs font-bold text-cyan-400 hover:text-white transition-colors shrink-0 titr-back"
+        }, __alloT('stem.titration.back_4', "\u2190 Back")),
+        // Bespoke inline SVG Burette & Erlenmeyer Flask Emblem
+        React.createElement("div", { "aria-hidden": "true", className: "w-11 h-11 rounded-xl border border-cyan-400/45 bg-slate-950/75 flex items-center justify-center shrink-0 shadow-md" },
+          React.createElement("svg", { viewBox: "0 0 44 44", width: 38, height: 38, "aria-hidden": "true", focusable: "false" },
+            React.createElement("rect", { x: 18, y: 3, width: 8, height: 15, rx: 1.5, fill: "rgba(56,189,248,0.18)", stroke: "#67e8f9", strokeWidth: 1.4 }),
+            React.createElement("line", { x1: 20, y1: 7, x2: 24, y2: 7, stroke: "#e2e8f0", strokeWidth: 1 }),
+            React.createElement("line", { x1: 20, y1: 11, x2: 24, y2: 11, stroke: "#e2e8f0", strokeWidth: 1 }),
+            React.createElement("line", { x1: 20, y1: 15, x2: 24, y2: 15, stroke: "#e2e8f0", strokeWidth: 1 }),
+            React.createElement("path", { d: "M22 18V22", stroke: "#67e8f9", strokeWidth: 1.6 }),
+            React.createElement("circle", { cx: 22, cy: 24.5, r: 1.6, fill: "#38bdf8" }),
+            React.createElement("path", { d: "M18 26H26L33 38.5C33.6 39.6 32.8 41 31.5 41H12.5C11.2 41 10.4 39.6 11 38.5L18 26Z", fill: "rgba(15,23,42,0.8)", stroke: "#94a3b8", strokeWidth: 1.5, strokeLinejoin: "round" }),
+            React.createElement("path", { d: "M14.2 33.5H29.8L32.4 38.4C32.8 39.2 32.2 40 31.3 40H12.7C11.8 40 11.2 39.2 11.6 38.4L14.2 33.5Z", fill: labTab === 'challenge' ? '#38bdf8' : (isPotentiometric ? '#c026d3' : (currentY >= indicator.high ? indicator.colorHigh : currentY >= indicator.low ? indicator.colorMid : '#38bdf8')), opacity: 0.78 })
+          )
+        ),
+        React.createElement("div", { className: "min-w-0 flex-1" },
+          React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+            React.createElement("h3", { className: "text-lg font-black text-white tracking-tight" }, __alloT('stem.titration.virtual_titration_lab', "\uD83E\uDDEA Virtual Titration Lab")),
+            React.createElement("span", { className: "titr-subject-badge" }, "Chemistry · Volumetric Analysis"),
+            React.createElement("span", { className: "text-[0.6875rem] text-slate-400" }, "v2.0")
+          ),
+          React.createElement("p", { className: "text-xs text-slate-200 mt-0.5" },
+            "Flask: ", preset.acidName, " (", preset.volAcid, __alloT('stem.titration.ml_burette', " mL)  \u2022  Burette: "), preset.baseName
+          ),
+          React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" },
+            React.createElement("span", { className: "titr-telemetry-pill" }, "Reaction: ", React.createElement("strong", null, preset.label)),
+            labTab !== 'challenge'
+              ? React.createElement("span", { className: "titr-telemetry-pill" }, "Indicator: ", React.createElement("strong", null, isPotentiometric ? "Self-indicating" : indicator.label))
+              : React.createElement("span", { className: "titr-telemetry-pill" }, "Mode: ", React.createElement("strong", null, __alloT('stem.titration.graded_unknown', 'Graded Unknown')))
+          )
+        )
+      ),
 
-        onClick: function () { setStemLabTool(null); },
-
-        className: "text-xs font-bold text-cyan-400 hover:text-white transition-colors"
-
-      }, __alloT('stem.titration.back_4', "\u2190 Back")),
-
-      React.createElement("h3", { className: "text-lg font-black text-white tracking-tight" }, __alloT('stem.titration.virtual_titration_lab', "\uD83E\uDDEA Virtual Titration Lab")),
-      React.createElement("span", { className: "text-[0.6875rem] text-slate-400 ml-1" }, "v2.0")
-
-    ),
-
-    React.createElement("p", { className: "text-xs text-slate-200 text-center" },
-
-      "Flask: ", preset.acidName, " (", preset.volAcid, __alloT('stem.titration.ml_burette', " mL)  \u2022  Burette: "), preset.baseName
+      // Live reactive pH / Potential Spectrum & Indicator Window SVG (hidden on Challenge tab to prevent any answer leak)
+      labTab !== 'challenge' && (function () {
+        var gradId = 'titr-ph-spec-' + titrationInstanceKey;
+        var spanMin = isPotentiometric ? 0.4 : 0;
+        var spanMax = isPotentiometric ? 1.6 : 14;
+        var xPos = function (v) { return 12 + (Math.max(0, Math.min(1, (v - spanMin) / (spanMax - spanMin))) * 192); };
+        var markerX = xPos(currentY);
+        var winLoX = !isPotentiometric ? xPos(indicator.low) : 0;
+        var winHiX = !isPotentiometric ? xPos(indicator.high) : 0;
+        return React.createElement("svg", {
+          viewBox: "0 0 216 58", width: 216, height: 58, "aria-hidden": "true", focusable: "false",
+          className: "shrink-0", style: { display: 'block', width: '100%', maxWidth: 216, height: 'auto' }
+        },
+          React.createElement("defs", null,
+            React.createElement("linearGradient", { id: gradId, x1: "0%", y1: "0%", x2: "100%", y2: "0%" },
+              isPotentiometric
+                ? [
+                    React.createElement("stop", { key: "a", offset: "0%", stopColor: "#22c55e" }),
+                    React.createElement("stop", { key: "b", offset: "55%", stopColor: "#38bdf8" }),
+                    React.createElement("stop", { key: "c", offset: "100%", stopColor: "#c026d3" })
+                  ]
+                : [
+                    React.createElement("stop", { key: "a", offset: "0%", stopColor: "#ef4444" }),
+                    React.createElement("stop", { key: "b", offset: "32%", stopColor: "#f59e0b" }),
+                    React.createElement("stop", { key: "c", offset: "50%", stopColor: "#22c55e" }),
+                    React.createElement("stop", { key: "d", offset: "72%", stopColor: "#3b82f6" }),
+                    React.createElement("stop", { key: "e", offset: "100%", stopColor: "#8b5cf6" })
+                  ]
+            )
+          ),
+          React.createElement("rect", { x: 1, y: 1, width: 214, height: 56, rx: 10, fill: "rgba(2,12,24,0.72)", stroke: "rgba(56,189,248,0.35)", strokeWidth: 1.2 }),
+          React.createElement("text", { x: 12, y: 14, fill: "#67e8f9", fontSize: 10, fontWeight: 800 }, isPotentiometric ? "REDOX SCALE" : "pH & INDICATOR"),
+          React.createElement("text", { x: 204, y: 14, textAnchor: "end", fill: "#f8fafc", fontSize: 10, fontWeight: 800 }, (isPotentiometric ? '' : 'pH ') + yAxis.readout(currentY) + yAxis.unit),
+          React.createElement("rect", { x: 12, y: 22, width: 192, height: 10, rx: 5, fill: "url(#" + gradId + ")" }),
+          !isPotentiometric && indicator.id !== 'universal' && React.createElement("rect", {
+            x: winLoX, y: 19, width: Math.max(8, winHiX - winLoX), height: 16, rx: 3,
+            fill: "rgba(255,255,255,0.16)", stroke: "#fde68a", strokeWidth: 1.4, strokeDasharray: "2 2"
+          }),
+          React.createElement("line", { x1: markerX, y1: 18, x2: markerX, y2: 36, stroke: "#ffffff", strokeWidth: 2 }),
+          React.createElement("circle", { cx: markerX, cy: 27, r: 4, fill: "#ffffff", stroke: "#0f172a", strokeWidth: 1.4 }),
+          React.createElement("text", { x: 12, y: 49, fill: "#cbd5e1", fontSize: 10, fontWeight: 700 }, isPotentiometric ? "0.4V" : "0"),
+          React.createElement("text", { x: 108, y: 49, textAnchor: "middle", fill: "#cbd5e1", fontSize: 10, fontWeight: 700 }, isPotentiometric ? "1.0V" : "7"),
+          React.createElement("text", { x: 204, y: 49, textAnchor: "end", fill: "#cbd5e1", fontSize: 10, fontWeight: 700 }, isPotentiometric ? "1.6V" : "14")
+        );
+      })()
 
     )
 

@@ -616,6 +616,7 @@ function UDLGuideModal(props) {
     if (!chatMenuOpen) return void 0;
     const onKey = (ev) => {
       if (ev.key === "Escape") {
+        if (ev.isComposing || ev.keyCode === 229) return;
         ev.preventDefault();
         setChatMenuOpen(false);
         try {
@@ -754,10 +755,18 @@ function UDLGuideModal(props) {
     const previousFocus = typeof document !== "undefined" ? document.activeElement : null;
     const focusable = () => Array.from(overlay.querySelectorAll(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((el) => el.offsetParent !== null || el === document.activeElement);
+    )).filter((el) => {
+      if (el.hidden || el.getAttribute("aria-hidden") === "true" || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let cur = el; cur && cur !== overlay; cur = cur.parentElement) {
+        const st = typeof window.getComputedStyle === "function" ? window.getComputedStyle(cur) : null;
+        if (st && (st.display === "none" || st.visibility === "hidden")) return false;
+      }
+      return true;
+    });
     (focusable()[0] || overlay).focus();
     const onKey = (ev) => {
       if (ev.key === "Escape") {
+        if (ev.isComposing || ev.keyCode === 229) return;
         ev.preventDefault();
         ev.stopPropagation();
         closePreviewRef.current();
@@ -799,6 +808,7 @@ function UDLGuideModal(props) {
     const previousFocus = typeof document !== "undefined" ? document.activeElement : null;
     const onKey = (ev) => {
       if (ev.key !== "Escape") return;
+      if (ev.isComposing || ev.keyCode === 229) return;
       if (ev.defaultPrevented) return;
       const root = guideRef.current;
       if (root && root.querySelector('[data-testid="bp-preview-overlay"]')) return;
@@ -1027,7 +1037,7 @@ function UDLGuideModal(props) {
       "button",
       {
         type: "button",
-        "aria-label": t("common.minimize"),
+        "aria-label": isUDLGuideExpanded ? t("common.minimize") : t("common.maximize"),
         "data-help-key": "chat_expand",
         onClick: handleToggleIsUDLGuideExpanded,
         className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors",
@@ -1054,10 +1064,10 @@ function UDLGuideModal(props) {
       "div",
       {
         role: "log",
-        tabIndex: 0,
         "aria-live": "polite",
         "aria-relevant": "additions",
         "aria-atomic": "false",
+        tabIndex: 0,
         "aria-label": tx("chat_guide.transcript_aria", "Conversation transcript"),
         className: `flex-1 min-h-0 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`,
         ref: udlScrollRef
@@ -1591,6 +1601,10 @@ function PlatformDiagnosticsSection(props) {
         const w = window.open("", "_blank", "width=80,height=60");
         if (w) {
           try {
+            w.opener = null;
+          } catch (_) {
+          }
+          try {
             w.close();
           } catch (_) {
           }
@@ -1728,7 +1742,7 @@ function PlatformDiagnosticsSection(props) {
             } catch (_) {
             }
           }, 6e3) : null;
-          const r = await fetch(pair[1], ac ? { signal: ac.signal } : void 0);
+          const r = await fetch(pair[1], Object.assign({ credentials: "omit", referrerPolicy: "no-referrer" }, ac ? { signal: ac.signal } : {}));
           if (tid) clearTimeout(tid);
           add("CDN: " + pair[0], r.ok ? "pass" : "warn", "HTTP " + r.status + " in " + (Date.now() - t0) + "ms");
         } catch (e) {
@@ -1737,7 +1751,7 @@ function PlatformDiagnosticsSection(props) {
       }
       try {
         const t0 = Date.now();
-        const r = await fetch("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm", { cache: "force-cache" });
+        const r = await fetch("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm", { cache: "force-cache", credentials: "omit", referrerPolicy: "no-referrer" });
         if (r.ok) {
           await r.arrayBuffer();
           add("Writing-Check cache (10 MB WASM)", "info", "fetched in " + (Date.now() - t0) + "ms \u2014 under ~500ms means the HTTP cache held it; re-run in a fresh session to test cross-session caching");
@@ -1877,7 +1891,7 @@ function ModelDiagnosticsSection(props) {
     if (ago < 36e5) return Math.floor(ago / 6e4) + "m ago";
     return Math.floor(ago / 36e5) + "h ago";
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-indigo-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("model_diag.header") || "AI Model Diagnostics")), /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-violet-50/60 border border-violet-200 rounded-lg p-2.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1" }, "\u26FD ", t("model_diag.usage_header") || "Your Gemini usage (this session)"), _sessionCallTotal === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("model_diag.usage_none") || "No AI calls yet this session.") : /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, _sessionCallTotal), " ", t("model_diag.usage_calls") || "AI call(s):", " ", _sessionTotals.map((pair, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "font-mono" }, pair[0], " \xD7", pair[1], i < _sessionTotals.length - 1 ? " \xB7 " : ""))), _quotaHits.length > 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 font-bold mt-1" }, "\u{1F6D1} ", t("model_diag.quota_hit") || "Quota limit (HTTP 429) hit this session", " \u2014 ", new Date(_quotaHits[_quotaHits.length - 1].at).toLocaleTimeString(), " (", _quotaHits[_quotaHits.length - 1].model, "). ", t("model_diag.quota_hit_advice") || "If retries keep failing, the daily quota is spent \u2014 free-tier quotas reset around midnight Pacific.") : /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-green-700 mt-1" }, "\u2713 ", t("model_diag.quota_ok") || "No quota errors this session."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("model_diag.usage_caveat") || "Honest limits of this meter: Google does not let apps see your remaining balance, so this counts AlloFlow\u2019s own calls and resets when the page reloads. A 429 error is the only definitive \u201Cquota reached\u201D signal \u2014 when one happens, a red banner appears at the top of the app (dismissable) and it\u2019s recorded here.")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("model_diag.served_header") || "Models actually used this session"), usageEntries.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2.5 rounded-lg border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, t("model_diag.no_calls_yet") || "No AI calls completed yet this session. Run an audit, generate text, or use any AI feature to populate.")) : /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-[11px] w-full" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "bg-slate-100 text-slate-700" }, /* @__PURE__ */ React.createElement("th", { className: "text-left p-1.5 font-bold" }, t("model_diag.col_requested") || "Requested"), /* @__PURE__ */ React.createElement("th", { className: "text-left p-1.5 font-bold" }, t("model_diag.col_served") || "Served by Google"), /* @__PURE__ */ React.createElement("th", { className: "text-right p-1.5 font-bold" }, t("model_diag.col_count") || "Calls"), /* @__PURE__ */ React.createElement("th", { className: "text-right p-1.5 font-bold" }, t("model_diag.col_last") || "Last"))), /* @__PURE__ */ React.createElement("tbody", null, usageEntries.map((entry, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: entry.divergent ? "bg-amber-50 border-t border-amber-200" : "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.requested), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.served || /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, t("model_diag.unreported") || "(unreported)"), entry.divergent && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-amber-700 font-bold", title: t("model_diag.divergent_tooltip") || "Google routed this request to a different model" }, "\u21C4")), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-700 font-bold" }, entry.count), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-600" }, formatRelativeTime(entry.lastSeen))))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1 italic" }, t("model_diag.served_hint") || "\u21C4 marks a row where Google served a different model than the one requested (silent reroute by the API).")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.catalog_header") || "Available models for your API key"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-indigo-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("model_diag.header") || "AI Model Diagnostics")), /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-violet-50/60 border border-violet-200 rounded-lg p-2.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1" }, "\u26FD ", t("model_diag.usage_header") || "Your Gemini usage (this session)"), _sessionCallTotal === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("model_diag.usage_none") || "No AI calls yet this session.") : /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, _sessionCallTotal), " ", t("model_diag.usage_calls") || "AI call(s):", " ", _sessionTotals.map((pair, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "font-mono" }, pair[0], " \xD7", pair[1], i < _sessionTotals.length - 1 ? " \xB7 " : ""))), _quotaHits.length > 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 font-bold mt-1" }, "\u{1F6D1} ", t("model_diag.quota_hit") || "Quota limit (HTTP 429) hit this session", " \u2014 ", new Date(_quotaHits[_quotaHits.length - 1].at).toLocaleTimeString(), " (", _quotaHits[_quotaHits.length - 1].model, "). ", t("model_diag.quota_hit_advice") || "If retries keep failing, the daily quota is spent \u2014 free-tier quotas reset around midnight Pacific.") : /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-green-700 mt-1" }, "\u2713 ", t("model_diag.quota_ok") || "No quota errors this session."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("model_diag.usage_caveat") || "Honest limits of this meter: Google does not let apps see your remaining balance, so this counts AlloFlow\u2019s own calls and resets when the page reloads. A 429 error is the only definitive \u201Cquota reached\u201D signal \u2014 when one happens, a red banner appears at the top of the app (dismissable) and it\u2019s recorded here.")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("model_diag.served_header") || "Models actually used this session"), usageEntries.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2.5 rounded-lg border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, t("model_diag.no_calls_yet") || "No AI calls completed yet this session. Run an audit, generate text, or use any AI feature to populate.")) : /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-[11px] w-full" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "bg-slate-100 text-slate-700" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 font-bold" }, t("model_diag.col_requested") || "Requested"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 font-bold" }, t("model_diag.col_served") || "Served by Google"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1.5 font-bold" }, t("model_diag.col_count") || "Calls"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1.5 font-bold" }, t("model_diag.col_last") || "Last"))), /* @__PURE__ */ React.createElement("tbody", null, usageEntries.map((entry, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: entry.divergent ? "bg-amber-50 border-t border-amber-200" : "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.requested), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.served || /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, t("model_diag.unreported") || "(unreported)"), entry.divergent && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-amber-700 font-bold", title: t("model_diag.divergent_tooltip") || "Google routed this request to a different model" }, "\u21C4")), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-700 font-bold" }, entry.count), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-600" }, formatRelativeTime(entry.lastSeen))))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1 italic" }, t("model_diag.served_hint") || "\u21C4 marks a row where Google served a different model than the one requested (silent reroute by the API).")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.catalog_header") || "Available models for your API key"), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1886,7 +1900,7 @@ function ModelDiagnosticsSection(props) {
       className: "text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded hover:bg-indigo-200 disabled:opacity-50 active:scale-95"
     },
     catalogLoading ? t("model_diag.loading") || "\u23F3 Loading..." : (catalogFetched ? "\u21BB " : "\u2193 ") + (t("model_diag.refresh") || "Fetch catalog")
-  )), catalogError && /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 p-2 rounded-lg border border-red-100 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 font-medium" }, "\u26A0 ", catalogError)), catalog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 max-h-40 overflow-y-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-[10px] w-full" }, /* @__PURE__ */ React.createElement("thead", { className: "sticky top-0 bg-slate-100" }, /* @__PURE__ */ React.createElement("tr", { className: "text-slate-700" }, /* @__PURE__ */ React.createElement("th", { className: "text-left p-1 font-bold" }, t("model_diag.col_id") || "Model"), /* @__PURE__ */ React.createElement("th", { className: "text-left p-1 font-bold" }, t("model_diag.col_display") || "Name"), /* @__PURE__ */ React.createElement("th", { className: "text-right p-1 font-bold", title: t("model_diag.col_in_tt") || "Input token limit" }, t("model_diag.col_in") || "In tok"), /* @__PURE__ */ React.createElement("th", { className: "text-right p-1 font-bold", title: t("model_diag.col_out_tt") || "Output token limit" }, t("model_diag.col_out") || "Out tok"))), /* @__PURE__ */ React.createElement("tbody", null, catalog.map((m, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1 font-mono text-slate-700" }, m.id), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-slate-700" }, m.displayName), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.inputTokenLimit ? m.inputTokenLimit.toLocaleString() : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.outputTokenLimit ? m.outputTokenLimit.toLocaleString() : "\u2014")))))), !catalogFetched && !catalogError && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic" }, t("model_diag.click_to_load") || 'Click "Fetch catalog" to query Google for the list of models your key can access.')), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.map_header") || "Current model map (what the app requests)"), Object.keys(storedOverrides).length > 0 && /* @__PURE__ */ React.createElement(
+  )), catalogError && /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 p-2 rounded-lg border border-red-100 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 font-medium" }, "\u26A0 ", catalogError)), catalog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 max-h-40 overflow-y-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-[10px] w-full" }, /* @__PURE__ */ React.createElement("thead", { className: "sticky top-0 bg-slate-100" }, /* @__PURE__ */ React.createElement("tr", { className: "text-slate-700" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1 font-bold" }, t("model_diag.col_id") || "Model"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1 font-bold" }, t("model_diag.col_display") || "Name"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1 font-bold", title: t("model_diag.col_in_tt") || "Input token limit" }, t("model_diag.col_in") || "In tok"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1 font-bold", title: t("model_diag.col_out_tt") || "Output token limit" }, t("model_diag.col_out") || "Out tok"))), /* @__PURE__ */ React.createElement("tbody", null, catalog.map((m, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1 font-mono text-slate-700" }, m.id), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-slate-700" }, m.displayName), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.inputTokenLimit ? m.inputTokenLimit.toLocaleString() : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.outputTokenLimit ? m.outputTokenLimit.toLocaleString() : "\u2014")))))), !catalogFetched && !catalogError && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic" }, t("model_diag.click_to_load") || 'Click "Fetch catalog" to query Google for the list of models your key can access.')), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.map_header") || "Current model map (what the app requests)"), Object.keys(storedOverrides).length > 0 && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1953,8 +1967,10 @@ function AIBackendModalBody(props) {
       }
     };
   }, []);
+  const [confirmForgetKey, setConfirmForgetKey] = React.useState(false);
   const handleAIBackendDialogKeyDown = (event) => {
     if (event.key === "Escape") {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       event.stopPropagation();
       setShowAIBackendModal(false);
@@ -1964,11 +1980,16 @@ function AIBackendModalBody(props) {
     const dialog = aiBackendDialogRef.current;
     if (!dialog) return;
     const focusable = Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
-      const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
-      return !style || style.display !== "none" && style.visibility !== "hidden";
+      let node = element;
+      while (node && node !== dialog) {
+        const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(node) : null;
+        if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+        node = node.parentElement;
+      }
+      return true;
     });
     if (!focusable.length) {
       event.preventDefault();
@@ -2538,11 +2559,11 @@ function AIBackendModalBody(props) {
       ...keyProps,
       type: "button",
       onClick,
-      className: "w-full text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99]"
+      className: "w-full text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, emoji), /* @__PURE__ */ React.createElement("span", { className: "font-black text-sm text-slate-800" }, title), badge && /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full" }, badge)),
-    /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1 leading-relaxed" }, body),
-    req && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-1" }, req)
+    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, emoji), /* @__PURE__ */ React.createElement("span", { className: "font-black text-sm text-slate-800" }, title), badge && /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full" }, badge)),
+    /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600 mt-1 leading-relaxed" }, body),
+    req && /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 mt-1" }, req)
   );
   const renderGuidedStep = () => {
     const cfg = readAIBackendConfig();
@@ -2557,7 +2578,7 @@ function AIBackendModalBody(props) {
           writeAIBackendConfig({ ...current, contributePledge: e.target.checked });
         }
       }
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs leading-relaxed text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-black" }, t("ai_backend.pledge_title") || "I will help make AlloFlow better."), " ", t("ai_backend.pledge_body") || "A developer key is a developer tool. If something breaks I will report it, and if I build a lesson or tool worth sharing I will send it to the Community Catalog from my history so other teachers get it too.", " ", /* @__PURE__ */ React.createElement("a", { href: "https://github.com/Apomera/AlloFlow/issues/new", target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("ai_backend.pledge_report") || "Report something \u2197"), " \xB7 ", /* @__PURE__ */ React.createElement("a", { href: "https://apomera.github.io/AlloFlow/feedback.html", target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("ai_backend.pledge_share") || "Share what you made \u2197"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500" }, t("ai_backend.guided_gemini_key_note_teacher") || "Stored only on this device and never used in student mode."), guidedBackBtn("choose"));
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs leading-relaxed text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-black" }, t("ai_backend.pledge_title") || "I will help make AlloFlow better."), " ", t("ai_backend.pledge_body") || "A developer key is a developer tool. If something breaks I will report it, and if I build a lesson or tool worth sharing I will send it to the Community Catalog from my history so other teachers get it too.", " ", /* @__PURE__ */ React.createElement("a", { href: "https://github.com/Apomera/AlloFlow/issues/new", target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("ai_backend.pledge_report") || "Report something \u2197"), " \xB7 ", /* @__PURE__ */ React.createElement("a", { href: "https://apomera.github.io/AlloFlow/feedback.html", target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("ai_backend.pledge_share") || "Share what you made \u2197"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("ai_backend.guided_gemini_key_note_teacher") || "Stored only on this device and never used in student mode."), guidedBackBtn("choose"));
     if (guidedView === "private") return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_private_kicker") || "Step 2 of 2 \xB7 Private AI on this computer"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-slate-700 leading-relaxed" }, /* @__PURE__ */ React.createElement("li", null, "\u2705 ", /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.guided_private_b1a") || "Private:"), " ", t("ai_backend.guided_private_b1b") || "lessons and student text never leave this computer."), /* @__PURE__ */ React.createElement("li", null, "\u{1F4E5} ", /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.guided_private_b2a") || "One-time download:"), " ", t("ai_backend.guided_private_b2b") || "a starter AI model (about 2 GB). Keep the app open until it finishes."), /* @__PURE__ */ React.createElement("li", null, "\u{1F5A5}\uFE0F ", /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.guided_private_b3a") || "Hardware:"), " ", t("ai_backend.guided_private_b3b") || "works best with 8 GB+ memory and ~2.5 GB free disk."), /* @__PURE__ */ React.createElement("li", null, "\u23F1\uFE0F ", /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.guided_private_b4a") || "Speed:"), " ", t("ai_backend.guided_private_b4b") || "answers take a bit longer than cloud AI \u2014 that's the privacy trade.")), renderEngineStrip(), guidedBackBtn("choose"));
     if (guidedView === "connect") return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_connect_kicker") || "Step 2 of 3 \xB7 Which app do you run?"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, GUIDED_CONNECT_APPS.map((app) => /* @__PURE__ */ React.createElement(
       "button",
@@ -2570,10 +2591,10 @@ function AIBackendModalBody(props) {
           setGuidedReady(false);
           setGuidedView("connect-detail:" + app.id);
         },
-        className: "text-left border-2 border-slate-200 rounded-xl p-3 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99]"
+        className: "text-left border-2 border-slate-200 rounded-xl p-3 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none"
       },
-      /* @__PURE__ */ React.createElement("span", { className: "font-black text-xs text-slate-800" }, app.title),
-      /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, app.body)
+      /* @__PURE__ */ React.createElement("span", { className: "block font-black text-xs text-slate-800" }, app.title),
+      /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 mt-0.5" }, app.body)
     ))), guidedBackBtn("choose"));
     if (guidedView.startsWith("connect-detail:")) {
       const app = GUIDED_CONNECT_APPS.find((a) => a.id === guidedView.slice("connect-detail:".length)) || GUIDED_CONNECT_APPS[3];
@@ -2675,21 +2696,37 @@ function AIBackendModalBody(props) {
           },
           className: "min-h-11 w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
         }
-      ), keyLockMessage && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-xs font-bold text-rose-800" }, keyLockMessage), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: keyLockBusy || !keyLockCode, onClick: unlock, className: "min-h-11 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-60" }, t("ai_backend.key_lock_unlock_btn") || "Unlock"), /* @__PURE__ */ React.createElement(
+      ), keyLockMessage && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-xs font-bold text-rose-800" }, keyLockMessage), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: keyLockBusy || !keyLockCode, onClick: unlock, className: "min-h-11 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-60" }, t("ai_backend.key_lock_unlock_btn") || "Unlock"), !confirmForgetKey ? /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setConfirmForgetKey(true),
+          className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+        },
+        t("ai_backend.key_lock_forget_btn") || "Forgot your code? Remove saved key"
+      ) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-rose-900" }, t("ai_backend.key_lock_forget_confirm") || "Remove the saved AI key from this device? You can enter it again afterward."), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: () => {
-            if (typeof window.confirm === "function" && !window.confirm(t("ai_backend.key_lock_forget_confirm") || "Remove the saved AI key from this device? You can enter it again afterward.")) return;
             keyLockApi().forgetAiKey();
+            setConfirmForgetKey(false);
             setKeyLockMessage("");
             setConfigRevision((revision) => revision + 1);
             setKeyLockTick((tick) => tick + 1);
           },
-          className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+          className: "min-h-9 rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800"
         },
-        t("ai_backend.key_lock_forget_btn") || "Forgot your code? Remove saved key"
-      )))
+        t("common.remove") || "Remove"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setConfirmForgetKey(false),
+          className: "min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+        },
+        t("common.cancel") || "Cancel"
+      ))))
     );
   }
   return /* @__PURE__ */ React.createElement(
@@ -2753,17 +2790,24 @@ function AIBackendModalBody(props) {
         id: "ai-backend-test",
         onClick: async () => {
           const btn = document.getElementById("ai-backend-test");
+          if (!btn || btn.getAttribute("aria-busy") === "true") return;
           const status = document.getElementById("ai-backend-status");
-          const panel = btn && btn.closest('[data-help-key="ai_backend_modal_panel"]');
-          const lockedControls = panel ? Array.from(panel.querySelectorAll("input, select, button")).filter((control) => control !== btn) : [];
-          btn.disabled = true;
+          const panel = btn.closest('[data-help-key="ai_backend_modal_panel"]');
+          const lockedControls = panel ? Array.from(panel.querySelectorAll("input, select, button")).filter((control) => {
+            if (control === btn || control.disabled) return false;
+            const lbl = (control.getAttribute("aria-label") || control.textContent || "").trim();
+            if (/^(close|cancel|back)\b/i.test(lbl) || control.hasAttribute("data-ai-backend-close")) return false;
+            return true;
+          }) : [];
+          btn.setAttribute("aria-disabled", "true");
+          btn.setAttribute("aria-busy", "true");
           lockedControls.forEach((control) => {
             control.disabled = true;
           });
           btn.textContent = "\u23F3 Testing...";
           if (status) {
-            status.textContent = "";
-            status.className = "";
+            status.textContent = "Testing AI connection...";
+            status.className = "text-xs font-bold mt-2 text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200";
           }
           try {
             const testedConfig = readAIBackendConfig();
@@ -2834,7 +2878,8 @@ function AIBackendModalBody(props) {
           lockedControls.forEach((control) => {
             control.disabled = false;
           });
-          btn.disabled = false;
+          btn.removeAttribute("aria-disabled");
+          btn.removeAttribute("aria-busy");
           btn.textContent = "\u{1F50C} Test Connection";
         },
         className: "flex-1 bg-violet-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-all shadow-lg shadow-violet-200 active:scale-95"
@@ -2871,7 +2916,7 @@ function AIBackendModalBody(props) {
         className: "bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
       },
       isStudentAiSetup ? "Disconnect & erase key" : "\u21A9 Reset"
-    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status" })), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status", role: "status", "aria-live": "polite", "aria-atomic": "true" })), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "data-help-key": "ai_backend_model_select",

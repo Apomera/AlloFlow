@@ -107,7 +107,7 @@ module.exports = {
     letter_tracing_lowercase: 'Trace the lowercase letter {letter}.',
     letter_tracing_tools: 'Use your finger, a pen or the mouse.',
     letter_tracing_part: 'Part {n} of {total}',
-    letter_tracing_how_one: 'Start at the green dot. Follow the arrow.',
+    letter_tracing_how_one: 'Start at the green dot 1. Follow the arrow.',
     letter_tracing_how_more: 'Start at the green dot 1. Follow the arrow. Then do 2, and the next numbers in order.',
     letter_tracing_canvas_capital: 'Tracing area for the capital letter {letter}',
     letter_tracing_canvas_lowercase: 'Tracing area for the lowercase letter {letter}',
@@ -117,7 +117,7 @@ module.exports = {
     // The app prints "for cat" beside the letter.
     letter_tracing_word: 'The word: {word}',
     // 2026-11-13: a tip, never a fail: the first stroke started far from the start dot.
-    letter_tracing_start_one: 'Start at the green dot.',
+    letter_tracing_start_one: 'Start at the green dot 1.',
     letter_tracing_start_more: 'Start at the green dot 1.',
   },
   prepare: function (w, env) {
@@ -162,7 +162,7 @@ module.exports = {
     var at = 0;
     var pen = 22; // the width of the student's line and of the guide
     // A square that shrinks on a narrow phone (padding-top keeps it square without aspect-ratio).
-    var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:' + size + 'px;max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;background:#fff;overflow:hidden;touch-action:none' });
+    var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:' + size + 'px;max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;background:var(--card);overflow:hidden;touch-action:none' });
     wrap.appendChild(ctx.el('div', { 'aria-hidden': 'true', style: 'padding-top:100%' }));
     var guide = doc.createElement('canvas');
     var ink = doc.createElement('canvas');
@@ -239,26 +239,51 @@ module.exports = {
       }
       return null;
     };
+    // Live theme colors from Reading tools CSS variables (so Dark, Soft, High Contrast, Ocean, Sunny, Forest all stay crisp).
+    var palette = function () {
+      var cs = win.getComputedStyle ? win.getComputedStyle(doc.documentElement) : null;
+      var cv = function (name, fallback) { var v = cs ? String(cs.getPropertyValue(name) || '').trim() : ''; return v || fallback; };
+      var hc = doc.documentElement && doc.documentElement.getAttribute('data-lt-colors') === '1';
+      return {
+        hc: hc,
+        card: cv('--card', '#ffffff'),
+        ink: cv('--ink', '#1d2433'),
+        muted: cv('--muted', '#4a5468'),
+        line: cv('--line', '#94a3b8'),
+        accent: cv('--accent', '#3d3aa8'),
+        ok: cv('--ok', '#1d6b3a'),
+      };
+    };
     var drawGuide = function () {
       if (!gg) return;
-      paint(gg, 'rgba(100,116,139,0.32)', 0);
+      var pal = palette();
+      gg.save();
+      gg.globalAlpha = pal.hc ? 0.42 : 0.24;
+      paint(gg, pal.muted, 0);
+      gg.restore();
       if (!shape) return;
       // Writing lines behind the letter: top, a dashed middle, the base line.
       gg.globalCompositeOperation = 'destination-over';
-      [[0, '#94a3b8', []], [50, '#94a3b8', [8, 7]], [100, '#475569', []]].forEach(function (row) {
-        gg.beginPath(); gg.setLineDash(row[2]); gg.lineWidth = 2; gg.strokeStyle = row[1];
+      [[0, pal.hc ? 0.55 : 0.7, []], [50, pal.hc ? 0.55 : 0.7, [8, 7]], [100, pal.hc ? 0.9 : 0.85, []]].forEach(function (row) {
+        gg.save();
+        gg.globalAlpha = row[1];
+        gg.beginPath(); gg.setLineDash(row[2]); gg.lineWidth = 2; gg.strokeStyle = row[0] === 100 ? pal.muted : (pal.hc ? pal.muted : pal.line);
         gg.moveTo(8, shape.y(row[0])); gg.lineTo(size - 8, shape.y(row[0])); gg.stroke();
+        gg.restore();
       });
       gg.globalCompositeOperation = 'source-over';
       gg.setLineDash([]);
       // A thin dashed line down the middle of each stroke, then a numbered start dot and an arrow.
-      gg.lineWidth = 2; gg.strokeStyle = '#64748b'; gg.setLineDash([5, 6]);
+      gg.save();
+      gg.globalAlpha = pal.hc ? 0.9 : 0.85;
+      gg.lineWidth = 2; gg.strokeStyle = pal.muted; gg.setLineDash([5, 6]);
       shape.strokes.forEach(function (st) {
         if (st.dot) return;
         gg.beginPath(); gg.moveTo(st.pts[0][0], st.pts[0][1]);
         st.pts.slice(1).forEach(function (p) { gg.lineTo(p[0], p[1]); });
         gg.stroke();
       });
+      gg.restore();
       gg.setLineDash([]);
       // 2026-11-13: no dot, number or arrow covers another. Dot 1 is at its real start. Each later stroke takes the
       // cheapest place for its dot (its real start; a little way along the stroke; beside or behind the start, with
@@ -310,25 +335,35 @@ module.exports = {
       // Short lines from moved dots to their real starts, then the arrows, then the dots.
       dots.forEach(function (m) {
         if (!m.lead) return;
-        gg.beginPath(); gg.lineWidth = 2; gg.strokeStyle = '#15803d'; gg.moveTo(m.lead[0], m.lead[1]); gg.lineTo(m.p[0], m.p[1]); gg.stroke();
-        gg.beginPath(); gg.arc(m.lead[0], m.lead[1], 4, 0, Math.PI * 2); gg.fillStyle = '#15803d'; gg.fill();
+        gg.beginPath(); gg.lineWidth = 2; gg.strokeStyle = pal.ok; gg.moveTo(m.lead[0], m.lead[1]); gg.lineTo(m.p[0], m.p[1]); gg.stroke();
+        gg.beginPath(); gg.arc(m.lead[0], m.lead[1], 4, 0, Math.PI * 2); gg.fillStyle = pal.ok; gg.fill();
       });
       arrows.forEach(function (a) {
-        gg.beginPath(); gg.fillStyle = '#15803d';
+        gg.beginPath(); gg.fillStyle = pal.ok;
         gg.moveTo(a.x + a.ux * 10, a.y + a.uy * 10);
         gg.lineTo(a.x - a.ux * 6 - a.uy * 8, a.y - a.uy * 6 + a.ux * 8);
         gg.lineTo(a.x - a.ux * 6 + a.uy * 8, a.y - a.uy * 6 - a.ux * 8);
         gg.closePath(); gg.fill();
       });
-      // The dots, last first, so dot 1 is on top.
+      // The dots, last first, so dot 1 is on top. Always number dot 1 so start cues never rely on color alone (WCAG 1.4.1).
       for (var n = dots.length - 1; n >= 0; n--) {
         var p = dots[n].p;
-        gg.beginPath(); gg.arc(p[0], p[1], R, 0, Math.PI * 2); gg.fillStyle = '#15803d'; gg.fill();
-        gg.lineWidth = 2; gg.strokeStyle = '#fff'; gg.stroke();
-        if (many) { gg.fillStyle = '#fff'; gg.font = 'bold 14px system-ui, sans-serif'; gg.textAlign = 'center'; gg.textBaseline = 'middle'; gg.fillText(String(n + 1), p[0], p[1] + 1); }
+        gg.beginPath(); gg.arc(p[0], p[1], R, 0, Math.PI * 2); gg.fillStyle = pal.ok; gg.fill();
+        gg.lineWidth = 2; gg.strokeStyle = pal.card; gg.stroke();
+        gg.fillStyle = pal.card; gg.font = 'bold 14px system-ui, sans-serif'; gg.textAlign = 'center'; gg.textBaseline = 'middle'; gg.fillText(String(n + 1), p[0], p[1] + 1);
       }
     };
-    var drawing = false, last = null;
+    var retintInk = function () {
+      if (!pg) return;
+      var pal = palette();
+      pg.save();
+      pg.setTransform(k, 0, 0, k, 0, 0);
+      pg.globalCompositeOperation = 'source-in';
+      pg.fillStyle = pal.accent;
+      pg.fillRect(0, 0, size, size);
+      pg.restore();
+    };
+    var drawing = false, activeId = null, last = null;
     // The first stroke of a part (after Start again too): where it began and how long it is, for the start tip.
     var first = null, firstDone = false;
     var spot = function (e) {
@@ -338,19 +373,20 @@ module.exports = {
     var line = function (a, b) {
       if (!pg) return;
       pg.setTransform(k, 0, 0, k, 0, 0);
-      pg.strokeStyle = '#1d4ed8'; pg.lineWidth = pen; pg.lineCap = 'round'; pg.lineJoin = 'round';
+      pg.strokeStyle = palette().accent; pg.lineWidth = pen; pg.lineCap = 'round'; pg.lineJoin = 'round';
       pg.beginPath(); pg.moveTo(a.x, a.y); pg.lineTo(b.x, b.y); pg.stroke();
     };
-    var wipe = function () { first = null; firstDone = false; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } };
+    var wipe = function () { first = null; firstDone = false; drawing = false; activeId = null; last = null; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } };
     ink.addEventListener('pointerdown', function (e) {
-      if (ctx.isDone()) return;
-      drawing = true; last = spot(e); line(last, last);
+      // Ignore secondary touches (palm rest / second finger on iPad) and non-left mouse buttons.
+      if (ctx.isDone() || drawing || e.isPrimary === false || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      drawing = true; activeId = e.pointerId != null ? e.pointerId : null; last = spot(e); line(last, last);
       if (!firstDone) first = { x: last.x, y: last.y, len: 0 };
       try { ink.setPointerCapture(e.pointerId); } catch (_) {}
       e.preventDefault();
     });
     ink.addEventListener('pointermove', function (e) {
-      if (!drawing) return;
+      if (!drawing || (activeId != null && e.pointerId !== activeId)) return;
       var p = spot(e);
       if (first && !firstDone) first.len += Math.sqrt((p.x - last.x) * (p.x - last.x) + (p.y - last.y) * (p.y - last.y));
       line(last, p); last = p; e.preventDefault();
@@ -363,9 +399,31 @@ module.exports = {
       if (!dot || Math.sqrt((first.x - dot[0]) * (first.x - dot[0]) + (first.y - dot[1]) * (first.y - dot[1])) <= 35) return;
       note.textContent = shape.strokes.length > 1 ? (L.letter_tracing_start_more || '') : (L.letter_tracing_start_one || '');
     };
-    var stop = function () { if (drawing) startTip(); drawing = false; last = null; };
+    var stop = function (e) {
+      if (!drawing || (e && activeId != null && e.pointerId !== activeId)) return;
+      startTip(); drawing = false; activeId = null; last = null;
+    };
     ink.addEventListener('pointerup', stop);
     ink.addEventListener('pointercancel', stop);
+    // Redraw guide and re-tint existing ink whenever Reading tools theme or OS color scheme changes.
+    var themeObs = null, schemeMq = null;
+    var onTheme = function () {
+      if (!ctx.root.isConnected) {
+        if (themeObs) { try { themeObs.disconnect(); } catch (_) {} themeObs = null; }
+        if (schemeMq && schemeMq.removeEventListener) { try { schemeMq.removeEventListener('change', onTheme); } catch (_) {} schemeMq = null; }
+        return;
+      }
+      drawGuide();
+      retintInk();
+    };
+    if (win.MutationObserver && doc.documentElement) {
+      themeObs = new win.MutationObserver(onTheme);
+      themeObs.observe(doc.documentElement, { attributes: true, attributeFilter: ['data-lt-colors'] });
+    }
+    try {
+      schemeMq = win.matchMedia && win.matchMedia('(prefers-color-scheme: dark)');
+      if (schemeMq && schemeMq.addEventListener) schemeMq.addEventListener('change', onTheme);
+    } catch (_) {}
     // Region by region, as the app checks it: the share of the letter's 7 x 7 grid cells
     // the strokes cover, and how much ink lands well away from the letter (scribbling over
     // the whole box is not tracing). Every other pixel is enough.

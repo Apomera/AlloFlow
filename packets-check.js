@@ -64,10 +64,13 @@
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null, batchBusy = false;
   var previewOmit = {}, previewOmitKey = '', previewSession = null, inPreviewAction = false;
   function formEditKey(id, grade, version, untimed) { return id + '|' + grade + '|' + version + '|' + !!untimed; }
+  function stopPreviewSession() {
+    if (previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
+  }
   function resetPreview(stopSession) {
     previewOmit = {};
     previewOmitKey = '';
-    if (stopSession && previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
+    if (stopSession) stopPreviewSession();
   }
 
   // untimed (an accommodation) is for one student's file: it is not kept, so the page never opens with it on.
@@ -294,8 +297,18 @@
   // ---------------------------------------------------------------------------
   // Step 2, my own problems: each one is looked at by the builder, with its reason in plain words
   // ---------------------------------------------------------------------------
+  // Clean pasted worksheet lines: strip BOM, numbering/bullets, empty trailing "= / = ? / = ___", and typographic operators.
+  function cleanProblemPart(raw) {
+    var s = String(raw || '').replace(/^\uFEFF/, '').trim();
+    if (!s) return '';
+    s = s.replace(/^(?:\d+\s*[.)]\s+|[\u2022\u25e6\u25aa\u2023\u2043*\-]\s+)/, '').trim();
+    s = s.replace(/\s*=\s*(?:[?\uff1f_.\u2026\s]*)$/, '').trim();
+    s = s.replace(/[\u2013\u2014]/g, '\u2212').replace(/[\u00b7\u22c5]/g, '\u00d7');
+    s = s.replace(/=\s*\u2212(\d+)$/, '= -$1');
+    return s;
+  }
   function typedParts() {
-    return String(state.problems || '').split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean);
+    return String(state.problems || '').replace(/^\uFEFF/, '').split(/[,;\r\n]+/).map(cleanProblemPart).filter(Boolean);
   }
   // The builder's reason for one problem, without its "Problem 1:" and without the choice this page does not offer.
   function reason(error) {
@@ -418,11 +431,30 @@
     setText('title-hint', 'The student sees it at the top of the file. The results file\'s name starts with it. Left empty, it is "' + titleFallback() + '".');
   }
   function syncCodeName() {
-    var field = $('f-code-name');
-    if (field && field.value !== state.learner) field.value = state.learner;
-    var clean = codeNameNow(), typed = String(state.learner || '').trim();
-    setText('code-name-said', typed && clean !== typed ? (clean ? 'The file will have: ' + clean + '. A code name keeps letters, digits, spaces, dots, dashes and underscores.' : 'A code name needs a letter or a number.') : '');
-    if (typed) $('code-name-box').open = true;
+    var field = $('f-batch-names');
+    if (!field) return;
+    if (state.learner && !field.value.trim()) field.value = state.learner;
+    if (state.learner && $('batch') && !$('batch').open) $('batch').open = true;
+  }
+  function patchSingleCodeName(name) {
+    state.learner = name || '';
+    if (!built || !built.baseHtml || typeof builder.withCodeName !== 'function') return;
+    var clean = codeNameNow();
+    var nextHtml = builder.withCodeName(built.baseHtml, clean);
+    var nextName = withName(built.todo.name, clean);
+    if (nextHtml === built.html && nextName === built.name) return;
+    var blob = new Blob([nextHtml], { type: 'text/html' });
+    if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
+    built.html = nextHtml;
+    built.name = nextName;
+    built.bytes = blob.size;
+    renderSummaryRows(built, clean);
+    setText('summary-facts', count(built.items, built.item) + '. ' + (built.limit ? capital(minutes(built.limit)) : built.usual ? 'Untimed' : 'No clock') + '. ' + fileSize(built.bytes) + '.');
+    if (fileUrl) {
+      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
+      if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
+    }
   }
   // One check, as one version of it: the version picks the problems of a ready check. Your own problems have no versions.
   function planFor(version) {
@@ -459,6 +491,7 @@
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
     dropBatchFile();
     show('summary', false);
+    drawPreviewNote(null);
     show('try', false);
     show('save', false);
     show('after-save', false);
@@ -581,14 +614,47 @@
       return { said: said(err) || 'Could not remove that problem.' };
     });
   }
+  function renderSummaryRows(entry, learner) {
+    var rows = entry.baseRows.slice();
+    if (learner) rows.push(['Code name', learner + '. The file opens with it filled in.']);
+    rows.push(['File', entry.name + ', ' + fileSize(entry.bytes) + '.']);
+    var host = $('summary-rows');
+    host.textContent = '';
+    rows.forEach(function (row) {
+      host.appendChild(el('dt', '', row[0]));
+      host.appendChild(el('dd', '', row[1]));
+    });
+  }
+  function drawPreviewNote(todo) {
+    var box = $('summary'), note = $('preview-note');
+    var omitCount = todo && todo.edited ? Object.keys(previewOmit).length : 0;
+    if (!omitCount) {
+      if (note && note.parentNode) note.parentNode.removeChild(note);
+      return;
+    }
+    if (!box) return;
+    if (!note) {
+      note = el('p', 'result-sub');
+      note.id = 'preview-note';
+      box.appendChild(note);
+    }
+    note.textContent = count(omitCount, 'question') + ' removed in Preview. ';
+    var restoreBtn = el('button', 'btn btn-text btn-small', 'Restore');
+    restoreBtn.type = 'button';
+    restoreBtn.id = 'preview-restore';
+    restoreBtn.addEventListener('click', function () {
+      resetPreview(false);
+      makeSoon(0);
+    });
+    note.appendChild(restoreBtn);
+  }
   function drawResult(result, todo) {
     show('making', false);
     var check = result.manifest.check, limit = check.timeLimitS, items = check.items, practice = check.practiceItems;
     var coded = check.teacherCode !== 'none';
     var blob = new Blob([result.html], { type: 'text/html' });
     var learner = codeNameNow();
-    built = { html: result.html, name: withName(todo.name, learner), bytes: blob.size, coded: coded, title: result.manifest.title, todo: todo };
-    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
+    var baseHtml = typeof builder.withCodeName === 'function' ? builder.withCodeName(result.html, '') : result.html;
     // "question" for Quantity Discrimination, "problem" for every other check and for the teacher's own list.
     var item = todo.own ? 'problem' : todo.row.item;
     var skip = todo.lesson.check.allowSkip ? 'The student may skip a ' + item + '.' : 'There is no skip button.';
@@ -604,15 +670,12 @@
     rows.push(['Practice first', practice ? count(practice, 'practice question') + ', not scored.' : 'None.']);
     rows.push(['Teacher screen', coded ? 'Opens only with your teacher code. It shows the score and each answer.' : 'Shows only the score, not each answer. No teacher code is set.']);
     rows.push(['Title', result.manifest.title]);
-    if (learner) rows.push(['Code name', learner + '. The file opens with it filled in.']);
-    rows.push(['File', built.name + ', ' + fileSize(built.bytes) + '.']);
-    var host = $('summary-rows');
-    host.textContent = '';
-    rows.forEach(function (row) {
-      host.appendChild(el('dt', '', row[0]));
-      host.appendChild(el('dd', '', row[1]));
-    });
+    built = { html: result.html, baseHtml: baseHtml, baseRows: rows, items: items, item: item, limit: limit, usual: usual,
+      name: withName(todo.name, learner), bytes: blob.size, coded: coded, title: result.manifest.title, todo: todo };
+    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
+    renderSummaryRows(built, learner);
     setText('summary-facts', count(items, item) + '. ' + (limit ? capital(minutes(limit)) : usual ? 'Untimed' : 'No clock') + '. ' + fileSize(built.bytes) + '.');
+    drawPreviewNote(todo);
     show('summary', true);
     if (fileUrl) {
       $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
@@ -655,12 +718,22 @@
   // (builder.withCodeName), which is exactly what a single make with that code name gives. A ready check can give the
   // students versions A, B and C in turn; each version is made once.
   // ---------------------------------------------------------------------------
+  function cleanRosterLine(line) {
+    var s = String(line || '').replace(/^\uFEFF/, '').trim();
+    if (!s) return '';
+    if (s.indexOf('\t') >= 0) s = s.split('\t')[0].trim();
+    else if (s.indexOf(',') >= 0) s = s.split(',')[0].trim();
+    s = s.replace(/^["'\u201c\u201d]+|["'\u201c\u201d]+$/g, '').trim();
+    s = s.replace(/^(?:\d+\s*[.)]\s+|[\u2022\u25e6\u25aa\u2023\u2043\u2013\u2014*\-]\s+)/, '').trim();
+    return s;
+  }
   function batchList() {
     var seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
     String(($('f-batch-names') && $('f-batch-names').value) || '').split(/\r?\n/).forEach(function (line) {
-      if (!line.trim()) return;
-      var name = builder.codeName(line);
-      if (!name) { out.unusable.push(line.trim().slice(0, 40)); return; }
+      var cleaned = cleanRosterLine(line);
+      if (!cleaned) return;
+      var name = builder.codeName(cleaned);
+      if (!name) { out.unusable.push(cleaned.slice(0, 40)); return; }
       var key = name.toLowerCase();
       if (seen[key]) { if (out.twice.indexOf(name) < 0) out.twice.push(name); return; }
       seen[key] = true;
@@ -677,28 +750,29 @@
     return out;
   }
   function drawBatch() {
-    show('batch-more', state.check !== OWN && versionsNow().length > 1);
-    if (batchBusy) return;
     var list = batchList(), n = list.names.length, parts = [];
-    if (!n) parts.push('Type or paste the code names, one on each line.');
+    show('batch-rotate-wrap', n >= 2 && state.check !== OWN && versionsNow().length > 1);
+    show('batch-make', n >= 2);
+    if (n >= 2) setText('batch-make', 'Save .zip for ' + n + ' students');
+    if (batchBusy) return;
+    if (!n) parts.push('Type or paste code names, one on each line. One name puts it in the file above; 2 to 40 make a .zip file.');
+    else if (n === 1) parts.push('The file above is personalized for ' + list.names[0] + '. Press Save the file above.');
     else parts.push(count(n, 'file') + (built ? ', about ' + fileSize(n * built.bytes) + ' in all.' : '. The size shows here once the file above is ready.'));
-    if (n && batchRotates()) parts.push('Versions ' + listed(versionsNow()) + ' in turn, starting with ' + versionNow() + '.');
+    if (n >= 2 && batchRotates()) parts.push('Versions ' + listed(versionsNow()) + ' in turn, starting with ' + versionNow() + '.');
     if (list.over) parts.push('Not used: ' + count(list.over, 'more code name') + '. At most ' + MAX_STUDENTS + ' go in one .zip file.');
     if (list.twice.length) parts.push('Listed more than once, used once: ' + list.twice.join(', ') + '.');
     if (list.unusable.length) parts.push('Not used, because a code name needs a letter or a number: ' + list.unusable.join(', ') + '.');
-    if (batchFile) parts = ['Ready: ' + count(batchFile.count, 'file') + ' in one .zip file, ' + fileSize(batchFile.bytes) + '.'];
     setText('batch-said', parts.join(' '));
   }
   function dropBatchFile() {
     if (batchFile && batchFile.url) { try { URL.revokeObjectURL(batchFile.url); } catch (_) {} }
     batchFile = null;
-    show('batch-save', false);
   }
   function makeBatch() {
     setText('batch-problem', '');
     dropBatchFile();
     var list = batchList();
-    if (!list.names.length) { setText('batch-problem', 'Type at least one code name.'); return; }
+    if (list.names.length < 2) { setText('batch-problem', 'Type at least two code names for a .zip file, or press Save the file above for one student.'); return; }
     if (!built) { setText('batch-problem', 'The file above is not ready yet.'); return; }
     if (!window.AlloPacketZip || typeof window.AlloPacketZip.create !== 'function') { setText('batch-problem', 'This page could not load the part that makes .zip files. Load the page again.'); return; }
     var versions = batchVersions(list.names.length), bases = {};
@@ -707,8 +781,12 @@
       list.names.forEach(function (name, i) {
         var version = versions[i];
         if (!bases[version]) {
-          var todo = version ? planFor(version) : built.todo;
-          bases[version] = { html: buildFor(todo, '').html, name: todo.name };
+          if (!version && built.baseHtml) {
+            bases[version] = { html: built.baseHtml, name: built.todo.name };
+          } else {
+            var todo = version ? planFor(version) : built.todo;
+            bases[version] = { html: buildFor(todo, '').html, name: todo.name };
+          }
         }
         zip.add(withName(bases[version].name, name), encoder.encode(builder.withCodeName(bases[version].html, name)));
       });
@@ -717,15 +795,22 @@
       var stem = todo0.own ? fileStem(built.title) : todo0.row.slug + '-g' + todo0.grade + (versions[0] ? '' : '-' + todo0.version) + (todo0.untimed ? '-untimed' : '');
       batchFile = { parts: parts, bytes: zip.bytes, count: list.names.length, name: stem + '__' + list.names.length + '-students.zip', url: '' };
     } catch (error) { setText('batch-problem', 'The .zip file could not be made (' + said(error) + ').'); return; }
-    show('batch-save', true);
-    drawBatch();
+    saveBatch();
   }
   function saveBatch() {
     if (!batchFile) return;
     if (!batchFile.url) { try { batchFile.url = URL.createObjectURL(new Blob(batchFile.parts, { type: 'application/zip' })); } catch (_) { batchFile.url = ''; } }
     if (!batchFile.url) { setText('batch-problem', 'This browser cannot save files from a page.'); return; }
     download(batchFile.url, batchFile.name);
-    setText('batch-said', 'Saved ' + batchFile.name + '. Each file\'s name ends with the student\'s code name. Send each student their own file.');
+    setText('batch-said', 'Saved ' + batchFile.name + ' (' + count(batchFile.count, 'file') + ', ' + fileSize(batchFile.bytes) + '). Each file\'s name ends with the student\'s code name. Send each student their own file.');
+  }
+  function batchNamesChanged() {
+    dropBatchFile();
+    setText('batch-problem', '');
+    var list = batchList();
+    var singleName = list.names.length === 1 ? list.names[0] : '';
+    if (singleName !== state.learner) patchSingleCodeName(singleName);
+    drawBatch();
   }
 
   // ---------------------------------------------------------------------------
@@ -990,7 +1075,7 @@
   // "Open a file I made" (2026-11-13): the page fills itself in from a check made earlier. packets_reopen.js reads it
   // (readCheck, with packets_verify_core.js). The file is read in this tab only. Nothing in it is run.
   // ---------------------------------------------------------------------------
-  var reopenKit = null;
+  var reopenKit = null, reopenPending = null;
   function showReopen(line, items, page) {
     setText('reopen-line', line);
     var host = $('reopen-list');
@@ -1007,8 +1092,23 @@
     if (!(seconds > 0)) return 0;
     return TIME_CHOICES.filter(Boolean).reduce(function (best, t) { return Math.abs(t - seconds) < Math.abs(best - seconds) ? t : best; }, TIME_DEFAULT);
   }
-  function applyReopen(result, name) {
-    if (!result.ok) { showReopen(result.why, [], result.page); return; }
+  function applyReopen(result, name, bytes) {
+    if (!result.ok) {
+      var handoff = window.AlloPacketHandoff;
+      var pageHref = result.page ? result.page.href : '';
+      if (pageHref && bytes) {
+        reopenPending = {
+          file: { name: name, bytes: bytes },
+          href: pageHref,
+          hash: pageHref === 'packets-results.html' ? ((handoff && handoff.RESULTS_HASH) || '#import-results') : ((handoff && handoff.HASH) || '#open-file'),
+        };
+      } else {
+        reopenPending = null;
+      }
+      showReopen(result.why, [], result.page);
+      return;
+    }
+    reopenPending = null;
     var got = result.check, items = [];
     clearTimeout(buildTimer);
     resetPreview(true);
@@ -1041,14 +1141,17 @@
     result.notes.forEach(function (note) { items.push(note); });
     state = fresh;
     $('f-code').value = '';
+    if ($('f-batch-names')) $('f-batch-names').value = state.learner || '';
+    if ($('batch')) $('batch').open = !!state.learner;
     showCode(false);
     remember();
     goTo(1, true);
     showReopen('Filled in from ' + name + '. Change what you want, then make the new file in step 3.', items, null);
   }
-  function reopenText(text, name) {
+  function reopenText(text, name, bytes) {
     if (!reopenKit) return;
-    applyReopen(reopenKit.readCheck(text, { verify: window.AlloPacketVerify, builder: builder, codeName: builder.codeName }), String(name || 'the file').slice(0, 120));
+    var rawBytes = bytes || (typeof TextEncoder === 'function' ? new TextEncoder().encode(String(text || '')).buffer : null);
+    applyReopen(reopenKit.readCheck(text, { verify: window.AlloPacketVerify, builder: builder, codeName: builder.codeName }), String(name || 'the file').slice(0, 120), rawBytes);
   }
   function wireReopen() {
     $('reopen-choose').addEventListener('click', function () { $('reopen-file').click(); });
@@ -1056,12 +1159,30 @@
       var file = this.files && this.files[0];
       this.value = '';
       if (!file) return;
-      if (file.size > 20 * 1024 * 1024) { showReopen('This file is too large to be a check made here.', [], null); return; }
-      var reader = new FileReader();
-      reader.onload = function () { reopenText(String(reader.result || ''), file.name); };
-      reader.onerror = function () { showReopen('This browser could not read the file.', [], null); };
-      reader.readAsText(file);
+      if (file.size > 60 * 1024 * 1024) { showReopen('This file is larger than 60 MB, so it cannot be opened here.', [], null); return; }
+      var done = function (buf) {
+        var text = typeof TextDecoder === 'function' ? new TextDecoder('utf-8').decode(buf) : '';
+        reopenText(text, file.name, buf);
+      };
+      if (typeof file.arrayBuffer === 'function') {
+        file.arrayBuffer().then(done, function () { showReopen('This browser could not read the file.', [], null); });
+      } else {
+        var reader = new FileReader();
+        reader.onload = function () { done(reader.result); };
+        reader.onerror = function () { showReopen('This browser could not read the file.', [], null); };
+        reader.readAsArrayBuffer(file);
+      }
     });
+    if ($('reopen-page')) {
+      $('reopen-page').addEventListener('click', function (event) {
+        var handoff = window.AlloPacketHandoff;
+        if (!reopenPending || !handoff || typeof handoff.redirect !== 'function') return;
+        event.preventDefault();
+        var target = reopenPending;
+        reopenPending = null;
+        handoff.redirect(target.file, target.href, target.hash).catch(function () { $('reopen-page').click(); });
+      });
+    }
   }
   // A file handed over by "Change this file" on Open a practice file or check (packets-open.html, packets_handoff.js).
   function takeHanded() {
@@ -1070,7 +1191,7 @@
     try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
     handoff.take().then(function (file) {
       if (!file) { showReopen('The file is not here any more. Choose it with Open a file I made.', [], null); return; }
-      reopenText(new TextDecoder('utf-8').decode(file.bytes), file.name);
+      reopenText(new TextDecoder('utf-8').decode(file.bytes), file.name, file.bytes);
     }, function () { showReopen('This browser could not hand the file over. Choose it with Open a file I made.', [], null); });
   }
 
@@ -1095,7 +1216,7 @@
       stop = stopAtStep2();
       if (stop) target = 2;
     }
-    if (target !== 3) { clearTimeout(buildTimer); resetPreview(true); clearBuilt(); show('making', false); }
+    if (target !== 3) { clearTimeout(buildTimer); stopPreviewSession(); clearBuilt(); show('making', false); }
     // Sent back to the step already on screen: the reason is announced and the focus stays where it is.
     var stayed = target !== wanted && target === step;
     step = target;
@@ -1149,11 +1270,27 @@
       remember();
       if (step === 3) makeSoon(400);
     });
-    $('f-code-name').addEventListener('input', function () { state.learner = this.value.slice(0, 40); syncCodeName(); if (step === 3) makeSoon(400); });
-    $('f-batch-names').addEventListener('input', function () { dropBatchFile(); setText('batch-problem', ''); drawBatch(); });
-    $('f-batch-rotate').addEventListener('change', function () { this.parentNode.classList.toggle('is-on', this.checked); dropBatchFile(); drawBatch(); });
+    $('f-batch-names').addEventListener('input', batchNamesChanged);
+    $('f-batch-rotate').addEventListener('change', function () { this.parentNode.classList.toggle('is-on', this.checked); batchNamesChanged(); });
     $('batch-make').addEventListener('click', makeBatch);
-    $('batch-save').addEventListener('click', saveBatch);
+    if ($('batch-load') && $('batch-file')) {
+      $('batch-load').addEventListener('click', function () { $('batch-file').click(); });
+      $('batch-file').addEventListener('change', function () {
+        var file = this.files && this.files[0];
+        this.value = '';
+        if (!file) return;
+        if (file.size > 65536) { setText('batch-problem', 'That text file is too large for a list of code names.'); return; }
+        var r = new FileReader();
+        r.onload = function () {
+          var lines = String(r.result || '').replace(/^\uFEFF/, '').split(/\r?\n/).map(cleanRosterLine).filter(Boolean);
+          $('f-batch-names').value = lines.join('\n');
+          setText('batch-problem', '');
+          batchNamesChanged();
+        };
+        r.onerror = function () { setText('batch-problem', 'This browser could not read that text file.'); };
+        r.readAsText(file);
+      });
+    }
     $('f-skip').addEventListener('change', function () { state.skip = this.checked; remember(); this.parentNode.classList.toggle('is-on', this.checked); });
     $('f-untimed').addEventListener('change', function () { state.untimed = this.checked; resetPreview(false); this.parentNode.classList.toggle('is-on', this.checked); drawFormLine(); });
     $('f-code').addEventListener('input', function () { drawCode(); if (!codeProblem()) setText('step-2-problem', ''); });
@@ -1166,7 +1303,7 @@
       state = defaults();
       $('f-code').value = '';
       $('f-title').value = '';
-      $('f-code-name').value = '';
+      if ($('f-batch-names')) $('f-batch-names').value = '';
       showCode(false);
       goTo(1, true);
       setText('forget-said', 'Done. The page is back to how it started.');

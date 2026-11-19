@@ -90,7 +90,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       '  .llm-lit-print-root { background: #fff !important; color: #000 !important; padding: 0 !important; }',
       '  .llm-lit-print-root * { box-shadow: none !important; background-image: none !important; }',
       '  .llm-lit-print-card { break-inside: avoid; page-break-inside: avoid; border: 1px solid #ccc !important; }',
-      '}'
+      '}',
+      '.llm-lit-subject-pill,.llm-lit-telemetry-pill{display:inline-flex;align-items:center;min-height:24px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums;}',
+      '.llm-lit-subject-pill{background:rgba(167,139,250,.22);border:1px solid rgba(196,181,253,.55);color:#f5f3ff;letter-spacing:.04em;text-transform:uppercase;}',
+      '.llm-lit-telemetry-pill{background:rgba(15,23,42,.45);border:1px solid rgba(255,255,255,.25);color:#e2e8f0;}',
+      '.llm-lit-svg-stage{border-radius:10px;border:1px solid #cbd5e1;background:#ffffff;padding:10px 12px;margin:10px 0;overflow:hidden;}',
+      '.theme-dark .llm-lit-svg-stage{background:#0f172a;border-color:#334155;}',
+      '.theme-contrast .llm-lit-svg-stage{background:#000!important;border-color:#ffff00!important;}',
+      '.theme-contrast .llm-lit-subject-pill,.theme-contrast .llm-lit-telemetry-pill{background:#000!important;color:#ffff00!important;border-color:#ffff00!important;}'
     ].join('\n');
     document.head.appendChild(s);
   })();
@@ -1363,7 +1370,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       var announceToSR = ctx.announceToSR || function(){};
       var gradeLevel = ctx.gradeLevel || '7th Grade';
 
-      var d = (ctx.toolData && ctx.toolData.llmLiteracy) || {};
+      var safeObj = function(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; };
+      var d = safeObj(safeObj(ctx.toolData).llmLiteracy);
       // Stabilize view/chrome identities (declarations hoist, so re-binding
       // here covers every later use — views reconcile instead of remounting).
       ReflectionEditor = stableType('ReflectionEditor', ReflectionEditor);
@@ -2457,18 +2465,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             h('div', { style: { position: 'relative', display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' } },
               h('div', {
                 style: {
-                  width: '56px', height: '56px', flexShrink: 0,
-                  borderRadius: '14px',
-                  background: 'linear-gradient(135deg, #fbbf24, #f472b6)',
+                  width: '62px', height: '62px', flexShrink: 0,
+                  borderRadius: '16px',
+                  background: ctx.isContrast ? '#000000' : 'rgba(15, 23, 42, .55)',
+                  border: '1.5px solid ' + (ctx.isContrast ? '#ffff00' : 'rgba(196, 181, 253, .55)'),
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '32px',
-                  boxShadow: '0 8px 20px -6px rgba(251, 191, 36, .5)'
+                  boxShadow: ctx.isContrast ? 'none' : '0 8px 20px -6px rgba(124, 58, 237, .45)'
                 },
                 'aria-hidden': 'true'
-              }, '\uD83E\uDDE0'),
+              },
+                h('svg', { viewBox: '0 0 64 64', width: 48, height: 48, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
+                  // Token blocks on left
+                  h('rect', { x: 6, y: 12, width: 16, height: 10, rx: 3, fill: '#38bdf8' }),
+                  h('rect', { x: 6, y: 27, width: 19, height: 10, rx: 3, fill: '#f472b6' }),
+                  h('rect', { x: 6, y: 42, width: 14, height: 10, rx: 3, fill: '#fbbf24' }),
+                  // Attention links
+                  h('line', { x1: 23, y1: 17, x2: 36, y2: 26, stroke: '#c4b5fd', strokeWidth: 1.6, opacity: 0.9 }),
+                  h('line', { x1: 26, y1: 32, x2: 36, y2: 32, stroke: '#c4b5fd', strokeWidth: 1.8, opacity: 0.95 }),
+                  h('line', { x1: 21, y1: 47, x2: 36, y2: 38, stroke: '#c4b5fd', strokeWidth: 1.6, opacity: 0.9 }),
+                  // Softmax probability bars on right
+                  h('rect', { x: 38, y: 13, width: 20, height: 7, rx: 2, fill: '#a78bfa' }),
+                  h('rect', { x: 38, y: 24, width: 14, height: 7, rx: 2, fill: '#38bdf8' }),
+                  h('rect', { x: 38, y: 35, width: 9, height: 7, rx: 2, fill: '#fbbf24' }),
+                  h('rect', { x: 38, y: 46, width: 5, height: 7, rx: 2, fill: '#94a3b8' })
+                )
+              ),
               h('div', { style: { flex: 1, minWidth: 0 } },
-                h('h2', { style: { margin: 0, fontSize: '24px', fontWeight: 800, letterSpacing: '-.01em' } }, __alloT('stem.llm_literacy.ai_literacy_lab_2', 'AI Literacy Lab')),
-                h('p', { style: { margin: '6px 0 0', fontSize: '13px', lineHeight: 1.55, color: 'rgba(255,255,255,.82)', maxWidth: '620px' } },
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
+                  h('h2', { style: { margin: 0, fontSize: '24px', fontWeight: 800, letterSpacing: '-.01em' } }, __alloT('stem.llm_literacy.ai_literacy_lab_2', 'AI Literacy Lab')),
+                  h('span', { className: 'llm-lit-subject-pill' }, __alloT('stem.llm_literacy.subject_badge', 'Technology \u00B7 AI Literacy')),
+                  h('span', { className: 'llm-lit-telemetry-pill' }, visitedCount + '/' + tiles.length + ' ' + __alloT('stem.llm_literacy.sections_visited_pill', 'sections')),
+                  h('span', { className: 'llm-lit-telemetry-pill' }, hasLiveAI ? __alloT('stem.llm_literacy.mode_live_ai', 'Live AI + Demos') : __alloT('stem.llm_literacy.mode_offline', 'Interactive Demos'))
+                ),
+                h('p', { style: { margin: '6px 0 0', fontSize: '13px', lineHeight: 1.55, color: 'rgba(255,255,255,.88)', maxWidth: '620px' } },
                   __alloT('stem.llm_literacy.the_ai_in_alloflow_is_not_magic_it_is_', 'The AI in AlloFlow is not magic \u2014 it is a next-token predictor trained on a huge pile of text. This lab shows what it is really doing, when it fails, and how to use it without letting it do the thinking you need to practice.')
                 )
               ),
@@ -3233,6 +3262,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   h('div', { style: { width: '40px', fontSize: '12px', fontWeight: 600, color: COLORS.subtext, textAlign: 'right' } }, p.pct + '%')
                 );
               }),
+              // Softmax Probability & Shannon Entropy SVG visualizer
+              (function() {
+                var preds = ntEx.predictions || [];
+                var topSum = preds.reduce(function(s, p) { return s + p.pct; }, 0);
+                var tailPct = Math.max(0, 100 - topSum);
+                var probs = preds.map(function(p) { return p.pct / 100; });
+                if (tailPct > 0) probs.push(tailPct / 100);
+                var entropy = probs.reduce(function(H, pr) { return pr > 0 ? H - pr * (Math.log(pr) / Math.LN2) : H; }, 0);
+                var regime = entropy < 0.8 ? __alloT('stem.llm_literacy.entropy_sharp', 'Sharp peak (high certainty)')
+                  : entropy < 1.9 ? __alloT('stem.llm_literacy.entropy_spread', 'Spread out (temperature-sensitive)')
+                  : __alloT('stem.llm_literacy.entropy_flat', 'Flat tail (hallucination risk zone)');
+                var svgBg = ctx.isContrast ? '#000000' : ctx.isDark ? '#0f172a' : '#f8fafc';
+                var barText = ctx.isContrast ? '#ffff00' : ctx.isDark ? '#e2e8f0' : '#0f172a';
+                var mutedCol = ctx.isContrast ? '#ffffff' : ctx.isDark ? '#94a3b8' : '#475569';
+                var barFill = ctx.isContrast ? '#ffff00' : '#7c3aed';
+                var tailFill = ctx.isContrast ? '#67e8f9' : '#94a3b8';
+                var cols = preds.concat(tailPct > 0 ? [{ tok: 'all others', pct: tailPct, isTail: true }] : []);
+                return h('div', { className: 'llm-lit-svg-stage', style: { background: svgBg, marginTop: '10px' } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' } },
+                    h('strong', { style: { fontSize: '12px', color: barText } }, __alloT('stem.llm_literacy.softmax_spread_title', 'Probability distribution & entropy')),
+                    h('span', { style: { fontSize: '11px', fontWeight: 700, color: mutedCol, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                      'H = ' + entropy.toFixed(2) + ' bits \u00B7 ' + regime)
+                  ),
+                  h('svg', {
+                    viewBox: '0 0 640 144', width: '100%', role: 'img',
+                    'aria-label': __alloT('stem.llm_literacy.softmax_svg_aria', 'Bar chart of next-token probabilities and distribution entropy'),
+                    style: { display: 'block', width: '100%', height: 'auto' }
+                  },
+                    h('rect', { x: 0, y: 0, width: 640, height: 144, rx: 6, fill: svgBg }),
+                    h('line', { x1: 34, y1: 108, x2: 616, y2: 108, stroke: mutedCol, strokeWidth: 1.2, opacity: 0.55 }),
+                    cols.map(function(item, idx) {
+                      var slotW = 580 / Math.max(1, cols.length);
+                      var cx = 36 + idx * slotW + slotW / 2;
+                      var bw = Math.min(64, slotW * 0.62);
+                      var bh = Math.max(3, (item.pct / 100) * 82);
+                      var by = 108 - bh;
+                      var lbl = String(item.tok).trim();
+                      if (lbl.length > 10) lbl = lbl.slice(0, 9) + '\u2026';
+                      return h('g', { key: idx },
+                        h('rect', { x: cx - bw / 2, y: by, width: bw, height: bh, rx: 4, fill: item.isTail ? tailFill : barFill, opacity: item.isTail ? 0.75 : (idx === 0 ? 1 : 0.72) }),
+                        h('text', { x: cx, y: Math.max(14, by - 5), textAnchor: 'middle', fill: barText, fontSize: 10.5, fontWeight: 800 }, item.pct + '%'),
+                        h('text', { x: cx, y: 126, textAnchor: 'middle', fill: mutedCol, fontSize: 10.5, fontFamily: 'ui-monospace, Menlo, monospace' }, lbl)
+                      );
+                    })
+                  )
+                );
+              })(),
               h('p', { style: { marginTop: '10px', marginBottom: 0, fontSize: '12px', color: COLORS.subtext, lineHeight: 1.5, fontStyle: 'italic' } }, ntEx.note)
             )
           ),
@@ -3294,6 +3370,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               ),
               h('div', { style: { height: '32px' } })
             ),
+            // Temperature Softmax Reshaping Curves SVG
+            (function() {
+              var logits = [3.2, 2.5, 2.0, 1.5, 1.0, 0.5];
+              var softmax = function(temp) {
+                var exps = logits.map(function(z) { return Math.exp(z / temp); });
+                var sum = exps.reduce(function(a, b) { return a + b; }, 0);
+                return exps.map(function(e) { return e / sum; });
+              };
+              var curves = [
+                { t: 0.2, label: 'T = 0.2 (sharp)', color: ctx.isContrast ? '#67e8f9' : '#2563eb', probs: softmax(0.2) },
+                { t: 0.7, label: 'T = 0.7 (balanced)', color: ctx.isContrast ? '#ffff00' : '#7c3aed', probs: softmax(0.7) },
+                { t: 1.2, label: 'T = 1.2 (flat tail)', color: ctx.isContrast ? '#f9a8d4' : '#db2777', probs: softmax(1.2) }
+              ];
+              var svgBg = ctx.isContrast ? '#000000' : ctx.isDark ? '#0f172a' : '#ffffff';
+              var axisCol = ctx.isContrast ? '#ffffff' : ctx.isDark ? '#94a3b8' : '#64748b';
+              var xPos = function(i) { return 64 + i * 102; };
+              var yPos = function(p) { return 104 - Math.min(1, p) * 82; };
+              return h('div', { className: 'llm-lit-svg-stage', style: { background: svgBg, marginBottom: '12px' } },
+                h('svg', {
+                  viewBox: '0 0 640 132', width: '100%', role: 'img',
+                  'aria-label': __alloT('stem.llm_literacy.temp_curve_aria', 'Comparison of token probability curves at temperatures 0.2, 0.7, and 1.2 showing how higher temperature flattens probabilities toward less common tokens'),
+                  style: { display: 'block', width: '100%', height: 'auto' }
+                },
+                  h('rect', { x: 0, y: 0, width: 640, height: 132, rx: 6, fill: svgBg }),
+                  h('line', { x1: 52, y1: 104, x2: 590, y2: 104, stroke: axisCol, strokeWidth: 1.2, opacity: 0.6 }),
+                  h('line', { x1: 52, y1: 20, x2: 52, y2: 104, stroke: axisCol, strokeWidth: 1.2, opacity: 0.6 }),
+                  h('text', { x: 44, y: 26, textAnchor: 'end', fill: axisCol, fontSize: 10.5 }, '100%'),
+                  h('text', { x: 44, y: 66, textAnchor: 'end', fill: axisCol, fontSize: 10.5 }, '50%'),
+                  h('text', { x: 44, y: 106, textAnchor: 'end', fill: axisCol, fontSize: 10.5 }, '0%'),
+                  curves.map(function(c) {
+                    var pts = c.probs.map(function(p, idx) { return xPos(idx) + ',' + yPos(p).toFixed(1); }).join(' ');
+                    return h('g', { key: String(c.t) },
+                      h('polyline', { points: pts, fill: 'none', stroke: c.color, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                      c.probs.map(function(p, idx) { return h('circle', { key: idx, cx: xPos(idx), cy: yPos(p), r: 3.4, fill: c.color }); })
+                    );
+                  }),
+                  logits.map(function(_, idx) {
+                    return h('text', { key: idx, x: xPos(idx), y: 122, textAnchor: 'middle', fill: axisCol, fontSize: 10.5 }, 'Rank #' + (idx + 1));
+                  }),
+                  curves.map(function(c, ci) {
+                    var lx = 398, ly = 26 + ci * 18;
+                    return h('g', { key: 'leg-' + ci },
+                      h('line', { x1: lx, y1: ly - 4, x2: lx + 18, y2: ly - 4, stroke: c.color, strokeWidth: 3 }),
+                      h('text', { x: lx + 24, y: ly, fill: c.color, fontSize: 11, fontWeight: 700 }, c.label)
+                    );
+                  })
+                )
+              );
+            })(),
             [
               { key: 'low',  label: __alloT('stem.llm_literacy.temp_0_2_conservative', 'Temp 0.2 \u2014 conservative'), color: '#2563eb', icon: '\u2744\uFE0F' },
               { key: 'mid',  label: __alloT('stem.llm_literacy.temp_0_7_balanced', 'Temp 0.7 \u2014 balanced'),     color: '#7c3aed', icon: '\u269C\uFE0F' },
@@ -6307,7 +6432,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       }
 
       function TrustCalibrationInquiry() {
-        var iq = d.trustIQ || { taskFamiliarity: 5, stakes: 5, sourceQuality: 5, modelConfidence: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var rawIq = safeObj(d.trustIQ);
+        var clampN = function(v, fb, lo, hi) { var n = Number(v); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : fb; };
+        var iq = {
+          taskFamiliarity: clampN(rawIq.taskFamiliarity, 5, 1, 10),
+          stakes: clampN(rawIq.stakes, 5, 1, 10),
+          sourceQuality: clampN(rawIq.sourceQuality, 5, 1, 10),
+          modelConfidence: clampN(rawIq.modelConfidence, 50, 0, 100),
+          hypothesis: typeof rawIq.hypothesis === 'string' ? rawIq.hypothesis : '',
+          stuckRevealed: !!rawIq.stuckRevealed,
+          understood: !!rawIq.understood,
+          explanation: typeof rawIq.explanation === 'string' ? rawIq.explanation : '',
+          log: Array.isArray(rawIq.log) ? rawIq.log : []
+        };
         function setIQ(patch) { upd('trustIQ', Object.assign({}, iq, patch)); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
         // trust budget: low familiarity + high stakes = need higher source-quality bar
@@ -6322,19 +6459,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           risky: { label: __alloT('stem.llm_literacy.risky', 'Risky'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.llm_literacy.high_stakes_or_low_source_quality_use_', 'High stakes or low source quality. Use only for brainstorming; do not present any AI output as a final answer.') },
           dontuse: { label: __alloT('stem.llm_literacy.don_t_use_for_this', "Don't use for this"), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.llm_literacy.medical_diagnosis_legal_advice_citing_', 'Medical diagnosis, legal advice, citing primary sources you cannot verify — wrong tool for the job. Use a human expert or authoritative source.') }
         })[state];
+        var trustPresets = [
+          { label: __alloT('stem.llm_literacy.preset_brainstorm', 'Essay brainstorm'), vals: { taskFamiliarity: 8, stakes: 2, sourceQuality: 8, modelConfidence: 70 } },
+          { label: __alloT('stem.llm_literacy.preset_factcheck', 'History date check'), vals: { taskFamiliarity: 5, stakes: 6, sourceQuality: 5, modelConfidence: 90 } },
+          { label: __alloT('stem.llm_literacy.preset_medical', 'Medical / legal claim'), vals: { taskFamiliarity: 2, stakes: 10, sourceQuality: 2, modelConfidence: 95 } }
+        ];
         return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.llm_literacy.trust_calibration_how_much_should_i_tr', '🔬 Trust Calibration — How Much Should I Trust This Output?')),
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.llm_literacy.set_task_familiarity_stakes_source_qua', 'Set task familiarity, stakes, source quality, and stated model confidence, then observe where the trust threshold lands. The result updates live; record a hypothesis or pattern you notice.')),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 8 } },
+            h('span', { style: { fontSize: 11, fontWeight: 700, opacity: 0.85 } }, __alloT('stem.llm_literacy.try_scenario', 'Try scenario:')),
+            trustPresets.map(function(pr, pi) {
+              return h('button', {
+                key: pi, type: 'button', onClick: function() { setIQ(pr.vals); },
+                style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 999, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', cursor: 'pointer' }
+              }, pr.label);
+            })
+          ),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · gap ' + trustGap.toFixed(0)),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', role: 'img', 'aria-label': sm.label + ' trust calibration chart: source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' versus threshold ' + trustThreshold.toFixed(0), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+          h('svg', { width: '100%', height: 84, viewBox: '0 0 320 84', role: 'img', 'aria-label': sm.label + ' trust calibration chart: source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' versus threshold ' + trustThreshold.toFixed(0), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
             h('rect', { x: 30, y: 28, width: 260, height: 26, fill: '#0f172a', stroke: '#1e293b' }),
             h('rect', { x: 30, y: 28, width: Math.max(0, Math.min(260, trustThreshold * 2.6)), height: 26, fill: '#f87171', opacity: 0.5 }),
             h('rect', { x: 30, y: 28, width: Math.max(0, Math.min(260, iq.sourceQuality * 26)), height: 26, fill: sm.color, opacity: 0.85 }),
             h('text', { x: 160, y: 46, fill: '#fff', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' vs threshold ' + trustThreshold.toFixed(0)),
-            h('text', { x: 30, y: 22, fill: '#94a3b8', fontSize: 9 }, '0'),
-            h('text', { x: 290, y: 22, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, '100'),
-            h('text', { x: 160, y: 70, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, __alloT('stem.llm_literacy.green_red_safer_to_use', 'green > red = safer to use'))
+            h('text', { x: 30, y: 22, fill: '#cbd5e1', fontSize: 10.5 }, '0'),
+            h('text', { x: 290, y: 22, fill: '#cbd5e1', fontSize: 10.5, textAnchor: 'end' }, '100'),
+            h('text', { x: 160, y: 74, fill: '#cbd5e1', fontSize: 10.5, textAnchor: 'middle' }, __alloT('stem.llm_literacy.green_red_safer_to_use', 'green > red = safer to use'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', { style: { fontSize: 11 } },

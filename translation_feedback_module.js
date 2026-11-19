@@ -97,18 +97,23 @@
       if (cached) { EN = flatten(JSON.parse(cached)); return; }
     } catch (_) {}
     try {
-      fetch('./ui_strings.js', { credentials: 'omit', cache: 'no-store' })
-        .then(function (r) { return r.text(); })
+      var enCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var enTimer = enCtrl ? setTimeout(function () { try { enCtrl.abort(); } catch (_) {} }, 10000) : null;
+      var enOpts = { credentials: 'omit', cache: 'no-store' };
+      if (enCtrl) enOpts.signal = enCtrl.signal;
+      fetch('./ui_strings.js', enOpts)
+        .then(function (r) { if (!r || !r.ok) throw new Error('HTTP'); return r.text(); })
         .then(function (txt) {
           var j = txt.replace(/^[^{]*/, '').replace(/;?\s*$/, '');
           EN = flatten(JSON.parse(j));
         })
-        .catch(function () {});
+        .catch(function () {})
+        .finally(function () { if (enTimer) clearTimeout(enTimer); });
     } catch (_) {}
   }
   function englishFor(key) {
     if (!key || !EN) return '';
-    return EN[key] || '';
+    return Object.prototype.hasOwnProperty.call(EN, key) ? (EN[key] || '') : '';
   }
 
   // ── The "✎ Suggest a better translation" pill (shown by offerFor during help-mode) ──
@@ -243,25 +248,32 @@
       var out = [];
       for (var i = 0; i < list.length; i++) {
         var el = list[i];
-        if (el.closest('[hidden]')) continue;
+        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) continue;
+        var hiddenByCss = false;
         try {
-          var cs = window.getComputedStyle(el);
-          if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) continue;
+          if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+            for (var cur = el; cur && cur !== panel.parentElement; cur = cur.parentElement) {
+              var cs = window.getComputedStyle(cur);
+              if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) { hiddenByCss = true; break; }
+              if (cur === panel) break;
+            }
+          }
         } catch (_) {}
+        if (hiddenByCss) continue;
         out.push(el);
       }
       return out;
     }
     function onDocKeydown(e) {
-      if (e.isComposing || e.keyCode === 229) return;
+      if (e.defaultPrevented || e.isComposing || e.keyCode === 229) return;
       if (!isTopTrap()) return;
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeModal(); return; }
       if (e.key === 'Tab') {
         var items = focusablesInPanel();
-        if (!items.length) return;
+        if (!items.length) { e.preventDefault(); return; }
         e.preventDefault(); e.stopPropagation();
         var idx = items.indexOf(document.activeElement);
-        if (idx < 0) items[0].focus();
+        if (idx < 0) (e.shiftKey ? items[items.length - 1] : items[0]).focus();
         else items[(idx + (e.shiftKey ? items.length - 1 : 1)) % items.length].focus();
       }
     }
@@ -272,11 +284,13 @@
         if (items.length) items[0].focus();
       }
     }
+    var activeSubmitCtrl = null;
     document.addEventListener('keydown', onDocKeydown, true);
     document.addEventListener('focusin', onDocFocusin, true);
     activeModalCleanup = function () {
       document.removeEventListener('keydown', onDocKeydown, true);
       document.removeEventListener('focusin', onDocFocusin, true);
+      if (activeSubmitCtrl) { try { activeSubmitCtrl.abort(); } catch (_) {} activeSubmitCtrl = null; }
     };
 
     var $ = function (id) { return panel.querySelector('#' + id); };
@@ -328,10 +342,26 @@
       };
       try {
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
-        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
+        if (activeSubmitCtrl) { try { activeSubmitCtrl.abort(); } catch (_) {} }
+        var submitCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        activeSubmitCtrl = submitCtrl;
+        var submitTimer = submitCtrl ? setTimeout(function () { try { submitCtrl.abort(); } catch (_) {} }, 15000) : null;
+        var submitOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
+        if (submitCtrl) submitOpts.signal = submitCtrl.signal;
+        fetch(SUBMIT_URL, submitOpts)
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
-          .then(function (res) { if (res.ok && res.j && res.j.ok && res.j.storage === 'private') showThanks(); else showSendFailure(); })
-          .catch(function () { showSendFailure(); });
+          .then(function (res) {
+            if (!overlay || !overlay.isConnected) return;
+            if (res.ok && res.j && res.j.ok && res.j.storage === 'private') showThanks(); else showSendFailure();
+          })
+          .catch(function () {
+            if (!overlay || !overlay.isConnected) return;
+            showSendFailure();
+          })
+          .finally(function () {
+            if (submitTimer) clearTimeout(submitTimer);
+            if (activeSubmitCtrl === submitCtrl) activeSubmitCtrl = null;
+          });
       } catch (_) { showSendFailure(); }
     };
     var first = $('allo-tfb-suggest'); if (first) first.focus();

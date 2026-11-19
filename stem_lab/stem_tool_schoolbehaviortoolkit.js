@@ -761,22 +761,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
 
     var ph = phases[currentPhase - 1];
 
-    // Escalation arc: 7 points across X, Y rises toward Phase 5 then
-    // drops back. Coords computed once into a polyline string.
+    // Escalation arc: 7 points across X in a crisp 560x156 viewBox (no aspect distortion, readable >=10px labels).
+    var xs = [72, 142, 212, 282, 352, 422, 492];
+    var ys = [118, 96, 72, 42, 22, 66, 104];
     var arcPoints = phases.map(function(_, i) {
-      var x = 8 + i * (84 / 6);                  // 8..92 across an SVG viewBox 0..100
-      var heights = [70, 56, 42, 22, 8, 36, 60]; // calm→trigger→agit→accel→peak→deesc→recovery (lower y = higher visually)
-      return x + ',' + heights[i];
+      return xs[i] + ',' + ys[i];
     }).join(' ');
-    var dotX = 8 + (currentPhase - 1) * (84 / 6);
-    var dotY = [70, 56, 42, 22, 8, 36, 60][currentPhase - 1];
+    var areaPoints = arcPoints + ' 492,130 72,130';
+    var dotX = xs[currentPhase - 1] || xs[0];
+    var dotY = ys[currentPhase - 1] || ys[0];
 
     return h('div', {
+      className: 'sbt-stage-frame',
       style: {
-        background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 16, marginBottom: 14,
-        borderTop: '1px solid rgba(20,184,166,0.30)', borderRight: '1px solid rgba(20,184,166,0.30)',
-        borderBottom: '1px solid rgba(20,184,166,0.30)', borderLeft: '4px solid #14b8a6',
-        boxShadow: '0 4px 20px rgba(20,184,166,0.10)'
+        background: 'rgba(15,23,42,0.74)', borderRadius: 12, padding: 16, marginBottom: 14,
+        borderTop: '1px solid rgba(20,184,166,0.32)', borderRight: '1px solid rgba(20,184,166,0.32)',
+        borderBottom: '1px solid rgba(20,184,166,0.32)', borderLeft: '4px solid #14b8a6',
+        boxShadow: '0 6px 24px rgba(2,6,23,0.35), 0 0 20px rgba(20,184,166,0.08)'
       }
     },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
@@ -785,13 +786,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           border: '1.5px solid #14b8a6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18
         } }, '▶'),
         h('div', { style: { flex: 1, minWidth: 200 } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, 'Walk the cycle — Colvin\'s 7 phases'),
-          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Click a phase, drag the slider, or press Play to auto-advance through escalation and recovery.')
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, __alloSBTT('stem.schoolbehaviortoolkit.walk_the_cycle', 'Walk the cycle — Colvin\'s 7 phases')),
+          h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, __alloSBTT('stem.schoolbehaviortoolkit.cycle_scrubber_hint', 'Click a phase, drag the slider, or press Play to auto-advance through escalation and recovery.'))
         )
       ),
 
       // Phase chip strip
-      h('div', { role: 'tablist', 'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_acting_out_cycle_phases', 'Acting-out cycle phases'), style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 } },
+      h('div', { role: 'tablist', 'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_acting_out_cycle_phases', 'Acting-out cycle phases'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
         phases.map(function(p) {
           var active = p.phase === currentPhase;
           return h('button', {
@@ -799,58 +800,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             onClick: function() { setCurrentPhase(p.phase); },
             title: p.name,
             style: {
-              flex: '1 1 80px', minWidth: 64,
+              flex: '1 1 82px', minWidth: 68, minHeight: 44,
               padding: '8px 6px',
               borderRadius: 8,
-              border: '1.5px solid ' + (active ? p.color : 'rgba(100,116,139,0.30)'),
-              background: active ? p.color + '22' : 'rgba(15,23,42,0.5)',
+              border: '1.5px solid ' + (active ? p.color : 'rgba(100,116,139,0.32)'),
+              background: active ? p.color + '22' : 'rgba(15,23,42,0.55)',
               color: active ? p.color: 'var(--allo-stem-text-soft, #94a3b8)',
-              fontSize: 10, fontWeight: active ? 800 : 600,
+              fontSize: 10.5, fontWeight: active ? 800 : 600,
               cursor: 'pointer',
               transition: 'all 180ms ease',
-              transform: active ? 'translateY(-2px)' : 'none',
+              transform: active ? 'translateY(-1px)' : 'none',
               boxShadow: active ? '0 4px 12px ' + p.color + '40' : 'none'
             }
           },
             h('div', { 'aria-hidden': 'true', style: { fontSize: 16, lineHeight: 1, marginBottom: 2 } }, p.icon),
-            h('div', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 9 } }, 'P' + p.phase),
+            h('div', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 9.5 } }, 'P' + p.phase),
             h('div', { style: { lineHeight: 1.2, marginTop: 2 } }, p.name)
           );
         })
       ),
 
-      // SVG escalation curve
-      h('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 8, padding: 8, marginBottom: 12 } },
+      // SVG escalation curve (true aspect ratio, >=10px labels, intervention zones)
+      h('div', { style: { background: 'rgba(2,6,23,0.62)', border: '1px solid rgba(51,65,85,0.55)', borderRadius: 10, padding: '8px 10px', marginBottom: 12 } },
         h('svg', {
-          viewBox: '0 0 100 80', preserveAspectRatio: 'none',
-          'aria-hidden': 'true',
-          style: { width: '100%', height: 90, display: 'block' }
+          viewBox: '0 0 560 156',
+          role: 'img',
+          'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_escalation_curve_diagram', 'Colvin acting-out escalation curve across 7 phases, currently at phase ') + currentPhase + ': ' + ph.name,
+          style: { width: '100%', maxHeight: 168, height: 'auto', display: 'block' }
         },
-          // axis baseline
-          h('line', { x1: 4, y1: 76, x2: 96, y2: 76, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.5 }),
-          // labels for low/high
-          h('text', { x: 2, y: 8, fontSize: 4, fill: '#94a3b8' }, 'PEAK'),
-          h('text', { x: 2, y: 78, fontSize: 4, fill: '#94a3b8' }, 'CALM'),
-          // glow under curve
-          h('polyline', {
-            points: arcPoints + ' 92,76 8,76',
-            fill: 'rgba(239,68,68,0.10)', stroke: 'none'
-          }),
-          // curve
+          // Intervention zone bands
+          h('rect', { x: 56, y: 12, width: 122, height: 118, fill: 'rgba(34,197,94,0.06)' }),
+          h('rect', { x: 178, y: 12, width: 138, height: 118, fill: 'rgba(251,191,36,0.06)' }),
+          h('rect', { x: 316, y: 12, width: 72, height: 118, fill: 'rgba(239,68,68,0.09)' }),
+          h('rect', { x: 388, y: 12, width: 130, height: 118, fill: 'rgba(56,189,248,0.06)' }),
+          // Horizontal reference gridlines
+          h('line', { x1: 56, y1: 22, x2: 518, y2: 22, stroke: 'rgba(239,68,68,0.28)', strokeWidth: 1, strokeDasharray: '4 4' }),
+          h('line', { x1: 56, y1: 72, x2: 518, y2: 72, stroke: 'rgba(251,191,36,0.25)', strokeWidth: 1, strokeDasharray: '4 4' }),
+          h('line', { x1: 56, y1: 130, x2: 518, y2: 130, stroke: 'rgba(148,163,184,0.40)', strokeWidth: 1.2 }),
+          // Y-axis labels (>=10px)
+          h('text', { x: 50, y: 26, textAnchor: 'end', fontSize: 10.5, fontWeight: 700, fill: '#f87171', fontFamily: 'ui-monospace, Menlo, monospace' }, 'PEAK'),
+          h('text', { x: 50, y: 76, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' }, 'MID'),
+          h('text', { x: 50, y: 128, textAnchor: 'end', fontSize: 10.5, fontWeight: 700, fill: '#4ade80', fontFamily: 'ui-monospace, Menlo, monospace' }, 'CALM'),
+          // Glow fill under escalation curve
+          h('polygon', { points: areaPoints, fill: 'rgba(20,184,166,0.14)', stroke: 'none' }),
+          // Escalation curve
           h('polyline', {
             points: arcPoints,
-            fill: 'none', stroke: '#14b8a6', strokeWidth: 1.2,
+            fill: 'none', stroke: '#2dd4bf', strokeWidth: 3,
             strokeLinejoin: 'round', strokeLinecap: 'round'
           }),
-          // phase dots (faint)
+          // Phase markers and P1..P7 axis labels
           phases.map(function(p, i) {
-            var x = 8 + i * (84 / 6);
-            var y = [70, 56, 42, 22, 8, 36, 60][i];
-            return h('circle', { key: 'dot-' + i, cx: x, cy: y, r: 1.4, fill: '#475569' });
+            var isCur = p.phase === currentPhase;
+            return h('g', { key: 'dot-' + i },
+              h('line', { x1: xs[i], y1: ys[i], x2: xs[i], y2: 130, stroke: isCur ? p.color : 'rgba(148,163,184,0.18)', strokeWidth: isCur ? 1.5 : 1, strokeDasharray: isCur ? '' : '2 3' }),
+              h('circle', { cx: xs[i], cy: ys[i], r: isCur ? 5 : 4, fill: isCur ? p.color : '#334155', stroke: '#0f172a', strokeWidth: 1.5 }),
+              h('text', { x: xs[i], y: 147, textAnchor: 'middle', fontSize: 10.5, fontWeight: isCur ? 800 : 600, fill: isCur ? p.color : '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' }, 'P' + p.phase)
+            );
           }),
-          // active marker — glowing dot at current phase position
-          h('circle', { cx: dotX, cy: dotY, r: 4.5, fill: ph.color, opacity: 0.25 }),
-          h('circle', { cx: dotX, cy: dotY, r: 2.4, fill: ph.color, stroke: '#0f172a', strokeWidth: 0.6 })
+          // Active marker halo
+          h('circle', { cx: dotX, cy: dotY, r: 12, fill: ph.color, opacity: 0.22 }),
+          h('circle', { cx: dotX, cy: dotY, r: 6.5, fill: ph.color, stroke: '#0f172a', strokeWidth: 2 })
         )
       ),
 
@@ -1356,6 +1366,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+  // Bespoke clinical studio workbench styles + High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-schoolbehaviortoolkit-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-schoolbehaviortoolkit-studio-css';
+    st.textContent = [
+      '.sbt-workbench { box-sizing: border-box; border: 1px solid rgba(45,212,191,0.24); overflow-x: clip; }',
+      '.sbt-workbench * { box-sizing: border-box; }',
+      '.sbt-workbench button:focus-visible, .sbt-workbench [tabindex]:focus-visible, .sbt-workbench input:focus-visible, .sbt-workbench textarea:focus-visible { outline: 2px solid #5eead4; outline-offset: 2px; }',
+      '.sbt-hero { background: linear-gradient(135deg, rgba(15,23,42,0.92) 0%, rgba(17,44,44,0.88) 55%, rgba(15,23,42,0.94) 100%); border-bottom: 1px solid rgba(45,212,191,0.22); border-radius: 16px 16px 0 0; }',
+      '.sbt-telemetry-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: rgba(15,23,42,0.72); border: 1px solid rgba(45,212,191,0.34); color: #e2e8f0; font-size: 11px; font-weight: 700; line-height: 1.2; white-space: nowrap; }',
+      '.sbt-preset-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(15,23,42,0.72); border: 1px solid rgba(45,212,191,0.30); color: #cbd5e1; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease, color 140ms ease; }',
+      '.sbt-preset-chip:hover:not(:disabled) { background: rgba(20,184,166,0.18); border-color: #2dd4bf; color: #f0fdfa; }',
+      '.sbt-preset-chip[data-active="true"] { background: rgba(20,184,166,0.22); border-color: #5eead4; color: #5eead4; box-shadow: 0 2px 10px rgba(20,184,166,0.20); }',
+      '.sbt-preset-chip:disabled { opacity: 0.45; cursor: not-allowed; }',
+      '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-workbench { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; --allo-stem-canvas: #000000; --allo-stem-text: #ffff00; --allo-stem-text-soft: #ffff00; --allo-stem-border: #ffff00; }',
+      '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-hero { background: #000000 !important; border-bottom: 2px solid #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-telemetry-pill { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-preset-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-preset-chip[data-active="true"], .theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-preset-chip:hover:not(:disabled) { background: #00ff00 !important; border-color: #ffff00 !important; color: #000000 !important; }',
+      '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-workbench button:focus-visible, .theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-workbench [tabindex]:focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 2px; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('schoolBehaviorToolkit', {
     icon: '🏫',
     label: 'School Behavior Toolkit',
@@ -1378,19 +1412,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       // to an undeclared identifier is a ReferenceError, not a falsy check.
       var addToast = ctx.addToast;
 
-      var d = labToolData.schoolBehaviorToolkit || defaultState();
+      var rawSbt = labToolData && labToolData.schoolBehaviorToolkit;
+      var d = (rawSbt && typeof rawSbt === 'object' && !Array.isArray(rawSbt)) ? rawSbt : defaultState();
       function setSBT(patch) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var prior = (prev && prev.schoolBehaviorToolkit) || defaultState();
+          var prevObj = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevSbt = prevObj.schoolBehaviorToolkit;
+          var prior = (prevSbt && typeof prevSbt === 'object' && !Array.isArray(prevSbt)) ? prevSbt : defaultState();
           var next = Object.assign({}, prior, patch);
           next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { schoolBehaviorToolkit: next });
+          return Object.assign({}, prevObj, { schoolBehaviorToolkit: next });
         });
       }
-      var section = d.activeSection || 'pbis';
+      var VALID_SECTIONS = ['pbis', 'fba', 'functions', 'bip', 'replacement', 'setting', 'cycle', 'restraint', 'tokens', 'cico', 'equity', 'maine', 'connect', 'inquiry'];
+      var section = (typeof d.activeSection === 'string' && VALID_SECTIONS.indexOf(d.activeSection) >= 0) ? d.activeSection : 'pbis';
+      var isAssessmentLocked = !!(ctx && (ctx.quizLock || ctx.teacherLock || (ctx.assessment && ctx.assessment.locked)));
+      var exploredCount = VALID_SECTIONS.reduce(function(acc, id) {
+        if (id === 'pbis' || id === section) return acc + 1;
+        return acc + (d['sbtViewed' + id.charAt(0).toUpperCase() + id.slice(1)] ? 1 : 0);
+      }, 0);
+      var safeTokenBalance = Number.isFinite(Number(d.tokenBalance)) ? Math.max(0, Math.round(Number(d.tokenBalance))) : 0;
+      var safeBehIQ = (d.behIQ && typeof d.behIQ === 'object' && !Array.isArray(d.behIQ)) ? d.behIQ : null;
+      var activeTierNum = (safeBehIQ && Number.isFinite(Number(safeBehIQ.tier))) ? Math.min(3, Math.max(1, Math.round(Number(safeBehIQ.tier)))) : 2;
+      var SECTION_LABELS = {
+        pbis: __alloT('stem.schoolbehaviortoolkit.pbis_tiers', 'PBIS Tiers'),
+        fba: __alloT('stem.schoolbehaviortoolkit.fba_process', 'FBA Process'),
+        functions: __alloT('stem.schoolbehaviortoolkit.four_functions_tab', 'Four Functions'),
+        bip: __alloT('stem.schoolbehaviortoolkit.bip_template', 'BIP Template'),
+        replacement: __alloT('stem.schoolbehaviortoolkit.replacement_behaviors', 'Replacement Behaviors'),
+        setting: __alloT('stem.schoolbehaviortoolkit.setting_events', 'Setting Events'),
+        cycle: __alloT('stem.schoolbehaviortoolkit.acting_out_cycle', 'Acting-Out Cycle'),
+        restraint: __alloT('stem.schoolbehaviortoolkit.restraint_seclusion', 'Restraint & Seclusion'),
+        tokens: __alloT('stem.schoolbehaviortoolkit.token_economy_tab', 'Token Economy'),
+        cico: __alloT('stem.schoolbehaviortoolkit.cico_template', 'CICO Template'),
+        equity: __alloT('stem.schoolbehaviortoolkit.equity_disparities', 'Equity & Disparities'),
+        maine: __alloT('stem.schoolbehaviortoolkit.maine_resources', 'Maine Resources'),
+        connect: __alloT('stem.schoolbehaviortoolkit.connect', 'Connect'),
+        inquiry: __alloT('stem.schoolbehaviortoolkit.behavior_inquiry', 'Behavior Inquiry')
+      };
 
       function setSection(s) {
-        setSBT({ activeSection: s, ['sbtViewed' + s.charAt(0).toUpperCase() + s.slice(1)]: true });
+        if (VALID_SECTIONS.indexOf(s) < 0) return;
+        var patch = { activeSection: s };
+        patch['sbtViewed' + s.charAt(0).toUpperCase() + s.slice(1)] = true;
+        setSBT(patch);
       }
 
       // Layered atmospheric background — same pattern shipped on
@@ -1444,34 +1510,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       };
 
       function renderHeader() {
-        return h('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,184,166,0.20)', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': __alloT('stem.schoolbehaviortoolkit.back_to_stem_lab', 'Back to STEAM Lab'),
-            style: { background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '←'),
-          // Circular accent badge — same vocabulary as the rest of the
-          // design system. 56px (large hero size).
-          h('div', { 'aria-hidden': 'true',
-            style: {
-              width: 56, height: 56, borderRadius: '50%',
-              background: 'rgba(20,184,166,0.18)',
-              border: '2px solid #14b8a6',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 28, lineHeight: 1, flexShrink: 0,
-              boxShadow: '0 4px 16px rgba(20,184,166,0.25)'
-            }
-          }, '🏫'),
-          h('div', { style: { flex: 1, minWidth: 240 } },
-            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
-              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#5eead4', letterSpacing: '-0.01em' } }, __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit', 'School Behavior Toolkit')),
-              // Meta-count chip — shows section count
-              h('span', { style: {
-                padding: '2px 8px', borderRadius: 999,
-                background: 'rgba(20,184,166,0.12)',
-                border: '1px solid rgba(20,184,166,0.40)',
-                color: '#5eead4', fontSize: 10, fontWeight: 700,
-                fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, __alloT('stem.schoolbehaviortoolkit.14_sections_7_interactive', '14 sections · 7 interactive'))
+        var starterPresets = [
+          { id: 'pbis', icon: '🏫', label: __alloT('stem.schoolbehaviortoolkit.preset_pbis_pyramid', 'PBIS 3-Tier Pyramid') },
+          { id: 'cycle', icon: '🌀', label: __alloT('stem.schoolbehaviortoolkit.preset_cycle_scrubber', 'Crisis Cycle Scrubber') },
+          { id: 'functions', icon: '🔍', label: __alloT('stem.schoolbehaviortoolkit.preset_function_sleuth', 'Function Sleuth Drill') },
+          { id: 'bip', icon: '📑', label: __alloT('stem.schoolbehaviortoolkit.preset_bip_chain', 'Tier 3 BIP Chain') },
+          { id: 'inquiry', icon: '🧪', label: __alloT('stem.schoolbehaviortoolkit.preset_plan_readiness', 'Plan Readiness Lab') }
+        ];
+        return h('div', { className: 'sbt-hero', style: { padding: '20px 24px 16px' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
+            h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': __alloT('stem.schoolbehaviortoolkit.back_to_stem_lab', 'Back to STEAM Lab'),
+              style: { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(148,163,184,0.28)', borderRadius: 10, minWidth: 44, minHeight: 44, padding: '6px 10px', cursor: 'pointer', color: '#e2e8f0', fontSize: 16, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '←'),
+            // Bespoke PBIS & Applied Behavior Science Studio SVG Emblem
+            h('div', { 'aria-hidden': 'true',
+              style: {
+                width: 56, height: 56, borderRadius: 14,
+                background: 'linear-gradient(135deg, rgba(20,184,166,0.22), rgba(15,23,42,0.85))',
+                border: '1.5px solid rgba(45,212,191,0.55)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 6px 18px rgba(20,184,166,0.24)'
+              }
+            },
+              h('svg', { width: 42, height: 42, viewBox: '0 0 56 56', 'aria-hidden': 'true' },
+                h('circle', { cx: 28, cy: 28, r: 25, fill: 'rgba(15,23,42,0.72)', stroke: '#2dd4bf', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+                // 3-tier PBIS pyramid
+                h('polygon', { points: '28,9 35,20 21,20', fill: '#ef4444', stroke: '#0f172a', strokeWidth: 1.2 }),
+                h('polygon', { points: '20,22 36,22 41,31 15,31', fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1.2 }),
+                h('polygon', { points: '14,33 42,33 47,43 9,43', fill: '#22c55e', stroke: '#0f172a', strokeWidth: 1.2 }),
+                // Escalation/recovery signal wave along base
+                h('polyline', { points: '12,48 20,48 25,44 31,49 37,46 44,48', fill: 'none', stroke: '#5eead4', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                h('circle', { cx: 28, cy: 9, r: 2.2, fill: '#fef08a' })
+              )
             ),
-            h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.5 } }, __alloT('stem.schoolbehaviortoolkit.applied_k_12_practice_pbis_replacement', 'Applied K-12 practice. PBIS · Replacement Behaviors (with function-spotter) · Setting Events · Acting-Out Cycle (with phase scrubber) · Restraint Ethics (with decision tree) · Equity & Disparities.'))
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
+                h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#5eead4', letterSpacing: '-0.01em' } }, __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit', 'School Behavior Toolkit')),
+                h('span', { style: {
+                  padding: '3px 9px', borderRadius: 999,
+                  background: 'rgba(20,184,166,0.16)',
+                  border: '1px solid rgba(45,212,191,0.45)',
+                  color: '#99f6e4', fontSize: 10, fontWeight: 800,
+                  letterSpacing: '0.05em', textTransform: 'uppercase'
+                } }, __alloT('stem.schoolbehaviortoolkit.subject_badge', 'Applied Behavior Science · PBIS')),
+                h('span', { style: {
+                  padding: '3px 9px', borderRadius: 999,
+                  background: 'rgba(15,23,42,0.72)',
+                  border: '1px solid rgba(100,116,139,0.45)',
+                  color: '#cbd5e1', fontSize: 10, fontWeight: 700,
+                  fontFamily: 'ui-monospace, Menlo, monospace'
+                } }, __alloT('stem.schoolbehaviortoolkit.14_sections_7_interactive', '14 sections · 7 interactive'))
+              ),
+              h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.5 } }, __alloT('stem.schoolbehaviortoolkit.applied_k_12_practice_pbis_replacement', 'Applied K-12 practice. PBIS · Replacement Behaviors (with function-spotter) · Setting Events · Acting-Out Cycle (with phase scrubber) · Restraint Ethics (with decision tree) · Equity & Disparities.'))
+            )
+          ),
+          // Live non-spoiler telemetry strip
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(45,212,191,0.16)' } },
+            h('span', { className: 'sbt-telemetry-pill' },
+              h('span', { 'aria-hidden': 'true', style: { color: '#5eead4' } }, '●'),
+              __alloT('stem.schoolbehaviortoolkit.telemetry_station', 'Station: ') + (SECTION_LABELS[section] || section)
+            ),
+            h('span', { className: 'sbt-telemetry-pill' },
+              __alloT('stem.schoolbehaviortoolkit.telemetry_explored', 'Explored: ') + exploredCount + ' / ' + VALID_SECTIONS.length
+            ),
+            h('span', { className: 'sbt-telemetry-pill' },
+              __alloT('stem.schoolbehaviortoolkit.telemetry_tier', 'Inquiry Tier: T') + activeTierNum
+            ),
+            h('span', { className: 'sbt-telemetry-pill' },
+              __alloT('stem.schoolbehaviortoolkit.telemetry_tokens', 'Token Bank: ') + safeTokenBalance
+            )
+          ),
+          // One-click starter workflow presets (hidden/disabled under assessment lock)
+          !isAssessmentLocked && h('div', { role: 'group', 'aria-label': __alloT('stem.schoolbehaviortoolkit.quick_workflows_label', 'Quick clinical workflow starters'),
+            style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 10 } },
+            h('span', { style: { fontSize: 10.5, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 2 } },
+              __alloT('stem.schoolbehaviortoolkit.quick_starters', 'Quick launch:')),
+            starterPresets.map(function(pr) {
+              var isCur = section === pr.id;
+              return h('button', {
+                key: 'sbt-pre-' + pr.id,
+                type: 'button',
+                className: 'sbt-preset-chip',
+                'data-active': isCur ? 'true' : 'false',
+                'aria-pressed': isCur ? 'true' : 'false',
+                onClick: function() { setSection(pr.id); }
+              },
+                h('span', { 'aria-hidden': 'true' }, pr.icon),
+                h('span', null, pr.label)
+              );
+            })
           )
         );
       }
@@ -1501,7 +1628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabCount;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + tabCount - 1) % tabCount;
           else if (e.key === 'Home') nextIndex = 0;
-          else if (e.key === 'End') nextIndex = 11;
+          else if (e.key === 'End') nextIndex = tabCount - 1;
           if (nextIndex < 0) return;
           e.preventDefault();
           var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
@@ -1509,7 +1636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           if (nextTab) { nextTab.focus(); nextTab.click(); }
         };
         return h('div', { role: 'tablist', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_sections', 'School Behavior Toolkit sections'),
-          style: { display: 'flex', gap: 4, padding: '14px 18px 0', overflowX: 'auto', borderBottom: '1px solid rgba(20,184,166,0.15)', alignItems: 'flex-end' } },
+          style: { display: 'flex', gap: 4, padding: '14px 18px 0', overflowX: 'auto', borderBottom: '1px solid rgba(20,184,166,0.18)', alignItems: 'flex-end' } },
           tabs.map(function(t, tabIndex) {
             var active = section === t.id;
             return h('button', {
@@ -1520,16 +1647,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               onClick: function() { setSection(t.id); },
               style: {
                 position: 'relative',
+                minHeight: 44,
                 padding: '10px 14px 12px',
                 border: 'none',
-                background: active ? 'rgba(20,184,166,0.10)' : 'transparent',
+                background: active ? 'rgba(20,184,166,0.14)' : 'transparent',
                 color: active ? '#5eead4' : '#94a3b8',
                 fontSize: 12, fontWeight: active ? 800 : 600,
                 cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
                 borderRadius: '8px 8px 0 0',
-                borderTop: '1px solid ' + (active ? 'rgba(20,184,166,0.30)' : 'transparent'),
-                borderLeft: '1px solid ' + (active ? 'rgba(20,184,166,0.30)' : 'transparent'),
-                borderRight: '1px solid ' + (active ? 'rgba(20,184,166,0.30)' : 'transparent'),
+                borderTop: '1px solid ' + (active ? 'rgba(20,184,166,0.34)' : 'transparent'),
+                borderLeft: '1px solid ' + (active ? 'rgba(20,184,166,0.34)' : 'transparent'),
+                borderRight: '1px solid ' + (active ? 'rgba(20,184,166,0.34)' : 'transparent'),
                 marginBottom: -1,
                 transition: 'color 140ms ease, background 140ms ease'
               }
@@ -1579,29 +1707,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           panelHeader('🏫 PBIS — Three Tiers of Support',
             'Positive Behavioral Interventions and Supports is the school-wide framework that holds individual ABA work inside a system. Most school psychs spend ~80% of their time inside this framework — not in 1-on-1 ABA.'),
           // ── The field's iconic PBIS pyramid, AREA-proportional to the 80/15/5
-          // split (for a triangle, cumulative area from the apex scales as the
-          // height-fraction squared, so the band boundaries are at sqrt of the
-          // cumulative percentages). Labels use a white fill + dark halo so they
-          // stay legible on red, yellow, AND green bands.
+          // split (cumulative area from apex scales as height-fraction squared).
+          // Upgraded to spacious 560x220 studio infographic with >=11px callout labels.
           (function() {
-            var W = 230, H = 172, apexY = 8, baseY = 152, cx = W / 2, halfBase = 100, hgt = baseY - apexY;
+            var W = 560, H = 220, apexY = 18, baseY = 192, cx = 148, halfBase = 116, hgt = baseY - apexY;
             function lvl(f) { return { y: apexY + hgt * f, lx: cx - halfBase * f, rx: cx + halfBase * f }; }
             var a = lvl(Math.sqrt(0.05)), b = lvl(Math.sqrt(0.20));
-            var labelStyle = { paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 2.4, strokeLinejoin: 'round' };
+            var y3 = (apexY + a.y) / 2 + 4;
+            var y2 = (a.y + b.y) / 2 + 2;
+            var y1 = (b.y + baseY) / 2 + 4;
             var bands = [
-              { poly: cx + ',' + apexY + ' ' + a.rx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + a.lx.toFixed(1) + ',' + a.y.toFixed(1), fill: '#ef4444', label: __alloT('stem.schoolbehaviortoolkit.tier_3_5_intensive', 'Tier 3 · ~5% · intensive'), ly: apexY + (a.y - apexY) * 0.62, fs: 7 },
-              { poly: a.lx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + a.rx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + b.rx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + b.lx.toFixed(1) + ',' + b.y.toFixed(1), fill: '#fbbf24', label: __alloT('stem.schoolbehaviortoolkit.tier_2_15_targeted', 'Tier 2 · ~15% · targeted'), ly: (a.y + b.y) / 2 + 3, fs: 8.5 },
-              { poly: b.lx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + b.rx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + (cx + halfBase) + ',' + baseY + ' ' + (cx - halfBase) + ',' + baseY, fill: '#22c55e', label: __alloT('stem.schoolbehaviortoolkit.tier_1_80_universal_all_students', 'Tier 1 · ~80% · universal (all students)'), ly: (b.y + baseY) / 2 + 3, fs: 9 }
+              {
+                poly: cx + ',' + apexY + ' ' + a.rx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + a.lx.toFixed(1) + ',' + a.y.toFixed(1),
+                fill: '#ef4444', stroke: '#fca5a5',
+                anchorX: (cx + a.rx) / 2 + 6, anchorY: y3,
+                tag: __alloT('stem.schoolbehaviortoolkit.tier_3_5_intensive', 'Tier 3 · ~5% · Intensive'),
+                sub: __alloT('stem.schoolbehaviortoolkit.tier_3_svg_sub', 'Individualized FBA, BIP & wraparound team'),
+                short: '5%'
+              },
+              {
+                poly: a.lx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + a.rx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + b.rx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + b.lx.toFixed(1) + ',' + b.y.toFixed(1),
+                fill: '#f59e0b', stroke: '#fde68a',
+                anchorX: (a.rx + b.rx) / 2 + 6, anchorY: y2,
+                tag: __alloT('stem.schoolbehaviortoolkit.tier_2_15_targeted', 'Tier 2 · ~15% · Targeted'),
+                sub: __alloT('stem.schoolbehaviortoolkit.tier_2_svg_sub', 'Check-In/Check-Out (CICO) & small-group skills'),
+                short: '15%'
+              },
+              {
+                poly: b.lx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + b.rx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + (cx + halfBase) + ',' + baseY + ' ' + (cx - halfBase) + ',' + baseY,
+                fill: '#16a34a', stroke: '#86efac',
+                anchorX: (b.rx + cx + halfBase) / 2 + 6, anchorY: y1,
+                tag: __alloT('stem.schoolbehaviortoolkit.tier_1_80_universal_all_students', 'Tier 1 · ~80% · Universal (All Students)'),
+                sub: __alloT('stem.schoolbehaviortoolkit.tier_1_svg_sub', 'Clear expectations, active supervision & recognition'),
+                short: '80%'
+              }
             ];
-            return h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 12 } },
-              h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 320 }, role: 'img', 'aria-label': __alloT('stem.schoolbehaviortoolkit.pbis_pyramid_tier_1_universal_supports', 'PBIS pyramid: Tier 1 universal supports for ~80% of students, Tier 2 targeted for ~15%, Tier 3 intensive for ~5%.') },
+            return h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 14, padding: '12px 14px', borderRadius: 12, background: 'rgba(2,6,23,0.58)', border: '1px solid rgba(45,212,191,0.22)' } },
+              h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 560, height: 'auto', display: 'block' }, role: 'img', 'aria-label': __alloT('stem.schoolbehaviortoolkit.pbis_pyramid_tier_1_universal_supports', 'PBIS pyramid: Tier 1 universal supports for ~80% of students, Tier 2 targeted for ~15%, Tier 3 intensive for ~5%.') },
                 bands.map(function(bd, i) {
+                  var calloutY = i === 0 ? 44 : i === 1 ? 94 : 152;
                   return h('g', { key: i },
-                    h('polygon', { points: bd.poly, fill: bd.fill, stroke: '#0f172a', strokeWidth: 1.5, opacity: 0.94 }),
-                    h('text', { x: cx, y: bd.ly, textAnchor: 'middle', fill: '#ffffff', fontSize: bd.fs, fontWeight: 800, style: labelStyle }, bd.label)
+                    h('polygon', { points: bd.poly, fill: bd.fill, stroke: '#0f172a', strokeWidth: 2, opacity: 0.94 }),
+                    i === 2 && h('text', { x: cx, y: y1 + 4, textAnchor: 'middle', fill: '#ffffff', fontSize: 13, fontWeight: 900, style: { paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 2.8, strokeLinejoin: 'round' } }, '80%'),
+                    i === 1 && h('text', { x: cx, y: y2 + 4, textAnchor: 'middle', fill: '#ffffff', fontSize: 11, fontWeight: 900, style: { paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 2.4, strokeLinejoin: 'round' } }, '15%'),
+                    h('line', { x1: bd.anchorX, y1: bd.anchorY, x2: 286, y2: calloutY, stroke: bd.stroke, strokeWidth: 1.5, strokeDasharray: '3 3', opacity: 0.85 }),
+                    h('circle', { cx: bd.anchorX, cy: bd.anchorY, r: 3.5, fill: bd.stroke }),
+                    h('text', { x: 294, y: calloutY - 2, textAnchor: 'start', fill: bd.stroke, fontSize: 12.5, fontWeight: 800 }, bd.tag),
+                    h('text', { x: 294, y: calloutY + 14, textAnchor: 'start', fill: '#cbd5e1', fontSize: 11 }, bd.sub)
                   );
                 }),
-                h('text', { x: cx, y: H - 3, textAnchor: 'middle', fill: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 7.5, fontStyle: 'italic' }, __alloT('stem.schoolbehaviortoolkit.bands_are_area_proportional_to_the_80_', 'bands are area-proportional to the ~80 / 15 / 5 split'))
+                h('text', { x: W / 2, y: H - 5, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10.5, fontStyle: 'italic' }, __alloT('stem.schoolbehaviortoolkit.bands_are_area_proportional_to_the_80_', 'Bands are area-proportional to the ~80 / 15 / 5 PBIS triangle'))
               )
             );
           })(),
@@ -1952,8 +2107,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       // behaviours are ones the student can already do, whether the exchange ratio
       // survives contact with a real week, and how the thing ever ends.
       function renderTokens() {
-        var balance = d.tokenBalance || 0;
-        var log = d.tokenLog || [];
+        var balance = Number.isFinite(Number(d.tokenBalance)) ? Math.max(0, Math.round(Number(d.tokenBalance))) : 0;
+        var log = Array.isArray(d.tokenLog) ? d.tokenLog.filter(function(item) { return item && typeof item === 'object'; }) : [];
 
         function pushLog(entry) {
           var next = [entry].concat(log);
@@ -2102,12 +2257,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       // in the tab before this one — the Toolkit had that process and no practice,
       // the Skinner-box tool had the practice and no process.
       function renderFunctions() {
-        var fnIdx = d.fnIdx === undefined ? -1 : d.fnIdx;
-        var fnShown = d.fnShown || [];
-        var fnScore = d.fnScore || 0;
-        var fnRounds = d.fnRounds || 0;
+        var rawFnIdx = Number(d.fnIdx);
+        var fnIdx = (Number.isInteger(rawFnIdx) && rawFnIdx >= 0 && rawFnIdx < FN_VIGNETTES.length) ? rawFnIdx : -1;
+        var fnShown = Array.isArray(d.fnShown) ? d.fnShown.filter(function(x) { return Number.isInteger(x) && x >= 0 && x < FN_VIGNETTES.length; }) : [];
+        var fnScore = Number.isFinite(Number(d.fnScore)) ? Math.max(0, Math.round(Number(d.fnScore))) : 0;
+        var fnRounds = Number.isFinite(Number(d.fnRounds)) ? Math.max(0, Math.round(Number(d.fnRounds))) : 0;
         var fnAnswered = !!d.fnAnswered;
-        var fnPick = d.fnPick || null;
+        var fnPick = typeof d.fnPick === 'string' ? d.fnPick : null;
 
         var fnDone = fnShown.length >= FN_VIGNETTES.length && fnAnswered;
 
@@ -2313,8 +2469,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   prompt: __alloT('stem.schoolbehaviortoolkit.bip_s5_p', 'How is the replacement taught, and how is it reinforced often enough at first to compete?'),
                   ph: 'Pre-teach the card daily; honour every request immediately for two weeks, then thin' }
               ];
-              var step = d.bipStep || 0;
-              var data = d.bipData || {};
+              var rawStep = Number(d.bipStep);
+              var step = (Number.isInteger(rawStep) && rawStep >= 0) ? Math.min(steps.length, rawStep) : 0;
+              var data = (d.bipData && typeof d.bipData === 'object' && !Array.isArray(d.bipData)) ? d.bipData : {};
 
               if (step < steps.length) {
                 var st = steps[step];
@@ -2586,7 +2743,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       else content = renderPbis();
 
       function renderBehaviorInquiry() {
-        var iq = d.behIQ || { tier: 2, intensity: 5, functionConfidence: 5, environmentStability: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var rawIq = (d.behIQ && typeof d.behIQ === 'object' && !Array.isArray(d.behIQ)) ? d.behIQ : {};
+        var clampInt = function(val, min, max, fb) {
+          var n = Number(val);
+          return Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : fb;
+        };
+        var iq = {
+          tier: clampInt(rawIq.tier, 1, 3, 2),
+          intensity: clampInt(rawIq.intensity, 1, 10, 5),
+          functionConfidence: clampInt(rawIq.functionConfidence, 1, 10, 5),
+          environmentStability: clampInt(rawIq.environmentStability, 1, 10, 5),
+          hypothesis: typeof rawIq.hypothesis === 'string' ? rawIq.hypothesis : '',
+          stuckRevealed: !!rawIq.stuckRevealed,
+          understood: !!rawIq.understood,
+          explanation: typeof rawIq.explanation === 'string' ? rawIq.explanation : '',
+          log: Array.isArray(rawIq.log) ? rawIq.log.filter(function(item) { return item && typeof item === 'object'; }) : []
+        };
         function setIQ(patch) { setSBT({ behIQ: Object.assign({}, iq, patch) }); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
         // intervention fit: tier appropriateness for intensity, function confidence required at higher tiers
@@ -2606,18 +2778,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.schoolbehaviortoolkit.set_tier_observed_intensity_function_c', 'Set tier, observed intensity, function confidence, and environment stability, then observe how modeled plan readiness changes. The result updates live; record a hypothesis or pattern you notice.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', role: 'img', 'aria-label': __alloT('stem.schoolbehaviortoolkit.a11y_pbis_three_tier_support_diagram_showing_univers', 'PBIS three-tier support diagram showing universal, targeted, and intensive tiers'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+          h('svg', { width: '100%', viewBox: '0 0 480 124', role: 'img', 'aria-label': __alloT('stem.schoolbehaviortoolkit.a11y_pbis_three_tier_support_diagram_showing_univers', 'PBIS three-tier support diagram showing universal, targeted, and intensive tiers'), style: { background: '#0a0f1e', border: '1px solid rgba(148,163,184,0.22)', borderRadius: 8, marginBottom: 10, maxHeight: 140, height: 'auto', display: 'block' } },
             [1, 2, 3].map(function(tier) {
-              var x = 20 + (tier - 1) * 100;
+              var x = 16 + (tier - 1) * 90;
               var w = 80;
               var active = iq.tier === tier;
               return h('g', { key: 't' + tier },
-                h('rect', { x: x, y: 20, width: w, height: 40, fill: active ? sm.color : '#0f172a', stroke: active ? sm.color : '#1e293b', strokeWidth: active ? 2 : 1 }),
-                h('text', { x: x + w / 2, y: 35, fill: active ? '#000' : '#94a3b8', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Tier ' + tier),
-                h('text', { x: x + w / 2, y: 50, fill: active ? '#000' : '#64748b', fontSize: 8, textAnchor: 'middle' }, tier === 1 ? 'universal' : tier === 2 ? 'targeted' : 'intensive')
+                h('rect', { x: x, y: 18, width: w, height: 64, rx: 8, fill: active ? sm.color : '#111827', stroke: active ? sm.color : '#334155', strokeWidth: active ? 2 : 1.2 }),
+                h('text', { x: x + w / 2, y: 44, fill: active ? '#000000' : '#e2e8f0', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, 'Tier ' + tier),
+                h('text', { x: x + w / 2, y: 63, fill: active ? '#0f172a' : '#94a3b8', fontSize: 10.5, fontWeight: 700, textAnchor: 'middle' }, tier === 1 ? 'Universal' : tier === 2 ? 'Targeted' : 'Intensive')
               );
             }),
-            h('text', { x: 160, y: 75, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, __alloT('stem.schoolbehaviortoolkit.pbis_multi_tiered_system_of_supports', 'PBIS multi-tiered system of supports'))
+            // Right-hand live telemetry bars (Intensity, FBA Confidence, Env Stability)
+            [
+              { label: 'Intensity', val: iq.intensity, y: 24, col: '#fb923c' },
+              { label: 'FBA Conf.', val: iq.functionConfidence, y: 50, col: '#38bdf8' },
+              { label: 'Env Stab.', val: iq.environmentStability, y: 76, col: '#4ade80' }
+            ].map(function(m, idx) {
+              return h('g', { key: 'm-' + idx },
+                h('text', { x: 296, y: m.y + 10, fill: '#cbd5e1', fontSize: 10.5, fontWeight: 700 }, m.label),
+                h('rect', { x: 358, y: m.y, width: 92, height: 12, rx: 4, fill: '#1e293b' }),
+                h('rect', { x: 358, y: m.y, width: Math.round((m.val / 10) * 92), height: 12, rx: 4, fill: m.col }),
+                h('text', { x: 456, y: m.y + 10, fill: m.col, fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' }, String(m.val))
+              );
+            }),
+            h('text', { x: 240, y: 112, fill: '#94a3b8', fontSize: 10.5, textAnchor: 'middle' }, __alloT('stem.schoolbehaviortoolkit.pbis_multi_tiered_system_of_supports', 'PBIS Multi-Tiered System of Supports & Plan Readiness Matrix'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', { style: { fontSize: 11 } },
@@ -2668,7 +2853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         );
       }
 
-      return h('div', { style: rootStyle, role: 'region', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_2', 'School Behavior Toolkit') },
+      return h('div', { className: 'sbt-workbench', style: rootStyle, role: 'region', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_2', 'School Behavior Toolkit') },
         renderHeader(),
         renderTabs(),
         h('div', { role: 'tabpanel', id: 'school-behavior-panel-' + section,

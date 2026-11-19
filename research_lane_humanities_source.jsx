@@ -1234,7 +1234,7 @@
             })}
           </div>
           {chipId === 'other' && (
-            <textarea value={otherText} onChange={function (e) { setOtherText(e.target.value); }}
+            <textarea aria-label={t('humanities.loopback_other_label') || 'Reason for looping back'} value={otherText} onChange={function (e) { setOtherText(e.target.value); }}
               rows={2} maxLength={240}
               placeholder={t('humanities.loopback_other_ph') || "Briefly: what made you loop back? (≥10 chars)"}
               style={{ marginTop: '8px', width: '100%', boxSizing: 'border-box',
@@ -1309,14 +1309,14 @@
       <div style={{ padding: '12px', borderRadius: '12px', background: '#fff', border: '1px solid #e2e8f0' }}>
         <label style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', display: 'block' }}>
           {props.label}
+          {props.help && (<span style={{ display: 'block', margin: '4px 0', fontSize: '11px', fontWeight: 400, color: '#475569', lineHeight: 1.5 }}>{props.help}</span>)}
+          <textarea value={props.value || ''} onChange={function (e) { props.onChange(e.target.value); }}
+            rows={props.rows || 3} maxLength={props.max || 800}
+            placeholder={props.placeholder || ''}
+            style={{ marginTop: '4px', width: '100%', boxSizing: 'border-box',
+              padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1',
+              fontSize: '12px', fontWeight: 400, fontFamily: 'inherit', resize: 'vertical', minHeight: '60px' }} />
         </label>
-        {props.help && (<p style={{ margin: '4px 0', fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>{props.help}</p>)}
-        <textarea value={props.value || ''} onChange={function (e) { props.onChange(e.target.value); }}
-          rows={props.rows || 3} maxLength={props.max || 800}
-          placeholder={props.placeholder || ''}
-          style={{ marginTop: '4px', width: '100%', boxSizing: 'border-box',
-            padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1',
-            fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', minHeight: '60px' }} />
       </div>
     );
   }
@@ -1642,7 +1642,7 @@
           {t('humanities.positionality_edit_help', { min: floors.positionality }) ||
             ('Name your MATERIAL relationship to this question, not a generic identity. ≥' + floors.positionality + ' chars or 5s+ voice. Generic-identity statements ("as a student", "an observer") are refused.')}
         </p>
-        <textarea value={draft} rows={4} maxLength={1500}
+        <textarea aria-label={t('humanities.positionality_edit_title') || 'Your standpoint — material relationship to the question'} value={draft} rows={4} maxLength={1500}
           onChange={function (e) { setDraft(e.target.value); }}
           placeholder={t('humanities.positionality_edit_ph') || 'I am [specific relationship to this question]. This question matters to me because [material stake].'}
           style={{ width: '100%', boxSizing: 'border-box',
@@ -1856,7 +1856,7 @@
             </div>
           </div>
           {allGatesOk && (
-            <select value={sift.tier || 'unvetted'}
+            <select aria-label={(t('humanities.sift_tier_aria') || 'Source verification tier') + ': ' + (source.citation || source.id)} value={sift.tier || 'unvetted'}
               onChange={function (e) { promoteTier(e.target.value); }}
               style={{ padding: '4px 8px', borderRadius: '6px',
                 border: '1px solid #f9a8d4', fontSize: '11px' }}>
@@ -1876,7 +1876,7 @@
             <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#64748b' }}>
               What is your first reaction to this source, before reading further? (≥40 chars)
             </p>
-            <textarea value={stop.firstReactionText || ''} rows={2} maxLength={400}
+            <textarea aria-label={(t('humanities.sift_stop_aria') || 'First reaction to this source') + ': ' + (source.citation || source.id)} value={stop.firstReactionText || ''} rows={2} maxLength={400}
               onChange={function (e) { updateSift('stop.firstReactionText', e.target.value); updateSift('stop.ts', Date.now()); }}
               style={{ width: '100%', boxSizing: 'border-box',
                 padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1',
@@ -1918,7 +1918,7 @@
               {(Array.isArray(inv.whoMadeItFacts) ? inv.whoMadeItFacts : []).map(function (f, i) {
                 return (
                   <div key={i} style={{ marginTop: '4px', display: 'flex', gap: '4px' }}>
-                    <input type="text" value={f.text || ''} maxLength={240}
+                    <input type="text" aria-label={(t('humanities.who_made_it_aria') || 'Who made this source fact') + ' ' + (i + 1)} value={f.text || ''} maxLength={240}
                       onChange={function (e) {
                         var arr = (inv.whoMadeItFacts || []).slice();
                         arr[i] = Object.assign({}, arr[i], { text: e.target.value, ts: Date.now() });
@@ -2524,9 +2524,11 @@
                   border: '1px solid ' + (p.isWorkingPosition ? '#f9a8d4' : '#e2e8f0'),
                   fontSize: '11px', color: '#1e293b',
                   display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input type="radio" name="working-position" checked={p.isWorkingPosition}
-                    onChange={function () { setWorkingPosition(p.id); }} />
-                  <span style={{ flex: 1 }}>{p.text}</span>
+                  <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input type="radio" name="working-position" checked={p.isWorkingPosition}
+                      onChange={function () { setWorkingPosition(p.id); }} />
+                    <span>{p.text}</span>
+                  </label>
                   <button type="button" onClick={function () { removePlausibleAnswer(p.id); }}
                     aria-label={tr(t, 'rl.hum.removePlausibleAnswer', 'Remove plausible answer')}
                     style={{ minWidth: '44px', minHeight: '44px', background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}>{'\u{2715}'}</button>
@@ -2593,19 +2595,19 @@
     return (
       <div style={{ marginTop: '8px', padding: '8px', borderRadius: '8px', background: '#fdf2f8', border: '1px solid #fbcfe8',
         display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <input type="text" value={draft.whoseQuestionIsThis} maxLength={120}
+        <input type="text" aria-label={t('humanities.stakeholder_question_label') || 'Whose question is this'} value={draft.whoseQuestionIsThis} maxLength={120}
           onChange={function (e) { setDraft(Object.assign({}, draft, { whoseQuestionIsThis: e.target.value })); }}
           placeholder={t('humanities.stakeholder_question_ph') || "Whose question is this? (e.g. alumni asking for redaction)"}
           style={{ padding: '5px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px' }} />
-        <textarea value={draft.whyTheyCareText} rows={2} maxLength={400}
+        <textarea aria-label={t('humanities.stakeholder_why_label') || 'Why do they care'} value={draft.whyTheyCareText} rows={2} maxLength={400}
           onChange={function (e) { setDraft(Object.assign({}, draft, { whyTheyCareText: e.target.value })); }}
           placeholder={t('humanities.stakeholder_why_ph') || "Why do they care? (≥20 chars)"}
           style={{ padding: '5px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', fontFamily: 'inherit' }} />
-        <input type="text" value={draft.whatThisFramingForegrounds} maxLength={200}
+        <input type="text" aria-label={t('humanities.stakeholder_foreground_label') || 'What does their framing foreground'} value={draft.whatThisFramingForegrounds} maxLength={200}
           onChange={function (e) { setDraft(Object.assign({}, draft, { whatThisFramingForegrounds: e.target.value })); }}
           placeholder={t('humanities.stakeholder_foreground_ph') || "What does their framing foreground? (optional)"}
           style={{ padding: '5px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px' }} />
-        <input type="text" value={draft.whatThisFramingObscures} maxLength={200}
+        <input type="text" aria-label={t('humanities.stakeholder_obscure_label') || 'What does their framing obscure'} value={draft.whatThisFramingObscures} maxLength={200}
           onChange={function (e) { setDraft(Object.assign({}, draft, { whatThisFramingObscures: e.target.value })); }}
           placeholder={t('humanities.stakeholder_obscure_ph') || "What does their framing obscure? (optional)"}
           style={{ padding: '5px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px' }} />
@@ -2631,7 +2633,7 @@
     return (
       <div style={{ marginTop: '8px', padding: '8px', borderRadius: '8px', background: '#fdf2f8', border: '1px solid #fbcfe8',
         display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <textarea value={text} rows={2} maxLength={600}
+        <textarea aria-label={t('humanities.plausible_answer_label') || 'Competing plausible answer'} value={text} rows={2} maxLength={600}
           onChange={function (e) { setText(e.target.value); }}
           placeholder={t('humanities.plausible_answer_ph') || "A competing position someone could reasonably hold (≥6 words)"}
           style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', fontFamily: 'inherit' }} />
@@ -2785,11 +2787,11 @@
         {adding ? (
           <div style={{ padding: '12px', borderRadius: '12px', background: '#fff', border: '1px solid #e2e8f0',
             display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <input type="text" value={newSrc.citation} maxLength={400}
+            <input type="text" aria-label={t('humanities.source_citation_label') || 'Source URL or full citation'} value={newSrc.citation} maxLength={400}
               onChange={function (e) { setNewSrc(Object.assign({}, newSrc, { citation: e.target.value })); }}
               placeholder={t('humanities.source_citation_ph') || "URL or full citation"}
               style={{ minHeight: '44px', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-            <select value={newSrc.kind}
+            <select aria-label={t('humanities.source_kind_label') || 'Source type'} value={newSrc.kind}
               onChange={function (e) { setNewSrc(Object.assign({}, newSrc, { kind: e.target.value })); }}
               style={{ minHeight: '44px', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }}>
               <option value="web_article">web article</option>
@@ -2813,7 +2815,7 @@
                 <label style={{ fontSize: '12px', color: '#334155' }}>Page, chapter, or locator<input type="text" value={newSrc.locator} maxLength={80} onChange={function (e) { setNewSrc(Object.assign({}, newSrc, { locator: e.target.value })); }} style={{ display: 'block', width: '100%', boxSizing: 'border-box', minHeight: '44px', marginTop: '3px', padding: '7px', borderRadius: '6px', border: '1px solid #94a3b8', fontSize: '13px' }} /></label>
               </div>
             </details>
-            <textarea value={newSrc.notes} rows={2} maxLength={400}
+            <textarea aria-label={t('humanities.source_notes_label') || 'Initial source notes'} value={newSrc.notes} rows={2} maxLength={400}
               onChange={function (e) { setNewSrc(Object.assign({}, newSrc, { notes: e.target.value })); }}
               placeholder={t('humanities.source_notes_ph') || "Initial notes (optional)"}
               style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'inherit' }} />
@@ -3004,15 +3006,15 @@
                   Anchor whitelist (at least one must appear in foregrounding): {chip.semanticAnchorWhitelist.join(', ')}
                 </p>
               )}
-              <input type="text" value={draft.label} maxLength={80}
+              <input type="text" aria-label={t('humanities.framing_label_aria') || 'Label for this framing'} value={draft.label} maxLength={80}
                 onChange={function (e) { setDraft(Object.assign({}, draft, { label: e.target.value })); }}
                 placeholder={t('humanities.framing_label_ph') || "Your label for this framing (≥4 chars)"}
                 style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px' }} />
-              <textarea value={draft.framingPrompt} rows={2} maxLength={400}
+              <textarea aria-label={t('humanities.framing_prompt_aria') || 'Framing prompt question'} value={draft.framingPrompt} rows={2} maxLength={400}
                 onChange={function (e) { setDraft(Object.assign({}, draft, { framingPrompt: e.target.value })); }}
                 placeholder={t('humanities.framing_prompt_ph') || "Framing prompt: a question this lens would ask of your sources (≥30 chars)"}
                 style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', fontFamily: 'inherit' }} />
-              <textarea value={draft.whatItForegrounds} rows={2} maxLength={400}
+              <textarea aria-label={t('humanities.framing_foreground_aria') || 'What this framing foregrounds'} value={draft.whatItForegrounds} rows={2} maxLength={400}
                 onChange={function (e) { setDraft(Object.assign({}, draft, { whatItForegrounds: e.target.value })); }}
                 placeholder={t('humanities.framing_foreground_ph') || "What does this framing FOREGROUND? (must include an anchor word, ≥20 chars)"}
                 style={{ padding: '6px 8px', borderRadius: '6px',
@@ -3028,17 +3030,17 @@
                   Too similar to an existing framing. Make this one substantively different.
                 </p>
               )}
-              <textarea value={draft.whatItOccludes} rows={2} maxLength={400}
+              <textarea aria-label={t('humanities.framing_occlude_aria') || 'What this framing occludes'} value={draft.whatItOccludes} rows={2} maxLength={400}
                 onChange={function (e) { setDraft(Object.assign({}, draft, { whatItOccludes: e.target.value })); }}
                 placeholder={t('humanities.framing_occlude_ph') || "What does it OCCLUDE? (optional)"}
                 style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', fontFamily: 'inherit' }} />
-              <label style={{ fontSize: '11px', fontWeight: 700, color: '#9d174d' }}>
-                Which vetted sources fit this framing? (≥1)
+              <div role="group" aria-label="Which vetted sources fit this framing? (at least 1)" style={{ fontSize: '11px', fontWeight: 700, color: '#9d174d' }}>
+                <div>Which vetted sources fit this framing? (≥1)</div>
                 <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                   {vettedSources.map(function (s) {
                     var on = draft.whichVettedSourcesFitIt.indexOf(s.id) !== -1;
                     return (
-                      <button key={s.id} type="button"
+                      <button key={s.id} type="button" aria-pressed={on}
                         onClick={function () {
                           var arr = draft.whichVettedSourcesFitIt.slice();
                           var idx = arr.indexOf(s.id);
@@ -3053,7 +3055,7 @@
                     );
                   })}
                 </div>
-              </label>
+              </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
                 <button type="button" onClick={function () { setAdding(false); }}
                   style={{ padding: '10px 14px', minHeight: '44px', borderRadius: '999px',
@@ -3230,21 +3232,21 @@
           <h4 style={{ margin: '0 0 6px', fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>
             {t('humanities.position_title') || 'Your position'}
           </h4>
-          <p style={{ margin: '0 0 8px', fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>
+          <p style={{ margin: '0 0 8px', fontSize: '11px', color: '#475569', lineHeight: 1.5 }}>
             ≥60 chars. Must include a multi-word phrase (≥3 content words, ≥12 chars) verbatim from your positionality OR an absent-voice entry. Refuses thesis platitudes.
           </p>
-          <textarea value={hpDraft.text} rows={3} maxLength={1500}
+          <textarea aria-label={t('humanities.position_title') || 'Your position'} value={hpDraft.text} rows={3} maxLength={1500}
             onChange={function (e) { setHpDraft(Object.assign({}, hpDraft, { text: e.target.value })); }}
             placeholder={t('humanities.position_text_ph') || "State your position in your own voice."}
             style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px',
               borderRadius: '8px', border: '1px solid #cbd5e1',
               fontSize: '12px', fontFamily: 'inherit' }} />
-          <input type="text" value={hpDraft.positionalityLinkText || ''} maxLength={200}
+          <input type="text" aria-label={t('humanities.position_link_label') || 'Verbatim phrase from positionality or absent voice'} value={hpDraft.positionalityLinkText || ''} maxLength={200}
             onChange={function (e) { setHpDraft(Object.assign({}, hpDraft, { positionalityLinkText: e.target.value })); }}
             placeholder={t('humanities.position_link_ph') || "Multi-word phrase (≥3 content words, ≥12 chars) from your positionality or an absent voice"}
             style={{ marginTop: '6px', width: '100%', boxSizing: 'border-box',
               padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px' }} />
-          <textarea value={hpDraft.whatThisClaimDoesNotSpeakTo || ''} rows={2} maxLength={1000}
+          <textarea aria-label={t('humanities.position_notspeak_label') || 'What this claim does not speak to'} value={hpDraft.whatThisClaimDoesNotSpeakTo || ''} rows={2} maxLength={1000}
             onChange={function (e) { setHpDraft(Object.assign({}, hpDraft, { whatThisClaimDoesNotSpeakTo: e.target.value })); }}
             placeholder={t('humanities.position_notspeak_ph') || "What this claim does NOT speak to (≥60 chars; will feed the Foreclosure Coda)"}
             style={{ marginTop: '6px', width: '100%', boxSizing: 'border-box',
@@ -3254,7 +3256,7 @@
             {['defensible_given_evidence', 'partial_standing', 'contested_open'].map(function (lab) {
               var selected = hpDraft.label === lab;
               return (
-                <button key={lab} type="button"
+                <button key={lab} type="button" aria-pressed={selected}
                   onClick={function () { setHpDraft(Object.assign({}, hpDraft, { label: lab })); }}
                   style={{ minHeight: '44px', padding: '8px 12px', borderRadius: '999px',
                     background: selected ? '#9d174d' : '#fff', color: selected ? '#fff' : '#9d174d',
@@ -3567,7 +3569,7 @@
               <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#92400e', lineHeight: 1.5 }}>
                 Every framing probe so far returned "warrant survives." That is unusual — frameworks usually contract under at least one alternative reading. Author a ≥120-char justification explaining why your warrant genuinely survives every framing.
               </p>
-              <textarea value={asJust} rows={3} maxLength={1200}
+              <textarea aria-label={t('humanities.all_survives_just_label') || 'Justification for why warrant survives every framing'} value={asJust} rows={3} maxLength={1200}
                 onChange={function (e) { setAsJust(e.target.value); }}
                 placeholder={t('humanities.all_survives_just_ph') || "Why does the warrant truly survive every framing? Be specific about which evidence resists which framing."}
                 style={{ marginTop: '6px', width: '100%', boxSizing: 'border-box',

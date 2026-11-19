@@ -91,6 +91,8 @@ describe('the helpers', () => {
     expect(got.dog).toBeNull();
     expect(got.hat).toBeNull();
     expect(cards.picturesOf(['cat'], null, null)).toEqual({ cat: null });
+    // Explicit "no picture" override ({ none: true }) suppresses the built-in symbol too.
+    expect(cards.picturesOf(['cat', 'alien'], { cat: { picture: { none: true } } }, index)).toMatchObject({ cat: null, alien: { set: 'openmoji' } });
   });
 
   it('credit each picture set used, in the maker\'s own words, and nothing that is not used', () => {
@@ -160,9 +162,30 @@ describe('the print view', () => {
     view.choose('pages', 'cards');
     expect(view.d.querySelector('.pc-list')).toBeNull();
     expect(view.said()).toBe('13 words. 4 pages of cards to print.');
+    expect(view.d.querySelector('input[name="pc-pages"][value="cards"]').parentNode.classList.contains('is-on')).toBe(true);
+    expect(view.d.querySelector('input[name="pc-pages"][value="list"]').parentNode.classList.contains('is-on')).toBe(false);
 
     view.d.querySelector('.pc-actions .btn-primary').click();
     expect(view.printed).toEqual([4]);
+  });
+
+  it('lazy-loads pictures on demand when opened with pictures off but symbols available, and toggles .is-on on radios', async () => {
+    const view = openView();
+    const { index, loaded } = fakeSymbols({ cat: 'mulberry', sun: 'mulberry' }, { ready: false });
+    let loads = 0;
+    const loadPictures = async () => { loads++; loaded.ready = true; return true; };
+    view.set({ words: ['cat', 'sun'], title: 'On demand', pictures: false, symbols: index, loadPictures });
+    await view.press();
+    await settle();
+    expect(loads).toBe(0);
+    expect(view.d.querySelectorAll('.pc-card img')).toHaveLength(0);
+    expect(view.d.querySelector('input[name="pc-shows"]').closest('fieldset').hidden).toBe(false);
+    expect(view.d.querySelector('input[name="pc-shows"][value="word"]').parentNode.classList.contains('is-on')).toBe(true);
+    view.choose('shows', 'both');
+    await settle(); await settle();
+    expect(loads).toBe(1);
+    expect(view.d.querySelector('input[name="pc-shows"][value="both"]').parentNode.classList.contains('is-on')).toBe(true);
+    expect(view.d.querySelectorAll('.pc-card img')).toHaveLength(2);
   });
 
   it('shows the teacher\'s picture before the symbol, gets missing drawings once through the maker, and credits what it shows', async () => {

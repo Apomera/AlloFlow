@@ -30,10 +30,10 @@
 
   function normalizeName(value, fallback, used) {
     var name = String(value == null ? '' : value).trim().replace(/[^A-Za-z0-9_]+/g, '_');
-    if (!name) name = fallback;
+    if (!name || name === '__proto__' || name === 'constructor' || name === 'prototype') name = fallback;
     if (/^[0-9]/.test(name)) name = '_' + name;
     var base = name, suffix = 2;
-    while (used[name]) name = base + '_' + suffix++;
+    while (Object.prototype.hasOwnProperty.call(used, name)) name = base + '_' + suffix++;
     used[name] = true;
     return name;
   }
@@ -47,13 +47,13 @@
       Object.keys(row).forEach(function (key) { if (keys.indexOf(key) < 0) keys.push(key); });
     });
     if (!keys.length && options.columns && Array.isArray(options.columns)) keys = options.columns.slice();
-    var used = {}, columns = keys.map(function (key, index) { return normalizeName(key, 'column_' + (index + 1), used); });
-    var keyMap = {};
+    var used = Object.create(null), columns = keys.map(function (key, index) { return normalizeName(key, 'column_' + (index + 1), used); });
+    var keyMap = Object.create(null);
     keys.forEach(function (key, index) { keyMap[key] = columns[index]; });
     var normalized = rows.map(function (row) {
       var out = {};
       keys.forEach(function (key, index) {
-        var value = row[key];
+        var value = Object.prototype.hasOwnProperty.call(row, key) ? row[key] : null;
         if (value instanceof Date) value = value.toISOString();
         if (typeof value === 'bigint') value = Number(value);
         out[columns[index]] = value == null ? null : value;
@@ -182,7 +182,7 @@
     runtimeInfo.state = 'loading';
     var base = resolveAssetBase();
     var worker = null, workerAsset = null, wasmAsset = null;
-    runtimePromise = Promise.resolve().then(function () {
+    var pending = Promise.resolve().then(function () {
       if (typeof window.__alloLoadVerifiedRuntime !== 'function' || typeof window.__alloGetVerifiedRuntimeAsset !== 'function') {
         throw new Error('Verified analytical runtime delivery is unavailable.');
       }
@@ -211,8 +211,10 @@
       runtimeInfo.state = 'fallback';
       runtimeInfo.backend = 'fallback';
       runtimeInfo.error = String(error && error.message || error || 'DuckDB-Wasm unavailable');
+      if (runtimePromise === pending) runtimePromise = null;
       return null;
     });
+    runtimePromise = pending;
     return runtimePromise;
   }
 

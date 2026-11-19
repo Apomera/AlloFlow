@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+  <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Remediation Pipeline | AlloFlow</title>
     <meta name="description"
@@ -44,7 +45,7 @@
     <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="./" class="nav-logo">
-                <i data-lucide="layers" style="width:28px;height:28px"></i>
+                <i data-lucide="layers" aria-hidden="true" style="width:28px;height:28px"></i>
                 AlloFlow
             </a>
             <div class="nav-links" data-site-nav="primary">
@@ -58,7 +59,7 @@
                 <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
-                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+                aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
 
@@ -244,8 +245,8 @@
                         <a href="ways-to-use.html#remote-pilot">Understand the architecture</a>
                     </article>
                 </div>
-                <aside class="boundary-panel">
-                    <h3>The portable workflow is private from AlloFlow, not from the AI host you choose</h3>
+                <aside class="boundary-panel" aria-labelledby="remediation-privacy-heading">
+                    <h3 id="remediation-privacy-heading">The portable workflow is private from AlloFlow, not from the AI host you choose</h3>
                     <p>ChatGPT, Claude, or another selected host still processes the attachment under that provider's
                         terms and settings. In the MCP pathway, Gemini sees content only when a Gemini-dependent tool is
                         invoked. Do not use either route for protected data unless your organization has approved the
@@ -329,14 +330,14 @@
                         <code class="checksum">SHA-256 published in SHA256SUMS.txt on the release · provenance: gh attestation verify</code>
                         <a class="promo-button"
                             href="https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.11.3/alloflow-remediation.mcpb">Download
-                            MCPB v0.3.5</a>
+                            MCPB v0.11.3</a>
                     </article>
                 </div>
                 <p style="margin-top:18px"><a href="https://github.com/Apomera/AlloFlow/releases/tag/portable-v0.2.9"
                         target="_blank" rel="noopener noreferrer">View release notes and manifest on GitHub</a></p>
 
-                <aside id="mcp-status" class="release-note">
-                    <h3>Install the Claude Desktop connector</h3>
+                <aside id="mcp-status" class="release-note" aria-labelledby="mcp-status-heading">
+                    <h3 id="mcp-status-heading">Install the Claude Desktop connector</h3>
                     <p>The MCPB release is built and published by the repository's CI: it must pass parity and
                         artifact validation, and it ships with a checksum list (<code>SHA256SUMS.txt</code>), an SBOM,
                         and GitHub build provenance (<code>gh attestation verify alloflow-remediation.mcpb -R
@@ -385,7 +386,7 @@
 
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+            <div class="footer-logo"><i data-lucide="layers" aria-hidden="true" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>Open-source tools for access, learning, and evidence-aware document remediation.</p>
             <!-- shared footer links:start -->
@@ -401,7 +402,7 @@
     </footer>
 
     <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})"
-        aria-label="Back to top"><i data-lucide="chevron-up" style="width:20px;height:20px"></i></button>
+        aria-label="Back to top"><i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i></button>
     <script>
         if (window.lucide) lucide.createIcons();
         const backBtn = document.querySelector('.back-to-top');

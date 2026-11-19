@@ -24,7 +24,7 @@
 <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
 <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation.">
 <style>
-:root{--ink:#0f172a;--soft:#64748b;--line:#e2e8f0;--accent:#4f46e5;--accent-soft:#eef2ff;--warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;--bg:#f8fafc;}
+:root{--ink:#0f172a;--soft:#475569;--line:#e2e8f0;--accent:#4f46e5;--accent-soft:#eef2ff;--warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;--bg:#f8fafc;}
 *{box-sizing:border-box;}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;}
 .wrap{max-width:820px;margin:0 auto;padding:32px 22px 80px;}
@@ -49,11 +49,17 @@ blockquote p{margin:0;color:var(--warn-ink);font-size:14.5px;}
 .toc ul{columns:2;column-gap:26px;margin:0;padding-left:20px;}
 .toc li{break-inside:avoid;margin-bottom:4px;}
 footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:12.5px;}
+.skip-link{position:absolute;left:-9999px;top:8px;z-index:9999;background:var(--accent);color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}
+.skip-link:focus{left:12px;}
+main:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;}}
+@media (forced-colors:active){.banner,.toc,blockquote{border:1px solid CanvasText;}a:focus-visible,main:focus-visible{outline:3px solid Highlight;outline-offset:3px;}}
 @media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:25px;}.toc ul{columns:1;}}
 </style>
 </head>
 <body>
-<main class="wrap">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<main id="main-content" class="wrap" tabindex="-1">
 <p class="manual-home"><a href="../manuals.html">← All manuals and guides</a></p>
 <div class="banner">🔬 <strong>Clinical tool · v1.</strong> Dynamic Assessment is a structured clinical observation of how a student responds to teaching — <strong>not a normed or standardized test</strong>, and not a basis for eligibility on its own. Use it to plan intervention and generate hypotheses, alongside other evidence.</div>
 <article>

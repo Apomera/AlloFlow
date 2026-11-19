@@ -19190,7 +19190,7 @@ var CLASSIFY_CASES = [
           '<div class="sci">' + esc(dn.name) + '</div>' +
           '<div class="say">Say it: ' + esc(dn.say) + '  ·  Means: &ldquo;' + esc(dn.meaning) + '&rdquo;</div>' +
           '<p class="blurb">' + esc(dn.blurb) + '</p>' +
-          '<table><tbody>' + rows.map(function (r) { return '<tr><th>' + esc(r[0]) + '</th><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</tbody></table>' +
+          '<table><tbody>' + rows.map(function (r) { return '<tr><th scope="row">' + esc(r[0]) + '</th><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</tbody></table>' +
           '<h3>Standout traits</h3><ul>' + dn.traits.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
           '<div class="box know"><b>🔎 How we know:</b> ' + esc(dn.howKnow) + '</div>' +
           '<div class="box unc"><b>⚖️ What we are not sure about:</b> ' + esc(dn.uncertain) + '</div>' +
@@ -19198,6 +19198,7 @@ var CLASSIFY_CASES = [
           '</div></body></html>';
         try {
           var w = window.open('', '_blank', 'width=620,height=900');
+          try { if (w) w.opener = null; } catch (_) {}
           if (!w) { announceToSR(__alloT('stem.dinolab.sr_pop_up_blocked_allow_pop_ups_to_print_the_card', 'Pop-up blocked. Allow pop-ups to print the card.')); return; }
           w.document.open(); w.document.write(html); w.document.close();
           announceToSR('Trading card for ' + dn.common + ' opened in a new window.');
@@ -19207,6 +19208,7 @@ var CLASSIFY_CASES = [
       function openPrint(html, okMsg, what) {
         try {
           var w = window.open('', '_blank', 'width=820,height=1000');
+          try { if (w) w.opener = null; } catch (_) {}
           if (!w) { announceToSR('Pop-up blocked. Allow pop-ups to print ' + (what || 'this') + '.'); return; }
           w.document.open(); w.document.write(html); w.document.close();
           announceToSR(okMsg);
@@ -19215,7 +19217,7 @@ var CLASSIFY_CASES = [
       // Print a cut-out species card deck (for sorting activities). All dynamic
       // strings are HTML-escaped via esc().
       function printDeck(list, label) {
-        var rowFor = function (k, v) { return '<tr><th>' + esc(k) + '</th><td>' + esc(v) + '</td></tr>'; };
+        var rowFor = function (k, v) { return '<tr><th scope="row">' + esc(k) + '</th><td>' + esc(v) + '</td></tr>'; };
         var cards = list.map(function (dn) {
           return '<div class="card">' +
             '<div class="per" style="background:' + pColor(dn.period) + '22;border-color:' + pColor(dn.period) + '">' + esc(periodName(dn.period)) + '</div>' +

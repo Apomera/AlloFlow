@@ -1035,13 +1035,15 @@ const getStoryForgeReviewSignature = (value = {}) => {
   return `review-v1-${(hash >>> 0).toString(36)}-${serialized.length}`;
 };
 
+const _isUnsafePropKey = (k) => k === '__proto__' || k === 'constructor' || k === 'prototype';
+
 const sanitizePanelDirections = (obj) => {
   if (!obj || typeof obj !== 'object') return {};
   const out = {};
   Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
     const key = String(k || '').slice(0, 64);
     const v = obj[k];
-    if (!key || !v || typeof v !== 'object') return;
+    if (!key || _isUnsafePropKey(key) || !v || typeof v !== 'object') return;
     const clean = {};
     ['shot', 'angle', 'mood', 'transition'].forEach((field) => {
       const value = normalizeComicDirectionValue(field, v[field]);
@@ -1084,7 +1086,7 @@ const sanitizePanelThumbnails = (obj) => {
   Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
     const key = String(k || '').slice(0, 64);
     const v = obj[k];
-    if (!key || !v || typeof v !== 'object') return;
+    if (!key || _isUnsafePropKey(key) || !v || typeof v !== 'object') return;
     const clean = {};
     if (typeof v.focalPoint === 'string' && v.focalPoint.trim()) clean.focalPoint = v.focalPoint.slice(0, 180);
     if (typeof v.composition === 'string' && v.composition.trim()) clean.composition = v.composition.slice(0, 240);
@@ -1108,7 +1110,7 @@ const sanitizePanelStickers = (obj) => {
   Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
     const key = String(k || '').slice(0, 64);
     const value = obj[k];
-    if (!key || typeof value !== 'string' || !value.trim()) return;
+    if (!key || _isUnsafePropKey(key) || typeof value !== 'string' || !value.trim()) return;
     out[key] = value.slice(0, 16);
   });
   return out;
@@ -1123,7 +1125,7 @@ const sanitizePanelLayouts = (obj) => {
   Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
     const key = String(k || '').slice(0, 64);
     const value = obj[k];
-    if (!key || !value || typeof value !== 'object') return;
+    if (!key || _isUnsafePropKey(key) || !value || typeof value !== 'object') return;
     const clean = {};
     const frame = normalizeComicPanelFrame(value.frame);
     if (frame) clean.frame = frame;
@@ -1930,7 +1932,7 @@ const sanitizeValenceByParagraph = (obj) => {
   Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((rawKey) => {
     const key = String(rawKey || '').slice(0, 64);
     const value = Number(obj[rawKey]);
-    if (!key || !Number.isFinite(value)) return;
+    if (!key || _isUnsafePropKey(key) || !Number.isFinite(value)) return;
     out[key] = Math.max(-5, Math.min(5, Math.round(value * 10) / 10));
   });
   return out;
@@ -2379,14 +2381,14 @@ const StoryForge = React.memo(({
   };
   // The host may hand a blocked fn (truthy), and a keyless teacher's call returns nothing: ask the host.
   const _sfAiCheck = (kind, fn) => {
-    if (!fn) return false;
+    if (typeof fn !== 'function') return false;
     try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-    return !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    return !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   };
   const sfTextAi = _sfAiCheck('text', onCallGemini);
   const sfVisionAi = _sfAiCheck('vision', onCallGeminiVision);
-  const sfImageEditAi = _sfAiCheck('image-edit', onCallGeminiImageEdit);
-  const sfImagenAi = _sfAiCheck('imagen', onCallImagen);
+  const sfImageEditAi = _sfAiCheck('imageEdit', onCallGeminiImageEdit);
+  const sfImagenAi = _sfAiCheck('images', onCallImagen);
   const notifyAiUnavailable = () => {
     const message = ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.');
     if (addToast) addToast(message, 'info');
@@ -7443,7 +7445,7 @@ main{display:block}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
 <a class="skip-link" href="#story-content">${isComic ? 'Skip to comic' : 'Skip to story'}</a>
-<button type="button" class="print-btn" onclick="window.print()" aria-label="${isComic ? 'Print comic' : 'Print storybook'}">Print-ready PDF</button>
+<button type="button" class="print-btn" onclick="window.print()" aria-label="${isComic ? 'Print-ready PDF for comic' : 'Print-ready PDF for storybook'}">Print-ready PDF</button>
 <header class="cover" role="banner">
   ${coverArt ? `<img src="${escapeHtml(coverArt)}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
@@ -7859,7 +7861,7 @@ ${panelsHtml}
     try {
       const w = window.open('', '_blank');
       if (w) { try { w.opener = null; } catch (_) {} w.document.write(html); w.document.close(); }
-      else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_3'), 'error');
+      else { if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_3'), 'error'); return; }
       setHasExported(true);
       awardXP(15, 'Exported comic production pack');
       sfAnnounce(ta('a11y.storyforge_comic_production_pack_opened'));
@@ -8080,7 +8082,7 @@ show();
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
     if (addToast) addToast(ta('a11y.storyforge_toast_story_forge_project_package_exported'), 'success');
     sfAnnounce(ta('a11y.storyforge_story_forge_project_package_exported'));
   };
@@ -8147,7 +8149,7 @@ show();
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
     if (addToast) addToast(t('toasts.draft_exported_as_json_share'), 'success');
   };
 
@@ -8197,7 +8199,7 @@ show();
       const reader = new FileReader();
       reader.onload = async (ev) => {
         try {
-          const d = JSON.parse(ev.target.result);
+          const d = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
           const validated = validateStoryForgeImport(d);
           if (!validated.valid) {
             if (addToast) addToast(validated.code === 'newer-version'
@@ -9008,7 +9010,6 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       onClick={() => selectArtifactType(key)}
                       disabled={artifactTypeLocked && artifactType !== key}
                       aria-pressed={artifactType === key}
-                      aria-label={optLabel('artifact', key, m.label) + ': ' + optLabel('artifactdesc', key, m.desc)}
                       title={artifactTypeLocked && artifactType !== key ? ta('a11y.storyforge_ui_artifact_type_locked') : optLabel('artifactdesc', key, m.desc)}
                       className={`p-3 rounded-xl border-2 text-center text-xs font-bold transition-all disabled:opacity-45 disabled:cursor-not-allowed ${
                         artifactType === key ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-blue-300'
@@ -9265,7 +9266,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     className="mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-300"
                   />
                 )}
-                {language !== 'en' && <p className="mt-2 text-[11px] text-teal-500 font-medium">{ta('a11y.storyforge_ui_ai_scaffolds_coaching_grading_and_dictation').replace('{0}', langLabel)}</p>}
+                {language !== 'en' && <p className="mt-2 text-[11px] text-teal-700 font-medium">{ta('a11y.storyforge_ui_ai_scaffolds_coaching_grading_and_dictation').replace('{0}', langLabel)}</p>}
               </div>
 
               {/* Starting idea */}
@@ -9283,7 +9284,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 {/* Story Starters */}
                 {genre !== 'free' && STORY_STARTERS[genre] && (
                   <div className="mt-3 pt-3 border-t border-amber-100">
-                    <div className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2">💡 {genreLabel(genre)} {ta('a11y.storyforge_ui_story_starters_click_to_use')}</div>
+                    <div className="text-[11px] font-bold text-amber-800 uppercase tracking-widest mb-2">💡 {genreLabel(genre)} {ta('a11y.storyforge_ui_story_starters_click_to_use')}</div>
                     <div className="space-y-2">
                       {STORY_STARTERS[genre].map((starter, si) => (
                         <button type="button"
@@ -9841,7 +9842,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           </div>
                         ))}
                       </div>
-                      <button type="button" onClick={() => { setHelpMeParagraphIdx(-1); setHelpMeResult(null); }} className="mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold">{t("ui_common.dismiss")}</button>
+                      <button type="button" onClick={() => { setHelpMeParagraphIdx(-1); setHelpMeResult(null); }} className="mt-2 text-[11px] text-amber-800 hover:text-amber-900 font-bold">{t("ui_common.dismiss")}</button>
                     </div>
                   )}
                   {layoutMode === 'comic' ? (
@@ -10155,18 +10156,18 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   {/* Per-paragraph strength indicator + vocab reminder */}
                   {p.text.length > 0 && (
                     <div className={`px-4 py-1.5 border-t flex flex-wrap items-center gap-3 text-[11px] font-medium ${
-                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-500'
+                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600'
                     }`}>
                       <span>{paragraphStats[idx]?.wordCount || 0} words</span>
                       <span>·</span>
                       <span>{paragraphStats[idx]?.sentenceCount || 0} sentences</span>
                       <span>·</span>
-                      <span className={paragraphStats[idx]?.vocabUsed > 0 ? 'text-green-500' : 'text-slate-500'}>{paragraphStats[idx]?.vocabUsed || 0} {ta('a11y.storyforge_ui_vocab_terms')}</span>
+                      <span className={paragraphStats[idx]?.vocabUsed > 0 ? (layoutMode === 'dark' ? 'text-green-400' : 'text-green-700') : (layoutMode === 'dark' ? 'text-slate-300' : 'text-slate-600')}>{paragraphStats[idx]?.vocabUsed || 0} {ta('a11y.storyforge_ui_vocab_terms')}</span>
                       {overusedWords.length > 0 && p.text.toLowerCase().split(/\s+/).some(w => overusedWords.includes(w.replace(/[^a-z'-]/g, ''))) && (
-                        <span className="text-amber-500" title={`Overused: ${overusedWords.join(', ')}`}>{ta('a11y.storyforge_ui_repeated_words')}</span>
+                        <span className={layoutMode === 'dark' ? 'text-amber-300' : 'text-amber-800'} title={`Overused: ${overusedWords.join(', ')}`}>{ta('a11y.storyforge_ui_repeated_words')}</span>
                       )}
                       {sentenceVariety[idx] && !sentenceVariety[idx].varied && (
-                        <span className="text-orange-500" title={sentenceVariety[idx].issues.join('; ')}>{ta('a11y.storyforge_ui_vary_sentences')}</span>
+                        <span className={layoutMode === 'dark' ? 'text-orange-300' : 'text-orange-800'} title={sentenceVariety[idx].issues.join('; ')}>{ta('a11y.storyforge_ui_vary_sentences')}</span>
                       )}
                     </div>
                   )}
@@ -10327,13 +10328,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <div className="mt-4 border-t border-purple-100 pt-4" data-sf-cast-references>
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <div>
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{ta('a11y.storyforge_ui_cast_references')}</div>
-                        <p className="text-[11px] text-slate-500 mt-1">{ta('a11y.storyforge_ui_lock_recurring_appearance_wardrobe_props_and')}</p>
+                        <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{ta('a11y.storyforge_ui_cast_references')}</div>
+                        <p className="text-[11px] text-slate-600 mt-1">{ta('a11y.storyforge_ui_lock_recurring_appearance_wardrobe_props_and')}</p>
                       </div>
                       <button type="button" onClick={addContinuityReference} className="px-3 py-1.5 rounded-lg border border-purple-200 bg-purple-50 text-[11px] font-bold text-purple-700 hover:bg-purple-100" aria-label={ta('a11y.storyforge_attr_add_cast_reference')}><Plus size={12} aria-hidden="true" /> {ta('a11y.storyforge_ui_add_cast')}</button>
                     </div>
                     {comicContinuity.references.length === 0 ? (
-                      <div className="rounded-lg border border-dashed border-purple-200 bg-purple-50/30 p-3 text-[11px] text-slate-500">{ta('a11y.storyforge_ui_add_a_cast_reference_when_a')}</div>
+                      <div className="rounded-lg border border-dashed border-purple-200 bg-purple-50/30 p-3 text-[11px] text-slate-600">{ta('a11y.storyforge_ui_add_a_cast_reference_when_a')}</div>
                     ) : (
                       <div className="space-y-3">
                         {comicContinuity.references.map((reference, referenceIndex) => (
@@ -10345,7 +10346,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               {[['name','Name','Mina'],['aliases','Also known as','Min, Captain M'],['role','Role','Explorer'],['appearance','Appearance','Round glasses, warm brown skin, short curls'],['wardrobe','Wardrobe','Red jacket with a silver compass'],['props','Props','Brass compass and canvas satchel']].map(([field, label, placeholder]) => (
                                 <label key={field} className={field === 'appearance' || field === 'wardrobe' || field === 'props' ? 'sm:col-span-2' : ''}>
-                                  <span className="block text-[10px] font-bold text-slate-500 mb-1">{label}</span>
+                                  <span className="block text-[10px] font-bold text-slate-600 mb-1">{label}</span>
                                   {field === 'name' || field === 'aliases' || field === 'role' ? (
                                     <input value={reference[field] || ''} onChange={(e) => updateContinuityReference(reference.id, field, e.target.value)} placeholder={placeholder} className="w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700" aria-label={ta('a11y.storyforge_aria_cast_reference').replace('{0}', label.toLowerCase())} />
                                   ) : (
@@ -11134,14 +11135,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                       <span className="text-xs font-bold text-indigo-600">{artifactType === 'comic' ? 'Panel' : 'Scene'} {idx + 1} {isCurrentPlayback && '\u25B6 Playing'}</span>
                       <div role="group" className="flex w-full flex-wrap items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 sm:w-auto" aria-label={ta('a11y.storyforge_attr_narration_and_voice_practice_actions')}>
-                        <span className="w-full text-[10px] font-black uppercase tracking-wider text-indigo-500">{ta('a11y.storyforge_ui_create_narration')}</span>
+                        <span className="w-full text-[10px] font-black uppercase tracking-wider text-indigo-700">{ta('a11y.storyforge_ui_create_narration')}</span>
                         {/* AI Narrate button */}
                         {hasSentenceAudio ? (
-                          <span className="text-xs text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> AI Narrated ({seg.sentenceAudios.filter(Boolean).length} sentences)</span>
+                          <span className="text-xs text-green-700 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> AI Narrated ({seg.sentenceAudios.filter(Boolean).length} sentences)</span>
                         ) : seg?.aiLoading ? (
-                          <span className="text-xs text-indigo-400 flex items-center gap-1"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {ta('a11y.storyforge_ui_generating')}</span>
+                          <span className="text-xs text-indigo-700 flex items-center gap-1"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {ta('a11y.storyforge_ui_generating')}</span>
                         ) : (
-                          <button type="button" onClick={() => narrateParagraph(p.id, p.text)} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                          <button type="button" onClick={() => narrateParagraph(p.id, p.text)} className="text-xs font-bold text-indigo-700 hover:text-indigo-900 flex items-center gap-1">
                             <Volume2 size={12} /> Narrate
                           </button>
                         )}
@@ -11152,17 +11153,17 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               if (isCurrentPlayback) { setPlaybackIdx(-1); setSentenceIdx(0); }
                               else { setPlaybackIdx(idx); setSentenceIdx(0); }
                             }}
-                            className="text-xs font-bold text-green-600 hover:text-green-800 flex items-center gap-1"
+                            className="text-xs font-bold text-green-700 hover:text-green-800 flex items-center gap-1"
                           >
                             <Play size={12} /> {isCurrentPlayback ? 'Stop' : 'Play'}
                           </button>
                         )}
-                        <span className="mt-1 w-full border-t border-indigo-200 pt-2 text-[10px] font-black uppercase tracking-wider text-rose-500">{ta('a11y.storyforge_ui_practice_or_record_my_voice')}</span>
+                        <span className="mt-1 w-full border-t border-indigo-200 pt-2 text-[10px] font-black uppercase tracking-wider text-rose-700">{ta('a11y.storyforge_ui_practice_or_record_my_voice')}</span>
                         {/* Record button */}
                         <button type="button"
                           onClick={() => recordingParagraphId === p.id ? stopRecordingParagraph() : startRecordingParagraph(p.id)}
                           className={`text-xs font-bold flex items-center gap-1 transition-colors ${
-                            recordingParagraphId === p.id ? 'text-red-600 animate-pulse motion-reduce:animate-none' : 'text-rose-500 hover:text-rose-700'
+                            recordingParagraphId === p.id ? 'text-red-700 animate-pulse motion-reduce:animate-none' : 'text-rose-700 hover:text-rose-800'
                           }`}
                         >
                           <Mic size={12} /> {recordingParagraphId === p.id ? 'Stop' : seg?.studentAudioUrl ? 'Re-record' : 'Record'}
@@ -11172,7 +11173,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           <button type="button"
                             onClick={() => fluencyReadingId === p.id ? stopFluencyReading(p.id, p.text) : startFluencyReading(p.id)}
                             className={`text-xs font-bold flex items-center gap-1 transition-colors ${
-                              fluencyReadingId === p.id && fluencyRecording ? 'text-orange-600 animate-pulse motion-reduce:animate-none' : 'text-teal-500 hover:text-teal-700'
+                              fluencyReadingId === p.id && fluencyRecording ? 'text-orange-700 animate-pulse motion-reduce:animate-none' : 'text-teal-700 hover:text-teal-800'
                             }`}
                             aria-label={fluencyReadingId === p.id ? (t('a11y.stop_fluency_reading') || 'Stop fluency reading') : (t('a11y.read_aloud_fluency_practice') || 'Read aloud for fluency practice')}
                           >
@@ -11818,25 +11819,25 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <div className="space-y-1">
                     {characterIssues.map((issue, i) => (
                       <div key={i} className="text-xs text-orange-800">
-                        Did you mean <strong>"{issue.expected}"</strong> {ta('a11y.storyforge_ui_instead_of')} <span className="line-through text-orange-500">"{issue.found}"</span>?
+                        Did you mean <strong>"{issue.expected}"</strong> {ta('a11y.storyforge_ui_instead_of')} <span className="line-through text-orange-800">"{issue.found}"</span>?
                       </div>
                     ))}
                   </div>
-                  <p className="text-[11px] text-orange-500 mt-2">{ta('a11y.storyforge_ui_tip_check_your_character_names_are')}</p>
+                  <p className="text-[11px] text-orange-800 mt-2">{ta('a11y.storyforge_ui_tip_check_your_character_names_are')}</p>
                 </div>
               )}
 
               {/* Revision Delta */}
               {revisionSnapshot && draftCount >= 2 && (
                 <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4">
-                  <div className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2">{ta('a11y.storyforge_ui_revision_progress_vs_draft')}{draftCount - 1})</div>
+                  <div className="text-[11px] font-bold text-indigo-700 uppercase tracking-widest mb-2">{ta('a11y.storyforge_ui_revision_progress_vs_draft')}{draftCount - 1})</div>
                   <div className="flex flex-wrap gap-3">
                     {(() => {
                       const wordDelta = totalWords - (revisionSnapshot.words || 0);
                       const vocabDelta = vocabUsedCount - (revisionSnapshot.vocabUsed || 0);
                       return (
                         <>
-                          <span className={`text-xs font-bold ${wordDelta > 0 ? 'text-green-600' : wordDelta < 0 ? 'text-red-500' : 'text-slate-500'}`}>
+                          <span className={`text-xs font-bold ${wordDelta > 0 ? 'text-green-700' : wordDelta < 0 ? 'text-red-700' : 'text-slate-600'}`}>
                             {wordDelta > 0 ? '+' : ''}{wordDelta} words
                           </span>
                           <span className={`text-xs font-bold ${vocabDelta > 0 ? 'text-green-600' : vocabDelta < 0 ? 'text-red-500' : 'text-slate-500'}`}>

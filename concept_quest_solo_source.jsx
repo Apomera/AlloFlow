@@ -78,7 +78,12 @@ function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, 
   const debrief = terminal ? solo.createDebrief(quest) : null;
   const buttonClass = 'min-h-11 rounded-xl px-4 py-2 font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed';
   const gameLabel = (entry,field = 'name') => tr(entry[field + 'Key'] || ('role_' + entry.id + '_' + field),entry[field] || '');
-  const getLocalStorage = () => { try { return window.localStorage; } catch (_) { return null; } };
+  const getLocalStorage = () => {
+    try {
+      const isUnauthStudent = !user?.uid && typeof window !== 'undefined' && (window.__alloStudentView === true || window.__alloLearnerRoleActive === true);
+      return isUnauthStudent ? window.sessionStorage : window.localStorage;
+    } catch (_) { return null; }
+  };
   function snapshotOf(value) {
     return {version:1,quest:value.quest,roleId:value.roleId,abilityId:value.abilityId,response:value.response,recapOpen:value.recapOpen,gmState:value.gmState,aiEnabled:value.aiEnabled,practice:value.practice||null};
   }
@@ -224,7 +229,7 @@ function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, 
             <ConceptQuestSoloQuestion key={item.id} item={item} response={active.response} onChange={response=>updateRun({response})} guideOpen={!!active.response?.guideRevealed} onGuideOpen={()=>{}} t={t}/>
             <button type="button" disabled={!canResolve} onClick={resolveTurn} className={buttonClass+' w-full bg-indigo-700 text-white'}>{item.selfReviewRequired?tr('solo_finish_review','3. Record self-review and continue'):tr('solo_resolve','3. Resolve this turn')}</button>
           </>}
-        </section><aside className="space-y-4"><details className="rounded-xl border border-slate-300 bg-white p-4" open={quest.phase==='explore'}><summary className="flex min-h-11 cursor-pointer items-center rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('solo_map','Adventure map')}</summary><ol className="mt-3 space-y-2">{quest.rooms.map((room,index)=><li key={room.id} aria-current={room.id===quest.currentRoomId?'location':undefined} className={'rounded-lg p-2 text-sm '+(room.id===quest.currentRoomId?'bg-indigo-100 font-bold text-indigo-900':'')}>{index+1}. {room.emoji} {room.name}{room.enemy?.hp===0?' ✓':''}</li>)}</ol></details>
+        </section><aside aria-label={tr('solo_map_and_inventory','Adventure map and inventory')} className="space-y-4"><details className="rounded-xl border border-slate-300 bg-white p-4" open={quest.phase==='explore'}><summary className="flex min-h-11 cursor-pointer items-center rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('solo_map','Adventure map')}</summary><ol className="mt-3 space-y-2">{quest.rooms.map((room,index)=><li key={room.id} aria-current={room.id===quest.currentRoomId?'location':undefined} className={'rounded-lg p-2 text-sm '+(room.id===quest.currentRoomId?'bg-indigo-100 font-bold text-indigo-900':'')}>{index+1}. {room.emoji} {room.name}{room.enemy?.hp===0?' ✓':''}</li>)}</ol></details>
           <section className="rounded-xl border border-slate-300 bg-white p-4"><h4 className="font-bold">{tr('solo_inventory','Your inventory')}</h4>{quest.inventory.length?<ul className="mt-3 space-y-3">{quest.inventory.map((entry,index)=><li key={entry.id}><p className="font-bold">{entry.emoji} {entry.name}</p><p className="mt-1 text-xs text-slate-600">{entry.description}</p><button type="button" disabled={entry.effect?.type==='clue'&&quest.phase!=='battle'} onClick={()=>applyResult(base.useItem(quest,index),false,true)} className={buttonClass+' mt-2 border border-indigo-300 bg-indigo-50 text-indigo-800'}>{tr('solo_use_item','Use item')}</button></li>)}</ul>:<p className="mt-2 text-sm text-slate-600">{tr('solo_inventory_empty','Find items by exploring treasure rooms.')}</p>}</section>
         </aside></div>}
         <p className="text-xs text-slate-600">{tr('solo_local_notice','Independent practice. Progress and your guide conversation are saved on this device for this account or local profile. This adventure does not submit an assessment score.')}</p>

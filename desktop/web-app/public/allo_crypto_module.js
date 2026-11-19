@@ -288,10 +288,20 @@
       material.fill(0);
     }
   }
+  function destroyVaultKey(dek) {
+    if (!dek || !_vaultKeyMaterial) return false;
+    var material = _vaultKeyMaterial.get(dek);
+    if (material && typeof material.fill === 'function') material.fill(0);
+    return _vaultKeyMaterial.delete(dek);
+  }
   async function rewrapVaultKey(env, oldPassword, newPassword, options) {
     _passwordBytes(newPassword, 'rewrapVaultKey');
     var key = await unwrapVaultKey(env, oldPassword);
-    return wrapVaultKey(key, newPassword, options);
+    try {
+      return await wrapVaultKey(key, newPassword, options);
+    } finally {
+      destroyVaultKey(key);
+    }
   }
 
   function _canonicalize(value, seen) {
@@ -464,6 +474,7 @@
     wrapVaultKey: wrapVaultKey,
     unwrapVaultKey: unwrapVaultKey,
     rewrapVaultKey: rewrapVaultKey,
+    destroyVaultKey: destroyVaultKey,
     encryptRecord: encryptRecord,
     decryptRecord: decryptRecord,
     generateRecoveryCode: generateRecoveryCode,

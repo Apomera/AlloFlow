@@ -81,9 +81,12 @@
   var busy = false;
   var chartCount = 0;
   var redraws = [];
+  var unsavedEdits = false;
+  var lastRemoved = null;
   // 2026-11-17: "To pick up here next week, save all of this as one file." Shown once in a visit, after a goal, a goal date or a
   // paper score is typed or more files are added, and never again in that visit: 'none', then 'shown', then 'done'.
   var nudge = 'none';
+  function markEdited() { if (!state.sample) unsavedEdits = true; }
   function offerSave() {
     if (nudge !== 'none' || state.sample) return;
     nudge = 'shown';
@@ -92,6 +95,30 @@
   function endNudge() {
     if (nudge === 'shown') nudge = 'done';
     show('save-nudge', false);
+  }
+  function drawUndo() {
+    var host = $('results-undo');
+    if (!host) return;
+    host.textContent = '';
+    if (!lastRemoved) { host.hidden = true; return; }
+    var info = lastRemoved.session;
+    var label = (info.title || info.measureName || 'result') + (info.date ? ' (' + showDate(info.date) + ')' : '');
+    var undoBtn = button('btn btn-small', 'Undo');
+    undoBtn.id = 'results-undo-btn';
+    undoBtn.addEventListener('click', function () {
+      if (!lastRemoved) return;
+      var back = lastRemoved;
+      lastRemoved = null;
+      if (!state.byId[back.session.sessionId]) {
+        state.sessions.splice(Math.min(back.index, state.sessions.length), 0, back.session);
+        state.byId[back.session.sessionId] = back.session;
+      }
+      changed();
+      go('results', true);
+      say('Restored ' + label + '.');
+    });
+    add(host, el('span', '', 'Removed ' + label + '.'), undoBtn);
+    host.hidden = false;
   }
 
   function fresh() {
@@ -204,6 +231,40 @@
     return lines;
   }
   function learnerNamed(key) { return model ? model.learners.filter(function (row) { return row.key === key; })[0] || null : null; }
+  // Follow state.merges chains with cycle protection (matches reader.addUp).
+  function canonKey(key) {
+    var k = String(key == null ? '' : key);
+    for (var hop = 0; hop < 12 && k && Object.prototype.hasOwnProperty.call(state.merges, k) && state.merges[k] !== k; hop++) {
+      k = state.merges[k];
+    }
+    return k;
+  }
+  function wouldCycle(fromKey, intoKey) {
+    var cur = String(intoKey == null ? '' : intoKey);
+    for (var hop = 0; hop < 12 && cur; hop++) {
+      if (cur === fromKey) return true;
+      if (!Object.prototype.hasOwnProperty.call(state.merges, cur) || state.merges[cur] === cur) break;
+      cur = state.merges[cur];
+    }
+    return false;
+  }
+  function mergedMapValue(map, learnerKey, measureKey) {
+    var direct = learnerKey + '\n' + measureKey;
+    if (direct in map) return map[direct];
+    var keys = Object.keys(map);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i], at = k.indexOf('\n');
+      if (at >= 0 && k.slice(at + 1) === measureKey && canonKey(k.slice(0, at)) === learnerKey) return map[k];
+    }
+    return undefined;
+  }
+  function clearMergedMap(map, learnerKey, measureKey) {
+    delete map[learnerKey + '\n' + measureKey];
+    Object.keys(map).forEach(function (k) {
+      var at = k.indexOf('\n');
+      if (at >= 0 && k.slice(at + 1) === measureKey && canonKey(k.slice(0, at)) === learnerKey) delete map[k];
+    });
+  }
   function labelFor(key) {
     var found = '';
     state.sessions.forEach(function (s) { if (!found && reader.labelKey(s.learner) === key) found = s.learner; });
@@ -213,13 +274,40 @@
   // ---------------------------------------------------------------------------
   // Reading files
   // ---------------------------------------------------------------------------
+  var MAX_ZIP_BYTES = 50 * 1024 * 1024;
   function readText(file) {
+    if (file && Number(file.size) > reader.MAX_BYTES) return Promise.reject(new Error('too_big'));
+    if (file && file._bytes) {
+      if (file._bytes.byteLength > reader.MAX_BYTES) return Promise.reject(new Error('too_big'));
+      try { return Promise.resolve(new TextDecoder('utf-8').decode(file._bytes)); }
+      catch (_) { return Promise.reject(new Error('unreadable')); }
+    }
     return new Promise(function (done, fail) {
       var fileReader = new FileReader();
       fileReader.onload = function () { done(String(fileReader.result == null ? '' : fileReader.result)); };
       fileReader.onerror = function () { fail(new Error('unreadable')); };
       fileReader.readAsText(file);
     });
+  }
+  function readBuffer(file) {
+    var zipLimit = Number(reader.MAX_ZIP_BYTES) || MAX_ZIP_BYTES;
+    if (file && Number(file.size) > zipLimit) return Promise.reject(new Error('too_big'));
+    if (file && file._bytes) {
+      if (file._bytes.byteLength > zipLimit) return Promise.reject(new Error('too_big'));
+      return Promise.resolve(file._bytes);
+    }
+    if (file && typeof file.arrayBuffer === 'function') return file.arrayBuffer();
+    return new Promise(function (done, fail) {
+      var fileReader = new FileReader();
+      fileReader.onload = function () { done(fileReader.result); };
+      fileReader.onerror = function () { fail(new Error('unreadable')); };
+      fileReader.readAsArrayBuffer(file);
+    });
+  }
+  function isZipFile(file) {
+    var name = String((file && file.name) || '');
+    var type = String((file && file.type) || '');
+    return /\.zip$/i.test(name) || type === 'application/zip' || type === 'application/x-zip-compressed';
   }
   function addSession(s, drop, fromFile) {
     var have = state.byId[s.sessionId];
@@ -243,7 +331,11 @@
   }
   function takeBundle(bundle, drop) {
     bundle.sessions.forEach(function (s) { addSession(s, drop, false); });
-    bundle.merges.forEach(function (row) { if (!(row.from in state.merges)) state.merges[row.from] = row.into; });
+    bundle.merges.forEach(function (row) {
+      if (row.from && row.into && !(row.from in state.merges) && !wouldCycle(row.from, row.into)) {
+        state.merges[row.from] = canonKey(row.into);
+      }
+    });
     bundle.apart.forEach(function (row) { state.apart[reader.pairKey(row[0], row[1])] = true; });
     bundle.goals.forEach(function (row) { var key = row.learner + '\n' + row.measure; if (!(key in state.goals)) state.goals[key] = row.value; });
     // 2026-11-17: goal dates and paper scores, kept the way goals are. A paper score already on the page is not added twice.
@@ -284,12 +376,46 @@
     if (!all.length) return;
     if (busy) { say('Still reading the last files.'); return; }
     busy = true;
+    lastRemoved = null;
     var drop = startDrop();
     var files = all.slice(0, reader.MAX_FILES);
     state.leftOut += all.length - files.length;
     say('Reading ' + count(files.length, 'file') + '.');
+    var budget = reader.MAX_FILES;
     for (var i = 0; i < files.length; i++) {
       var file = files[i], result;
+      if (isZipFile(file) && typeof reader.unpackZip === 'function') {
+        if (budget <= 0) { state.leftOut++; continue; }
+        var zipLimit = Number(reader.MAX_ZIP_BYTES) || MAX_ZIP_BYTES;
+        if (Number(file.size) > zipLimit) {
+          absorb({ ok: false, name: String(file.name || 'archive.zip'), why: 'This .zip file is larger than 50 MB. Unzip it on your device and drop the results files in smaller groups.' }, drop);
+          continue;
+        }
+        var unpacked;
+        try { unpacked = await reader.unpackZip(await readBuffer(file), { maxFiles: budget }); }
+        catch (_) { unpacked = { ok: false, why: reader.REASONS.unreadable, entries: [], skipped: [], leftOut: 0 }; }
+        if (!unpacked.ok) {
+          absorb({ ok: false, name: String(file.name || 'archive.zip'), why: unpacked.why }, drop);
+          continue;
+        }
+        state.leftOut += unpacked.leftOut || 0;
+        (unpacked.skipped || []).forEach(function (skip) {
+          state.notResults.push({ file: skip.name, why: skip.why });
+          drop.look++;
+        });
+        if (!unpacked.entries.length && (unpacked.skipped || []).length) drop.read++;
+        for (var j = 0; j < unpacked.entries.length; j++) {
+          if (budget <= 0) { state.leftOut++; continue; }
+          budget--;
+          var entry = unpacked.entries[j];
+          try { result = await reader.read(entry.text, { name: entry.name, lastModified: file.lastModified }); }
+          catch (_) { result = reader.refuse('unreadable', entry.name); }
+          absorb(result, drop);
+        }
+        continue;
+      }
+      if (budget <= 0) { state.leftOut++; continue; }
+      budget--;
       if (Number(file.size) > reader.MAX_BYTES) result = reader.refuse('too_big', file.name);
       else {
         try { result = await reader.read(await readText(file), { name: file.name, lastModified: file.lastModified }); }
@@ -332,6 +458,7 @@
     if (!state.keep || state.sample) return;
     try {
       if (state.sessions.length) storage().setItem(STORE_KEY, JSON.stringify(bundleNow())); else forgetStored();
+      unsavedEdits = false;
     } catch (_) {
       state.keep = false;
       forgetStored();
@@ -409,11 +536,14 @@
         same.addEventListener('click', function () {
           // The name with fewer results joins the one with more.
           var from = row.a.count < row.b.count ? row.a : row.b, into = from === row.a ? row.b : row.a;
-          state.merges[from.key] = into.key;
+          if (!from.key || !into.key || wouldCycle(from.key, into.key)) return;
+          state.merges[from.key] = canonKey(into.key);
+          markEdited();
           answered(from.label + ' and ' + into.label + ' are counted as one student.');
         });
         differ.addEventListener('click', function () {
           state.apart[row.pair] = true;
+          markEdited();
           answered(row.a.label + ' and ' + row.b.label + ' stay two students.');
         });
         return add(item, line, add(el('p', 'pair-buttons'), same, differ));
@@ -424,11 +554,47 @@
       var undo = button('btn btn-small', 'Count them apart again');
       var line = labelFor(from) + ' is counted with ' + labelFor(state.merges[from]) + '.';
       undo.setAttribute('aria-label', line + ' Count them apart again');
-      undo.addEventListener('click', function () { delete state.merges[from]; answered(labelFor(from) + ' is counted apart again.'); });
+      undo.addEventListener('click', function () { delete state.merges[from]; markEdited(); answered(labelFor(from) + ' is counted apart again.'); });
       return add(item, el('p', 'pair-names', line), add(el('p', 'pair-buttons'), undo));
     })));
     if (state.leftOut) add(body, el('p', 'note', 'Only the first ' + reader.MAX_FILES + ' files of a drop are read, and the page holds ' + reader.MAX_SESSIONS + ' results. Left out: ' + state.leftOut + '.'));
     if (!body.firstChild) add(body, el('p', 'hint', 'Nothing needs a look.'));
+    var mergeFold = $('manual-merge'), mergeHost = $('manual-merge-body');
+    if (mergeFold && mergeHost) {
+      mergeHost.textContent = '';
+      var mergeable = model.learners.filter(function (l) { return !!l.key; });
+      if (mergeable.length >= 2) {
+        mergeFold.hidden = false;
+        var fromSel = el('select');
+        fromSel.id = 'merge-from';
+        var intoSel = el('select');
+        intoSel.id = 'merge-into';
+        mergeable.forEach(function (l) {
+          var o1 = el('option', '', l.label + ' (' + count(l.count, 'result') + ')'); o1.value = l.key; fromSel.appendChild(o1);
+          var o2 = el('option', '', l.label + ' (' + count(l.count, 'result') + ')'); o2.value = l.key; intoSel.appendChild(o2);
+        });
+        intoSel.selectedIndex = 1;
+        var fromLab = el('label', '', 'Move results from'); fromLab.htmlFor = 'merge-from';
+        var intoLab = el('label', '', 'Into'); intoLab.htmlFor = 'merge-into';
+        var mergeGo = button('btn btn-small', 'Combine names');
+        mergeGo.id = 'merge-go';
+        var mergeNote = el('p', 'hint', '');
+        mergeNote.setAttribute('role', 'status');
+        mergeGo.addEventListener('click', function () {
+          var fKey = fromSel.value, tKey = intoSel.value;
+          if (!fKey || !tKey || fKey === tKey || wouldCycle(fKey, tKey)) { mergeNote.textContent = 'Choose two different names to combine.'; return; }
+          state.merges[fKey] = canonKey(tKey);
+          markEdited();
+          offerSave();
+          answered(labelFor(fKey) + ' and ' + labelFor(tKey) + ' are counted as one student.');
+        });
+        add(mergeHost, el('p', 'hint', 'If one student typed two different names in their files, combine them here.'),
+          add(el('div', 'manual-merge-row'), add(el('div', 'field'), fromLab, fromSel), add(el('div', 'field'), intoLab, intoSel), mergeGo), mergeNote);
+      } else {
+        mergeFold.hidden = true;
+        mergeFold.open = false;
+      }
+    }
     show('show-results', results > 0);
   }
   function answered(text) {
@@ -444,10 +610,11 @@
     var range = dateRange(model.firstDate, model.lastDate);
     setText('results-line', count(model.count, 'result') + ' from ' + count(model.learners.length, 'student') + (range ? '. ' + range + '.' : '.'));
     var look = lookCount();
-    show('open-check', look > 0 || Object.keys(state.merges).length > 0);
+    show('open-check', look > 0 || Object.keys(state.merges).length > 0 || model.learners.length >= 2);
     setText('open-check', 'Check what was read' + (look ? ' (' + look + ')' : ''));
     show('sample-note', state.sample);
     show('save-nudge', nudge === 'shown' && !state.sample);
+    drawUndo();
     show('start-over-ask', false);
     if (!learnerNamed(state.learner)) state.learner = model.learners.length ? model.learners[0].key : '';
     var pick = $('pick-learner');
@@ -471,6 +638,7 @@
     // Only the view that is shown is on the page: the other one is emptied, not just hidden.
     $('middles').textContent = '';
     $('group-table').textContent = '';
+    if ($('group-missed')) { $('group-missed').textContent = ''; $('group-missed').hidden = true; }
     $('learner-body').textContent = '';
     if (state.view === 'group') drawGroup(); else drawLearner();
     setPrintHead();
@@ -627,6 +795,31 @@
   }
   function newTabHint() { return el('p', 'hint new-tab-hint no-print', 'These buttons open the maker in a new tab. This page stays open as it is.'); }
 
+  var SR_CUSTOM_TOKEN = /^[A-Za-z0-9]{1,16}$/;
+  var SR_SPECIAL_MODE = /(?:stroop|subitize|flanker|^math_)/i;
+  var SR_MODE_LABELS = {
+    color_word_stroop: 'ink color',
+    number_size_stroop: 'number size',
+    quantity_stroop: 'count the symbols',
+    flanker_letters: 'center letter',
+    subitize_dots: 'dot patterns',
+    ras_switch: 'rapid switching',
+    ras_triple: '3-way rapid switching',
+    math_make_10: 'make-10 partners',
+    math_doubles: 'doubles facts',
+    math_mult_2_5_10: '2s, 5s, and 10s',
+    math_squares: 'multiplication squares',
+  };
+  function srModeLabel(modeId) {
+    var k = String(modeId || '').toLowerCase();
+    return Object.prototype.hasOwnProperty.call(SR_MODE_LABELS, k) ? SR_MODE_LABELS[k] : k.replace(/_/g, ' ');
+  }
+  function srModeOf(session) {
+    var m = /^symbol-runner-([a-z0-9_]+)-/i.exec(String((session && session.packetId) || ''));
+    return m ? m[1].toLowerCase() : '';
+  }
+  function isSrSpecialMode(mode) { return !!mode && SR_SPECIAL_MODE.test(mode); }
+
   function drawGroupMissed() {
     var viewGroup = $('view-group');
     var groupTable = $('group-table');
@@ -682,6 +875,8 @@
       var learnerSeen = Object.create(null);
       learnerNow = learner.label;
       (learner.sessions || []).forEach(function (s) {
+        var sMode = srModeOf(s);
+        var srSpecial = isSrSpecialMode(sMode);
         (s.items || []).forEach(function (it) {
           if (it.practice || !it.attempted) return;
           var act = String(it.activity || '');
@@ -701,7 +896,8 @@
           if (act === 'symbol_runner') {
             var sym = String(it.target || it.word || '').trim();
             if (!sym) return;
-            recordMiss(learnerSeen, 'sr:' + sym.toLowerCase(), sym, 'sr', it);
+            var srKind = srSpecial ? ('sr_mode:' + sMode) : (SR_CUSTOM_TOKEN.test(sym) ? 'sr' : 'sr_other');
+            recordMiss(learnerSeen, 'sr:' + sym.toLowerCase(), sym, srKind, it);
           } else if (/^vocab_/i.test(act)) {
             var vw = String(it.word || it.target || '').trim();
             if (!vw) return;
@@ -760,25 +956,36 @@
     var navStart = host.childNodes.length;
 
     var srList = list.filter(function (e) { return e.kind === 'sr'; }).slice(0, 6).map(function (e) { return e.display; });
+    var srModes = [];
+    list.forEach(function (e) {
+      if (e.kind.indexOf('sr_mode:') === 0) {
+        var modeId = e.kind.slice(8);
+        if (modeId && srModes.indexOf(modeId) < 0 && srModes.length < 2) srModes.push(modeId);
+      }
+    });
     var vocabList = list.filter(function (e) { return e.kind === 'vocab'; }).slice(0, 12).map(function (e) { return e.display; });
     var wsList = list.filter(function (e) { return e.kind === 'ws'; }).slice(0, 12).map(function (e) { return e.display; });
     var mathList = list.filter(function (e) { return e.kind === 'math'; }).slice(0, 12).map(function (e) { return e.display; });
     var hasQd = list.some(function (e) { return e.kind === 'qd'; });
     var hasMn = list.some(function (e) { return e.kind === 'mn'; });
 
-    if (srList.length) {
-      add(host, add(el('p', 'actions no-print'), navButton('Practice group missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srList.join(',')))));
+    if (srList.length || srModes.length) {
+      var srGroupRow = el('p', 'actions no-print');
+      if (srList.length) add(srGroupRow, navButton('Practice group missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srList.join(','))));
+      srModes.forEach(function (modeId) {
+        add(srGroupRow, navButton('Practice group ' + srModeLabel(modeId) + ' in Symbol Runner', 'packets-symbol-runner.html#mode=' + encodeURIComponent(modeId)));
+      });
+      add(host, srGroupRow);
     }
     if (vocabList.length) {
       add(host, add(el('p', 'actions no-print'),
         navButton('Practice group missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabList.join(','))),
-        navButton('Open group missed words in Present and Export', 'packets-present-export.html#words=' + encodeURIComponent(vocabList.join(',')))));
+        navButton('Open group missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(vocabList.join(',')))));
     }
     if (wsList.length) {
-      var wsGroupRow = add(el('p', 'actions no-print'), navButton('Practice group missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsList.join(','))));
-      if (!vocabList.length) {
-        add(wsGroupRow, navButton('Open group missed words in Present and Export', 'packets-present-export.html#words=' + encodeURIComponent(wsList.join(','))));
-      }
+      var wsGroupRow = add(el('p', 'actions no-print'),
+        navButton('Practice group missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsList.join(','))),
+        navButton('Open group missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(wsList.join(','))));
       add(host, wsGroupRow);
     }
     if (mathList.length) {
@@ -895,7 +1102,7 @@
     points.concat(paper).forEach(function (p) { if (!dated[p.date]) { dated[p.date] = true; dates++; } });
     if (dates < 2) return null;
     var W = Math.max(280, Math.min(720, Math.round(width) || 680)), H = W < 420 ? 220 : 250;
-    var left = 40, right = 34, top = 26, bottom = 46, inset = 16;
+    var left = 46, right = 34, top = 26, bottom = 46, inset = 16;
     var days = points.map(function (p) { return dayNumber(p.date); });
     var paperDays = paper.map(function (p) { return dayNumber(p.date); });
     var allDays = days.concat(paperDays, aim ? [dayNumber(aim.date)] : []);
@@ -975,18 +1182,22 @@
     role(table, 'table');
     add(table, el('caption', 'sr-only', caption));
     var headRow = role(el('tr'), 'row');
-    heads.forEach(function (text) { var th = role(el('th', '', text), 'columnheader'); th.scope = 'col'; headRow.appendChild(th); });
+    var headClasses = heads.map(function (h) { return h && typeof h === 'object' ? String(h.className || '') : ''; });
+    var headTexts = heads.map(function (h) { return h && typeof h === 'object' ? String(h.text || '') : String(h); });
+    headTexts.forEach(function (text, i) { var th = role(el('th', headClasses[i], text), 'columnheader'); th.scope = 'col'; headRow.appendChild(th); });
     var body = role(el('tbody'), 'rowgroup');
     rows.forEach(function (cells) {
       var row = role(el('tr'), 'row');
       // A cell is text, or a list: its first line, then smaller lines under it.
       cells.forEach(function (text, i) {
         var lines = Array.isArray(text) ? text : [text];
-        var cell = role(el(i ? 'td' : 'th', '', lines[0]), i ? 'cell' : 'rowheader');
+        var firstNode = lines[0] && lines[0].nodeType ? lines[0] : null;
+        var cell = role(el(i ? 'td' : 'th', headClasses[i], firstNode ? '' : lines[0]), i ? 'cell' : 'rowheader');
+        if (firstNode) cell.appendChild(firstNode);
         // A line can also be a node built here (2026-11-17: the names under a count, in a fold).
         lines.slice(1).forEach(function (line) { add(cell, line && line.nodeType ? line : el('span', 'cell-sub', line)); });
         if (!i) cell.scope = 'row';
-        else if (cards) cell.setAttribute('data-label', heads[i]);
+        else if (cards) cell.setAttribute('data-label', headTexts[i]);
         row.appendChild(cell);
       });
       body.appendChild(row);
@@ -1044,9 +1255,9 @@
     return 'Aim line: from ' + amountText(aim.from.value, series) + ' on ' + showDate(aim.from.date) + ' (the first score) to the goal of ' + amountText(aim.goal, series) + ' on '
       + showDate(aim.date) + '. To get there: ' + perWeekText(aim.perWeek, series) + ' a week.';
   }
-  // The paper scores typed for this learner and this check, in date order.
+  // The paper scores typed for this learner (and any names merged into them) and this check, in date order.
   function paperFor(learner, series) {
-    return state.paper.filter(function (p) { return p.learner === learner.key && p.measure === series.key; })
+    return state.paper.filter(function (p) { return canonKey(p.learner) === learner.key && p.measure === series.key; })
       .sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
   }
   // A measure's table: each result from the files, then each paper score (its own row, labeled paper), then the goal and the
@@ -1092,8 +1303,8 @@
     var growthLine = el('p', 'growth-line');
     var caution = el('p', 'hint growth-caution');
     var tableBox = null;
-    var goalNow = function () { return goalKey in state.goals ? state.goals[goalKey] : null; };
-    var dateNow = function () { return goalKey in state.goalDates ? state.goalDates[goalKey] : ''; };
+    var goalNow = function () { var v = mergedMapValue(state.goals, learner.key, series.key); return v === undefined ? null : v; };
+    var dateNow = function () { var d = mergedMapValue(state.goalDates, learner.key, series.key); return d === undefined ? '' : d; };
     var redraw = function () {
       var goal = goalNow(), goalDate = dateNow();
       var aim = aimOf(scoresHere, goal, goalDate);
@@ -1129,7 +1340,7 @@
     input.setAttribute('autocomplete', 'off');
     input.setAttribute('data-goal', series.key);
     input.setAttribute('aria-describedby', 'goal-' + n + '-hint');
-    input.value = goalKey in state.goals ? String(state.goals[goalKey]) : '';
+    input.value = goalNow() !== null ? String(goalNow()) : '';
     label.htmlFor = input.id;
     var hint = el('span', 'hint', 'Type a number. It is drawn as a line on the chart.');
     hint.id = 'goal-' + n + '-hint';
@@ -1139,7 +1350,8 @@
       var bad = typed !== '' && (value === null || value > most);
       if (bad) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
       if (bad) return;
-      if (value === null) delete state.goals[goalKey]; else state.goals[goalKey] = value;
+      if (value === null) clearMergedMap(state.goals, learner.key, series.key); else state.goals[goalKey] = value;
+      markEdited();
       persist();
       redraw();
       if (value !== null) offerSave();
@@ -1162,16 +1374,20 @@
       var bad = typed !== '' && !day;
       if (bad) dateInput.setAttribute('aria-invalid', 'true'); else dateInput.removeAttribute('aria-invalid');
       if (bad || (day || '') === dateNow()) return;
-      if (!day) delete state.goalDates[goalKey]; else state.goalDates[goalKey] = day;
+      if (!day) clearMergedMap(state.goalDates, learner.key, series.key); else state.goalDates[goalKey] = day;
+      markEdited();
       persist();
       redraw();
       if (day) offerSave();
     };
     dateInput.addEventListener('input', onDate);
     dateInput.addEventListener('change', onDate);
+    var goalFold = el('details', 'goal-fold no-print');
+    goalFold.open = goalNow() !== null || !!dateNow();
+    add(goalFold, el('summary', '', 'Goal & aim line'), add(field, label, input, hint), add(dateField, dateLabel, dateInput, dateHint));
     tableBox = measureTable(series, paper, goalNow(), dateNow(), aimOf(scoresHere, goalNow(), dateNow()), growthPerWeek(scoresHere));
     // The chart and its goal on one side, the same numbers as a table on the other (under it on a narrow screen).
-    return add(card, add(el('div', 'measure-body'), add(el('div', 'measure-side'), holder, add(field, label, input, hint), add(dateField, dateLabel, dateInput, dateHint),
+    return add(card, add(el('div', 'measure-body'), add(el('div', 'measure-side'), holder, goalFold,
       goalLine, aimLine, growthLine, caution), tableBox));
   }
   // "Add a paper score" (2026-11-17): the check maker prints a paper version; its scores are typed here. Each is kept apart
@@ -1182,7 +1398,13 @@
     var title = el('h4', 'learner-sub', 'Add a paper score');
     title.id = 'paper-title';
     box.setAttribute('aria-labelledby', title.id);
-    add(box, title, el('p', 'hint', 'For a check given on paper, such as the printed version the check maker makes. A paper score is kept apart from the scores in the files: it has its own row in the table and its own mark on the chart, labeled "paper", and it is never averaged with them.'));
+    var mine = state.paper.filter(function (p) { return canonKey(p.learner) === learner.key; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    var fold = el('details', 'paper-fold');
+    fold.open = mine.length > 0;
+    var foldBody = el('div', 'paper-fold-body');
+    add(fold, add(el('summary'), title), foldBody);
+    add(box, fold);
+    add(foldBody, el('p', 'hint', 'For a check given on paper, such as the printed version the check maker makes. A paper score is kept apart from the scores in the files: it has its own row in the table and its own mark on the chart, labeled "paper", and it is never averaged with them.'));
     var checksHere = seriesList.filter(function (s) { return s.kind === 'check' || s.kind === 'paper'; });
     var field = function (labelText, input, id) {
       input.id = id;
@@ -1241,6 +1463,7 @@
       // A typed name that is one of this student's checks goes with that check.
       if (!target) target = checksHere.filter(function (s) { return s.name.toLowerCase() === typedName.toLowerCase(); })[0] || null;
       var entry = addPaper({ learner: learner.key, measure: target ? target.key : 'paper\t' + typedName.toLowerCase(), name: target ? target.name : typedName, date: day, value: value, note: cleanTyped(note.value, 200) });
+      markEdited();
       persist();
       offerSave();
       drawLearner();
@@ -1250,9 +1473,8 @@
       var again = $('paper-go');
       if (again) again.focus();
     });
-    add(box, add(el('div', 'paper-form'), field('Date', date, 'paper-date'), pickField, nameField, field('Score', score, 'paper-score'), field('Note (optional)', note, 'paper-note')),
+    add(foldBody, add(el('div', 'paper-form'), field('Date', date, 'paper-date'), pickField, nameField, field('Score', score, 'paper-score'), field('Note (optional)', note, 'paper-note')),
       add(el('p', 'actions'), go), said);
-    var mine = state.paper.filter(function (p) { return p.learner === learner.key; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
     if (mine.length) {
       var list = el('ul', 'paper-list');
       mine.forEach(function (p) {
@@ -1261,6 +1483,7 @@
         remove.setAttribute('aria-label', 'Remove the paper score ' + line);
         remove.addEventListener('click', function () {
           state.paper = state.paper.filter(function (q) { return q.id !== p.id; });
+          markEdited();
           persist();
           drawLearner();
           setText('paper-said', 'Removed the paper score ' + line);
@@ -1270,7 +1493,7 @@
         });
         list.appendChild(add(el('li'), el('span', '', line), remove));
       });
-      add(box, el('p', 'paper-list-title', 'Paper scores typed for this student'), list);
+      add(foldBody, el('p', 'paper-list-title', 'Paper scores typed for this student'), list);
     }
     return box;
   }
@@ -1289,7 +1512,7 @@
     var have = Object.create(null);
     seriesList.forEach(function (series) { have[series.key] = true; });
     state.paper.forEach(function (p) {
-      if (p.learner !== learner.key || have[p.measure]) return;
+      if (canonKey(p.learner) !== learner.key || have[p.measure]) return;
       have[p.measure] = true;
       seriesList.push({ key: p.measure, kind: 'paper', name: p.name, unitName: '', percent: false, points: [], dates: 0, formKey: '' });
     });
@@ -1303,13 +1526,15 @@
       add(body, el('h4', 'learner-sub', 'Most frequent wrong answers in practice'),
         plainTable('Most frequent wrong answers in practice', ['Word', 'Answered', 'Times'], wrong.map(function (row) { return [row.word, row.answer, String(row.times)]; }), 'narrow'));
     }
-    var srSeen = Object.create(null), srMissed = [];
+    var srSeen = Object.create(null), srMissed = [], srModes = [];
     var vocabSeen = Object.create(null), vocabMissed = [];
     var wsSeen = Object.create(null), wsMissed = [];
     var mathSeen = Object.create(null), mathMissed = [];
     var mathKnownSeen = Object.create(null), mathKnownCandidates = [];
     var qdMissedCount = 0, mnMissedCount = 0;
     learner.sessions.forEach(function (s) {
+      var sMode = srModeOf(s);
+      var srSpecial = isSrSpecialMode(sMode);
       (s.items || []).forEach(function (it) {
         if (it.practice || !it.attempted) return;
         var act = String(it.activity || '');
@@ -1330,8 +1555,14 @@
         if (it.firstTry && it.correct) return;
         if (act === 'symbol_runner') {
           var sym = String(it.target || it.word || '').trim();
+          if (!sym) return;
+          if (srSpecial) {
+            if (srModes.indexOf(sMode) < 0 && srModes.length < 2) srModes.push(sMode);
+            return;
+          }
+          if (!SR_CUSTOM_TOKEN.test(sym)) return;
           var key = sym.toLowerCase();
-          if (!sym || srSeen[key] || srMissed.length >= 6) return;
+          if (srSeen[key] || srMissed.length >= 6) return;
           srSeen[key] = true;
           srMissed.push(sym);
         } else if (/^vocab_/i.test(act)) {
@@ -1344,10 +1575,10 @@
           qdMissedCount += 1;
         } else if (act === 'missing_number') {
           mnMissedCount += 1;
-        } else {
+        } else if (reader && reader.ACTIVITIES && reader.ACTIVITIES[act]) {
           var ww = String(it.word || it.target || '').trim();
           var wKey = ww.toLowerCase();
-          if (!ww || !/^[a-z]/i.test(ww) || wsSeen[wKey] || wsMissed.length >= 12) return;
+          if (!ww || !/^[a-z]{2,16}$/i.test(ww) || wsSeen[wKey] || wsMissed.length >= 12) return;
           wsSeen[wKey] = true;
           wsMissed.push(ww);
         }
@@ -1365,19 +1596,23 @@
       if (mathKnown.length >= 8 || mathBlocked[cand.key]) return;
       mathKnown.push(cand.text);
     });
-    if (srMissed.length) {
-      add(body, add(el('p', 'actions no-print'), navButton('Practice missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srMissed.join(',')))));
+    if (srMissed.length || srModes.length) {
+      var srRow = el('p', 'actions no-print');
+      if (srMissed.length) add(srRow, navButton('Practice missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srMissed.join(','))));
+      srModes.forEach(function (modeId) {
+        add(srRow, navButton('Practice ' + srModeLabel(modeId) + ' in Symbol Runner', 'packets-symbol-runner.html#mode=' + encodeURIComponent(modeId)));
+      });
+      add(body, srRow);
     }
     if (vocabMissed.length) {
       add(body, add(el('p', 'actions no-print'),
         navButton('Practice missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabMissed.join(','))),
-        navButton('Open missed words in Present and Export', 'packets-present-export.html#words=' + encodeURIComponent(vocabMissed.join(',')))));
+        navButton('Open missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(vocabMissed.join(',')))));
     }
     if (wsMissed.length) {
-      var wsRow = add(el('p', 'actions no-print'), navButton('Practice missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsMissed.join(','))));
-      if (!vocabMissed.length) {
-        add(wsRow, navButton('Open missed words in Present and Export', 'packets-present-export.html#words=' + encodeURIComponent(wsMissed.join(','))));
-      }
+      var wsRow = add(el('p', 'actions no-print'),
+        navButton('Practice missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsMissed.join(','))),
+        navButton('Open missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(wsMissed.join(','))));
       add(body, wsRow);
     }
     if (mathMissed.length) {
@@ -1398,14 +1633,34 @@
     }
     if (body.querySelector('.nav-new-tab')) add(body, newTabHint());
     add(body, el('h4', 'learner-sub', 'Every result, in date order'),
-      plainTable('Every result for ' + learner.label + ', in date order', ['Date', 'What', 'Result', 'Answered', 'Time taken', 'Notes'], learner.sessions.map(function (s) {
+      plainTable('Every result for ' + learner.label + ', in date order', ['Date', 'What', 'Result', 'Answered', 'Time taken', 'Notes', { text: 'Action', className: 'no-print' }], learner.sessions.map(function (s) {
         var probe = s.mode === 'probe';
         var what = probe ? s.measureName + (formText(s.form) ? ', version ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
         var result = probe ? (s.value === null ? 'No score' : s.value + ' ' + unitFor(s.value, s.unitName)) : s.summary.firstTryPct === null ? 'Not scored' : s.summary.firstTryPct + '% on the first try';
         var more = (probe ? [] : newFactsLines(s.newFacts)).concat(extraLines(s));
         // Practice that is never scored (Letter Trace alone): how much was done, not "0 of 0".
         var answered = !probe && !s.summary.given ? s.summary.done + ' done (practice, not scored)' : s.summary.attempted + ' of ' + s.summary.given;
-        return [showDate(s.date), what, more.length ? [result].concat(more) : result, answered, timeCell(s), sentence(notesOf(s).join('; '))];
+        var rem = button('btn btn-text btn-small no-print row-remove', 'Remove');
+        rem.setAttribute('aria-label', 'Remove ' + what + ' from ' + showDate(s.date));
+        rem.addEventListener('click', function () {
+          var idx = state.sessions.indexOf(s);
+          if (idx < 0) return;
+          lastRemoved = { session: s, index: idx };
+          state.sessions.splice(idx, 1);
+          delete state.byId[s.sessionId];
+          markEdited();
+          changed();
+          if (!state.sessions.length) {
+            go('empty', false);
+            if ($('choose')) $('choose').focus();
+            say('Removed the last result. The page is clear.');
+            return;
+          }
+          drawResults();
+          if ($('results-undo-btn')) $('results-undo-btn').focus();
+          say('Removed ' + what + ' from ' + showDate(s.date) + '. Press Undo to restore it.');
+        });
+        return [showDate(s.date), what, more.length ? [result].concat(more) : result, answered, timeCell(s), sentence(notesOf(s).join('; ')), rem];
       }), 'wide'));
     measureCues();
   }
@@ -1436,6 +1691,7 @@
   function saveBundle() {
     var name = (state.sample ? 'sample-' : '') + 'results-all__' + today() + '.json';
     if (saveFile(name, JSON.stringify(bundleNow()), 'application/json')) {
+      unsavedEdits = false;
       setText('take-said', 'Saved ' + name + '. Drop it on this page later to open where you left off.');
       return name;
     }
@@ -1451,7 +1707,10 @@
     forgetStored();
     state = fresh();
     model = null;
+    unsavedEdits = false;
+    lastRemoved = null;
     endNudge();
+    drawUndo();
     $('files').value = '';
     go('empty', false);
     drawKeep('');
@@ -1530,7 +1789,25 @@
       drawKeep('Removed from this device. The results stay on this page until you close it.');
       $('keep').focus();
     });
-    window.addEventListener('beforeprint', setPrintHead);
+    var openedMissed = [];
+    function preparePrint() {
+      setPrintHead();
+      openedMissed = [];
+      Array.prototype.forEach.call(doc.querySelectorAll('details.missed-fold'), function (box) {
+        if (!box.open) { box.open = true; openedMissed.push(box); }
+      });
+    }
+    function finishPrint() {
+      openedMissed.forEach(function (box) { box.open = false; });
+      openedMissed = [];
+    }
+    window.addEventListener('beforeprint', preparePrint);
+    window.addEventListener('afterprint', finishPrint);
+    window.addEventListener('beforeunload', function (event) {
+      if (!unsavedEdits || state.keep || state.sample || !state.sessions.length) return;
+      event.preventDefault();
+      event.returnValue = '';
+    });
     // A chart is drawn at the width of its box: draw the charts again when the window has settled at a new width.
     var settle = 0, lastWidth = window.innerWidth;
     window.addEventListener('resize', function () {
@@ -1546,6 +1823,20 @@
       changed();
       go('results', false);
       say('Opened the results kept on this device.');
+    }
+    var handoff = window.AlloPacketHandoff;
+    var resultsHash = (handoff && handoff.RESULTS_HASH) || '#import-results';
+    if (handoff && typeof handoff.take === 'function' && window.location.hash === resultsHash) {
+      try { window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (_) {}
+      handoff.take().then(function (handed) {
+        if (handed && handed.bytes) {
+          takeFiles([{ name: handed.name || 'results.csv', size: handed.bytes.byteLength, lastModified: Date.now(), _bytes: handed.bytes }]);
+        } else {
+          say('The results file was no longer waiting. Choose or drop it here.');
+        }
+      }, function () {
+        say('This browser could not hand the results file over. Choose or drop it here.');
+      });
     }
   }
 

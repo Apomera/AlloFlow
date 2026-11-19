@@ -22,7 +22,8 @@
 .found-go { margin-top: 1rem; }
 .found-go .btn { width: 100%; max-width: 20rem; min-height: 3.5rem; font-size: 1.1875rem; }
 .found-more { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 1rem; margin-top: 0.75rem; }
-.found-more .hint { flex-basis: 100%; font-size: 0.875rem; color: var(--muted); }
+.found-teacher { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.75rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+.found-teacher .hint { font-size: 0.875rem; color: var(--muted); }
 
 .open-how { margin-top: 2rem; }
 .open-how h2 { font-size: 1.25rem; }
@@ -33,13 +34,13 @@
 /* The running file: the whole screen, a small bar on top */
 body.is-running { overflow: hidden; }
 .run { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; background: var(--surface); }
-.run-bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; padding: 0.4rem max(0.75rem, env(safe-area-inset-right)) 0.4rem max(0.75rem, env(safe-area-inset-left)); padding-top: max(0.4rem, env(safe-area-inset-top)); background: var(--ink); color: #ffffff; font-size: 0.9375rem; }
+.run-bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; padding: 0.4rem max(0.75rem, env(safe-area-inset-right)) 0.4rem max(0.75rem, env(safe-area-inset-left)); padding-top: max(0.4rem, env(safe-area-inset-top)); background: var(--bar-bg); color: var(--bar-ink); font-size: 0.9375rem; }
 .run-title { flex: 1 1 8rem; min-width: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .run-said { flex: 1 1 100%; order: 3; min-width: 0; overflow-wrap: anywhere; }
 .run-said:empty { display: none; }
 .run-bar .btn { min-height: 2.75rem; }
 .run-close { margin-left: auto; }
-.run-bar :focus-visible { outline-color: #ffffff; }
+.run-bar :focus-visible { outline-color: var(--bar-ink); }
 .run-host { flex: 1 1 auto; display: flex; min-height: 0; }
 .run-frame { flex: 1 1 auto; width: 100%; height: 100%; min-height: 0; border: 0; background: var(--surface); }
 

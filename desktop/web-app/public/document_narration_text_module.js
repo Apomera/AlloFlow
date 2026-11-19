@@ -141,7 +141,9 @@ var AlloNarrationText = (() => {
     const explicit = cleanSp(mathEl.getAttribute && (mathEl.getAttribute("aria-label") || mathEl.getAttribute("alttext")) || "");
     if (explicit) return explicit;
     const mathAtom = (s) => /^[A-Za-z0-9.]+$/.test(s) ? s : "(" + s + ")";
+    const mathBase = (s) => /^[A-Za-z0-9.]+$/.test(s) || Array.from(s).length === 1 ? s : "(" + s + ")";
     const mathScript = (s) => /^-?[A-Za-z0-9]+$/.test(s) ? s : "(" + s + ")";
+    const OVER_ACCENT = { "\xAF": "bar", "\u203E": "bar", "\u02C9": "bar", "_": "bar", "^": "hat", "\u02C6": "hat", "~": "tilde", "\u02DC": "tilde", "\u2192": "vec", "\u20D7": "vec", "\u02D9": "dot", "\xA8": "ddot" };
     const walkMath = (node) => {
       if (!node) return "";
       if (node.nodeType === 3) return String(node.nodeValue || node.textContent || "");
@@ -166,6 +168,49 @@ var AlloNarrationText = (() => {
         const s = cleanSp(walkMath(ch[1]));
         const e = cleanSp(walkMath(ch[2]));
         return b ? mathAtom(b) + "_" + mathScript(s) + "^" + mathScript(e) : "";
+      }
+      if (t === "munderover" && ch.length >= 3) {
+        const b = cleanSp(walkMath(ch[0]));
+        const u = cleanSp(walkMath(ch[1]));
+        const o = cleanSp(walkMath(ch[2]));
+        return b ? mathBase(b) + (u ? "_" + mathScript(u) : "") + (o ? "^" + mathScript(o) : "") : cleanSp(u + " " + o);
+      }
+      if (t === "munder" && ch.length >= 2) {
+        const b = cleanSp(walkMath(ch[0]));
+        const u = cleanSp(walkMath(ch[1]));
+        return b && u ? mathBase(b) + "_" + mathScript(u) : b || u;
+      }
+      if (t === "mover" && ch.length >= 2) {
+        const b = cleanSp(walkMath(ch[0]));
+        const o = cleanSp(walkMath(ch[1]));
+        if (b && OVER_ACCENT[o]) return OVER_ACCENT[o] + "(" + b + ")";
+        return b && o ? mathBase(b) + "^" + mathScript(o) : b || o;
+      }
+      if (t === "mtable") {
+        const rows = ch.map((row) => {
+          const rt = String(row.tagName || "").toLowerCase();
+          if (rt === "mtr" || rt === "mlabeledtr") {
+            const cells = Array.from(row.children || []).map((c) => cleanSp(walkMath(c))).filter(Boolean);
+            return cells.join(", ");
+          }
+          return cleanSp(walkMath(row));
+        }).filter(Boolean);
+        return rows.length ? "[" + rows.join("; ") + "]" : "";
+      }
+      if (t === "mfenced") {
+        const open = node.getAttribute("open") != null ? node.getAttribute("open") : "(";
+        const close = node.getAttribute("close") != null ? node.getAttribute("close") : ")";
+        const seps = Array.from(String(node.getAttribute("separators") != null ? node.getAttribute("separators") : ",").replace(/\s+/g, ""));
+        const parts = ch.map((c) => cleanSp(walkMath(c)));
+        let out = "";
+        for (let i = 0; i < parts.length; i++) {
+          if (i > 0) {
+            const sep = seps.length ? seps[Math.min(i - 1, seps.length - 1)] : "";
+            out += sep ? sep + " " : " ";
+          }
+          out += parts[i];
+        }
+        return open + out + close;
       }
       if (t === "msqrt") {
         const inner = cleanSp(Array.from(node.childNodes || []).map(walkMath).join(""));

@@ -223,7 +223,15 @@ function _useBridgeDialogFocus(open, onClose) {
     if (stack) stack.push(trapEntry);
     const getFocusable = () => Array.from(dialog.querySelectorAll(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((node) => !node.hasAttribute("hidden") && node.getAttribute("aria-hidden") !== "true" && node.style.display !== "none" && node.style.visibility !== "hidden");
+    )).filter((node) => {
+      if (node.hasAttribute("hidden") || node.getAttribute("aria-hidden") === "true" || node.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      if (!(node.style.display !== "none")) return false;
+      for (let cur = node; cur && cur !== dialog; cur = cur.parentElement) {
+        const st = typeof window.getComputedStyle === "function" ? window.getComputedStyle(cur) : null;
+        if (st && (st.display === "none" || st.visibility === "hidden")) return false;
+      }
+      return true;
+    });
     const focusTarget = getFocusable()[0] || dialog;
     const focusFrame = typeof window !== "undefined" && window.requestAnimationFrame ? window.requestAnimationFrame(() => focusTarget.focus()) : null;
     if (focusFrame === null) focusTarget.focus();
@@ -252,6 +260,7 @@ function _useBridgeDialogFocus(open, onClose) {
       if (event.defaultPrevented) return;
       if (stack && stack.length && stack[stack.length - 1] !== trapEntry) return;
       if (event.key === "Escape") {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         if (typeof onCloseRef.current === "function") {
           event.preventDefault();
           event.stopPropagation();
@@ -575,6 +584,7 @@ function BridgeSendModal(props) {
       },
       onKeyDown: (e) => {
         if (e.key === "Escape") {
+          if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
           e.preventDefault();
           closeBridgeSendModal();
         }
@@ -1985,6 +1995,7 @@ function BridgeMessageModal(props) {
       },
       onKeyDown: (e) => {
         if (e.key === "Escape") {
+          if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
           e.preventDefault();
           closeBridgeMessageModal();
         }

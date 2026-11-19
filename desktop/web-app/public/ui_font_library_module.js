@@ -671,8 +671,13 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
       return Promise.resolve({ head: '<link rel="stylesheet" href="' + cssUrl + '">', css: '' });
     }
     var limit = options.maxBytes || 3 * 1024 * 1024, used = 0;
+    var fetchTimed = function (url) {
+      var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 8000) : null;
+      return fetch(url, ctrl ? { signal: ctrl.signal } : undefined).finally(function () { if (timer) clearTimeout(timer); });
+    };
     var fetchFont = function (url) {
-      return fetch(url).then(function (r) { if (!r.ok) throw new Error('font ' + r.status); return r.arrayBuffer(); }).then(function (buf) {
+      return fetchTimed(url).then(function (r) { if (!r.ok) throw new Error('font ' + r.status); return r.arrayBuffer(); }).then(function (buf) {
         used += buf.byteLength; if (used > limit) throw new Error('font too large to embed');
         return bytesToBase64(buf);
       });
@@ -680,7 +685,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     var mime = function (url) { return /\.woff2(\?|$)/.test(url) ? 'font/woff2' : 'font/woff'; };
     var job = o.id === 'opendyslexic'
       ? Promise.all(OPEN_DYSLEXIC.map(function (w) { return fetchFont(w[1]).then(function (b64) { return "@font-face{font-family:'OpenDyslexic';src:url(data:font/woff;base64," + b64 + ") format('woff');font-weight:" + w[0] + ';font-display:swap}'; }); })).then(function (parts) { return parts.join(''); })
-      : fetch(cssUrl).then(function (r) { if (!r.ok) throw new Error('css ' + r.status); return r.text(); }).then(function (css) {
+      : fetchTimed(cssUrl).then(function (r) { if (!r.ok) throw new Error('css ' + r.status); return r.text(); }).then(function (css) {
           var urls = []; css.replace(/url\((['"]?)([^'")]+)\1\)/g, function (m, q, u) { if (urls.indexOf(u) < 0) urls.push(u); return m; });
           return Promise.all(urls.map(function (u) { return fetchFont(u).then(function (b64) { return [u, 'data:' + mime(u) + ';base64,' + b64]; }); })).then(function (pairs) {
             pairs.forEach(function (p) { css = css.split(p[0]).join(p[1]); });

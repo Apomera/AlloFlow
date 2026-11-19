@@ -51,6 +51,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     document.head.appendChild(st);
   })();
 
+  // ── Oratory Studio CSS + SVG Helpers ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function') return;
+    if (document.getElementById('allo-oratory-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-oratory-studio-css';
+    st.textContent = [
+      '.oratory-hero{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 55%,#1e3a8a 100%);border:1px solid rgba(167,139,250,0.45);box-shadow:0 10px 24px rgba(30,27,75,0.2);color:#f8fafc;}',
+      '.oratory-pill{background:rgba(15,23,42,0.52);border:1px solid rgba(196,181,253,0.38);color:#f8fafc;}',
+      '.oratory-pattern-card{transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;}',
+      '.oratory-pattern-card:hover,.oratory-pattern-card:focus-visible{transform:translateY(-1px);box-shadow:0 8px 18px rgba(109,40,217,0.14);}',
+      '.theme-contrast .oratory-hero{background:#000000 !important;border:2px solid #ffff00 !important;box-shadow:none !important;color:#ffffff !important;}',
+      '.theme-contrast .oratory-pill{background:#000000 !important;border:1px solid #ffff00 !important;color:#ffff00 !important;}',
+      '.theme-contrast .oratory-tab-band{background:#000000 !important;border:2px solid #ffff00 !important;color:#ffffff !important;}',
+      '.theme-contrast .oratory-tab-band h3{color:#ffff00 !important;}',
+      '.theme-contrast .oratory-tab-band p{color:#ffffff !important;}',
+      '.theme-contrast .oratory-prosody-stage{background:#000000 !important;border:2px solid #ffff00 !important;color:#ffffff !important;}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
+  function renderOratoryEmblem(h) {
+    return h('svg', { width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+      h('defs', null,
+        h('linearGradient', { id: 'or-emblem-g', x1: '0', y1: '0', x2: '1', y2: '1' },
+          h('stop', { offset: '0%', stopColor: '#7c3aed' }),
+          h('stop', { offset: '100%', stopColor: '#0284c7' })
+        )
+      ),
+      h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 11, fill: 'url(#or-emblem-g)', stroke: '#ddd6fe', strokeWidth: 1.5 }),
+      h('rect', { x: 10, y: 18, width: 3.5, height: 10, rx: 1.7, fill: '#bae6fd' }),
+      h('rect', { x: 15.5, y: 12, width: 3.5, height: 18, rx: 1.7, fill: '#ffffff' }),
+      h('rect', { x: 21, y: 9, width: 3.5, height: 24, rx: 1.7, fill: '#fef08a' }),
+      h('rect', { x: 26.5, y: 14, width: 3.5, height: 16, rx: 1.7, fill: '#ffffff' }),
+      h('rect', { x: 32, y: 19, width: 3.5, height: 8, rx: 1.7, fill: '#bae6fd' })
+    );
+  }
+
+  function renderIntonationSparkSvg(h, points, isDark) {
+    if (!points || !points.length) return null;
+    var W = 120, Hh = 34;
+    var dPath = points.map(function(p, idx) {
+      var x = 8 + (p[0] * (W - 16));
+      var y = Hh - 6 - (p[1] * (Hh - 12));
+      return (idx === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+    var last = points[points.length - 1];
+    var lx = 8 + (last[0] * (W - 16));
+    var ly = Hh - 6 - (last[1] * (Hh - 12));
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: W, height: Hh, 'aria-hidden': 'true', style: { flexShrink: 0, borderRadius: 6, background: isDark ? '#0f172a' : '#f5f3ff', border: '1px solid ' + (isDark ? '#334155' : '#ddd6fe') } },
+      h('line', { x1: 6, y1: Hh / 2, x2: W - 6, y2: Hh / 2, stroke: isDark ? '#334155' : '#cbd5e1', strokeWidth: 1, strokeDasharray: '2 2' }),
+      h('path', { d: dPath, fill: 'none', stroke: isDark ? '#a78bfa' : '#6d28d9', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+      h('circle', { cx: lx, cy: ly, r: 3, fill: isDark ? '#38bdf8' : '#0284c7' })
+    );
+  }
+
+  function renderProsodySimSvg(h, iq, accentColor, isDark) {
+    var W = 460, Hh = 122, padL = 42, padR = 14, padT = 16, padB = 22;
+    var plotW = W - padL - padR, plotH = Hh - padT - padB;
+    var pace = Math.max(0.5, Math.min(2.0, Number(iq.pace) || 1.0));
+    var pitchOff = Math.max(0, Math.min(200, Number(iq.pitch) || 100));
+    var volDb = Math.max(-12, Math.min(12, Number(iq.volume) || 0));
+    var estWpm = Math.round(145 * pace);
+    var normPitch = pitchOff / 200; // 0..1
+    var ampScale = 0.45 + ((volDb + 12) / 24) * 0.9; // 0.45..1.35
+    var baseLine = padT + plotH * (0.76 - normPitch * 0.46);
+    var refPts = [];
+    var livePts = [];
+    var steps = 64;
+    for (var i = 0; i <= steps; i++) {
+      var u = i / steps;
+      var x = padL + u * plotW;
+      // Baseline conversational contour (1.0x pace, 100Hz offset, 0dB)
+      var refY = padT + plotH * 0.53 - Math.sin(u * Math.PI * 3.2) * 14 - Math.sin(u * Math.PI * 1.1) * 5;
+      refPts.push((i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + refY.toFixed(1));
+      // Live modulated contour
+      var wave = Math.sin(u * Math.PI * (2.6 * pace + 0.6)) * (13 * ampScale) + Math.cos(u * Math.PI * (1.2 * pace)) * (5 * ampScale);
+      var y = Math.max(padT + 4, Math.min(padT + plotH - 4, baseLine - wave));
+      livePts.push((i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1));
+    }
+    var strokeW = (1.8 + ((volDb + 12) / 24) * 2.2).toFixed(1);
+    var bg = isDark ? '#0b1220' : '#0f172a';
+    var gridCol = '#1e293b';
+    return h('div', { className: 'oratory-prosody-stage rounded-xl p-3', style: { background: bg, border: '1px solid #334155' } },
+      h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1.5 text-[0.6875rem]', style: { color: '#e2e8f0' } },
+        h('span', { className: 'font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, 'Live Acoustic Delivery Preview'),
+        h('span', { className: 'font-mono font-bold', style: { color: '#38bdf8' } }, '~' + estWpm + ' WPM · +' + pitchOff + ' Hz · ' + (volDb >= 0 ? '+' : '') + volDb + ' dB')
+      ),
+      h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', role: 'img', 'aria-label': 'Simulated delivery prosody wave at approximately ' + estWpm + ' words per minute, plus ' + pitchOff + ' hertz pitch offset, and ' + volDb + ' decibel gain.', style: { display: 'block', maxHeight: 132 } },
+        h('rect', { x: padL, y: padT, width: plotW, height: plotH, rx: 6, fill: '#020617', stroke: '#1e293b', strokeWidth: 1 }),
+        // Target conversational band
+        h('rect', { x: padL, y: padT + plotH * 0.34, width: plotW, height: plotH * 0.34, fill: '#10b981', opacity: 0.12 }),
+        [0.25, 0.5, 0.75].map(function(f, gi) {
+          var gy = padT + plotH * f;
+          return h('line', { key: 'gh' + gi, x1: padL, y1: gy, x2: W - padR, y2: gy, stroke: gridCol, strokeWidth: 1, strokeDasharray: '3 3' });
+        }),
+        h('text', { x: padL - 6, y: padT + 10, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700 }, 'High'),
+        h('text', { x: padL - 6, y: padT + plotH * 0.54, textAnchor: 'end', fill: '#34d399', fontSize: 8.5, fontWeight: 700 }, 'Mid'),
+        h('text', { x: padL - 6, y: padT + plotH - 2, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700 }, 'Low'),
+        // Reference baseline wave
+        h('path', { d: refPts.join(' '), fill: 'none', stroke: '#64748b', strokeWidth: 1.4, strokeDasharray: '5 4' }),
+        // Active live wave
+        h('path', { d: livePts.join(' '), fill: 'none', stroke: accentColor, strokeWidth: strokeW, strokeLinecap: 'round' }),
+        // Legend bottom
+        h('line', { x1: padL + 4, y1: Hh - 8, x2: padL + 22, y2: Hh - 8, stroke: '#64748b', strokeWidth: 1.4, strokeDasharray: '4 3' }),
+        h('text', { x: padL + 26, y: Hh - 5, fill: '#cbd5e1', fontSize: 8.5 }, 'Baseline (1.0×)'),
+        h('line', { x1: padL + 114, y1: Hh - 8, x2: padL + 132, y2: Hh - 8, stroke: accentColor, strokeWidth: 2.5 }),
+        h('text', { x: padL + 136, y: Hh - 5, fill: '#f8fafc', fontSize: 8.5, fontWeight: 700 }, 'Your delivery'),
+        h('text', { x: W - padR, y: Hh - 5, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5 }, 'Time →')
+      )
+    );
+  }
+
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
     if (document.getElementById('allo-live-oratory')) return;
@@ -1739,8 +1852,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         // Audio Engine: Start / Stop
         // ════════════════════════════════════════
 
+        var startingMicRef = React.useRef(false);
+        var oratoryMountedRef = React.useRef(true);
+        React.useEffect(function() {
+          oratoryMountedRef.current = true;
+          return function() { oratoryMountedRef.current = false; startingMicRef.current = false; };
+        }, []);
+
         var startRecording = React.useCallback(function() {
-          if (isRecording) return;
+          if (isRecording || startingMicRef.current) return;
+          startingMicRef.current = true;
           setMicError(null);
 
           // Phase 3v.MR.oratory — prefer the shared voice_module recorder
@@ -1757,6 +1878,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 maxDurationMs: 60 * 60 * 1000, // 1h cap; oratory was uncapped before
                 preferredMimeType: 'audio/webm;codecs=opus',
                 onStream: function(stream) {
+                  startingMicRef.current = false;
+                  if (!oratoryMountedRef.current) {
+                    try { stream.getTracks().forEach(function(tr) { tr.stop(); }); } catch (_) {}
+                    return;
+                  }
+                  if (audioCtxRef.current) { try { audioCtxRef.current.close().catch(function() {}); } catch (_) {} }
                   var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                   audioCtxRef.current = audioCtx;
                   var source = audioCtx.createMediaStreamSource(stream);
@@ -1890,6 +2017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   analyzeLoop();
                 },
                 onError: function(err) {
+                  startingMicRef.current = false;
                   console.warn('[Oratory] Mic error (shared):', err);
                   setMicError((err && err.message) || 'Could not access microphone. Please allow microphone permissions and try again.');
                   if (announceToSR) announceToSR(__alloT('stem.oratory.sr_microphone_access_denied_please_allow_microphone', 'Microphone access denied. Please allow microphone permissions.'));
@@ -1908,6 +2036,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
           navigator.mediaDevices.getUserMedia({ audio: true })
             .then(function(stream) {
+              startingMicRef.current = false;
+              if (!oratoryMountedRef.current) {
+                try { stream.getTracks().forEach(function(tr) { tr.stop(); }); } catch (_) {}
+                return;
+              }
+              if (streamRef.current) { try { streamRef.current.getTracks().forEach(function(tr) { tr.stop(); }); } catch (_) {} }
+              if (audioCtxRef.current) { try { audioCtxRef.current.close().catch(function() {}); } catch (_) {} }
               streamRef.current = stream;
               var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
               audioCtxRef.current = audioCtx;
@@ -2080,6 +2215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               analyzeLoop();
             })
             .catch(function(err) {
+              startingMicRef.current = false;
               console.warn('[Oratory] Mic error:', err);
               setMicError('Could not access microphone. Please allow microphone permissions and try again.');
               if (announceToSR) announceToSR(__alloT('stem.oratory.sr_microphone_access_denied_please_allow_microphone', 'Microphone access denied. Please allow microphone permissions.'));
@@ -2489,7 +2625,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           callGemini('Generate a single simple phrase (5-10 words) in ' + langName + ' appropriate for a ' + gradeText + ' student. Include the translation in English in parentheses. Return ONLY the phrase, nothing else.')
             .then(function(response) {
               setAiLoading(false);
-              setMultiPhrase(response.trim());
+              var text = typeof response === 'string' ? response.trim() : '';
+              setMultiPhrase(text || 'Hello, how are you today?');
             })
             .catch(function() {
               setAiLoading(false);
@@ -2943,8 +3080,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
             // Prosody Curve
             h('div', { className: cardClass },
-              h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                h('span', null, '\uD83D\uDCC8'), t('stem.oratory.pitch_contour', 'Pitch Contour')),
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1.5' },
+                h('h3', { className: headingClass + ' text-sm flex items-center gap-2 m-0' },
+                  h('span', null, '\uD83D\uDCC8'), t('stem.oratory.pitch_contour', 'Pitch Contour')),
+                h('span', { className: 'text-[0.6875rem] font-mono font-bold px-2 py-0.5 rounded-full ' + (isDark ? 'bg-slate-900 text-violet-300 border border-slate-700' : 'bg-violet-50 text-violet-800 border border-violet-200') },
+                  currentPitch > 0 ? Math.round(currentPitch) + ' Hz · ' + pitchZone(currentPitch).label : 'Standby')
+              ),
               h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.the_melody_of_your_speech_rising_pitch', 'The melody of your speech. Rising pitch = questions, falling = statements, variation = emphasis.')),
               h('canvas', { tabIndex: 0, ref: pitchCanvasRef,
                 width: 600,
@@ -2973,8 +3114,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
               // Pacing Speedometer
               h('div', { className: cardClass },
-                h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                  h('span', null, '\u23F1\uFE0F'), t('stem.oratory.pacing', 'Pacing')),
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1.5' },
+                  h('h3', { className: headingClass + ' text-sm flex items-center gap-2 m-0' },
+                    h('span', null, '\u23F1\uFE0F'), t('stem.oratory.pacing', 'Pacing')),
+                  h('span', { className: 'text-[0.6875rem] font-mono font-bold px-2 py-0.5 rounded-full ' + (isDark ? 'bg-slate-900 text-sky-300 border border-slate-700' : 'bg-sky-50 text-sky-800 border border-sky-200') },
+                    currentWpm + ' WPM')
+                ),
                 h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.how_fast_you_are_speaking_in_words_per', 'How fast you are speaking in words per minute.')),
                 h('canvas', { tabIndex: 0, ref: pacingCanvasRef,
                   width: 280,
@@ -2986,8 +3131,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
               // Volume Meter
               h('div', { className: cardClass },
-                h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                  h('span', null, '\uD83D\uDD0A'), t('stem.oratory.volume', 'Volume')),
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1.5' },
+                  h('h3', { className: headingClass + ' text-sm flex items-center gap-2 m-0' },
+                    h('span', null, '\uD83D\uDD0A'), t('stem.oratory.volume', 'Volume')),
+                  h('span', { className: 'text-[0.6875rem] font-mono font-bold px-2 py-0.5 rounded-full ' + (isDark ? 'bg-slate-900 text-emerald-300 border border-slate-700' : 'bg-emerald-50 text-emerald-800 border border-emerald-200') },
+                    Math.round(currentDb) + ' dB')
+                ),
                 h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.your_speaking_volume_and_steadiness_ov', 'Your speaking volume and steadiness over time.')),
                 h('canvas', { tabIndex: 0, ref: volumeCanvasRef,
                   width: 280,
@@ -3000,8 +3149,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
             // Pause Detection
             h('div', { className: cardClass },
-              h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                h('span', null, '\u23F8\uFE0F'), t('stem.oratory.pause_detection', 'Pause Detection')),
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1.5' },
+                h('h3', { className: headingClass + ' text-sm flex items-center gap-2 m-0' },
+                  h('span', null, '\u23F8\uFE0F'), t('stem.oratory.pause_detection', 'Pause Detection')),
+                h('span', { className: 'text-[0.6875rem] font-mono font-bold px-2 py-0.5 rounded-full ' + (isDark ? 'bg-slate-900 text-amber-300 border border-slate-700' : 'bg-amber-50 text-amber-800 border border-amber-200') },
+                  Math.round(pauseRatio * 100) + '% pause')
+              ),
               h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.good_speakers_use_pauses_aim_for_20_30', 'Good speakers use pauses! Aim for 20-30% pauses in your speech.')),
               h('canvas', { tabIndex: 0, ref: pauseCanvasRef,
                 width: 600,
@@ -3090,14 +3243,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             // ═══════════════════════════════════════
             h('div', { className: cardClass },
               h('button', {
+                type: 'button',
                 className: 'w-full flex items-center justify-between',
                 onClick: function() { setVowelLabOpen(!vowelLabOpen); },
                 'aria-expanded': vowelLabOpen ? 'true' : 'false',
                 'aria-controls': 'oratory-vowel-lab'
               },
-                h('h3', { className: headingClass + ' text-sm flex items-center gap-2' },
-                  h('span', null, '\uD83D\uDDE3\uFE0F'), t('stem.oratory.formant_vowel_space_lab', 'Formant Vowel Space Lab')),
-                h('span', { className: subTextClass + ' text-lg' }, vowelLabOpen ? '\u25B2' : '\u25BC')),
+                h('span', { className: headingClass + ' text-sm flex items-center gap-2' },
+                  h('span', { 'aria-hidden': 'true' }, '\uD83D\uDDE3\uFE0F'), t('stem.oratory.formant_vowel_space_lab', 'Formant Vowel Space Lab')),
+                h('span', { className: subTextClass + ' text-lg', 'aria-hidden': 'true' }, vowelLabOpen ? '\u25B2' : '\u25BC')),
 
               vowelLabOpen && h('div', { id: 'oratory-vowel-lab', className: 'mt-4 space-y-3' },
                 h('p', { className: subTextClass + ' mb-2' },
@@ -3206,6 +3360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                         playbackIdx === ri && h('div', {
                           className: 'flex-1 h-2 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-600' : 'bg-slate-200'),
                           role: 'progressbar',
+                          'aria-label': 'Recording ' + (ri + 1) + ' playback progress',
                           'aria-valuenow': Math.round(playbackProgress * 100),
                           'aria-valuemin': '0',
                           'aria-valuemax': '100'
@@ -3504,7 +3659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-yellow-300' : 'text-yellow-700') }, 'Target: ' + targetWpm + ' WPM'),
                   h('div', { className: headingClass + ' text-base leading-relaxed' }, text)),
                 h('div', { className: 'text-center' },
-                  h('div', { className: 'text-2xl font-bold  tracking-tight' + (Math.abs(currentWpm - targetWpm) < 20 ? 'text-green-500' : Math.abs(currentWpm - targetWpm) < 40 ? 'text-yellow-500' : 'text-red-500') },
+                  h('div', { className: 'text-2xl font-bold tracking-tight ' + (Math.abs(currentWpm - targetWpm) < 20 ? 'text-green-600' : Math.abs(currentWpm - targetWpm) < 40 ? 'text-amber-600' : 'text-red-600') },
                     currentWpm + ' WPM'),
                   h('div', { className: subTextClass },
                     currentWpm === 0 ? 'Start speaking...'
@@ -3530,7 +3685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   h('div', { className: headingClass + ' text-base leading-relaxed mb-2' }, volText),
                   exerciseActive
                     ? h('div', null,
-                        h('div', { className: 'text-4xl font-bold  tracking-tight' + (isDark ? 'text-green-400' : 'text-green-600'), 'aria-live': 'polite' }, volumeTimer + 's'),
+                        h('div', { className: 'text-4xl font-bold tracking-tight ' + (isDark ? 'text-green-400' : 'text-green-700'), 'aria-live': 'polite' }, volumeTimer + 's'),
                         h('div', { className: subTextClass }, t('stem.oratory.keep_going_hold_your_volume_steady', 'Keep going! Hold your volume steady.')))
                     : h('button', {
                         className: btnPrimary,
@@ -3641,8 +3796,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     (patternScore >= 70 ? (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') :
                      patternScore >= 40 ? (isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200') :
                      (isDark ? 'bg-red-900/30 border border-red-700' : 'bg-red-50 border border-red-200')) },
-                  h('div', { className: 'text-4xl font-bold mb-1  tracking-tight' +
-                    (patternScore >= 70 ? 'text-green-500' : patternScore >= 40 ? 'text-yellow-500' : 'text-red-500') },
+                  h('div', { className: 'text-4xl font-bold mb-1 tracking-tight ' +
+                    (patternScore >= 70 ? (isDark ? 'text-green-300' : 'text-green-700') : patternScore >= 40 ? (isDark ? 'text-amber-300' : 'text-amber-800') : (isDark ? 'text-red-300' : 'text-red-700')) },
                     patternScore + '%'),
                   h('div', { className: headingClass + ' text-sm' },
                     patternScore >= 85 ? 'Excellent match!' :
@@ -3679,7 +3834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               INTONATION_PATTERNS.map(function(pat) {
                 return h('button', {
                   key: pat.id,
-                  className: cardClass + ' text-left hover:ring-2 hover:ring-violet-400 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500',
+                  className: cardClass + ' oratory-pattern-card text-left hover:ring-2 hover:ring-violet-400 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500',
                   onClick: function() {
                     setSelectedPattern(pat);
                     setPatternPracticing(false);
@@ -3688,12 +3843,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   },
                   'aria-label': pat.label + ': ' + pat.desc + '. Sample phrase: ' + pat.phrase
                 },
-                  h('div', { className: 'flex items-start gap-3' },
-                    h('div', { className: 'text-2xl font-mono w-8 text-center flex-shrink-0 ' + (isDark ? 'text-violet-400' : 'text-violet-600') }, pat.icon),
-                    h('div', null,
-                      h('div', { className: headingClass + ' text-sm' }, pat.label),
-                      h('div', { className: subTextClass + ' mb-1' }, __alloT('stem.oratory.' + (pat.id) + '_desc', pat.desc)),
-                      h('div', { className: 'text-xs italic ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, '"' + pat.phrase + '"'))));
+                  h('div', { className: 'flex items-start justify-between gap-3' },
+                    h('div', { className: 'flex items-start gap-2.5 min-w-0 flex-1' },
+                      h('div', { className: 'text-2xl font-mono w-7 text-center flex-shrink-0 ' + (isDark ? 'text-violet-400' : 'text-violet-700') }, pat.icon),
+                      h('div', { className: 'min-w-0' },
+                        h('div', { className: headingClass + ' text-sm' }, pat.label),
+                        h('div', { className: subTextClass + ' mb-1' }, __alloT('stem.oratory.' + (pat.id) + '_desc', pat.desc)),
+                        h('div', { className: 'text-xs italic ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, '"' + pat.phrase + '"'))),
+                    renderIntonationSparkSvg(h, pat.points, isDark)
+                  ));
               }))
           );
         }
@@ -3706,8 +3864,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             h('div', { className: 'flex items-center gap-3' },
               h('button', {
                 className: isRecording
-                  ? 'transition-colors px-4 py-2 rounded-full font-bold text-sm bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-2 focus:ring-red-300 active:scale-[0.97]' + (reducedMotion ? '' : ' animate-pulse')
-                  : 'px-4 py-2 rounded-full font-bold text-sm ' + ('transition-colors bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]') + ' focus:outline-none focus:ring-2 focus:ring-violet-400',
+                  ? 'transition-colors motion-reduce:transition-none px-4 py-2 rounded-full font-bold text-sm bg-red-600 hover:bg-red-700 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400 focus-visible:ring-2 focus-visible:ring-red-300 active:scale-[0.97]' + (reducedMotion ? '' : ' animate-pulse')
+                  : 'px-4 py-2 rounded-full font-bold text-sm ' + ('transition-colors motion-reduce:transition-none bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]') + ' focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 focus-visible:ring-2 focus-visible:ring-violet-400',
                 onClick: isRecording ? stopRecording : startRecording,
                 'aria-label': isRecording ? 'Stop microphone' : 'Start microphone'
               }, isRecording ? '\uD83D\uDD34 Stop' : '\uD83C\uDFA4 Start'),
@@ -3818,7 +3976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
                 // Mode status
                 multiMode === 'modeling' && h('div', { className: subTextClass + ' mt-3' + (reducedMotion ? '' : ' animate-pulse') }, t('stem.oratory.listen_carefully_to_the_model', 'Listen carefully to the model...')),
-                multiMode === 'yourTurn' && h('div', { className: (isDark ? 'text-green-400' : 'text-green-600') + ' mt-3 font-bold text-sm' }, t('stem.oratory.your_turn_speak_the_phrase_and_try_to_', 'Your turn! Speak the phrase and try to match the pitch pattern.')))
+                multiMode === 'yourTurn' && h('div', { className: (isDark ? 'text-green-400' : 'text-green-700') + ' mt-3 font-bold text-sm' }, t('stem.oratory.your_turn_speak_the_phrase_and_try_to_', 'Your turn! Speak the phrase and try to match the pitch pattern.')))
             ),
 
             // Prosody comparison visualization
@@ -3981,11 +4139,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           // 1.23:1 there. Light mode is untouched.
           style: isDark ? { background: '#0f172a', borderRadius: 12, padding: 12 } : undefined
         },
-          // Header
-          h('div', { className: 'flex items-center justify-between' },
-            h('div', { className: 'flex items-center gap-3' },
+          // Acoustic & Rhetoric Studio Hero Header
+          h('div', { className: 'oratory-hero rounded-2xl p-4 flex items-center justify-between gap-3 flex-wrap' },
+            h('div', { className: 'flex items-center gap-3 min-w-0 flex-1' },
               h('button', {
-                className: btnSecondary + ' flex items-center gap-1',
+                type: 'button',
+                className: 'px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-violet-300',
+                style: { background: 'rgba(15,23,42,0.55)', borderColor: 'rgba(196,181,253,0.45)', color: '#f8fafc' },
                 onClick: function() {
                   if (isRecording) stopRecording();
                   setStemLabTool(null);
@@ -3994,17 +4154,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               },
                 ArrowLeft && h(ArrowLeft, { size: 14 }),
                 t('stem.oratory.back_3', 'Back')),
-              h('div', null,
-                h('h2', { className: headingClass + ' text-lg flex items-center gap-2' },
-                  h('span', null, '\uD83D\uDDE3\uFE0F'), t('stem.oratory.oratory_lab', 'Oratory Lab')),
-                h('p', { className: subTextClass }, t('stem.oratory.speech_prosody_visualization_for_slp_r', 'Speech prosody visualization for SLP-recommended practice')))),
-            // Recording indicator
-            isRecording && h('div', {
-              className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ' +
-                (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-700'),
-              role: 'status',
-              'aria-live': 'polite'
-            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' + (reducedMotion ? '' : ' animate-pulse') }), t('stem.oratory.recording', 'Recording'))),
+              renderOratoryEmblem(h),
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                  h('h2', { className: 'text-lg font-black m-0 flex items-center gap-1.5', style: { color: '#ffffff' } },
+                    h('span', { 'aria-hidden': 'true' }, '\uD83D\uDDE3\uFE0F'), t('stem.oratory.oratory_lab', 'Oratory Lab')),
+                  h('span', { className: 'px-2 py-0.5 rounded-full text-[0.625rem] font-extrabold uppercase tracking-wider', style: { background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(125,211,252,0.55)', color: '#bae6fd' } }, t('stem.oratory.studio_badge', 'Arts · Prosody Studio'))
+                ),
+                h('p', { className: 'text-xs m-0 mt-0.5', style: { color: '#ddd6fe' } }, t('stem.oratory.speech_prosody_visualization_for_slp_r', 'Speech prosody visualization for SLP-recommended practice')))),
+            // Live acoustic telemetry pills + recording indicator
+            h('div', { className: 'flex items-center gap-2 flex-wrap' },
+              h('div', { className: 'oratory-pill rounded-xl px-2.5 py-1 text-center' },
+                h('div', { className: 'text-xs font-mono font-black leading-tight', style: { color: '#fef08a' } }, currentPitch > 0 ? Math.round(currentPitch) + ' Hz' : '--'),
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, 'PITCH')
+              ),
+              h('div', { className: 'oratory-pill rounded-xl px-2.5 py-1 text-center' },
+                h('div', { className: 'text-xs font-mono font-black leading-tight', style: { color: '#38bdf8' } }, currentWpm + ' WPM'),
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, 'PACE')
+              ),
+              h('div', { className: 'oratory-pill rounded-xl px-2.5 py-1 text-center' },
+                h('div', { className: 'text-xs font-mono font-black leading-tight', style: { color: '#4ade80' } }, (totalPhrases || 0) + ' done'),
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, 'PHRASES')
+              ),
+              isRecording && h('div', {
+                className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-red-600 text-white border border-red-300',
+                role: 'status',
+                'aria-live': 'polite'
+              }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-white' + (reducedMotion ? '' : ' animate-pulse') }), t('stem.oratory.recording', 'Recording'))
+            )),
 
           // Tab navigation
           h('div', {
@@ -4054,7 +4231,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             // Accent at 55% (light) or 45% toward white (dark) clears 4.5:1 on the tint.
             var heroInk = 'rgb(' + [1, 3, 5].map(function(i) { var c = parseInt(meta.accent.substr(i, 2), 16); return Math.round(isDark ? c + (255 - c) * 0.45 : c * 0.55); }).join(',') + ')';
             return h('div', {
-              className: 'mt-2',
+              className: 'oratory-tab-band mt-2',
               style: {
                 padding: '12px 14px',
                 borderRadius: 12,
@@ -4091,46 +4268,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               else if (iq.pace < 1.6) tempo = 'fast';
               else tempo = 'sprint';
               var tm = {
-                slow: { label: t('stem.oratory.slow_deliberate', '🐢 Slow / deliberate'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.oratory.suited_to_emphasis_reflection_gravitas', 'Suited to emphasis, reflection, gravitas.') },
-                conversational: { label: t('stem.oratory.conversational_2', '🗣 Conversational'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: t('stem.oratory.default_for_most_speaking_natural_rhyt', 'Default for most speaking. Natural rhythm.') },
-                fast: { label: t('stem.oratory.fast_urgent', '⚡ Fast / urgent'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.oratory.conveys_excitement_urgency_energy', 'Conveys excitement, urgency, energy.') },
-                sprint: { label: t('stem.oratory.sprint', '🚀 Sprint'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.oratory.too_fast_comprehension_drops', 'Too fast — comprehension drops.') }
+                slow: { label: t('stem.oratory.slow_deliberate', '🐢 Slow / deliberate'), color: '#0e7490', wave: '#22d3ee', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.oratory.suited_to_emphasis_reflection_gravitas', 'Suited to emphasis, reflection, gravitas.') },
+                conversational: { label: t('stem.oratory.conversational_2', '🗣 Conversational'), color: '#047857', wave: '#34d399', bg: '#ecfdf5', border: '#86efac', desc: t('stem.oratory.default_for_most_speaking_natural_rhyt', 'Default for most speaking. Natural rhythm.') },
+                fast: { label: t('stem.oratory.fast_urgent', '⚡ Fast / urgent'), color: '#92400e', wave: '#fbbf24', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.oratory.conveys_excitement_urgency_energy', 'Conveys excitement, urgency, energy.') },
+                sprint: { label: t('stem.oratory.sprint', '🚀 Sprint'), color: '#b91c1c', wave: '#f87171', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.oratory.too_fast_comprehension_drops', 'Too fast — comprehension drops.') }
               }[tempo];
+              var deliveryPresets = [
+                { id: 'ted', label: t('stem.oratory.preset_keynote', '🎙️ Keynote (~150 WPM)'), patch: { pitch: 110, pace: 1.05, volume: 2 } },
+                { id: 'dramatic', label: t('stem.oratory.preset_dramatic', '🎭 Dramatic Gravitas'), patch: { pitch: 55, pace: 0.65, volume: 4 } },
+                { id: 'urgent', label: t('stem.oratory.preset_urgent', '⚡ Urgent Broadcast'), patch: { pitch: 155, pace: 1.45, volume: 6 } }
+              ];
               return h('div', { className: 'p-4 rounded-xl border ' + (isDark ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-500') + ' space-y-3' },
-                h('h3', { className: 'text-sm font-black' }, t('stem.oratory.prosody_discovery', '⚙️ Prosody discovery')),
-                h('p', { className: 'text-[0.75rem] leading-relaxed' }, t('stem.oratory.adjust_pitch_offset_pacing_volume_disc', 'Adjust pitch offset, pacing, volume. Discrete 4-tempo classification. No score, no reveal.')),
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('h3', { className: 'text-sm font-black m-0' }, t('stem.oratory.prosody_discovery', '⚙️ Prosody discovery')),
+                  h('div', { className: 'flex flex-wrap gap-1.5' },
+                    deliveryPresets.map(function(pr) {
+                      return h('button', { key: pr.id, type: 'button', onClick: function() { setIQ(pr.patch); }, className: btnSecondary }, pr.label);
+                    })
+                  )
+                ),
+                h('p', { className: 'text-[0.75rem] leading-relaxed m-0' }, t('stem.oratory.adjust_pitch_offset_pacing_volume_disc', 'Adjust pitch offset, pacing, volume. Discrete 4-tempo classification. No score, no reveal.')),
+                // Live reactive SVG prosody waveform simulator
+                renderProsodySimSvg(h, iq, tm.wave, isDark),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: tm.bg, border: '2px solid ' + tm.border } },
                   h('div', { className: 'text-base font-black', style: { color: tm.color } }, tm.label),
-                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, tm.desc)
+                  h('div', { className: 'text-[0.6875rem] mt-1 font-medium', style: { color: '#1e293b' } }, tm.desc)
                 ),
-                h('div', { className: 'grid grid-cols-3 gap-3' },
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                   [{ k: 'pitch', l: 'Pitch (+Hz)', mn: 0, mx: 200, st: 5 },
                    { k: 'pace', l: 'Pace ×', mn: 0.5, mx: 2.0, st: 0.05 },
                    { k: 'volume', l: 'Volume gain dB', mn: -12, mx: 12, st: 0.5 }].map(function(s) {
-                    return h('div', { key: s.k },
-                      h('label', { htmlFor: 'ph-' + s.k, className: 'block text-[0.6875rem] font-bold' }, s.l + ': ', h('span', { className: 'font-mono' }, iq[s.k])),
+                    return h('div', { key: s.k, className: 'p-2.5 rounded-lg border ' + (isDark ? 'bg-slate-900/60 border-slate-700' : 'bg-slate-50 border-slate-300') },
+                      h('label', { htmlFor: 'ph-' + s.k, className: 'flex justify-between text-[0.6875rem] font-bold mb-1' },
+                        h('span', null, s.l),
+                        h('span', { className: 'font-mono ' + (isDark ? 'text-violet-300' : 'text-violet-700') }, iq[s.k])),
                       h('input', { id: 'ph-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pitch, c: iq.pace, v: iq.volume, t: tempo }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[0.6875rem] font-bold text-slate-700' }, t('stem.oratory.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[0.6875rem] font-semibold border border-slate-300 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.reset_2', '↺ Reset'))
+                  h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pitch, c: iq.pace, v: iq.volume, t: tempo }]).slice(-8) }); }, className: btnPrimary + ' text-xs py-1.5 px-3' }, t('stem.oratory.log', '📋 Log')),
+                  h('button', { type: 'button', onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: btnSecondary }, t('stem.oratory.reset_2', '↺ Reset'))
+                ),
+                (iq.log && iq.log.length > 0) && h('div', { className: 'rounded-lg p-2.5 text-[0.6875rem] font-mono border ' + (isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800') },
+                  h('div', { className: 'font-sans font-bold mb-1 text-[0.6875rem]' }, 'Logged Trials (' + iq.log.length + ')'),
+                  iq.log.map(function(entry, li) {
+                    return h('div', { key: li, className: 'py-0.5' }, '#' + (li + 1) + ' · ' + entry.t + ' · +' + entry.p + 'Hz · ' + entry.c + '× (~' + Math.round(145 * entry.c) + ' WPM) · ' + (entry.v >= 0 ? '+' : '') + entry.v + 'dB');
+                  })
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.oratory.hypothesis_input', 'Oratory pace hypothesis'), placeholder: t('stem.oratory.hypothesis_how_does_pace_affect_audien', 'Hypothesis: How does pace affect audience comprehension?'),
-                  className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.oratory.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] leading-relaxed' },
-                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  className: 'w-full text-[0.75rem] border border-slate-500 rounded-lg p-2.5 font-mono leading-snug ' + (isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'), rows: 3 }),
+                !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border ' + (isDark ? 'bg-amber-900/40 text-amber-200 border-amber-600' : 'bg-amber-50 text-amber-900 border-amber-400') }, t('stem.oratory.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded-lg border text-[0.6875rem] leading-relaxed ' + (isDark ? 'bg-amber-950/60 border-amber-700 text-amber-100' : 'bg-amber-50 border-amber-300 text-slate-800') },
+                  h('ul', { className: 'list-disc pl-5 space-y-1 m-0' },
                     h('li', null, t('stem.oratory.most_ted_talks_are_150_wpm_investigate', 'Most TED talks are ~150 wpm. Investigate why.')),
                     h('li', null, t('stem.oratory.when_does_pitch_variation_help_vs_dist', 'When does pitch variation help vs distract?')))),
                 h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.oratory.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.oratory.explanation_input', 'Oratory prosody explanation'), placeholder: t('stem.oratory.explain_how_prosody_shapes_oratory_imp', 'Explain how prosody shapes oratory impact.'),
-                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
-                h('div', { className: 'text-[0.625rem] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.design_note_discrete_4_tempo_marker_no', 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.'))
+                  className: 'w-full text-[0.75rem] border border-emerald-400 rounded-lg p-2.5 font-mono leading-snug mt-2 ' + (isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'), rows: 3 }),
+                h('div', { className: 'text-[0.6875rem] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.design_note_discrete_4_tempo_marker_no', 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.'))
               );
             })()
           ),

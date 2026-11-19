@@ -49,6 +49,33 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Angles Studio visual workbench polish & contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-angles-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-angles-polish-css';
+    st.textContent = [
+      '.ang-hero-deck{position:relative;overflow:hidden;border-radius:18px;border:1px solid rgba(196,181,253,.42);background:linear-gradient(135deg,#0f172a 0%,#3b0764 54%,#4a044e 100%);box-shadow:0 16px 32px rgba(15,23,42,.24);color:#ffffff}',
+      '.ang-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(196,181,253,.16);border:1px solid rgba(196,181,253,.45);color:#ede9fe}',
+      '.ang-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,23,42,.56);border:1px solid rgba(196,181,253,.34);color:#f5f3ff}',
+      '.ang-telemetry-pill strong{color:#fde68a;font-weight:900}',
+      '.ang-stage-card{box-shadow:0 10px 26px rgba(88,28,135,.09);border-radius:16px}',
+      '.ang-bench-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border-radius:12px;background:#f8fafc;border:1px solid #ddd6fe}',
+      '.ang-bench-chip{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#ffffff;border:1px solid #a78bfa;color:#4c1d95;cursor:pointer;min-height:36px;transition:background-color .15s,border-color .15s,color .15s}',
+      '.ang-bench-chip:hover{background:#ede9fe;border-color:#7c3aed;color:#3b0764}',
+      '.ang-bench-chip[aria-pressed="true"]{background:#6d28d9;border-color:#5b21b6;color:#ffffff}',
+      '[data-angles-root] button:focus-visible,[data-angles-root] select:focus-visible,[data-angles-root] input:focus-visible{outline:3px solid #7c3aed;outline-offset:2px}',
+      '.theme-contrast .ang-hero-deck{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .ang-hero-badge,.theme-contrast .ang-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .ang-telemetry-pill strong{color:#00ff00!important}',
+      '.theme-contrast .ang-bench-bar{background:#000000!important;border:2px solid #ffffff!important;color:#ffffff!important}',
+      '.theme-contrast .ang-bench-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .ang-bench-chip[aria-pressed="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast [data-angles-root] button:focus-visible,.theme-contrast [data-angles-root] select:focus-visible,.theme-contrast [data-angles-root] input:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-angles')) return;
@@ -1008,7 +1035,7 @@ window.StemLab = window.StemLab || {
       var isTeacher = ctx.isTeacherMode === true;
       // Student AI-off: no window.callGemini alias; AI controls render only when the host says text AI is usable.
       var _anglesAiFn = ctx.callGemini;
-      var _anglesAiOn = ctx.aiAvailable !== false && typeof _anglesAiFn === 'function' && !_anglesAiFn._alloQrBlocked && !(window.__alloStudentAiDisabled === true && !isTeacher);
+      var _anglesAiOn = ctx.aiAvailable !== false && typeof _anglesAiFn === 'function' && !_anglesAiFn._alloQrBlocked && (typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('text', _anglesAiFn) : !((window.__alloStudentAiDisabled === true && !isTeacher) || window.__alloAiSecretsLocked === true));
       var aiAllowed = ctx.aiHintsEnabled !== false && ctx.aiAvailable !== false;
       var callGemini = aiAllowed && _anglesAiOn ? _anglesAiFn : null;
       var announce = function(msg) {
@@ -1086,7 +1113,8 @@ window.StemLab = window.StemLab || {
       var setExploreScore = ctx.setExploreScore || function() {};
 
       // ── Extended state (via toolData.protractor) ──
-      var d = (ctx.toolData && ctx.toolData.protractor) || {};
+      var rawProtractor = ctx.toolData && ctx.toolData.protractor;
+      var d = (rawProtractor && typeof rawProtractor === 'object' && !Array.isArray(rawProtractor)) ? rawProtractor : {};
       var upd = function(key, val) {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('protractor', key); }
         else { if (ctx.update) ctx.update('protractor', key, val); }
@@ -1096,7 +1124,8 @@ window.StemLab = window.StemLab || {
       var updMerge = function(fn) {
         if (typeof ctx.setToolData === 'function') {
           ctx.setToolData(function(prev) {
-            var cur = (prev && prev.protractor) || {};
+            var rawCur = prev && prev.protractor;
+            var cur = (rawCur && typeof rawCur === 'object' && !Array.isArray(rawCur)) ? rawCur : {};
             return Object.assign({}, prev, { protractor: Object.assign({}, cur, fn(cur)) });
           });
         } else upd(fn(d));
@@ -4689,15 +4718,30 @@ window.StemLab = window.StemLab || {
         return h('div', { 'data-angles-root': 'true', className: 'space-y-3 max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
-        h('section', { 'data-protractor-command': 'true', className: 'overflow-hidden rounded-2xl border border-violet-300/40 bg-gradient-to-br from-slate-950 via-violet-950 to-fuchsia-950 text-white shadow-xl' },
+        h('section', { 'data-protractor-command': 'true', className: 'ang-hero-deck' },
           // Compact: back, title and the next move on one band. The Explore angle and
           // pin count show on Explore only; elsewhere that angle was a decoy answer.
-          h('div', { className: 'px-3 py-2 sm:px-4' },
-            h('div', { className: 'flex flex-wrap items-center gap-x-3 gap-y-1' },
+          h('div', { className: 'px-3 py-2.5 sm:px-4' },
+            h('div', { className: 'flex flex-wrap items-center gap-x-3 gap-y-2' },
               h('button', { type: 'button', onClick: function() { if (setStemLabTool) setStemLabTool(null); }, style: { minHeight: 44, minWidth: 44 }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-violet-300', 'aria-label': t('stem.angles.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-              h('h3', { className: 'text-lg font-black tracking-tight sm:text-xl' }, t('stem.angles.angle_explorer', '📐 Angle Explorer')),
+              h('svg', { width: 42, height: 42, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+                h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.62)', stroke: isContrast ? '#00ff00' : 'rgba(196,181,253,0.55)', strokeWidth: 1.5 }),
+                h('path', { d: 'M12 46 A20 20 0 0 1 52 46 Z', fill: isContrast ? '#000000' : 'rgba(167,139,250,0.22)', stroke: isContrast ? '#ffffff' : '#c4b5fd', strokeWidth: 2 }),
+                h('line', { x1: 32, y1: 46, x2: 49, y2: 46, stroke: '#fbbf24', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                h('line', { x1: 32, y1: 46, x2: 44, y2: 28, stroke: '#fbbf24', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                h('path', { d: 'M42 46 A10 10 0 0 0 38.5 37.8', fill: 'none', stroke: '#34d399', strokeWidth: 2 }),
+                h('circle', { cx: 32, cy: 46, r: 2.6, fill: '#ffffff' })
+              ),
+              h('div', { className: 'min-w-0' },
+                h('span', { className: 'ang-hero-badge' }, t('stem.angles.hero_badge', 'Geometry · Protractor & Proofs')),
+                h('h3', { className: 'text-lg font-black tracking-tight sm:text-xl mt-0.5' }, t('stem.angles.angle_explorer', '📐 Angle Explorer'))
+              ),
               // The protractor tab's own prompt already gives this move, so the hero skips it there.
-              activeTab !== 'protractor' && h('p', { className: 'min-w-0 flex-1 text-sm font-semibold text-violet-100', style: { flexBasis: '16rem' }, 'data-angles-next-move': 'true' }, angleNext),
+              activeTab !== 'protractor' && h('p', { className: 'min-w-0 flex-1 text-sm font-semibold text-violet-100', style: { flexBasis: '14rem' }, 'data-angles-next-move': 'true' }, angleNext),
+              h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                h('span', { className: 'ang-telemetry-pill' }, t('stem.angles.pill_band', 'Band'), ' ', h('strong', null, level === 'g4' ? 'G4' : level === 'g8' ? 'G8+' : 'G5–7')),
+                streak > 0 && h('span', { className: 'ang-telemetry-pill' }, '🔥 ', h('strong', null, String(streak)))
+              ),
               activeTab === 'explore' && h('div', { className: 'flex gap-2', 'data-angles-metrics': 'true' },
                 [
                   { key: 'angle', label: t('stem.angles.metric_angle', 'Angle'), value: hideRead ? '?' : String(convertedAngle) },
@@ -4781,10 +4825,22 @@ window.StemLab = window.StemLab || {
           // ── TAB: Explore ──
           // ══════════════════════════════════════════════════════════
           activeTab === 'explore' && h('div', { className: 'space-y-3' },
-          h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-2 sm:p-3 flex justify-center relative overflow-x-auto' },
+          h('div', { className: 'ang-stage-card bg-white rounded-xl border-2 border-purple-200 p-2 sm:p-3 flex justify-center relative overflow-x-auto' },
             h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, (hideRead ? '' : convertedAngle + (hideClass ? '' : ', ' + fill(t('stem.angles.sr_cls_angle', '{cls} angle'), { cls: clsLabel(angleClass) })))),
             renderExploreSvg(),
             h('div', { className: 'absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold ' + cc.bg + ' ' + cc.text + ' ' + cc.border + ' border' }, hideClass ? '?' : clsLabel(angleClass))
+          ),
+          !estimateActive && !hideRead && h('div', { className: 'ang-bench-bar', role: 'group', 'aria-label': t('stem.angles.a11y_benchmark_angles', 'Benchmark angle presets') },
+            h('span', { className: 'text-xs font-extrabold text-purple-900 mr-1' }, t('stem.angles.benchmarks_label', 'Benchmarks:')),
+            [30, 45, 60, 90, 120, 135, 180, 270].map(function(deg) {
+              return h('button', {
+                key: 'bench-' + deg,
+                type: 'button',
+                className: 'ang-bench-chip',
+                'aria-pressed': angleValue === deg ? 'true' : 'false',
+                onClick: function() { setAngleValue(deg); setAngleFeedback(null); if (soundEnabled) sfxClick(); }
+              }, deg + '°');
+            })
           ),
 
           // ── Controls row ──

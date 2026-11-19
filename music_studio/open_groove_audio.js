@@ -3,7 +3,12 @@
 (function (root) {
   'use strict';
 
-  var sessionSamples = root.OpenGrooveSessionSamples = root.OpenGrooveSessionSamples || {};
+  var sessionSamples = root.OpenGrooveSessionSamples = root.OpenGrooveSessionSamples || Object.create(null);
+
+  function finiteOr(value, fallback) {
+    var n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
 
   function getCore() {
     return root.OpenGrooveCore || root.AlloModules && root.AlloModules.OpenGrooveCore || null;
@@ -40,7 +45,7 @@
     }
     var ctx = options.context || new Ctor();
     var master = ctx.createGain();
-    master.gain.value = options.gain == null ? 0.85 : Math.max(0, Math.min(1.5, Number(options.gain) || 0.85));
+    master.gain.value = options.gain == null ? 0.85 : Math.max(0, Math.min(1.5, finiteOr(options.gain, 0.85)));
     var shaper = ctx.createWaveShaper();
     shaper.curve = makeDistCurve(0.5);
     shaper.oversample = '2x';
@@ -193,7 +198,7 @@
     var decay = Math.max(0.001, Number(envelope.decay) || 0.05);
     var sustain = Math.max(0, Math.min(1, envelope.sustain == null ? 0.3 : Number(envelope.sustain)));
     var release = Math.max(0.001, Number(envelope.release) || 0.04);
-    var peak = Math.max(0, Math.min(1, Number(velocity) || 0.8));
+    var peak = Math.max(0, Math.min(1, finiteOr(velocity, 0.8)));
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, peak), now + attack);
     gain.gain.linearRampToValueAtTime(Math.max(0.0001, peak * sustain), now + attack + decay);
@@ -260,16 +265,16 @@
     if (!engine || !engine.available) return false;
     var ctx = engine.ctx;
     var start = Math.max(ctx.currentTime, Number(when) || ctx.currentTime);
-    var vel = Math.max(0, Math.min(1, Number(velocity) || 0.8));
+    var vel = Math.max(0, Math.min(1, finiteOr(velocity, 0.8)));
     var out = createEffectOutput(engine, effects, start, 1.5);
     var kind = String(type || 'kick');
     var voice = voiceProfile || {};
-    var pitchScale = Math.max(0.5, Math.min(2, Number(voice.pitch) || 1));
-    var brightnessScale = Math.max(0.35, Math.min(2.4, Number(voice.brightness) || 1));
-    var decayScale = Math.max(0.25, Math.min(2.5, Number(voice.decay) || 1));
-    var noiseScale = Math.max(0, Math.min(2, Number(voice.noise) || 1));
-    var clickScale = Math.max(0, Math.min(2, Number(voice.click) || 1));
-    var bodyScale = Math.max(0, Math.min(2, Number(voice.body) || 1));
+    var pitchScale = Math.max(0.5, Math.min(2, finiteOr(voice.pitch, 1)));
+    var brightnessScale = Math.max(0.35, Math.min(2.4, finiteOr(voice.brightness, 1)));
+    var decayScale = Math.max(0.25, Math.min(2.5, finiteOr(voice.decay, 1)));
+    var noiseScale = Math.max(0, Math.min(2, finiteOr(voice.noise, 1)));
+    var clickScale = Math.max(0, Math.min(2, finiteOr(voice.click, 1)));
+    var bodyScale = Math.max(0, Math.min(2, finiteOr(voice.body, 1)));
     function vFreq(value) { return Math.max(20, Math.min(18000, value * pitchScale)); }
     function vBright(value) { return Math.max(20, Math.min(18000, value * brightnessScale)); }
     function vDur(value) { return Math.max(0.01, value * decayScale); }
@@ -433,6 +438,7 @@
 
   function ogRegisterSampleBuffer(assetId, buffer, metadata) {
     if (!assetId || !buffer) return false;
+    if (assetId === '__proto__' || assetId === 'constructor' || assetId === 'prototype') return false;
     sessionSamples[assetId] = {
       buffer: buffer,
       metadata: metadata || {}
@@ -475,16 +481,23 @@
     var text = String(dataUrl || '');
     if (!/^data:audio\//i.test(text)) return Promise.resolve(null);
     if (root.fetch) {
-      return root.fetch(text).then(function (response) { return response.arrayBuffer(); }).catch(function () { return null; });
+      return root.fetch(text).then(function (response) {
+        if (!response || !response.ok) return null;
+        return response.arrayBuffer();
+      }).catch(function () { return null; });
     }
     if (!root.atob) return Promise.resolve(null);
     var comma = text.indexOf(',');
     if (comma < 0) return Promise.resolve(null);
-    var binary = root.atob(text.slice(comma + 1).replace(/\s+/g, ''));
-    var buffer = new ArrayBuffer(binary.length);
-    var view = new Uint8Array(buffer);
-    for (var i = 0; i < binary.length; i++) view[i] = binary.charCodeAt(i);
-    return Promise.resolve(buffer);
+    try {
+      var binary = root.atob(text.slice(comma + 1).replace(/\s+/g, ''));
+      var buffer = new ArrayBuffer(binary.length);
+      var view = new Uint8Array(buffer);
+      for (var i = 0; i < binary.length; i++) view[i] = binary.charCodeAt(i);
+      return Promise.resolve(buffer);
+    } catch (_) {
+      return Promise.resolve(null);
+    }
   }
 
   function ogDecodeDataUrlAndRegisterSample(engine, assetId, dataUrl, metadata) {
@@ -512,12 +525,12 @@
 
   function ogPlaySample(engine, assetId, when, velocity, region, effects) {
     if (!engine || !engine.available || !assetId) return false;
-    var sample = sessionSamples[assetId];
+    var sample = Object.prototype.hasOwnProperty.call(sessionSamples, assetId) ? sessionSamples[assetId] : null;
     var buffer = sample && sample.buffer || null;
     if (!buffer) return false;
     var ctx = engine.ctx;
     var start = Math.max(ctx.currentTime, Number(when) || ctx.currentTime);
-    var vel = Math.max(0, Math.min(1, Number(velocity) || 0.8));
+    var vel = Math.max(0, Math.min(1, finiteOr(velocity, 0.8)));
     region = region || {};
     var offset = Math.max(0, Math.min(buffer.duration || 0, Number(region.startSec) || 0));
     var requestedEnd = region.endSec == null ? buffer.duration : Number(region.endSec);
@@ -549,7 +562,7 @@
         }
         var padType = item.padEngine || item.event && (item.event.engine || item.event.padEngine) || item.padId || 'kick';
         var padMap = { pad_1: 'kick', pad_2: 'snare', pad_3: 'hihat', pad_4: 'openhat', pad_5: 'clap', pad_6: 'rim', pad_7: 'tomLow', pad_8: 'tomHigh', pad_9: 'crash', pad_10: 'ride', pad_11: 'shaker', pad_13: 'sub' };
-        if (padMap[padType]) padType = padMap[padType];
+        if (Object.prototype.hasOwnProperty.call(padMap, padType)) padType = padMap[padType];
         scheduled += ogPlayDrum(engine, padType, when, item.velocity, item.effects, item.drumVoice) ? 1 : 0;
       } else if (item.type === 'note') {
         scheduled += ogPlayNote(engine, item, when, item.durationSec) ? 1 : 0;

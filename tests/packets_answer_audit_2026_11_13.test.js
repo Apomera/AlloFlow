@@ -240,10 +240,28 @@ describe('vocabulary: a word of the list that a student could take for the word 
     for (const list of all(rowOf(['seem', 'appear', 'look', 'feel', 'sound', 'become', 'remain'], 'seem'))) expect(list).not.toContain('appear');
     for (const list of all(rowOf(['photo', 'picture', 'drawing', 'map', 'poster', 'letter'], 'photo'))) expect(list).not.toContain('picture');
   });
-  it('after "a", the choices start with the same kind of letter as the answer (a unified whole)', () => {
+  it('after "a" or "an", choices match spoken vowel/consonant sound so the article is never a giveaway (a unified whole, an herbivore)', () => {
     const r = rowOf(['unify', 'organize', 'include', 'invite', 'order', 'expand', 'combine', 'connect', 'separate'], 'unify');
     expect(r.blank.answer).toBe('unified');
-    for (const w of r.blank.wrong) expect(/^[aeiou]/.test(w), w).toBe(true);
-    expect(r.blank.why).toBe('Fill the blank needs 3 other verbs from your list that can be written like unified and start with a vowel, as "unified" does after "a". Add words to the list, or edit the sentence.');
+    expect(r.blank.why).toBe('');
+    expect(r.blank.wrong).toHaveLength(3);
+    // "unified" starts with consonant sound /j/ (takes "a"), so vowel-sound verbs like invited/organized/expanded must be excluded.
+    for (const w of r.blank.wrong) {
+      expect(['invited', 'organized', 'expanded', 'included', 'ordered']).not.toContain(w.toLowerCase());
+      expect(/^[aeiou]/i.test(w), w).toBe(false);
+    }
+    // Silent-h "an herbivore" picks vowel-sound distractors, never consonant-sound giveaways.
+    const h = rowOf(['herbivore', 'predator', 'carnivore', 'ecosystem', 'organism', 'island', 'ocean'], 'herbivore');
+    expect(h.blank.answer).toBe('herbivore');
+    expect(h.blank.why).toBe('');
+    for (const w of h.blank.wrong) expect(/^[aeiou]/i.test(w), w).toBe(true);
+    // Custom sentence with only vowel-sound distractors still reports a clear shortfall for "a unified ...".
+    const short = VB.draftRows({
+      words: ['unify', 'organize', 'include', 'invite', 'expand'],
+      bank,
+      edits: { senses: { 'unify|v|1': { example: 'They formed a unified team.' } } },
+    }).find((row) => row.word === 'unify');
+    expect(short.blank.wrong).toEqual([]);
+    expect(short.blank.why).toBe('Fill the blank needs 3 other verbs from your list that can be written like unified and can go after "a". Add words to the list, or edit the sentence.');
   });
 });

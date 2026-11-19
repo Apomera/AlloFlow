@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+  <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>School Rewards &amp; Store: Quick Cards | AlloFlow</title>
 <meta name="description" content="Two printable one-page quick cards for AlloFlow School Rewards: one for staff awarding points, one for cashiers at the register.">
@@ -188,10 +189,12 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 .card ol{padding-left:22px}.card li{margin:0 0 8px}
 .card .stop{border-left:4px solid var(--warn-bd);background:var(--warn-bg);color:var(--warn-ink);padding:10px 12px;border-radius:8px;margin-top:14px}
 @media print{.card{page-break-after:always}.card:last-of-type{page-break-after:auto}}
+.skip-link{position:absolute;left:-9999px;top:8px;z-index:999;background:#1e3a8a;color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}.skip-link:focus{left:12px;outline:3px solid #facc15;outline-offset:2px;}
 </style>
 </head>
 <body>
-<main class="wrap">
+<a class="skip-link" href="#main">Skip to main content</a>
+<main class="wrap" id="main" tabindex="-1">
 <p class="manual-home"><a href="school-rewards-manual.html">← School Rewards &amp; Store manual</a></p>
 <article>
 <h1>School Rewards &amp; Store: Quick Cards</h1>

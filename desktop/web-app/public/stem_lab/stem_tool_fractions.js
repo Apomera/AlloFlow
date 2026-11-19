@@ -428,7 +428,23 @@ window.StemLab = window.StemLab || {
       ".fraction-lab-guidance p{font-size:14px;line-height:1.5;margin:0;color:var(--fraction-nav-muted)}",
       "@media(max-width:560px){.fraction-lab-goals,.fraction-lab-activities{grid-template-columns:repeat(2,minmax(0,1fr))}}",
       '@media (max-width:780px){.fraction-lab-practice-grid{grid-template-columns:1fr}.fraction-lab-model-stage{min-height:236px}.fraction-lab-summary-grid{grid-template-columns:1fr 1fr}}',
-      '@media (max-width:480px){.fraction-lab-toolbar{align-items:flex-start}.fraction-lab-summary-grid{grid-template-columns:1fr}.fraction-lab-control-card{padding:11px}.fraction-lab-model-stage{min-height:210px;padding:10px}.fraction-lab-equivalence-canvas-wrap{aspect-ratio:auto;height:138px;min-height:0}}'
+      '@media (max-width:480px){.fraction-lab-toolbar{align-items:flex-start}.fraction-lab-summary-grid{grid-template-columns:1fr}.fraction-lab-control-card{padding:11px}.fraction-lab-model-stage{min-height:210px;padding:10px}.fraction-lab-equivalence-canvas-wrap{aspect-ratio:auto;height:138px;min-height:0}}',
+      '.frac-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:16px 18px;background:linear-gradient(135deg,#2a0a18 0%,#6d1033 54%,#1e1b4b 100%);border:1px solid rgba(251,113,133,.42);box-shadow:0 16px 34px rgba(42,10,24,.24);color:#fff1f2}',
+      '.frac-hero-deck h3{color:#ffffff!important;margin:0}',
+      '.frac-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(251,113,133,.18);border:1px solid rgba(253,164,175,.45);color:#fecdd3}',
+      '.frac-hero-back{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(253,164,175,.32);color:#ffffff;cursor:pointer}',
+      '.frac-hero-back:hover{background:rgba(255,255,255,.2)}',
+      '.frac-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,23,42,.56);border:1px solid rgba(253,164,175,.32);color:#ffe4e6;white-space:nowrap}',
+      '.frac-telemetry-pill strong{color:#fde68a;font-weight:900}',
+      '.frac-mini-gauge{display:flex;align-items:center;gap:10px;padding:7px 11px;border-radius:13px;background:rgba(15,23,42,.52);border:1px solid rgba(253,164,175,.3)}',
+      '.frac-preset-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:11px;padding-top:10px;border-top:1px solid rgba(253,164,175,.22)}',
+      '.frac-preset-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.11);border:1px solid rgba(253,164,175,.38);color:#fff1f2;cursor:pointer;min-height:34px;transition:background-color .15s,border-color .15s}',
+      '.frac-preset-chip:hover{background:rgba(251,113,133,.28);border-color:#fda4af;color:#ffffff}',
+      '.theme-contrast .frac-hero-deck{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffff00!important}',
+      '.theme-contrast .frac-hero-deck h3,.theme-contrast .frac-hero-deck p{color:#ffff00!important}',
+      '.theme-contrast .frac-hero-badge,.theme-contrast .frac-telemetry-pill,.theme-contrast .frac-mini-gauge{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .frac-hero-back,.theme-contrast .frac-preset-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffff00!important}',
+      '.theme-contrast [data-fractions-root] button:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -1941,13 +1957,16 @@ window.StemLab = window.StemLab || {
       var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
 
     // ── State via labToolData._fractions ──
-    var ld = ctx.toolData || {};
-    var _f = ld._fractions || {};
+    var ld = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+    var rawF = ld._fractions;
+    var _f = (rawF && typeof rawF === 'object' && !Array.isArray(rawF)) ? rawF : {};
     var upd = function(obj) {
       if (typeof ctx.setToolData === 'function') {
         ctx.setToolData(function(prev) {
-          var fr = Object.assign({}, (prev && prev._fractions) || {}, obj);
-          return Object.assign({}, prev, { _fractions: fr });
+          var prevSafe = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevF = (prevSafe._fractions && typeof prevSafe._fractions === 'object' && !Array.isArray(prevSafe._fractions)) ? prevSafe._fractions : {};
+          var fr = Object.assign({}, prevF, obj);
+          return Object.assign({}, prevSafe, { _fractions: fr });
         });
       }
     };
@@ -6738,7 +6757,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() {
                   if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                    (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(g.goal).then(function() { addToast('📋 Goal copied', 'success'); });
+                    Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(g.goal)).then(function() { if (addToast) addToast('📋 Goal copied', 'success'); }, function() { if (addToast) addToast('Copy failed', 'error'); });
                   }
                 },
                 className: 'transition-colors px-2 py-1 rounded text-[0.625rem] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
@@ -11756,14 +11775,74 @@ window.StemLab = window.StemLab || {
       if (buttons[next]) { buttons[next].focus(); buttons[next].click(); }
     }
 
+    var safeN = Math.max(0, Math.min(24, Number(pieces && pieces.numerator) || 0));
+    var safeD = Math.max(1, Math.min(24, Number(pieces && pieces.denominator) || 8));
+    var showHeroFractionGauge = !challenge && !quiz && (tab === 'practice' || tab === 'models' || tab === 'numberline' || tab === 'wall');
+    var fracEmblemSvg = h('svg', { width: 48, height: 48, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+      h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.68)', stroke: isContrast ? '#00ff00' : 'rgba(251,113,133,0.55)', strokeWidth: 1.5 }),
+      h('circle', { cx: 32, cy: 28, r: 17, fill: isContrast ? '#000000' : 'rgba(255,255,255,0.1)', stroke: isContrast ? '#ffffff' : '#fda4af', strokeWidth: 1.8 }),
+      h('path', { d: 'M32 28 L32 11 A17 17 0 0 1 49 28 Z', fill: isContrast ? '#ffff00' : '#fb7185' }),
+      h('path', { d: 'M32 28 L49 28 A17 17 0 0 1 32 45 Z', fill: isContrast ? '#00ff00' : '#f43f5e' }),
+      h('line', { x1: 15, y1: 28, x2: 49, y2: 28, stroke: isContrast ? '#ffffff' : '#fff1f2', strokeWidth: 1.3 }),
+      h('line', { x1: 32, y1: 11, x2: 32, y2: 45, stroke: isContrast ? '#ffffff' : '#fff1f2', strokeWidth: 1.3 }),
+      h('line', { x1: 12, y1: 53, x2: 52, y2: 53, stroke: isContrast ? '#ffff00' : '#fde68a', strokeWidth: 2, strokeLinecap: 'round' }),
+      h('circle', { cx: 32, cy: 53, r: 3, fill: isContrast ? '#00ff00' : '#fde68a' })
+    );
+    var fracMiniPieSvg = (function() {
+      var fillFrac = Math.max(0, Math.min(1, safeN / safeD));
+      var r = 16, cx = 22, cy = 22;
+      var slices = [];
+      for (var si = 0; si < Math.min(safeD, 12); si++) {
+        var a0 = -Math.PI / 2 + (si / Math.min(safeD, 12)) * Math.PI * 2;
+        var a1 = -Math.PI / 2 + ((si + 1) / Math.min(safeD, 12)) * Math.PI * 2;
+        var x0 = +(cx + r * Math.cos(a0)).toFixed(1), y0 = +(cy + r * Math.sin(a0)).toFixed(1);
+        var x1 = +(cx + r * Math.cos(a1)).toFixed(1), y1 = +(cy + r * Math.sin(a1)).toFixed(1);
+        var filled = si < Math.round(fillFrac * Math.min(safeD, 12));
+        slices.push(h('path', {
+          key: 'ms-' + si,
+          d: 'M' + cx + ' ' + cy + ' L' + x0 + ' ' + y0 + ' A' + r + ' ' + r + ' 0 0 1 ' + x1 + ' ' + y1 + ' Z',
+          fill: filled ? (isContrast ? '#ffff00' : '#fb7185') : (isContrast ? '#000000' : 'rgba(255,255,255,0.1)'),
+          stroke: isContrast ? '#ffffff' : '#1e1b4b',
+          strokeWidth: 1.2
+        }));
+      }
+      return h('svg', { width: 44, height: 44, viewBox: '0 0 44 44', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' }, slices);
+    })();
+    var fracPctText = Math.round((safeN / safeD) * 100) + '%';
+
     return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200', 'data-fractions-root': 'true' },
-      h('div', { className: 'flex items-center gap-3 mb-2 flex-wrap' },
-        h('button', { onClick: function() { if (window._fracKbHandler) { window.removeEventListener('keydown', window._fracKbHandler); window._fracKbHandler = null; } setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.fractions.back', 'Back') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-        h('h3', { className: 'text-lg font-bold text-rose-800' + onHostInk }, __alloT('stem.fractions.fraction_lab', '\uD83C\uDF55 Fraction Lab')),
-        h('div', { className: 'ml-auto flex items-center gap-3 flex-wrap' },
-          streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-          bestStreak > 0 && h('span', { className: 'text-[0.6875rem] text-slate-600' }, 'Best: ' + bestStreak),
-          score.total > 0 && h('span', { className: 'text-xs font-bold text-rose-700', style: { color: isContrast ? '#ffff00' : undefined } }, __alloT("stem.fractions.nav_practice_score", "Practice score:") + ' ' + score.correct + '/' + score.total)
+      h('header', { className: 'frac-hero-deck' },
+        h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+          h('div', { className: 'flex items-start gap-3 min-w-0 flex-1' },
+            h('button', { type: 'button', onClick: function() { if (window._fracKbHandler) { window.removeEventListener('keydown', window._fracKbHandler); window._fracKbHandler = null; } setStemLabTool(null); }, className: 'frac-hero-back', 'aria-label': __alloT('stem.fractions.back', 'Back') }, h(ArrowLeft, { size: 18 })),
+            fracEmblemSvg,
+            h('div', { className: 'min-w-0' },
+              h('span', { className: 'frac-hero-badge' }, __alloT('stem.fractions.hero_badge', 'Math · Visual Fractions, Equivalence & Number Lines')),
+              h('h3', { className: 'text-xl font-black tracking-tight mt-0.5' }, __alloT('stem.fractions.fraction_lab', '\uD83C\uDF55 Fraction Lab')),
+              h('p', { className: 'text-xs text-rose-100/90 mt-0.5' }, __alloT('stem.fractions.hero_sub', 'Partition wholes, line up equivalent pieces, compare models, and step through fraction arithmetic.'))
+            )
+          ),
+          showHeroFractionGauge && h('div', { className: 'frac-mini-gauge' },
+            fracMiniPieSvg,
+            h('div', { className: 'text-xs leading-snug' },
+              h('div', { className: 'font-black text-white' }, safeN + '/' + safeD),
+              h('div', { className: 'text-rose-200 font-semibold' }, (safeN / safeD).toFixed(2) + ' · ' + fracPctText)
+            )
+          )
+        ),
+        h('div', { className: 'flex flex-wrap items-center gap-2 mt-2.5' },
+          h('span', { className: 'frac-telemetry-pill' }, __alloT('stem.fractions.pill_mode', 'Focus'), ' ', h('strong', null, MODE_LABELS[navMode] ? MODE_LABELS[navMode].label : navMode)),
+          streak > 0 && h('span', { className: 'frac-telemetry-pill' }, '\uD83D\uDD25 ', h('strong', null, String(streak))),
+          bestStreak > 0 && h('span', { className: 'frac-telemetry-pill' }, __alloT('stem.fractions.pill_best', 'Best'), ' ', h('strong', null, String(bestStreak))),
+          score.total > 0 && h('span', { className: 'frac-telemetry-pill' }, __alloT("stem.fractions.nav_practice_score", "Practice score:"), ' ', h('strong', null, score.correct + '/' + score.total))
+        ),
+        h('div', { className: 'frac-preset-bar', role: 'group', 'aria-label': __alloT('stem.fractions.a11y_starter_studies', 'Quick fraction starters') },
+          h('span', { className: 'text-[11px] font-extrabold uppercase tracking-wider text-rose-200 mr-1' }, __alloT('stem.fractions.presets_label', 'Quick start:')),
+          h('button', { type: 'button', className: 'frac-preset-chip', onClick: function() { sfxClick(); upd({ navMode: 'learn', tab: 'practice', pieces: { numerator: 3, denominator: 8 }, challenge: null }); } }, '🍕 ' + __alloT('stem.fractions.preset_build', 'Build 3/8')),
+          h('button', { type: 'button', className: 'frac-preset-chip', onClick: function() { sfxClick(); upd({ navMode: 'learn', tab: 'numberline', pieces: { numerator: 3, denominator: 4 } }); } }, '📏 ' + __alloT('stem.fractions.preset_line', 'Number Line')),
+          h('button', { type: 'button', className: 'frac-preset-chip', onClick: function() { sfxClick(); upd({ navMode: 'learn', tab: 'wall', wallHighlight: { n: 1, d: 2 } }); } }, '🧱 ' + __alloT('stem.fractions.preset_wall', 'Fraction Wall')),
+          h('button', { type: 'button', className: 'frac-preset-chip', onClick: function() { sfxClick(); upd({ navMode: 'practice', tab: 'compare', num1: 2, den1: 3, num2: 3, den2: 4 }); } }, '⚖️ ' + __alloT('stem.fractions.preset_compare', 'Compare 2/3 vs 3/4')),
+          h('button', { type: 'button', className: 'frac-preset-chip', onClick: function() { sfxClick(); upd({ navMode: 'practice', tab: 'operations', opMode: 'add', num1: 1, den1: 4, num2: 1, den2: 2 }); } }, '➕ ' + __alloT('stem.fractions.preset_ops', 'Add Fractions'))
         )
       ),
       h('div', { className: 'fraction-lab-navigation', style: navStyle },

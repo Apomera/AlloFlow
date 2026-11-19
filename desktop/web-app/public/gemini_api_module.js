@@ -665,9 +665,16 @@ const createGeminiAPI = (deps) => {
       if (!_request.apiKey && !_isCanvasEnv) {
         return { error: 'No API key configured', models: [], reachable: false };
       }
+      const listCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const listTimer = listCtrl ? setTimeout(() => listCtrl.abort(), 15000) : null;
       try {
         const url = 'https://generativelanguage.googleapis.com/v1beta/models';
-        const requestOptions = Object.freeze({ method: 'GET', headers: _geminiHeaders(false, _request.apiKey), ...(managedAIProfile() != null ? { redirect: 'error' } : {}) });
+        const requestOptions = Object.freeze({
+          method: 'GET',
+          headers: _geminiHeaders(false, _request.apiKey),
+          ...(managedAIProfile() != null ? { redirect: 'error' } : {}),
+          ...(listCtrl ? { signal: listCtrl.signal } : {})
+        });
         _guardRequest(_request);
         const r = await fetch(url, requestOptions);
         if (!r.ok) {
@@ -690,6 +697,8 @@ const createGeminiAPI = (deps) => {
       } catch (e) {
         if (_managedRequestDenied(e)) throw e;
         return { error: e.message || 'Network error', models: [], reachable: false };
+      } finally {
+        if (listTimer !== null) clearTimeout(listTimer);
       }
     };
 
@@ -1029,7 +1038,7 @@ const createGeminiAPI = (deps) => {
              if (reason === 'MAX_TOKENS') {
                  warnLog("Gemini Generation hit MAX_TOKENS. Result may be truncated.");
              }
-             else if (reason === 'MALFORMED_FUNCTION_CALL' && jsonMode) {
+             else if (reason === 'MALFORMED_FUNCTION_CALL' && jsonMode && !(_request && _request._jsonRepairAttempted)) {
                  warnLog("Gemini returned MALFORMED_FUNCTION_CALL. Initiating self-healing JSON repair...");
                  const repairPrompt = `
                      SYSTEM ALERT: You just generated malformed JSON that crashed the application.
@@ -1039,7 +1048,8 @@ const createGeminiAPI = (deps) => {
                      """,
                      TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, trailing commas) and return ONLY the valid JSON. Do not explain or add any text.
                  `;
-                 return await callGemini(repairPrompt, true, false, 0.1, null, signal, false, telemetry, null, _request);
+                 const repairRequest = _request ? Object.assign({}, _request, { _jsonRepairAttempted: true }) : { _jsonRepairAttempted: true };
+                 return await callGemini(repairPrompt, true, false, 0.1, null, signal, false, telemetry, null, repairRequest);
              }
              else if (reason !== 'STOP') {
                  throw new Error(`Generation Stopped: ${reason}`);
@@ -1237,18 +1247,31 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         contents: [{ parts: parts }],
         generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
       };
+      const editController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      let editTimedOut = false;
+      const onEditAbort = () => { try { editController && editController.abort(); } catch (_) {} };
+      if (_signal && editController) {
+        try { _signal.addEventListener('abort', onEditAbort, { once: true }); } catch (_) {}
+      }
+      const editTimeoutId = editController ? setTimeout(() => { editTimedOut = true; try { editController.abort(); } catch (_) {} }, 90000) : null;
       try {
         const requestOptions = Object.freeze({
           method: 'POST',
           headers: _geminiHeaders(true, _request.apiKey),
             ...(managedAIProfile() != null ? { redirect: 'error' } : {}),
           body: JSON.stringify(payload),
-          ...(_signal ? { signal: _signal } : {})
+          ...(editController ? { signal: editController.signal } : (_signal ? { signal: _signal } : {}))
         });
         _guardRequest(_request);
         const response = await fetch(url, requestOptions);
         _guardRequest(_request);
         _throwIfImageEditAborted();
+        if (!response.ok) {
+          const errText = await response.text().catch(() => '');
+          const httpErr = new Error(`Gemini Image Edit HTTP ${response.status}${errText ? ': ' + errText.slice(0, 200) : ''}`);
+          httpErr.status = response.status;
+          throw httpErr;
+        }
         const data = await response.json();
         _guardRequest(_request);
         const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
@@ -1264,8 +1287,16 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       } catch (err) {
         _guardRequest(_request);
         if (!imageAllowed()) return null;
+        if (editTimedOut && !(_signal && _signal.aborted)) {
+          const timeoutErr = new Error('Gemini Image Edit timed out');
+          warnLog("Gemini Image Edit Error", _diagnosticErrorSummary(timeoutErr));
+          throw timeoutErr;
+        }
         warnLog("Gemini Image Edit Error", _diagnosticErrorSummary(err));
         throw err;
+      } finally {
+        if (editTimeoutId) clearTimeout(editTimeoutId);
+        try { _signal && _signal.removeEventListener && _signal.removeEventListener('abort', onEditAbort); } catch (_) {}
       }
     };
 
@@ -1427,6 +1458,8 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       const model = modelName == null ? _request.models.default : String(modelName);
       await _authorizeRequest(_request);
       if (!_request.apiKey && !_isCanvasEnv) return { kind: 'skipped', reason: 'no-api-key', model };
+      const probeCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const probeTimer = probeCtrl ? setTimeout(() => probeCtrl.abort(), 15000) : null;
       try {
         const url = _requestUrl(model);
         const probePayload = {
@@ -1437,6 +1470,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
           method: 'POST',
           headers: _geminiHeaders(true, _request.apiKey),
             ...(managedAIProfile() != null ? { redirect: 'error' } : {}),
+            ...(probeCtrl ? { signal: probeCtrl.signal } : {}),
           body: JSON.stringify(probePayload)
         });
         _guardRequest(_request);
@@ -1451,6 +1485,8 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       } catch (probeErr) {
         if (_managedRequestDenied(probeErr)) throw probeErr;
         return { kind: 'transient', userMessage: probeErr.message, model };
+      } finally {
+        if (probeTimer !== null) clearTimeout(probeTimer);
       }
     };
 

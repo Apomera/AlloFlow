@@ -25,9 +25,9 @@ const { execFileSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const QUIET = process.argv.includes('--quiet');
 
-// file → { pattern: expected `grep -c` count (LINES containing the pattern, not raw occurrences) }
+// file -> { pattern: expected `grep -c` count (LINES containing the pattern, not raw occurrences) }
 const MARKERS = {
-  'stem_lab/stem_tool_lumen.js': { focusIds: 7, dataHash: 5 },
+  'stem_lab/stem_tool_lumen.js': { focusIds: 8, dataHash: 5 },
 };
 
 const count = (haystack, needle) =>
@@ -75,5 +75,5 @@ if (fails.length) {
   console.error('   just edit the expected counts. See memory `project_lumen_design`.');
   process.exit(1);
 }
-if (!QUIET) console.log('check_lumen_sweep: OK — Lumen wave markers intact (focusIds=7, dataHash=5; working tree + staged).');
+if (!QUIET) console.log('check_lumen_sweep: OK - Lumen wave markers intact (focusIds=8, dataHash=5; working tree + staged).');
 process.exit(0);

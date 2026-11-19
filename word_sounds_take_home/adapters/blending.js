@@ -88,8 +88,10 @@ module.exports = {
         if (i >= steps.length) { mark(-1); return; }
         var s = steps[i++];
         mark(s.hi == null ? -1 : s.hi);
-        ctx.play(s.id).then(function () {
-          if (mine === token) win.setTimeout(step, s.gap || 0);
+        ctx.play(s.id).then(function (ok) {
+          if (mine !== token) return;
+          if (ok === false) { mark(-1); return; }
+          win.setTimeout(step, s.gap || 0);
         });
       };
       step();
@@ -134,6 +136,7 @@ module.exports = {
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('soundReplays'); run(soundSteps()); } }, text: ctx.L.blending_hear_sounds }),
       hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { ctx.support('optionReplays'); run(optionSteps(600)); } }, text: ctx.L.blending_play_all }),
+      ctx.el('button', { type: 'button', 'data-stop-audio': '', on: { click: function () { halt(); if (typeof ctx.stop === 'function') ctx.stop(); } }, text: ctx.L.stop_audio || 'Stop audio' }),
       hear ? hear.note : null,
     ]));
     ctx.root.appendChild(list);

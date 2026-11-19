@@ -499,6 +499,8 @@ function SessionModal({
             const directSummary = ancestor.querySelector(':scope > summary');
             if (element !== directSummary) return false;
           }
+          const ancStyle = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(ancestor) : null;
+          if (ancStyle && (ancStyle.display === 'none' || ancStyle.visibility === 'hidden')) return false;
           ancestor = ancestor.parentElement;
         }
         const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
@@ -615,7 +617,7 @@ function SessionModal({
 
   const testStudentJoin = React.useCallback(() => {
     if (!liveJoinUrl || typeof window === 'undefined') return;
-    const preview = window.open(liveJoinUrl, '_blank');
+    const preview = window.open(liveJoinUrl, '_blank', 'noopener,noreferrer');
     if (preview) {
       try { preview.opener = null; } catch (_) {}
     } else {
@@ -639,15 +641,15 @@ function SessionModal({
     popup.document.write(`<!doctype html><html lang="${String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '')}"${document.documentElement.dir === 'rtl' ? ' dir="rtl"' : ''}><head><meta charset="utf-8"><title>AlloFlow live session ${safeCode}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.mode{font-weight:700;color:#0e7490;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 54px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>AlloFlow live session</h1><div class="mode">${isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'} · ${studentAiLabel}</div><div class="qr">${liveQrSvg}</div><div>Fallback class code</div><div class="code">${safeCode}</div><div class="note">Scan the QR code to join. This invitation works only while the teacher session is active.</div></body></html>`);
     popup.document.close();
     setTimeout(() => { try { popup.focus(); popup.print(); } catch (_) {} }, 250);
-  }, [activeSessionCode, addToast, isMailboxSession, liveQrSvg, studentAiLabel]);
+  }, [activeSessionCode, addToast, isMailboxSession, liveQrSvg, studentAiLabel, tr]);
 
   return (
-    <div className={`fixed inset-0 bg-black/80 z-[150] flex items-center justify-center animate-in fade-in duration-200 motion-reduce:animate-none ${isProjectionMode ? 'p-0' : 'p-4'}`} role="presentation" onClick={handleSetShowSessionModalToFalse}>
-      <div ref={dialogRef} tabIndex={-1} className={`bg-white shadow-2xl text-center w-full overflow-y-auto relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none ${isProjectionMode ? 'h-screen max-w-none rounded-none p-6 sm:p-10' : 'max-h-[90vh] max-w-md rounded-2xl p-5 sm:p-8'}`} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title" aria-describedby="alloflow-session-modal-description">
+    <div className={`fixed inset-0 bg-black/80 z-[260] flex items-center justify-center animate-in fade-in duration-200 motion-reduce:animate-none ${isProjectionMode ? 'p-0' : 'p-4'}`} role="presentation" onClick={handleSetShowSessionModalToFalse}>
+      <div ref={dialogRef} tabIndex={-1} className={`allo-docsuite bg-white shadow-2xl text-center w-full overflow-y-auto relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none ${isProjectionMode ? 'h-screen max-w-none rounded-none p-6 sm:p-10' : 'max-h-[90vh] max-w-md rounded-2xl p-5 sm:p-8'}`} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title" aria-describedby="alloflow-session-modal-description">
         {!isLocalOnly && liveJoinUrl && !isCanvasManagedBackend && <button type="button" onClick={() => setIsProjectionMode(value => !value)} className="absolute top-4 left-4 z-10 min-h-11 flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm hover:border-indigo-400" aria-label={isProjectionMode ? 'Exit projection mode' : 'Open projection mode'}>
           {isProjectionMode ? <Minimize size={16} aria-hidden="true"/> : <Maximize size={16} aria-hidden="true"/>} <span className="hidden sm:inline">{isProjectionMode ? 'Exit projection mode' : 'Open projection mode'}</span>
         </button>}
-        <button type="button" onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24} aria-hidden="true"/></button>
+        <button type="button" onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none" aria-label={t('common.close')}><X size={24} aria-hidden="true"/></button>
         <div className="flex justify-center mb-4">
           <div className="bg-green-100 p-4 rounded-full shadow-inner" aria-hidden="true">
             <Wifi size={48} className="text-green-600 animate-pulse motion-reduce:animate-none" />

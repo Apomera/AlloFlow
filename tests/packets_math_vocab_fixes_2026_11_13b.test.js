@@ -405,17 +405,17 @@ describe('numbers of 10000 or more, one line, and remainders (L14, L16)', () => 
     t = render({ a: 9999, b: 9999, op: 'mul' });
     expect(t.q('.prompt').textContent).toBe('9999 ' + TIMES + ' 9999 =');
     expect(Number(/(\d+)vw/.exec(t.q('.prompt').getAttribute('style'))[1])).toBeLessThan(12);
-    // A teacher's own problem gets the minus sign too, and the screen reader label has it.
+    // A teacher's own problem gets the minus sign too, and the screen reader label speaks it as words.
     t = render({ display: '10 - 3 - 2', answer: 5 });
     expect(t.q('.prompt').textContent).toBe('10 ' + MINUS + ' 3 ' + MINUS + ' 2');
-    expect(t.q('[data-pad-input]').getAttribute('aria-label')).toBe('10 ' + MINUS + ' 3 ' + MINUS + ' 2. Type the answer.');
+    expect(t.q('[data-pad-input]').getAttribute('aria-label')).toBe('10 minus 3 minus 2. Type the answer.');
   });
 
   it('allowRemainders: every division says "Leave out the remainder.", on screen and to a screen reader; others do not', () => {
     for (const raw of [{ a: 7, b: 2, op: 'div' }, { a: 8, b: 2, op: 'div' }]) {
       const t = render(raw);
       expect(t.q('[data-pad-input]').closest('.card').textContent).toContain('Leave out the remainder.');
-      expect(t.q('[data-pad-input]').getAttribute('aria-label')).toBe(raw.a + ' ' + String.fromCharCode(0xF7) + ' 2. Type the answer. Leave out the remainder.');
+      expect(t.q('[data-pad-input]').getAttribute('aria-label')).toBe(raw.a + ' divided by 2. Type the answer. Leave out the remainder.');
     }
     const add = render({ a: 7, b: 2, op: 'add' });
     expect(add.q('[data-pad-input]').closest('.card').textContent).not.toContain('remainder');

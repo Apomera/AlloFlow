@@ -86,6 +86,7 @@ module.exports = {
     return { item: item };
   },
   render: function (item, ctx) {
+    var doc = ctx.root.ownerDocument;
     var L = ctx.L;
     var target = String(item.target);
     var written = item.shown && String(item.shown).length === target.length ? String(item.shown) : target;
@@ -120,11 +121,74 @@ module.exports = {
     };
     var own = function (text) { return String(text || '').split('').filter(function (ch) { return !fixed(ch); }).join(''); };
 
-    var tray = ctx.el('ul', { class: 'row', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:10px' });
+    var drag = null, dragEndedAt = 0;
+    var dragged = function () { return Date.now() - dragEndedAt < 400; };
+    var dragStart = function (e, ti, from, bi) {
+      if (locked() || e.isPrimary === false || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      drag = { ti: ti, from: from, bi: bi, x: e.clientX, y: e.clientY, src: e.currentTarget, ghost: null };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+      e.currentTarget.addEventListener('pointermove', dragMove);
+      e.currentTarget.addEventListener('pointerup', dragEnd);
+      e.currentTarget.addEventListener('pointercancel', dragEnd);
+    };
+    var dragMove = function (e) {
+      if (!drag) return;
+      var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (!drag.ghost) {
+        if (dx * dx + dy * dy < 100) return;
+        var g = drag.src.cloneNode(true);
+        ['data-ws-tile', 'data-ws-box', 'aria-label', 'aria-pressed'].forEach(function (a) { g.removeAttribute(a); });
+        g.setAttribute('aria-hidden', 'true');
+        var r = drag.src.getBoundingClientRect();
+        g.style.cssText += ';position:fixed;margin:0;z-index:60;pointer-events:none;opacity:.92;width:' + r.width + 'px;height:' + r.height + 'px';
+        doc.body.appendChild(g);
+        drag.ghost = g;
+        drag.w = r.width; drag.h = r.height;
+        if (drag.from === 'tray') { picked = drag.ti; draw(); }
+      }
+      drag.ghost.style.left = (e.clientX - drag.w / 2) + 'px';
+      drag.ghost.style.top = (e.clientY - drag.h / 2) + 'px';
+      e.preventDefault();
+    };
+    var dragEnd = function (e) {
+      var d = drag;
+      drag = null;
+      if (!d) return;
+      d.src.removeEventListener('pointermove', dragMove);
+      d.src.removeEventListener('pointerup', dragEnd);
+      d.src.removeEventListener('pointercancel', dragEnd);
+      if (!d.ghost) return;
+      if (d.ghost.parentNode) d.ghost.parentNode.removeChild(d.ghost);
+      dragEndedAt = Date.now();
+      var at = e.type === 'pointercancel' ? null : (typeof doc.elementFromPoint === 'function' ? doc.elementFromPoint(e.clientX, e.clientY) : null);
+      var boxNode = at && at.closest ? at.closest('[data-ws-box]') : null;
+      var trayNode = at && at.closest ? at.closest('[data-ws-tray]') : null;
+      if (boxNode && ctx.root.contains(boxNode)) {
+        var to = Number(boxNode.getAttribute('data-ws-box'));
+        if (d.from === 'tray') {
+          picked = null; boxes[to] = d.ti; lastSubmitted = null;
+          draw();
+          ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(d.ti), n: to + 1 }));
+        } else if (to !== d.bi) {
+          var other = boxes[to];
+          boxes[to] = d.ti; boxes[d.bi] = other; picked = null; lastSubmitted = null;
+          draw();
+          ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(d.ti), n: to + 1 }));
+        }
+      } else if (trayNode && d.from === 'box') {
+        boxes[d.bi] = null; lastSubmitted = null;
+        draw();
+        ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(d.ti), n: d.bi + 1 }));
+      } else if (d.from === 'tray') {
+        picked = null; draw();
+      }
+    };
+
+    var tray = ctx.el('ul', { class: 'row', 'data-ws-tray': '', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:10px' });
     var tiles = item.letters.map(function (letter, ti) {
-      var btn = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'aria-label': ctx.fmt(L.word_scramble_pick, { letter: up(ti) }),
-        style: 'min-width:56px;min-height:56px;font-size:1.5rem;font-weight:700',
-        on: { click: function () { onTile(ti); } } }, [up(ti)]);
+      var btn = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-ws-tile': String(ti), 'aria-label': ctx.fmt(L.word_scramble_pick, { letter: up(ti) }),
+        style: 'min-width:56px;min-height:56px;font-size:1.5rem;font-weight:700;touch-action:none',
+        on: { click: function (e) { if (dragged()) return; onTile(ti, e); }, pointerdown: function (e) { dragStart(e, ti, 'tray', -1); } } }, [up(ti)]);
       var li = ctx.el('li', {}, [btn]);
       tray.appendChild(li);
       return { li: li, btn: btn };
@@ -134,8 +198,8 @@ module.exports = {
     target.split('').forEach(function (ch, i) {
       if (fixed(ch)) { boxList.appendChild(ctx.el('li', { 'aria-hidden': 'true', 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.5rem;font-weight:700' }, [written[i] === ' ' ? ' ' : written[i]])); return; }
       var bi = boxEls.length;
-      var btn = ctx.el('button', { type: 'button', class: 'slot', style: 'min-width:60px;min-height:64px;font-size:1.5rem;font-weight:700',
-        on: { click: function () { onBox(bi); } } });
+      var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-ws-box': String(bi), style: 'min-width:60px;min-height:64px;font-size:1.5rem;font-weight:700',
+        on: { click: function (e) { if (dragged()) return; onBox(bi, e); }, pointerdown: function (e) { if (boxes[bi] != null) dragStart(e, boxes[bi], 'box', bi); } } });
       boxList.appendChild(ctx.el('li', {}, [btn]));
       boxEls.push(btn);
     });
@@ -155,6 +219,7 @@ module.exports = {
     var checkBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { onCheck(); } }, text: L.word_scramble_check });
 
     var draw = function () {
+      var holding = picked != null && !locked();
       tiles.forEach(function (t, ti) {
         t.li.hidden = boxes.indexOf(ti) >= 0;
         t.btn.setAttribute('aria-pressed', picked === ti ? 'true' : 'false');
@@ -164,23 +229,27 @@ module.exports = {
         var ti = boxes[bi];
         btn.textContent = ti == null ? '' : up(ti);
         btn.style.borderStyle = ti == null ? 'dashed' : 'solid';
-        btn.style.borderColor = ti == null ? 'var(--muted)' : 'var(--accent)';
+        btn.style.borderColor = ti == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--accent)';
+        btn.style.background = ti == null && holding ? 'var(--soft)' : '';
+        btn.style.boxShadow = ti == null && holding ? '0 0 0 3px var(--accent)' : '';
+        btn.style.touchAction = ti == null ? 'manipulation' : 'none';
         btn.setAttribute('aria-label', ti == null ? ctx.fmt(L.word_scramble_box_empty, { n: bi + 1 }) : ctx.fmt(L.word_scramble_box_filled, { n: bi + 1, letter: up(ti) }));
         if (locked()) btn.setAttribute('aria-disabled', 'true');
       });
       checkBtn.setAttribute('aria-disabled', locked() || !answerText() ? 'true' : 'false');
       if (locked()) { clearBtn.setAttribute('aria-disabled', 'true'); showWord.setAttribute('aria-disabled', 'true'); }
     };
-    var onTile = function (ti) {
+    var byKey = function (e) { return !e || e.detail === 0; };
+    var onTile = function (ti, e) {
       if (locked() || boxes.indexOf(ti) >= 0) return;
       if (picked === ti) { picked = null; draw(); ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(ti) })); return; }
       picked = ti;
       draw();
       ctx.announce(ctx.fmt(L.word_scramble_picked, { letter: up(ti) }));
       var empty = boxes.indexOf(null);
-      boxEls[empty >= 0 ? empty : 0].focus();
+      if (byKey(e)) boxEls[empty >= 0 ? empty : 0].focus();
     };
-    var onBox = function (bi) {
+    var onBox = function (bi, e) {
       if (locked()) return;
       if (picked == null) {
         var out = boxes[bi];
@@ -195,6 +264,7 @@ module.exports = {
       boxes[bi] = ti; lastSubmitted = null;
       draw();
       ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(ti), n: bi + 1 }));
+      if (!byKey(e)) return;
       if (boxes.indexOf(null) < 0) { checkBtn.focus(); return; }
       for (var k = 0; k < tiles.length; k++) if (boxes.indexOf(k) < 0) { tiles[k].btn.focus(); return; }
     };
@@ -213,6 +283,47 @@ module.exports = {
       // A first miss clears the answer and frees every tile (checkScramble).
       if (outcome === 'retry') { clearAll(); draw(); if (tiles[0]) tiles[0].btn.focus(); }
     };
+
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        if (locked()) return false;
+        var k = String(key == null ? '' : key);
+        if (k === 'Backspace') {
+          for (var bi = n - 1; bi >= 0; bi--) {
+            if (boxes[bi] != null) {
+              var out = boxes[bi];
+              boxes[bi] = null; picked = null; lastSubmitted = null;
+              draw();
+              ctx.announce(ctx.fmt(L.word_scramble_removed, { letter: up(out), n: bi + 1 }));
+              return true;
+            }
+          }
+          return false;
+        }
+        if (k === 'Enter') {
+          var ae = doc && doc.activeElement;
+          var onBtn = !!(ae && String(ae.tagName || '').toUpperCase() === 'BUTTON' && ae !== checkBtn && !ae.closest('[hidden]') && !ae.disabled && ae.getAttribute('aria-disabled') !== 'true');
+          if (onBtn) return false;
+          if (!answerText()) return false;
+          onCheck();
+          return true;
+        }
+        if (k.length === 1 && !fixed(k)) {
+          var lc = k.toLowerCase();
+          var emptyAt = boxes.indexOf(null);
+          if (emptyAt < 0) return false;
+          for (var ti = 0; ti < item.letters.length; ti++) {
+            if (item.letters[ti] === lc && boxes.indexOf(ti) < 0) {
+              picked = null; boxes[emptyAt] = ti; lastSubmitted = null;
+              draw();
+              ctx.announce(ctx.fmt(L.word_scramble_placed, { letter: up(ti), n: emptyAt + 1 }));
+              return true;
+            }
+          }
+        }
+        return false;
+      });
+    }
 
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.word_scramble_question }));
     ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.word_scramble_how }));

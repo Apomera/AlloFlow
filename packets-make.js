@@ -110,8 +110,8 @@
   var TRACE_CASES = ['both', 'capital', 'lowercase'];
   // Choices: how many answers a board shows (word_sounds_packet_builder.js, opts.choices), and the activities it changes.
   var CHOICE_LEVELS = ['easy', 'medium', 'all'];
-  // 2026-11-18: and Break it Down, whose Easy shows the word's sounds and one more.
-  var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting', 'segmentation'];
+  // 2026-11-18: Break it Down (Easy shows the word's sounds and one more); 2026-11-19: Sight & Spell (Easy shows a smaller letter bank and word length).
+  var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting', 'segmentation', 'orthography'];
   // The words for each, on the top line of a "More options" box.
   var CHOICE_NAMES = { easy: 'Easy', medium: 'Medium', all: 'All' };
   var TRACE_NAMES = { both: 'capital, then lowercase', capital: 'capital only', lowercase: 'lowercase only' };
@@ -303,12 +303,11 @@
     // What is not offered, and the plain reason for each kind, folded behind one line.
     var held = heldBack.map(core.activityEnglishName);
     var missing = core.activityIds().filter(function (id) { return order.indexOf(id) < 0 && heldBack.indexOf(id) < 0; }).map(core.activityEnglishName);
-    var parts = [], notCount = held.length + missing.length;
+    var parts = [];
     if (held.length) parts.push(listed(held) + ' (' + HELD_BACK_REASON + ').');
     if (missing.length) parts.push(listed(missing) + ' (' + (missing.length === 1 ? 'it' : 'they') + ' cannot be made from a word list alone yet).');
-    setText('not-offered-summary', count(notCount, 'more activity is', 'more activities are') + ' not in this version');
     setText('not-offered-text', parts.length ? 'Not in this version: ' + parts.join(' ') : '');
-    show('not-offered', parts.length > 0);
+    show('not-offered-text', parts.length > 0);
   }
   function syncActivities() {
     Array.prototype.forEach.call($('strands').querySelectorAll('input[type="checkbox"]'), function (box) {
@@ -563,7 +562,6 @@
     item.appendChild(doc.createTextNode(' — no grade: chosen by how widely a word is used.'));
     wide.appendChild(item);
     host.appendChild(wide);
-    show('stage-key', stageRows.length > 0);
   }
   function stageDetail(id) { var row = stageRow(id); return row ? String(row.label).split(':').slice(1).join(':').trim() : ''; }
   // One short line for a stage, made from the builder's own row: a few of its example words and its limits.
@@ -857,8 +855,9 @@
     var spelling = !state.stage && state.activities.some(function (id) { return core.activityStrand(id) === 'spelling'; });
     show('stage-spell-note', spelling);
     stage.setAttribute('aria-describedby', ['stage-hint'].concat(kindergarten ? ['stage-k-note'] : [], spelling ? ['stage-spell-note'] : []).join(' '));
-    setText('stage-why-text', stageWhy(state.stage));
-    show('stage-why', !!stageWhy(state.stage));
+    var whyText = stageWhy(state.stage);
+    setText('stage-why-text', whyText);
+    show('stage-why-text', !!whyText);
     drawMore2();
   }
   // "More options" of step 2: a sound, a pattern and other curricula while the page picks the words, and the version
@@ -1103,15 +1102,22 @@
     var uses = mineSounds && mineClip ? 'Uses your sounds and your recording. ' : mineClip ? 'Uses your recording. ' : mineSounds ? 'Uses your sounds. ' : '';
     return { word: word, ok: true, edit: true, says: 'Ready. ' + uses + count(sounds.length, 'sound') + ': ' + sounds.map(soundName).join(', ') + '.' };
   }
-  function typedWords() {
+  // Clean pasted spelling lists (numbered lines, bullets, surrounding quotes/punctuation) without mangling interior invalid characters.
+  function parseWordInput(text) {
     var seen = {}, out = [];
-    String(state.own || '').toLowerCase().split(/[\s,;]+/).forEach(function (word) {
-      if (!word || seen[word]) return;
-      seen[word] = true;
-      out.push(word);
+    String(text || '').toLowerCase().split(/\r?\n/).forEach(function (line) {
+      var trimmedLine = line.replace(/^\s*(?:\d+[.)]\s+|[\u2022\u25e6\u25aa\u2023\u2043\u2013\u2014*\-]\s+)/, '');
+      trimmedLine.split(/[\s,;\u2022\u25e6\u25aa\u2023\u2043]+/).forEach(function (raw) {
+        if (!raw || /^(?:\d+[.)]|[\u2013\u2014*\-]+)$/.test(raw)) return;
+        var word = raw.replace(/^[("'\u201c\u201d\u2018\u2019\[{]+|[)"'\u201c\u201d\u2018\u2019\]}.!?:]+$/g, '');
+        if (!word || seen[word]) return;
+        seen[word] = true;
+        out.push(word);
+      });
     });
     return out;
   }
+  function typedWords() { return parseWordInput(state.own); }
   function drawOwn() {
     clearTimeout(ownTimer);
     var words = typedWords(), list = $('own-list');
@@ -1172,12 +1178,16 @@
   // the order of checking (the chips show it). Until the teacher changes a box, the boxes show the picker's words
   // for the length chosen. Only LIST_PAGE rows are drawn at a time.
   var listPool = [], listKey = null, listLimit = LIST_PAGE, listNote = '', listTimer = 0, listPanel = null, addPending = {}, myPictured = {}, myNoPicture = {};
-  var previewOmit = {}, previewSeeds = {}, previewNoPicture = {}, previewOwnPic = {}, previewSession = null, inPreviewAction = false;
+  var previewOmit = {}, previewSeeds = {}, previewNoPicture = {}, previewOwnPic = {}, previewSession = null, inPreviewAction = false, previewContextKey = '';
   var REROLL_ACTS = ['isolation', 'segmentation', 'blending', 'decoding', 'rhyming', 'missing_letter', 'word_families', 'sound_sort'];
+  function stopPreviewSession() {
+    if (previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
+  }
   function resetPreview(stopSession) {
     previewOmit = {};
     previewSeeds = {};
-    if (stopSession && previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
+    previewContextKey = '';
+    if (stopSession) stopPreviewSession();
   }
   function typedNow() { return typedWords().slice(0, MAX_TYPED); }
   // A word can go in the file: it passes the typed-word checks, and a borderline word only when the teacher typed it.
@@ -1349,8 +1359,7 @@
   }
   // "Add your own words": they join the typed words (the same ones as "Type my own words") and are checked when they can be used.
   function addTyped() {
-    var field = $('f-add'), words = [];
-    String(field.value || '').toLowerCase().split(/[\s,;]+/).forEach(function (word) { if (word && words.indexOf(word) < 0) words.push(word); });
+    var field = $('f-add'), words = parseWordInput(field.value);
     if (!words.length) { listNote = 'Type a word first.'; drawListSaid(); field.focus(); return; }
     var typed = typedWords(), fresh = words.filter(function (word) { return typed.indexOf(word) < 0; });
     if (fresh.length) state.own = (String(state.own || '').replace(/\s+$/, '') + (String(state.own || '').trim() ? ' ' : '') + fresh.join(' ')).slice(0, 4000);
@@ -1450,7 +1459,7 @@
   // ---------------------------------------------------------------------------
   // myRows: the store's small rows (list), for the summary. mine: the whole entries of the words on the
   // lists now, for the messages and the panels. Both are read again whenever the store says it changed.
-  var myWords = null, wordPanel = null, myRows = [], mine = {}, mineTried = {}, mineRun = 0, mineTimer = 0, clearing = false, cleared = '';
+  var myWords = null, myWordsReady = false, wordPanel = null, myRows = [], mine = {}, mineTried = {}, mineRun = 0, mineTimer = 0, clearing = false, cleared = '';
   var ownOpen = {}, pickOpen = null;
   // fromFile: { word: { sounds, clip, picture } } read back from a file opened with "Open a file I made" (see packets_reopen.js).
   var fromFile = {}, OWN_PARTS = ['sounds', 'clip', 'picture'];
@@ -1467,8 +1476,11 @@
     clearTimeout(mineTimer);
     if (!myWords) return Promise.resolve();
     var run = ++mineRun;
-    return myWords.list().then(function (rows) {
+    var checkAvail = typeof myWords.available === 'function' ? myWords.available() : Promise.resolve(true);
+    return Promise.all([checkAvail, myWords.list()]).then(function (both) {
       if (run !== mineRun) return null;
+      myWordsReady = !!both[0];
+      var rows = both[1];
       myRows = Array.isArray(rows) ? rows : [];
       myPictured = {};
       myNoPicture = {};
@@ -1485,7 +1497,11 @@
         mine = found && typeof found === 'object' ? found : {};
         mineChanged();
       });
-    }).then(null, function () {});
+    }).then(null, function () {
+      if (run !== mineRun) return;
+      myWordsReady = false;
+      drawMyWords();
+    });
   }
   function mineChanged() {
     drawMyWords();
@@ -1496,7 +1512,7 @@
     Object.keys(ownOpen).forEach(function (word) { ownOpen[word].update(mineOf(word)); });
     if (pickOpen) pickOpen.update(mineOf(pickOpen.word));
     if (listPanel) listPanel.panel.update(mineOf(listPanel.word));
-    if (step === 3) drawPictures();
+    if (step === 3) { drawPictures(); drawLengths(); }
   }
   function wordMade(row) {
     var parts = [];
@@ -1506,12 +1522,12 @@
     else if (row.picture) parts.push(row.own ? 'your picture' : 'picture');
     return parts.join(', ');
   }
-  // The quiet summary in step 2: shown only when the store holds something.
+  // The quiet summary in step 2: always reachable (closed by default) when the device store is available so "Open a My words file" works on fresh devices.
   function drawMyWords() {
     var box = $('my-words');
     if (!box) return;
     var rows = myRows, list = $('my-words-list');
-    box.hidden = !myWords || (!rows.length && !cleared);
+    box.hidden = !myWordsReady;
     var bytes = rows.reduce(function (sum, row) { return sum + (Number(row.bytes) || 0); }, 0);
     setText('my-words-line', 'My words on this device: ' + (rows.length ? count(rows.length, 'word') + ', ' + fileSize(bytes) : 'none') + '.');
     list.textContent = '';
@@ -1541,6 +1557,7 @@
     if (!rows.length) clearing = false;
     clear.textContent = clearing ? 'Yes, remove all ' + count(rows.length, 'word') : 'Remove all my words';
     show('my-words-keep', clearing && rows.length > 0);
+    show('my-words-export', rows.length > 0);
     if (cleared) setText('my-words-said', cleared);
   }
   function wireMyWords() {
@@ -1706,10 +1723,17 @@
     };
     return more();
   }
+  function fetchBounded(url, init, ms) {
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, ms || 15000) : null;
+    var clear = function () { if (timer !== null) { clearTimeout(timer); timer = null; } };
+    var opts = ctrl ? Object.assign({}, init || {}, { signal: ctrl.signal }) : init;
+    return window.fetch(url, opts).then(function (reply) { clear(); return reply; }, function (err) { clear(); throw err; });
+  }
   // One sound file: from the saved copy when the site still has the same one, else from the site.
   function readSoundFile(cache, file, onBytes) {
     var download = function (response) {
-      var fetched = response ? Promise.resolve(response) : window.fetch(file.url);
+      var fetched = response ? Promise.resolve(response) : fetchBounded(file.url, undefined, 20000);
       return fetched.then(function (reply) {
         if (!reply.ok) throw new Error(file.url + ' answered ' + reply.status);
         return readBody(reply, onBytes).then(function (text) {
@@ -1732,7 +1756,7 @@
       var tag = hit.headers.get('etag'), dated = hit.headers.get('last-modified');
       if (!tag && !dated) return use();
       // Ask the site whether the file changed. No answer (no internet) means the saved copy is used.
-      return window.fetch(file.url, { headers: tag ? { 'If-None-Match': tag } : { 'If-Modified-Since': dated } }).then(function (reply) {
+      return fetchBounded(file.url, { headers: tag ? { 'If-None-Match': tag } : { 'If-Modified-Since': dated } }, 12000).then(function (reply) {
         return reply.status === 200 ? download(reply) : use();
       }, use);
     });
@@ -1875,12 +1899,13 @@
   }
 
   // A recording as MP3 (2026-11-17): the app's own encoder (lame.min.js) through packets_audio_kit.js, both from this site.
-  // They start loading when the page opens (audioKit() from start) and a build uses them only once they have arrived: a
-  // build never waits on them. One channel, 48 kbps: a file's recordings are about 6 to 10 times smaller than as WAV. Until
-  // the encoder is here, or if it cannot be had, the builder keeps the WAV.
-  var MP3_KBPS = 48, mp3Ready = null, mp3Kit = null;
+  // They start loading when the page opens (audioKit() from start), and the first build waits briefly (up to 1.5 s from
+  // page load) so fast builds also get MP3. One channel, 48 kbps: a file's recordings are about 6 to 10 times smaller than
+  // as WAV. If the encoder still has not arrived, or cannot be had, the builder keeps the WAV.
+  var MP3_KBPS = 48, mp3Ready = null, mp3Kit = null, mp3Done = false, mp3Waited = false, mp3Start = 0;
   function audioKit() {
     if (mp3Ready) return mp3Ready;
+    mp3Start = Date.now();
     mp3Ready = new Promise(function (resolve) {
       if (window.AlloPacketAudioKit) { resolve(window.AlloPacketAudioKit); return; }
       var script = document.createElement('script');
@@ -1888,8 +1913,16 @@
       script.onload = function () { resolve(window.AlloPacketAudioKit || null); };
       script.onerror = function () { resolve(null); };
       document.head.appendChild(script);
-    }).then(function (kit) { return kit ? kit.getMp3().then(function (ok) { mp3Kit = ok ? kit : null; return mp3Kit; }) : null; });
+    }).then(function (kit) { return kit ? kit.getMp3().then(function (ok) { mp3Kit = ok ? kit : null; mp3Done = true; return mp3Kit; }) : (mp3Done = true, null); });
     return mp3Ready;
+  }
+  function waitAudioKit() {
+    if (mp3Kit || mp3Done || mp3Waited) return Promise.resolve(mp3Kit);
+    mp3Waited = true;
+    var ready = audioKit();
+    var remaining = 1500 - (Date.now() - mp3Start);
+    if (remaining <= 0) return Promise.resolve(mp3Kit);
+    return Promise.race([ready, new Promise(function (resolve) { setTimeout(function () { resolve(null); }, remaining); })]);
   }
   // Each recording is made smaller once per visit: making the file again (a word removed, another version) reuses it.
   var mp3s = typeof Map === 'function' ? new Map() : null;
@@ -1910,10 +1943,14 @@
     if (symbols.ready()) return Promise.resolve(true);
     if (!picturesLoading) {
       picturesLoading = Promise.all(symbols.shards.map(function (shard) {
-        return window.fetch(shard.url).then(function (reply) {
+        return fetchBounded(shard.url, undefined, 15000).then(function (reply) {
           if (!reply.ok) throw new Error(shard.url + ' answered ' + reply.status);
           return reply.text();
-        }).then(function (text) { symbols.add(JSON.parse(text)); });
+        }).then(function (text) {
+          symbols.add(JSON.parse(text, function (k, v) {
+            return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+          }));
+        });
       })).then(function () { picturesLoading = null; return symbols.ready(); }, function (error) { picturesLoading = null; throw error; });
     }
     return picturesLoading;
@@ -1966,6 +2003,7 @@
         picturesNote = 'The pictures could not be downloaded, so this file has none. Check the box to try again.';
       }
       drawPictures();
+      if (!ready && step === 3) drawLengths();
       if (run === buildRun) making('Putting the file together.', null);
       return ready;
     });
@@ -2049,18 +2087,36 @@
     if (state.directionsOnce) now.push('directions once');
     if (state.repeatMissed) now.push('missed questions once more');
     if (state.questionOrder && state.activities.length >= 2) now.push('your own question order');
-    if (state.learner) now.push('a code name');
     setText('more-3-now', now.join(', '));
-    openMore('more-3', (!hand && state.length !== 'regular') || !!state.directionsOnce || !!state.repeatMissed || !!state.learner || (!!state.questionOrder && state.activities.length >= 2));
+    openMore('more-3', (!hand && state.length !== 'regular') || !!state.directionsOnce || !!state.repeatMissed || (!!state.questionOrder && state.activities.length >= 2));
   }
-  // Step 3's code name: the field shows what was typed; the line under it, what the file will carry when that differs.
+  // Step 3's unified code-name field: 1 name personalizes the single file above via builder.withCodeName synchronously;
+  // 2 to 40 lines prepare a 1-click .zip download.
   function syncCodeName() {
-    var field = $('f-code-name');
+    var field = $('f-batch-names');
     if (!field) return;
-    if (doc.activeElement !== field && field.value !== state.learner) field.value = state.learner;
-    if (state.learner && !$('code-box').open) $('code-box').open = true;
+    if (state.learner && !field.value.trim()) field.value = state.learner;
+    if (state.learner && $('batch') && !$('batch').open) $('batch').open = true;
+  }
+  function patchSingleCodeName(name) {
+    state.learner = name || '';
+    if (!built || !built.baseHtml || typeof builder.withCodeName !== 'function') return;
     var clean = codeNameNow();
-    setText('code-name-said', state.learner.trim() && clean !== state.learner.trim() ? (clean ? 'The file uses: ' + clean + '. A code name keeps to letters, numbers, spaces and . _ -' : 'A code name needs a letter or a number.') : '');
+    var nextHtml = builder.withCodeName(built.baseHtml, clean);
+    if (nextHtml === built.html && built.name === fileName(built.title, clean)) return;
+    var blob = new Blob([nextHtml], { type: 'text/html' });
+    if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
+    built.html = nextHtml;
+    built.name = fileName(built.title, clean);
+    built.bytes = blob.size;
+    setText('summary-facts', count(built.total, 'question') + '. About ' + count(Math.ceil(built.total / 2), 'minute') + '. ' + fileSize(built.bytes) + '.');
+    setText('size-warn', built.bytes >= LARGE_FILE_BYTES ? LARGE_FILE_SAID : '');
+    show('size-warn', built.bytes >= LARGE_FILE_BYTES);
+    if (fileUrl) {
+      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
+      if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
+    }
   }
   // Custom's number: a whole number from 1 to MAX_WORDS. Above it, the file uses MAX_WORDS and the line says so.
   function countTyped(field) {
@@ -2077,6 +2133,7 @@
   // A new length may need more words from the picker (Custom above Long): it lists them first.
   function lengthChanged(delay) {
     if (state.mode === 'pick' && !state.hand) drawPick();
+    drawPictures();
     drawLengths();
     makeSoon(delay);
   }
@@ -2170,6 +2227,12 @@
       problem('There is nothing to make yet. Choose at least one activity and one word.', 'change');
       return Promise.resolve({ html: null, said: 'There is nothing to make yet.' });
     }
+    var nextCtx = JSON.stringify([activities, words, state.version, state.choices, state.tracing]);
+    if (previewContextKey && previewContextKey !== nextCtx) {
+      previewOmit = {};
+      previewSeeds = {};
+    }
+    previewContextKey = nextCtx;
     var said = false;
     making(sounds ? 'Putting the file together.' : soundsSaved ? 'Reading the sounds saved on this device.' : 'Getting the sounds.', null);
     return getSounds(function (bytes) {
@@ -2192,8 +2255,9 @@
         return picturesFor(run, words).then(function (pictures) {
           if (run !== buildRun) return null;
           // What the teacher added to these words, read from the store now (not from what the page showed).
-          return ownFor(words).then(function (own) {
+          return Promise.all([ownFor(words), waitAudioKit()]).then(function (parts) {
             if (run !== buildRun) return null;
+            var own = parts[0];
             return builder.buildPacket(packetOptions({ words: words, activities: activities, seed: seed(), title: title, picked: state.mode === 'pick' && !state.hand ? picked : null },
               withWords, pictures, own, codeNameNow()));
           });
@@ -2423,7 +2487,8 @@
       return;
     }
     var blob = new Blob([result.html], { type: 'text/html' });
-    built = { html: result.html, name: fileName(manifest.title, manifest.learnerLabel), bytes: blob.size };
+    var baseHtml = typeof builder.withCodeName === 'function' ? builder.withCodeName(result.html, '') : result.html;
+    built = { html: result.html, baseHtml: baseHtml, title: manifest.title, total: manifest.items.total, name: fileName(manifest.title, manifest.learnerLabel), bytes: blob.size };
     lastLesson = result.lesson || null;
     drawOrder();
     try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
@@ -2442,6 +2507,23 @@
       return core.activityLabel(id) + ': ' + (n ? count(n, 'question') : 'none (see Left out)') + '.';
     }));
     drawList('sum-out', out.length ? out : ['Nothing. Every word is in every activity you chose.']);
+    var omitCount = Object.keys(previewOmit).length, swapCount = Object.keys(previewSeeds).length;
+    if (omitCount || swapCount) {
+      var previewParts = [];
+      if (omitCount) previewParts.push(count(omitCount, 'question') + ' removed in Preview');
+      if (swapCount) previewParts.push(count(swapCount, 'question') + ' updated in Preview');
+      var previewNote = el('p', 'result-sub', previewParts.join('; ') + '. ');
+      var restoreBtn = el('button', 'btn btn-text btn-small', 'Restore');
+      restoreBtn.type = 'button';
+      restoreBtn.id = 'preview-restore';
+      restoreBtn.addEventListener('click', function () {
+        previewOmit = {};
+        previewSeeds = {};
+        makeSoon(0);
+      });
+      previewNote.appendChild(restoreBtn);
+      $('sum-out').appendChild(previewNote);
+    }
     // With pictures, the line under the box now counts the words that show one in this file.
     if (manifest.pictures && (manifest.pictures.symbols || manifest.pictures.counts.teacher)) drawPictures(manifest.pictures.counts);
     show('summary', true);
@@ -2490,13 +2572,24 @@
   // (builder.withCodeName), which is exactly what a single make with that code name gives.
   // ---------------------------------------------------------------------------
   var batchRun = 0, batchBusy = false, batchFile = null;
+  // Clean one roster line: strip BOM, keep first tab/CSV column, drop outer quotes and leading numbering/bullets.
+  function cleanRosterLine(line) {
+    var s = String(line || '').replace(/^\uFEFF/, '').trim();
+    if (!s) return '';
+    if (s.indexOf('\t') >= 0) s = s.split('\t')[0].trim();
+    else if (s.indexOf(',') >= 0) s = s.split(',')[0].trim();
+    s = s.replace(/^["'\u201c\u201d]+|["'\u201c\u201d]+$/g, '').trim();
+    s = s.replace(/^(?:\d+\s*[.)]\s+|[\u2022\u25e6\u25aa\u2023\u2043\u2013\u2014*\-]\s+)/, '').trim();
+    return s;
+  }
   // The code names typed, one on each line: cleaned the way a file carries them, each used once, at most MAX_STUDENTS.
   function batchList() {
     var field = $('f-batch-names'), seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
     String((field && field.value) || '').split(/\r?\n/).forEach(function (line) {
-      if (!line.trim()) return;
-      var name = typeof builder.codeName === 'function' ? builder.codeName(line) : '';
-      if (!name) { out.unusable.push(line.trim().slice(0, 40)); return; }
+      var cleaned = cleanRosterLine(line);
+      if (!cleaned) return;
+      var name = typeof builder.codeName === 'function' ? builder.codeName(cleaned) : '';
+      if (!name) { out.unusable.push(cleaned.slice(0, 40)); return; }
       var key = name.toLowerCase();
       if (seen[key]) { if (out.twice.indexOf(name) < 0) out.twice.push(name); return; }
       seen[key] = true;
@@ -2511,11 +2604,15 @@
     for (var i = 0; i < n; i++) out.push(batchRotates() ? VERSIONS[i % VERSIONS.length] : state.version);
     return out;
   }
-  // The line under the box: how many files, and how large they are in all, before anything is made.
+  // The line under the box: 1 name personalizes the file above; 2 to 40 offer 1-click Save .zip.
   function drawBatch() {
     if (!$('batch') || batchBusy || !state) return;
     var list = batchList(), n = list.names.length, parts = [];
-    if (!n) parts.push('Type or paste the code names, one on each line.');
+    show('batch-rotate-wrap', n >= 2);
+    show('batch-make', n >= 2);
+    if (n >= 2) setText('batch-make', 'Save .zip for ' + n + ' students');
+    if (!n) parts.push('Type or paste code names, one on each line. One name puts it in the file above; 2 to 40 make a .zip file.');
+    else if (n === 1) parts.push('The file above is personalized for ' + list.names[0] + '. Press Save the file above.');
     else {
       parts.push(count(n, 'file') + (built ? ', about ' + fileSize(n * built.bytes) + ' in all (' + fileSize(built.bytes) + ' each).' : '. The size shows here once the file above is ready.'));
       parts.push(batchRotates() ? 'Versions A, B and C in turn.' : 'All version ' + state.version + '.');
@@ -2523,19 +2620,17 @@
     if (list.over) parts.push('Not used: ' + count(list.over, 'more code name') + '. At most ' + MAX_STUDENTS + ' go in one .zip file, because a larger one is slow to make and to open, most of all on a phone or tablet. Make a second .zip file for the rest.');
     if (list.twice.length) parts.push('Listed more than once, used once: ' + list.twice.join(', ') + '.');
     if (list.unusable.length) parts.push('Not used, because a code name needs a letter or a number: ' + list.unusable.join(', ') + '.');
-    if (batchFile) parts = ['Ready: ' + count(batchFile.count, 'file') + ' in one .zip file, ' + fileSize(batchFile.bytes) + '.' + batchFile.note];
     setText('batch-said', parts.join(' '));
   }
   function dropBatchFile() {
     if (batchFile && batchFile.url) { try { URL.revokeObjectURL(batchFile.url); } catch (_) {} }
     batchFile = null;
-    show('batch-save', false);
   }
   function batchDone() {
     batchBusy = false;
     show('batch-making', false);
     show('batch-stop', false);
-    $('batch-make').disabled = false;
+    if ($('batch-make')) $('batch-make').disabled = false;
   }
   // A choice changed: files made for the old choices are put away, and a run that is still going stops.
   function batchChanged() {
@@ -2544,13 +2639,13 @@
     batchRun++;
     dropBatchFile();
     batchDone();
-    setText('batch-problem', going ? 'Stopped, because a choice changed. Press Make the files again.' : 'A choice changed, so the .zip file was put away. Press Make the files again.');
+    setText('batch-problem', going ? 'Stopped, because a choice changed. Press Save .zip again.' : '');
     drawBatch();
   }
   function makeBatch() {
     var list = batchList(), zipKit = window.AlloPacketZip;
     setText('batch-problem', '');
-    if (!list.names.length) { setText('batch-problem', 'Type at least one code name first.'); $('f-batch-names').focus(); return; }
+    if (list.names.length < 2) { setText('batch-problem', 'Type at least two code names for a .zip file, or press Save the file above for one student.'); $('f-batch-names').focus(); return; }
     if (!zipKit || typeof zipKit.create !== 'function' || typeof builder.withCodeName !== 'function' || typeof TextEncoder !== 'function') {
       setText('batch-problem', 'This page could not load the part that makes .zip files. Load the page again.');
       return;
@@ -2574,8 +2669,16 @@
     line(sounds ? 'Getting ready.' : 'Getting the sounds.', 0);
     setText('batch-said', 'Making ' + count(names.length, 'file') + '.');
     var bases = {};
-    getSounds(function () {}).then(function (banks) {
-      return needed.reduce(function (chain, version, i) {
+    var canReuseCurrent = !!(built && built.baseHtml);
+    var needBuild = needed.filter(function (version) {
+      if (canReuseCurrent && version === state.version) {
+        bases[version] = { html: built.baseHtml, manifest: { words: { used: plans[version].words } } };
+        return false;
+      }
+      return true;
+    });
+    var buildStep = needBuild.length ? getSounds(function () {}).then(function (banks) {
+      return needBuild.reduce(function (chain, version, i) {
         return chain.then(function () {
           if (run !== batchRun) return null;
           var plan = plans[version];
@@ -2594,7 +2697,8 @@
           });
         });
       }, Promise.resolve());
-    }).then(function () {
+    }) : Promise.resolve();
+    buildStep.then(function () {
       if (run !== batchRun) return null;
       var zip = zipKit.create(), encoder = new TextEncoder(), used = {}, i = 0;
       return new Promise(function (resolve, reject) {
@@ -2624,9 +2728,7 @@
       batchFile = { parts: parts, name: fileName(zipTitle, '', '__' + names.length + '-students.zip'), bytes: zip.bytes, count: names.length, url: '',
         note: short.length ? ' Some words are left out of version ' + listed(short) + '. Make one file of that version above to see which, and why.' : '' };
       batchDone();
-      show('batch-save', true);
-      drawBatch();
-      $('batch-save').focus();
+      saveBatch();
     }).catch(function (error) {
       if (run !== batchRun) return;
       batchDone();
@@ -2641,13 +2743,20 @@
     if (!batchFile.url) { try { batchFile.url = URL.createObjectURL(new Blob(batchFile.parts, { type: 'application/zip' })); } catch (_) { batchFile.url = ''; } }
     if (!batchFile.url) { setText('batch-problem', 'This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.'); return; }
     saveBlob(batchFile.url, batchFile.name);
-    setText('batch-said', 'Saved ' + batchFile.name + '. Open it to see the files. Each file\'s name ends with the student\'s code name. Send each student their own file.');
+    setText('batch-said', 'Saved ' + batchFile.name + ' (' + count(batchFile.count, 'file') + ', ' + fileSize(batchFile.bytes) + ').' + batchFile.note + ' Open it to see the files. Each file\'s name ends with the student\'s code name.');
+  }
+  function batchNamesChanged() {
+    if (batchBusy) return;
+    if (batchFile) { dropBatchFile(); setText('batch-problem', ''); }
+    var list = batchList();
+    var singleName = list.names.length === 1 ? list.names[0] : '';
+    if (singleName !== state.learner) patchSingleCodeName(singleName);
+    drawBatch();
   }
   function wireBatch() {
     if (!$('batch')) return;
-    var changed = function () { if (batchBusy) return; if (batchFile) { dropBatchFile(); setText('batch-problem', ''); } drawBatch(); };
-    $('f-batch-names').addEventListener('input', changed);
-    $('f-batch-rotate').addEventListener('change', function () { this.parentNode.classList.toggle('is-on', this.checked); changed(); });
+    $('f-batch-names').addEventListener('input', batchNamesChanged);
+    $('f-batch-rotate').addEventListener('change', function () { this.parentNode.classList.toggle('is-on', this.checked); batchNamesChanged(); });
     $('batch').addEventListener('toggle', drawBatch);
     $('batch-make').addEventListener('click', makeBatch);
     $('batch-stop').addEventListener('click', function () {
@@ -2657,19 +2766,41 @@
       drawBatch();
       $('batch-make').focus();
     });
-    $('batch-save').addEventListener('click', saveBatch);
+    if ($('batch-load') && $('batch-file')) {
+      $('batch-load').addEventListener('click', function () { $('batch-file').click(); });
+      $('batch-file').addEventListener('change', function () {
+        var file = this.files && this.files[0];
+        this.value = '';
+        if (!file) return;
+        if (file.size > 65536) { setText('batch-problem', 'That text file is too large for a list of code names.'); return; }
+        var r = new FileReader();
+        r.onload = function () {
+          var lines = String(r.result || '').replace(/^\uFEFF/, '').split(/\r?\n/).map(cleanRosterLine).filter(Boolean);
+          $('f-batch-names').value = lines.join('\n');
+          setText('batch-problem', '');
+          batchNamesChanged();
+        };
+        r.onerror = function () { setText('batch-problem', 'This browser could not read that text file.'); };
+        r.readAsText(file);
+      });
+    }
   }
 
   // ---------------------------------------------------------------------------
   // "Open a file I made": the page fills itself in from a practice file made earlier (packets_reopen.js reads it,
   // with packets_verify_core.js). The file is read in this tab only. Nothing in it is run.
   // ---------------------------------------------------------------------------
-  var reopenKit = null;
+  var reopenKit = null, reopenPending = null;
   function reopenEnv() {
     return { verify: window.AlloPacketVerify, creditLine: builder.creditLine, codeName: builder.codeName, activities: order, wordSounds: core.activityIds(),
       labels: dictionary.labels || builder.SOUND_LABELS || [], seeds: SEEDS };
   }
+  var MAX_REOPEN_BYTES = 60 * 1024 * 1024;
+  function reopenLimitBytes() {
+    return (window.AlloPacketVerify && Number(window.AlloPacketVerify.MAX_BYTES)) || MAX_REOPEN_BYTES;
+  }
   function readBytes(file) {
+    if (file && Number(file.size) > reopenLimitBytes()) return Promise.reject(new Error('too_big'));
     if (file && typeof file.arrayBuffer === 'function') return file.arrayBuffer();
     return new Promise(function (resolve, reject) {
       try {
@@ -2682,9 +2813,15 @@
   }
   function reopenFile(file) {
     if (!file || !reopenKit) return Promise.resolve();
+    reopenPending = null;
+    if (Number(file.size) > reopenLimitBytes()) {
+      showReopen('This file is larger than 60 MB, so it is not a practice file made here.', [], null);
+      return Promise.resolve();
+    }
     setText('reopen-status', 'Reading the file.');
     return readBytes(file).then(function (bytes) {
-      applyReopen(reopenKit.read(bytes, reopenEnv()), String(file.name || 'the file').slice(0, 120));
+      var name = String(file.name || 'the file').slice(0, 120);
+      applyReopen(reopenKit.read(bytes, reopenEnv()), name, bytes);
     }).catch(function () { showReopen('This browser could not read the file.', [], null); });
   }
   function drawReopenKeep() { show('reopen-keep', !!myWords && Object.keys(fromFile).length > 0); }
@@ -2716,8 +2853,22 @@
     addPending = {};
     setText('count-said', '');
   }
-  function applyReopen(result, name) {
-    if (!result.ok) { showReopen(result.why, [], result.page); return; }
+  function applyReopen(result, name, bytes) {
+    if (!result.ok) {
+      var handoff = window.AlloPacketHandoff;
+      if (result.page && bytes && result.page.href) {
+        reopenPending = {
+          file: { name: name, bytes: bytes },
+          href: result.page.href,
+          hash: result.page.href === 'packets-results.html' ? ((handoff && handoff.RESULTS_HASH) || '#import-results') : ((handoff && handoff.HASH) || '#open-file'),
+        };
+      } else {
+        reopenPending = null;
+      }
+      showReopen(result.why, [], result.page);
+      return;
+    }
+    reopenPending = null;
     clearTimeout(buildTimer);
     resetPreview(true);
     previewNoPicture = {};
@@ -2765,6 +2916,8 @@
       + (myWords ? 'To use them in other files too, press Keep them in My words on this device.' : 'This browser cannot keep them after you close the page.'));
     result.notes.forEach(function (note) { items.push(note); });
     drawOwn();
+    if ($('f-batch-names')) $('f-batch-names').value = state.learner || '';
+    if ($('batch')) $('batch').open = !!state.learner;
     if (myWords) readMine();
     goTo(1, true);
     showReopen('Filled in from ' + name + '. Change what you want, then make the new file in step 3.', items, null);
@@ -2813,7 +2966,15 @@
       event.preventDefault();
       reopenFile(event.dataTransfer.files && event.dataTransfer.files[0]);
     });
-    $('reopen-close').addEventListener('click', function () { show('reopen-note', false); $('reopen-choose').focus(); });
+    $('reopen-close').addEventListener('click', function () { reopenPending = null; show('reopen-note', false); $('reopen-choose').focus(); });
+    $('reopen-page').addEventListener('click', function (event) {
+      var handoff = window.AlloPacketHandoff;
+      if (!reopenPending || !handoff || typeof handoff.redirect !== 'function') return;
+      event.preventDefault();
+      var target = reopenPending;
+      reopenPending = null;
+      handoff.redirect(target.file, target.href, target.hash).catch(function () { $('reopen-page').click(); });
+    });
     $('reopen-keep').addEventListener('click', function () {
       setText('reopen-said', 'Keeping them.');
       keepFromFile(Object.keys(fromFile)).then(function (done) {
@@ -2856,7 +3017,7 @@
             : 'No words fit yet. Loosen one choice above, or type your own words.');
       }
     }
-    if (target !== 3) { clearTimeout(buildTimer); resetPreview(true); clearBuilt(); show('making', false); }
+    if (target !== 3) { clearTimeout(buildTimer); stopPreviewSession(); clearBuilt(); show('making', false); }
     // Sent back to the step already on screen: the reason is announced and the focus stays where it is.
     var stayed = target !== wanted && target === step;
     step = target;
@@ -2870,7 +3031,7 @@
     doc.title = (name ? name + ': ' : '') + 'Make Word Sounds practice, step ' + step + ' of 3';
     if (step === 1) { syncActivities(); openStrands(); }
     if (step === 2) { drawWords(); soundsNote(); }
-    if (step === 3) { drawLengths(); makeSoon(0); drawBatch(); }
+    if (step === 3) { drawPictures(); drawLengths(); makeSoon(0); drawBatch(); }
     if (!quiet && !stayed) {
       var heading = $('step-' + step + '-title');
       if (heading) { heading.focus(); if (typeof heading.scrollIntoView === 'function') heading.scrollIntoView({ block: 'start' }); }
@@ -2891,8 +3052,8 @@
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="mode"]'), function (radio) {
       radio.addEventListener('change', function () { if (!radio.checked) return; state.mode = radio.value; remember(); drawWords(); });
     });
-    if ($('f-trace-cases')) $('f-trace-cases').addEventListener('change', function () { state.tracing = TRACE_CASES.indexOf(this.value) >= 0 ? this.value : 'both'; remember(); });
-    if ($('f-choices')) $('f-choices').addEventListener('change', function () { state.choices = CHOICE_LEVELS.indexOf(this.value) >= 0 ? this.value : 'medium'; remember(); });
+    if ($('f-trace-cases')) $('f-trace-cases').addEventListener('change', function () { state.tracing = TRACE_CASES.indexOf(this.value) >= 0 ? this.value : 'both'; syncActivities(); remember(); });
+    if ($('f-choices')) $('f-choices').addEventListener('change', function () { state.choices = CHOICE_LEVELS.indexOf(this.value) >= 0 ? this.value : 'medium'; syncActivities(); remember(); });
     $('f-sound').addEventListener('change', function () { state.sound = this.value; if (!state.sound) state.position = 'any'; pickChanged(false); });
     $('f-position').addEventListener('change', function () { state.position = this.value; pickChanged(false); });
     $('f-shape').addEventListener('change', function () { state.shape = this.value; pickChanged(false); });
@@ -2932,11 +3093,6 @@
       makeSoon(700);
     });
     $('f-title').addEventListener('blur', function () { if (!state.titleEdited) this.value = autoTitle(); });
-    $('f-code-name').addEventListener('input', function () {
-      state.learner = this.value.slice(0, 40);
-      syncCodeName();
-      makeSoon(700);
-    });
     wireBatch();
     $('f-pictures').addEventListener('change', function () { picturesChoice = this.checked ? 'on' : 'off'; picturesNote = ''; makeSoon(0); drawLengths(); });
     if ($('f-repeat-missed')) $('f-repeat-missed').addEventListener('change', function () { state.repeatMissed = this.checked; this.parentNode.classList.toggle('is-on', this.checked); remember(); makeSoon(0); drawLengths(); });
@@ -2981,6 +3137,8 @@
       closeListPanel(false);
       state = defaults();
       picked = null;
+      picturesChoice = '';
+      picturesNote = '';
       // The list's own controls start over too.
       $('pick-list').open = false;
       $('f-find').value = '';
@@ -3039,7 +3197,7 @@
   }
 
   function start() {
-    audioKit(); // the MP3 encoder starts loading now, so it is here by step 3 (a build never waits on it)
+    audioKit(); // the MP3 encoder starts loading now, and the first build waits briefly if needed
     var modules = window.AlloModules || {};
     dictionary = modules.WordSoundsPhonemes;
     wordlist = modules.WordSoundsWordlist;
@@ -3095,7 +3253,7 @@
   function applyRehearseHash() {
     var hash = String(window.location && window.location.hash ? window.location.hash : '');
     var match = /^#rehearse=(.+)$/i.exec(hash);
-    if (!match) return false;
+    if (!match) return [];
     var parsed = '';
     try { parsed = decodeURIComponent(match[1]); } catch (_) { parsed = match[1]; }
     var unique = [];
@@ -3114,7 +3272,7 @@
       remember();
     }
     try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
-    return unique.length > 0;
+    return unique;
   }
 
   function openPage(buildable, held) {
@@ -3131,7 +3289,7 @@
       soundGroups: SOUND_GROUPS, soundName: soundName, bankClip: bankClip, bankNote: bankNote, playable: toWav, picturesPage: PICTURES_PAGE }) : null;
     drawPickControls();
     state = recall();
-    applyRehearseHash();
+    var rehearseWords = applyRehearseHash();
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_work) setText('csv-label', loader.DEFAULT_LABELS.save_work);
     drawStrands();
     listFiles();
@@ -3145,7 +3303,11 @@
       readMine();
     }
     show('loading', false);
-    goTo(1, true);
+    goTo(rehearseWords.length ? 2 : 1, true);
+    if (rehearseWords.length) {
+      var previewList = rehearseWords.slice(0, 8).join(', ') + (rehearseWords.length > 8 ? ', ...' : '');
+      showReopen('Loaded ' + count(rehearseWords.length, 'missed word') + ': ' + previewList + '.', [], null);
+    }
     checkSavedSounds();
   }
 

@@ -127,9 +127,9 @@
   }
 
   // Content-word tokens (drops stopwords + short words) for lightweight sense matching.
-  var STOPWORDS = { the:1, a:1, an:1, of:1, to:1, in:1, and:1, or:1, is:1, are:1, for:1, that:1, with:1, as:1, by:1, on:1, at:1, from:1, it:1, its:1, this:1, which:1, be:1, been:1, being:1, was:1, were:1, has:1, have:1, had:1, not:1, but:1, can:1, may:1, one:1, used:1, using:1, into:1, when:1, such:1, more:1, most:1, some:1, any:1, etc:1 };
+  var STOPWORDS = Object.assign(Object.create(null), { the:1, a:1, an:1, of:1, to:1, in:1, and:1, or:1, is:1, are:1, for:1, that:1, with:1, as:1, by:1, on:1, at:1, from:1, it:1, its:1, this:1, which:1, be:1, been:1, being:1, was:1, were:1, has:1, have:1, had:1, not:1, but:1, can:1, may:1, one:1, used:1, using:1, into:1, when:1, such:1, more:1, most:1, some:1, any:1, etc:1 });
   function _tokens(s) {
-    var out = [], seen = {};
+    var out = [], seen = Object.create(null);
     String(s == null ? '' : s).toLowerCase().split(/[^a-z]+/).forEach(function (w) {
       if (w.length >= 4 && !STOPWORDS[w] && !seen[w]) { seen[w] = 1; out.push(w); }
     });
@@ -489,8 +489,16 @@
       if (bankHit) return finishBankHit(bankHit);
       return result(null, reason);
     };
+    let controller = null;
+    let timeoutId = null;
     try {
-      const response = await fetch(API + encodeURIComponent(w), { signal: options.signal, credentials: 'omit' });
+      const timeoutMs = Number.isFinite(options.timeoutMs) && options.timeoutMs > 0 ? options.timeoutMs : 6000;
+      if (!options.signal && typeof AbortController !== 'undefined') {
+        controller = new AbortController();
+        timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      }
+      const response = await fetch(API + encodeURIComponent(w), { signal: options.signal || (controller ? controller.signal : undefined), credentials: 'omit' });
+      if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
       if (options.signal?.aborted) return result(null, 'cancelled');
       // A concurrent caller may have cached a usable entry while this request waited.
       // readCache validates it; a late miss must not erase successful offline help.
@@ -527,7 +535,12 @@
         if ((err && err.name === 'AbortError') || options.signal?.aborted) return result(null, 'cancelled');
       }
       return result(entry);
-    } catch (_) { return recoverFailure('request_failed'); }
+    } catch (_) {
+      if (options.signal?.aborted) return result(null, 'cancelled');
+      return recoverFailure('request_failed');
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
   }
 
   window.AlloDictionary = {

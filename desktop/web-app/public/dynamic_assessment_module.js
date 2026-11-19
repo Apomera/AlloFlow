@@ -45,7 +45,7 @@
     try {
       if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
     } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   }
   function daRequireWorkspace(session) {
     var api = window.AlloModules && window.AlloModules.SensitiveWorkspace;
@@ -6591,7 +6591,7 @@
     function isUsableProvider(provider, k) {
       if (typeof provider !== "function" || provider._alloQrBlocked) return false;
       var w = typeof window !== "undefined" ? window : null;
-      if (w && w.__alloStudentAiDisabled === true) return false;
+      if (w && (w.__alloStudentAiDisabled === true || w.__alloAiSecretsLocked === true)) return false;
       if (w && typeof w.__alloAiUsable === "function") {
         try { return !!w.__alloAiUsable(k === "imageEdit" ? "imageEdit" : "text", provider); } catch (_) { return false; }
       }
@@ -6719,8 +6719,18 @@
       }
     }, daBlockedParentCallbacks(host.addToast));
     DA_GUARDED_EXPORT_CALLBACKS.add(childProps.onOpenAlloSheet);
-    return React.createElement("div", { className: "fixed inset-0 z-[60] bg-black/50 overflow-y-auto", onClick: close },
-      React.createElement("div", { className: "bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl", onClick: function (event) { event.stopPropagation(); } },
+    React.useEffect(function () {
+      function onKeyDown(event) {
+        if (event && event.key === "Escape" && !event.isComposing && event.keyCode !== 229) {
+          event.stopPropagation();
+          close();
+        }
+      }
+      window.addEventListener("keydown", onKeyDown);
+      return function () { window.removeEventListener("keydown", onKeyDown); };
+    }, [close]);
+    return React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[60] bg-black/50 overflow-y-auto", onClick: close },
+      React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-label": "Dynamic Assessment", tabIndex: -1, className: "bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl", onClick: function (event) { event.stopPropagation(); } },
         React.createElement(DA, childProps), aiReview.render()));
   }
   function DynamicAssessment(props) {
@@ -12525,11 +12535,23 @@
         input.onchange = function (ev) {
           var file = ev.target && ev.target.files && ev.target.files[0];
           if (!file) return;
+          var MAX_DA_BACKUP_BYTES = 25 * 1024 * 1024;
+          if (typeof file.size === 'number' && file.size > MAX_DA_BACKUP_BYTES) {
+            addToast("Restore failed: that backup file exceeds the 25 MB safety limit.");
+            return;
+          }
           var reader = new FileReader();
           reader.onload = function () {
             try {
               daAssertOperation();
-              var parsed = JSON.parse(String(reader.result || ""));
+              var rawText = String(reader.result || "");
+              if (rawText.length > MAX_DA_BACKUP_BYTES) {
+                addToast("Restore failed: that backup file exceeds the 25 MB safety limit.");
+                return;
+              }
+              var parsed = JSON.parse(rawText, function (k, v) {
+                return (k === "__proto__" || k === "constructor" || k === "prototype") ? undefined : v;
+              });
               if (parsed && parsed._exportFormat === DA_ENCRYPTED_BACKUP_FORMAT) {
                 daOpenEncryptedRestoreDialog(parsed, opener, file.name);
                 return;
@@ -16980,12 +17002,13 @@
           }, "✨ Generate all outputs") : null,
           // Phase E — Print packet
           evidence.sufficient ? h("button", {
+            type: "button",
             onClick: function () {
               try { if (daCanExport("print")) window.print(); }
               catch (e) { addToast("Print is not available in this browser."); }
             },
-            "aria-label": "Print clinical observation report",
-            title: "Generates a self-contained black-and-white PDF/print of the session for paste-in to a clinical report.",
+            "aria-label": __alloT("da.print_packet_aria", "Print packet — clinical observation report"),
+            title: __alloT("da.print_packet_title", "Generates a self-contained black-and-white PDF/print of the session for paste-in to a clinical report."),
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-ink-3)", background: "var(--da-surface)", color: "var(--da-ink)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🖨 Print packet") : null,
           // Phase D — Export to Report Writer

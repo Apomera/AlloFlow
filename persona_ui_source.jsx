@@ -238,9 +238,12 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
     return rawPlan.map((item, idx) => {
       const type = typeof item === 'string' ? item : (item && (item.tool || item.type || item.toolId || item.resourceType || item.id));
       if (!type) return null;
+      const toolDirective = (cfg.toolDirectives && Object.prototype.hasOwnProperty.call(cfg.toolDirectives, type) && typeof cfg.toolDirectives[type] === 'string')
+        ? cfg.toolDirectives[type]
+        : "";
       const directive = typeof item === 'string'
-        ? (cfg.toolDirectives?.[type] || "")
-        : (item.directive || item.instructions || item.customInstructions || cfg.toolDirectives?.[type] || "");
+        ? toolDirective
+        : (item.directive || item.instructions || item.customInstructions || toolDirective);
       return {
         id: (typeof item === 'object' && item.uiId) || `step-${idx}-${type}`,
         type,
@@ -519,14 +522,17 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
       : [];
   const sourceSelection = (run && run.sourceSelection) || config?.sourcePolicy || null;
   const staleSettingNames = run && Array.isArray(run.staleSettings) ? run.staleSettings : [];
-  const readableSettingName = (field) => ({
+  const _settingNameMap = {
       gradeLevel: 'grade', language: 'primary language', selectedLanguages: 'output languages',
       studentInterests: 'student interests', targetStandards: 'standards', translationMode: 'translation policy',
       currentUiLanguage: 'interface language', differentiationRange: 'differentiation range',
       differentiationTypes: 'differentiated resources', differentiationCustomGrades: 'custom grades',
       dokLevel: 'DOK level', useEmojis: 'emoji preference', textFormat: 'text format',
       imageGenerationStyle: 'image style', imageAspectRatio: 'image aspect ratio',
-  }[field] || String(field || '').replace(/([A-Z])/g, ' $1').trim());
+  };
+  const readableSettingName = (field) => (Object.prototype.hasOwnProperty.call(_settingNameMap, field)
+    ? _settingNameMap[field]
+    : String(field || '').replace(/([A-Z])/g, ' $1').trim());
   return (
     <div data-help-key="blueprint_card_panel" className="bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-sm w-full min-w-0 max-w-2xl">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-3 pb-3 border-b border-indigo-50">
@@ -798,16 +804,17 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                   // never by position, because normalizePlanItems reorders the
                   // plan (analysis first, lesson-plan last) and a positional
                   // lookup would label the wrong rows.
-                  const _rowRun = (run && run.rows && run.rows[item.id]) || null;
+                  const _rowRun = (run && run.rows && Object.prototype.hasOwnProperty.call(run.rows, item.id) && run.rows[item.id]) || null;
                   const _status = _rowRun && _rowRun.status;
-                  const _statusStyle = {
+                  const _statusMap = {
                       planned:     { label: t('blueprint.status_planned') || 'Planned',        cls: 'bg-slate-100 text-slate-600 border-slate-200' },
                       running:     { label: t('blueprint.status_running') || 'Building...',    cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
                       landed:      { label: t('blueprint.status_landed') || 'Done',            cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
                       partial:     { label: t('blueprint.status_partial') || 'Partial',         cls: 'bg-amber-50 text-amber-900 border-amber-300' },
                       failed:      { label: t('blueprint.status_failed') || 'Failed',          cls: 'bg-red-50 text-red-700 border-red-200' },
                       interrupted: { label: t('blueprint.status_interrupted') || 'Interrupted', cls: 'bg-amber-50 text-amber-800 border-amber-200' },
-                  }[_status] || null;
+                  };
+                  const _statusStyle = (typeof _status === 'string' && Object.prototype.hasOwnProperty.call(_statusMap, _status)) ? _statusMap[_status] : null;
                   // Raw provider text can include credentials, prompt excerpts,
                   // or student context. Keep it in the credential-redacted local
                   // Error Reporter; this shared classifier is the only text the
@@ -1098,6 +1105,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                                           <button
                                                               type="button"
                                                               data-testid="bp-preview-variant-btn"
+                                                              aria-label={`${t('blueprint.preview_step') || 'Preview this resource'}: ${getToolLabel(item.type)} (${audience})`}
                                                               onClick={() => {
                                                                   const selection = _previewSelection(variant);
                                                                   onPreviewStep(item.id, selection.resourceId, selection);

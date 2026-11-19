@@ -27,7 +27,7 @@ const analytics = read('student_analytics_module.js');
 const cut = (start, end) => { const a = analytics.indexOf(start), b = analytics.indexOf(end, a + start.length); if (a < 0 || b < 0) throw new Error('not found: ' + start); return analytics.slice(a, b); };
 const AC = new Function(cut('  function _acTrimStudentData(data) {', '  function _acRestoreImportedStudents(raw) {') + cut('  function _acWsSoundMastered(entry) {', '  async function _acCanonicalStudentName(')
   + '\nreturn {readFile: _acThReadFile, preview: _acThPreview, ready: _acThReady, panel: _acThPreviewPanel, persistable: _acPersistableStudent, kept: _acKeptScreening,'
-  + ' localDate: _acLocalDate, sheetStamp: _acThSheetStamp, scoreText: _acCkScoreText, notes: _acCkNotes, record: _acCkRecord, overTime: _acCkOverTime, activeText: _acThActiveText};')();
+  + ' localDate: _acLocalDate, sheetStamp: _acThSheetStamp, scoreText: _acCkScoreText, notes: _acCkNotes, record: _acCkRecord, overTime: _acCkOverTime, activeText: _acThActiveText, reasonText: _acThReasonText};')();
 const md = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const React = require(resolve(md, 'react'));
 const { renderToStaticMarkup } = require(resolve(md, 'react-dom/server'));
@@ -202,7 +202,7 @@ describe('1. the group in two tables', () => {
       .toEqual(['table', 'rowgroup', 'rowgroup', 'row']);
     const row = every.querySelector('tbody tr');
     expect([row.children[0].getAttribute('role'), ...[...row.children].slice(1).map((td) => [td.getAttribute('role'), td.getAttribute('data-label')])])
-      .toEqual(['rowheader', ['cell', 'What'], ['cell', 'Result'], ['cell', 'Answered'], ['cell', 'Time taken'], ['cell', 'Notes']]);
+      .toEqual(['rowheader', ['cell', 'What'], ['cell', 'Result'], ['cell', 'Answered'], ['cell', 'Time taken'], ['cell', 'Notes'], ['cell', 'Action']]);
     for (const th of every.querySelectorAll('thead th')) expect([th.getAttribute('role'), th.getAttribute('scope')]).toEqual(['columnheader', 'col']);
     const measure = page.$('learner-body').querySelector('.measure table');
     expect(measure.className).toContain('data-cards');
@@ -419,9 +419,12 @@ describe('7. smaller fixes', () => {
     expect([link.textContent, link.getAttribute('href')]).toEqual(['Make a file', 'packets.html']);
   });
   it('Class Analytics names its files with the local date, not the UTC one', () => {
-    const named = analytics.split('\n').filter((line) => /\.download = /.test(line));
-    expect(named.filter((line) => /toISOString/.test(line))).toEqual([]);
-    expect(named.filter((line) => line.includes('_acLocalDate(new Date())'))).toHaveLength(9);
+    const lines = analytics.split('\n');
+    const named = lines.map((line, i) => ({ line, i })).filter(({ line }) => /\.download = /.test(line));
+    expect(named.filter(({ line }) => /toISOString/.test(line))).toEqual([]);
+    const withLocalDate = named.filter(({ line, i }) => line.includes('_acLocalDate(new Date())')
+      || (line.includes('stamp') && lines[i - 1] && lines[i - 1].includes('_acLocalDate(new Date())')));
+    expect(withLocalDate).toHaveLength(9);
     // 23:30 on the 13th is the 13th here, whatever UTC says.
     expect(AC.localDate(new Date(2026, 10, 13, 23, 30))).toBe('2026-11-13');
   });
@@ -452,5 +455,100 @@ describe('7. smaller fixes', () => {
       'The check was open in two tabs or windows while it ran; finished before the time was up, so the score is for the time used']);
     // Both readers agree.
     expect((await theirs(csvOf(check({ sid: 'f-1', done: 5, elapsedS: 120, completion: 'time', flags: ['time_up_away'] })))).check).toMatchObject({ noScore: 'time_up_away', completion: 'time_up_away', score: null });
+  });
+
+  it('Wave 4B: hides printed Action column, empties #group-missed on Learner view, preserves focus on Remove/Undo, and syncs Class Analytics paused/directions/.zip parity', async () => {
+    const p1 = practice({ sid: 'w4-p1', learner: 'BlueHeron7', day: '2026-11-16' });
+    const p2 = practice({ sid: 'w4-p2', learner: 'RedFox2', day: '2026-11-16' });
+    const page = openPage();
+    await page.drop([page.file(csvOf(p1), 'p1.csv'), page.file(csvOf(p2), 'p2.csv')]);
+    if (!page.$('state-results').hidden === false) page.$('show-results').click();
+    // Group view populates #group-missed (2 learners missed the same item).
+    expect(page.$('group-missed').textContent).toContain('cat');
+    // Switching to Learner view empties & hides #group-missed.
+    page.learner('BlueHeron7');
+    expect(page.$('group-missed').textContent).toBe('');
+    expect(page.$('group-missed').hidden).toBe(true);
+    // Every result marks both Action <th> and Action <td> with no-print.
+    const everyTable = page.every();
+    const headCells = [...everyTable.querySelectorAll('thead th')];
+    expect(headCells.at(-1).textContent).toBe('Action');
+    expect(headCells.at(-1).classList.contains('no-print')).toBe(true);
+    const bodyCells = [...everyTable.querySelectorAll('tbody tr')[0].children];
+    expect(bodyCells.at(-1).classList.contains('no-print')).toBe(true);
+    // Row Remove moves focus to #results-undo-btn; Undo returns focus to #results-title.
+    const removeBtn = everyTable.querySelector('button.row-remove');
+    removeBtn.focus();
+    removeBtn.click();
+    expect(page.d.activeElement && page.d.activeElement.id).toBe('results-undo-btn');
+    page.$('results-undo-btn').click();
+    expect(page.d.activeElement && page.d.activeElement.id).toBe('results-title');
+    // Removing the last remaining result focuses #choose on the empty screen.
+    page.learner('BlueHeron7');
+    page.every().querySelector('button.row-remove').click();
+    page.learner('RedFox2');
+    page.every().querySelector('button.row-remove').click();
+    expect(page.$('state-empty').hidden).toBe(false);
+    expect(page.d.activeElement && page.d.activeElement.id).toBe('choose');
+
+    // Class Analytics parity for paused checks, directionsHeard, and .zip drops.
+    const pausedObj = check({ sid: 'w4-c1', flags: ['paused'] });
+    pausedObj.score.pausedS = 34.4;
+    pausedObj.score.pauses = 2;
+    pausedObj.score.directionsHeard = 3;
+    const pausedSession = await theirs(csvOf(pausedObj));
+    expect(pausedSession.check.pausedSeconds).toBe(34.4);
+    expect(pausedSession.check.pauses).toBe(2);
+    expect(pausedSession.check.directionsHeard).toBe(3);
+    const notesNow = AC.notes(null, pausedSession.check);
+    expect(notesNow.some((n) => /Paused;.*34 seconds paused in all/.test(n))).toBe(true);
+    expect(notesNow.some((n) => /Pressed Hear the directions before starting \(3 times\)/.test(n))).toBe(true);
+    const rec = AC.record(pausedSession, 'BlueHeron7');
+    const over = AC.overTime({ name: 'BlueHeron7', screeningHistory: [] }, { BlueHeron7: [rec] });
+    const rowNotes = AC.notes(null, over[0].rows[0]);
+    expect(rowNotes.some((n) => /34 seconds paused in all/.test(n))).toBe(true);
+    expect(rowNotes.some((n) => /Hear the directions.*3 times/.test(n))).toBe(true);
+
+    const zipRes = await AC.readFile({ name: 'submissions.zip', size: 1024, type: 'application/zip', text: async () => 'PK\u0003\u0004' });
+    expect(zipRes.reason).toBe('zip');
+    expect(AC.reasonText(null, 'zip')).toContain('.zip folder');
+    expect(AC.reasonText(null, 'zip')).toContain('Add up results');
+  });
+
+  it('Wave 5B: provides OS dark-mode tokens in packets.css, clean print header/missed-fold expand, and wider SVG chart left margin', async () => {
+    const baseCss = read('packets.css');
+    expect(baseCss).toContain('@media (prefers-color-scheme: dark)');
+    expect(baseCss).toContain('--bar-bg:');
+    expect(baseCss).toContain('--bar-ink:');
+    expect(baseCss).toContain('--scroll-shadow:');
+    expect(baseCss).toContain('@media print');
+    const resultsCss = read('packets-results.css');
+    const resultsScreen = resultsCss.slice(0, resultsCss.indexOf('@media print'));
+    expect(resultsScreen).not.toMatch(/rgba\(/);
+    expect(resultsCss).toContain('#group-table .data thead th:first-child, #group-table .data tbody th { position: static; }');
+
+    // Auto-open collapsed details.missed-fold on beforeprint and restore on afterprint (7+ learners missing same word).
+    const files = Array.from({ length: 7 }, (_, i) => {
+      const s = practice({ sid: 'w5-m' + i, learner: 'Student' + (i + 1), day: '2026-11-16' });
+      return { text: csvOf(s), name: 'm' + i + '.csv' };
+    });
+    const page = openPage();
+    await page.drop(files.map((f) => page.file(f.text, f.name)));
+    if (page.$('state-results').hidden) page.$('show-results').click();
+    const fold = page.$('group-missed').querySelector('details.missed-fold');
+    expect(fold).toBeTruthy();
+    expect(fold.open).toBe(false);
+    page.w.dispatchEvent(new page.w.Event('beforeprint'));
+    expect(fold.open).toBe(true);
+    page.w.dispatchEvent(new page.w.Event('afterprint'));
+    expect(fold.open).toBe(false);
+
+    // Chart y-axis scale text sits at x = 40 (left = 46), giving room for "100%".
+    const sLate = practice({ sid: 'w5-m0-b', learner: 'Student1', day: '2026-11-19' });
+    await page.drop([page.file(csvOf(sLate), 'm0b.csv')]);
+    if (page.$('state-results').hidden) page.$('show-results').click();
+    page.learner('Student1');
+    const scaleX = Number(page.$('learner-body').querySelector('.chart-scale').getAttribute('x'));
+    expect(scaleX).toBe(40);
   });
 });

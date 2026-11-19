@@ -44,6 +44,7 @@
   style.textContent+=' #ce-renewables-timeline:focus-visible{outline:3px solid var(--ce-focus,#4338ca);outline-offset:3px}@media(forced-colors:active){#ce-renewables-timeline:focus-visible{outline-color:Highlight}}';
   style.textContent+=' @media(forced-colors:active){#ce-advanced-toggle{forced-color-adjust:auto;background:ButtonFace!important;color:ButtonText!important;-webkit-text-fill-color:ButtonText!important;border-color:ButtonText!important}}';
   style.textContent+=' .ce-explorer-root [data-climate-mission-panel] button:focus-visible{outline:3px solid var(--ce-focus,#4338ca);outline-offset:3px} @media(forced-colors:active){.ce-explorer-root [data-climate-mission-panel],.ce-explorer-root [data-climate-mission-panel] *,#ce-context-banner,#ce-context-banner *,.ce-explorer-root [data-allo-fs-btn],.ce-explorer-root [data-allo-fs-btn] *{forced-color-adjust:auto}.ce-explorer-root [data-climate-mission-panel] button:focus-visible{outline-color:Highlight}.ce-explorer-root [data-climate-mission-panel] button,.ce-explorer-root [data-allo-fs-btn]{background:ButtonFace!important;color:ButtonText!important;-webkit-text-fill-color:ButtonText!important;border-color:ButtonText!important}.ce-explorer-root [data-allo-fs-btn] span{color:ButtonText!important;-webkit-text-fill-color:ButtonText!important}}';
+  style.textContent+=' .ce-subject-badge,.ce-telemetry-pill{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;line-height:1.3;font-variant-numeric:tabular-nums}.ce-svg-stage{border-radius:10px;padding:10px 12px;margin:10px 0 12px;overflow:hidden}';
   document.head.appendChild(style);
 })();
 // Carbon calculator, renewables simulator, climate justice, solutions spotlight
@@ -331,11 +332,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var canvasNarrate = ctx.canvasNarrate;
 
       // ── State ──
-      var d = (labToolData && labToolData.climateExplorer) || {};
+      var safeObj = function(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; };
+      var d = safeObj(safeObj(labToolData).climateExplorer);
       function upd(k, v) {
         setLabToolData(function(prev) {
-          var copy = Object.assign({}, prev);
-          copy.climateExplorer = Object.assign({}, copy.climateExplorer || {}, typeof k === 'object' ? k : (function() { var o = {}; o[k] = v; return o; })());
+          var copy = Object.assign({}, safeObj(prev));
+          copy.climateExplorer = Object.assign({}, safeObj(copy.climateExplorer), typeof k === 'object' && k && !Array.isArray(k) ? k : (function() { var o = {}; o[k] = v; return o; })());
           return copy;
         });
       }
@@ -1838,10 +1840,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         // ── Header ──
         el('div', { id:'ce-header', style: { padding:'20px 24px 16px',background:quizColors.panel,color:quizColors.text,borderRadius:'16px 16px 0 0',borderBottom:'1px solid '+quizColors.border,display:'flex',alignItems:'center',gap:12,flexWrap:'wrap' } },
           el('button', { type:'button',onClick: function() { setStemLabTool(null); }, 'aria-label': t('stem.climateExplorer.back_to_stem_lab', 'Back to STEAM Lab'), style: { minWidth:44,minHeight:44,background:quizColors.raised,border:'1px solid '+quizColors.border,borderRadius:8,padding:'6px 10px',cursor:'pointer',color:quizColors.text,fontSize:16 } }, '\u2190'),
-          el('div', { style: { fontSize: 28 } }, '\uD83C\uDF0D'),
-          el('div', {style:{minWidth:0,flex:'1 1 180px'}},
-            el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, color:quizColors.text } }, 'Climate Explorer'),
-            el('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Understand \u2022 Calculate \u2022 Act')
+          el('div', { 'aria-hidden': 'true', style: { width: 54, height: 54, borderRadius: 14, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: quizColors.raised, border: '1.5px solid ' + quizColors.correct } },
+            el('svg', { viewBox: '0 0 64 64', width: 44, height: 44, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
+              el('circle', { cx: 32, cy: 32, r: 22, fill: ctx.isContrast ? '#000000' : '#0369a1', stroke: ctx.isContrast ? '#ffff00' : '#38bdf8', strokeWidth: 2 }),
+              el('path', { d: 'M18 27 C23 20 31 19 34 25 C36 29 31 35 26 36 C21 37 16 32 18 27 Z', fill: ctx.isContrast ? '#ffff00' : '#22c55e' }),
+              el('path', { d: 'M36 33 C41 30 48 33 48 40 C48 45 42 49 37 46 C34 44 33 36 36 33 Z', fill: ctx.isContrast ? '#ffff00' : '#4ade80' }),
+              el('ellipse', { cx: 32, cy: 32, rx: 28, ry: 11, transform: 'rotate(-22 32 32)', fill: 'none', stroke: ctx.isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 1.8, strokeDasharray: '5 3' }),
+              el('circle', { cx: 53, cy: 20, r: 3.5, fill: ctx.isContrast ? '#ffff00' : '#fbbf24' })
+            )
+          ),
+          el('div', {style:{minWidth:0,flex:'1 1 200px'}},
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 4 } },
+              el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, color:quizColors.text } }, 'Climate Explorer'),
+              el('span', { className: 'ce-subject-badge', style: { background: quizColors.raised, color: quizColors.correct, border: '1px solid ' + quizColors.correct } }, t('stem.climateExplorer.subject_badge', 'Science \u00B7 Climate Systems')),
+              el('span', { className: 'ce-telemetry-pill', style: { background: quizColors.raised, color: quizColors.text, border: '1px solid ' + quizColors.border } }, '431.4 ppm CO\u2082'),
+              el('span', { className: 'ce-telemetry-pill', style: { background: quizColors.raised, color: quizColors.text, border: '1px solid ' + quizColors.border } }, tab === 'renewables' ? (100 - rsFossil) + '% ' + t('stem.climateExplorer.clean_grid_short', 'clean grid') : (ct.total / 1000).toFixed(1) + ' t/yr')
+            ),
+            el('p', { style: { margin: 0, fontSize: 12, color: quizColors.muted, fontWeight: 600 } }, 'Understand \u2022 Calculate \u2022 Act')
           ),
           el('div', { style: { minWidth:0, maxWidth:'100%', marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
             el('button', { id:'ce-export',onClick:exportClimateReport,'data-ce-export-tab':tab,'aria-busy':exportBusy,'aria-disabled':exportBusy,'aria-controls':'ce-export-panel',title: t('stem.climateExplorer.export_your_climate_report_to_clipboar', 'Export your climate report to clipboard'),
@@ -1907,6 +1922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   return;
                 }
                 cv._ceInit = true;
+                cv._ceRafId = 0;
                 var g = cv.getContext('2d');
                 if (!g) return;
                 // Read LIVE, not once at init. This ref callback runs a single time
@@ -2012,9 +2028,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     }
                     g.globalAlpha = 1;
                   }
-                  if (!heroReduced() && !cv._cePaused) requestAnimationFrame(heroDraw);
+                  cv._ceRafId = 0;
+                  if (!heroReduced() && !cv._cePaused && cv.isConnected) cv._ceRafId = requestAnimationFrame(heroDraw);
                 }
-                cv._ceResume = function() { cv._cePaused = false; heroDraw(); };
+                cv._ceResume = function() { cv._cePaused = false; if (!cv._ceRafId) heroDraw(); };
                 // Turning the preference OFF has to RESTART the loop: by then it has
                 // already stopped rescheduling itself, so a live read alone would
                 // leave the hero frozen. Turning it ON needs nothing here -- the next
@@ -2334,6 +2351,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 })
               ),
 
+              // Proportional Carbon Share Vector Bar SVG
+              (function() {
+                var segs = [
+                  { id: 'transport', label: t('stem.climateExplorer.transport_3', 'Transport'), kg: ct.transport, color: ctx.isContrast ? '#67e8f9' : '#3b82f6' },
+                  { id: 'food', label: t('stem.climateExplorer.food_2', 'Food'), kg: ct.food, color: ctx.isContrast ? '#ffff00' : '#f59e0b' },
+                  { id: 'energy', label: t('stem.climateExplorer.energy_2', 'Energy'), kg: ct.energy, color: ctx.isContrast ? '#f9a8d4' : '#ef4444' },
+                  { id: 'waste', label: t('stem.climateExplorer.waste_2', 'Waste'), kg: ct.waste, color: ctx.isContrast ? '#86efac' : '#22c55e' }
+                ];
+                var tot = Math.max(1, ct.total);
+                var cursor = 20;
+                var barW = 600;
+                return el('div', { className: 'ce-svg-stage', style: { background: quizColors.raised, border: '1px solid ' + quizColors.border } },
+                  el('svg', {
+                    viewBox: '0 0 640 72', width: '100%', role: 'img',
+                    'aria-label': t('stem.climateExplorer.carbon_share_svg_aria', 'Proportional carbon footprint share bar across Transport, Food, Energy, and Waste'),
+                    style: { display: 'block', width: '100%', height: 'auto' }
+                  },
+                    el('text', { x: 20, y: 16, fill: quizColors.text, fontSize: 11, fontWeight: 800 }, t('stem.climateExplorer.sector_share_heading', 'Proportional sector share')),
+                    el('text', { x: 620, y: 16, textAnchor: 'end', fill: quizColors.muted, fontSize: 11, fontWeight: 700 }, (ct.total / 1000).toFixed(2) + ' t CO\u2082e/yr'),
+                    segs.map(function(s) {
+                      var w = (s.kg / tot) * barW;
+                      var x = cursor;
+                      cursor += w;
+                      var pct = Math.round((s.kg / tot) * 100);
+                      return el('g', { key: s.id },
+                        el('rect', { x: x, y: 24, width: Math.max(0, w), height: 24, fill: s.color, stroke: quizColors.panel, strokeWidth: 1.5 }),
+                        w >= 54 && el('text', { x: x + w / 2, y: 40, textAnchor: 'middle', fill: '#000000', fontSize: 10.5, fontWeight: 800 }, pct + '%')
+                      );
+                    }),
+                    el('text', { x: 20, y: 64, fill: quizColors.muted, fontSize: 10.5 }, t('stem.climateExplorer.largest_driver_hint', 'Largest share drives the fastest reduction when changed first.'))
+                  )
+                );
+              })(),
+
               // Tree comparison
               el('div',{style:{marginTop:14,padding:12,borderRadius:10,background:quizColors.raised,border:'1px solid '+quizColors.border,textAlign:'center'}},
                 el('div', { style: { fontSize: 24 } }, '\uD83C\uDF33'),
@@ -2631,6 +2682,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div',{id:'ce-renewables-mix',role:'group','aria-labelledby':'ce-renewables-mix-title','aria-describedby':'ce-renewables-mix-help',style:{padding:16,borderRadius:14,background:quizColors.raised,border:'1px solid '+quizColors.border,marginBottom:16}},
               el('h4',{id:'ce-renewables-mix-title',style:{color:quizColors.text,fontSize:15,fontWeight:800,margin:'0 0 8px'}},'Design Your Energy Mix'),
               el('p',{id:'ce-renewables-mix-help',style:{color:quizColors.muted,fontSize:13,lineHeight:1.5,margin:'0 0 12px'}},t('stem.climateExplorer.renewables_mix_help','Each source is a percentage of the grid. Increasing a source uses the fossil remainder first, then adjusts other sources when necessary. Use arrow keys for 1% steps, Home for 0%, and End for 100%.')),
+              // Live 100% Grid Generation Mix & Firm Capacity SVG Gauge
+              (function() {
+                var sources = [
+                  { id: 'solar', label: 'Solar', pct: rsSolar, color: ctx.isContrast ? '#ffff00' : '#f59e0b' },
+                  { id: 'wind', label: 'Wind', pct: rsWind, color: ctx.isContrast ? '#67e8f9' : '#60a5fa' },
+                  { id: 'hydro', label: 'Hydro', pct: rsHydro, color: ctx.isContrast ? '#86efac' : '#22d3ee' },
+                  { id: 'nuclear', label: 'Nuclear', pct: rsNuclear, color: ctx.isContrast ? '#f9a8d4' : '#a78bfa' },
+                  { id: 'fossil', label: 'Fossil', pct: rsFossil, color: ctx.isContrast ? '#ffffff' : '#64748b' }
+                ];
+                var gx = 20, gw = 600;
+                var firmX = 20 + Math.min(1, rsReliability / 100) * gw;
+                var targetX = 20 + Math.min(1, RELIABILITY_TARGET / 100) * gw;
+                return el('div', { className: 'ce-svg-stage', style: { background: quizColors.panel, border: '1px solid ' + quizColors.border } },
+                  el('svg', {
+                    viewBox: '0 0 640 94', width: '100%', role: 'img',
+                    'aria-label': t('stem.climateExplorer.grid_mix_svg_aria', 'Stacked generation share bar for Solar, Wind, Hydro, Nuclear, and Fossil fuels with firm capacity reserve gauge'),
+                    style: { display: 'block', width: '100%', height: 'auto' }
+                  },
+                    el('text', { x: 20, y: 15, fill: quizColors.text, fontSize: 11, fontWeight: 800 }, t('stem.climateExplorer.grid_composition_label', '100% Grid Generation Mix')),
+                    el('text', { x: 620, y: 15, textAnchor: 'end', fill: rsFossil <= 5 ? quizColors.correct : quizColors.muted, fontSize: 11, fontWeight: 800 }, (100 - rsFossil) + '% clean \u00B7 ' + rsFossil + '% fossil'),
+                    sources.map(function(s) {
+                      var w = (Math.max(0, s.pct) / 100) * gw;
+                      var x = gx;
+                      gx += w;
+                      return el('g', { key: s.id },
+                        el('rect', { x: x, y: 22, width: w, height: 24, fill: s.color, stroke: quizColors.panel, strokeWidth: 1.4 }),
+                        w >= 52 && el('text', { x: x + w / 2, y: 38, textAnchor: 'middle', fill: '#000000', fontSize: 10.5, fontWeight: 800 }, s.label + ' ' + s.pct + '%')
+                      );
+                    }),
+                    // Firm capacity gauge bar
+                    el('text', { x: 20, y: 63, fill: quizColors.muted, fontSize: 10.5, fontWeight: 700 }, t('stem.climateExplorer.firm_capacity_gauge_label', 'Firm capacity vs. reserve target (' + RELIABILITY_TARGET + '%)')),
+                    el('rect', { x: 20, y: 70, width: gw, height: 12, rx: 6, fill: quizColors.raised, stroke: quizColors.border, strokeWidth: 1 }),
+                    el('rect', { x: 20, y: 70, width: Math.max(4, firmX - 20), height: 12, rx: 6, fill: rsBrownout ? quizColors.wrong : quizColors.correct }),
+                    el('line', { x1: targetX, y1: 65, x2: targetX, y2: 87, stroke: quizColors.text, strokeWidth: 2, strokeDasharray: '3 2' }),
+                    el('text', { x: Math.min(585, targetX + 6), y: 81, fill: quizColors.text, fontSize: 10.5, fontWeight: 800 }, rsReliability + '%')
+                  )
+                );
+              })(),
               slider('Solar','\u2600\uFE0F',rsSolar,'#f59e0b',function(e){changeRenewablesSlider('rsSolar',parseInt(e.target.value,10),'Solar');},'ce-renewables-solar','ce-renewables-mix-help'),
               slider('Wind','\uD83C\uDF2C\uFE0F',rsWind,'#60a5fa',function(e){changeRenewablesSlider('rsWind',parseInt(e.target.value,10),'Wind');},'ce-renewables-wind','ce-renewables-mix-help'),
               slider('Hydro','\uD83D\uDCA7',rsHydro,'#22d3ee',function(e){changeRenewablesSlider('rsHydro',parseInt(e.target.value,10),'Hydro');},'ce-renewables-hydro','ce-renewables-mix-help'),

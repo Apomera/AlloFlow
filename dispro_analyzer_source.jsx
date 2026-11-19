@@ -294,7 +294,8 @@ function DisproChart({ rows, tt }) {
   const H = MT + MB + plotRows.length * ROW_H;
   const x = (v) => ML + (v / axisMax) * PW;
   const ticks = [];
-  for (let v = 0; v <= axisMax + 0.001; v += (axisMax > 4 ? 1 : 0.5)) ticks.push(Math.round(v * 2) / 2);
+  const tickStep = axisMax <= 4 ? 0.5 : Math.max(1, Math.ceil(axisMax / 8));
+  for (let v = 0; v <= axisMax + 0.001; v += tickStep) ticks.push(Math.round(v * 2) / 2);
   return (
     <div className="overflow-x-auto mt-2">
       <svg viewBox={'0 0 ' + W + ' ' + H} width="100%" style={{ minWidth: '480px', maxWidth: '620px' }} role="img"
@@ -305,6 +306,7 @@ function DisproChart({ rows, tt }) {
             <text x={x(v)} y={H - 8} textAnchor="middle" fontSize="10" fill="#898781">{v}</text>
           </g>
         ))}
+        {!ticks.includes(1) && <line x1={x(1)} x2={x(1)} y1={MT - 4} y2={H - MB} stroke="#898781" strokeWidth="1.5" strokeDasharray="4 3" />}
         <text x={x(1)} y={MT - 8} textAnchor="middle" fontSize="9" fill="#52514e">{tt('dispro.chart_parity', 'parity (1.0)')}</text>
         {plotRows.map((r, i) => {
           const y = MT + i * ROW_H + 5;

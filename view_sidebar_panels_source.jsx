@@ -80,9 +80,19 @@ function createPathFork() {
       };
     }, []);
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onCancel(); return; }
+      if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault(); event.stopPropagation(); onCancel(); return;
+      }
       if (event.key !== 'Tab' || !boxRef.current) return;
-      const items = [...boxRef.current.querySelectorAll('button, input')].filter((el) => !el.disabled);
+      const items = [...boxRef.current.querySelectorAll('button, input')].filter((el) => {
+        if (el.disabled || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        for (let node = el; node && node !== boxRef.current; node = node.parentElement) {
+          const s = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+          if (s && (s.display === 'none' || s.visibility === 'hidden')) return false;
+        }
+        return true;
+      });
       if (!items.length) return;
       const first = items[0], last = items[items.length - 1];
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -638,8 +648,8 @@ const SIDEBAR_PANEL_UI = Object.freeze({
   settingsSurface: 'border-b border-slate-200/80 bg-slate-50/70 p-3.5 flex flex-col gap-3.5',
   settingsGroup: 'space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm',
   label: 'block mb-1.5 text-[11px] font-semibold leading-4 tracking-wide text-slate-700',
-  control: 'w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
-  textarea: 'w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
+  control: 'w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-500 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
+  textarea: 'w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-500 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
   help: 'mt-1.5 text-[11px] leading-relaxed text-slate-500',
   checkbox: 'h-4 w-4 rounded border-slate-300 text-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50',
   disclosure: 'flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 disabled:opacity-70',
@@ -1194,10 +1204,13 @@ function UniversalSettingsPanel(props) {
       addToast((t('standards_finder.toast_attached_seeded') || 'Standard attached and topic seeded with this direction.'), 'success');
       return;
     }
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(brief);
-      addToast((t('standards_finder.toast_attached_copied') || 'Standard attached; direction copied — paste it into your topic or source field.'), 'success');
-    } catch (e) { addToast((t('standards_finder.toast_attached_manual') || 'Standard attached. Copy the direction text manually.'), 'info'); }
+    const showCopied = () => addToast((t('standards_finder.toast_attached_copied') || 'Standard attached; direction copied — paste it into your topic or source field.'), 'success');
+    const showManual = () => addToast((t('standards_finder.toast_attached_manual') || 'Standard attached. Copy the direction text manually.'), 'info');
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      Promise.resolve(navigator.clipboard.writeText(brief)).then(showCopied, showManual);
+    } else {
+      showManual();
+    }
   };
   const resolveFromLocalSnapshot = () => {
     const query = String(standardInputValue || '').trim();
@@ -1240,13 +1253,13 @@ function UniversalSettingsPanel(props) {
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex min-h-14 w-full items-center justify-between bg-white px-3.5 py-3 transition-colors motion-reduce:transition-none hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-indigo-500/20"
               >
-                <div className="text-left min-w-0">
-                  <div className="text-sm font-bold text-indigo-900 flex gap-2 items-center">
-                    <Settings2 size={16} className="shrink-0"/> {t('universal.title') || 'Universal Settings'}
-                  </div>
-                  <p className="text-[11px] text-indigo-700/80 mt-0.5 truncate">{isOpen ? (t('universal.subtitle') || 'Apply to most resources you generate') : summaryBits.join(' · ')}</p>
-                </div>
-                <ChevronDown size={16} className={`text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}/>
+                <span className="block text-left min-w-0">
+                  <span className="text-sm font-bold text-indigo-900 flex gap-2 items-center">
+                    <Settings2 size={16} className="shrink-0" aria-hidden="true"/> {t('universal.title') || 'Universal Settings'}
+                  </span>
+                  <span className="block text-[11px] text-indigo-700/80 mt-0.5 truncate">{isOpen ? (t('universal.subtitle') || 'Apply to most resources you generate') : summaryBits.join(' · ')}</span>
+                </span>
+                <ChevronDown size={16} aria-hidden="true" className={`text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}/>
               </button>
               {isOpen && (
                 <div className="animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200">
@@ -1465,13 +1478,13 @@ function UniversalSettingsPanel(props) {
                                                     }}
                                                     className="w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
                                                 >
-                                                    <div className="flex justify-between items-start gap-1">
+                                                    <span className="flex justify-between items-start gap-1">
                                                         <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
                                                         <span className="text-[11px] text-slate-600 uppercase">{std.framework}</span>
-                                                    </div>
-                                                    <p className="text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
+                                                    </span>
+                                                    <span className="block text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
                                                         {std.description}
-                                                    </p>
+                                                    </span>
                                                 </button>
                                             ))}
                                         </div>
@@ -1959,7 +1972,6 @@ function SimplifiedPanel(props) {
                         </div>
                 </div>
                 <div data-reading-options className="space-y-2.5 bg-white p-3.5">
-                    {!hasSourceOrAnalysis && <p className="text-xs leading-5 text-slate-600">{readingOptionText('sidebar.reading_options_add_source', 'Add source text to enable these options.')}</p>}
                     <button type="button" data-read-original data-help-key="simplified_read_original" onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing}
                         className={`${readingActionClass} border-indigo-200 bg-indigo-50 text-indigo-900 enabled:hover:border-indigo-300 enabled:hover:bg-indigo-100`}>
                         <BookOpen size={18} aria-hidden="true" className="shrink-0" />
@@ -2399,6 +2411,11 @@ function DbqPanel(props) {
                                                     const file = e.target.files?.[0];
                                                     const docArea = document.getElementById('dbq-custom-docs');
                                                     if (!file || !docArea || !callGeminiVision) return;
+                                                    if (Number(file.size) > 20 * 1024 * 1024) {
+                                                        addToast && addToast('File is too large for OCR (max 20 MB).', 'error');
+                                                        e.target.value = '';
+                                                        return;
+                                                    }
                                                     addToast && addToast(t("toasts.extracting_text_image"), 'info');
                                                     try {
                                                         const reader = new FileReader();
@@ -2434,6 +2451,10 @@ function DbqPanel(props) {
                                                         if (imageType) {
                                                             addToast && addToast(t("toasts.extracting_clipboard"), 'info');
                                                             const blob = await item.getType(imageType);
+                                                            if (Number(blob.size) > 20 * 1024 * 1024) {
+                                                                addToast && addToast('Clipboard image is too large for OCR (max 20 MB).', 'error');
+                                                                return;
+                                                            }
                                                             const reader = new FileReader();
                                                             reader.onload = async () => {
                                                                 try {
@@ -4002,14 +4023,15 @@ function BrainstormPanel(props) {
                              </div>
                              <div>
                                 <div className="flex justify-between items-center mb-1">
-                                    <label className="block text-xs font-bold text-violet-900">
+                                    <label htmlFor="brainstorm-step-count" className="block text-xs font-bold text-violet-900">
                                        {t('bridge.iterative_steps')}
                                     </label>
                                     <span className="text-[11px] font-mono bg-white px-1.5 rounded border border-violet-200 text-violet-800 font-bold">
                                         {bridgeStepCount} {t('bridge.prompts_count')}
                                     </span>
                                 </div>
-                                <input aria-label={t('common.range_slider')}
+                                <input id="brainstorm-step-count"
+                                    aria-valuetext={`${bridgeStepCount} ${t('bridge.prompts_count')}`}
                                     data-help-key="brainstorm_step_count"
                                     type="range"
                                     min="1"
@@ -5449,7 +5471,7 @@ function SourceChangeControl({ t, inputText, sourceRecord, setSourceReplacement 
       </button>
       {asking && (
         <div data-source-change-confirm role="alertdialog" aria-modal="false" aria-labelledby="source-change-title" aria-describedby="source-change-desc"
-          onKeyDown={(event) => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keep(); } }}
+          onKeyDown={(event) => { if (event.key === 'Escape' && !(event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229)) { event.preventDefault(); event.stopPropagation(); keep(); } }}
           className="basis-full w-full cursor-auto rounded-lg border-2 border-amber-400 bg-amber-50 p-3 text-left text-xs text-amber-950">
           <h3 id="source-change-title" className="text-sm font-bold">{say('sidebar.source_change_title', 'Choose a different source?')}</h3>
           <p id="source-change-desc" className="mt-1">{inUse
@@ -5532,7 +5554,7 @@ function SourceInputShellView(props) {
     reader.onload = async (ev) => {
       if (!_projectLoadIsCurrent()) return;
       try {
-        const _savedProject = JSON.parse(ev.target.result);
+        const _savedProject = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
         // A lesson project (a resource list, { history: [...] }, or an encrypted
         // save) is a valid file in the wrong place: say where it opens.
         const _crypto = window.AlloModules && window.AlloModules.AlloCrypto;

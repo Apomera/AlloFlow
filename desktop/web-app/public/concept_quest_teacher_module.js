@@ -18,7 +18,7 @@
       return window.__alloAiUsable(kind, fn);
     }
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true);
+  return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true);
 };
 const _cqSanitizeUntrusted = val => String(val == null ? '' : val).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '');
 const _cqFenceUntrusted = (tag, val) => '<UNTRUSTED_' + tag + '>\n' + _cqSanitizeUntrusted(val) + '\n</UNTRUSTED_' + tag + '>';

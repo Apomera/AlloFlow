@@ -20,7 +20,22 @@
   function rowOf(word) { try { return wordlist ? wordlist.get(word) : null; } catch (_) { return null; } }
   function builtIn(word) { var row = rowOf(word); return !!(row && (row.kokoro || row.shards)); }
   function notUsed(word) { var row = rowOf(word); return !!(row && row.blocked); }
-  var state = { words: [], entries: {}, ready: false, getting: false, making: false, stop: null, storage: true, playing: null };
+  var state = { words: [], entries: {}, ready: false, getting: false, making: false, stop: null, makeRun: 0, storage: true, playing: null };
+  function makeController() {
+    if (typeof win.AbortController === 'function') return new win.AbortController();
+    var ctrl = { signal: { aborted: false }, abort: function () { ctrl.signal.aborted = true; } };
+    return ctrl;
+  }
+  function abortError() {
+    var err = new Error('Stopped');
+    err.name = 'AbortError';
+    return err;
+  }
+  function cancelMake() {
+    state.makeRun += 1;
+    if (state.stop) { try { state.stop.abort(); } catch (_) {} state.stop = null; }
+    state.making = false;
+  }
 
   function el(tag, cls, text) { var node = doc.createElement(tag); if (cls) node.className = cls; if (text != null) node.textContent = text; return node; }
   function setText(id, text) { var node = $(id); if (node && node.textContent !== text) node.textContent = text; }
@@ -28,15 +43,20 @@
   function count(n, one, many) { return n + ' ' + (n === 1 ? one : many || one + 's'); }
 
   // The words in the box: letters only, 2 to 24 of them, each once, at most MAX_WORDS.
+  // Tolerates pasted lists: UTF-8 BOM, leading numbering/bullets per line, and outer quotes or punctuation.
   function readWords() {
     var seen = {}, words = [], refused = [];
-    String($('f-words').value || '').split(/[\s,;]+/).forEach(function (raw) {
-      var word = raw.trim().toLowerCase();
-      if (!word) return;
-      if (!/^[a-z]{2,24}$/.test(word)) { if (refused.indexOf(raw) < 0) refused.push(raw); return; }
-      if (seen[word]) return;
-      seen[word] = true;
-      words.push(word);
+    String($('f-words').value || '').replace(/^\uFEFF/, '').split(/\r?\n/).forEach(function (line) {
+      var cleanedLine = line.replace(/^\s*(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '');
+      cleanedLine.split(/[\s,;]+/).forEach(function (raw) {
+        var trimmed = raw.trim();
+        if (!trimmed) return;
+        var word = trimmed.replace(/^["'\u201c\u201d\u2018\u2019(\[{]+|["'\u201c\u201d\u2018\u2019)\]}.,!?:;]+$/g, '').toLowerCase();
+        if (!/^[a-z]{2,24}$/.test(word)) { if (refused.indexOf(trimmed) < 0) refused.push(trimmed); return; }
+        if (seen[word]) return;
+        seen[word] = true;
+        words.push(word);
+      });
     });
     var over = Math.max(0, words.length - MAX_WORDS);
     state.words = words.slice(0, MAX_WORDS);
@@ -166,14 +186,25 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Making a recording: the loader's WAV for one word, kept as that word's clip in My words
+  // Making a recording: the loader's WAV for one word, compressed to MP3 when available, kept in My words
   // ---------------------------------------------------------------------------
   function makeOne(word, signal) {
     var voice = $('f-voice').value || 'af_heart';
+    if (signal && signal.aborted) return Promise.reject(abortError());
     // A new recording every time: a second press of "Make again" gives a new one, not the loader's remembered one.
     return engine.speak(word, voice, { word: true, signal: signal }).then(function (bytes) {
-      if (bytes.length > CLIP_LIMIT) throw new Error('The recording of ' + word + ' is too long to keep.');
-      return myWords.put(word, { clip: { dataUri: engine.toDataUri(bytes), source: 'computer-voice', made: new Date().toISOString(), ms: engine.wavMs(bytes) } });
+      if (signal && signal.aborted) throw abortError();
+      var ms = engine.wavMs(bytes);
+      var readyMp3 = typeof engine.getMp3 === 'function' ? engine.getMp3().catch(function () { return false; }) : Promise.resolve(false);
+      return readyMp3.then(function (hasMp3) {
+        if (signal && signal.aborted) throw abortError();
+        var mp3 = hasMp3 && typeof engine.wavToMp3 === 'function' ? engine.wavToMp3(bytes, 64) : null;
+        if (signal && signal.aborted) throw abortError();
+        var out = mp3 || bytes;
+        var mime = mp3 ? 'audio/mpeg' : 'audio/wav';
+        if (out.length > CLIP_LIMIT) throw new Error('The recording of ' + word + ' is too long to keep.');
+        return myWords.put(word, { clip: { dataUri: engine.toDataUri(out, mime), source: 'computer-voice', made: new Date().toISOString(), ms: ms } });
+      });
     }, function (error) {
       if (error && error.code === 'no_sound') throw new Error('The voice gave no sound for ' + word + '.');
       if (error && error.code === 'bad_sound') throw new Error('The voice gave a sound this page cannot keep for ' + word + '.');
@@ -186,29 +217,34 @@
     if (state.making || !state.ready || !myWords) return;
     var list = words.filter(function (word) { var clip = clipOf(word); return !clip || (again && clip.source === 'computer-voice'); });
     if (!list.length) return;
+    var run = ++state.makeRun;
+    var stop = makeController();
     state.making = true;
-    state.stop = new win.AbortController();
+    state.stop = stop;
     setText('make-problem', '');
     draw();
     var done = 0, failed = [], stopped = false;
     var step = function (index) {
-      if (index >= list.length || state.stop.signal.aborted) { stopped = state.stop.signal.aborted && index < list.length; return Promise.resolve(); }
+      if (run !== state.makeRun || stop.signal.aborted) { stopped = true; return Promise.resolve(); }
+      if (index >= list.length) return Promise.resolve();
       var word = list[index];
       setText('make-said', 'Making ' + (index + 1) + ' of ' + list.length + ': ' + word + '.');
-      return makeOne(word, state.stop.signal).then(function () { done += 1; }, function (error) {
-        if (error && error.name === 'AbortError') { stopped = true; return; }
+      return makeOne(word, stop.signal).then(function () { done += 1; }, function (error) {
+        if (run !== state.makeRun || stop.signal.aborted || (error && error.name === 'AbortError')) { stopped = true; return; }
         failed.push(word + ((error && error.code === 'storage_full') ? ' (this browser is out of room)' : ''));
-      }).then(function () { return stopped ? null : step(index + 1); });
+      }).then(function () { return (stopped || run !== state.makeRun) ? null : step(index + 1); });
     };
     step(0).then(function () {
+      if (run !== state.makeRun) return;
       state.making = false;
-      state.stop = null;
-      return redraw();
-    }).then(function () {
-      setText('make-said', (stopped ? 'Stopped. ' : '') + count(done, 'recording') + ' made and kept in My words on this device.' + (done ? ' Press Play to hear each one.' : ''));
-      if (failed.length) setText('make-problem', 'Not made: ' + failed.join(', ') + '. You can press Make recording on a word to try it again.');
-      var focus = list.length === 1 ? doc.querySelector('[data-play="' + list[0] + '"]') : $('make-all');
-      if (focus && !focus.disabled) focus.focus();
+      if (state.stop === stop) state.stop = null;
+      return redraw().then(function () {
+        if (run !== state.makeRun) return;
+        setText('make-said', (stopped ? 'Stopped. ' : '') + count(done, 'recording') + ' made and kept in My words on this device.' + (done ? ' Press Play to hear each one.' : ''));
+        if (failed.length) setText('make-problem', 'Not made: ' + failed.join(', ') + '. You can press Make recording on a word to try it again.');
+        var focus = list.length === 1 ? doc.querySelector('[data-play="' + list[0] + '"]') : $('make-all');
+        if (focus && !focus.disabled) focus.focus();
+      });
     });
   }
 
@@ -217,7 +253,11 @@
     var handed = /[#&]words=([^&]*)/.exec(win.location.hash || '');
     if (handed) { try { $('f-words').value = decodeURIComponent(handed[1]).split(',').join('\n').slice(0, 2000); } catch (_) {} }
     var timer = 0;
-    $('f-words').addEventListener('input', function () { win.clearTimeout(timer); timer = win.setTimeout(function () { readWords(); redraw(); }, 250); });
+    $('f-words').addEventListener('input', function () {
+      if (state.making) { cancelMake(); setText('make-said', 'Stopped because the word list changed.'); }
+      win.clearTimeout(timer);
+      timer = win.setTimeout(function () { readWords(); redraw(); }, 250);
+    });
     $('get-voice').addEventListener('click', getVoice);
     $('make-all').addEventListener('click', function () { makeSome(needing(), false); });
     $('stop').addEventListener('click', function () { if (state.stop) state.stop.abort(); });

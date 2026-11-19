@@ -103,11 +103,20 @@
     });
   }
   // The shared sound helpers and the app's MP3 encoder (packets_audio_kit.js, lame.min.js), from this site, once. null when they cannot be had.
-  // Loading starts the first time recordings are asked for; it never holds them up: until the encoder is here, WAV.
+  // Loading starts the first time recordings are asked for; wait briefly (up to 1.5 s) so even the first build encodes MP3 instead of caching WAV.
   var gettingKit = null, readyKit = null;
+  var KIT_WAIT_MS = 1500;
   function smaller() {
+    if (readyKit) return Promise.resolve(readyKit);
     if (!gettingKit) startKit();
-    return Promise.resolve(readyKit);
+    var timer = null;
+    var cap = new Promise(function (resolve) {
+      timer = (typeof root.setTimeout === 'function' ? root.setTimeout : setTimeout)(function () { resolve(readyKit); }, KIT_WAIT_MS);
+    });
+    return Promise.race([gettingKit, cap]).then(function (kit) {
+      if (timer != null && typeof (root.clearTimeout || clearTimeout) === 'function') (root.clearTimeout || clearTimeout)(timer);
+      return kit || readyKit;
+    });
   }
   function startKit() {
     gettingKit = new Promise(function (resolve) {

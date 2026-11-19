@@ -642,6 +642,12 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
                       ...prev,
                       inventory: prev.inventory.map(i => i.id === newItem.id ? { ...i, image: url || null, isLoading: false } : i)
                   }));
+              }).catch(() => {
+                  if (launchEpoch !== adventureRunEpoch) return;
+                  setAdventureState(prev => ({
+                      ...prev,
+                      inventory: prev.inventory.map(i => i.id === newItem.id ? { ...i, isLoading: false } : i)
+                  }));
               });
               inventoryPromises.push(promise);
           });

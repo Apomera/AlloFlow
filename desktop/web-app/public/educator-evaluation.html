@@ -17,13 +17,26 @@
   <meta name="twitter:card" content="summary_large_image" />
   <style>
     html,body,#educator-evaluation-root{min-height:100%;margin:0}
-    body{background:#f4f7fb}
+    body{background:#f4f7fb;color:#24324a}
     .boot{font:16px system-ui;color:#24324a;min-height:100vh;display:grid;place-items:center;text-align:center;padding:24px}
-    .boot strong{display:block;font-size:22px;color:#173e70;margin-bottom:6px}
+    .boot h1{display:block;font-size:22px;color:#173e70;margin:0 0 6px}
+    .boot a{color:#1d4ed8;font-weight:700}
+    html[data-ae-theme="dark"] body{background:#0f172a;color:#e6ebf5}
+    html[data-ae-theme="dark"] .boot{color:#e2e8f0}
+    html[data-ae-theme="dark"] .boot h1{color:#f8fafc}
+    html[data-ae-theme="dark"] .boot a{color:#93c5fd}
+    html[data-ae-theme="contrast"] body{background:#000000;color:#ffffff}
+    html[data-ae-theme="contrast"] .boot{color:#ffffff}
+    html[data-ae-theme="contrast"] .boot h1{color:#ffff00}
+    html[data-ae-theme="contrast"] .boot a{color:#00ff00}
+    .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10000}
+    .skip-link:focus{position:fixed;left:8px;top:8px;width:auto;height:auto;padding:10px 18px;background:#10233f;color:#fff;font:700 14px system-ui;border-radius:8px;outline:3px solid #facc15;text-decoration:none}
+    @media (forced-colors: active){.boot,.boot h1,.boot a{color:CanvasText}}
   </style>
 </head>
 <body>
-  <div id="educator-evaluation-root"><div class="boot"><div><strong>Educator Growth &amp; Evaluation</strong>Loading the principal workspace…<p style="margin-top:14px;font-size:14px"><a href="./educator-evaluation-manual.html">Read the user manual</a></p></div></div></div>
+  <a class="skip-link" href="#educator-evaluation-root">Skip to main content</a>
+  <div id="educator-evaluation-root" tabindex="-1"><main class="boot" role="status" aria-live="polite"><div><h1>Educator Growth &amp; Evaluation</h1><p>Loading the principal workspace…</p><p style="margin-top:14px;font-size:14px"><a href="./educator-evaluation-manual.html">Read the user manual</a></p></div></main></div>
   <script>(function(){try{var m=window.matchMedia;var theme=m&&m('(prefers-contrast: more)').matches?'contrast':(m&&m('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-ae-theme',theme);if(theme!=='light'){document.body.style.background=theme==='dark'?'#0f172a':'#000';document.body.style.color='#e6ebf5';}}catch(e){}})();</script>
   <script src="./educator_evaluation_standalone.js"></script>
 </body>

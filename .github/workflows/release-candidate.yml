@@ -43,9 +43,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: node dev-tools/security_release_candidate.cjs check-ci --sha=$env:GITHUB_SHA
       - name: Install locked verification dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install locked web build dependencies
-        run: npm ci --prefix desktop/web-app --no-audit --no-fund
+        run: npm ci --ignore-scripts --prefix desktop/web-app --no-audit --no-fund
       - name: Install the fixture browser
         run: npx --no-install playwright install chromium
       - name: Install pinned EPUBCheck fixtures

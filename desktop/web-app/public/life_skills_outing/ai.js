@@ -30,10 +30,13 @@
       if (opts && Array.isArray(opts.trustedOrigins) && opts.trustedOrigins.indexOf(value) !== -1) return true;
       var currentOrigin = win && win.location && typeof win.location.origin === 'string' ? win.location.origin : '';
       if (currentOrigin && currentOrigin !== 'null' && currentOrigin === value) return true;
-      var hostname = new URL(value).hostname.toLowerCase();
-      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]') return true;
-      if (/^(?:alloflow(?:-[a-z0-9-]+)?\.(?:pages\.dev|web\.app|firebaseapp\.com|app|org|edu)|[a-z0-9-]+\.instructure\.com|(?:[a-z0-9-]+\.)?canvas\.gemini\.google\.com|(?:[a-z0-9-]+\.)?scf\.usercontent\.goog)$/i.test(hostname)) return true;
-      if (/^[a-z0-9-]+\.example$/i.test(hostname) && !/^(?:attacker|evil|malicious)\./i.test(hostname)) return true;
+      var parsed = new URL(value);
+      var hostname = parsed.hostname.toLowerCase();
+      var isLoopback = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+      if (parsed.protocol === 'http:') return isLoopback;
+      if (parsed.protocol !== 'https:') return false;
+      if (isLoopback) return true;
+      if (/^(?:(?:[a-z0-9-]+\.)?alloflow-cdn\.pages\.dev|(?:[a-z0-9-]+\.)?alloflow\.(?:app|org|com)|[a-z0-9-]+\.instructure\.com|(?:[a-z0-9-]+\.)?canvas\.gemini\.google\.com|(?:[a-z0-9-]+\.)?scf\.usercontent\.goog)$/i.test(hostname)) return true;
       return false;
     } catch (_) { return false; }
   }

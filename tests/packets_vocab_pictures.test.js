@@ -56,10 +56,10 @@ describe('the two picture activities in the engine', () => {
     for (const id of IDS) { expect(TH.CHECK_ADAPTERS[id], id).toBeTruthy(); expect(TH.ADAPTERS[id]).toBeUndefined(); }
     const plain = (a, part) => a[part].toString().split(a.id + '_').join('X_');
     for (const part of ['prepare', 'render', 'score']) expect(plain(TH.CHECK_ADAPTERS.vocab_picture_word, part), part).toBe(plain(TH.CHECK_ADAPTERS.vocab_picture, part));
+    expect(TH._vocabChoice.toString()).toContain('v.localService === true');
     for (const id of IDS) {
       const a = TH.CHECK_ADAPTERS[id];
       expect(a.render.toString()).not.toMatch(/\b(?:document|window|localStorage|sessionStorage|globalThis)\b/);
-      expect(a.render.toString()).toContain('v.localService === true');
       expect(Object.values(a.labels).join('\n')).not.toMatch(/\b(?:tests?|quiz|learners?|assessments?)\b|licence|colour/i);
     }
   });
@@ -233,12 +233,52 @@ describe('Look up a word online (packets-vocab-lookup.html)', () => {
     expect(V.creditLines(bank, rows).join('\n')).toContain('Meanings found on the internet and not checked: photosynthesis (from Wiktionary, through the Free Dictionary API (dictionaryapi.dev), license CC BY-SA 3.0).');
     expect(V.creditLines(bank, rows).join('\n')).not.toContain('Meanings written by the teacher: photosynthesis');
   });
+
+  it('supports sequential multi-word lookups on the same open tab using strictly in-memory consent (zero sessionStorage)', async () => {
+    const dom = new JSDOM(read('packets-vocab-lookup.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://site.test/packets-vocab-lookup.html#word=photosynthesis&more=chlorophyll' });
+    const w = dom.window;
+    opened.push(w);
+    const asked = [];
+    const replies = {
+      photosynthesis: ANSWER,
+      chlorophyll: [{ word: 'chlorophyll', license: { name: 'CC BY-SA 3.0', url: 'x' }, meanings: [{ partOfSpeech: 'noun', definitions: [{ definition: 'Green pigment in plants that absorbs light.' }] }] }],
+    };
+    w.fetch = (url, opts) => {
+      asked.push([url, opts]);
+      const term = decodeURIComponent(String(url).split('/').pop());
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(replies[term] || []) });
+    };
+    w.eval(read('packets-page.js'));
+    w.eval(read('packets-vocab-lookup.js'));
+    const $ = (id) => w.document.getElementById(id);
+    expect($('online-on').checked).toBe(false);
+    $('online-on').checked = true;
+    $('online-on').dispatchEvent(new w.Event('change', { bubbles: true }));
+    $('look').click();
+    await wait(10);
+    $('use').click();
+    // Tab stays consented in memory and queues word #2 automatically.
+    expect($('online-on').checked).toBe(true);
+    expect($('word').value).toBe('chlorophyll');
+    expect($('use-line').textContent).toContain('Next word ready above: chlorophyll');
+    $('look').click();
+    await wait(10);
+    $('use').click();
+    expect(asked.map((a) => a[0])).toEqual([
+      'https://api.dictionaryapi.dev/api/v2/entries/en/photosynthesis',
+      'https://api.dictionaryapi.dev/api/v2/entries/en/chlorophyll',
+    ]);
+    const edits = JSON.parse(w.localStorage.getItem(EDITS_KEY));
+    expect(edits.words.photosynthesis.def).toBe('The process by which plants use light to make food');
+    expect(edits.words.chlorophyll.def).toBe('Green pigment in plants that absorbs light');
+    expect($('word').value).toBe('');
+  });
 });
 
 // ---------------------------------------------------------------------------
 // The maker, step 3
 // ---------------------------------------------------------------------------
-const PAGE_SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_zip.js', 'packets_handoff.js', 'packets_vocab_bank_en.js',
+const PAGE_SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_zip.js', 'packets_handoff.js', 'packets_my_words.js', 'packets_vocab_bank_en.js',
   'word_sounds_symbols_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', 'packets-vocab.js'];
 async function maker() {
   const dom = new JSDOM(read('packets-vocab.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://site.test/packets-vocab.html' });

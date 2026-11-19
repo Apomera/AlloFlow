@@ -100,6 +100,7 @@ const UiLanguageSelector = (props = {}) => {
   const manualInputRef = useRef(null);
   useEffect(() => {
     let cancelled = false;
+    let activeCtrl = null;
     const urls = [
       "./lang/manifest.json",
       "https://alloflow-cdn.pages.dev/lang/manifest.json",
@@ -107,8 +108,12 @@ const UiLanguageSelector = (props = {}) => {
     ];
     (async () => {
       for (const u of urls) {
+        if (cancelled) return;
+        const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+        activeCtrl = ctrl;
+        const timer = ctrl ? setTimeout(() => ctrl.abort(), 8e3) : null;
         try {
-          const r = await fetch(u, { cache: "no-cache" });
+          const r = await fetch(u, ctrl ? { cache: "no-cache", signal: ctrl.signal } : { cache: "no-cache" });
           if (!r.ok) continue;
           const m = await r.json();
           if (m && Array.isArray(m.available)) {
@@ -121,11 +126,20 @@ const UiLanguageSelector = (props = {}) => {
             return;
           }
         } catch (_) {
+        } finally {
+          if (timer !== null) clearTimeout(timer);
+          if (activeCtrl === ctrl) activeCtrl = null;
         }
       }
     })();
     return () => {
       cancelled = true;
+      if (activeCtrl) {
+        try {
+          activeCtrl.abort();
+        } catch (_) {
+        }
+      }
     };
   }, []);
   const commonLanguages = [
@@ -139,7 +153,7 @@ const UiLanguageSelector = (props = {}) => {
   };
   const optionLabel = (entry) => {
     const endonym = entry.endonym || entry.value;
-    const suffix = PROVENANCE_SUFFIX[entry.provenance] || "";
+    const suffix = Object.prototype.hasOwnProperty.call(PROVENANCE_SUFFIX, entry.provenance) ? PROVENANCE_SUFFIX[entry.provenance] : "";
     if (endonym === entry.value) return entry.value + suffix;
     return endonym + " \u2014 " + entry.value + suffix;
   };
@@ -216,7 +230,7 @@ const UiLanguageSelector = (props = {}) => {
     "button",
     {
       type: "button",
-      onClick: () => fileInputRef.current.click(),
+      onClick: () => fileInputRef.current && fileInputRef.current.click(),
       "data-help-key": "ui_lang_import_btn",
       className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors",
       title: languageCopy("language_selector.upload_tooltip", "Import Language Pack"),

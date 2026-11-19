@@ -108,6 +108,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
       '.theme-dark .economicslab-tool-shell .text-indigo-900,.theme-dark .economicslab-tool-shell .text-violet-900,.theme-dark .economicslab-tool-shell .text-purple-900,.theme-dark .economicslab-tool-shell .text-fuchsia-900{color:#c4b5fd!important;}',
       '.theme-dark .economicslab-tool-shell .text-red-900,.theme-dark .economicslab-tool-shell .text-rose-900{color:#fda4af!important;}',
       '.theme-dark .economicslab-tool-shell .text-slate-900,.theme-dark .economicslab-tool-shell .text-slate-950{color:var(--eco-text)!important;}',
+      '.eco-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:18px 20px;margin-bottom:14px;background:linear-gradient(135deg,#0b132b 0%,#102a43 52%,#0f3d3e 100%);border:1px solid rgba(52,211,153,.38);box-shadow:0 16px 34px rgba(11,19,43,.24);color:#f8fafc}',
+      '.eco-hero-deck h2{color:#ffffff!important}',
+      '.eco-hero-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(16,185,129,.18);border:1px solid rgba(52,211,153,.45);color:#6ee7b7}',
+      '.eco-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,23,42,.62);border:1px solid rgba(148,163,184,.34);color:#e2e8f0;white-space:nowrap}',
+      '.eco-telemetry-pill strong{color:#6ee7b7;font-weight:900}',
+      '.eco-mini-chart{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:13px;background:rgba(15,23,42,.58);border:1px solid rgba(52,211,153,.32);color:#e2e8f0}',
+      '.eco-preset-bar{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(148,163,184,.22)}',
+      '.eco-preset-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(52,211,153,.38);color:#f8fafc;cursor:pointer;min-height:34px;transition:background-color .15s,border-color .15s}',
+      '.eco-preset-chip:hover{background:rgba(16,185,129,.26);border-color:#34d399;color:#ffffff}',
+      '.eco-tools-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}',
+      '.eco-hero-back{display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(226,232,240,.28);color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer}',
+      '.eco-hero-back:hover{background:rgba(255,255,255,.2)}',
+      '.economicslab-tool-shell button:focus-visible,.economicslab-tool-shell select:focus-visible,.economicslab-tool-shell input:focus-visible{outline:3px solid #10b981;outline-offset:2px}',
+      '.economicslab-canvas-shell{box-shadow:0 8px 22px rgba(15,23,42,.08);border-radius:14px}',
+      '.economicslab-tabbar{box-shadow:0 4px 12px rgba(15,23,42,.06);border-radius:14px}',
+      '.theme-contrast .eco-hero-deck{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffff00!important}',
+      '.theme-contrast .eco-hero-deck h2,.theme-contrast .eco-hero-deck p{color:#ffff00!important}',
+      '.theme-contrast .eco-hero-badge,.theme-contrast .eco-telemetry-pill,.theme-contrast .eco-mini-chart{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .eco-telemetry-pill strong{color:#00ff00!important}',
+      '.theme-contrast .eco-preset-chip,.theme-contrast .eco-hero-back{background:#000000!important;border:2px solid #00ff00!important;color:#ffff00!important}',
+      '.theme-contrast .economicslab-tool-shell button:focus-visible,.theme-contrast .economicslab-tool-shell select:focus-visible,.theme-contrast .economicslab-tool-shell input:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -1907,7 +1928,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
       // ── Tool body (economicsLab) ──
       return (function() {
-var d = labToolData || {};
+var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData : {};
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -3613,114 +3634,130 @@ var d = labToolData || {};
 
           setTimeout(econRestoreFocus, 0);
 
+          var ecoEmblemSvg = React.createElement('svg', { width: 52, height: 52, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+            React.createElement('rect', { x: 2, y: 2, width: 60, height: 60, rx: 15, fill: ctx.isContrast ? '#000000' : 'rgba(15,23,42,0.72)', stroke: ctx.isContrast ? '#00ff00' : 'rgba(52,211,153,0.55)', strokeWidth: 1.5 }),
+            React.createElement('line', { x1: 14, y1: 50, x2: 52, y2: 50, stroke: ctx.isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1.8 }),
+            React.createElement('line', { x1: 14, y1: 14, x2: 14, y2: 50, stroke: ctx.isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1.8 }),
+            React.createElement('line', { x1: 18, y1: 18, x2: 48, y2: 44, stroke: ctx.isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 2.6, strokeLinecap: 'round' }),
+            React.createElement('line', { x1: 18, y1: 44, x2: 48, y2: 18, stroke: ctx.isContrast ? '#00ff00' : '#34d399', strokeWidth: 2.6, strokeLinecap: 'round' }),
+            React.createElement('circle', { cx: 33, cy: 31, r: 4.5, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1.5 })
+          );
+          var ecoMiniCurveSvg = (function () {
+            var qStarClamped = Math.max(5, Math.min(95, sdOut && isFinite(sdOut.qStar) ? sdOut.qStar : 50));
+            var pStarClamped = Math.max(5, Math.min(95, sdOut && isFinite(sdOut.pStar) ? sdOut.pStar : 50));
+            var sx = function (q) { return +(8 + (q / 100) * 60).toFixed(1); };
+            var sy = function (p) { return +(42 - (p / 100) * 34).toFixed(1); };
+            var dY0 = sy(Math.max(0, Math.min(100, sdDemInt)));
+            var dY1 = sy(Math.max(0, Math.min(100, sdDemInt - 100 * sdDemSlope)));
+            var sY0 = sy(Math.max(0, Math.min(100, sdSupInt)));
+            var sY1 = sy(Math.max(0, Math.min(100, sdSupInt + 100 * sdSupSlope)));
+            var ex = sx(qStarClamped), ey = sy(pStarClamped);
+            return React.createElement('svg', { width: 76, height: 48, viewBox: '0 0 76 48', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
+              React.createElement('rect', { x: 1, y: 1, width: 74, height: 46, rx: 8, fill: ctx.isContrast ? '#000000' : 'rgba(2,6,23,0.65)', stroke: ctx.isContrast ? '#ffff00' : 'rgba(148,163,184,0.28)', strokeWidth: 1 }),
+              React.createElement('line', { x1: 8, y1: 42, x2: 68, y2: 42, stroke: '#64748b', strokeWidth: 1 }),
+              React.createElement('line', { x1: 8, y1: 8, x2: 8, y2: 42, stroke: '#64748b', strokeWidth: 1 }),
+              React.createElement('line', { x1: 8, y1: dY0, x2: 68, y2: dY1, stroke: ctx.isContrast ? '#00ffff' : '#60a5fa', strokeWidth: 2 }),
+              React.createElement('line', { x1: 8, y1: sY0, x2: 68, y2: sY1, stroke: ctx.isContrast ? '#00ff00' : '#34d399', strokeWidth: 2 }),
+              React.createElement('line', { x1: ex, y1: ey, x2: ex, y2: 42, stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '2 2' }),
+              React.createElement('line', { x1: 8, y1: ey, x2: ex, y2: ey, stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '2 2' }),
+              React.createElement('circle', { cx: ex, cy: ey, r: 3.5, fill: '#fbbf24' })
+            );
+          })();
+          var applyEcoPreset = function (patch, toastMsg) {
+            var viewed = Object.assign({}, d.tabsViewed || {});
+            viewed[patch.econTab || 'supplyDemand'] = true;
+            updMany(Object.assign({ tabsViewed: viewed }, patch));
+            if (addToast && toastMsg) addToast(toastMsg, 'info');
+          };
+
           return React.createElement('div', { className: 'economicslab-tool-shell max-w-4xl mx-auto', "data-economicslab-tool": "true", ref: econShellRef },
 
-            // Header
+            // Bespoke Hero Workbench Header
+            React.createElement('header', { className: 'eco-hero-deck' },
+              React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                React.createElement('div', { className: 'flex items-start gap-3 min-w-0 flex-1' },
+                  React.createElement('button', {
+                    type: 'button',
+                    "aria-label": t('stem.economicslab.back_to_stem_tools', 'Back to STEM tools'),
+                    title: t('stem.economicslab.back', 'Back'),
+                    onClick: function () { setStemLabTool(null); },
+                    className: 'eco-hero-back'
+                  }, '\u2190'),
+                  ecoEmblemSvg,
+                  React.createElement('div', { className: 'min-w-0' },
+                    React.createElement('span', { className: 'eco-hero-badge' }, t('stem.economicslab.hero_badge', 'Economics · Markets, Finance & Macro Policy')),
+                    React.createElement('h2', { className: 'text-xl font-black tracking-tight mt-1' }, t('stem.economicslab.economics_lab', '\uD83D\uDCB0 Economics Lab')),
+                    React.createElement('p', { className: 'text-xs text-slate-300 mt-0.5' }, t('stem.economicslab.hero_sub', 'Interactive supply & demand equilibrium, comparative advantage, investing, business unit economics, and macro policy.'))
+                  )
+                ),
+                React.createElement('div', { className: 'eco-mini-chart' },
+                  ecoMiniCurveSvg,
+                  React.createElement('div', { className: 'text-xs leading-snug' },
+                    React.createElement('div', { className: 'font-extrabold text-emerald-300' }, t('stem.economicslab.mini_eq_label', 'Live Equilibrium')),
+                    React.createElement('div', { className: 'font-bold text-white' }, 'P* $' + (sdOut && isFinite(sdOut.pStar) ? sdOut.pStar.toFixed(0) : '50') + ' · Q* ' + (sdOut && isFinite(sdOut.qStar) ? sdOut.qStar.toFixed(0) : '50')),
+                    React.createElement('div', { className: 'text-[11px] text-slate-300' }, 'GDP ' + macroGDP.toFixed(1) + '% · CPI ' + macroInflation.toFixed(1) + '%')
+                  )
+                )
+              ),
 
-            React.createElement('div', { className: 'flex items-center gap-3 mb-4 flex-wrap' },
+              React.createElement('div', { className: 'eco-tools-strip' },
+                React.createElement('span', { className: 'eco-telemetry-pill' }, t('stem.economicslab.5_simulators', '5 simulators')),
+                React.createElement('span', {
+                  title: t('stem.economicslab.explored_tooltip', 'How much of the lab you have explored: concepts learned, years played in the sims, quiz answers, and achievements. It measures activity, not mastery.'),
+                  className: 'eco-telemetry-pill'
+                }, '\uD83E\uDDED ' + t('stem.economicslab.explored_label', 'Explored:') + ' ', React.createElement('strong', null, econLiteracyScore + '%'), React.createElement('span', { className: 'sr-only' }, ' ' + t('stem.economicslab.explored_sr', '(counts activity, not mastery)'))),
+                React.createElement('span', { className: 'eco-telemetry-pill', title: econAI ? undefined : t('stem.economicslab.offline_mode_title', 'AI is not available in this session. Every simulator still works with its built-in decks.') }, econAI ? t('stem.economicslab.ai_powered_learning', '\uD83D\uDCDA AI-Powered Learning') : t('stem.economicslab.offline_mode_badge', '\uD83D\uDCDA Built-in decks (AI off)')),
+                React.createElement('button', {
+                  type: 'button',
+                  'aria-expanded': d.showAchievements ? 'true' : 'false',
+                  className: 'text-[0.6875rem] text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 cursor-pointer font-bold',
+                  onClick: function () { upd('showAchievements', !(d.showAchievements)); }
+                }, '\uD83C\uDFC6 ' + econAchievements.length + '/' + ECON_ACH.length + ' ' + t('stem.economicslab.achievements_word', 'achievements')),
+                React.createElement('button', {
+                  type: 'button',
+                  'aria-expanded': d.showProgress ? 'true' : 'false',
+                  'data-economicslab-progress-button': 'true',
+                  className: 'text-[0.6875rem] text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200 cursor-pointer font-bold',
+                  onClick: function () { upd('showProgress', !(d.showProgress)); }
+                }, t('stem.economicslab.progress_button', '📋 My progress')),
+                React.createElement('button', {
+                  type: 'button',
+                  'aria-expanded': d.showGlossary ? 'true' : 'false',
+                  className: 'text-[0.6875rem] text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full border border-violet-200 cursor-pointer font-bold',
+                  onClick: function () { upd('showGlossary', !(d.showGlossary)); }
+                }, '\uD83D\uDCD6 Glossary (' + conceptsLearned + ')'),
+                React.createElement('button', {
+                  type: 'button',
+                  'aria-expanded': d.showQuiz ? 'true' : 'false',
+                  onClick: function () { upd('showQuiz', !(d.showQuiz)); },
+                  className: 'text-[0.6875rem] text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200 cursor-pointer font-bold'
+                }, t('stem.economicslab.quiz_me', '\u270D\uFE0F Quiz Me')),
+                econAI && React.createElement('button', {
+                  type: 'button',
+                  'aria-expanded': d.showAdvisor ? 'true' : 'false',
+                  onClick: function () { upd('showAdvisor', !(d.showAdvisor)); },
+                  className: 'text-[0.6875rem] text-sky-700 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200 cursor-pointer font-bold'
+                }, t('stem.economicslab.ask_tutor', '\uD83E\uDDD1\u200D\uD83C\uDFEB Ask Tutor')),
+                React.createElement('select', {
+                  'aria-label': t('stem.economicslab.difficulty', 'Difficulty'),
+                  value: d.econDifficulty || 'medium',
+                  onChange: function (e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
+                  className: 'text-[0.6875rem] bg-slate-100 border border-slate-500 rounded-full px-2.5 py-1 text-slate-600 cursor-pointer font-bold'
+                },
+                  React.createElement('option', { value: 'easy' }, t('stem.economicslab.easy', '\uD83C\uDF31 Easy')),
+                  React.createElement('option', { value: 'medium' }, t('stem.economicslab.medium', '\u2699\uFE0F Medium')),
+                  React.createElement('option', { value: 'hard' }, t('stem.economicslab.hard', '\uD83D\uDD25 Hard'))
+                )
+              ),
 
-              React.createElement('button', {
-
-                "aria-label": t('stem.economicslab.back_to_stem_tools', 'Back to STEM tools'),
-
-                title: t('stem.economicslab.back', 'Back'),
-
-                onClick: function () { setStemLabTool(null); },
-
-                className: 'text-slate-500 hover:text-slate-700 transition-colors text-lg'
-
-              }, '\u2190'),
-
-              React.createElement('h2', { className: 'text-xl font-bold text-slate-800' }, t('stem.economicslab.economics_lab', '\uD83D\uDCB0 Economics Lab')),
-
-              React.createElement('span', { className: 'text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full' }, t('stem.economicslab.5_simulators', '5 simulators')),
-
-              React.createElement('span', {
-
-                title: t('stem.economicslab.explored_tooltip', 'How much of the lab you have explored: concepts learned, years played in the sims, quiz answers, and achievements. It measures activity, not mastery.'),
-
-                className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border ' +
-
-                  (econLiteracyScore >= 80 ? 'text-green-800 bg-green-50 border-green-200' :
-
-                    econLiteracyScore >= 50 ? 'text-blue-700 bg-blue-50 border-blue-200' :
-
-                      econLiteracyScore >= 25 ? 'text-amber-800 bg-amber-50 border-amber-200' :
-
-                        'text-slate-600 bg-slate-50 border-slate-200')
-
-              }, '\uD83E\uDDED ' + t('stem.economicslab.explored_label', 'Explored:') + ' ' + econLiteracyScore + '%', React.createElement('span', { className: 'sr-only' }, ' ' + t('stem.economicslab.explored_sr', '(counts activity, not mastery)'))),
-
-              React.createElement('span', { className: 'text-[0.6875rem] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200', title: econAI ? undefined : t('stem.economicslab.offline_mode_title', 'AI is not available in this session. Every simulator still works with its built-in decks.') }, econAI ? t('stem.economicslab.ai_powered_learning', '\uD83D\uDCDA AI-Powered Learning') : t('stem.economicslab.offline_mode_badge', '\uD83D\uDCDA Built-in decks (AI off)')),
-
-              React.createElement('button', {
-
-                type: 'button',
-                'aria-expanded': d.showAchievements ? 'true' : 'false',
-                className: 'text-[0.6875rem] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
-
-                onClick: function () { upd('showAchievements', !(d.showAchievements)); }
-
-              }, '\uD83C\uDFC6 ' + econAchievements.length + '/' + ECON_ACH.length + ' ' + t('stem.economicslab.achievements_word', 'achievements')),
-
-              React.createElement('button', {
-                type: 'button',
-                'aria-expanded': d.showProgress ? 'true' : 'false',
-                'data-economicslab-progress-button': 'true',
-                className: 'text-[0.6875rem] text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200 cursor-pointer font-bold',
-                onClick: function () { upd('showProgress', !(d.showProgress)); }
-              }, t('stem.economicslab.progress_button', '📋 My progress')),
-
-              React.createElement('button', {
-
-                type: 'button',
-                'aria-expanded': d.showGlossary ? 'true' : 'false',
-                className: 'text-[0.6875rem] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
-
-                onClick: function () { upd('showGlossary', !(d.showGlossary)); }
-
-              }, '\uD83D\uDCD6 Glossary (' + conceptsLearned + ')'),
-
-              React.createElement('button', {
-
-                type: 'button',
-                'aria-expanded': d.showQuiz ? 'true' : 'false',
-                onClick: function () { upd('showQuiz', !(d.showQuiz)); },
-
-                className: 'text-[0.6875rem] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
-
-              }, t('stem.economicslab.quiz_me', '\u270D\uFE0F Quiz Me')),
-
-              econAI && React.createElement('button', {
-
-                type: 'button',
-                'aria-expanded': d.showAdvisor ? 'true' : 'false',
-                onClick: function () { upd('showAdvisor', !(d.showAdvisor)); },
-
-                className: 'text-[0.6875rem] text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 cursor-pointer font-bold'
-
-              }, t('stem.economicslab.ask_tutor', '\uD83E\uDDD1\u200D\uD83C\uDFEB Ask Tutor')),
-
-              React.createElement('select', {
-
-                'aria-label': t('stem.economicslab.difficulty', 'Difficulty'),
-
-                value: d.econDifficulty || 'medium',
-
-                onChange: function (e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
-
-                className: 'text-[0.6875rem] bg-slate-100 border border-slate-500 rounded-full px-2 py-0.5 text-slate-600 cursor-pointer'
-
-              },
-
-                React.createElement('option', { value: 'easy' }, t('stem.economicslab.easy', '\uD83C\uDF31 Easy')),
-
-                React.createElement('option', { value: 'medium' }, t('stem.economicslab.medium', '\u2699\uFE0F Medium')),
-
-                React.createElement('option', { value: 'hard' }, t('stem.economicslab.hard', '\uD83D\uDD25 Hard'))
-
+              React.createElement('div', { className: 'eco-preset-bar', role: 'group', 'aria-label': t('stem.economicslab.a11y_market_presets', 'Starter market scenarios') },
+                React.createElement('span', { className: 'text-[11px] font-extrabold uppercase tracking-wider text-emerald-300 mr-1' }, t('stem.economicslab.presets_label', 'Starter scenarios:')),
+                React.createElement('button', { type: 'button', className: 'eco-preset-chip', onClick: function () { applyEcoPreset({ econTab: 'supplyDemand', sdDemandShift: 20, sdSupplyShift: 0, sdPriceCeiling: 0, sdPriceFloor: 0, sdTax: 0, sdMonopoly: false }, 'Loaded Demand Surge (+20) scenario'); } }, '📈 ' + t('stem.economicslab.preset_demand_surge', 'Demand Surge')),
+                React.createElement('button', { type: 'button', className: 'eco-preset-chip', onClick: function () { applyEcoPreset({ econTab: 'supplyDemand', sdDemandShift: 0, sdSupplyShift: 0, sdPriceCeiling: 32, sdPriceFloor: 0, sdTax: 0, sdMonopoly: false }, 'Loaded Binding Price Ceiling ($32) scenario'); } }, '🏠 ' + t('stem.economicslab.preset_ceiling', 'Price Ceiling')),
+                React.createElement('button', { type: 'button', className: 'eco-preset-chip', onClick: function () { applyEcoPreset({ econTab: 'supplyDemand', sdDemandShift: 0, sdSupplyShift: 0, sdPriceCeiling: 0, sdPriceFloor: 0, sdTax: 15, sdMonopoly: false }, 'Loaded Per-Unit Tax ($15) scenario'); } }, '🏛️ ' + t('stem.economicslab.preset_tax', 'Per-Unit Tax')),
+                React.createElement('button', { type: 'button', className: 'eco-preset-chip', onClick: function () { applyEcoPreset({ econTab: 'trade' }, 'Opened Comparative Advantage Trade Lab'); } }, '🤝 ' + t('stem.economicslab.preset_trade', 'Trade Lab')),
+                React.createElement('button', { type: 'button', className: 'eco-preset-chip', onClick: function () { applyEcoPreset({ econTab: 'macro' }, 'Opened National Economy Macro Desk'); } }, '🌐 ' + t('stem.economicslab.preset_macro', 'Macro Policy'))
               )
-
             ),
 
             // Tab bar
@@ -3990,7 +4027,7 @@ var d = labToolData || {};
                   econGlossaryList.length > 0 && React.createElement('button', {
                     onClick: function () {
                       var glossaryText = econGlossaryList.map(function (g) { return g.concept + ' \u2014 ' + g.explanation; }).join('\n');
-                      try { (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(glossaryText); if (addToast) addToast(t('stem.economicslab.glossary_copied', 'Glossary copied \u2014 paste it into your notes'), 'success'); } catch (e) { if (addToast) addToast('Copy failed', 'error'); }
+                      try { Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(glossaryText)).then(function () { if (addToast) addToast(t('stem.economicslab.glossary_copied', 'Glossary copied \u2014 paste it into your notes'), 'success'); }, function () { if (addToast) addToast('Copy failed', 'error'); }); } catch (e) { if (addToast) addToast('Copy failed', 'error'); }
                     },
                     className: 'text-[0.6875rem] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-bold'
                   }, t('stem.economicslab.copy_glossary', '\uD83D\uDCCB Copy')),

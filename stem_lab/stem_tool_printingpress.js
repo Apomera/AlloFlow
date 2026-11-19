@@ -6182,10 +6182,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           { id: 'IN_PRINT', label: __alloT('stem.printingpress.phrase_1_in_print', 'Phrase 1: IN PRINT'), phrase: 'IN PRINT', slotCount: 8,
             sorts: ['I', 'N', ' ', 'P', 'R', 'I', 'N', 'T', 'A', 'E', 'O', 'T', 'S'],
             hint: __alloT('stem.printingpress.pick_mirror_reversed_letters_from_the__2', 'Pick mirror-reversed letters from the case and drop them in the composing stick, left to right, just as a 1450 compositor would.') },
-          { id: 'FIRST_PROOF', label: __alloT('stem.printingpress.phrase_2_first_proof_with_fi_ligature', 'Phrase 2: FIRST PROOF (with fi ligature)'), phrase: 'RST PROOF', slotCount: 10,
-            // Note:  is a placeholder for the "fi" ligature in the target.
+          { id: 'FIRST_PROOF', label: __alloT('stem.printingpress.phrase_2_first_proof_with_fi_ligature', 'Phrase 2: FIRST PROOF (with fi ligature)'), phrase: '\u0001RST PROOF', slotCount: 10,
+            // Note: \u0001 is a placeholder for the "fi" ligature in the target.
             // The corresponding sort is 'fi' (a 2-character string treated as one block).
-            sorts: ['F', '', 'R', 'S', 'T', ' ', 'P', 'R', 'O', 'O', 'F', 'I', 'N'],
+            sorts: ['F', '\u0001', 'R', 'S', 'T', ' ', 'P', 'R', 'O', 'O', 'F', 'I', 'N'],
             hint: __alloT('stem.printingpress.this_challenge_includes_a_fi_ligature_', 'This challenge includes a "fi" ligature — a single sort that prints both letters joined. Look for the special joined sort in the case.') },
           { id: 'FALMOUTH', label: __alloT('stem.printingpress.phrase_3_falmouth_1785_maine', 'Phrase 3: FALMOUTH (1785 Maine)'), phrase: 'FALMOUTH', slotCount: 8,
             sorts: ['F', 'A', 'L', 'M', 'O', 'U', 'T', 'H', 'E', 'I', 'R', 'N', 'S'],
@@ -6233,7 +6233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // A space sort displayed as ' ' gave its button and slot a blank name.
         function spokenChar(c) { return c === ' ' ? __alloT('stem.printingpress.sort_space', 'space') : displayChar(c); }
         // Display helper: render the ligature placeholder as "fi"
-        function displayChar(c) { return c === '' ? 'fi' : c; }
+        function displayChar(c) { return c === '\u0001' ? 'fi' : c; }
         // Decode-mirror-text exercise state. Students see a mirror-reversed
         // word and type what it would say after pressing. Tests the
         // compositor skill: reading mirror-reversed at speed.
@@ -12732,6 +12732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     onClick: function() {
                       try {
                         var cert = window.open('', '_blank', 'width=800,height=600');
+                        try { if (cert) cert.opener = null; } catch (_) {}
                         if (!cert) { addToast(__alloT('stem.printingpress.pop_up_blocked_allow_pop_ups_to_print', 'Pop-up blocked. Allow pop-ups to print the certificate.'), 'warn'); return; }
                         var date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                         var html = '<!DOCTYPE html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Certificate of Mastery — PrintingPress</title>' +

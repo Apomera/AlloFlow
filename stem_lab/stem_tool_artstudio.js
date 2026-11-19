@@ -9065,11 +9065,13 @@ const d = labToolData.artStudio || {};
 
               link.download = 'stereogram-anim-' + Date.now() + '.gif';
 
-              link.href = URL.createObjectURL(blob);
+              var gifUrl = URL.createObjectURL(blob);
+
+              link.href = gifUrl;
 
               link.click();
 
-              URL.revokeObjectURL(link.href);
+              setTimeout(function () { try { URL.revokeObjectURL(gifUrl); } catch (_) {} }, 1000);
 
               if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_animated_gif_exported', '\uD83C\uDFAC Animated GIF exported!'), 'success');
 
@@ -12287,7 +12289,7 @@ const d = labToolData.artStudio || {};
                 var reader = new window.FileReader();
                 reader.onload = function() {
                   try {
-                    var parsed = JSON.parse(String(reader.result || ''));
+                    var parsed = JSON.parse(String(reader.result || ''), function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
                     var imported = P3D.normalizeRecipe(parsed);
                     if (!imported || !imported.parts || !imported.parts.length) throw new Error('No valid parts');
                     upd('sculptSel', 0);
@@ -15052,6 +15054,14 @@ const d = labToolData.artStudio || {};
                         if (Number(file.size) > 5 * 1024 * 1024) {
 
                           rejectDepth(__alloT('stem.artstudio.toast_depth_map_over_import_limit', 'That image is over the 5 MB import limit.'));
+
+                          return;
+
+                        }
+
+                        if (file.type && /svg/i.test(file.type)) {
+
+                          rejectDepth(__alloT('stem.artstudio.toast_depth_map_svg_unsupported', 'SVG images are not supported for depth maps. Choose PNG, JPEG, or WebP.'));
 
                           return;
 

@@ -1371,6 +1371,11 @@ ${safeOriginalText}
           raw = '';
         }
         if (!raw) {
+          const canUseGemini = !analysisAiOff && typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true)) && !(typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', callGemini));
+          if (!canUseGemini) {
+            addToast(t('process.grammar_fix_failed') || 'Failed to fix grammar errors.', 'error');
+            return;
+          }
           raw = await callGemini(fixPrompt, false, false, null);
         }
         const cleaned = (typeof raw === 'string' ? raw : raw && raw.text || '').trim().replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```$/, '').replace(/^["']|["']$/g, '').trim();
@@ -1452,15 +1457,15 @@ ${safeOriginalText}
         onClick: () => dismissGrammarNote(idx),
         title: t('analysis.grammar_dismiss_hint') || 'Dismiss this notice without using AI (already fixed by hand, or not a real error)',
         "aria-label": `${t('analysis.grammar_dismiss_one') || 'Dismiss notice'}: ${bareNote.slice(0, 80)}`,
-        className: "shrink-0 ml-1 px-1.5 py-0.5 rounded text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors"
+        className: "shrink-0 ml-1 min-h-6 min-w-6 inline-flex items-center justify-center px-1.5 py-0.5 rounded text-slate-600 hover:text-slate-800 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-slate-400 transition-colors"
       }, /*#__PURE__*/React.createElement(X, {
         size: 14,
         "aria-hidden": "true"
       })), canChangeReportNotes && isDismissed && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => restoreGrammarNote(idx),
-        "aria-label": `${t('analysis.grammar_restore_one') || 'Restore notice'}: ${bareNote.slice(0, 80)}`,
-        className: "shrink-0 ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors"
+        "aria-label": `${t('analysis.grammar_restore_one') || 'Restore'}: ${bareNote.slice(0, 80)}`,
+        className: "shrink-0 ml-1 min-h-6 inline-flex items-center justify-center px-2 py-0.5 rounded text-[11px] font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-slate-400 transition-colors"
       }, t('analysis.grammar_restore_one') || 'Restore'));
     })), isTeacherMode && isTranslatedDisplay && openGrammarErrors.length > 0 && /*#__PURE__*/React.createElement("p", {
       className: "mb-3 text-xs text-slate-700"
@@ -1532,6 +1537,7 @@ ${safeOriginalText}
     size: 14
   }), downloadingContentId === 'dl-analysis-source' ? t('common.downloading') : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-pressed": !!isEditingAnalysis,
     onClick: handleToggleIsEditingAnalysis,
     className: `flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isEditingAnalysis ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100'}`
   }, isEditingAnalysis ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -1556,9 +1562,12 @@ ${safeOriginalText}
     type: "text",
     value: sourceRefineInstruction,
     onChange: e => setSourceRefineInstruction(e.target.value),
-    onKeyDown: e => e.key === 'Enter' && !analysisAiOff && handleAiRefineSource(),
+    onKeyDown: e => {
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Enter' && !analysisAiOff) handleAiRefineSource();
+    },
     placeholder: t('analysis.refine_placeholder'),
-    className: "w-full pl-9 pr-3 py-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none transition-all shadow-sm bg-white",
+    className: "w-full pl-9 pr-3 py-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 transition-all shadow-sm bg-white",
     disabled: isProcessing,
     "aria-busy": isProcessing
   })), /*#__PURE__*/React.createElement("button", {
@@ -1656,7 +1665,7 @@ ${safeOriginalText}
     ref: analysisEditorRef,
     value: generatedContent?.data.originalText,
     onChange: e => handleAnalysisTextChange(e.target.value),
-    className: "w-full min-h-[300px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-sm text-slate-700 font-serif leading-relaxed resize-y",
+    className: "w-full min-h-[300px] bg-white p-4 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-sm text-slate-700 font-serif leading-relaxed resize-y",
     style: passageFontStyle,
     placeholder: t('common.edit_source_text'),
     spellCheck: "false"
@@ -1664,7 +1673,8 @@ ${safeOriginalText}
     className: "text-sm text-slate-700 font-serif leading-relaxed max-w-none",
     style: passageFontStyle
   }, passageLanguageBar, shownPassage ? /*#__PURE__*/React.createElement("div", {
-    "data-passage-shown": shownPassageLanguage
+    "data-passage-shown": shownPassageLanguage,
+    lang: shownPassageLanguage && shownPassageLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(shownPassageLanguage) : undefined
   }, renderFormattedText(shownPassage, false)) : (() => {
     const _fullOrig = generatedContent?.data?.originalText || '';
     const {
@@ -1672,11 +1682,13 @@ ${safeOriginalText}
       references: _refs
     } = splitReferencesFromBody(_fullOrig);
     return /*#__PURE__*/React.createElement(React.Fragment, null, renderFormattedText(_bodyNoRefs, false), generatedContent?.data.rawEnglishText && generatedContent?.data.translatedText && normalizedText(generatedContent.data.rawEnglishText) !== normalizedText(_fullOrig) && /*#__PURE__*/React.createElement("div", {
+      lang: "en",
       className: "mt-8 pt-8 border-t border-slate-200 opacity-80"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2"
     }, /*#__PURE__*/React.createElement(FileText, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     }), " ", t('output.original_source_label')), renderFormattedText(generatedContent?.data.rawEnglishText, false)), _refs && /*#__PURE__*/React.createElement(SourceReferencesPanel, {
       referencesText: _refs
     }));

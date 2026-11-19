@@ -14548,6 +14548,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var sceneLabel = __alloT('stem.astronomy.obs_scene', '3D observatory sky') + '. ' + resolved.site.name + ', ' + (deepTime ? driftLabel(resolved.drift) + '. ' : wallText + '. ') + (deepTime ? __alloT('stem.astronomy.obs_drift_scene', 'Deep-time star field: solar-system objects hidden.') : daylightText) + ' ' + textPack.moon + ' ' + moon.phase.name + ', ' + (moon.alt > 0 ? compass(moon.az) + ' ' + Math.round(moon.alt) + '°' : __alloT('stem.astronomy.below_horizon', 'below horizon')) + '.';
         function checkNoaa() {
           var requestId = Date.now() + ':' + (++ovationRequestSerial);
+          if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+            upd({ obsNoaa: { error: 'External NOAA forecast requests are disabled in offline Desktop mode.', requestId: requestId }, obsNoaaApply: false });
+            return;
+          }
           upd({ obsNoaa: { loading: true, requestId: requestId, requestStartedAt: Date.now() }, obsNoaaApply: false });
           var controller = typeof AbortController === 'function' ? new AbortController() : null;
           var timer;
@@ -14561,7 +14565,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var timeout = new Promise(function(resolve, reject) {
             timer = setTimeout(function() { reject(new Error('The forecast request timed out. Try again.')); if (controller) controller.abort(); }, 20000);
           });
-          var request = Promise.resolve().then(function() { return fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json', { signal: controller ? controller.signal : undefined, cache: 'no-store' }); })
+          var request = Promise.resolve().then(function() { return fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json', { signal: controller ? controller.signal : undefined, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' }); })
             .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
             .then(function(json) { return Object.assign({ fetchedAt: Date.now() }, summarizeOvation(json, resolved.lat, resolved.lon)); });
           Promise.race([request, timeout])

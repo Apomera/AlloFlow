@@ -775,7 +775,7 @@
     var fn = window.callGemini;
     try {
       if (typeof window.__alloAiUsable === 'function') { if (!window.__alloAiUsable('text', fn)) return false; }
-      else if (typeof fn !== 'function' || fn._alloQrBlocked || window.__alloStudentAiDisabled === true) return false;
+      else if (typeof fn !== 'function' || fn._alloQrBlocked || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
     } catch (_) { return false; }
     var backend = getActiveBackend();
     if (backend && backend !== 'gemini') return false;

@@ -57,23 +57,42 @@ function createTextPdf(filePath, text) {
   fs.writeFileSync(filePath, Buffer.from(pdf, 'latin1'));
 }
 
+function listItemStrings(items) {
+  const out = [];
+  for (const item of items || []) {
+    if (item && typeof item === 'object') {
+      if (item.text) out.push(item.text);
+      if (item.children && Array.isArray(item.children.items)) out.push(...listItemStrings(item.children.items));
+    } else if (item) {
+      out.push(String(item));
+    }
+  }
+  return out;
+}
+
+function cellTextValue(cell) {
+  return cell && typeof cell === 'object' ? String(cell.text || '') : String(cell || '');
+}
+
 function planText(blocks) {
   const values = [];
   for (const block of blocks) {
     if (['heading', 'paragraph', 'blockquote', 'link'].includes(block.type)) values.push(block.text || '');
-    else if (block.type === 'list') values.push(...block.items);
-    else if (block.type === 'table') values.push(block.caption, ...block.columns, ...block.rows.flat());
+    else if (block.type === 'list') values.push(...listItemStrings(block.items));
+    else if (block.type === 'table') values.push(block.caption, ...(block.columns || []).map(cellTextValue), ...(block.rows || []).flat().map(cellTextValue));
     else if (block.type === 'image') values.push(block.alt || '', block.caption || '');
+    else if (block.type === 'code') values.push(block.text || '', block.caption || '');
+    else if (block.type === 'formula') values.push(block.alt_text || '', block.expression || '', block.caption || '');
   }
   return values.filter(Boolean).join(' ');
 }
 
-function makePlan(source, title, documentType, blocks, reviewNotes) {
+function makePlan(source, title, documentType, blocks, reviewNotes, language) {
   return {
     schema_version: '1.0',
     document: {
       title,
-      language: 'en',
+      language: language || 'en',
       source_page_count: 1,
       source_sha256: sha256(source),
       document_type: documentType,
@@ -156,10 +175,11 @@ function acceptedCase(root, definition) {
   const html = fs.readFileSync(path.join(output, stem + '-accessible.html'), 'utf8');
   const report = JSON.parse(fs.readFileSync(path.join(output, stem + '-accessibility-report.json'), 'utf8'));
   const missing = (definition.htmlIncludes || []).filter((value) => !html.includes(value));
+  const forbidden = (definition.htmlExcludes || []).filter((value) => html.includes(value));
   const audit = report.checks && report.checks.staticHtmlAudit;
   const metrics = report.checks && report.checks.repairPlan && report.checks.repairPlan.metrics;
   const recall = metrics ? metrics.plan_internal_token_recall : null;
-  const passed = missing.length === 0 && audit && audit.ok === true && recall !== null && recall >= 0.95;
+  const passed = missing.length === 0 && forbidden.length === 0 && audit && audit.ok === true && recall !== null && recall >= 0.95;
 
   return {
     id: definition.id,
@@ -170,6 +190,7 @@ function acceptedCase(root, definition) {
     planInternalTokenRecall: recall,
     humanReviewRequired: result.json.humanReviewRequired === true,
     missingExpectedHtml: missing,
+    ...(forbidden.length ? { forbiddenPresentHtml: forbidden } : {}),
     artifacts: [
       stem + '-accessible.html',
       stem + '-accessibility-report.json',
@@ -202,13 +223,16 @@ function blockedFormCase(root) {
     '--pdf', 'never', '--verapdf', 'never',
   ]);
   const message = result.json && result.json.error ? result.json.error : '';
+  const stderrSnippet = String(result.stderr || '').trim().slice(0, 300);
+  const passed = result.status === 3 && /blocked for forms/i.test(message) && !fs.existsSync(output);
   return {
     id,
-    passed: result.status === 3 && /blocked for forms/i.test(message) && !fs.existsSync(output),
+    passed,
     expected: 'blocked',
     exitCode: result.status,
     reasonMatched: /blocked for forms/i.test(message),
     partialArtifactsPublished: fs.existsSync(output),
+    ...(!passed ? { error: message || stderrSnippet || 'No structured error', stderr: stderrSnippet } : {}),
   };
 }
 

@@ -15,7 +15,7 @@ WORKDIR /app
 
 # Copy the deploy project (package.json first for layer caching)
 COPY desktop/web-app/package*.json ./
-RUN npm ci --production=false
+RUN npm ci --ignore-scripts --production=false
 
 # Copy desktop/web-app source
 COPY desktop/web-app/ ./

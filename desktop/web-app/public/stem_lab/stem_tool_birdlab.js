@@ -25918,6 +25918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             '</body></html>';
           try {
             var w = window.open('', '_blank', 'width=860,height=900');
+            try { if (w) w.opener = null; } catch (_) {}
             if (!w) {
               if (typeof addToast === 'function') addToast('Pop-up blocked. Allow pop-ups and try again.', 'warning');
               return;
@@ -35267,6 +35268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           function csvEscape(v) {
             if (v == null) return '';
             var s = String(v);
+            if (typeof v !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s) && !Number.isFinite(Number(s))) s = "'" + s;
             if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
             return s;
           }

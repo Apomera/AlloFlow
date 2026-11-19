@@ -54,7 +54,8 @@ function GeminiBridgeView(props) {
   }))))))), /*#__PURE__*/React.createElement("div", {
     className: "mt-8 pt-4 border-t border-slate-700 text-xs text-slate-300 flex items-center gap-2 justify-center"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "w-2 h-2 rounded-full bg-green-500 animate-pulse"
+    "aria-hidden": "true",
+    className: "w-2 h-2 rounded-full bg-green-500 animate-pulse motion-reduce:animate-none"
   }), t('bridge.next_step'))));
 }
 
@@ -394,9 +395,15 @@ function StemArtworkHandoffView(props) {
     stemArtworkHandoff,
     stemArtworkLabel
   } = props;
+  const t = typeof props.t === 'function' ? props.t : k => k;
+  const stemArtworkHandoffRef = React.useRef(null);
+  if (typeof window !== 'undefined' && window.__alloHooks && typeof window.__alloHooks.useFocusTrap === 'function') {
+    window.__alloHooks.useFocusTrap(stemArtworkHandoffRef, true, () => setStemArtworkHandoff(null));
+  }
   const boards = _alloReadVisualSupportCollection('alloSymbolBoards');
   const schedules = _alloReadVisualSupportCollection('alloSchedules');
   return /*#__PURE__*/React.createElement("div", {
+    ref: stemArtworkHandoffRef,
     className: "fixed inset-0 z-[9200] bg-black/70 flex items-center justify-center p-4",
     role: "dialog",
     "aria-modal": "true",
@@ -415,8 +422,8 @@ function StemArtworkHandoffView(props) {
   }, "Give this Art Studio image a short label so it can be shown and spoken from a board or schedule.")), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setStemArtworkHandoff(null),
-    className: "p-2 rounded-lg text-slate-500 hover:bg-slate-100",
-    "aria-label": "Close"
+    className: "min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:bg-slate-100",
+    "aria-label": t('common.close') || 'Close'
   }, "\xD7")), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 grid gap-5 sm:grid-cols-[180px_1fr] items-start"
   }, /*#__PURE__*/React.createElement("div", {
@@ -439,10 +446,10 @@ function StemArtworkHandoffView(props) {
     maxLength: 80,
     onChange: event => setStemArtworkLabel(event.target.value),
     className: "mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900",
-    placeholder: "For example, My spiral pattern",
+    placeholder: t('visuals.artwork_label_placeholder') || 'For example, My spiral pattern',
     autoFocus: true
   }), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-500 mt-1"
+    className: "text-[11px] text-slate-600 mt-1"
   }, "This is the label students will see and hear.")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     htmlFor: "stem-artwork-destination",
     className: "block text-sm font-bold text-slate-800"
@@ -492,30 +499,33 @@ function SessionStartOptionsView(props) {
   window.__alloHooks.useFocusTrap(sessionStartOptionsRef, true, props.onTrapEscape);
   return /*#__PURE__*/React.createElement("div", {
     ref: sessionStartOptionsRef,
-    className: "fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print",
+    className: "fixed inset-0 bg-black/70 z-[260] flex items-center justify-center p-4 no-print",
     role: "dialog",
     "aria-modal": "true",
     "aria-label": t('session.start_dialog_aria') || 'Teach live',
     onClick: () => setShowSessionStartOptions(false)
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative",
+    className: "allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => setShowSessionStartOptions(false),
-    className: "absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100",
+    className: "absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100",
     "aria-label": t('common.close') || 'Close'
   }, /*#__PURE__*/React.createElement(X, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h2", {
     className: "text-xl font-black text-slate-900 mb-1"
   }, t('share_collect.start_live_session') || 'Teach live'), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mb-3"
   }, t('share_collect.prepare_the_lesson_flow_if_you') || 'Prepare the lesson flow if you want, then choose how student devices will connect.'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setShowSessionStartOptions(false);
       setShowLiveLessonPrep(true);
     },
-    className: "w-full mb-4 text-left rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3 hover:border-cyan-400 hover:bg-cyan-100 transition-colors"
+    className: "w-full mb-4 text-left rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3 hover:border-cyan-400 hover:bg-cyan-100 transition-colors motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block text-sm font-black text-cyan-950"
   }, t('share_collect.prepare_live_run') || 'Prepare live lesson', " ", /*#__PURE__*/React.createElement("span", {
@@ -525,21 +535,23 @@ function SessionStartOptionsView(props) {
   }, t('share_collect.attach_private_presenter_cues_and_existing') || 'Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setShowSessionStartOptions(false);
       startClassSession();
     },
-    className: "w-full text-left rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4 hover:border-indigo-400 hover:bg-indigo-100 transition-colors"
+    className: "w-full text-left rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4 hover:border-indigo-400 hover:bg-indigo-100 transition-colors motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block text-sm font-black text-indigo-900"
   }, t('mailbox.standard_live_session') || 'Standard live session'), /*#__PURE__*/React.createElement("span", {
     className: "block text-xs text-indigo-800 mt-1"
   }, t('mailbox.use_the_configured_firebase_district_or') || 'Use the configured Firebase, district, or local-network session backend.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setShowSessionStartOptions(false);
       setMbPanelOpen(true);
     },
-    className: "w-full text-left rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 hover:border-emerald-400 hover:bg-emerald-100 transition-colors"
+    className: "w-full text-left rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 hover:border-emerald-400 hover:bg-emerald-100 transition-colors motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block text-sm font-black text-emerald-900"
   }, t('mailbox.class_mailbox_qr_session') || 'Class Mailbox QR session'), /*#__PURE__*/React.createElement("span", {
@@ -590,13 +602,14 @@ function TranslateModalView(props) {
   });
   return /*#__PURE__*/React.createElement("div", {
     ref: translateModalRef,
+    role: "presentation",
     onKeyDown: e => {
-      if (e.key === 'Escape') handleSetIsTranslateModalOpenToFalse();
+      if (e.key === 'Escape' && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229) handleSetIsTranslateModalOpenToFalse();
     },
-    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200",
+    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200",
     onClick: handleSetIsTranslateModalOpenToFalse
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200",
+    className: "allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border-4 border-indigo-100 transition-all motion-reduce:transition-none animate-in motion-reduce:animate-none zoom-in-95 duration-200",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "header-translate-dialog-title",
@@ -605,17 +618,20 @@ function TranslateModalView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSetIsTranslateModalOpenToFalse,
-    className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 transition-colors",
+    className: "absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h3", {
     id: "header-translate-dialog-title",
     className: "text-lg font-black text-slate-800 mb-4 flex items-center gap-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-indigo-100 p-2 rounded-full text-indigo-600"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex bg-indigo-100 p-2 rounded-full text-indigo-600",
+    "aria-hidden": "true"
   }, /*#__PURE__*/React.createElement(Languages, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   })), t('header.translate_button')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
@@ -626,7 +642,7 @@ function TranslateModalView(props) {
     type: "text",
     value: targetTranslationLang,
     onChange: e => setTargetTranslationLang(e.target.value),
-    className: "w-full text-sm border-2 border-indigo-600 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all",
+    className: "w-full text-sm border-2 border-indigo-600 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 transition-all motion-reduce:transition-none",
     placeholder: t('translate.placeholder'),
     "data-autofocus": "true"
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
@@ -665,7 +681,7 @@ function TranslateModalView(props) {
       });
     },
     disabled: isProcessing || !currentBatch.items.length || !primaryLanguage,
-    className: "flex-1 py-3 bg-white text-indigo-600 border-2 border-indigo-100 hover:border-indigo-300 font-bold rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "flex-1 py-3 bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 font-bold rounded-xl transition-all motion-reduce:transition-none shadow-sm active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
   }, t('translate.action_current')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
@@ -675,7 +691,7 @@ function TranslateModalView(props) {
       });
     },
     disabled: isProcessing || !batch.items.length || !primaryLanguage,
-    className: "flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all motion-reduce:transition-none shadow-md active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
   }, scopeLabel)))));
 }
 window.AlloModules.GeminiBridgeView = GeminiBridgeView;

@@ -36,14 +36,35 @@
   var u32 = function (v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; };
   var UTF8_NAMES = 0x0800, DOS_DATE = 0x21; // 1980-01-01, 00:00
 
+  function uniqueName(raw, seen) {
+    var clean = String(raw || 'file').replace(/[\\]/g, '/').replace(/^\/+/, '');
+    var parts = clean.split('/').map(function (seg) {
+      return seg.replace(/[:*?"<>|]/g, '-').trim();
+    }).filter(Boolean);
+    var basePath = parts.join('/') || 'file';
+    var key = basePath.toLowerCase();
+    if (!seen[key]) { seen[key] = true; return basePath; }
+    var slash = basePath.lastIndexOf('/');
+    var dir = slash >= 0 ? basePath.slice(0, slash + 1) : '';
+    var file = slash >= 0 ? basePath.slice(slash + 1) : basePath;
+    var dot = file.lastIndexOf('.');
+    var stem = dot > 0 ? file.slice(0, dot) : file;
+    var ext = dot > 0 ? file.slice(dot) : '';
+    var n = 2;
+    while (seen[(dir + stem + '-' + n + ext).toLowerCase()]) n++;
+    var next = dir + stem + '-' + n + ext;
+    seen[next.toLowerCase()] = true;
+    return next;
+  }
+
   function create() {
-    var parts = [], central = [], offset = 0, done = false;
+    var parts = [], central = [], offset = 0, done = false, seen = Object.create(null);
     var zip = {
       bytes: 0,
       count: 0,
       add: function (name, data) {
         if (done) throw new Error('The zip file is already finished.');
-        var nameBytes = utf8(String(name || ('file' + central.length)).replace(/[\\]/g, '/').replace(/^\/+/, ''));
+        var nameBytes = utf8(uniqueName(name || ('file' + central.length), seen));
         var body = typeof data === 'string' ? utf8(data) : data instanceof Uint8Array ? data : new Uint8Array(data || 0);
         if (central.length >= 65535 || offset + 30 + nameBytes.length + body.length > 0xFFFFFFFF) throw new Error('Too many files for one zip file.');
         var crc = crc32(body);

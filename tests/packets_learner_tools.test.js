@@ -127,7 +127,10 @@ describe('every file carries the reading tools', () => {
     // And +0.2 KB: Lexend and Atkinson in the Letters group (the fonts themselves are not counted here: 42.5 KB, in FONT_CSS).
     // Re-pinned 2026-11-17 from 18500: "Space between sounds" (its group, its three names, soundGap and its words; +0.3 KB,
     // 18.8 KB; tests/packets_sound_space_2026_11_17.test.js).
-    expect(bytes).toBeLessThan(19000);
+    // Re-pinned 2026-11-19 from 19000: persisted extra tool prefs (slower/syllables) minus duplicate bottom Close (+0.1 KB).
+    // Re-pinned 2026-11-19 (Wave 2A) from 19500: unified Voice speed (Normal / Slower) + calm no-voice notice inside Reading tools (+0.7 KB, ~19.8 KB).
+    // Re-pinned 2026-11-19 (Wave 8A) from 20200: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier null-guard & touch edge clamp (~20.8 KB).
+    expect(bytes).toBeLessThan(21000);
     // The copy in the file is the loader's own function, without its indentation.
     expect(fn.slice('\ntools:'.length, -1)).toBe(TH._tools.toString().replace(/\n +/g, '\n'));
   });
@@ -181,10 +184,13 @@ describe('the button and the panel', () => {
       // 2026-11-15, deliberately: "Spoken directions" (directionsOnce). Default "Every question" unless set in maker;
       // shown in practice packets with spoken directions and hidden in checks/facts without them.
       ['directions', 'Spoken directions', ['Every question=true', 'First question only=false']],
+      // 2026-11-19 (Wave 2A): unified Voice speed (Normal / Slower) shown whenever the file has audio or Read aloud, hidden on silent packets.
+      ['speed', 'Voice speed', ['Normal=true', 'Slower=false']],
       // 2026-11-17, deliberately: "Space between sounds" (the pause between a word's sounds in Blend Sounds). Shown only in a
       // practice file with Blend Sounds, so hidden in this Find Sounds file (tests/packets_sound_space_2026_11_17.test.js).
       ['sounds', 'Space between sounds', ['Some=true', 'More=false', 'Less=false']],
     ]);
+    expect(t.q('[data-tool-group="speed"]').hidden).toBe(false);
     expect(t.q('[data-tool-group="sounds"]').hidden).toBe(true);
     expect(groups[6].hidden).toBe(false);
     expect(groups[7].hidden).toBe(false);
@@ -194,6 +200,8 @@ describe('the button and the panel', () => {
       const nt = open(noDir);
       nt.q('[data-tools-open]').click();
       expect(nt.q('[data-tool-group="directions"]').hidden).toBe(true);
+      // Silent math files have no audio or Read aloud, so Voice speed stays hidden.
+      expect(nt.q('[data-tool-group="speed"]').hidden).toBe(true);
     }
     t.tool('size', 1);
     expect([...groups[0].querySelectorAll('button')].map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false']);
@@ -288,6 +296,36 @@ describe('the settings are kept in the file\'s one storage item', () => {
     expect(t.json().items.map((it) => it.supports)).toEqual([{}, {}]);
     const again = open(FILES.practice, { storage: { [keyName]: JSON.stringify(t.dump()[keyName]) } });
     expect(again.q('[data-tool="directions-1"]').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('Voice speed persists in the single storage key, slows audio playback to 0.8 with preservesPitch, and is excluded from item supports', () => {
+    const keyName = manifestOf(FILES.practice).stores[0].key;
+    const played = [];
+    const dom = new JSDOM(FILES.practice, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://packet.test/file.html', beforeParse(w) {
+      w.Audio = class {
+        constructor() { this.playbackRate = 1; this.preservesPitch = false; }
+        play() { played.push({ rate: this.playbackRate, pitch: this.preservesPitch }); return Promise.resolve(); }
+        pause() {}
+      };
+      w.Blob = class { constructor(parts, opts) { this.body = parts.join(''); this.type = opts && opts.type; } };
+      w.URL.createObjectURL = () => 'blob:r';
+      w.URL.revokeObjectURL = () => {};
+      w.HTMLAnchorElement.prototype.click = function () {};
+    } });
+    opened.push(dom.window);
+    const d = dom.window.document;
+    d.querySelector('[data-tool="speed-1"]').click();
+    expect(JSON.parse(dom.window.localStorage.getItem(keyName)).tools).toEqual({ speed: 1 });
+    d.getElementById('learner-name').value = 'Ana';
+    [...d.querySelectorAll('#app button')].find((b) => b.textContent === 'Start').click();
+    expect(played.length).toBeGreaterThan(0);
+    expect(played.every((p) => p.rate === 0.8 && p.pitch === true)).toBe(true);
+    // Persisted on reload and excluded from supports scoring.
+    const saved = dom.window.localStorage.getItem(keyName);
+    const again = open(FILES.practice, { storage: { [keyName]: saved } });
+    expect(again.q('[data-tool="speed-1"]').getAttribute('aria-pressed')).toBe('true');
+    const savedObj = JSON.parse(saved);
+    expect(savedObj.items[0].supports).toEqual({});
   });
 });
 

@@ -19477,7 +19477,7 @@ test('no a11y violations', async () => {
         var blob = new Blob([html], { type: 'text/html' });
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a'); a.href = url; a.download = base + '.html'; a.click();
-        URL.revokeObjectURL(url);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
         upd('hasExported', true);
         addToast && addToast('Exported ' + base + '.html', 'success');
       }, [html, prompt, addToast]);
@@ -19489,6 +19489,10 @@ test('no a11y violations', async () => {
         // or a too-short file, so a mis-picked file just did nothing.
         if (!/\.html?$/i.test(file.name || '')) {
           addToast && addToast('Pick an .html file — ' + (file.name || 'that file') + ' is not one.', 'error');
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          addToast && addToast('HTML file exceeds the 5 MB safety limit.', 'error');
           return;
         }
         var reader = new FileReader();
@@ -20521,7 +20525,7 @@ test('no a11y violations', async () => {
             _aiOn && h('label', { style: { fontSize: '13px', fontWeight: 700, color: 'var(--allo-stem-text, #374151)', marginBottom: '6px', display: 'block' } }, __alloT('stem.applab.what_do_you_want_to_build', 'What do you want to build?')),
             _aiOn && h('textarea', { value: prompt, onChange: function(ev) { setPrompt(ev.target.value); },
               placeholder: __alloT('stem.applab.describe_an_interactive_app_simulation', 'Describe an interactive app, simulation, or visualization...\n\nExamples:\n• "Interactive solar system with orbiting planets and info on click"\n• "Color mixing tool where you combine primary colors"\n• "Simple calculator with history"'),
-              rows: 4, style: { width: '100%', padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: 'none', background: '#ffffff', color: '#1f2937' },
+              rows: 4, style: { width: '100%', padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: '2px solid transparent', outlineOffset: '2px', background: '#ffffff', color: '#1f2937' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; },
               onBlur: function(e) { e.target.style.boxShadow = 'none'; },
               'aria-label': __alloT('stem.applab.app_description_prompt', 'App description prompt') }),
@@ -20731,7 +20735,7 @@ test('no a11y violations', async () => {
               h('textarea', { ref: editorRef, value: editHtml,
                 onChange: function(ev) { setEditHtml(ev.target.value); },
                 onScroll: function(ev) { if (gutterRef.current) gutterRef.current.scrollTop = ev.target.scrollTop; },
-                style: { flex: 1, fontFamily: 'Consolas, Monaco, monospace', fontSize: '11px', padding: '10px', border: 'none', resize: 'none', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', outline: 'none', tabSize: 2, lineHeight: 1.5, minWidth: 0 },
+                style: { flex: 1, fontFamily: 'Consolas, Monaco, monospace', fontSize: '11px', padding: '10px', border: 'none', resize: 'none', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', outline: '2px solid transparent', outlineOffset: '-2px', tabSize: 2, lineHeight: 1.5, minWidth: 0 },
                 onFocus: function(e) { e.target.parentNode.style.boxShadow = 'inset 0 0 0 2px rgba(34,211,238,0.6)'; },
                 onBlur: function(e) { e.target.parentNode.style.boxShadow = 'none'; },
                 spellCheck: false, 'aria-label': __alloT('stem.applab.html_source_code_editor', 'HTML source code editor') })
@@ -20781,7 +20785,7 @@ test('no a11y violations', async () => {
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; },
                 onBlur: function(e) { e.target.style.boxShadow = 'none'; },
                 placeholder: __alloT('stem.applab.enhance_add_a_dark_mode_toggle_or_make', 'Enhance: "add a dark mode toggle" or "make the particles bigger"...'),
-                style: { flex: 1, padding: '8px 14px', border: '2px solid #d1d5db', borderRadius: '10px', fontSize: '12px', outline: 'none' }, className: 'focus:ring-2 focus:ring-violet-500 focus:ring-offset-1',
+                style: { flex: 1, padding: '8px 14px', border: '2px solid #d1d5db', borderRadius: '10px', fontSize: '12px', outline: '2px solid transparent', outlineOffset: '2px' }, className: 'focus:ring-2 focus:ring-violet-500 focus:ring-offset-1',
                 disabled: isGenerating, 'aria-label': __alloT('stem.applab.enhancement_prompt', 'Enhancement prompt') }),
               _aiOn && h('button', { onClick: enhanceApp, disabled: !enhancePrompt.trim() || isGenerating,
                 style: btn(PURPLE, '#fff', !enhancePrompt.trim() || isGenerating) }, isGenerating ? '\u23F3' : '\u2728 Enhance'),

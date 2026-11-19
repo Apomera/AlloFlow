@@ -10,7 +10,8 @@
 //   motion     with prefers-reduced-motion: reduce, nothing animates or has a transition longer than 0.01 s
 //   live       right and wrong feedback in a file reaches a live region (role status/alert or aria-live)
 //   names      every button has a name with a word in it (an audio button that is only a symbol fails)
-// axe runs at 1280 and 375 px wide, and again in dark mode for the files (the site pages have no dark mode).
+// axe runs at 1280 and 375 px wide, and again in OS dark mode (prefers-color-scheme: dark) for the files and
+// representative states across all 17 site pages.
 // Landmark and heading rules (axe best practice) run at 1280 px too. axe is first run on a page with three known faults:
 // if it does not find them, the run stops (a gate that cannot fail is worse than none).
 // "Skipped is not passed": every state that could not be reached, and every check that could not run, is listed and
@@ -45,6 +46,8 @@ async function makeFiles(dir) {
   const checks = require(path.join(ROOT, 'packet_check_builder.js'));
   const facts = require(path.join(ROOT, 'packet_math_practice_builder.js'));
   const vocab = require(path.join(ROOT, 'packet_vocab_builder.js'));
+  const sr = require(path.join(ROOT, 'packet_symbol_runner_builder.js'));
+  const ra = require(path.join(ROOT, 'packet_read_along_builder.js'));
   const tool = require(path.join(ROOT, 'dev-tools/make_word_sounds_packet.cjs'));
   const symbolsTool = require(path.join(ROOT, 'dev-tools/build_word_sounds_symbols.cjs'));
   const parts = tool.loadParts();
@@ -88,6 +91,19 @@ async function makeFiles(dir) {
   put('facts-rehearsal', mfile('rehearsal'), 'Math fact practice: rehearsal with known facts');
   put('vocab', vfile('practice', ['meaning', 'word', 'blank']), 'Vocabulary practice');
   put('vocab-check', vfile('check', ['meaning', 'word']), 'Vocabulary check');
+  put('sr-practice', sr.buildSymbolRunnerPacket({ loader, symbolMode: 'confusable_letters', packetMode: 'practice', control: 'direct', count: 8, title: 'Confusable letters practice' }), 'Symbol Runner practice');
+  put('sr-check', sr.buildSymbolRunnerPacket({ loader, symbolMode: 'confusable_letters', packetMode: 'check', control: 'direct', count: 8, timeLimitS: 60, title: 'Confusable letters check' }), 'Symbol Runner check');
+  const raSentences = ra.splitPassage(
+    'The bright kite sailed over the tall trees. Mia watched it climb into the morning wind. '
+    + 'Her brother held the wooden spool tightly. The red ribbon danced in the sunlight. '
+    + 'A yellow bird glided past the silver clouds. The breeze pushed the kite toward the meadow. '
+    + 'Mia walked carefully across the green grass. The string hummed softly in the steady wind. '
+    + 'Soon the afternoon shadows grew long. Together they reeled the kite safely back down.'
+  );
+  const mp3Clip = 'data:audio/mpeg;base64,' + Buffer.from([0xff, 0xf3, 0x44, 0xc4]).toString('base64');
+  const raSyllables = (w) => (w.length >= 6 ? [w.slice(0, Math.ceil(w.length / 2)), w.slice(Math.ceil(w.length / 2))] : null);
+  put('read-along', ra.buildReadAlongPacket({ made: ra.lessonFromReadAlong({ loader, title: 'The kite', sentences: raSentences, clips: Object.fromEntries(raSentences.map((s) => [ra.clipKey(s.text), mp3Clip])), syllables: raSyllables }), loader }), 'Read-along practice with recordings and syllables');
+  put('read-along-silent', ra.buildReadAlongPacket({ made: ra.lessonFromReadAlong({ loader, title: 'The kite (silent)', sentences: raSentences, clips: {}, syllables: raSyllables }), loader }), 'Read-along practice in silent syllable-only mode');
   return out;
 }
 
@@ -336,10 +352,14 @@ async function audit(page, state, { isFile, dark }) {
   passes[state].push('names');
   t = lap('reflow motion names', t);
   if (dark) {
+    // Suppress CSS color transitions before flipping color-scheme so axe always measures steady-state dark contrast.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.emulateMedia({ colorScheme: 'dark' });
-    await page.waitForTimeout(80);
+    await page.waitForTimeout(200);
     await axeRun(page, state, 'dark');
     await page.emulateMedia({ colorScheme: 'light' });
+    await page.waitForTimeout(40);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
   }
   t = lap('dark', t);
   await keyboard(page, state, isFile);
@@ -374,9 +394,11 @@ const file = {
   },
   // Answers the item on screen with the first thing to press. Returns true once a Next button shows.
   answerOnce: async (page) => {
-    // Cover, copy, compare and rehearsal: a new fact is shown first, with a button that covers it.
-    const cover = page.locator('[data-cover]').filter({ visible: true }).first();
+    // Cover, copy, compare and rehearsal (math facts + Symbol Runner): a new item is shown first, with a button that covers it.
+    const cover = page.locator('[data-cover], [data-sr-cover]').filter({ visible: true }).first();
     if (await cover.count()) { await cover.click(); await wait(page, 350); }
+    const readDone = page.locator('#app [data-read-along-done]:not([disabled])').filter({ visible: true }).first();
+    if (await readDone.count()) { await readDone.click(); await wait(page, 350); return; }
     const pad = page.locator('[data-pad-input]').filter({ visible: true }).first();
     if (await pad.count()) {
       await pad.focus(); await page.keyboard.type('1'); await wait(page, 100);
@@ -384,67 +406,71 @@ const file = {
       if (await next.count()) await next.click(); else await page.keyboard.press('Enter');
       await wait(page, 350); return;
     }
-    const choice = page.locator('#app [data-choice]:not([disabled]):not([aria-disabled=true]), #app [data-key]:not([disabled])').filter({ visible: true }).first();
+    const choice = page.locator('#app [data-choice]:not([disabled]):not([aria-disabled=true]), #app [data-sr-choice]:not([disabled]):not([aria-disabled=true]), #app [data-key]:not([disabled])').filter({ visible: true }).first();
     if (await choice.count()) { await choice.click(); await wait(page, 350); return; }
-    const any = page.locator('#app .card button:not([disabled]):not([data-say]):not([data-read-aloud])').filter({ visible: true }).first();
+    const any = page.locator('#app .card button:not([disabled]):not([data-say]):not([data-read-aloud]):not([data-sr-hear]):not([data-read-along-play]):not([data-read-along-syllables]):not([data-read-along-line])').filter({ visible: true }).first();
     if (await any.count()) { await any.click(); await wait(page, 350); }
   },
 };
 
 function siteStates() {
   const S = [];
-  const site = (name, url, steps) => S.push({ name, url, steps, isFile: false, dark: false });
+  // Pass dark=true on 1-2 representative rich states per site page (covering all 17 packets*.html pages)
+  // to verify @media (prefers-color-scheme: dark) contrast without doubling runtime on intermediate steps.
+  const site = (name, url, steps, dark = false) => S.push({ name, url, steps, isFile: false, dark });
   site('hub', '/packets.html', async () => {});
-  site('hub: proof open', '/packets.html', async (p) => { await p.locator('details.proof > summary').first().click(); });
-  site('it', '/packets-it.html', async () => {});
+  site('hub: proof open', '/packets.html', async (p) => { await p.locator('details.proof > summary').first().click(); }, true);
+  site('about', '/packets-about.html', async () => {});
+  site('about: proof open', '/packets-about.html', async (p) => { await p.locator('details.proof > summary').first().click(); }, true);
+  site('it', '/packets-it.html', async () => {}, true);
   // Word Sounds maker
   const make1 = async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); };
-  site('make: step 1', '/packets-make.html', make1);
+  site('make: step 1', '/packets-make.html', make1, true);
   const make2 = async (p) => { await make1(p); await pickFirst(p, '#strands'); await p.click('#next-1'); await p.waitForSelector('#step-2:not([hidden])', { timeout: 8000 }); };
   site('make: step 2', '/packets-make.html', make2);
   site('make: step 2, word list open', '/packets-make.html', async (p) => { await make2(p); await p.evaluate(() => document.querySelectorAll('#step-2 details:not([hidden])').forEach((d) => { d.open = true; })); });
   const make3 = async (p) => { await make2(p); await wait(p, 600); await p.click('#next-2'); await p.waitForSelector('#step-3:not([hidden])', { timeout: 8000 }); await p.waitForSelector('#save:not([hidden])', { timeout: 60000 }); };
   site('make: step 3, file ready', '/packets-make.html', make3);
-  site('make: step 3, options open', '/packets-make.html', async (p) => { await make3(p); await p.evaluate(() => document.querySelectorAll('#step-3 details:not([hidden]), #about-page').forEach((d) => { d.open = true; })); });
+  site('make: step 3, options open', '/packets-make.html', async (p) => { await make3(p); await p.evaluate(() => document.querySelectorAll('#step-3 details:not([hidden]), #about-page').forEach((d) => { d.open = true; })); }, true);
   // Check maker
   const check1 = async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); };
   site('check: step 1', '/packets-check.html', check1);
   const check2 = async (p) => { await check1(p); await p.locator('#checks label').first().click(); await p.click('#next-1'); await p.waitForSelector('#step-2:not([hidden])', { timeout: 8000 }); await p.locator('#grades label').first().click(); await wait(p, 200); };
   site('check: step 2', '/packets-check.html', check2);
-  site('check: step 2, options open', '/packets-check.html', async (p) => { await check2(p); await p.evaluate(() => document.querySelectorAll('#step-2 details:not([hidden]), #about-page').forEach((d) => { d.open = true; })); });
+  site('check: step 2, options open', '/packets-check.html', async (p) => { await check2(p); await p.evaluate(() => document.querySelectorAll('#step-2 details:not([hidden]), #about-page').forEach((d) => { d.open = true; })); }, true);
   site('check: step 2, untimed chosen', '/packets-check.html', async (p) => { await check2(p); await p.click('#untimed-box > summary'); await p.locator('label').filter({ has: p.locator('#f-untimed') }).click(); await wait(p, 200); });
   site('check: step 2, own problems', '/packets-check.html', async (p) => { await check1(p); await p.locator('#checks label').last().click(); await p.click('#next-1'); await p.waitForSelector('#step-2:not([hidden])'); await p.fill('#f-problems', '7+8, 12-5, 6x4, 20/0'); await wait(p, 500); });
   const check3 = async (p) => { await check2(p); await p.click('#next-2'); await p.waitForSelector('#save:not([hidden])', { timeout: 30000 }); };
   site('check: step 3, file ready', '/packets-check.html', check3);
-  site('check: step 3, saved', '/packets-check.html', async (p) => { await check3(p); await p.evaluate(() => { const a = document.getElementById('after-save'); if (a) a.hidden = false; document.querySelectorAll('#step-3 details').forEach((d) => { d.open = true; }); }); });
+  site('check: step 3, saved', '/packets-check.html', async (p) => { await check3(p); await p.evaluate(() => { const a = document.getElementById('after-save'); if (a) a.hidden = false; document.querySelectorAll('#step-3 details').forEach((d) => { d.open = true; }); }); }, true);
   // Math fact practice maker
   const mp1 = async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); };
   site('math practice: step 1', '/packets-math-practice.html', mp1);
   const mp2 = async (p) => { await mp1(p); await pickFirst(p, '#kinds'); await wait(p, 200); if (await p.locator('#sets input').count()) await pickFirst(p, '#sets'); await p.click('#next-1'); await p.waitForSelector('#step-2:not([hidden])', { timeout: 8000 }); };
   site('math practice: step 2', '/packets-math-practice.html', mp2);
-  site('math practice: step 3, file ready', '/packets-math-practice.html', async (p) => { await mp2(p); await pickFirst(p, '#methods'); await p.click('#next-2'); await p.waitForSelector('#save:not([hidden])', { timeout: 30000 }); await p.evaluate(() => document.querySelectorAll('#step-3 details, #about-page').forEach((d) => { d.open = true; })); });
+  site('math practice: step 3, file ready', '/packets-math-practice.html', async (p) => { await mp2(p); await pickFirst(p, '#methods'); await p.click('#next-2'); await p.waitForSelector('#save:not([hidden])', { timeout: 30000 }); await p.evaluate(() => document.querySelectorAll('#step-3 details, #about-page').forEach((d) => { d.open = true; })); }, true);
   // Vocabulary maker
   const v1 = async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 30000 }); };
   site('vocab: step 1', '/packets-vocab.html', v1);
   const v2 = async (p) => { await v1(p); await p.fill('#f-words', 'habitat, predator, prey, cell, adapt'); await wait(p, 300); await p.click('#next-1'); await p.waitForSelector('#step-2:not([hidden])', { timeout: 30000 }); await wait(p, 500); };
-  site('vocab: step 2, meanings', '/packets-vocab.html', v2);
+  site('vocab: step 2, meanings', '/packets-vocab.html', v2, true);
   const v3 = async (p) => { await v2(p); await p.click('#next-2'); await p.waitForSelector('#step-3:not([hidden])', { timeout: 8000 }); await wait(p, 500); };
   site('vocab: step 3', '/packets-vocab.html', v3);
-  site('vocab: step 3, check chosen, options open', '/packets-vocab.html', async (p) => { await v3(p); const radios = p.locator('#modes label'); if (await radios.count() > 1) await radios.nth(1).click(); await wait(p, 600); await p.evaluate(() => document.querySelectorAll('#step-3 details, #about-page').forEach((d) => { d.open = true; })); });
+  site('vocab: step 3, check chosen, options open', '/packets-vocab.html', async (p) => { await v3(p); const radios = p.locator('#modes label'); if (await radios.count() > 1) await radios.nth(1).click(); await wait(p, 600); await p.evaluate(() => document.querySelectorAll('#step-3 details, #about-page').forEach((d) => { d.open = true; })); }, true);
   // Results
   site('results: empty', '/packets-results.html', async (p) => { await p.waitForSelector('#state-empty'); });
   const r1 = async (p) => { await p.click('#samples'); await p.waitForSelector('#state-check:not([hidden]), #state-results:not([hidden])', { timeout: 15000 }); };
   site('results: samples read', '/packets-results.html', r1);
   const r2 = async (p) => { await r1(p); if (await p.locator('#show-results').filter({ visible: true }).count()) await p.click('#show-results'); await p.waitForSelector('#state-results:not([hidden])', { timeout: 15000 }); await wait(p, 300); };
-  site('results: group', '/packets-results.html', r2);
-  site('results: one student', '/packets-results.html', async (p) => { await r2(p); await p.locator('#group-table .name-link').first().click(); await p.waitForSelector('#view-learner:not([hidden])', { timeout: 8000 }); await wait(p, 300); });
+  site('results: group', '/packets-results.html', r2, true);
+  site('results: one student', '/packets-results.html', async (p) => { await r2(p); await p.locator('#group-table .name-link').first().click(); await p.waitForSelector('#view-learner:not([hidden])', { timeout: 8000 }); await wait(p, 300); }, true);
   // Verify, open, pictures
   site('verify: empty', '/packets-verify.html', async () => {});
-  site('verify: a check file', '/packets-verify.html', async (p, gen) => { await p.setInputFiles('#files', path.join(gen.dir, 'check-mc.html')); await p.waitForSelector('#reports:not([hidden])', { timeout: 15000 }); await wait(p, 800); await p.evaluate(() => document.querySelectorAll('#reports details').forEach((d, i) => { if (i < 3) d.open = true; })); });
+  site('verify: a check file', '/packets-verify.html', async (p, gen) => { await p.setInputFiles('#files', path.join(gen.dir, 'check-mc.html')); await p.waitForSelector('#reports:not([hidden])', { timeout: 15000 }); await wait(p, 800); await p.evaluate(() => document.querySelectorAll('#reports details').forEach((d, i) => { if (i < 3) d.open = true; })); }, true);
   site('verify: a practice file', '/packets-verify.html', async (p, gen) => { await p.setInputFiles('#files', path.join(gen.dir, 'ws-pictures.html')); await p.waitForSelector('#reports:not([hidden])', { timeout: 15000 }); await wait(p, 800); });
   site('open: empty', '/packets-open.html', async () => {});
   const o1 = async (p, gen) => { await p.setInputFiles('#file', path.join(gen.dir, 'vocab.html')); await p.waitForSelector('#found:not([hidden])', { timeout: 15000 }); await wait(p, 300); };
-  site('open: a file loaded', '/packets-open.html', o1);
+  site('open: a file loaded', '/packets-open.html', o1, true);
   site('open: the file running', '/packets-open.html', async (p, gen) => { await o1(p, gen); await p.click('#start'); await p.waitForSelector('#run:not([hidden])', { timeout: 8000 }); await wait(p, 1500); });
   site('pictures: start', '/packets-pictures.html', async () => {});
   site('pictures: a picture chosen', '/packets-pictures.html', async (p) => {
@@ -452,6 +478,41 @@ function siteStates() {
     const png = path.join(os.tmpdir(), 'a11y-cat.png');
     fs.writeFileSync(png, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==', 'base64'));
     await p.setInputFiles('#file', png); await wait(p, 1200);
+  }, true);
+  // Symbol Runner maker
+  const sr1 = async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); };
+  site('symbol runner: step 1', '/packets-symbol-runner.html', sr1);
+  const sr2 = async (p) => { await sr1(p); await p.click('#sr-next-1'); await p.waitForSelector('#step-2:not([hidden])', { timeout: 8000 }); };
+  site('symbol runner: step 2', '/packets-symbol-runner.html', sr2);
+  site('symbol runner: step 2, options open', '/packets-symbol-runner.html', async (p) => { await sr2(p); await p.evaluate(() => document.querySelectorAll('#step-2 details:not([hidden])').forEach((d) => { d.open = true; })); });
+  const sr3 = async (p) => { await sr2(p); await p.click('#sr-next-2'); await p.waitForSelector('#step-3:not([hidden])', { timeout: 8000 }); await p.waitForSelector('#sr-save-html:not([disabled])', { timeout: 30000 }); };
+  site('symbol runner: step 3, file ready', '/packets-symbol-runner.html', sr3);
+  site('symbol runner: step 3, options open', '/packets-symbol-runner.html', async (p) => { await sr3(p); await p.evaluate(() => document.querySelectorAll('#step-3 details:not([hidden]), #about-page').forEach((d) => { d.open = true; })); }, true);
+  // Read-along maker
+  const ra1 = async (p) => { await p.waitForSelector('#f-text', { timeout: 15000 }); };
+  site('read along: empty', '/packets-read-along.html', ra1);
+  const ra2 = async (p) => { await ra1(p); await p.fill('#f-title', 'The kite'); await p.fill('#f-text', 'The kite sailed over the trees. Mia looked for it all afternoon.'); await p.waitForSelector('#save:not([hidden])', { timeout: 15000 }); await wait(p, 300); };
+  site('read along: passage entered, silent ready', '/packets-read-along.html', ra2);
+  site('read along: options open', '/packets-read-along.html', async (p) => { await ra2(p); await p.evaluate(() => document.querySelectorAll('details:not([hidden])').forEach((d) => { d.open = true; })); }, true);
+  // Present & print word cards
+  site('present export: start', '/packets-present-export.html', async (p) => { await p.waitForSelector('#pe-word-source', { timeout: 15000 }); await wait(p, 300); });
+  site('present export: options open', '/packets-present-export.html', async (p) => { await p.waitForSelector('#pe-word-source', { timeout: 15000 }); await p.evaluate(() => document.querySelectorAll('details:not([hidden])').forEach((d) => { d.open = true; })); }, true);
+  // Voice recorder / studio
+  site('voice: empty', '/packets-voice.html', async (p) => { await p.waitForSelector('#f-words', { timeout: 15000 }); });
+  site('voice: words entered', '/packets-voice.html', async (p) => { await p.waitForSelector('#f-words', { timeout: 15000 }); await p.fill('#f-words', 'cat, habitat, sun'); await wait(p, 400); }, true);
+  // Vocab lookup
+  site('vocab lookup: start', '/packets-vocab-lookup.html', async (p) => { await p.waitForSelector('#word', { timeout: 15000 }); });
+  site('vocab lookup: proof open', '/packets-vocab-lookup.html', async (p) => { await p.waitForSelector('#word', { timeout: 15000 }); await p.locator('details.proof > summary').first().click(); }, true);
+  // Try / Preview page
+  site('try: no preview', '/packets-try.html', async (p) => { await p.waitForSelector('#try-problem:not([hidden])', { timeout: 8000 }); }, true);
+  site('try: a file running', '/packets-about.html', async (p, gen) => {
+    const html = fs.readFileSync(path.join(gen.dir, 'vocab.html'), 'utf8');
+    const holder = await p.context().newPage();
+    await holder.goto(p.url(), { waitUntil: 'load' });
+    const blobUrl = await holder.evaluate((text) => URL.createObjectURL(new Blob([text], { type: 'text/html' })), html);
+    await p.goto(new URL('/packets-try.html#' + blobUrl, p.url()).href, { waitUntil: 'load' });
+    await p.waitForSelector('iframe', { timeout: 15000 });
+    await wait(p, 1500);
   });
   return S;
 }
@@ -484,8 +545,8 @@ function fileStates(gen) {
     f(label + ': start', key, async (p) => { await p.waitForSelector('#app h2', { timeout: 8000 }); });
     f(label + ': start, reading tools open', key, async (p) => { await p.waitForSelector('#app h2'); await p.click('[data-tools-open]'); await wait(p, 100); });
     f(label + ': start, about this file open', key, async (p) => { await p.waitForSelector('#app h2'); const b = p.locator('[data-about-open]'); if (await b.count()) await b.first().click(); await wait(p, 100); });
-    f(label + ': high contrast colors', key, async (p) => { await file.start(p); await p.click('[data-tools-open]'); await p.click('[data-tool="colors-1"]'); await p.click('[data-tools-close]'); await wait(p, 100); });
-    f(label + ': soft colors, larger text', key, async (p) => { await file.start(p); await p.click('[data-tools-open]'); await p.click('[data-tool="colors-2"]'); await p.click('[data-tool="size-2"]'); await p.click('[data-tools-close]'); await wait(p, 100); });
+    f(label + ': high contrast colors', key, async (p) => { await file.start(p); await p.click('[data-tools-open]'); await p.click('[data-tool="colors-1"]'); await p.locator('[data-tools-close-top], [data-tools-close]').first().click(); await wait(p, 100); });
+    f(label + ': soft colors, larger text', key, async (p) => { await file.start(p); await p.click('[data-tools-open]'); await p.click('[data-tool="colors-2"]'); await p.click('[data-tool="size-2"]'); await p.locator('[data-tools-close-top], [data-tools-close]').first().click(); await wait(p, 100); });
     const firsts = [];
     items.forEach((it, i) => { if (!firsts.some((x) => x.activity === it.activity)) firsts.push({ activity: it.activity, index: i }); });
     firsts.forEach((x) => f(label + ': question, ' + x.activity, key, at(x.index)));
@@ -497,6 +558,10 @@ function fileStates(gen) {
   practice('facts-ccc', 'facts ccc');
   practice('facts-rehearsal', 'facts rehearsal');
   practice('vocab', 'vocab');
+  practice('sr-practice', 'symbol runner');
+  practice('read-along', 'read along');
+  practice('read-along-silent', 'read along silent');
+  f('read along: syllables on', 'read-along', async (p) => { await file.start(p); await p.click('[data-read-along-syllables]'); await wait(p, 150); });
   // Checks: start, a practice item and its feedback, get ready, a question, the stop box, the end, the teacher screen.
   const checkFlow = (key, label, code) => {
     const toPractice = async (p) => { await file.start(p); };
@@ -504,8 +569,10 @@ function fileStates(gen) {
       await toPractice(p);
       for (let i = 0; i < 6 && !(await p.locator('[data-check-begin]').count()); i++) {
         await file.answerOnce(p);
-        const next = p.locator('#app button.primary').filter({ visible: true }).filter({ hasNotText: /^$/ });
         if (await p.locator('[data-check-begin]').count()) break;
+        const practiceNext = p.locator('[data-practice-next]').filter({ visible: true }).first();
+        if (await practiceNext.count()) { await practiceNext.click().catch(() => {}); await wait(p, 350); continue; }
+        const next = p.locator('#app button.primary').filter({ visible: true }).filter({ hasNotText: /^$/ });
         if (await next.count()) { await next.last().click().catch(() => {}); await wait(p, 350); }
       }
       await p.waitForSelector('[data-check-begin]', { timeout: 4000 });
@@ -536,6 +603,7 @@ function fileStates(gen) {
   // A vocabulary check opens with a sample question (2026-11-13, packet_vocab_builder.js sampleFor), as a math check
   // does: the same states, through it. (Before, it had no practice item: start, a question, the end, teacher screen.)
   checkFlow('vocab-check', 'vocab check');
+  checkFlow('sr-check', 'symbol runner check');
   return S;
 }
 

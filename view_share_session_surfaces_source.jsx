@@ -22,14 +22,18 @@ function HomeworkQrDialogView(props) {
     const prevFocus = document.activeElement;
     if (stack) stack.push(trapId);
     const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(el => {
-      if (el.disabled || el.getAttribute('aria-hidden') === 'true') return false;
-      const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+      if (el.disabled || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let cur = el; cur && cur !== dialog; cur = cur.parentElement) {
+        const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(cur) : null;
+        if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+      }
+      return true;
     });
     const onKeyDown = (event) => {
       if (event.defaultPrevented) return;
       if (stack && stack[stack.length - 1] !== trapId) return;
       if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         if (typeof setQrShareModal === 'function') setQrShareModal(null);
         return;
@@ -291,7 +295,7 @@ function ClassMailboxSetupView(props) {
                   <li><b>{t('mailbox.mailbox_live_session_or_mailbox_hosted') || 'Mailbox live session or mailbox-hosted homework:'}</b> {t('mailbox.save_submit_uploads_json') || 'Save & Submit uploads the complete student-work JSON automatically to your private Drive mailbox folder. If delivery fails, the student receives a backup download instead.'}</li>
                   <li><b>{t('mailbox.standard_firebase_live_session') || 'Standard Firebase live session:'}</b> {t('mailbox.live_quiz_answer_content_travels_peer') || 'live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.'}</li>
                   <li><b>{t('mailbox.self_contained_non_live_homework') || 'Self-contained/non-live homework:'}</b> {t('mailbox.work_stays_on_the_student_device') || 'work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.'}</li>
-                  <li><b>{t('mailbox.teacher_review') || 'Teacher review:'}</b> {t('mailbox.open_drive_alloflow_class_mailbox_download') || 'open AlloFlow’s Submission Inbox and click “Check Class Mailbox” to collect student submissions directly (or import downloaded files from your “AlloFlow Class Mailbox” Drive folder), then review and grade them.'}</li>
+                  <li><b>{t('mailbox.teacher_review') || 'Teacher review:'}</b> {t('mailbox.open_drive_alloflow_class_mailbox_download') || 'open AlloFlow’s Submission Inbox and click “Get submissions from Class Mailbox” to collect student submissions directly (or import downloaded files from your “AlloFlow Class Mailbox” Drive folder), then review and grade them.'}</li>
                 </ul>
               </details>
             </div>
@@ -318,13 +322,13 @@ function ClassMailboxSetupView(props) {
             {/* The connect self-test reports VERSION. Redeploying the current
                 script requires owner setup and preserves existing classroom
                 credentials at the same deployment URL. */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 30 && (
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 31 && (
               <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3" data-mailbox-update-notice={mbConfig.v}>
                 <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. {Number(mbConfig.v) < 28
                   ? tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')
                   : Number(mbConfig.v) < 29
                     ? tx('mailbox.update_v29_pickup', 'Update to v29 so the Submission Inbox can collect student submissions from the mailbox, with no Drive downloads. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')
-                    : tx('mailbox.update_v30_fixes', 'Update to v30 for security and privacy fixes: stricter sign-in checks, sign-up and availability polls erased on their delete date, and a page reader that refuses private network addresses. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')}</p>
+                    : tx('mailbox.update_v30_fixes', 'Update to v31 for security and privacy fixes: stricter sign-in checks, sign-up and availability polls erased on their delete date, and a page reader that refuses private network addresses. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:').replace(/\bv30\b/g, 'v31')}</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
                   <li><button type="button" onClick={copyMailboxScriptSource} disabled={mailboxScriptState.status !== 'ready'} aria-busy={mailboxScriptState.status === 'loading'} className="font-bold underline underline-offset-2 disabled:cursor-wait disabled:text-amber-700">{mailboxScriptState.status === 'loading' ? 'Preparing the updated script…' : mailboxScriptState.status === 'error' ? 'Updated script unavailable' : 'Copy the updated script'}</button>{mailboxScriptState.status === 'error' && <> (<button type="button" onClick={retryMailboxScriptSource} className="font-bold underline underline-offset-2">{t('mailbox.retry_loading') || 'retry loading'}</button>)</>} {t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'}</li>
                   {Number(mbConfig.v) < 28 && <li>{tx('mailbox.owner_update_setup','Update appsscript.json using the manifest below, then run setupMailboxOwner in the editor as the deploying owner. Reuse the existing admin token from Script properties.')} <button type="button" onClick={() => copyToClipboard(ownerManifest)} className="font-bold underline underline-offset-2">{tx('mailbox.copy_owner_manifest', 'copy manifest')}</button></li>}

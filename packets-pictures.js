@@ -223,9 +223,9 @@
     } catch (_) { return false; }
   }
 
-  // The word: from the address (#word=cat) or typed
+  // The word: from the address (#word=cat or #from=present&word=cat) or typed
   function wordFromAddress() {
-    var found = /^#word=([^&]*)/.exec(String(root.location && root.location.hash || ''));
+    var found = /[#&]word=([^&]*)/.exec(String(root.location && root.location.hash || ''));
     if (!found) return '';
     try { return store.normalizeWord(decodeURIComponent(found[1])); } catch (_) { return ''; }
   }
@@ -277,8 +277,10 @@
       return store.put(word, { picture: { dataUri: dataUri, credit: { own: true } } });
     }).then(function (entry) {
       setText('device-said', '');
+      if (state.word !== word) { drawMine(); return; }
       showSaved(word, entry);
     }, function (error) {
+      if (state.word !== word) return;
       var words = problemText(error, 'That file could not be read as a picture. Choose another file.');
       setText('device-said', words);
       say(words);
@@ -296,18 +298,45 @@
     show('online-more', state.online);
     drawSearch();
   }
+  var activeStops = [];
+  function abortOnline() {
+    var list = activeStops.slice();
+    activeStops = [];
+    list.forEach(function (ctrl) { try { ctrl.abort(); } catch (_) {} });
+  }
+  var MAX_REMOTE_IMAGE_BYTES = 10 * 1024 * 1024;
+  var MAX_REMOTE_JSON_BYTES = 2 * 1024 * 1024;
   function ask(address, ms, how) {
+    if (root && (root._isDesktopBundledApp === true || root.__ALLOFLOW_DESKTOP_OFFLINE__ === true)) {
+      return Promise.reject(new Error('offline'));
+    }
     var control = typeof root.AbortController === 'function' ? new root.AbortController() : null;
+    if (control) activeStops.push(control);
     var timer = root.setTimeout(function () { if (control) control.abort(); }, ms);
     var options = { method: 'GET', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer' };
     if (control) options.signal = control.signal;
-    var done = function () { root.clearTimeout(timer); };
+    var done = function () {
+      root.clearTimeout(timer);
+      if (control) activeStops = activeStops.filter(function (c) { return c !== control; });
+    };
+    var limitBytes = how === 'file' ? MAX_REMOTE_IMAGE_BYTES : MAX_REMOTE_JSON_BYTES;
     return root.fetch(address, options).then(function (response) {
       if (!response || !response.ok) { var refused = new Error('refused'); refused.status = response ? response.status : 0; throw refused; }
-      return how === 'file' ? response.blob() : response.json();
+      var declaredLen = Number(response.headers && typeof response.headers.get === 'function' ? response.headers.get('content-length') : NaN);
+      if (isFinite(declaredLen) && declaredLen > limitBytes) {
+        if (response.body && typeof response.body.cancel === 'function') { try { response.body.cancel(); } catch (_) {} }
+        throw new Error('too_big');
+      }
+      if (how === 'file') {
+        return response.blob().then(function (blob) {
+          if (blob && Number(blob.size) > limitBytes) throw new Error('too_big');
+          return blob;
+        });
+      }
+      return response.json();
     }).then(function (value) { done(); return value; }, function (error) { done(); throw error; });
   }
-  function pictureCard(picture) {
+  function pictureCard(picture, onDrop) {
     var item = el('li', 'pic');
     var image = el('img');
     image.alt = '';
@@ -318,7 +347,12 @@
     image.crossOrigin = 'anonymous';
     image.referrerPolicy = 'no-referrer';
     // A picture that does not arrive cannot be looked at, so it is not offered.
-    image.addEventListener('error', function () { if (item.parentNode) item.parentNode.removeChild(item); });
+    image.addEventListener('error', function () {
+      if (item.parentNode) {
+        item.parentNode.removeChild(item);
+        if (typeof onDrop === 'function') onDrop();
+      }
+    });
     image.src = picture.show;
     var by = picture.author ? 'by ' + picture.author : 'Author not named';
     var button = el('button', 'btn', 'Use this picture');
@@ -334,8 +368,18 @@
     return ask(searchAddress(service, word), SEARCH_MS, 'json').then(function (json) {
       if (run !== state.run) return null;
       var found = READ[service](json, word);
-      found.pictures.forEach(function (picture) { list.appendChild(pictureCard(picture)); });
-      setText(said, found.pictures.length ? count(found.pictures.length, 'picture.', 'pictures.') : 'No pictures with an open license were found here for this word.');
+      var remaining = found.pictures.length;
+      var showCount = function () {
+        setText(said, remaining ? count(remaining, 'picture.', 'pictures.') : 'No pictures with an open license were found here for this word.');
+      };
+      found.pictures.forEach(function (picture) {
+        list.appendChild(pictureCard(picture, function () {
+          if (run !== state.run) return;
+          remaining = Math.max(0, remaining - 1);
+          showCount();
+        }));
+      });
+      showCount();
       return nameOf(service) + ': ' + (found.pictures.length ? count(found.pictures.length, 'picture', 'pictures') : 'no pictures') + '.';
     }, function (error) {
       if (run !== state.run) return null;
@@ -370,7 +414,7 @@
     });
   }
   function usePicture(picture, item, button) {
-    var word = state.searched, said = 'said-' + picture.service;
+    var word = state.searched, run = state.run, said = 'said-' + picture.service;
     if (!word || button.getAttribute('aria-disabled') === 'true') return;
     button.setAttribute('aria-disabled', 'true');
     item.classList.add('is-busy');
@@ -385,9 +429,11 @@
       return store.put(word, { picture: { dataUri: dataUri, credit: credit } });
     }).then(function (entry) {
       free();
+      if (run !== state.run || state.word !== word) { drawMine(); return; }
       showSaved(word, entry);
     }, function (error) {
       free();
+      if (run !== state.run || state.word !== word) return;
       var words = problemText(error, 'This picture could not be copied. Choose another one.');
       setText(said, words);
       say(words);
@@ -447,15 +493,22 @@
 
   function start() {
     var input = $('word');
-    // Back to the page the teacher came from: Present and export says so with #from=present (2026-11-17); else the maker.
-    if (/[#&]from=present(?:&|$)/.test(String(root.location && root.location.hash || ''))) {
-      var back = $('back-link');
-      if (back) { back.setAttribute('href', 'packets-present-export.html'); back.textContent = 'Back to Present and export'; }
+    // Back to the page the teacher came from: Present, Vocab or Symbol Runner via #from=...; else the Word Sounds maker.
+    var rawHash = String(root.location && root.location.hash || '');
+    var back = $('back-link');
+    if (back) {
+      if (/[#&]from=present(?:&|$)/.test(rawHash)) {
+        back.setAttribute('href', 'packets-present-export.html'); back.textContent = 'Back to Present & print word cards';
+      } else if (/[#&]from=vocab(?:&|$)/.test(rawHash)) {
+        back.setAttribute('href', 'packets-vocab.html'); back.textContent = 'Back to Make vocabulary practice';
+      } else if (/[#&]from=symbol-runner(?:&|$)/.test(rawHash)) {
+        back.setAttribute('href', 'packets-symbol-runner.html'); back.textContent = 'Back to Make Symbol Runner practice';
+      }
     }
     state.word = wordFromAddress();
     input.value = state.word;
     input.addEventListener('input', function () { takeWord(input.value); });
-    input.addEventListener('keydown', function (event) { if (event.key === 'Enter' && state.online) { event.preventDefault(); search(); } });
+    input.addEventListener('keydown', function (event) { if (event.key === 'Enter' && !event.repeat && !event.isComposing && event.keyCode !== 229 && state.online) { event.preventDefault(); search(); } });
     root.addEventListener('hashchange', function () { var word = wordFromAddress(); if (word) { input.value = word; takeWord(word); } });
 
     $('choose').addEventListener('click', chooseFile);
@@ -468,6 +521,7 @@
     $('online-on').addEventListener('change', function () {
       state.online = $('online-on').checked;
       if (!state.online) {
+        abortOnline();
         state.run++; state.busy = false; state.searched = '';
         show('results', false);
         keep(false);

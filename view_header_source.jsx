@@ -475,7 +475,7 @@ function HeaderBar(props) {
       setShowHelpMenu(false);
     };
     const escape = (event) => {
-      if (event.key !== 'Escape') return;
+      if (event.key !== 'Escape' || event.isComposing || event.keyCode === 229) return;
       setShowHelpMenu(false);
       const toggle = document.querySelector('[data-help-menu-toggle]');
       if (toggle) toggle.focus();
@@ -906,6 +906,11 @@ function HeaderBar(props) {
         <span className="flex items-center gap-2 text-sm font-black"><MapIcon size={16} aria-hidden="true" />{homeToolsText('toolbar.tour_take', 'Take the app tour')}</span>
         <span className="text-xs font-medium leading-snug">{homeToolsText('help_menu.tour_desc', 'A guided look at each area.')}</span>
       </button>
+      {tourResumeStep > 0 && (
+        <button type="button" data-help-menu-tour-resume="" onClick={() => { setShowHelpMenu(false); startAppTour(tourResumeStep); }} className={helpMenuRow}>
+          <span className="text-xs font-bold">{homeToolsText('toolbar.tour_resume', 'Resume the tour where you left off')}</span>
+        </button>
+      )}
       <button type="button" data-help-key="hints_recall" data-help-menu-tips="" onClick={() => { setShowHelpMenu(false); handleSetShowHintsModalToTrue(); }} className={helpMenuRow}>
         <span className="flex items-center gap-2 text-sm font-black"><Lightbulb size={16} aria-hidden="true" />{homeToolsText('help_menu.tips', 'Past tips and messages')}{helpHasHistory && <span aria-hidden="true" className="w-2 h-2 bg-red-500 rounded-full"></span>}</span>
         <span className="text-xs font-medium leading-snug">{homeToolsText('help_menu.tips_desc', 'Read a tip or notice again after it has gone.')}</span>
@@ -966,28 +971,30 @@ function HeaderBar(props) {
         <div className="w-full max-w-[1600px] mx-auto relative">
           <div className={headerCollapsed ? 'allo-premium-appbar flex items-center gap-2 sm:gap-3 min-w-0' : 'flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4'}>
             <div className={headerCollapsed ? 'allo-premium-appbar-brand' : ''}>
+              <div className="flex min-w-0 shrink-0 items-center gap-3">
               <h1 className={`${headerCollapsed ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'} font-black tracking-tight flex min-w-0 shrink-0 items-center gap-3 ${theme === 'contrast' ? 'text-yellow-400' : 'text-white drop-shadow-sm'}`}>
                 <span className={`inline-flex items-center justify-center ${theme === 'contrast' ? '' : `${headerCollapsed ? 'p-1 rounded-xl' : 'p-1.5 rounded-2xl'} bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30`}`} aria-hidden="true">
                   <Layers className={headerCollapsed ? 'w-7 h-7' : 'w-9 h-9'} aria-hidden="true" />
                 </span>
                 <span className={`allo-premium-brand-name ${theme === 'contrast' ? '' : 'bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent'}`}>{t('header.app_name')}</span>
-                {!headerCollapsed && <div className={`hidden 2xl:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
-                    <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-green-200'}`}>
-                        <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
-                        <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.equitable')}</span>
-                    </div>
-                    <div className={`w-px h-3 ${theme === 'contrast' ? 'bg-yellow-400' : 'bg-white/10'}`}></div>
-                    <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-teal-200'}`}>
-                        <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
-                        <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.accessible')}</span>
-                    </div>
-                    <div className={`w-px h-3 ${theme === 'contrast' ? 'bg-yellow-400' : 'bg-white/10'}`}></div>
-                    <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-purple-200'}`}>
-                        <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
-                        <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.scaffolded')}</span>
-                    </div>
-                </div>}
               </h1>
+              {!headerCollapsed && <div aria-hidden="true" className={`hidden 2xl:flex items-center gap-1 ml-1 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                  <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-green-200'}`}>
+                      <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
+                      <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.equitable')}</span>
+                  </div>
+                  <div className={`w-px h-3 ${theme === 'contrast' ? 'bg-yellow-400' : 'bg-white/10'}`}></div>
+                  <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-teal-200'}`}>
+                      <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
+                      <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.accessible')}</span>
+                  </div>
+                  <div className={`w-px h-3 ${theme === 'contrast' ? 'bg-yellow-400' : 'bg-white/10'}`}></div>
+                  <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-purple-200'}`}>
+                      <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
+                      <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.scaffolded')}</span>
+                  </div>
+              </div>}
+              </div>
               {!headerCollapsed && (
                 <p className={`mt-2 text-sm font-medium italic opacity-90 ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
                   {t('header.tagline')}
@@ -1039,6 +1046,7 @@ function HeaderBar(props) {
                     <button type="button"
                       onClick={() => handleRestoreView(latestLessonPlan)}
                       data-help-key="header_jump_lesson_collapsed"
+                      aria-current={generatedContent?.id === latestLessonPlan.id ? 'page' : undefined}
                       className={`shrink-0 inline-flex items-center justify-center gap-2 rounded-xl px-3 transition-colors ${generatedContent?.id === latestLessonPlan.id ? 'bg-cyan-100 text-cyan-800 shadow-lg ring-2 ring-cyan-500' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
                       title={t('header.jump_to_lesson')}
                       aria-label={t('header.jump_to_lesson')}
@@ -1050,6 +1058,7 @@ function HeaderBar(props) {
                   <button type="button"
                     onClick={handleSetActiveViewToDashboard}
                     data-help-key="header_dashboard"
+                    aria-current={activeView === 'dashboard' ? 'page' : undefined}
                     className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 transition-colors ${activeView === 'dashboard' ? 'bg-white text-indigo-900 shadow-lg' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
                     title={dashboardNavLabel}
                     aria-label={dashboardNavLabel}
@@ -1240,7 +1249,7 @@ function HeaderBar(props) {
                 {/* Help stays reachable in the compact bar; the expanded header has its own button. */}
                 {headerCollapsed && (
                   <div className="relative shrink-0">
-                    <button type="button" data-help-ignore="true" data-compact-help-toggle="" data-help-menu-toggle="" onClick={handleHelpButton} aria-pressed={isHelpMode} aria-haspopup={helpMenuAvailable ? 'true' : undefined} aria-expanded={helpMenuAvailable ? showHelpMenu : undefined}
+                    <button type="button" data-help-ignore="true" data-compact-help-toggle="" data-help-menu-toggle="" onClick={handleHelpButton} aria-pressed={(!helpMenuAvailable || isHelpMode) ? isHelpMode : undefined} aria-haspopup={(helpMenuAvailable && !isHelpMode) ? 'true' : undefined} aria-expanded={(helpMenuAvailable && !isHelpMode) ? showHelpMenu : undefined}
                       className={`relative inline-flex h-full min-h-9 items-center justify-center rounded-xl border px-2.5 transition-colors ${isHelpMode ? 'border-yellow-300 bg-yellow-400 text-slate-900' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'}`}
                       title={helpButtonLabel} aria-label={helpButtonLabel}>
                       <CircleHelp size={16} aria-hidden="true" />
@@ -1311,11 +1320,12 @@ function HeaderBar(props) {
                         <button type="button"
                             onClick={() => setShowReadThisPage(prev => !prev)}
                             data-help-key="read_this_page_toggle"
+                            aria-pressed={!!showReadThisPage}
                             className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${showReadThisPage || focusNarrationEnabled ? 'ring-2 ring-purple-400 !bg-purple-600 !text-white shadow-[0_0_10px_rgba(147,51,234,0.5)]' : ''} ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`}
                             title={showReadThisPage ? (closeLabel + ': ' + readThisPageTitle) : readThisPageTitle}
                             aria-label={showReadThisPage ? (closeLabel + ': ' + readThisPagePanelLabel) : readThisPagePanelLabel}
                         >
-                            <Ear size={18} aria-hidden="true" className={showReadThisPage ? 'animate-pulse' : ''} />
+                            <Ear size={18} aria-hidden="true" className={showReadThisPage ? 'animate-pulse motion-reduce:animate-none' : ''} />
                         </button>
                         <div className="relative">
                             <button type="button"
@@ -1386,14 +1396,14 @@ function HeaderBar(props) {
                                                     <span className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{baseFontSize}px</span>
                                                 </div>
                                             <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
-                                                    <button type="button" aria-label={t('common.minimize')} onClick={() => setSliderFontSize(Math.max(10, baseFontSize - 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Minimize size={16}/></button>
+                                                    <button type="button" aria-label={t('settings.text.decrease_size') || 'Decrease text size'} onClick={() => setSliderFontSize(Math.max(10, baseFontSize - 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Minimize size={16} aria-hidden="true"/></button>
                                                     <input id="header-text-font-size"
                                                         type="range" min="10" max="48" step="1"
                                                         value={sliderFontSize}
                                                         onChange={(e) => setSliderFontSize(parseInt(e.target.value))}
                                                         className="flex-grow h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                                     />
-                                                    <button type="button" aria-label={t('common.maximize')} onClick={() => setSliderFontSize(Math.min(48, baseFontSize + 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Maximize size={16}/></button>
+                                                    <button type="button" aria-label={t('settings.text.increase_size') || 'Increase text size'} onClick={() => setSliderFontSize(Math.min(48, baseFontSize + 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Maximize size={16} aria-hidden="true"/></button>
                                                 </div>
                                             </div>
                                             <div className={`border-t ${_skin.divider} pt-3 mt-3`}>
@@ -1798,6 +1808,7 @@ function HeaderBar(props) {
                         <button type="button"
                           onClick={toggleOverlay}
                           data-help-key="header_settings_overlay"
+                          aria-pressed={colorOverlay !== 'none'}
                           className={`p-2 rounded-xl transition-all flex items-center gap-2 ${colorOverlay !== 'none' ? 'bg-white text-indigo-900 shadow-lg' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
                           title={`${t('settings.overlay')}: ${selectedOverlayLabel}`}
                           aria-label={`${t('a11y.overlay_toggle')}: ${selectedOverlayLabel}`}
@@ -1822,11 +1833,12 @@ function HeaderBar(props) {
                                 <button type="button"
                                   onClick={handleSetActiveViewToDashboard}
                                   data-help-key="header_dashboard"
+                                  aria-current={activeView === 'dashboard' ? 'page' : undefined}
                                   className={`p-2 rounded-xl transition-all flex items-center gap-2 ${activeView === 'dashboard' ? 'bg-white text-indigo-900 shadow-lg' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
                                   title={dashboardNavLabel}
                                   aria-label={dashboardNavLabel}
                                 >
-                                  <Layout size={20} />
+                                  <Layout size={20} aria-hidden="true" />
                                 </button>
                                 {!isTeacherMode && (
                                     <button type="button"
@@ -1843,11 +1855,12 @@ function HeaderBar(props) {
                                     <button type="button"
                                         onClick={() => handleRestoreView(latestLessonPlan)}
                                         data-help-key="header_jump_lesson"
+                                        aria-current={generatedContent?.id === latestLessonPlan.id ? 'page' : undefined}
                                         className={`p-2 rounded-xl transition-all flex items-center gap-2 ${generatedContent?.id === latestLessonPlan.id ? 'bg-cyan-100 text-cyan-800 shadow-lg ring-2 ring-cyan-500' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
                                         title={t('header.jump_to_lesson')}
                                         aria-label={t('header.jump_to_lesson')}
                                     >
-                                        <ClipboardList size={20} />
+                                        <ClipboardList size={20} aria-hidden="true" />
                                     </button>
                                 )}
                                 {notebookEntryCount > 0 && setShowNotebook && (
@@ -1908,10 +1921,10 @@ function HeaderBar(props) {
                             data-help-ignore="true"
                             data-help-menu-toggle=""
                             onClick={handleHelpButton}
-                            aria-pressed={isHelpMode}
-                            aria-haspopup={helpMenuAvailable ? 'true' : undefined}
-                            aria-expanded={helpMenuAvailable ? showHelpMenu : undefined}
-                            className={`relative p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
+                            aria-pressed={(!helpMenuAvailable || isHelpMode) ? isHelpMode : undefined}
+                            aria-haspopup={(helpMenuAvailable && !isHelpMode) ? 'true' : undefined}
+                            aria-expanded={(helpMenuAvailable && !isHelpMode) ? showHelpMenu : undefined}
+                            className={`relative p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md' : 'hover:bg-white/10 text-white/90 hover:text-white'}`}
                             title={helpButtonLabel}
                             aria-label={helpButtonLabel}
                         >
@@ -1935,11 +1948,12 @@ function HeaderBar(props) {
                             <button type="button"
                                 onClick={handleCloudToggleClick}
                                 data-help-key="header_cloud_sync"
+                                aria-pressed={!!isCloudSyncEnabled}
                                 className={`p-2 rounded-xl transition-colors ${isCloudSyncEnabled ? 'bg-green-700 text-white shadow-lg shadow-green-500/30' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
                                 title={isCloudSyncEnabled ? t('header.cloud_sync_active') : t('header.cloud_sync_enable')}
                                 aria-label={t('header.cloud_sync_toggle')}
                             >
-                                {isCloudSyncEnabled ? <Cloud size={20} /> : <CloudOff size={20} />}
+                                {isCloudSyncEnabled ? <Cloud size={20} aria-hidden="true" /> : <CloudOff size={20} aria-hidden="true" />}
                             </button>
                         )}
                         {isTeacherMode && (
@@ -1992,11 +2006,12 @@ function HeaderBar(props) {
                                 ref={_translateTriggerRef}
                                 onClick={openTranslateDialogFromHeader}
                                 aria-haspopup="dialog"
+                                aria-label={t('header.translate_button')}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30"
                                 title={t('header.translate_tooltip')}
                                 data-help-key="header_translate"
                             >
-                                <Languages size={14} /> <span className="hidden lg:inline">{t('header.translate_button')}</span>
+                                <Languages size={14} aria-hidden="true" /> <span className="hidden lg:inline">{t('header.translate_button')}</span>
                             </button>
                             <div className="relative shrink-0">
                             <button type="button"
@@ -2012,63 +2027,59 @@ function HeaderBar(props) {
                             </button>
                             {showExportMenu && _headerPortal(
                                 <>
-                                <div ref={_exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-documents-dialog-title" className="fixed top-4 right-4 bottom-4 w-56 max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain bg-white rounded-xl shadow-2xl p-2 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1">
+                                <div ref={_exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-documents-dialog-title" className={`fixed top-4 right-4 bottom-4 w-56 max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain rounded-xl shadow-2xl p-2 border z-[100] animate-in fade-in zoom-in-95 motion-reduce:animate-none flex flex-col gap-1 ${_skin.panel}`}>
                                     <div className="flex items-center justify-between gap-2 px-2 py-1">
-                                      <h2 id="header-documents-dialog-title" className="text-xs font-black text-slate-800 flex items-center gap-1.5">{"\ud83d\udcc4"} {t('export_menu.section_documents') || 'Documents'}</h2>
-                                      <button type="button" onClick={handleSetShowExportMenuToFalse} className="min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('common.close') || 'Close'}><X size={18} aria-hidden="true" /></button>
+                                      <h2 id="header-documents-dialog-title" className={`text-xs font-black flex items-center gap-1.5 ${_skin.label}`}>{"\ud83d\udcc4"} {t('export_menu.section_documents') || 'Documents'}</h2>
+                                      <button type="button" onClick={handleSetShowExportMenuToFalse} className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close'}><X size={18} aria-hidden="true" /></button>
                                     </div>
-                                    <button type="button" onClick={() => openExportPreview('print')} className="w-full px-3 py-2 bg-indigo-600 bg-gradient-to-r from-indigo-700 to-violet-700 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex flex-col items-center justify-center gap-0.5 mb-1">
-                                        <span className="flex items-center gap-1.5">{"\ud83d\udee0\ufe0f"} {t('export_menu.document_builder') || 'Document Builder'}</span>
-                                        <span className="text-[10px] font-medium text-indigo-100">{t('export_menu.document_builder_subtitle') || 'Edit, style & preview all formats'}</span>
-                                    </button>
-                                    {customExportCSS && <div className="text-[11px] text-green-600 font-medium px-2 mb-1">✓ {t('export_menu.custom_style_active') || 'Custom style active'}</div>}
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcc4"} {t('export_menu.section_print') || 'Print & PDF'}</div>
                                     <button type="button"
                                         aria-label={t('header.open_doc_builder_pdf_aria') || 'Open Document Builder for PDF'}
                                         onClick={() => openExportPreview('print')}
-                                        className="flex flex-col items-start w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-green-700 text-xs font-bold transition-colors"
                                         data-help-key="export_pdf"
+                                        className={`w-full px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex flex-col items-center justify-center gap-0.5 mb-1 ${theme === 'contrast' ? 'bg-yellow-400 text-black border-2 border-yellow-400 hover:bg-yellow-300' : 'bg-indigo-600 bg-gradient-to-r from-indigo-700 to-violet-700 hover:from-indigo-800 hover:to-violet-800 text-white'}`}
                                     >
-                                        <span className="flex items-center gap-2"><FileDown size={14} /> {t('export_menu.pdf_slash_print', { print: t('export_menu.print') }) || `PDF / ${t('export_menu.print')}`}</span>
-                                        <span className="text-[10px] font-normal text-slate-600 pl-5">{t('export_menu.pdf_via_builder_sub') || 'Opens Builder ready to print or save PDF'}</span>
+                                        <span className="flex items-center gap-1.5">{"\ud83d\udee0\ufe0f"} {t('export_menu.document_builder') || 'Document Builder'}</span>
+                                        <span className={`text-[10px] font-medium ${theme === 'contrast' ? 'text-black' : 'text-indigo-100'}`}>{t('export_menu.pdf_slash_print', { print: t('export_menu.print') }) || `PDF / ${t('export_menu.print')}`} · {t('export_menu.document_builder_subtitle') || 'Edit, style & preview all formats'}</span>
                                     </button>
+                                    {customExportCSS && <div className={`text-[11px] font-medium px-2 mb-1 ${theme === 'dark' ? 'text-emerald-300' : theme === 'contrast' ? 'text-yellow-400' : 'text-green-700'}`}>✓ {t('export_menu.custom_style_active') || 'Custom style active'}</div>}
+                                    <div className={`text-[11px] font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcc4"} {t('export_menu.section_print') || 'Print & PDF'}</div>
                                     <button type="button"
                                         onClick={() => openExportPreview('worksheet')}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors"
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-slate-50 text-slate-700' : _skin.ghost}`}
                                         data-help-key="export_worksheet"
                                     >
-                                        <FileText size={14} /> {t('export_menu.worksheet')}
+                                        <FileText size={14} aria-hidden="true" /> {t('export_menu.worksheet')}
                                     </button>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcbb"} {t('export_menu.section_digital') || 'Digital Formats'}</div>
+                                    <div className={`text-[11px] font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcbb"} {t('export_menu.section_digital') || 'Digital Formats'}</div>
                                     <button type="button"
                                         onClick={() => openExportPreview('html')}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 text-indigo-700 text-xs font-bold transition-colors"
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-indigo-50 text-indigo-700' : _skin.ghost}`}
                                         data-help-key="export_html"
                                     >
-                                        <Code size={14} /> {t('export_menu.html')}
+                                        <Code size={14} aria-hidden="true" /> {t('export_menu.html')}
                                     </button>
                                     <button type="button"
                                         onClick={() => openExportPreview('slides')}
                                         disabled={!pptxLoaded} title={t('header.export_slides_tooltip') || 'Opens Document Builder in Slides mode'}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-orange-50 text-orange-700 text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme === 'light' ? 'hover:bg-orange-50 text-orange-700' : _skin.ghost}`}
                                         data-help-key="export_slides"
                                     >
-                                        {!pptxLoaded ? <RefreshCw size={14} className="animate-spin"/> : <MonitorPlay size={14} />}
+                                        {!pptxLoaded ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <MonitorPlay size={14} aria-hidden="true" />}
                                         {t('export_menu.slides')}
                                     </button>
                                     {/* Sharing to a class is not part of learning on your own. */}
                                     {!isIndependentMode && (<>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{t('export_menu.section_student_qr') || 'Student QR'}</div>
+                                    <div className={`text-[11px] font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{t('export_menu.section_student_qr') || 'Student QR'}</div>
                                     <button type="button"
                                         onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); setShowExportMenu(false); }}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 text-cyan-700 text-xs font-bold transition-colors"
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-cyan-50 text-cyan-700' : _skin.ghost}`}
                                         data-help-key="homework_qr"
                                     >
-                                        <Share2 size={14} /> {t('export_menu.homework_qr') || 'Homework QR'}
+                                        <Share2 size={14} aria-hidden="true" /> {t('export_menu.homework_qr') || 'Homework QR'}
                                     </button>
                                     <div className="px-3 pb-2">
-                                      <label className="block text-[11px] font-bold text-slate-600" htmlFor="homework-qr-expiry">{t('export_menu.homework_link_length') || 'Homework link length'}</label>
-                                      <select id="homework-qr-expiry" value={homeworkExpiryDays || 14} onChange={event => setHomeworkExpiryDays(Number(event.target.value) || 14)} className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                      <label className={`block text-[11px] font-bold ${_skin.label}`} htmlFor="homework-qr-expiry">{t('export_menu.homework_link_length') || 'Homework link length'}</label>
+                                      <select id="homework-qr-expiry" value={homeworkExpiryDays || 14} onChange={event => setHomeworkExpiryDays(Number(event.target.value) || 14)} className={`mt-1 w-full rounded-md border px-2 py-1.5 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-cyan-500 ${_skin.field}`}>
                                         <option value={1}>{t('export_menu.expiry_1_day') || '1 day'}</option>
                                         <option value={7}>{t('export_menu.expiry_1_week') || '1 week'}</option>
                                         <option value={14}>{t('export_menu.expiry_2_weeks') || '2 weeks'}</option>
@@ -2077,39 +2088,36 @@ function HeaderBar(props) {
                                         <option value={180}>{t('export_menu.expiry_180_days') || '180 days (semester)'}</option>
                                         <option value={365}>{t('export_menu.expiry_365_days') || '365 days (school year)'}</option>
                                       </select>
-                                      {/* Activity setup moved to the Assignment Control Center so this
-                                          compact dialog only needs one small select plus launch actions. */}
-                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-left text-[11px] font-bold text-sky-900 hover:bg-sky-100">
-                                        {t('export_menu.setup_activity') || 'Set up a poll, sign-up sheet or class activity'}
-                                      </button>
-                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800">
-                                        <History size={14}/> {t('export_menu.shared_links') || 'Polls, sign-ups & shared links'}{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
+                                      {/* Activity setup and shared-link history live together in the
+                                          Assignment Control Center — keep one clear launch action here. */}
+                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} title={t('export_menu.setup_activity') || 'Set up a poll, sign-up sheet or class activity'} className={`mt-2 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${theme === 'light' ? 'border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100' : _skin.surface}`}>
+                                        <History size={14} aria-hidden="true" /> {t('export_menu.shared_links') || 'Polls, sign-ups & shared links'}{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
                                       </button>
                                     </div>
-                                    <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">{studentAiPolicyForShare === 'student-byok' ? (t('export_menu.share_policy_byok') || 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.') : (t('export_menu.share_policy_ai_off') || 'Teacher-prepared resources open for students with AI generation off.')}</p>
+                                    <p className={`px-3 pb-2 text-[11px] leading-snug ${theme === 'light' ? 'text-slate-600' : _skin.muted}`}>{studentAiPolicyForShare === 'student-byok' ? (t('export_menu.share_policy_byok') || 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.') : (t('export_menu.share_policy_ai_off') || 'Teacher-prepared resources open for students with AI generation off.')}</p>
                                     </>)}
                                     {/* Section label shares the buttons' gate \u2014 an excluded mode
                                         must not see an empty "LMS Integration" heading (independent
                                         mode did, before parent exclusions were added). */}
                                     {!isIndependentMode && !isParentMode && (
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} {t('export_menu.section_lms') || 'LMS Integration'}</div>
+                                    <div className={`text-[11px] font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83c\udfeb"} {t('export_menu.section_lms') || 'LMS Integration'}</div>
                                     )}
                                     {activeView === 'quiz' && !isIndependentMode && !isParentMode && (
                                         <button type="button"
                                             onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
-                                            className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-teal-50 text-teal-700 text-xs font-bold transition-colors"
+                                            className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-teal-50 text-teal-700' : _skin.ghost}`}
                                             data-help-key="export_qti"
                                         >
-                                            <FolderDown size={14} /> {t('export_menu.qti')}
+                                            <FolderDown size={14} aria-hidden="true" /> {t('export_menu.qti')}
                                         </button>
                                     )}
                                     {!isIndependentMode && !isParentMode && (
                                     <button type="button"
                                         onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-yellow-50 text-yellow-700 text-xs font-bold transition-colors"
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-yellow-50 text-yellow-800' : _skin.ghost}`}
                                         data-help-key="export_ims"
                                     >
-                                        <FolderDown size={14} /> {t('export_menu.ims')}
+                                        <FolderDown size={14} aria-hidden="true" /> {t('export_menu.ims')}
                                     </button>
                                     )}
                                 </div>
@@ -2144,11 +2152,12 @@ function HeaderBar(props) {
                             {(isParentMode || isIndependentMode || screeningLiveActive) && (
                             <button type="button"
                                 onClick={() => setShowClassAnalytics(true)}
+                                aria-label={headerAnalyticsLabel}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"
                                 title={headerAnalyticsLabel}
                                 data-help-key="header_analytics"
                             >
-                                <ClipboardList size={14} /> <span className="hidden lg:inline">{headerAnalyticsLabel}</span>
+                                <ClipboardList size={14} aria-hidden="true" /> <span className="hidden lg:inline">{headerAnalyticsLabel}</span>
                             </button>
                             )}
                         </div>
@@ -2238,7 +2247,7 @@ function HeaderBar(props) {
                                 <button type="button"
                                     aria-label={activeSessionCode ? (t('header.live_session_code', { code: activeSessionCode }) || `Live: ${activeSessionCode}`) : (t('session.start') || 'Start session')}
                                     onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
-                                    className={`px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${activeSessionCode ? 'bg-green-700 text-white border-green-400 animate-pulse' : 'bg-white/10 hover:bg-white/20 text-white border-white/10 hover:border-white/30'}`}
+                                    className={`px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${activeSessionCode ? 'bg-green-700 text-white border-green-400 animate-pulse motion-reduce:animate-none' : 'bg-white/10 hover:bg-white/20 text-white border-white/10 hover:border-white/30'}`}
                                     data-help-key="header_session_start"
                                     title={t('session.start_tooltip')}
                                 >
@@ -2250,7 +2259,7 @@ function HeaderBar(props) {
                                 <div className="flex items-center">
                                     {activeSessionCode ? (
                                         <div className={`flex items-center gap-2 text-white px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm transition-colors ${sessionData ? 'bg-green-700 border-green-600' : 'bg-yellow-700 border-yellow-400'}`}>
-                                            {sessionData ? <Wifi size={14} className="animate-pulse"/> : <RefreshCw size={14} className="animate-spin"/>}
+                                            {sessionData ? <Wifi size={14} className="animate-pulse motion-reduce:animate-none" aria-hidden="true"/> : <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/>}
                                             <span>{sessionData ? (t('header.synced_session_code', { code: activeSessionCode }) || `Synced: ${activeSessionCode}`) : (t('header.connecting_session_code', { code: activeSessionCode }) || `Connecting: ${activeSessionCode}`)}</span>
                                             <button type="button"
                                                 aria-label={t('common.disconnect') || 'Disconnect'}
@@ -2265,9 +2274,8 @@ function HeaderBar(props) {
                                                     addToast(t('session.toast_disconnected'), "info");
                                                 }}
                                                 className="ml-2 p-0.5 hover:bg-white/20 rounded"
-                                                title={t('common.disconnect')}
                                             >
-                                                <X size={12}/>
+                                                <X size={12} aria-hidden="true"/>
                                             </button>
                                         </div>
                                     ) : (

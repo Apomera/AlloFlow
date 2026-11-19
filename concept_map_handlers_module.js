@@ -2,6 +2,12 @@
 'use strict';
 if (window.AlloModules && window.AlloModules.CmapHandlersModule) { console.log('[CDN] CmapHandlersModule already loaded, skipping'); return; }
 // Pure flow layout is colocated with its only consumer.
+const _cmapAiUsable = (kind, fn) => {
+  if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+  if (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true)) return false;
+  try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn)); } catch (_) { return false; }
+  return true;
+};
 const calculateFlowLayout = (nodes, containerWidth = 800) => {
     const centerX = containerWidth / 2;
     let currentY = 50;
@@ -450,7 +456,7 @@ const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
       // Without this a keyless install pays a pointless request that comes
       // back "{}", then shows an error toast for a feature the user never
       // invoked. The caller's fallback positions stand on their own.
-      let _aiText = true;
+      let _aiText = _cmapAiUsable('text', callGemini);
       try {
           const cap = (typeof window !== 'undefined' && typeof window.__alloResolveAiCapability === 'function')
               ? window.__alloResolveAiCapability()
@@ -631,6 +637,10 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
   const { inputText, gradeLevel, isIndependentMode, isParentMode, currentUiLanguage, leveledTextLanguage, lessonCustomAdditions, history, alloBotRef, setIsProcessing, setGenerationStep, setGeneratedContent, setActiveView, setHistory, setError, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, getLessonContext, getAssetManifest, buildStudyGuidePrompt, buildParentGuidePrompt, buildLessonPlanPrompt, flyToElement } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleGenerateLessonPlan fired"); } catch(_) {}
         if (!inputText.trim()) return;
+        if (!_cmapAiUsable('text', callGemini)) {
+             if (typeof addToast === 'function') addToast(t('errors.ai_unavailable') || 'AI is currently unavailable.', 'error');
+             return;
+        }
         setIsProcessing(true);
         if (alloBotRef.current) {
              const feedback = t('bot_events.feedback_lesson_generic').replace('{grade}', gradeLevel || "general");
@@ -679,10 +689,14 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
             const result = await callGemini(prompt, true);
             let content;
             try {
+                if (typeof result !== 'string') throw new Error('Expected string Lesson Plan response');
                 content = safeJsonParse(result);
                 if (!content) {
                      const cleaned = cleanJson(result);
                      content = JSON.parse(cleaned);
+                }
+                if (!content || typeof content !== 'object' || Array.isArray(content)) {
+                     throw new Error('Lesson Plan JSON must be an object');
                 }
             } catch (parseErr) {
                 warnLog("Lesson Plan Parse Error:", parseErr);
@@ -782,6 +796,7 @@ const prepareFactualCorrection = async ({ sourceText, notes, callGemini, chunkTe
   const openNotes = (Array.isArray(notes) ? notes : []).filter(isOpenFactualNote);
   if (!original.trim()) return { ok: false, reason: 'no-source' };
   if (!openNotes.length) return { ok: false, reason: 'no-selection' };
+  if (!_cmapAiUsable('text', callGemini)) return { ok: false, reason: 'unavailable' };
   const chunks = typeof chunkText === 'function' ? chunkText(original, 8000) : [original];
   const joiner = chunks.join('') === original ? '' : '\n\n';
   const parts = [];
@@ -836,10 +851,15 @@ const handleRefinePanel = async (panelIdx, editInstruction, deps) => {
       const plan = generatedContent?.data.visualPlan;
       const panel = plan.panels[panelIdx];
       if (!panel?.imageUrl) return;
+      if (!_cmapAiUsable('imageEdit', callGeminiImageEdit)) {
+          if (typeof addToast === 'function') addToast(t('visual_director.refine_failed') || 'Refinement failed', 'error');
+          return;
+      }
+      const rawBase64 = typeof panel.imageUrl === 'string' ? panel.imageUrl.split(',')[1] : '';
+      if (!rawBase64) return;
       setIsProcessing(true);
       setGenerationStep(t('visual_director.refining_panel') || 'Refining panel...');
       try {
-          const rawBase64 = panel.imageUrl.split(',')[1];
           const refinedUrl = await callGeminiImageEdit(editInstruction, rawBase64);
           if (refinedUrl) {
               const updatedPanels = [...plan.panels];
@@ -858,6 +878,7 @@ const handleRefinePanel = async (panelIdx, editInstruction, deps) => {
           addToast(t('visual_director.refine_failed') || 'Refinement failed', 'error');
       } finally {
           setIsProcessing(false);
+          if (typeof setGenerationStep === 'function') setGenerationStep('');
       }
 };
 

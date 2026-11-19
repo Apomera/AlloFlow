@@ -434,10 +434,13 @@ function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
       return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function (el) {
         if (!el || el.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
         var closedDetails = el.closest('details:not([open])');
-        if (closedDetails && !el.closest('summary')) return false;
+        if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
         if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
-          var cs = window.getComputedStyle(el);
-          if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+          for (var cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+            var cs = window.getComputedStyle(cur);
+            if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+            if (cur === dialog) break;
+          }
         }
         return true;
       });

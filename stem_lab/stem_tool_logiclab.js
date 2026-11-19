@@ -17,12 +17,28 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var t = this._registry[id]; if (!t||!t.render) return null; try{return t.render(ctx);}catch(e){console.error('[StemLab] Error rendering '+id,e);return null;} }
 };
 
-// WCAG 1.4.3 high contrast: pale violet gradient cards go black
+// WCAG 1.4.3 dark & high-contrast theme styling for Logic Lab
 (function() {
   if (typeof document === 'undefined' || !document.head || document.getElementById('allo-logiclab-hc-css')) return;
   var st = document.createElement('style');
   st.id = 'allo-logiclab-hc-css';
-  st.textContent = ".theme-contrast [data-stem-tool-shell=\"logicLab\"] [style*=\"gradient(\"][style*=\"rgb(245, 243, 255)\"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}";
+  st.textContent =
+    '.theme-contrast [data-stem-tool-shell="logicLab"] [style*="gradient("][style*="rgb(245, 243, 255)"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}' +
+    '.theme-contrast [data-logiclab-root="true"], .theme-contrast [data-logiclab-root="true"] .bg-white, .theme-contrast [data-logiclab-root="true"] .bg-violet-50, .theme-contrast [data-logiclab-root="true"] .bg-violet-100, .theme-contrast [data-logiclab-root="true"] .bg-slate-50, .theme-contrast [data-logiclab-root="true"] .bg-amber-50, .theme-contrast [data-logiclab-root="true"] .bg-emerald-50, .theme-contrast [data-logiclab-root="true"] .bg-red-50, .theme-contrast [data-logiclab-root="true"] .bg-purple-50 { background: #000000 !important; color: #ffff00 !important; border-color: #ffff00 !important; }' +
+    '.theme-contrast [data-logiclab-root="true"] h2, .theme-contrast [data-logiclab-root="true"] h3, .theme-contrast [data-logiclab-root="true"] h4, .theme-contrast [data-logiclab-root="true"] p, .theme-contrast [data-logiclab-root="true"] span, .theme-contrast [data-logiclab-root="true"] td, .theme-contrast [data-logiclab-root="true"] th, .theme-contrast [data-logiclab-root="true"] label, .theme-contrast [data-logiclab-root="true"] code { color: #ffff00 !important; }' +
+    '.theme-contrast [data-logiclab-root="true"] [aria-selected="true"] { background: #00ff00 !important; color: #000000 !important; border-color: #00ff00 !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] { background: #0f172a; color: #f8fafc; border-radius: 16px; padding: 12px; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .bg-white, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-slate-50, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-slate-100, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-slate-200, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-slate-300, [data-logiclab-root="true"][data-ll-theme="dark"] [style*="background: white"], [data-logiclab-root="true"][data-ll-theme="dark"] [style*="background: rgb(255, 255, 255)"] { background: #1e293b !important; color: #f8fafc !important; border-color: #475569 !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .bg-violet-50, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-violet-100, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-violet-200, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-purple-50, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-purple-100, [data-logiclab-root="true"][data-ll-theme="dark"] [style*="background: rgb(245, 243, 255)"], [data-logiclab-root="true"][data-ll-theme="dark"] [style*="background: #f5f3ff"] { background: #1e1b4b !important; color: #ede9fe !important; border-color: #6d28d9 !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .text-slate-950, [data-logiclab-root="true"][data-ll-theme="dark"] .text-slate-900, [data-logiclab-root="true"][data-ll-theme="dark"] .text-slate-700, [data-logiclab-root="true"][data-ll-theme="dark"] .text-slate-600, [data-logiclab-root="true"][data-ll-theme="dark"] .text-slate-500 { color: #e2e8f0 !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .text-violet-900, [data-logiclab-root="true"][data-ll-theme="dark"] .text-violet-800, [data-logiclab-root="true"][data-ll-theme="dark"] .text-violet-700, [data-logiclab-root="true"][data-ll-theme="dark"] .text-violet-600, [data-logiclab-root="true"][data-ll-theme="dark"] .text-purple-900, [data-logiclab-root="true"][data-ll-theme="dark"] .text-purple-800, [data-logiclab-root="true"][data-ll-theme="dark"] .text-purple-700, [data-logiclab-root="true"][data-ll-theme="dark"] .text-purple-600 { color: #ddd6fe !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .bg-emerald-50, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-emerald-100 { background: #064e3b !important; color: #a7f3d0 !important; border-color: #10b981 !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .bg-red-50, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-red-100 { background: #450a0a !important; color: #fecaca !important; border-color: #ef4444 !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .bg-amber-50, [data-logiclab-root="true"][data-ll-theme="dark"] .bg-amber-100 { background: #451a03 !important; color: #fde68a !important; border-color: #f59e0b !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .text-amber-900, [data-logiclab-root="true"][data-ll-theme="dark"] .text-amber-800, [data-logiclab-root="true"][data-ll-theme="dark"] .text-amber-700, [data-logiclab-root="true"][data-ll-theme="dark"] .text-amber-600 { color: #fde68a !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .text-emerald-800, [data-logiclab-root="true"][data-ll-theme="dark"] .text-emerald-700, [data-logiclab-root="true"][data-ll-theme="dark"] .text-emerald-600 { color: #6ee7b7 !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] .text-red-800, [data-logiclab-root="true"][data-ll-theme="dark"] .text-red-700, [data-logiclab-root="true"][data-ll-theme="dark"] .text-red-500 { color: #fca5a5 !important; }' +
+    '[data-logiclab-root="true"][data-ll-theme="dark"] input, [data-logiclab-root="true"][data-ll-theme="dark"] textarea { background: #0f172a !important; color: #f8fafc !important; border-color: #6d28d9 !important; }';
   document.head.appendChild(st);
 })();
 
@@ -90,8 +106,9 @@ window.StemLab = window.StemLab || {
 
   // ── Audio (auto-injected) ──
   var _logiclAC = null;
+  var _logiclMuted = false;
   function getLogiclAC() { if (!_logiclAC) { try { _logiclAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_logiclAC && _logiclAC.state === "suspended") { try { _logiclAC.resume(); } catch(e) {} } return _logiclAC; }
-  function logiclTone(f,d,tp,v) { var ac = getLogiclAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function logiclTone(f,d,tp,v) { if (_logiclMuted || (typeof window !== 'undefined' && window.AlloGlobalMuted)) return; var ac = getLogiclAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxLogiclClick() { logiclTone(600, 0.03, "sine", 0.04); }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
@@ -165,6 +182,14 @@ window.StemLab = window.StemLab || {
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
+      var isDark = !!ctx.isDark;
+      var isContrast = !!ctx.isContrast;
+      var llTheme = isContrast ? 'contrast' : (isDark ? 'dark' : 'light');
+      var llCardBg = isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff');
+      var llSubtleBg = isContrast ? '#000000' : (isDark ? '#17153b' : '#f5f3ff');
+      var llInk = isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a');
+      var llMuted = isContrast ? '#fde047' : (isDark ? '#cbd5e1' : '#475569');
+      var llBorder = isContrast ? '#ffff00' : (isDark ? '#4c1d95' : '#ddd6fe');
 
       // ── Tool body (logicLab) ──
       return (function() {
@@ -932,9 +957,9 @@ window.StemLab = window.StemLab || {
 
           // ── gradient map ──
 
-          var _gViolet = 'linear-gradient(135deg, #5b21b6, #6d28d9, #7c3aed)';
+          var _gViolet = isContrast ? '#000000' : 'linear-gradient(135deg, #4c1d95, #6d28d9, #7c3aed)';
 
-          var _gCard = 'linear-gradient(135deg, #f5f3ff, #ede9fe, #f5f3ff)';
+          var _gCard = isContrast ? '#000000' : (isDark ? 'linear-gradient(135deg, #17153b, #1e1b4b, #17153b)' : 'linear-gradient(135deg, #f5f3ff, #ede9fe, #f5f3ff)');
 
 
 
@@ -963,6 +988,8 @@ window.StemLab = window.StemLab || {
             '(': '#94a3b8', ')': '#94a3b8'
           };
 
+          var solvedCount = _solvedProofCount(d);
+
           var renderLogicStudioFocus = function() {
             var table = genTable(expr);
             var rowCount = table && table.rows ? table.rows.length : 0;
@@ -979,124 +1006,167 @@ window.StemLab = window.StemLab || {
             var activeModeLabel = modeLabels[mode] || modeLabels.truth;
             var proofTarget = activeCh && activeCh.conclusion ? activeCh.conclusion : 'Q';
             var routeCards = [
-              { id: 'truth', icon: '\uD83D\uDCCA', title: 'Truth Tables', detail: rowCount ? rowCount + ' rows ready' : 'Build every case', accent: '#7c3aed', soft: '#f5f3ff' },
-              { id: 'proof', icon: '\uD83E\uDDE9', title: 'Proof Builder', detail: proofSteps.length + ' steps toward ' + proofTarget, accent: '#0891b2', soft: '#ecfeff' },
-              { id: 'challenges', icon: '\u26A1', title: 'Challenge Run', detail: score + ' pts, streak ' + streak, accent: '#d97706', soft: '#fffbeb' },
-              { id: 'gates', icon: '\u26A1', title: 'Logic Gates', detail: gateType + ' output ' + (gateOutput ? 'true' : 'false'), accent: '#16a34a', soft: '#f0fdf4' },
-              { id: 'simLogic', icon: '\uD83C\uDFB2', title: 'Probability', detail: 'Reason with uncertainty', accent: '#db2777', soft: '#fdf2f8' }
+              { id: 'truth', icon: '\uD83D\uDCCA', title: 'Truth Tables', detail: rowCount ? rowCount + ' rows ready' : 'Build every case', accent: '#7c3aed', soft: isDark ? '#1e1b4b' : '#f5f3ff' },
+              { id: 'proof', icon: '\uD83E\uDDE9', title: 'Proof Builder', detail: solvedCount + '/8 solved \u00B7 target ' + proofTarget, accent: '#0891b2', soft: isDark ? '#083344' : '#ecfeff' },
+              { id: 'challenges', icon: '\u26A1', title: 'Challenge Run', detail: score + ' pts \u00B7 streak ' + streak, accent: '#d97706', soft: isDark ? '#451a03' : '#fffbeb' },
+              { id: 'gates', icon: '\u26A1', title: 'Logic Gates', detail: gateType + ' output ' + (gateOutput ? 'HIGH (1)' : 'LOW (0)'), accent: '#16a34a', soft: isDark ? '#052e16' : '#f0fdf4' },
+              { id: 'simLogic', icon: '\uD83C\uDFB2', title: 'Probability', detail: 'Reason with uncertainty', accent: '#db2777', soft: isDark ? '#500724' : '#fdf2f8' }
             ];
+            var invertingGate = gateType === 'NOT' || gateType === 'NAND' || gateType === 'NOR' || gateType === 'XNOR';
+            var gateBase = (gateType === 'AND' || gateType === 'NAND') ? 'and'
+              : (gateType === 'OR' || gateType === 'NOR') ? 'or'
+              : (gateType === 'XOR' || gateType === 'XNOR') ? 'xor' : 'not';
 
             return React.createElement("section", {
               "data-logiclab-focus": "true",
               role: "region",
               "aria-label": t('stem.logiclab.reasoning_studio', 'Logic Lab reasoning studio'),
-              className: "mb-5 overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm"
+              className: "mb-5 overflow-hidden rounded-2xl border shadow-sm",
+              style: { background: llCardBg, borderColor: llBorder }
             },
               React.createElement("div", {
                 className: "grid grid-cols-1 lg:grid-cols-5 gap-0",
-                style: { background: 'linear-gradient(135deg, #ffffff 0%, #f5f3ff 54%, #eef2ff 100%)' }
+                style: {
+                  background: isContrast ? '#000000' : (isDark ? 'linear-gradient(135deg, #17153b 0%, #1e1b4b 54%, #0f172a 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f5f3ff 54%, #eef2ff 100%)')
+                }
               },
-                React.createElement("div", { className: "lg:col-span-3 p-5 sm:p-6" },
+                React.createElement("div", { className: "lg:col-span-3 p-5 sm:p-6", style: { minWidth: 0 } },
                   React.createElement("div", { className: "flex flex-wrap items-start gap-3 justify-between" },
-                    React.createElement("div", null,
-                      React.createElement("p", { className: "text-xs font-black uppercase tracking-wide text-violet-700" }, t('stem.logiclab.current_workspace', 'Current workspace')),
-                      React.createElement("h3", { className: "mt-1 text-xl sm:text-2xl font-black text-slate-950" }, t('stem.logiclab.reasoning_studio_title', 'Reasoning Studio')),
-                      React.createElement("p", { className: "mt-2 max-w-xl text-sm leading-relaxed text-slate-700" }, t('stem.logiclab.reasoning_studio_hint', 'Move between truth tables, proof steps, logic gates, and probability without losing the thread of the argument.'))
+                    React.createElement("div", { style: { minWidth: 0 } },
+                      React.createElement("p", { className: "text-xs font-black uppercase tracking-wide", style: { color: isContrast ? '#00ff00' : (isDark ? '#c4b5fd' : '#6d28d9') } }, t('stem.logiclab.current_workspace', 'Current workspace')),
+                      React.createElement("h3", { className: "mt-1 text-xl sm:text-2xl font-black", style: { color: llInk } }, t('stem.logiclab.reasoning_studio_title', 'Reasoning Studio')),
+                      React.createElement("p", { className: "mt-2 max-w-xl text-sm leading-relaxed", style: { color: llMuted } }, t('stem.logiclab.reasoning_studio_hint', 'Move between truth tables, proof steps, logic gates, and probability without losing the thread of the argument.'))
                     ),
                     React.createElement("span", {
-                      className: "rounded-full px-3 py-1 text-xs font-black text-white",
-                      style: { background: _gViolet }
+                      className: "rounded-full px-3 py-1 text-xs font-black border",
+                      style: isContrast
+                        ? { background: '#00ff00', color: '#000000', borderColor: '#00ff00' }
+                        : { background: _gViolet, color: '#ffffff', borderColor: '#7c3aed' }
                     }, activeModeLabel)
                   ),
                   React.createElement("div", { className: "mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2" },
                     [
                       ['Expression', expr || 'P \u2192 Q', rowCount ? table.type : 'ready'],
                       ['Rows', rowCount || 'Build', trueCount + ' true'],
-                      ['Proof', proofSteps.length + ' steps', 'target ' + proofTarget],
+                      ['Proofs', solvedCount + ' / ' + PROOF_CHALLENGES.length, 'target ' + proofTarget],
                       ['Best', bestStreak + ' streak', score + ' pts']
                     ].map(function(stat) {
                       return React.createElement("div", {
                         key: stat[0],
-                        className: "rounded-xl border border-white/80 bg-white/85 p-3 shadow-sm",
-                        style: { minHeight: 86 }
+                        className: "rounded-xl border p-3 shadow-sm",
+                        style: {
+                          minHeight: 86,
+                          minWidth: 0,
+                          background: llCardBg,
+                          borderColor: llBorder
+                        }
                       },
-                        React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-slate-500" }, stat[0]),
-                        React.createElement("div", { className: "mt-1 truncate text-sm font-black text-slate-950", title: String(stat[1]) }, stat[1]),
-                        React.createElement("div", { className: "mt-1 text-xs font-bold text-violet-700" }, stat[2])
+                        React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-wide", style: { color: llMuted } }, stat[0]),
+                        React.createElement("div", { className: "mt-1 truncate text-sm font-black", style: { color: llInk }, title: String(stat[1]) }, stat[1]),
+                        React.createElement("div", { className: "mt-1 text-xs font-bold", style: { color: isContrast ? '#00ff00' : (isDark ? '#c4b5fd' : '#6d28d9') } }, stat[2])
                       );
                     })
                   ),
-                  React.createElement("div", { className: "mt-4 rounded-xl border border-violet-100 bg-white/75 p-3" },
-                    React.createElement("div", { className: "flex items-center justify-between text-xs font-black text-slate-600" },
-                      React.createElement("span", null, t('stem.logiclab.truth_mix', 'Truth mix')),
-                      React.createElement("span", null, trueCount + ' true / ' + falseCount + ' false')
+                  React.createElement("div", { className: "mt-4 rounded-xl border p-3", style: { background: llCardBg, borderColor: llBorder } },
+                    React.createElement("div", { className: "flex items-center justify-between text-xs font-black", style: { color: llMuted } },
+                      React.createElement("span", null, t('stem.logiclab.truth_mix', 'Truth density')),
+                      React.createElement("span", { style: { color: llInk } }, trueCount + ' true / ' + falseCount + ' false (' + truePct + '%)')
                     ),
-                    React.createElement("div", { className: "mt-2 h-3 overflow-hidden rounded-full bg-red-100" },
+                    React.createElement("div", { className: "mt-2 h-3 overflow-hidden rounded-full", style: { background: isContrast ? '#333333' : (isDark ? '#450a0a' : '#fee2e2') } },
                       React.createElement("div", {
-                        className: "h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400",
-                        style: { width: truePct + '%', minWidth: rowCount && truePct === 0 ? 0 : 10 }
+                        className: "h-full rounded-full",
+                        style: {
+                          width: truePct + '%',
+                          minWidth: rowCount && truePct === 0 ? 0 : 10,
+                          background: isContrast ? '#00ff00' : 'linear-gradient(90deg, #10b981, #06b6d4)'
+                        }
                       })
                     )
                   )
                 ),
-                React.createElement("div", { className: "lg:col-span-2 border-t border-violet-100 bg-slate-950 p-4 lg:border-l lg:border-t-0" },
+                React.createElement("div", {
+                  className: "lg:col-span-2 border-t bg-slate-950 p-4 lg:border-l lg:border-t-0 flex items-center",
+                  style: { borderColor: llBorder, background: isContrast ? '#000000' : '#0b1120' }
+                },
                   React.createElement("svg", {
                     viewBox: "0 0 520 220",
                     role: "img",
-                    "aria-label": t('stem.logiclab.logic_flow_visual', 'Logic flow visual showing inputs, gate, truth rows, and output.'),
+                    "aria-label": t('stem.logiclab.logic_flow_visual', 'Logic flow schematic showing inputs, IEEE logic gate, truth rows, and output signal.'),
                     className: "w-full",
                     style: { display: 'block', minHeight: 190 }
                   },
                     React.createElement("defs", null,
                       React.createElement("linearGradient", { id: "logicStudioLine", x1: "0", x2: "1", y1: "0", y2: "0" },
-                        React.createElement("stop", { offset: "0%", stopColor: "#a78bfa" }),
-                        React.createElement("stop", { offset: "100%", stopColor: "#22d3ee" })
+                        React.createElement("stop", { offset: "0%", stopColor: isContrast ? "#ffff00" : "#a78bfa" }),
+                        React.createElement("stop", { offset: "100%", stopColor: isContrast ? "#00ff00" : "#22d3ee" })
                       )
                     ),
-                    React.createElement("rect", { x: "0", y: "0", width: "520", height: "220", rx: "28", fill: "#0f172a" }),
-                    React.createElement("path", { d: "M66 72 H170 M66 148 H170 M318 110 H450", stroke: "url(#logicStudioLine)", strokeWidth: "10", strokeLinecap: "round", opacity: "0.75" }),
-                    React.createElement("circle", { cx: "66", cy: "72", r: "30", fill: gateInputs.A ? "#22c55e" : "#334155", stroke: "#a78bfa", strokeWidth: "4" }),
-                    React.createElement("circle", { cx: "66", cy: "148", r: "30", fill: (!isUnaryGate && gateInputs.B) ? "#22c55e" : "#334155", stroke: "#a78bfa", strokeWidth: "4", opacity: isUnaryGate ? "0.38" : "1" }),
-                    React.createElement("text", { x: "66", y: "78", textAnchor: "middle", fontSize: "22", fontWeight: "900", fill: "#f8fafc" }, "P"),
-                    React.createElement("text", { x: "66", y: "154", textAnchor: "middle", fontSize: "22", fontWeight: "900", fill: "#f8fafc" }, "Q"),
-                    React.createElement("rect", { x: "174", y: "48", width: "144", height: "124", rx: "26", fill: "#4c1d95", stroke: "#c4b5fd", strokeWidth: "4" }),
-                    React.createElement("text", { x: "246", y: "98", textAnchor: "middle", fontSize: "28", fontWeight: "900", fill: "#ffffff" }, gateType),
-                    React.createElement("text", { x: "246", y: "130", textAnchor: "middle", fontSize: "15", fontWeight: "800", fill: "#ddd6fe" }, rowCount + " rows"),
-                    React.createElement("circle", { cx: "450", cy: "110", r: "36", fill: gateOutput ? "#16a34a" : "#dc2626", stroke: "#f8fafc", strokeWidth: "5" }),
-                    React.createElement("text", { x: "450", y: "118", textAnchor: "middle", fontSize: "24", fontWeight: "900", fill: "#ffffff" }, gateOutput ? "TRUE" : "FALSE"),
-                    React.createElement("text", { x: "40", y: "205", fontSize: "14", fontWeight: "800", fill: "#c4b5fd" }, "Current: " + (expr || "P \u2192 Q")),
-                    React.createElement("text", { x: "480", y: "205", textAnchor: "end", fontSize: "14", fontWeight: "800", fill: "#67e8f9" }, truePct + "% true")
+                    React.createElement("rect", { x: "4", y: "4", width: "512", height: "212", rx: "24", fill: isContrast ? "#000000" : "#0f172a", stroke: isContrast ? "#ffff00" : "#334155", strokeWidth: "2" }),
+                    // Subtle PCB grid lines
+                    React.createElement("path", { d: "M120 12 V208 M260 12 V208 M400 12 V208 M12 72 H508 M12 148 H508", stroke: isContrast ? "#222222" : "#1e293b", strokeWidth: "1" }),
+                    // Live input/output signal wires
+                    React.createElement("path", { d: "M84 72 H188", stroke: gateInputs.A ? (isContrast ? "#00ff00" : "#22c55e") : (isContrast ? "#ffff00" : "#475569"), strokeWidth: "8", strokeLinecap: "round" }),
+                    !isUnaryGate && React.createElement("path", { d: "M84 148 H188", stroke: gateInputs.B ? (isContrast ? "#00ff00" : "#22c55e") : (isContrast ? "#ffff00" : "#475569"), strokeWidth: "8", strokeLinecap: "round" }),
+                    React.createElement("path", { d: "M336 110 H430", stroke: gateOutput ? (isContrast ? "#00ff00" : "#22c55e") : (isContrast ? "#ffff00" : "#ef4444"), strokeWidth: "9", strokeLinecap: "round" }),
+                    // Input nodes
+                    React.createElement("circle", { cx: "66", cy: "72", r: "28", fill: gateInputs.A ? (isContrast ? "#00ff00" : "#15803d") : "#1e293b", stroke: isContrast ? "#ffff00" : "#a78bfa", strokeWidth: "3.5" }),
+                    React.createElement("text", { x: "66", y: "72", textAnchor: "middle", fontSize: "19", fontWeight: "900", fill: gateInputs.A && isContrast ? "#000000" : "#f8fafc" }, "P"),
+                    React.createElement("text", { x: "66", y: "91", textAnchor: "middle", fontSize: "11", fontWeight: "800", fill: gateInputs.A && isContrast ? "#000000" : "#bbf7d0" }, gateInputs.A ? "1" : "0"),
+                    React.createElement("circle", { cx: "66", cy: "148", r: "28", fill: (!isUnaryGate && gateInputs.B) ? (isContrast ? "#00ff00" : "#15803d") : "#1e293b", stroke: isContrast ? "#ffff00" : "#a78bfa", strokeWidth: "3.5", opacity: isUnaryGate ? "0.35" : "1" }),
+                    React.createElement("text", { x: "66", y: "148", textAnchor: "middle", fontSize: "19", fontWeight: "900", fill: (!isUnaryGate && gateInputs.B && isContrast) ? "#000000" : "#f8fafc", opacity: isUnaryGate ? "0.4" : "1" }, "Q"),
+                    React.createElement("text", { x: "66", y: "167", textAnchor: "middle", fontSize: "11", fontWeight: "800", fill: (!isUnaryGate && gateInputs.B && isContrast) ? "#000000" : "#bbf7d0", opacity: isUnaryGate ? "0.4" : "1" }, gateInputs.B ? "1" : "0"),
+                    // Authentic IEEE gate body
+                    gateBase === 'and' && React.createElement("path", { d: "M186 48 L254 48 A62 62 0 0 1 254 172 L186 172 Z", fill: isContrast ? "#000000" : "#4c1d95", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" }),
+                    gateBase === 'or' && React.createElement("path", { d: "M182 48 Q216 110 182 172 Q264 166 322 110 Q264 54 182 48 Z", fill: isContrast ? "#000000" : "#4c1d95", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" }),
+                    gateBase === 'xor' && React.createElement("g", null,
+                      React.createElement("path", { d: "M192 48 Q226 110 192 172 Q268 166 322 110 Q268 54 192 48 Z", fill: isContrast ? "#000000" : "#4c1d95", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" }),
+                      React.createElement("path", { d: "M176 48 Q210 110 176 172", fill: "none", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" })
+                    ),
+                    gateBase === 'not' && React.createElement("path", { d: "M190 50 L318 110 L190 170 Z", fill: isContrast ? "#000000" : "#4c1d95", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" }),
+                    invertingGate && React.createElement("circle", { cx: "328", cy: "110", r: "10", fill: isContrast ? "#000000" : "#0f172a", stroke: isContrast ? "#00ff00" : "#c4b5fd", strokeWidth: "4" }),
+                    React.createElement("text", { x: "248", y: "108", textAnchor: "middle", fontSize: "24", fontWeight: "900", fill: isContrast ? "#ffff00" : "#ffffff" }, gateType),
+                    React.createElement("text", { x: "248", y: "132", textAnchor: "middle", fontSize: "13", fontWeight: "800", fill: isContrast ? "#00ff00" : "#ddd6fe" }, rowCount + " rows"),
+                    // Output node
+                    React.createElement("circle", { cx: "454", cy: "110", r: "34", fill: gateOutput ? (isContrast ? "#00ff00" : "#15803d") : (isContrast ? "#000000" : "#b91c1c"), stroke: isContrast ? "#ffff00" : "#f8fafc", strokeWidth: "4" }),
+                    React.createElement("text", { x: "454", y: "117", textAnchor: "middle", fontSize: "20", fontWeight: "900", fill: gateOutput && isContrast ? "#000000" : "#ffffff" }, gateOutput ? "TRUE" : "FALSE"),
+                    React.createElement("text", { x: "24", y: "203", fontSize: "13", fontWeight: "800", fill: isContrast ? "#ffff00" : "#c4b5fd" }, "Formula: " + (expr || "P \u2192 Q")),
+                    React.createElement("text", { x: "496", y: "203", textAnchor: "end", fontSize: "13", fontWeight: "800", fill: isContrast ? "#00ff00" : "#67e8f9" }, truePct + "% true")
                   )
                 )
               ),
-              React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 border-t border-violet-100 bg-white p-3" },
+              React.createElement("div", {
+                className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 border-t p-3",
+                style: { background: llCardBg, borderColor: llBorder }
+              },
                 routeCards.map(function(card) {
                   var active = mode === card.id;
                   return React.createElement("button", {
                     key: card.id,
                     type: "button",
                     "aria-label": "Open " + card.title,
+                    "aria-pressed": active,
                     onClick: function() { sfxLogiclClick(); upd({ mode: card.id }); },
-                    className: "text-left rounded-xl border p-3 transition-all focus:outline-none focus:ring-2 focus:ring-violet-500",
+                    className: "text-left rounded-xl border p-3 transition-all focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer",
                     style: {
-                      minHeight: 96,
-                      background: active ? card.soft : '#ffffff',
-                      borderColor: active ? card.accent : '#e2e8f0',
-                      boxShadow: active ? '0 10px 22px rgba(124,58,237,0.14)' : 'none'
+                      minHeight: 88,
+                      background: isContrast ? (active ? '#00ff00' : '#000000') : (active ? card.soft : llCardBg),
+                      borderColor: isContrast ? (active ? '#00ff00' : '#ffff00') : (active ? card.accent : llBorder),
+                      color: isContrast ? (active ? '#000000' : '#ffff00') : llInk,
+                      boxShadow: active && !isContrast ? '0 8px 18px rgba(124,58,237,0.14)' : 'none'
                     }
                   },
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("span", { "aria-hidden": "true", className: "text-lg" }, card.icon),
-                      React.createElement("span", { className: "text-sm font-black text-slate-950" }, card.title)
+                      React.createElement("span", { className: "text-sm font-black", style: { color: isContrast ? (active ? '#000000' : '#ffff00') : llInk } }, card.title)
                     ),
-                    React.createElement("div", { className: "mt-2 text-xs font-bold leading-snug text-slate-600" }, card.detail)
+                    React.createElement("div", { className: "mt-1.5 text-xs font-bold leading-snug", style: { color: isContrast ? (active ? '#000000' : '#fde047') : llMuted } }, card.detail)
                   );
                 })
               )
             );
           };
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto" },
+          return React.createElement("div", { className: "max-w-4xl mx-auto", "data-logiclab-root": "true", "data-ll-theme": llTheme },
 
             // CSS animations
             React.createElement("style", null,
@@ -1104,43 +1174,116 @@ window.StemLab = window.StemLab || {
               '@keyframes wrongShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}'
             ),
 
-            // Header
-            React.createElement("div", { className: "mb-6 text-center" },
-
-              React.createElement("div", { className: "inline-flex items-center gap-3 px-6 py-3 rounded-2xl mb-3", style: { background: _gViolet, boxShadow: '0 8px 32px rgba(124,58,237,0.3)' } },
-
-                React.createElement("span", { style: { fontSize: '32px' } }, "\uD83E\uDDE0"),
-
-                React.createElement("h2", { className: "text-2xl font-black text-white tracking-tight" }, t('stem.logiclab.logic_lab', "Logic Lab")),
-
-                React.createElement("span", { className: "text-violet-100 text-sm font-bold ml-2" }, t('stem.logiclab.propositional_logic_reasoning', "Propositional Logic & Reasoning"))
-
+            // Bespoke Formal Logic Workbench Header
+            React.createElement("div", { className: "mb-5" },
+              React.createElement("div", {
+                className: "rounded-2xl p-4 sm:p-5 border flex flex-wrap items-center justify-between gap-3",
+                style: isContrast
+                  ? { background: '#000000', borderColor: '#ffff00', borderWidth: '2px', color: '#ffff00' }
+                  : { background: _gViolet, borderColor: '#6d28d9', boxShadow: '0 8px 28px rgba(91,33,182,0.28)', color: '#ffffff' }
+              },
+                React.createElement("div", { className: "flex items-center gap-3", style: { minWidth: 0 } },
+                  React.createElement("span", { className: "text-3xl shrink-0", "aria-hidden": "true" }, "\uD83E\uDDE0"),
+                  React.createElement("div", { style: { minWidth: 0 } },
+                    React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+                      React.createElement("span", {
+                        className: "px-2 py-0.5 rounded-full text-[0.6875rem] font-black uppercase tracking-wider border",
+                        style: isContrast
+                          ? { background: '#000000', color: '#00ff00', borderColor: '#00ff00' }
+                          : { background: 'rgba(255,255,255,0.16)', color: '#ede9fe', borderColor: 'rgba(255,255,255,0.3)' }
+                      }, t('stem.logiclab.subject_badge', 'Computer Science \u00B7 Discrete Logic')),
+                      React.createElement("span", {
+                        className: "px-2 py-0.5 rounded-full text-[0.6875rem] font-bold tabular-nums border",
+                        style: isContrast
+                          ? { background: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                          : { background: 'rgba(16,185,129,0.22)', color: '#a7f3d0', borderColor: 'rgba(52,211,153,0.4)' }
+                      }, solvedCount + '/8 ' + t('stem.logiclab.proofs_pill', 'Proofs'))
+                    ),
+                    React.createElement("h2", { className: "text-2xl font-black tracking-tight mt-0.5", style: { color: isContrast ? '#ffff00' : '#ffffff' } }, t('stem.logiclab.logic_lab', "Logic Lab")),
+                    React.createElement("p", { className: "text-xs sm:text-sm font-medium", style: { color: isContrast ? '#fde047' : '#ede9fe' } }, t('stem.logiclab.propositional_logic_reasoning', "Propositional Logic, Truth Tables, Natural Deduction & Digital Gates"))
+                  )
+                ),
+                React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+                  React.createElement("span", {
+                    className: "px-3 py-1.5 rounded-xl text-xs font-black tabular-nums border",
+                    style: isContrast
+                      ? { background: '#000000', color: '#00ff00', borderColor: '#00ff00' }
+                      : { background: 'rgba(15,23,42,0.38)', color: '#fef3c7', borderColor: 'rgba(255,255,255,0.22)' }
+                  }, '\uD83C\uDF1F ' + score + ' pts'),
+                  React.createElement("span", {
+                    className: "px-3 py-1.5 rounded-xl text-xs font-black tabular-nums border",
+                    style: isContrast
+                      ? { background: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                      : { background: 'rgba(15,23,42,0.38)', color: '#a5f3fc', borderColor: 'rgba(255,255,255,0.22)' }
+                  }, '\uD83D\uDD25 ' + streak + ' streak'),
+                  React.createElement("button", {
+                    type: "button",
+                    "aria-pressed": !!d.muted,
+                    "aria-label": d.muted ? t('stem.logiclab.unmute_audio', 'Muted — unmute sound effects') : t('stem.logiclab.mute_audio', 'Sound on — mute sound effects'),
+                    onClick: function() {
+                      var nextMuted = !d.muted;
+                      _logiclMuted = nextMuted;
+                      upd({ muted: nextMuted });
+                    },
+                    className: "min-h-11 px-3 py-1.5 rounded-xl text-xs font-black border cursor-pointer",
+                    style: isContrast
+                      ? { background: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                      : { background: 'rgba(15,23,42,0.45)', color: '#ffffff', borderColor: 'rgba(255,255,255,0.3)' }
+                  }, d.muted ? '\uD83D\uDD07 ' + t('stem.logiclab.muted', 'Muted') : '\uD83D\uDD0A ' + t('stem.logiclab.sound_on', 'Sound on'))
+                )
               ),
 
-              // Mode tabs
-
-              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-4" },
-
-                [['truth', '\uD83D\uDCCA', 'Truth Tables'], ['proof', '\uD83E\uDDE9', 'Proof Builder'], ['challenges', '\u26A1', 'Challenges'], ['gates', '\u26A1\uFE0F', 'Logic Gates'], ['simLogic', '\uD83C\uDFB2', 'Probability']].map(function(m) {
-
+              // Accessible WAI-ARIA Mode Tabs
+              React.createElement("div", {
+                role: "tablist",
+                "aria-label": t('stem.logiclab.modes_tablist', 'Logic Lab modes'),
+                className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-3"
+              },
+                (function() {
+                  var _llModes = [['truth', '\uD83D\uDCCA', 'Truth Tables'], ['proof', '\uD83E\uDDE9', 'Proof Builder'], ['challenges', '\u26A1', 'Challenges'], ['gates', '\u26A1\uFE0F', 'Logic Gates'], ['simLogic', '\uD83C\uDFB2', 'Probability']];
+                  _logiclMuted = !!d.muted;
+                  return _llModes.map(function(m, mi) {
                   var active = mode === m[0];
-
-                  return React.createElement("button", { "aria-label": "Switch to " + m[2] + " mode",
-
+                  return React.createElement("button", {
+                    type: "button",
+                    role: "tab",
+                    tabIndex: active ? 0 : -1,
+                    "aria-selected": active,
+                    "aria-label": m[2] + " — switch mode",
                     key: m[0],
-
-                    onClick: function() { upd({ mode: m[0] }); },
-
-                    className: "px-3 py-2.5 rounded-xl text-sm font-bold transition-all " + (active ? "text-white shadow-lg sm:scale-105" : "text-violet-600 bg-violet-50 hover:bg-violet-100"),
-
-                    style: active ? { background: _gViolet, boxShadow: '0 4px 14px rgba(124,58,237,0.3)', minHeight: 44 } : { minHeight: 44 }
-
+                    onClick: function() { sfxLogiclClick(); upd({ mode: m[0] }); },
+                    onKeyDown: function(e) {
+                      var nextIdx = null;
+                      if (e.key === 'ArrowRight') nextIdx = (mi + 1) % _llModes.length;
+                      else if (e.key === 'ArrowLeft') nextIdx = (mi - 1 + _llModes.length) % _llModes.length;
+                      else if (e.key === 'Home') nextIdx = 0;
+                      else if (e.key === 'End') nextIdx = _llModes.length - 1;
+                      if (nextIdx === null) return;
+                      e.preventDefault();
+                      sfxLogiclClick();
+                      upd({ mode: _llModes[nextIdx][0] });
+                      var tabs = e.currentTarget.parentElement && e.currentTarget.parentElement.querySelectorAll('[role="tab"]');
+                      if (tabs && tabs[nextIdx]) tabs[nextIdx].focus();
+                    },
+                    className: "px-3 py-2.5 rounded-xl text-sm font-bold transition-all border cursor-pointer",
+                    style: active
+                      ? {
+                          background: isContrast ? '#00ff00' : _gViolet,
+                          color: isContrast ? '#000000' : '#ffffff',
+                          borderColor: isContrast ? '#00ff00' : '#6d28d9',
+                          boxShadow: isContrast ? 'none' : '0 4px 14px rgba(124,58,237,0.3)',
+                          minHeight: 44
+                        }
+                      : {
+                          background: llSubtleBg,
+                          color: isContrast ? '#ffff00' : (isDark ? '#ddd6fe' : '#5b21b6'),
+                          borderColor: llBorder,
+                          minHeight: 44
+                        }
                   }, m[1] + " " + m[2]);
-
-                })
-
+                });
+                })()
               )
-
             ),
 
             renderLogicStudioFocus(),
@@ -1148,11 +1291,11 @@ window.StemLab = window.StemLab || {
             // ── Topic-accent hero band per mode ──
             (function() {
               var MODE_META = {
-                truth:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCCA', title: t('stem.logiclab.truth_tables_every_input_combination_e', 'Truth Tables \u2014 every input combination, every output'), hint: t('stem.logiclab.for_n_variables_the_table_has_2_rows_a', 'For n variables, the table has 2\u207F rows. AND, OR, NOT, XOR, IFF \u2014 each gate is just a column. Boolean algebra (Boole 1854) underlies every digital circuit, every search query, every conditional in code.') },
-                proof:      { accent: '#0e7490', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDE9', title: t('stem.logiclab.proof_builder_derive_conclusions_step_', 'Proof Builder \u2014 derive conclusions step by step'),     hint: t('stem.logiclab.modus_ponens_modus_tollens_hypothetica', 'Modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism \u2014 the eight inference rules cover most introductory propositional logic. Each step justifies itself by NAME, not vibe.') },
-                challenges: { accent: '#b45309', soft: 'rgba(217,119,6,0.10)',  icon: '\u26A1',         title: t('stem.logiclab.challenges_graded_tautology_contradict', 'Challenges \u2014 graded tautology + contradiction puzzles'), hint: t('stem.logiclab.tautology_always_true_contradiction_al', 'Tautology = always true; contradiction = always false; contingency = sometimes both. Aristotle\u2019s law of non-contradiction (350 BCE) is the oldest published rule. AP CS Principles practice + intro discrete math.') },
-                gates:      { accent: '#15803d', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: t('stem.logiclab.logic_gates_transistors_all_the_way_do', 'Logic Gates \u2014 transistors all the way down'),         hint: t('stem.logiclab.nand_is_functionally_complete_you_can_', 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.') },
-                simLogic:   { accent: '#be185d', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFB2', title: t('stem.logiclab.probability_logic_inference_under_unce', 'Probability Logic \u2014 inference under uncertainty'), hint: t('stem.logiclab.p_and_q_each_carry_a_probability_inste', 'P and Q each carry a probability instead of a hard true/false. For independent events, P(P\u2227Q) = P(P) \u00D7 P(Q). Watch how a confidence threshold turns soft probabilities into discrete inferences.') }
+                truth:      { accent: '#7c3aed', darkAccent: '#c4b5fd', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCCA', title: t('stem.logiclab.truth_tables_every_input_combination_e', 'Truth Tables \u2014 every input combination, every output'), hint: t('stem.logiclab.for_n_variables_the_table_has_2_rows_a', 'For n variables, the table has 2\u207F rows. AND, OR, NOT, XOR, IFF \u2014 each gate is just a column. Boolean algebra (Boole 1854) underlies every digital circuit, every search query, every conditional in code.') },
+                proof:      { accent: '#0e7490', darkAccent: '#67e8f9', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDE9', title: t('stem.logiclab.proof_builder_derive_conclusions_step_', 'Proof Builder \u2014 derive conclusions step by step'),     hint: t('stem.logiclab.modus_ponens_modus_tollens_hypothetica', 'Modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism \u2014 the eight inference rules cover most introductory propositional logic. Each step justifies itself by NAME, not vibe.') },
+                challenges: { accent: '#b45309', darkAccent: '#fcd34d', soft: 'rgba(217,119,6,0.10)',  icon: '\u26A1',         title: t('stem.logiclab.challenges_graded_tautology_contradict', 'Challenges \u2014 graded tautology + contradiction puzzles'), hint: t('stem.logiclab.tautology_always_true_contradiction_al', 'Tautology = always true; contradiction = always false; contingency = sometimes both. Aristotle\u2019s law of non-contradiction (350 BCE) is the oldest published rule. AP CS Principles practice + intro discrete math.') },
+                gates:      { accent: '#15803d', darkAccent: '#86efac', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: t('stem.logiclab.logic_gates_transistors_all_the_way_do', 'Logic Gates \u2014 transistors all the way down'),         hint: t('stem.logiclab.nand_is_functionally_complete_you_can_', 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.') },
+                simLogic:   { accent: '#be185d', darkAccent: '#f9a8d4', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFB2', title: t('stem.logiclab.probability_logic_inference_under_unce', 'Probability Logic \u2014 inference under uncertainty'), hint: t('stem.logiclab.p_and_q_each_carry_a_probability_inste', 'P and Q each carry a probability instead of a hard true/false. For independent events, P(P\u2227Q) = P(P) \u00D7 P(Q). Watch how a confidence threshold turns soft probabilities into discrete inferences.') }
               };
               var meta = MODE_META[mode] || MODE_META.truth;
               return React.createElement('div', {
@@ -1160,16 +1303,16 @@ window.StemLab = window.StemLab || {
                   margin: '0 0 12px',
                   padding: '12px 14px',
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-                  border: '1px solid ' + meta.accent + '55',
-                  borderLeft: '4px solid ' + meta.accent,
+                  background: isContrast ? '#000000' : (isDark ? '#1e293b' : 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)'),
+                  border: '1px solid ' + (isContrast ? '#ffff00' : meta.accent + '55'),
+                  borderLeft: '4px solid ' + (isContrast ? '#00ff00' : meta.accent),
                   display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
                 }
               },
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
-                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                React.createElement('div', { style: { flex: 1, minWidth: 200 } },
+                  React.createElement('h3', { style: { color: isContrast ? '#ffff00' : (isDark ? meta.darkAccent : meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: llMuted, fontSize: 11.5, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -1360,6 +1503,88 @@ window.StemLab = window.StemLab || {
                     style: { background: 'linear-gradient(135deg, #f59e0b, #fbbf24)', boxShadow: '0 2px 8px rgba(245,158,11,0.3)' }
                   }, t('stem.logiclab.claim_xp_2', '\uD83C\uDF1F Claim XP'))
                 );
+              })(),
+
+              // Live Expression Syntax Tree (AST) SVG — makes operator precedence visually immediate
+              (function() {
+                try {
+                  var toksAst = tokenize(expr);
+                  if (!toksAst || toksAst.length === 0 || tableLetterCount(expr) > 8) return null;
+                  var parsedAst = parseExpr(toksAst, 0);
+                  if (!parsedAst || !parsedAst.node) return null;
+                  var nodes = [];
+                  var edges = [];
+                  var maxDepth = 0;
+                  var walkAst = function(nd, depth, xMin, xMax) {
+                    if (!nd || depth > 5) return null;
+                    if (depth > maxDepth) maxDepth = depth;
+                    var cx = Math.round((xMin + xMax) / 2);
+                    var cy = 24 + depth * 36;
+                    var id = nodes.length;
+                    var label = nd.type === 'var' ? nd.name : (nd.type === 'not' ? '\u00AC' : nd.op);
+                    var kind = nd.type === 'var' ? 'var' : (nd.type === 'not' ? 'not' : 'bin');
+                    nodes.push({ id: id, x: cx, y: cy, label: label, kind: kind });
+                    if (nd.type === 'not' && nd.child) {
+                      var cid = walkAst(nd.child, depth + 1, xMin, xMax);
+                      if (cid !== null) edges.push({ x1: cx, y1: cy, x2: nodes[cid].x, y2: nodes[cid].y });
+                    } else if (nd.type === 'bin') {
+                      var mid = (xMin + xMax) / 2;
+                      var lid = walkAst(nd.left, depth + 1, xMin, mid);
+                      var rid = walkAst(nd.right, depth + 1, mid, xMax);
+                      if (lid !== null) edges.push({ x1: cx, y1: cy, x2: nodes[lid].x, y2: nodes[lid].y });
+                      if (rid !== null) edges.push({ x1: cx, y1: cy, x2: nodes[rid].x, y2: nodes[rid].y });
+                    }
+                    return id;
+                  };
+                  walkAst(parsedAst.node, 0, 24, 396);
+                  var svgH = Math.max(66, 48 + maxDepth * 36);
+                  return React.createElement("div", {
+                    className: "rounded-2xl border-2 p-3",
+                    style: { background: llCardBg, borderColor: llBorder }
+                  },
+                    React.createElement("div", { className: "flex items-center justify-between gap-2 flex-wrap mb-2" },
+                      React.createElement("span", { className: "text-xs font-black uppercase tracking-wider", style: { color: isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#5b21b6') } }, t('stem.logiclab.ast_heading', '\uD83C\uDF33 Parse Tree (Operator Precedence)')),
+                      React.createElement("span", { className: "text-[0.6875rem] font-mono", style: { color: llMuted } }, '\u00AC > \u2227 > \u2228 > \u2192 > \u2194')
+                    ),
+                    React.createElement("svg", {
+                      viewBox: "0 0 420 " + svgH,
+                      width: "100%",
+                      style: { maxHeight: 190, display: 'block' },
+                      role: "img",
+                      "aria-label": t('stem.logiclab.ast_aria', 'Syntax parse tree for expression ') + expr
+                    },
+                      edges.map(function(e, ei) {
+                        return React.createElement("line", {
+                          key: "ae" + ei,
+                          x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2,
+                          stroke: isContrast ? '#ffff00' : (isDark ? '#6366f1' : '#a78bfa'),
+                          strokeWidth: 2
+                        });
+                      }),
+                      nodes.map(function(n) {
+                        var fill = isContrast
+                          ? (n.kind === 'var' ? '#000000' : '#00ff00')
+                          : (_symColor[n.label] || '#6366f1');
+                        var textFill = isContrast ? (n.kind === 'var' ? '#ffff00' : '#000000') : '#ffffff';
+                        return React.createElement("g", { key: "an" + n.id },
+                          React.createElement("circle", {
+                            cx: n.x, cy: n.y, r: 14,
+                            fill: fill,
+                            stroke: isContrast ? '#ffff00' : '#ffffff',
+                            strokeWidth: 2
+                          }),
+                          React.createElement("text", {
+                            x: n.x, y: n.y + 4.5,
+                            textAnchor: "middle",
+                            fontSize: 12,
+                            fontWeight: 900,
+                            fill: textFill
+                          }, n.label)
+                        );
+                      })
+                    )
+                  );
+                } catch (e) { return null; }
               })(),
 
               // Truth table output
@@ -2422,88 +2647,166 @@ window.StemLab = window.StemLab || {
 
             // ═══ MODE 4: LOGIC GATES ═══
             mode === 'gates' && React.createElement("div", { className: "space-y-4" },
-              React.createElement("div", { className: "p-5 rounded-2xl border-2 border-violet-200", style: { background: 'linear-gradient(135deg, #f5f3ff, #ede9fe, #f5f3ff)' } },
-                React.createElement("div", { className: "flex items-center gap-2 mb-4" },
+              React.createElement("div", { className: "p-5 rounded-2xl border-2", style: { background: _gCard, borderColor: llBorder } },
+                React.createElement("div", { className: "flex items-center gap-2 mb-4 flex-wrap" },
                   React.createElement("span", { style: { fontSize: '20px' } }, "\u26A1\uFE0F"),
                   React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.logic_gate_simulator', "Logic Gate Simulator")),
                   React.createElement("span", { className: "text-xs text-violet-700 font-bold" }, t('stem.logiclab.toggle_inputs_to_see_the_output_live', "Toggle inputs to see the output live"))
                 ),
                 // Binary-state legend — clarifies what the 1s and 0s on the wires mean
-                React.createElement("div", { className: "flex items-center gap-3 mb-4 text-[0.6875rem] font-bold" },
+                React.createElement("div", { className: "flex items-center gap-3 mb-4 text-[0.6875rem] font-bold flex-wrap" },
                   React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-emerald-700 text-white text-center leading-4" }, "1"), React.createElement("span", { className: "text-emerald-700" }, t('stem.logiclab.high_true_on', "HIGH · true · on"))),
-                  React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-slate-300 text-slate-700 text-center leading-4" }, "0"), React.createElement("span", { className: "text-slate-500" }, t('stem.logiclab.low_false_off', "LOW · false · off")))
+                  React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-slate-300 text-slate-700 text-center leading-4" }, "0"), React.createElement("span", { className: "text-slate-600" }, t('stem.logiclab.low_false_off', "LOW · false · off")))
                 ),
                 // Gate selector
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                   GATE_TYPES.map(function(gt) {
-                    return React.createElement("button", { "aria-label": "Select logic gate: " + gt, key: gt, onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,0.05);},
-                      className: "px-4 py-2 rounded-xl text-sm font-black transition-all",
-                      style: { background: gateType===gt?'linear-gradient(135deg,#7c3aed,#a78bfa)':'#f5f3ff', color: gateType===gt?'white':'#7c3aed', boxShadow: gateType===gt?'0 4px 12px rgba(124,58,237,0.3)':'none' }
+                    var activeGt = gateType === gt;
+                    return React.createElement("button", {
+                      type: "button",
+                      "aria-label": "Select logic gate: " + gt,
+                      "aria-pressed": activeGt,
+                      key: gt,
+                      onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,0.05);},
+                      className: "px-4 py-2 rounded-xl text-sm font-black transition-all border cursor-pointer",
+                      style: activeGt
+                        ? { background: isContrast ? '#00ff00' : 'linear-gradient(135deg,#6d28d9,#7c3aed)', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#6d28d9', boxShadow: isContrast ? 'none' : '0 4px 12px rgba(124,58,237,0.3)' }
+                        : { background: llCardBg, color: isContrast ? '#ffff00' : (isDark ? '#ddd6fe' : '#5b21b6'), borderColor: llBorder }
                     }, gt);
                   })
                 ),
-                // Inputs + SVG gate + output
-                React.createElement("div", { className: "flex items-center justify-center gap-8 mb-4 flex-wrap" },
+                // Digital Breadboard Stage: Inputs + IEEE Gate SVG + Output
+                React.createElement("div", {
+                  className: "rounded-2xl border p-4 mb-4 flex items-center justify-center gap-6 flex-wrap",
+                  style: { background: isContrast ? '#000000' : '#0f172a', borderColor: isContrast ? '#ffff00' : '#334155' }
+                },
                   // Input toggles
                   React.createElement("div", { className: "flex flex-col gap-3" },
                     ['A', isUnaryGate ? null : 'B'].filter(Boolean).map(function(inp) {
                       var val = gateInputs[inp];
                       return React.createElement("div", { key: inp, className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-xs font-black text-slate-600 w-4" }, inp),
-                        React.createElement("button", { "aria-label": "Toggle gate input " + inp + ": " + (val ? 'True to False' : 'False to True'),
+                        React.createElement("span", { className: "text-xs font-black w-4", style: { color: isContrast ? '#ffff00' : '#cbd5e1' } }, inp),
+                        React.createElement("button", {
+                          type: "button",
+                          "aria-label": "Toggle gate input " + inp + ": " + (val ? 'True to False' : 'False to True'),
+                          "aria-pressed": val,
                           onClick: function() {
                             var ni = Object.assign({}, gateInputs); ni[inp] = !ni[inp];
                             upd({ gateInputs: ni });
                             if (stemBeep) stemBeep(val?330:523, 0.06);
                           },
-                          className: "w-20 h-10 rounded-xl font-black text-sm text-white shadow-md transition-all hover:scale-105",
-                          style: { background: val?'linear-gradient(135deg,#059669,#10b981)':'linear-gradient(135deg,#dc2626,#ef4444)', boxShadow: val?'0 4px 12px rgba(16,185,129,0.4)':'0 4px 12px rgba(239,68,68,0.3)' }
+                          className: "w-20 h-10 rounded-xl font-black text-sm shadow-md transition-all hover:scale-105 cursor-pointer border",
+                          style: isContrast
+                            ? { background: val ? '#00ff00' : '#000000', color: val ? '#000000' : '#ffff00', borderColor: '#ffff00' }
+                            : { background: val ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#b91c1c,#dc2626)', color: '#ffffff', borderColor: val ? '#34d399' : '#f87171' }
                         }, val ? "1 (T)" : "0 (F)")
                       );
                     })
                   ),
                   // Gate SVG
-                  React.createElement("svg", { role: 'img', 'aria-label': t('stem.logiclab.gate_img', 'Logic gate diagram showing the current input states'), width: "120", height: "80", viewBox: "0 0 120 80" },
-                    React.createElement("line", { x1:"0",y1:isUnaryGate?"40":"25",x2:"35",y2:isUnaryGate?"40":"25",stroke:gateInputs.A?"#059669":"#dc2626",strokeWidth:"3" }),
-                    !isUnaryGate && React.createElement("line", { x1:"0",y1:"55",x2:"35",y2:"55",stroke:gateInputs.B?"#059669":"#dc2626",strokeWidth:"3" }),
+                  React.createElement("svg", { role: 'img', 'aria-label': t('stem.logiclab.gate_img', 'Logic gate diagram showing the current input states'), width: "160", height: "96", viewBox: "0 0 120 80" },
+                    React.createElement("line", { x1:"0",y1:isUnaryGate?"40":"25",x2:"35",y2:isUnaryGate?"40":"25",stroke:gateInputs.A?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444"),strokeWidth:"3.5",strokeLinecap:"round" }),
+                    !isUnaryGate && React.createElement("line", { x1:"0",y1:"55",x2:"35",y2:"55",stroke:gateInputs.B?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444"),strokeWidth:"3.5",strokeLinecap:"round" }),
                     (function() {
-                      // Distinct IEEE gate shapes (was a generic rounded rect with the name typed inside).
                       var inverting = gateType === 'NOT' || gateType === 'NAND' || gateType === 'NOR' || gateType === 'XNOR';
                       var base = (gateType === 'AND' || gateType === 'NAND') ? 'and'
                                : (gateType === 'OR' || gateType === 'NOR') ? 'or'
                                : (gateType === 'XOR' || gateType === 'XNOR') ? 'xor' : 'not';
-                      var fill = '#7c3aed', stroke = '#5b21b6';
-                      var bx = inverting ? 82 : 88; // right edge of the body (bubble sits just past it)
+                      var fill = isContrast ? '#000000' : '#6d28d9';
+                      var stroke = isContrast ? '#ffff00' : '#c4b5fd';
+                      var bx = inverting ? 82 : 88;
                       var shapes = [];
                       if (base === 'and') {
                         var midx = bx - 25;
-                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 L' + midx + ',15 A25,25 0 0 1 ' + midx + ',65 L35,65 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 L' + midx + ',15 A25,25 0 0 1 ' + midx + ',65 L35,65 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
                       } else if (base === 'or') {
-                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 Q52,40 35,65 Q60,63 ' + bx + ',40 Q60,17 35,15 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 Q52,40 35,65 Q60,63 ' + bx + ',40 Q60,17 35,15 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
                       } else if (base === 'xor') {
-                        shapes.push(React.createElement('path', { key: 'b', d: 'M39,15 Q56,40 39,65 Q64,63 ' + bx + ',40 Q64,17 39,15 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
-                        shapes.push(React.createElement('path', { key: 'x', d: 'M32,15 Q49,40 32,65', fill: 'none', stroke: stroke, strokeWidth: 2 }));
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M39,15 Q56,40 39,65 Q64,63 ' + bx + ',40 Q64,17 39,15 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
+                        shapes.push(React.createElement('path', { key: 'x', d: 'M32,15 Q49,40 32,65', fill: 'none', stroke: stroke, strokeWidth: 2.2 }));
                       } else {
-                        shapes.push(React.createElement('path', { key: 'b', d: 'M38,16 L' + bx + ',40 L38,64 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M38,16 L' + bx + ',40 L38,64 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
                       }
-                      if (inverting) shapes.push(React.createElement('circle', { key: 'bub', cx: bx + 5, cy: 40, r: 4, fill: 'white', stroke: stroke, strokeWidth: 2 }));
-                      shapes.push(React.createElement('text', { key: 't', x: base === 'not' ? 52 : 58, y: 44, textAnchor: 'middle', fill: 'white', fontWeight: '900', fontSize: '9' }, gateType));
+                      if (inverting) shapes.push(React.createElement('circle', { key: 'bub', cx: bx + 5, cy: 40, r: 4, fill: isContrast ? '#000000' : '#0f172a', stroke: isContrast ? '#00ff00' : '#c4b5fd', strokeWidth: 2.2 }));
+                      shapes.push(React.createElement('text', { key: 't', x: base === 'not' ? 52 : 58, y: 44, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#ffffff', fontWeight: '900', fontSize: '9' }, gateType));
                       return shapes;
                     })(),
-                    React.createElement("line", { x1:"90",y1:"40",x2:"120",y2:"40",stroke:gateOutput?"#059669":"#dc2626",strokeWidth:"3", style:{ filter: gateOutput ? 'drop-shadow(0 0 3px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } }),
-                    React.createElement("circle", { cx:"115",cy:"40",r:"5",fill:gateOutput?"#059669":"#dc2626", style:{ filter: gateOutput ? 'drop-shadow(0 0 4px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } })
+                    React.createElement("line", { x1:"90",y1:"40",x2:"120",y2:"40",stroke:gateOutput?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444"),strokeWidth:"3.5",strokeLinecap:"round" }),
+                    React.createElement("circle", { cx:"115",cy:"40",r:"5",fill:gateOutput?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444") })
                   ),
                   // Output
                   React.createElement("div", { className: "flex flex-col items-center gap-1" },
                     React.createElement("div", {
                       key: 'gate-'+animTick,
-                      className: "w-20 h-16 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-lg",
-                      style: { background:gateOutput?'linear-gradient(135deg,#059669,#10b981)':'linear-gradient(135deg,#dc2626,#ef4444)', boxShadow:gateOutput?'0 8px 24px rgba(16,185,129,0.4)':'0 8px 24px rgba(239,68,68,0.3)', animation:'logicPop 0.2s ease-out' }
-                    }, gateOutput?"1":"0"),
-                    React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t('stem.logiclab.output', "Output")),
-                    React.createElement("span", { className: "text-sm font-black "+(gateOutput?"text-emerald-600":"text-red-500") }, gateOutput?"TRUE":"FALSE")
+                      className: "w-20 h-16 rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg border-2",
+                      style: isContrast
+                        ? { background: gateOutput ? '#00ff00' : '#000000', color: gateOutput ? '#000000' : '#ffff00', borderColor: '#ffff00' }
+                        : { background: gateOutput ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#b91c1c,#dc2626)', color: '#ffffff', borderColor: gateOutput ? '#6ee7b7' : '#fca5a5', animation: 'logicPop 0.2s ease-out' }
+                    }, gateOutput ? "1" : "0"),
+                    React.createElement("span", { className: "text-xs font-bold", style: { color: isContrast ? '#ffff00' : '#cbd5e1' } }, t('stem.logiclab.output', "Output")),
+                    React.createElement("span", { className: "text-sm font-black", style: { color: gateOutput ? (isContrast ? '#00ff00' : '#6ee7b7') : (isContrast ? '#ffff00' : '#fca5a5') } }, gateOutput ? "TRUE" : "FALSE")
                   )
                 ),
+                // Live 4-Row Digital Timing Waveform SVG
+                (function() {
+                  var states = isUnaryGate
+                    ? [{ a: false, b: false, label: '0' }, { a: true, b: false, label: '1' }]
+                    : [{ a: false, b: false, label: '00' }, { a: false, b: true, label: '01' }, { a: true, b: false, label: '10' }, { a: true, b: true, label: '11' }];
+                  var stepW = Math.round(280 / states.length);
+                  var buildWave = function(vals, yHi, yLo) {
+                    var pts = [];
+                    vals.forEach(function(v, i) {
+                      var x0 = 56 + i * stepW;
+                      var x1 = x0 + stepW;
+                      var y = v ? yHi : yLo;
+                      pts.push((i === 0 ? 'M ' : 'L ') + x0 + ' ' + y + ' L ' + x1 + ' ' + y);
+                    });
+                    return pts.join(' ');
+                  };
+                  var aVals = states.map(function(s) { return s.a; });
+                  var bVals = states.map(function(s) { return s.b; });
+                  var oVals = states.map(function(s) { return evalGate(gateType, s.a, s.b); });
+                  var activeIdx = states.findIndex(function(s) { return s.a === gateInputs.A && (isUnaryGate || s.b === gateInputs.B); });
+                  return React.createElement("div", {
+                    className: "mb-4 rounded-xl border p-2.5",
+                    style: { background: isContrast ? '#000000' : '#0f172a', borderColor: isContrast ? '#ffff00' : '#334155' }
+                  },
+                    React.createElement("div", { className: "flex items-center justify-between text-[0.6875rem] font-bold mb-1", style: { color: isContrast ? '#ffff00' : '#cbd5e1' } },
+                      React.createElement("span", null, t('stem.logiclab.timing_waveform', 'Oscilloscope Timing Diagram (' + gateType + ')')),
+                      React.createElement("span", { className: "font-mono", style: { color: isContrast ? '#00ff00' : '#67e8f9' } }, 'Active state highlighted')
+                    ),
+                    React.createElement("svg", {
+                      viewBox: "0 0 360 112",
+                      width: "100%",
+                      role: "img",
+                      "aria-label": gateType + " digital timing waveform across all input combinations"
+                    },
+                      activeIdx >= 0 && React.createElement("rect", {
+                        x: 56 + activeIdx * stepW, y: 6, width: stepW, height: 92, rx: 4,
+                        fill: isContrast ? '#00ff00' : '#7c3aed', opacity: isContrast ? 0.22 : 0.26
+                      }),
+                      // Grid verticals
+                      states.map(function(s, si) {
+                        var gx = 56 + si * stepW;
+                        return React.createElement("g", { key: "wg" + si },
+                          React.createElement("line", { x1: gx, y1: 8, x2: gx, y2: 96, stroke: isContrast ? '#444444' : '#334155', strokeDasharray: '2 2' }),
+                          React.createElement("text", { x: gx + stepW / 2, y: 108, textAnchor: "middle", fontSize: 9, fontWeight: 800, fill: si === activeIdx ? (isContrast ? '#00ff00' : '#fde047') : (isContrast ? '#ffff00' : '#94a3b8') }, s.label)
+                        );
+                      }),
+                      // Wave A
+                      React.createElement("text", { x: 14, y: 26, fontSize: 10, fontWeight: 900, fill: isContrast ? '#ffff00' : '#a78bfa' }, "A"),
+                      React.createElement("path", { d: buildWave(aVals, 14, 30), fill: "none", stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 2.5 }),
+                      // Wave B (for binary gates)
+                      !isUnaryGate && React.createElement("g", null,
+                        React.createElement("text", { x: 14, y: 56, fontSize: 10, fontWeight: 900, fill: isContrast ? '#ffff00' : '#38bdf8' }, "B"),
+                        React.createElement("path", { d: buildWave(bVals, 44, 60), fill: "none", stroke: isContrast ? '#ffff00' : '#38bdf8', strokeWidth: 2.5 })
+                      ),
+                      // Wave OUT
+                      React.createElement("text", { x: 14, y: 86, fontSize: 10, fontWeight: 900, fill: isContrast ? '#00ff00' : '#34d399' }, "OUT"),
+                      React.createElement("path", { d: buildWave(oVals, 74, 90), fill: "none", stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth: 3 })
+                    )
+                  );
+                })(),
                 // Gate truth table
                 (function() {
                   var rows2 = []; var vals = [false,true];
@@ -2515,12 +2818,12 @@ window.StemLab = window.StemLab || {
                       React.createElement("caption", { className: "sr-only" }, "\uD83D\uDCCA "), React.createElement("thead", null, React.createElement("tr", null,
                         React.createElement("th", { scope: "col", className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100 rounded-lg" }, "A"),
                         !isUnaryGate && React.createElement("th", { scope: "col", className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100 rounded-lg" }, "B"),
-                        React.createElement("th", { scope: "col", className: "px-4 py-2 text-white font-black text-center rounded-lg", style:{background:'linear-gradient(135deg,#7c3aed,#a78bfa)'} }, gateType)
+                        React.createElement("th", { scope: "col", className: "px-4 py-2 text-white font-black text-center rounded-lg", style:{background: isContrast ? '#000000' : 'linear-gradient(135deg,#6d28d9,#7c3aed)', border: isContrast ? '1px solid #ffff00' : 'none'} }, gateType)
                       )),
                       React.createElement("tbody", null,
                         rows2.map(function(r2,ri2) {
                           var isActive2 = r2.A===gateInputs.A && (isUnaryGate||r2.B===gateInputs.B);
-                          return React.createElement("tr", { key:ri2, style:{background:isActive2?'#ede9fe':'transparent'} },
+                          return React.createElement("tr", { key:ri2, style:{background:isActive2?(isContrast?'#000000':(isDark?'#312e81':'#ede9fe')):'transparent'} },
                             React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.A?"text-emerald-600":"text-slate-600")},r2.A?"T":"F"),
                             !isUnaryGate&&React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.B?"text-emerald-600":"text-slate-600")},r2.B?"T":"F"),
                             React.createElement("td",{className:"px-4 py-2 text-center font-black "+(r2.out?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-700")},r2.out?"\u2705 T":"\u274C F")
@@ -2529,17 +2832,17 @@ window.StemLab = window.StemLab || {
                       )
                     ),
                     // Open in truth tables
-                    React.createElement("div", { className: "mt-3 p-3 bg-violet-50 rounded-xl border border-violet-200 flex items-center gap-2" },
+                    React.createElement("div", { className: "mt-3 p-3 bg-violet-50 rounded-xl border border-violet-200 flex items-center gap-2 flex-wrap" },
                       React.createElement("code", { className: "text-xs font-mono font-black text-violet-700" },
                         gateType==='AND'?'P \u2227 Q':gateType==='OR'?'P \u2228 Q':gateType==='NOT'?'\u00AC P':gateType==='NAND'?'\u00AC (P \u2227 Q)':gateType==='NOR'?'\u00AC (P \u2228 Q)':gateType==='XOR'?'P \u2295 Q':'\u00AC (P \u2295 Q)'
                       ),
-                      React.createElement("button", { "aria-label": t('stem.logiclab.open_in_truth_tables', "Open in Truth Tables"),
+                      React.createElement("button", { type: "button", "aria-label": t('stem.logiclab.open_in_truth_tables', "Open in Truth Tables"),
                         onClick: function() {
                           var fml = gateType==='AND'?'P \u2227 Q':gateType==='OR'?'P \u2228 Q':gateType==='NOT'?'\u00AC P':gateType==='NAND'?'\u00AC (P \u2227 Q)':gateType==='NOR'?'\u00AC (P \u2228 Q)':gateType==='XOR'?'P \u2295 Q':'\u00AC (P \u2295 Q)';
                           upd({ mode:'truth', expression: fml });
                           if (addToast) addToast('Opened in Truth Table builder!','info');
                         },
-                        className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-800 font-bold rounded-full text-[0.6875rem]"
+                        className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-800 font-bold rounded-full text-[0.6875rem] cursor-pointer"
                       }, t('stem.logiclab.open_in_truth_tables_2', "\uD83D\uDCCA Open in Truth Tables \u2192"))
                     )
                   );
@@ -2559,46 +2862,76 @@ window.StemLab = window.StemLab || {
               else if (pAnd < 5 && pOr < 5) state = 'contradiction';
               else state = 'inconclusive';
               var sm = {
-                bothCertain:   { label: t('stem.logiclab.both_certain_p_q_likely', '✅ Both certain (P∧Q likely)'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-                pLikely:       { label: t('stem.logiclab.p_likely_q_uncertain', '🟡 P likely; Q uncertain'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-                contradiction: { label: t('stem.logiclab.apparent_contradiction', '⚠️ Apparent contradiction'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                inconclusive:  { label: t('stem.logiclab.inconclusive', '🤔 Inconclusive'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' }
+                bothCertain:   { label: t('stem.logiclab.both_certain_p_q_likely', '✅ Both certain (P∧Q likely)'), color: isContrast ? '#00ff00' : (isDark ? '#6ee7b7' : '#047857'), bg: isContrast ? '#000000' : (isDark ? '#064e3b' : '#ecfdf5'), border: isContrast ? '#00ff00' : '#34d399' },
+                pLikely:       { label: t('stem.logiclab.p_likely_q_uncertain', '🟡 P likely; Q uncertain'), color: isContrast ? '#ffff00' : (isDark ? '#fde68a' : '#92400e'), bg: isContrast ? '#000000' : (isDark ? '#451a03' : '#fffbeb'), border: isContrast ? '#ffff00' : '#f59e0b' },
+                contradiction: { label: t('stem.logiclab.apparent_contradiction', '⚠️ Apparent contradiction'), color: isContrast ? '#ffff00' : (isDark ? '#fecaca' : '#991b1b'), bg: isContrast ? '#000000' : (isDark ? '#450a0a' : '#fef2f2'), border: isContrast ? '#ffff00' : '#f87171' },
+                inconclusive:  { label: t('stem.logiclab.inconclusive', '🤔 Inconclusive'), color: isContrast ? '#00ff00' : (isDark ? '#67e8f9' : '#0e7490'), bg: isContrast ? '#000000' : (isDark ? '#083344' : '#ecfeff'), border: isContrast ? '#00ff00' : '#22d3ee' }
               }[state];
+              var xThresh = 74 + Math.round((iq.threshold / 100) * 230);
               return React.createElement('div', { className: 'p-4 rounded-xl bg-white border border-violet-300 space-y-3' },
                 React.createElement('h3', { className: 'text-sm font-black text-violet-700' }, t('stem.logiclab.probability_logic_discovery', '🎲 Probability logic discovery')),
-                React.createElement('p', { className: 'text-[0.75rem] text-slate-700' }, t('stem.logiclab.sliders_for_p_q_truth_probabilities_co', 'Sliders for P, Q truth probabilities, confidence threshold. Discrete 4-state inference outcome. No score, no reveal.')),
+                React.createElement('p', { className: 'text-xs text-slate-700' }, t('stem.logiclab.sliders_for_p_q_truth_probabilities_co', 'Sliders for P, Q truth probabilities, confidence threshold. Discrete 4-state inference outcome. No score, no reveal.')),
                 React.createElement('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   React.createElement('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700 mt-1 font-mono' }, 'P(P)=' + iq.pTrue + '%, P(Q)=' + iq.qTrue + '%, P(P∧Q)=' + pAnd.toFixed(0) + '%, P(P∨Q)=' + pOr.toFixed(0) + '%')
+                  React.createElement('div', { className: 'text-xs mt-1 font-mono', style: { color: llInk } }, 'P(P)=' + iq.pTrue + '%, P(Q)=' + iq.qTrue + '%, P(P\u2227Q)=' + pAnd.toFixed(0) + '%, P(P\u2228Q)=' + pOr.toFixed(0) + '%')
                 ),
-                React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
+                // Proportional Probability Bar & Confidence Threshold SVG
+                React.createElement('div', {
+                  className: 'rounded-xl border p-2',
+                  style: { background: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc'), borderColor: llBorder }
+                },
+                  React.createElement('svg', {
+                    viewBox: '0 0 340 104',
+                    width: '100%',
+                    role: 'img',
+                    'aria-label': 'Probability bars comparing P(P), P(Q), P(P and Q), and P(P or Q) against confidence threshold ' + iq.threshold + ' percent'
+                  },
+                    [
+                      { label: 'P(P)', val: iq.pTrue, y: 12, color: isContrast ? '#ffff00' : '#7c3aed' },
+                      { label: 'P(Q)', val: iq.qTrue, y: 34, color: isContrast ? '#ffff00' : '#2563eb' },
+                      { label: 'P(P\u2227Q)', val: pAnd, y: 56, color: isContrast ? '#00ff00' : '#059669' },
+                      { label: 'P(P\u2228Q)', val: pOr, y: 78, color: isContrast ? '#00ff00' : '#db2777' }
+                    ].map(function(row) {
+                      var w = Math.max(2, Math.round((row.val / 100) * 230));
+                      return React.createElement('g', { key: row.label },
+                        React.createElement('text', { x: 68, y: row.y + 11, textAnchor: 'end', fontSize: 10, fontWeight: 800, fill: llInk }, row.label),
+                        React.createElement('rect', { x: 74, y: row.y, width: 230, height: 14, rx: 4, fill: isContrast ? '#222222' : (isDark ? '#1e293b' : '#e2e8f0') }),
+                        React.createElement('rect', { x: 74, y: row.y, width: w, height: 14, rx: 4, fill: row.color }),
+                        React.createElement('text', { x: 310, y: row.y + 11, fontSize: 9.5, fontWeight: 800, fill: llInk }, Math.round(row.val) + '%')
+                      );
+                    }),
+                    React.createElement('line', { x1: xThresh, y1: 6, x2: xThresh, y2: 96, stroke: isContrast ? '#00ff00' : '#dc2626', strokeWidth: 2, strokeDasharray: '4 2' }),
+                    React.createElement('text', { x: Math.min(295, Math.max(82, xThresh)), y: 102, textAnchor: 'middle', fontSize: 8.5, fontWeight: 900, fill: isContrast ? '#00ff00' : (isDark ? '#fca5a5' : '#b91c1c') }, 'Threshold ' + iq.threshold + '%')
+                  )
+                ),
+                React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                   [{ k: 'pTrue', l: 'P truth %' }, { k: 'qTrue', l: 'Q truth %' }, { k: 'threshold', l: 'Confidence %' }].map(function(s) {
                     return React.createElement('div', { key: s.k },
-                      React.createElement('label', { htmlFor: 'sl-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
+                      React.createElement('label', { htmlFor: 'sl-' + s.k, className: 'block text-xs font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-violet-700' }, iq[s.k] + '%')),
                       React.createElement('input', { id: 'sl-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pTrue, q: iq.qTrue, t: iq.threshold, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.logiclab.log', '📋 Log')),
-                  React.createElement('button', { onClick: function() { setIQ({ pTrue: 70, qTrue: 70, threshold: 80, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.logiclab.reset_3', '↺ Reset'))
+                  React.createElement('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pTrue, q: iq.qTrue, t: iq.threshold, st: state }]).slice(-8) }); }, className: 'px-2.5 py-1 rounded bg-slate-100 text-xs font-bold text-slate-700 border border-slate-300 cursor-pointer' }, t('stem.logiclab.log', '📋 Log')),
+                  React.createElement('button', { type: 'button', onClick: function() { setIQ({ pTrue: 70, qTrue: 70, threshold: 80, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2.5 py-1 rounded bg-white text-xs font-semibold text-slate-600 border border-slate-300 cursor-pointer' }, t('stem.logiclab.reset_3', '↺ Reset'))
                 ),
                 React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.logiclab.hypothesis_when_does_p_p_q_p_p_p_q', 'Hypothesis: When does P(P∧Q) ≈ P(P)·P(Q)?'),
                   'aria-label': t('stem.logiclab.hypothesis_when_does_p_p_q_p_p_p_q', 'Probability logic hypothesis'),
-                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.logiclab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700' },
+                  className: 'w-full text-xs border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && React.createElement('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2.5 py-1 rounded bg-amber-50 text-xs font-bold text-amber-800 border border-amber-300 cursor-pointer' }, t('stem.logiclab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-xs text-slate-700' },
                   React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
                     React.createElement('li', null, t('stem.logiclab.independence_vs_correlation_when_does_', 'Independence vs correlation — when does each apply?')),
                     React.createElement('li', null, t('stem.logiclab.how_does_threshold_change_inference_ou', 'How does threshold change inference outcome?')))),
-                React.createElement('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
+                React.createElement('label', { className: 'flex items-center gap-2 text-xs font-bold text-emerald-800 cursor-pointer' },
                   React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.logiclab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.logiclab.explain_probability_logic', 'Explain probability logic.'),
                   'aria-label': t('stem.logiclab.explain_probability_logic', 'Explain probability logic'),
-                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                React.createElement('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.logiclab.design_note_discrete_4_state_inference', 'Design note: discrete 4-state inference marker; no probability score; no reveal — by design.'))
+                  className: 'w-full text-xs border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                React.createElement('div', { className: 'text-[0.6875rem] italic text-slate-500' }, t('stem.logiclab.design_note_discrete_4_state_inference', 'Design note: discrete 4-state inference marker; no probability score; no reveal — by design.'))
               );
             })(),
 

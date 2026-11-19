@@ -33310,7 +33310,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
-      var _znAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
+      var _znAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       // `var t = ctx.t` removed 2026-09-21: it was declared and never called. ctx.t drops the English fallback, so the next person to wire this tool would have shipped raw keys. Use the __alloT wrapper instead.
       var band = ctx.gradeBand || 'elementary'; // 'elementary', 'middle', 'high'
@@ -34212,8 +34212,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                 )
               ),
               // AI advice button
-              callGemini && h('button', { 'aria-label': 'AI advice button',
+              _znAiOn && callGemini && h('button', { 'aria-label': 'AI advice button',
                 onClick: function() {
+                  if (!_znAiOn) return;
                   upd({ aiLoading: true, aiAdvice: null });
                   tryAwardBadge('ai_advice');
                   var prompt = 'You are a school counselor helping a ' + band + ' school student. ' +
@@ -34703,9 +34704,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
           ),
 
           // AI scenario generation button
-          callGemini && !scenarioFeedback && h('div', { style: { marginTop: 20, textAlign: 'center' } },
+          _znAiOn && callGemini && !scenarioFeedback && h('div', { style: { marginTop: 20, textAlign: 'center' } },
             h('button', { 'aria-label': 'Next scenario',
               onClick: function() {
+                if (!_znAiOn) return;
                 upd('aiScenarioLoading', true);
                 var prompt = 'Generate a single short scenario (1-2 sentences) that a ' + band + ' school student might experience. ' +
                   'The scenario should clearly represent one of these emotional states: calm/happy (green zone), anxious/excited/nervous (yellow zone), sad/tired/bored (blue zone), or angry/out-of-control/panicked (red zone). ' +

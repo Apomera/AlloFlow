@@ -1885,7 +1885,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       key: slot.id,
       className: "flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-2 py-1.5"
     }, /*#__PURE__*/React.createElement("span", {
-      className: `text-xs font-bold ${gone ? 'text-slate-400' : 'text-slate-800'}`
+      className: `text-xs font-bold ${gone ? 'text-slate-600 line-through' : 'text-slate-800'}`
     }, slot.label, /*#__PURE__*/React.createElement("span", {
       className: "ml-2 text-[10px] font-black uppercase tracking-wide"
     }, gone ? 'Full' : slot.remaining + ' of ' + slot.capacity + ' left')), /*#__PURE__*/React.createElement("button", {

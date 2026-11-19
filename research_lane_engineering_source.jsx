@@ -1075,6 +1075,7 @@
           {chipId === 'other' && (
             <textarea value={otherText} onChange={function (e) { setOtherText(e.target.value); }}
               rows={2} maxLength={240}
+              aria-label={t('engineering.loopback_other_label') || 'Reason for looping back'}
               placeholder={t('engineering.loopback_other_placeholder') || 'Briefly: what made you loop back? (≥10 chars)'}
               style={{ marginTop: '8px', width: '100%', boxSizing: 'border-box',
                 padding: '8px 10px', borderRadius: '8px', border: '1px solid #cbd5e1',
@@ -1148,14 +1149,14 @@
       <div style={{ padding: '12px', borderRadius: '12px', background: '#fff', border: '1px solid #e2e8f0' }}>
         <label style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', display: 'block' }}>
           {props.label}
+          {props.help && (<span style={{ display: 'block', margin: '4px 0', fontSize: '11px', fontWeight: 400, color: '#475569', lineHeight: 1.5 }}>{props.help}</span>)}
+          <textarea value={props.value || ''} onChange={function (e) { props.onChange(e.target.value); }}
+            rows={props.rows || 3} maxLength={props.max || 800}
+            placeholder={props.placeholder || ''}
+            style={{ marginTop: '4px', width: '100%', boxSizing: 'border-box',
+              padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1',
+              fontSize: '12px', fontWeight: 400, fontFamily: 'inherit', resize: 'vertical', minHeight: '60px' }} />
         </label>
-        {props.help && (<p style={{ margin: '4px 0', fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>{props.help}</p>)}
-        <textarea value={props.value || ''} onChange={function (e) { props.onChange(e.target.value); }}
-          rows={props.rows || 3} maxLength={props.max || 800}
-          placeholder={props.placeholder || ''}
-          style={{ marginTop: '4px', width: '100%', boxSizing: 'border-box',
-            padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1',
-            fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', minHeight: '60px' }} />
       </div>
     );
   }
@@ -1866,6 +1867,7 @@
           </div>
           <div style={{ marginTop: '4px', display: 'flex', gap: '4px' }}>
             <input type="text" value={matInput} maxLength={40}
+              aria-label={t('engineering.material_label') || 'Add material'}
               onChange={function (e) { setMatInput(e.target.value); }}
               onKeyDown={function (e) {
                 if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
@@ -2034,6 +2036,7 @@
                     return (
                       <td key={cr.id} style={{ padding: '6px', borderBottom: '1px solid #e2e8f0', verticalAlign: 'top' }}>
                         <select value={ce.score || ''}
+                          aria-label={(t('engineering.matrix_score_aria') || 'Score') + ': ' + (cn.name || cn.id) + ' — ' + (cr.name || cr.id)}
                           onChange={function (e) {
                             var v = e.target.value === '' ? '' : parseInt(e.target.value, 10);
                             onCellChange(cn.id, cr.id, { score: v });
@@ -2045,6 +2048,7 @@
                           <option value="3">3</option><option value="4">4</option><option value="5">5</option>
                         </select>
                         <textarea value={ce.reasonText || ''} rows={2} maxLength={400}
+                          aria-label={(t('engineering.matrix_reason_aria') || 'Reason for score') + ': ' + (cn.name || cn.id) + ' — ' + (cr.name || cr.id)}
                           onChange={function (e) { onCellChange(cn.id, cr.id, { reasonText: e.target.value }); }}
                           placeholder={t('engineering.matrix_reason_ph') || 'Why this score?'}
                           style={{ marginTop: '2px', width: '100%', boxSizing: 'border-box',
@@ -2790,6 +2794,7 @@
             {t('engineering.select_candidate_title') || 'Pick the candidate you will test'}
           </h4>
           <select value={selected} onChange={function (e) { setSelected(e.target.value); }}
+            aria-label={t('engineering.select_candidate_title') || 'Pick the candidate you will test'}
             style={{ width: '100%', padding: '8px 10px', borderRadius: '8px',
               border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'inherit' }}>
             <option value="">— pick one —</option>
@@ -2809,6 +2814,7 @@
               </p>
               <textarea value={domJust} onChange={function (e) { setDomJust(e.target.value); }}
                 rows={2} maxLength={600}
+                aria-label={t('engineering.dominated_just_label') || 'Justification for choosing a Pareto-dominated candidate'}
                 placeholder={t('engineering.dominated_just_ph') || 'e.g. lower scores on temp-hold but Ms. Patel prioritizes set-up time which the matrix under-weighted…'}
                 style={{ marginTop: '6px', width: '100%', boxSizing: 'border-box',
                   padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1',
@@ -2895,12 +2901,14 @@
                     </span>
                   </strong>
                   <textarea value={p.procedureText || ''} rows={2} maxLength={1000}
+                    aria-label={(t('engineering.protocol_text_aria') || 'Measurement procedure') + ': ' + (crit ? crit.name : p.id)}
                     onChange={function (e) { updateProtocol(p.id, { procedureText: e.target.value }); }}
                     placeholder={t('engineering.protocol_text_ph') || ('Procedure (≥' + floors.procedure + ' chars): how exactly will you measure this?')}
                     style={{ width: '100%', boxSizing: 'border-box',
                       padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1',
                       fontSize: '12px', fontFamily: 'inherit' }} />
                   <input type="text" value={p.instrument || ''} maxLength={80}
+                    aria-label={(t('engineering.protocol_instrument_aria') || 'Measurement instrument') + ': ' + (crit ? crit.name : p.id)}
                     onChange={function (e) { updateProtocol(p.id, { instrument: e.target.value }); }}
                     placeholder={t('engineering.protocol_instrument_ph') || 'Instrument (e.g. digital thermometer)'}
                     style={{ width: '100%', boxSizing: 'border-box',
@@ -3168,12 +3176,14 @@
                     <span style={{ fontSize: '10px', color: '#64748b' }}>{c.direction} {c.target} {c.unit}</span>
                     <div style={{ marginTop: '4px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                       <input type="text" inputMode="decimal" value={d.measured || ''}
+                        aria-label={(t('engineering.measured_value_aria') || 'Measured value') + ': ' + (c.name || c.id) + (c.unit ? ' (' + c.unit + ')' : '')}
                         onChange={function (e) { setRunDraft(Object.assign({}, runDraft, { [c.id]: Object.assign({}, d, { measured: e.target.value }) })); }}
                         placeholder="measured"
                         style={{ width: '80px', padding: '4px 8px', borderRadius: '6px',
                           border: '1px solid #cbd5e1', fontSize: '11px' }} />
-                      <span style={{ fontSize: '10px', color: '#64748b' }}>{c.unit}</span>
+                      <span style={{ fontSize: '10px', color: '#475569' }}>{c.unit}</span>
                       <input type="text" value={d.observationText || ''} maxLength={400}
+                        aria-label={(t('engineering.observation_aria') || 'Observation') + ': ' + (c.name || c.id)}
                         onChange={function (e) { setRunDraft(Object.assign({}, runDraft, { [c.id]: Object.assign({}, d, { observationText: e.target.value }) })); }}
                         placeholder="observation (optional)"
                         style={{ flex: 1, minWidth: '120px', padding: '4px 8px', borderRadius: '6px',
@@ -3349,7 +3359,7 @@
                         background: '#fff7ed', border: '1px solid #fdba74',
                         fontSize: '11px', color: '#9a3412' }}>
                         <strong>{t('engineering.attach_retest') || 'Attach a retest:'} </strong>
-                        <select value="" onChange={function (e) { if (e.target.value) attachRetest(f, e.target.value); }}
+                        <select value="" aria-label={t('engineering.attach_retest_aria') || 'Attach a retest run'} onChange={function (e) { if (e.target.value) attachRetest(f, e.target.value); }}
                           style={{ padding: '3px 6px', borderRadius: '6px', fontSize: '11px',
                             border: '1px solid #cbd5e1', marginLeft: '4px' }}>
                           <option value="">— pick a new testRun —</option>
@@ -3617,6 +3627,7 @@
           </h4>
           <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
             <input type="text" value={addingClaim} maxLength={500}
+              aria-label={t('engineering.design_claim_label') || 'New design claim'}
               onChange={function (e) { setAddingClaim(e.target.value); }}
               onKeyDown={function (e) { if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') addClaim(); }}
               placeholder={t('engineering.design_claim_ph') || 'A specific claim about the final design and its fitness…'}

@@ -373,26 +373,41 @@
         catch (_) { return fallback; }
       };
       var React = ctx.React, h = React.createElement;
-      var d = ((ctx.toolData || {})._timeSchedule) || {};
+      var rawToolData = (ctx && ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData : {};
+      var d = (rawToolData._timeSchedule && typeof rawToolData._timeSchedule === 'object' && !Array.isArray(rawToolData._timeSchedule)) ? rawToolData._timeSchedule : {};
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var isContrast = !!ctx.isContrast;
       var isDark = !isContrast && !!ctx.isDark;
       var themeClass = isContrast ? ' time-schedule-lab--contrast' : (isDark ? ' time-schedule-lab--dark' : '');
+      var svgFace0 = isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff');
+      var svgFace1 = isContrast ? '#000000' : (isDark ? '#0f172a' : '#e0f2fe');
+      var svgInk = isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a');
+      var svgSub = isContrast ? '#ffff00' : (isDark ? '#94a3b8' : '#64748b');
+      var svgAccent = isContrast ? '#00ff00' : (isDark ? '#38bdf8' : '#0284c7');
+      var svgRing = isContrast ? '#ffff00' : (isDark ? '#38bdf8' : '#0369a1');
+      var svgCardBg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff');
       var themeCss = [
-        '.time-schedule-lab--dark,.time-schedule-lab--contrast{padding:12px;border-radius:16px}',
-        '.time-schedule-lab--dark{background:#020617;color:#f8fafc}',
-        '.time-schedule-lab--dark [class*="bg-"]{background-color:#0f172a!important;background-image:none!important}',
-        '.time-schedule-lab--dark *{color:#f8fafc!important;border-color:#64748b!important;background-color:#0f172a!important;background-image:none!important}',
-        '.time-schedule-lab--dark input,.time-schedule-lab--dark select{background:#020617!important;color:#f8fafc!important}',
-        '.time-schedule-lab--dark [aria-selected="true"],.time-schedule-lab--dark [aria-pressed="true"]{background:#1d4ed8!important;color:#fff!important;border-color:#93c5fd!important}',
-        '.time-schedule-lab--dark svg{background:#fff!important;border-radius:12px}',
-        '.time-schedule-lab--contrast{background:#000;color:#fff}',
-        '.time-schedule-lab--contrast [class*="bg-"],.time-schedule-lab--contrast header,.time-schedule-lab--contrast main,.time-schedule-lab--contrast footer{background:#000!important;background-image:none!important}',
-        '.time-schedule-lab--contrast *{color:#fff!important;border-color:#fff!important;background-color:#000!important;background-image:none!important;box-shadow:none!important}',
-        '.time-schedule-lab--contrast input,.time-schedule-lab--contrast select{background:#000!important;color:#fff!important;border:2px solid #fff!important}',
-        '.time-schedule-lab--contrast [aria-selected="true"],.time-schedule-lab--contrast [aria-pressed="true"]{background:#fff!important;color:#000!important;outline:3px solid #ff0!important}',
-        '.time-schedule-lab--contrast :focus-visible{outline:3px solid #ff0!important;outline-offset:3px!important}',
-        '.time-schedule-lab--contrast svg{background:#fff!important;border:2px solid #fff;border-radius:12px}'
+        '.time-schedule-lab button,.time-schedule-lab select,.time-schedule-lab input{transition:transform 120ms ease,background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease}',
+        '.time-schedule-lab button:not([disabled]):hover{transform:translateY(-1px)}',
+        '.time-schedule-lab :focus-visible{outline:3px solid #0284c7;outline-offset:2px}',
+        '@media (prefers-reduced-motion:reduce){.time-schedule-lab button,.time-schedule-lab select,.time-schedule-lab input{transition:none!important;transform:none!important}}',
+        '.time-schedule-lab--dark,.time-schedule-lab--contrast{padding:14px;border-radius:18px}',
+        '.time-schedule-lab--dark{background:#020617;color:#f8fafc;border:1px solid #1e293b}',
+        '.time-schedule-lab--dark [class*="bg-white"],.time-schedule-lab--dark [class*="bg-slate-50"],.time-schedule-lab--dark [class*="bg-sky-50"],.time-schedule-lab--dark [class*="bg-cyan-50"],.time-schedule-lab--dark [class*="bg-indigo-50"],.time-schedule-lab--dark [class*="bg-amber-50"],.time-schedule-lab--dark [class*="bg-violet-50"],.time-schedule-lab--dark [class*="bg-emerald-50"],.time-schedule-lab--dark [class*="bg-rose-50"],.time-schedule-lab--dark [class*="bg-slate-100"]{background-color:#0f172a!important;background-image:none!important}',
+        '.time-schedule-lab--dark [class*="text-slate-"],.time-schedule-lab--dark [class*="text-indigo-"],.time-schedule-lab--dark [class*="text-sky-"],.time-schedule-lab--dark [class*="text-cyan-"],.time-schedule-lab--dark [class*="text-violet-"],.time-schedule-lab--dark [class*="text-amber-"],.time-schedule-lab--dark [class*="text-emerald-"],.time-schedule-lab--dark [class*="text-rose-"]{color:#e2e8f0!important}',
+        '.time-schedule-lab--dark [class*="border-slate-"],.time-schedule-lab--dark [class*="border-sky-"],.time-schedule-lab--dark [class*="border-cyan-"],.time-schedule-lab--dark [class*="border-indigo-"],.time-schedule-lab--dark [class*="border-amber-"],.time-schedule-lab--dark [class*="border-violet-"]{border-color:#334155!important}',
+        '.time-schedule-lab--dark .bg-emerald-100,.time-schedule-lab--dark .bg-orange-100,.time-schedule-lab--dark .bg-sky-100,.time-schedule-lab--dark .bg-violet-100{background-color:#1e293b!important;border:1px solid #334155!important}',
+        '.time-schedule-lab--dark input,.time-schedule-lab--dark select{background:#020617!important;color:#f8fafc!important;border-color:#475569!important}',
+        '.time-schedule-lab--dark [aria-selected="true"],.time-schedule-lab--dark [aria-pressed="true"]{background:#0369a1!important;color:#fff!important;border-color:#38bdf8!important}',
+        '.time-schedule-lab--dark svg{border-radius:12px}',
+        '.time-schedule-lab--contrast{background:#000;color:#fff;border:2px solid #ffff00}',
+        '.time-schedule-lab--contrast [class*="bg-"],.time-schedule-lab--contrast header,.time-schedule-lab--contrast main,.time-schedule-lab--contrast footer{background:#000!important;background-image:none!important;box-shadow:none!important}',
+        '.time-schedule-lab--contrast :not(svg):not(svg *){color:#fff!important;border-color:#ffff00!important}',
+        '.time-schedule-lab--contrast h2,.time-schedule-lab--contrast h3,.time-schedule-lab--contrast h4,.time-schedule-lab--contrast strong,.time-schedule-lab--contrast th{color:#ffff00!important}',
+        '.time-schedule-lab--contrast input,.time-schedule-lab--contrast select{background:#000!important;color:#fff!important;border:2px solid #ffff00!important}',
+        '.time-schedule-lab--contrast [aria-selected="true"],.time-schedule-lab--contrast [aria-pressed="true"]{background:#000!important;color:#00ff00!important;border:2px solid #00ff00!important}',
+        '.time-schedule-lab--contrast :focus-visible{outline:3px solid #00ff00!important;outline-offset:3px!important}',
+        '.time-schedule-lab--contrast svg{background:#000!important;border:2px solid #ffff00;border-radius:12px}'
       ].join('');
       var announce = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function () {};
       var award = typeof ctx.awardXP === 'function' ? ctx.awardXP : function () {};
@@ -455,7 +470,10 @@
       var challengeId = challenge.id;
       var chIndex = CHALLENGES.indexOf(challenge);
       var challengeAnswer = challengeSubstituted ? '' : (d.challengeAnswer || '');
-      var score = Object.assign({ correct: 0, total: 0 }, d.score || {}, { correct: timeChallengeSolvedCount(d) });
+      var safeScore = (d.score && typeof d.score === 'object' && !Array.isArray(d.score)) ? d.score : {};
+      var score = Object.assign({ correct: 0, total: 0 }, safeScore, { correct: timeChallengeSolvedCount(d) });
+      var safeModesUsed = (d.modesUsed && typeof d.modesUsed === 'object' && !Array.isArray(d.modesUsed)) ? d.modesUsed : {};
+      var safeAttempts = (d.challengeAttempts && typeof d.challengeAttempts === 'object' && !Array.isArray(d.challengeAttempts)) ? d.challengeAttempts : {};
 
       function setTab(id) {
         upd(function (current) {
@@ -519,24 +537,38 @@
       }
       function analog(value, id, compact, hideTime) {
         value = norm(value);
-        var minute = value % 60, hour = Math.floor(value / 60) % 12;
+        var minute = value % 60, hour = Math.floor(value / 60) % 12, hour24 = Math.floor(value / 60);
         var ma = minute * 6 * Math.PI / 180;
         var ha = (hour + minute / 60) * 30 * Math.PI / 180;
-        var ticks = [], labels = [], i, a;
+        var ticks = [], labels = [], outer24 = [], i, a;
         for (i = 0; i < 60; i += 1) {
           a = i * 6 * Math.PI / 180;
           ticks.push(h('line', { key: 't' + i,
-            x1: 160 + (i % 5 ? 132 : 125) * Math.sin(a),
-            y1: 160 - (i % 5 ? 132 : 125) * Math.cos(a),
+            x1: 160 + (i % 5 ? 132 : 124) * Math.sin(a),
+            y1: 160 - (i % 5 ? 132 : 124) * Math.cos(a),
             x2: 160 + 139 * Math.sin(a), y2: 160 - 139 * Math.cos(a),
-            stroke: i % 5 ? '#94a3b8' : '#0f172a', strokeWidth: i % 5 ? 1.5 : 4,
+            stroke: i % 5 ? svgSub : svgInk, strokeWidth: i % 5 ? 1.5 : 4,
             strokeLinecap: 'round' }));
         }
         for (i = 1; i <= 12; i += 1) {
           a = i * 30 * Math.PI / 180;
-          labels.push(h('text', { key: 'n' + i, x: 160 + 111 * Math.sin(a),
-            y: 166 - 111 * Math.cos(a), textAnchor: 'middle', fontSize: 17,
-            fontWeight: '800', fill: '#0f172a' }, i));
+          labels.push(h('text', { key: 'n' + i, x: 160 + 109 * Math.sin(a),
+            y: 166 - 109 * Math.cos(a), textAnchor: 'middle', fontSize: 17,
+            fontWeight: '800', fill: svgInk }, i));
+          if (use24 && !compact && !hideTime) {
+            var h24Label = i === 12 ? (hour24 >= 12 ? '12' : '00') : String(hour24 >= 12 ? i + 12 : i).padStart(2, '0');
+            outer24.push(h('text', { key: 'h24-' + i, x: 160 + 83 * Math.sin(a),
+              y: 164 - 83 * Math.cos(a), textAnchor: 'middle', fontSize: 10,
+              fontWeight: '700', fill: svgSub }, h24Label));
+          }
+        }
+        // Subtle minute sweep wedge (0 -> minute) when showing time
+        var sweepPath = null;
+        if (!hideTime && minute > 0) {
+          var sr = 122;
+          var sx = 160 + sr * Math.sin(ma), sy = 160 - sr * Math.cos(ma);
+          var largeArc = minute > 30 ? 1 : 0;
+          sweepPath = 'M 160 160 L 160 ' + (160 - sr) + ' A ' + sr + ' ' + sr + ' 0 ' + largeArc + ' 1 ' + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' Z';
         }
         // hideTime: a read-the-clock challenge must describe the hands, not state the time.
         var readable = hideTime ?
@@ -550,7 +582,7 @@
           t('stem.timeschedule.analog_clock_showing', "Analog clock showing ") + time12(value) +
           t('stem.timeschedule.minute_hand', ". Minute hand: ") + minute + t('stem.timeschedule.minutes_hour_hand', " minutes. Hour hand: ") +
           (minute ? t('stem.timeschedule.past', "past ") : t('stem.timeschedule.at', "at ")) + (hour || 12) + '.';
-        return h('figure', { className: 'm-0 flex flex-col items-center' },
+        return h('figure', { className: 'm-0 flex flex-col items-center w-full' },
           h('svg', { viewBox: '0 0 320 320', role: 'img',
             'aria-labelledby': id + '-title ' + id + '-desc',
             className: compact ? 'w-full max-w-[230px] h-auto' : 'w-full max-w-[330px] h-auto' },
@@ -559,20 +591,26 @@
             h('desc', { id: id + '-desc' }, readable),
             h('defs', null,
               h('radialGradient', { id: id + '-face', cx: '42%', cy: '35%', r: '70%' },
-                h('stop', { offset: '0%', stopColor: '#fff' }),
-                h('stop', { offset: '100%', stopColor: '#e0f2fe' }))),
-            h('circle', { cx: 160, cy: 160, r: 148, fill: 'url(#' + id + '-face)',
-              stroke: '#0369a1', strokeWidth: 7 }),
+                h('stop', { offset: '0%', stopColor: svgFace0 }),
+                h('stop', { offset: '100%', stopColor: svgFace1 }))),
+            h('circle', { cx: 160, cy: 160, r: 152, fill: 'none', stroke: svgSub, strokeWidth: 1.5, opacity: 0.45 }),
+            h('circle', { cx: 160, cy: 160, r: 146, fill: 'url(#' + id + '-face)',
+              stroke: svgRing, strokeWidth: 7 }),
+            sweepPath && h('path', { d: sweepPath, fill: svgAccent, opacity: isContrast ? 0.14 : (isDark ? 0.18 : 0.11) }),
             ticks, labels,
-            d.showMinuteLabels && !compact && Array.from({length:12},function(_,i){var angle=i*Math.PI/6;return h('text',{key:'minute-'+i,x:160+87*Math.sin(angle),y:164-87*Math.cos(angle),textAnchor:'middle',fontSize:12,fontWeight:700,fill:'#075985'},i*5);}),
-            h('line', { x1: 160, y1: 160, x2: 160 + 72 * Math.sin(ha),
-              y2: 160 - 72 * Math.cos(ha), stroke: '#0f172a', strokeWidth: 10,
+            d.showMinuteLabels && !compact && Array.from({length:12},function(_,idx){var angle=idx*Math.PI/6;return h('text',{key:'minute-'+idx,x:160+86*Math.sin(angle),y:164-86*Math.cos(angle),textAnchor:'middle',fontSize:11.5,fontWeight:700,fill:svgAccent},idx*5);}),
+            (!d.showMinuteLabels && outer24.length > 0) && outer24,
+            !hideTime && !compact && h('g', { 'aria-hidden': 'true' },
+              h('rect', { x: 132, y: 196, width: 56, height: 22, rx: 11, fill: svgCardBg, stroke: svgRing, strokeWidth: 1.5 }),
+              h('text', { x: 160, y: 211, textAnchor: 'middle', fontSize: 11, fontWeight: '800', fill: svgInk }, hour24 < 12 ? 'AM' : 'PM')),
+            h('line', { x1: 160, y1: 160, x2: 160 + 70 * Math.sin(ha),
+              y2: 160 - 70 * Math.cos(ha), stroke: svgInk, strokeWidth: 10,
               strokeLinecap: 'round' }),
-            h('line', { x1: 160, y1: 160, x2: 160 + 105 * Math.sin(ma),
-              y2: 160 - 105 * Math.cos(ma), stroke: '#0284c7', strokeWidth: 6,
+            h('line', { x1: 160, y1: 160, x2: 160 + 104 * Math.sin(ma),
+              y2: 160 - 104 * Math.cos(ma), stroke: svgAccent, strokeWidth: 6,
               strokeLinecap: 'round' }),
-            h('circle', { cx: 160, cy: 160, r: 11, fill: '#f97316',
-              stroke: '#fff', strokeWidth: 3 })),
+            h('circle', { cx: 160, cy: 160, r: 10, fill: isContrast ? '#ffff00' : '#f97316',
+              stroke: svgCardBg, strokeWidth: 3 })),
           h('figcaption', { className: 'mt-1 text-center text-xs text-slate-600' }, readable + (d.showMinuteLabels && !compact ? ' ' + t('stem.timeschedule.hour_moves_gradually','The short hour hand moves gradually between hours as the long minute hand moves.') : ''))
         );
       }
@@ -601,8 +639,41 @@
                   use24 ? '24-hour display' : '12-hour display'),
                 h('p', { className: 'font-mono text-4xl sm:text-5xl font-black tracking-wider mt-2',
                   'aria-live': 'polite' }, showTime(clock, use24)),
-                h('p', { className: 'text-xs text-slate-300 mt-2' }, time12(clock) + ' = ' + time24(clock))),
+                h('p', { className: 'text-xs text-slate-300 mt-2' }, time12(clock) + ' = ' + time24(clock)),
+                // 24-Hour Day Cycle Bar SVG showing exact position across the 24-hour solar cycle
+                (function () {
+                  var pinX = 24 + (clock / DAY) * 352;
+                  return h('div', { className: 'mt-3 pt-2 border-t border-slate-800' },
+                    h('svg', { viewBox: '0 0 400 54', className: 'w-full h-auto', style: { display: 'block' },
+                      role: 'img', 'aria-label': t('stem.timeschedule.day_cycle_aria', '24-hour day cycle marker at ') + showTime(clock, use24) },
+                      h('rect', { x: 24, y: 14, width: 88, height: 10, rx: 4, fill: isContrast ? '#000000' : '#1e3a8a', stroke: isContrast ? '#ffff00' : 'none', strokeWidth: 1 }),
+                      h('rect', { x: 112, y: 14, width: 176, height: 10, fill: isContrast ? '#000000' : '#0284c7', stroke: isContrast ? '#ffff00' : 'none', strokeWidth: 1 }),
+                      h('rect', { x: 288, y: 14, width: 88, height: 10, rx: 4, fill: isContrast ? '#000000' : '#312e81', stroke: isContrast ? '#ffff00' : 'none', strokeWidth: 1 }),
+                      h('circle', { cx: pinX, cy: 19, r: 7, fill: isContrast ? '#00ff00' : '#f97316', stroke: '#ffffff', strokeWidth: 2 }),
+                      [
+                        { x: 24, lbl: '00:00' }, { x: 112, lbl: '06:00' }, { x: 200, lbl: '12:00' }, { x: 288, lbl: '18:00' }, { x: 376, lbl: '24:00' }
+                      ].map(function (mk) {
+                        return h('text', { key: mk.lbl, x: mk.x, y: 44, textAnchor: mk.x === 24 ? 'start' : (mk.x === 376 ? 'end' : 'middle'), fontSize: 10.5, fontWeight: 700, fill: isContrast ? '#ffff00' : '#cbd5e1' }, mk.lbl);
+                      })
+                    )
+                  );
+                })()),
               h('div', { className: 'rounded-xl border border-slate-200 bg-white p-4 space-y-3' },
+                h('div', { className: 'flex flex-wrap gap-1.5 items-center' },
+                  h('span', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-slate-600 mr-1' }, t('stem.timeschedule.quick_times', 'Quick times:')),
+                  [
+                    { min: 495, label: t('stem.timeschedule.preset_morning', '8:15 AM') },
+                    { min: 720, label: t('stem.timeschedule.preset_noon', '12:00 PM') },
+                    { min: 905, label: t('stem.timeschedule.preset_dismissal', '3:05 PM') },
+                    { min: 1185, label: t('stem.timeschedule.preset_evening', '7:45 PM') },
+                    { min: 0, label: t('stem.timeschedule.preset_midnight', '12:00 AM') }
+                  ].map(function (pr) {
+                    var activeP = clock === pr.min;
+                    return h('button', { key: pr.min, type: 'button', 'aria-pressed': activeP,
+                      onClick: function () { setClock(pr.min); },
+                      className: 'rounded-full border px-2.5 py-1 text-xs font-bold ' + (activeP ? 'bg-sky-700 text-white border-sky-700' : 'bg-sky-50 text-sky-900 border-sky-200 hover:bg-sky-100') },
+                      pr.label);
+                  })),
                 h('label', { className: 'block text-xs font-black text-slate-700' }, t('stem.timeschedule.set_an_exact_time', "Set an exact time"),
                   h('input', { type: 'time', value: time24(clock),
                     onChange: function (e) { var v = parseInputTime(e.target.value); if (v != null) setClock(v); },
@@ -680,6 +751,20 @@
                     onChange: function (e) { markElapsed({ elapsedDuration: Math.floor(amount / 60) * 60 +
                       clamp(e.target.value, 0, 59) }); },
                     className: 'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-bold' }))),
+              h('div', { className: 'flex flex-wrap gap-1.5 items-center' },
+                h('span', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-slate-600' }, t('stem.timeschedule.elapsed_presets', 'Try a model:')),
+                [
+                  { id: 'short', label: '+45 min', s: 525, a: 45, dir: 1 },
+                  { id: 'noon', label: t('stem.timeschedule.preset_cross_noon', 'Cross Noon'), s: 650, a: 135, dir: 1 },
+                  { id: 'midnight', label: t('stem.timeschedule.preset_cross_midnight', 'Cross Midnight'), s: 1415, a: 50, dir: 1 },
+                  { id: 'back', label: '−55 min', s: 910, a: 55, dir: -1 }
+                ].map(function (ep) {
+                  var isCur = start === ep.s && amount === ep.a && direction === ep.dir;
+                  return h('button', { key: ep.id, type: 'button', 'aria-pressed': isCur,
+                    onClick: function () { markElapsed({ elapsedStart: ep.s, elapsedDuration: ep.a, elapsedDirection: ep.dir }); },
+                    className: 'rounded-full border px-2.5 py-1 text-xs font-bold ' + (isCur ? 'bg-sky-700 text-white border-sky-700' : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-sky-50') },
+                    ep.label);
+                })),
               h('button', { type: 'button', 'aria-pressed': guided, className: 'w-full rounded-lg border border-slate-400 bg-white text-slate-800 p-3 text-sm font-bold',
                 onClick: function() { upd({ elapsedStepMode: !guided, elapsedStepKey: signature, elapsedStep: 0, elapsedPrediction: '' }); } }, t('stem.timeschedule.predict_step', 'Predict, then step through')),
               guided && h('div', { className: 'space-y-3' },
@@ -713,33 +798,34 @@
                   var x = direction > 0 ? 55 + progress * 610 : 665 - progress * 610;
                   el.scrollLeft = Math.max(0, x * el.scrollWidth / 720 - el.clientWidth / 2);
                 } },
-              h('svg', { viewBox: '0 0 720 190', className: 'w-full h-auto', style: { minWidth: 720, display: 'block' },
+              h('svg', { viewBox: '0 0 720 190', className: 'w-full h-auto', style: { minWidth: 720, display: 'block', background: svgCardBg },
                 role: 'img', 'aria-labelledby': 'ts-jump-title ts-jump-desc' },
                 h('title', { id: 'ts-jump-title' }, t('stem.timeschedule.elapsed_time_jump_timeline', "Elapsed-time jump timeline")),
                 h('desc', { id: 'ts-jump-desc' }, t('stem.timeschedule.from', 'From ') + showTime(start, use24) + '. ' +
                   (direction > 0 ? t('stem.timeschedule.forward', 'forward ') : t('stem.timeschedule.backward', 'backward ')) + durationText(amount) + '. ' +
                   (complete ? t('stem.timeschedule.ending_time', 'Ending time') + ': ' + showTime(end, use24) : t('stem.timeschedule.endpoint_hidden', 'The endpoint is hidden until all jumps are shown.'))),
                 h('line', { x1: 55, y1: 105, x2: 665, y2: 105,
-                  stroke: '#0f172a', strokeWidth: 5, strokeLinecap: 'round' }),
+                  stroke: svgInk, strokeWidth: 5, strokeLinecap: 'round' }),
                 shownPoints.map(function (point, i) {
                   var progress = amount ? point.total / amount : 0;
                   var priorProgress = i && amount ? (point.total - point.amount) / amount : progress;
                   var x = direction > 0 ? 55 + progress * 610 : 665 - progress * 610;
                   var priorX = direction > 0 ? 55 + priorProgress * 610 : 665 - priorProgress * 610;
+                  var arcCol = isContrast ? (i % 2 ? '#ffff00' : '#00ff00') : (i % 2 ? '#0284c7' : '#8b5cf6');
                   return h('g', { key: i },
                     // SVG path data is NOT translatable text: a lang pack "translating"
                     // these fragments would corrupt the d attribute and hide the arcs.
                     i > 0 && h('path', { d: 'M ' + priorX + ' 91 Q ' +
                       ((priorX + x) / 2) + ' 35 ' + x + ' 91', fill: 'none',
-                      stroke: i % 2 ? '#0284c7' : '#7c3aed', strokeWidth: 4 }),
+                      stroke: arcCol, strokeWidth: 4 }),
                     i > 0 && h('text', { x: (priorX + x) / 2, y: 32,
-                      textAnchor: 'middle', fill: '#0f172a', fontSize: 15,
+                      textAnchor: 'middle', fill: svgInk, fontSize: 15,
                       fontWeight: '800' }, (direction > 0 ? '+' : '−') + point.amount + t('stem.timeschedule.min', " min")),
                     h('circle', { cx: x, cy: 105, r: i === 0 || i === points.length - 1 ? 10 : 7,
-                      fill: i === 0 ? '#f97316' : i === points.length - 1 ? '#10b981' : '#fff',
-                      stroke: '#0f172a', strokeWidth: 3 }),
+                      fill: i === 0 ? (isContrast ? '#ffff00' : '#f97316') : i === points.length - 1 ? (isContrast ? '#00ff00' : '#10b981') : svgCardBg,
+                      stroke: svgInk, strokeWidth: 3 }),
                     h('text', { x: x, y: 138 + i % 2 * 22, textAnchor: 'middle',
-                      fill: '#0f172a', fontSize: 14, fontWeight: '800' }, showTime(point.time, use24)));
+                      fill: svgInk, fontSize: 14, fontWeight: '800' }, showTime(point.time, use24)));
                 }))),
               h('div', { className: 'rounded-xl border border-cyan-200 bg-white p-3' },
                 h('h4', { className: 'text-xs font-black uppercase tracking-wide text-cyan-800' },
@@ -788,14 +874,14 @@
               : sq.id==='between-events-gap' ? t('stem.timeschedule.focus_gap','Measure the free interval from the end of one event to the start of the next.')
               : t('stem.timeschedule.focus_interval','Use these two times to work out the interval.')),
             sq.type==='time' ? h('p',{'data-focus-time':true,className:'text-xl font-black'},questionTime(focus.start))
-              : h('svg',{viewBox:'0 0 360 82',role:'img','aria-label':t('stem.timeschedule.interval_between','Interval from ')+questionTime(focus.start)+' → '+questionTime(focus.end),style:{display:'block',width:'100%',background:'#fff'}},
-                h('line',{x1:32,x2:328,y1:64,y2:64,stroke:'#334155',strokeWidth:3}),
+              : h('svg',{viewBox:'0 0 360 82',role:'img','aria-label':t('stem.timeschedule.interval_between','Interval from ')+questionTime(focus.start)+' → '+questionTime(focus.end),style:{display:'block',width:'100%',background:svgCardBg}},
+                h('line',{x1:32,x2:328,y1:64,y2:64,stroke:svgInk,strokeWidth:3}),
                 [focus.start,focus.end].map(function(value,i){return h('g',{key:i},
-                  h('line',{x1:xAt(value),x2:xAt(value),y1:54,y2:74,stroke:'#334155',strokeWidth:3}));}),
+                  h('line',{x1:xAt(value),x2:xAt(value),y1:54,y2:74,stroke:svgInk,strokeWidth:3}));}),
                 worked ? parts.map(function(part,i){var x1=xAt(part.from),x2=xAt(part.to);return h('g',{key:i,'data-schedule-jump':part.amount,'data-jump-start':part.from,'data-jump-end':part.to},
-                  h('path',{d:'M '+x1+' 61 Q '+((x1+x2)/2)+' 12 '+x2+' 61',fill:'none',stroke:'#1d4ed8',strokeWidth:2}),
-                  h('text',{x:(x1+x2)/2,y:28,textAnchor:'middle',fill:'#1e40af',fontSize:12,fontWeight:'bold'},'+'+part.amount));})
-                  : h('text',{x:180,y:38,textAnchor:'middle',fill:'#334155',fontSize:18,fontWeight:'bold'},'?')),
+                  h('path',{d:'M '+x1+' 61 Q '+((x1+x2)/2)+' 12 '+x2+' 61',fill:'none',stroke:svgAccent,strokeWidth:2.5}),
+                  h('text',{x:(x1+x2)/2,y:28,textAnchor:'middle',fill:svgInk,fontSize:12,fontWeight:'bold'},'+'+part.amount));})
+                  : h('text',{x:180,y:38,textAnchor:'middle',fill:svgInk,fontSize:18,fontWeight:'bold'},'?')),
             sq.type!=='time'&&h('div',{'data-schedule-endpoints':true,className:'grid grid-cols-2 gap-3 text-sm'},
               h('p',null,h('span',{className:'block text-xs'},t('stem.timeschedule.interval_from','From')),h('strong',null,questionTime(focus.start))),
               h('p',{className:'text-right'},h('span',{className:'block text-xs'},t('stem.timeschedule.interval_to','To')),h('strong',null,questionTime(focus.end)))),
@@ -859,6 +945,26 @@
                   Object.keys(SCHEDULES).map(function (key) {
                     return h('option', { key: key, value: key }, SCHEDULES[key].label);
                   }))),
+              // Visual Gantt Timeline Strip SVG showing event blocks & free-time gaps proportionally
+              (function () {
+                var t0 = timeline[0].start, t1 = timeline[timeline.length - 1].end, totalS = Math.max(1, t1 - t0);
+                var gx = function (v) { return 20 + ((v - t0) / totalS) * 600; };
+                return h('div', { className: 'px-3 pt-3 pb-1 border-b border-violet-100' },
+                  h('svg', { viewBox: '0 0 640 86', className: 'w-full h-auto', style: { display: 'block', background: svgCardBg },
+                    role: 'img', 'aria-label': schedule.label + ' ' + t('stem.timeschedule.visual_timeline_aria', 'proportional schedule timeline bar') },
+                    h('rect', { x: 20, y: 22, width: 600, height: 28, rx: 6, fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f1f5f9'), stroke: isContrast ? '#ffff00' : (isDark ? '#334155' : '#cbd5e1'), strokeWidth: 1.5 }),
+                    timeline.map(function (item, idx) {
+                      var bx = gx(item.start), bw = Math.max(8, gx(item.end) - bx);
+                      var focused = focus.rows.indexOf(idx) >= 0;
+                      return h('g', { key: idx },
+                        h('rect', { x: bx, y: 24, width: bw, height: 24, rx: 4, fill: isContrast ? '#000000' : item.event[3], opacity: focused ? 1 : 0.72, stroke: focused ? (isContrast ? '#00ff00' : svgInk) : (isContrast ? '#ffff00' : 'none'), strokeWidth: focused ? 2.2 : 1 }),
+                        bw > 34 && h('text', { x: bx + bw / 2, y: 40, textAnchor: 'middle', fontSize: 10.5, fontWeight: 800, fill: isContrast ? '#ffff00' : '#ffffff' }, String(idx + 1)));
+                    }),
+                    h('text', { x: 20, y: 70, textAnchor: 'start', fontSize: 11, fontWeight: 700, fill: svgInk }, scheduleTimeLabel(t0, use24)),
+                    h('text', { x: 320, y: 70, textAnchor: 'middle', fontSize: 10.5, fontWeight: 700, fill: svgSub }, t('stem.timeschedule.gantt_legend', 'Colored blocks = events · empty slots = free gaps')),
+                    h('text', { x: 620, y: 70, textAnchor: 'end', fontSize: 11, fontWeight: 700, fill: svgInk }, scheduleTimeLabel(t1, use24))
+                  ));
+              })(),
               h('div', {
                 className: 'overflow-x-auto rounded-b-xl focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-inset',
                 role: 'region', tabIndex: 0,
@@ -1061,7 +1167,7 @@
         }
         var accuracy = score.total ? Math.round((score.correct || 0) / score.total * 100) : 0;
         var solvedChallengeCount = timeChallengeSolvedCount(d);
-        var attemptCount = Number((d.challengeAttempts || {})[challengeId]) || 0;
+        var attemptCount = Number(safeAttempts[challengeId]) || 0;
         return h('section', { className: 'space-y-4',
           'aria-labelledby': 'ts-challenge-heading' },
           heading('ts-challenge-heading', t('stem.timeschedule.challenge_lab', "Challenge Lab"),
@@ -1093,20 +1199,45 @@
             h('span', { className: 'rounded-lg bg-sky-100 text-sky-800 px-3 py-2' }, accuracy + '%'),
             h('span', { className: 'rounded-lg bg-violet-100 text-violet-800 px-3 py-2' },
               t('stem.timeschedule.attempts_here', "Attempts here: ") + attemptCount)),
-          h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden', role: 'progressbar',
+          h('div', { style: { height: '8px' }, className: 'rounded-full bg-slate-200 overflow-hidden', role: 'progressbar',
             'aria-label': t('stem.timeschedule.challenge_set_progress', "Challenge set progress"), 'aria-valuemin': 0,
             'aria-valuemax': CHALLENGES.length, 'aria-valuenow': solvedChallengeCount,
             'aria-valuetext': solvedChallengeCount + t('stem.timeschedule.of', " of ") + CHALLENGES.length + t('stem.timeschedule.solved_currently_viewing_challenge', " solved; currently viewing challenge ") +
               (challengePosition + 1) + t('stem.timeschedule.of', " of ") + challengeList.length + t('stem.timeschedule.in', " in ") + selectedDifficulty.label },
-            h('div', { className: 'h-full bg-gradient-to-r from-sky-500 to-indigo-600',
-              style: { width: (solvedChallengeCount / CHALLENGES.length * 100) + '%' } })),
+            h('div', { className: 'bg-gradient-to-r from-sky-500 to-indigo-600',
+              style: { height: '8px', width: (solvedChallengeCount / CHALLENGES.length * 100) + '%' } })),
           h('div', { className: "grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-4" },
             h('div', { className: 'rounded-2xl border border-indigo-200 bg-gradient-to-b from-indigo-50 to-white p-4 flex items-center justify-center min-h-[280px]' },
               challenge.clock != null ? analog(challenge.clock, 'ts-challenge-clock-' + challengeId, true, !locked) :
-                h('div', { className: 'text-center max-w-xs' },
-                  h('div', { className: 'text-7xl', 'aria-hidden': 'true' },
-                    challenge.kind === 'convert' ? '\uD83D\uDD04' : challenge.kind === 'schedule' ? '\uD83D\uDE8C' :
-                    challenge.kind === 'overnight' ? '\uD83C\uDF19' : challenge.kind === 'interval' ? '\u2194\uFE0F' : '\u23F1\uFE0F'),
+                h('div', { className: 'text-center max-w-xs w-full' },
+                  h('svg', { viewBox: '0 0 220 140', className: 'w-full max-w-[220px] h-auto mx-auto', style: { display: 'block', background: svgCardBg, borderRadius: 12 }, 'aria-hidden': 'true' },
+                    h('rect', { x: 8, y: 8, width: 204, height: 124, rx: 12, fill: svgFace1, stroke: svgRing, strokeWidth: 2 }),
+                    challenge.kind === 'convert'
+                      ? h('g', null,
+                          h('rect', { x: 22, y: 42, width: 70, height: 48, rx: 8, fill: svgCardBg, stroke: svgAccent, strokeWidth: 2 }),
+                          h('text', { x: 57, y: 71, textAnchor: 'middle', fontSize: 15, fontWeight: 800, fill: svgInk }, '12 h'),
+                          h('path', { d: 'M98 60 L122 60 M116 54 L122 60 L116 66 M122 72 L98 72 M104 66 L98 72 L104 78', fill: 'none', stroke: svgAccent, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                          h('rect', { x: 128, y: 42, width: 70, height: 48, rx: 8, fill: svgCardBg, stroke: svgRing, strokeWidth: 2 }),
+                          h('text', { x: 163, y: 71, textAnchor: 'middle', fontSize: 15, fontWeight: 800, fill: svgInk }, '24 h'))
+                      : challenge.kind === 'overnight'
+                      ? h('g', null,
+                          h('line', { x1: 26, y1: 88, x2: 194, y2: 88, stroke: svgInk, strokeWidth: 3, strokeLinecap: 'round' }),
+                          h('line', { x1: 110, y1: 32, x2: 110, y2: 102, stroke: svgAccent, strokeWidth: 2, strokeDasharray: '4 4' }),
+                          h('text', { x: 110, y: 26, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: svgAccent }, '00:00 MIDNIGHT'),
+                          h('path', { d: 'M46 84 Q110 38 174 84', fill: 'none', stroke: svgRing, strokeWidth: 3 }),
+                          h('circle', { cx: 46, cy: 88, r: 6, fill: '#f97316', stroke: svgInk, strokeWidth: 2 }),
+                          h('circle', { cx: 174, cy: 88, r: 6, fill: '#10b981', stroke: svgInk, strokeWidth: 2 }),
+                          h('text', { x: 46, y: 112, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: svgSub }, 'PM'),
+                          h('text', { x: 174, y: 112, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: svgSub }, 'AM'))
+                      : h('g', null,
+                          h('line', { x1: 28, y1: 86, x2: 192, y2: 86, stroke: svgInk, strokeWidth: 3, strokeLinecap: 'round' }),
+                          h('path', { d: 'M42 80 Q76 40 110 80', fill: 'none', stroke: svgAccent, strokeWidth: 3 }),
+                          h('path', { d: 'M110 80 Q144 40 178 80', fill: 'none', stroke: isContrast ? '#ffff00' : '#8b5cf6', strokeWidth: 3 }),
+                          h('circle', { cx: 42, cy: 86, r: 6.5, fill: '#f97316', stroke: svgInk, strokeWidth: 2 }),
+                          h('circle', { cx: 110, cy: 86, r: 5, fill: svgCardBg, stroke: svgInk, strokeWidth: 2 }),
+                          h('circle', { cx: 178, cy: 86, r: 6.5, fill: '#10b981', stroke: svgInk, strokeWidth: 2 }),
+                          h('text', { x: 110, y: 36, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: svgInk }, challenge.type === 'time' ? 'START + JUMPS = ?' : 'HOW MANY MIN?'))
+                  ),
                   h('p', { className: 'mt-4 text-xs font-black uppercase tracking-widest text-indigo-700' },
                     challenge.kind + t('stem.timeschedule.reasoning', " reasoning")),
                   h('p', { className: 'text-sm text-slate-600 mt-2' },
@@ -1170,24 +1301,42 @@
         tab === 'challenge' ? challengeView() : clockView();
       return h('div', { className: 'time-schedule-lab max-w-6xl mx-auto space-y-4 pb-6 text-slate-900' + themeClass, 'data-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
         h('style', { key: 'theme' }, themeCss),
-        h('header', { className: 'rounded-2xl overflow-hidden shadow-lg border border-sky-700/20 bg-gradient-to-br from-sky-700 via-cyan-700 to-indigo-800 text-white' },
+        h('header', {
+          className: 'rounded-2xl overflow-hidden shadow-lg border border-sky-700/20 text-white',
+          style: isContrast
+            ? { backgroundColor: '#000000', border: '2px solid #ffff00' }
+            : { backgroundColor: '#075985', background: 'linear-gradient(135deg, #075985 0%, #0e7490 52%, #312e81 100%)' }
+        },
           h('div', { className: 'p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4' },
             h('div', { className: 'flex items-center gap-3 min-w-0 flex-1' },
               h('button', { type: 'button', 'aria-label': t('stem.timeschedule.back_to_stem_tools', "Back to STEM tools"),
                 onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); },
                 className: "shrink-0 rounded-xl border border-white/30 bg-white/10 p-2.5 hover:bg-white/20 focus:ring-2 focus:ring-white" },
                 ArrowLeft ? h(ArrowLeft, { size: 19 }) : '←'),
-              h('div', { className: 'text-4xl shrink-0', 'aria-hidden': 'true' }, '🕰️'),
+              // Bespoke Horology Chronometer Emblem synced to live clock hands
+              (function () {
+                var emMin = (clock % 60) * 6 * Math.PI / 180;
+                var emHr = ((Math.floor(clock / 60) % 12) + (clock % 60) / 60) * 30 * Math.PI / 180;
+                return h('div', { 'aria-hidden': 'true', className: 'shrink-0 rounded-xl border border-white/25 bg-black/20 p-1.5 flex items-center justify-center' },
+                  h('svg', { viewBox: '0 0 44 44', width: 38, height: 38, 'aria-hidden': 'true' },
+                    h('circle', { cx: 22, cy: 22, r: 18, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.55)', stroke: isContrast ? '#ffff00' : '#7dd3fc', strokeWidth: 2.2 }),
+                    h('circle', { cx: 22, cy: 22, r: 14, fill: 'none', stroke: isContrast ? '#00ff00' : '#bae6fd', strokeWidth: 1, strokeDasharray: '2 4' }),
+                    h('line', { x1: 22, y1: 22, x2: 22 + 9 * Math.sin(emHr), y2: 22 - 9 * Math.cos(emHr), stroke: isContrast ? '#ffff00' : '#ffffff', strokeWidth: 2.8, strokeLinecap: 'round' }),
+                    h('line', { x1: 22, y1: 22, x2: 22 + 13 * Math.sin(emMin), y2: 22 - 13 * Math.cos(emMin), stroke: isContrast ? '#00ff00' : '#38bdf8', strokeWidth: 2, strokeLinecap: 'round' }),
+                    h('circle', { cx: 22, cy: 22, r: 2.4, fill: isContrast ? '#ffff00' : '#f97316' })));
+              })(),
               h('div', { className: 'min-w-0' },
+                h('div', { className: 'text-[0.625rem] font-extrabold uppercase tracking-[0.12em] text-sky-200' },
+                  t('stem.timeschedule.badge_subject', 'Math · Executive Function · Horology Studio')),
                 h('h2', { className: 'text-xl sm:text-2xl font-black tracking-tight' },
                   t('stem.timeschedule.time_schedule_lab', "Time & Schedule Lab")),
-                h('p', { className: 'text-xs sm:text-sm text-sky-100 mt-1' },
+                h('p', { className: 'text-xs sm:text-sm text-sky-100 mt-0.5' },
                   t('stem.timeschedule.see_time_count_time_plan_time_and_expl', "See time, count time, plan time, and explain your strategy.")))),
             h('div', { className: 'grid grid-cols-3 gap-2 text-center shrink-0' },
-              [[score.correct || 0, t('stem.timeschedule.correct_4', "Correct")], [d.bestStreak || 0, t('stem.timeschedule.best_streak', "Best streak")],
-                [Object.keys(d.modesUsed || {}).length, t('stem.timeschedule.modes_tried', "Modes tried")]].map(function (x) {
+              [[(score.correct || 0) + '/' + CHALLENGES.length, t('stem.timeschedule.correct_4', "Correct")], [d.bestStreak || 0, t('stem.timeschedule.best_streak', "Best streak")],
+                [Object.keys(safeModesUsed).length + '/4', t('stem.timeschedule.modes_tried', "Modes tried")]].map(function (x) {
                 return h('div', { key: x[1],
-                  className: 'rounded-xl bg-black/15 border border-white/20 px-3 py-2' },
+                  className: 'rounded-xl bg-black/20 border border-white/25 px-3 py-2' },
                   h('div', { className: 'text-lg font-black' }, x[0]),
                   h('div', { className: 'text-[0.625rem] uppercase tracking-wide text-white font-semibold' }, x[1]));
               })))),

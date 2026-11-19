@@ -22,7 +22,7 @@ function install(puppeteer, { epubRoot, trustedScriptRoot }) {
       if (url.protocol === 'file:') return !url.hostname && !!containedFile(root, fileURLToPath(url));
       if (value === 'about:blank') return true;
       // Only passive raster data images are needed by supported EPUB content.
-      return type === 'image' && /^data:image\/(?:png|jpeg|gif|webp|avif);base64,[A-Za-z0-9+/=]+$/i.test(value);
+      return type === 'image' && /^data:image\/(?:png|jpeg|jpg|gif|webp|avif);base64,[A-Za-z0-9+/=]+$/i.test(value);
     } catch (_) { return false; }
   };
   puppeteer.launch = async function(options = {}) {

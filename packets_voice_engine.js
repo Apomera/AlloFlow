@@ -74,10 +74,13 @@
     });
   }
 
-  // The sound helpers, from packets_audio_kit.js (loaded by get()).
+  // The sound helpers, from packets_audio_kit.js (loaded by get(), or on demand by getMp3() for mic recording).
   var need = function (name) { return function () { var k = kit(); if (!k) throw new Error('The sound helpers did not arrive.'); return k[name].apply(null, arguments); }; };
   var wavInfo = need('wavInfo'), wavMs = need('wavMs'), toDataUri = need('toDataUri'), wavToMp3 = need('wavToMp3');
-  function getMp3() { return kit() ? kit().getMp3() : Promise.resolve(false); }
+  function getMp3() {
+    var loadKit = kit() ? Promise.resolve() : addScript('packets_audio_kit.js');
+    return loadKit.then(function () { return kit() ? kit().getMp3() : false; }, function () { return false; });
+  }
 
   win.AlloPacketVoiceEngine = { get: get, isReady: function () { return ready; }, speak: speak, wavInfo: wavInfo, wavMs: wavMs, toDataUri: toDataUri, getMp3: getMp3, wavToMp3: wavToMp3 };
 })(window);

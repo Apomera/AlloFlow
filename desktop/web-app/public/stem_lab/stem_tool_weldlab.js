@@ -9549,7 +9549,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               var _ens = function(cb){
                 if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
                 var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-                var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+                if(window._isDesktopBundledApp===true){cb();return;} var _sri=["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.integrity=_sri[i]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
               };
               _ens(function(){
                 try {
@@ -29816,11 +29816,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             '<p class="np"><button onclick="window.print()">' + esc(__alloT('stem.weldlab.insp2_print_btn', 'Print')) + '</button> ' +
             esc(__alloT('stem.weldlab.insp2_print_hint', 'If the print dialog does not open, press Ctrl+P (Cmd+P on a Mac).')) + '</p>' +
             '<h1>' + esc(REPORT_TITLE) + '</h1><p>' + esc(new Date().toLocaleDateString()) + '</p><p>' + esc(SCORE_LINE) + '</p>' +
-            '<table><thead><tr>' + REPORT_COLS.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+            '<table><thead><tr>' + REPORT_COLS.map(function (c) { return '<th scope="col">' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
             rows.map(function (r) { return '<tr>' + reportCells(r).map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') +
             '</tbody></table><p>' + esc(__alloT('stem.weldlab.insp2_table_note', 'Simplified from AWS D1.1:2020 Table 8.1 (statically loaded, nontubular) and the weld-profile limits it refers to. Always use the current edition of the governing code.')) + '</p></body></html>';
           var win = null;
           try { win = window.open('', '_blank'); } catch (_) { win = null; }
+          try { if (win) win.opener = null; } catch (_) {}
           if (win && win.document) {
             try { win.document.open(); win.document.write(html); win.document.close(); win.focus(); win.print(); } catch (_) {}
           } else {

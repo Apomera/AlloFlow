@@ -189,7 +189,7 @@ async function translateChunk(chunk, targetLanguage, idx) {
 
 // ─── validation ─────────────────────────────────────────────────────────────
 const placeholders = (t) => (String(t).match(/\{\d\}/g) || []).sort().join(',');
-const NON_LATIN = /[^ -ɏḀ-ỿ\s\p{P}\p{S}\p{N}]/u;
+const NON_LATIN = /[^\u0000-ɏḀ-ỿ\s\p{P}\p{S}\p{N}]/u;
 
 function validate(language, catalogue, strings, patterns) {
   const problems = [];

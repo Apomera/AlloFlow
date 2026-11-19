@@ -358,9 +358,12 @@
   .find-result { display:grid; gap:4px; padding:11px 12px; border:1px solid transparent; border-radius:9px; text-align:left; color:#eef3ff; background:#1a2941; font:13px system-ui; cursor:pointer; }.find-result span { color:#bdcee8; font-size:11px; }.find-result:hover { background:#2d365e; border-color:#9e9be2; }
   .find-footer,#quickFindEmpty { margin:12px 0 0; color:#bdcee8; font-size:11px; line-height:1.5; }
   @media(max-width:400px) { #sceneToolbar button { padding:7px 8px; } #hud #uiBuildStep { flex-basis:76px; width:76px; font-size:10px; } }
+  .skip-link { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; z-index:10000; }
+  .skip-link:focus { position:fixed; left:8px; top:8px; width:auto; height:auto; padding:10px 18px; background:#0f172a; color:#f8fafc; font:700 14px system-ui,sans-serif; border-radius:8px; outline:3px solid #facc15; text-decoration:none; }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#hud">Skip to geometry controls</a>
 
 <section id="immersiveBootStatus" data-state="loading" role="status" aria-live="polite" aria-atomic="true">
   <div class="boothead"><span class="bootdot" aria-hidden="true"></span><strong id="immersiveBootTitle">Starting the 3D lab...</strong></div>
@@ -383,7 +386,7 @@
   <div id="quickFindResults" aria-label="Matching controls"></div><p id="quickFindEmpty" hidden>No matching controls. Try “build”, “color”, or “comfort”.</p>
   <p class="find-footer">Enter opens the first result. Tab moves through results. Esc closes.</p>
 </dialog>
-<div id="hud">
+<div id="hud" role="main" tabindex="-1">
   <div class="hud-header"><div><span class="hud-eyebrow">GEOMETRY SANDBOX</span><h1>Immersive Stretch Lab</h1></div><button id="uiHudToggle" class="q" type="button" aria-expanded="true" aria-controls="hudBody">Hide controls</button></div>
   <div id="hudBody">
     <div class="workspace-navigation">
@@ -957,7 +960,7 @@ function isTrustedGeometryBridgeOrigin(u) {
   var h = String(u.hostname || '').toLowerCase();
   if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
   if (u.protocol !== 'https:') return false;
-  return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google') || h.endsWith('.run.app');
+  return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
 }
 var SANDBOX_BRIDGE = null;
 try { var bridgeQuery = new URLSearchParams(window.location.search || ''), bridgeOrigin = new URL(bridgeQuery.get('parentOrigin'));

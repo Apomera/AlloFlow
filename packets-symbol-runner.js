@@ -17,8 +17,12 @@
   var verify = root.AlloPacketVerify;
   var reopenKit = root.AlloPacketReopen;
   var handoff = root.AlloPacketHandoff;
+  var myWords = root.AlloPacketMyWords || null;
   var wpMedia = root.AlloWordPracticeMedia;
   var wpUi = root.AlloModules && root.AlloModules.WordPractice;
+  var PICTURES_PAGE = 'packets-pictures.html';
+  var MAX_REOPEN_BYTES = 60 * 1024 * 1024;
+  var MAX_ROSTER_BYTES = 256 * 1024;
 
   function $(id) { return doc.getElementById(id); }
 
@@ -30,7 +34,6 @@
   var hcCheck = $('sr-hc');
   var titleInput = $('sr-title');
   var learnersInput = $('sr-learners');
-  var codeNameInput = $('sr-code-name');
   var modeLineEl = $('sr-mode-line');
   var liveHost = $('sr-live-host');
   var picListEl = $('sr-pic-list');
@@ -61,7 +64,12 @@
   var phonemeAudio = {};
   var letterAudio = {};
   var wordAudio = {};
+  var myWordAudio = {};
+  var lastMyMediaSig = '';
   var wordAudioPromise = null;
+  function mergedWordAudio(wBank) {
+    return Object.assign({}, wBank || wordAudio, myWordAudio);
+  }
   var wordsJsonPromise = null;
   var shardIndexData = null;
   var shardIndexPromise = null;
@@ -80,7 +88,6 @@
   var activeRunner = null;
   var symbolReadyPromise = null;
   var step = 1;
-  var batchFile = null;
   var MAX_STUDENTS = 40;
   var TRY_PAGE = 'packets-try.html';
 
@@ -93,8 +100,13 @@
       if (data && typeof data === 'object') {
         var srcMap = data.clips && typeof data.clips === 'object' ? data.clips : data;
         Object.keys(srcMap).forEach(function (k) {
-          if (typeof srcMap[k] === 'string' && /^data:audio\//i.test(srcMap[k])) {
-            targetMap[String(k).toLowerCase()] = srcMap[k];
+          var val = srcMap[k];
+          if (typeof val === 'string' && /^data:audio\//i.test(val)) {
+            targetMap[String(k).toLowerCase()] = val;
+          } else if (val && typeof val === 'object' && typeof val.base64 === 'string' && val.base64) {
+            var mime = typeof val.mime === 'string' && /^audio\/[a-z0-9.+-]+$/i.test(val.mime.trim())
+              ? val.mime.trim().toLowerCase() : 'audio/wav';
+            targetMap[String(k).toLowerCase()] = 'data:' + mime + ';base64,' + val.base64.replace(/\s+/g, '');
           }
         });
         if (typeof onLoaded === 'function') onLoaded(targetMap);
@@ -123,17 +135,40 @@
     if (wordsJsonPromise) return wordsJsonPromise;
     wordsJsonPromise = loadAudioJson('audio_bank/words.json', wordAudio, function () {
       if (activeRunner && typeof activeRunner.setWordAudio === 'function') {
-        activeRunner.setWordAudio(wordAudio);
+        activeRunner.setWordAudio(mergedWordAudio(wordAudio));
       }
     });
     return wordsJsonPromise;
+  }
+
+  var FIXED_SPOKEN_WORDS = {
+    '0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four', '5': 'five',
+    '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine', '10': 'ten',
+    '11': 'eleven', '12': 'twelve', '13': 'thirteen', '14': 'fourteen', '15': 'fifteen',
+    '16': 'sixteen', '17': 'seventeen', '18': 'eighteen', '19': 'nineteen', '20': 'twenty',
+    '30': 'thirty', '40': 'forty', '50': 'fifty', '60': 'sixty', '70': 'seventy', '80': 'eighty', '90': 'ninety',
+    red: 'red', blue: 'blue', green: 'green', yellow: 'yellow', orange: 'orange', purple: 'purple', gold: 'gold',
+    up: 'up', down: 'down', left: 'left', right: 'right',
+  };
+
+  function spokenWordForItem(item) {
+    if (!item) return '';
+    var ans = String(item.answer || '').trim().toLowerCase();
+    return Object.prototype.hasOwnProperty.call(FIXED_SPOKEN_WORDS, ans) ? FIXED_SPOKEN_WORDS[ans] : '';
   }
 
   function poolWordTargets(pool, resolvedMode) {
     var out = [];
     var seen = Object.create(null);
     (pool || []).forEach(function (item) {
-      if (!item || item.dots > 0) return;
+      if (!item) return;
+      var fixedWord = spokenWordForItem(item);
+      if (fixedWord && !seen[fixedWord]) {
+        seen[fixedWord] = true;
+        out.push(fixedWord);
+        return;
+      }
+      if (item.dots > 0) return;
       var cat = String(item.category || '').toLowerCase();
       var key = String(item.phonemeKey || item.answer || '').trim().toLowerCase();
       if (!/^[a-z]{2,24}$/.test(key) || seen[key]) return;
@@ -227,42 +262,96 @@
           });
         });
         if (addedAny && activeRunner && typeof activeRunner.setWordAudio === 'function') {
-          activeRunner.setWordAudio(wordAudio);
+          activeRunner.setWordAudio(mergedWordAudio(wordAudio));
         }
         return wordAudio;
       });
     });
   }
 
+  var portableClipCache = Object.create(null);
+  function getAudioKitReady() {
+    var kit = root.AlloPacketAudioKit || null;
+    if (!kit || typeof kit.getMp3 !== 'function') return Promise.resolve(null);
+    var timer = null;
+    var cap = new Promise(function (resolve) {
+      timer = (typeof root.setTimeout === 'function' ? root.setTimeout : setTimeout)(function () { resolve(false); }, 1500);
+    });
+    return Promise.race([kit.getMp3().catch(function () { return false; }), cap]).then(function (ok) {
+      if (timer != null && typeof (root.clearTimeout || clearTimeout) === 'function') (root.clearTimeout || clearTimeout)(timer);
+      return ok ? kit : null;
+    });
+  }
+
+  // Transcodes any WebM clips to WAV via loader.portableAudio (Safari/iPad compatibility) and shrinks WAV to 48 kbps MP3 when available.
+  function makeClipsPortable(clipMap) {
+    if (!clipMap || typeof clipMap !== 'object') return Promise.resolve(clipMap || {});
+    var out = {};
+    var todoAudio = {};
+    var todoKeys = [];
+    Object.keys(clipMap).forEach(function (k) {
+      var uri = clipMap[k];
+      if (typeof uri !== 'string' || !/^data:audio\//i.test(uri)) return;
+      if (portableClipCache[uri]) {
+        out[k] = portableClipCache[uri];
+        return;
+      }
+      out[k] = uri;
+      if (/^data:audio\/(?:webm|wav|x-wav|wave)[;,]/i.test(uri)) {
+        todoAudio[k] = uri;
+        todoKeys.push(k);
+      }
+    });
+    if (!todoKeys.length) return Promise.resolve(out);
+    var OfflineCtx = root.OfflineAudioContext || root.webkitOfflineAudioContext;
+    var needsDecode = todoKeys.some(function (k) { return /^data:audio\/webm/i.test(todoAudio[k]); });
+    var decodeStep = (needsDecode && loader && typeof loader.portableAudio === 'function' && OfflineCtx)
+      ? loader.portableAudio({ audio: todoAudio }, {
+        AudioContext: function () { return new OfflineCtx(1, 1, 22050); },
+      }).catch(function () {})
+      : Promise.resolve();
+    return decodeStep.then(function () {
+      return getAudioKitReady();
+    }).then(function (kit) {
+      todoKeys.forEach(function (k) {
+        var orig = clipMap[k];
+        var cur = todoAudio[k];
+        if (typeof cur !== 'string') return;
+        if (/^data:audio\/(?:wav|x-wav|wave)[;,]/i.test(cur) && kit && typeof kit.wavUriToMp3Uri === 'function') {
+          var mp3 = kit.wavUriToMp3Uri(cur, 48);
+          if (mp3) cur = mp3;
+        }
+        // Only cache/replace when actually portable (not raw WebM); keep out[k] synced.
+        if (!/^data:audio\/webm/i.test(cur)) {
+          portableClipCache[orig] = cur;
+          out[k] = cur;
+        } else if (OfflineCtx && loader && typeof loader.portableAudio === 'function') {
+          // Decoding failed on a WebM clip: drop non-portable WebM so Safari does not receive broken audio.
+          delete out[k];
+        }
+      });
+      return out;
+    }).catch(function () { return out; });
+  }
+
   function ensurePoolWordAudio(pool, resolvedMode, convertToPortable) {
     var targets = poolWordTargets(pool, resolvedMode);
     if (!targets.length || typeof root.fetch !== 'function') return Promise.resolve(wordAudio);
-    var firstStep = resolvedMode === 'sight_words' ? loadWordAudio() : Promise.resolve(wordAudio);
-    return firstStep.then(function () {
-      return loadShardWordAudio(targets);
+    // Prefer lightweight word_audio_shards/ first; only fall back to the 11.3 MB audio_bank/words.json if a sight word is absent from shards.
+    return loadShardWordAudio(targets).then(function () {
+      if (resolvedMode !== 'sight_words') return wordAudio;
+      var stillMissing = targets.some(function (w) { return !/^data:audio\//i.test(wordAudio[w] || ''); });
+      return stillMissing ? loadWordAudio() : wordAudio;
     }).then(function () {
-      var OfflineCtx = root.OfflineAudioContext || root.webkitOfflineAudioContext;
-      if (!convertToPortable || !loader || typeof loader.portableAudio !== 'function' || !OfflineCtx) return wordAudio;
-      var todoAudio = {};
-      var keys = [];
+      if (!convertToPortable) return wordAudio;
+      var todo = {};
       targets.forEach(function (w) {
-        var uri = wordAudio[w];
-        if (typeof uri === 'string' && /^data:audio\/webm/i.test(uri)) {
-          todoAudio[w] = uri;
-          keys.push(w);
-        }
+        if (typeof wordAudio[w] === 'string' && /^data:audio\//i.test(wordAudio[w])) todo[w] = wordAudio[w];
       });
-      if (!keys.length) return wordAudio;
-      return loader.portableAudio({ audio: todoAudio }, {
-        AudioContext: function () { return new OfflineCtx(1, 1, 22050); },
-      }).then(function () {
-        keys.forEach(function (w) {
-          if (typeof todoAudio[w] === 'string' && /^data:audio\/(?:wav|x-wav|wave)[;,]/i.test(todoAudio[w])) {
-            wordAudio[w] = todoAudio[w];
-          }
-        });
+      return makeClipsPortable(todo).then(function (converted) {
+        Object.keys(converted).forEach(function (w) { wordAudio[w] = converted[w]; });
         return wordAudio;
-      }).catch(function () { return wordAudio; });
+      });
     });
   }
 
@@ -294,10 +383,17 @@
           a.click();
           doc.body.removeChild(a);
         }
-        if (linkInfo.href !== 'packets-results.html' && handoff && typeof handoff.put === 'function' && linkInfo.bytes) {
-          handoff.put({ name: linkInfo.fileName || 'packet.html', bytes: linkInfo.bytes }).then(function (ok) {
-            nav(ok ? (linkInfo.href + (handoff.HASH || '#open-file')) : linkInfo.href);
+        var h = root.AlloPacketHandoff || handoff;
+        var targetHash = linkInfo.href === 'packets-results.html'
+          ? ((h && h.RESULTS_HASH) || '#import-results')
+          : ((h && h.HASH) || '#open-file');
+        var rawBuf = linkInfo.bytes && linkInfo.bytes.buffer ? linkInfo.bytes.buffer : linkInfo.bytes;
+        if (h && typeof h.put === 'function' && rawBuf) {
+          h.put({ name: linkInfo.fileName || 'packet.html', bytes: rawBuf }).then(function (ok) {
+            nav(ok ? (linkInfo.href + targetHash) : linkInfo.href);
           }, function () { nav(linkInfo.href); });
+        } else if (h && typeof h.redirect === 'function' && rawBuf) {
+          h.redirect({ name: linkInfo.fileName || 'packet.html', bytes: rawBuf }, linkInfo.href, targetHash).catch(function () { nav(linkInfo.href); });
         } else {
           nav(linkInfo.href);
         }
@@ -438,6 +534,71 @@
     return symbolReadyPromise;
   }
 
+  var PIC_SIDE = 256;
+  var PIC_MAX_BYTES = 400000;
+  function localSvgRefusal(svg) {
+    var s = String(svg || '').replace(/^\s*<\?xml\s[^>]*\?>/i, '').replace(/^(?:\s*<!--[\s\S]*?-->)+/, '').trim();
+    if (!/^\s*<svg[\s>]/i.test(s) || !/<\/svg>\s*$/i.test(s)) return 'not an SVG drawing';
+    if (s.length > 300000) return 'the drawing is too large';
+    if (s.indexOf('\\') >= 0 || /<!(?:doctype|entity)/i.test(s) || /<\?(?!xml\s)/i.test(s)) return 'unsafe markup';
+    var plain = s.replace(/&#x([0-9a-f]+);?/gi, function (_, h) { return String.fromCharCode(parseInt(h, 16) & 0xFFFF); })
+      .replace(/&#(\d+);?/g, function (_, d) { return String.fromCharCode(Number(d) & 0xFFFF); })
+      .replace(/&(colon|newline|tab);/gi, function (_, n) { return n.toLowerCase() === 'colon' ? ':' : ''; });
+    var packed = plain.replace(/[\x00-\x20]+/g, '');
+    if (/<\s*(?:[\w-]+:)?(?:script|foreignObject|iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'unsupported element';
+    if (/[\s"'\/]on[a-z]+\s*=/i.test(plain) || /(?:java|vb|live)script:/i.test(packed) || /xml:base\s*=/i.test(plain) || /[\s"'\/]src\s*=/i.test(plain)) return 'unsafe attribute';
+    var m, href = /(?:[\s"'\/])(?:[\w-]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    while ((m = href.exec(plain))) {
+      var v = String(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3] || '').replace(/[\x00-\x20]+/g, '');
+      if (v.charAt(0) !== '#') return 'external link';
+    }
+    var url = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
+    while ((m = url.exec(plain))) {
+      var u = String(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3] || '').replace(/[\x00-\x20]+/g, '');
+      if (u.charAt(0) !== '#') return 'external url';
+    }
+    if (/@import|@font-face|@namespace|expression\s*\(/i.test(plain)) return 'unsafe style';
+    return '';
+  }
+
+  function downscaleImageUri(dataUri) {
+    return new Promise(function (resolve) {
+      if (typeof root.Image !== 'function' || !doc || typeof doc.createElement !== 'function') { resolve(dataUri); return; }
+      var img = new root.Image();
+      var done = false;
+      var finish = function (val) { if (done) return; done = true; resolve(val); };
+      var timer = (typeof root.setTimeout === 'function' ? root.setTimeout : setTimeout)(function () { finish(dataUri); }, 1500);
+      img.onload = function () {
+        if (typeof (root.clearTimeout || clearTimeout) === 'function') (root.clearTimeout || clearTimeout)(timer);
+        try {
+          var w = img.naturalWidth || img.width || 0;
+          var h = img.naturalHeight || img.height || 0;
+          if (!w || !h) { finish(dataUri); return; }
+          var scale = Math.min(1, PIC_SIDE / Math.max(w, h));
+          var tw = Math.max(1, Math.round(w * scale));
+          var th = Math.max(1, Math.round(h * scale));
+          var canvas = doc.createElement('canvas');
+          canvas.width = tw;
+          canvas.height = th;
+          var ctx2d = canvas.getContext && canvas.getContext('2d');
+          if (!ctx2d) { finish(dataUri); return; }
+          ctx2d.drawImage(img, 0, 0, tw, th);
+          var png = canvas.toDataURL('image/png');
+          if (png && png.length < PIC_MAX_BYTES * 1.4) { finish(png); return; }
+          var jpg = canvas.toDataURL('image/jpeg', 0.82);
+          finish(jpg && jpg.length < png.length ? jpg : png);
+        } catch (_) {
+          finish(dataUri);
+        }
+      };
+      img.onerror = function () {
+        if (typeof (root.clearTimeout || clearTimeout) === 'function') (root.clearTimeout || clearTimeout)(timer);
+        finish(dataUri);
+      };
+      img.src = dataUri;
+    });
+  }
+
   function svgToPngDataUri(svgText) {
     if (wpUi && typeof wpUi.rasterizeImage === 'function') {
       return wpUi.rasterizeImage(svgText, doc);
@@ -447,13 +608,45 @@
   }
 
   function readFileAsDataUri(file) {
+    var mime = String((file && file.type) || '').toLowerCase();
+    var isSvg = mime === 'image/svg+xml' || /\.svg$/i.test(String((file && file.name) || ''));
+    if (isSvg) {
+      return new Promise(function (resolve, reject) {
+        if (typeof root.FileReader !== 'function') { reject(new Error('File reader is unavailable.')); return; }
+        var reader = new root.FileReader();
+        reader.onload = function () {
+          var svg = String(reader.result || '');
+          var why = localSvgRefusal(svg);
+          if (why) { reject(new Error('That SVG picture could not be used (' + why + ').')); return; }
+          var b64 = typeof root.btoa === 'function' ? root.btoa(unescape(encodeURIComponent(svg))) : '';
+          resolve(b64 ? ('data:image/svg+xml;base64,' + b64) : ('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)));
+        };
+        reader.onerror = function () { reject(new Error('Could not read that image.')); };
+        reader.readAsText(file);
+      });
+    }
     if (wpUi && typeof wpUi.rasterizeImage === 'function') {
       return wpUi.rasterizeImage(file, doc);
     }
     return new Promise(function (resolve, reject) {
       if (typeof root.FileReader !== 'function') { reject(new Error('File reader is unavailable.')); return; }
       var reader = new root.FileReader();
-      reader.onload = function () { resolve(String(reader.result || '')); };
+      reader.onload = function () {
+        var raw = String(reader.result || '');
+        if (!/^data:image\/(?:png|jpeg|jpg|gif|webp);base64,/i.test(raw)) {
+          reject(new Error('Choose a PNG, JPEG, GIF, WebP or SVG picture.'));
+          return;
+        }
+        downscaleImageUri(raw).then(function (resized) {
+          var body = resized.slice(resized.indexOf(',') + 1);
+          var approxBytes = Math.floor(body.length * 0.75);
+          if (approxBytes > PIC_MAX_BYTES) {
+            reject(new Error('That picture is too large to keep. Choose a smaller picture.'));
+            return;
+          }
+          resolve(resized);
+        });
+      };
       reader.onerror = function () { reject(new Error('Could not read that image.')); };
       reader.readAsDataURL(file);
     });
@@ -492,15 +685,36 @@
       });
       bar.appendChild(impBtn);
 
+      var nw = myWords && typeof myWords.normalizeWord === 'function' ? myWords.normalizeWord(sym.answer) : '';
+      if (nw) {
+        var findLink = doc.createElement('a');
+        findLink.className = 'btn btn-small';
+        findLink.href = PICTURES_PAGE + '#word=' + encodeURIComponent(nw) + '&from=symbol-runner';
+        findLink.target = '_blank';
+        findLink.rel = 'noopener';
+        findLink.setAttribute('data-sr-find-pic', sym.answer);
+        findLink.textContent = 'Find a picture';
+        var srNote = doc.createElement('span');
+        srNote.className = 'sr-only';
+        srNote.textContent = ' (opens in a new tab)';
+        findLink.appendChild(srNote);
+        bar.appendChild(findLink);
+      }
+
       if (pic && pic.src) {
         var rmBtn = doc.createElement('button');
         rmBtn.type = 'button';
         rmBtn.className = 'btn btn-small';
         rmBtn.textContent = 'Remove';
         rmBtn.addEventListener('click', function () {
+          var wasCustom = !!(pic.fromMyWords || pic.set === 'custom');
           delete pictures[sym.answer];
+          if (wasCustom && myWords && typeof myWords.putMedia === 'function') {
+            myWords.putMedia(sym.answer, { picture: null }).catch(function () {});
+          }
           renderPictureList();
           startLive();
+          choicesChanged();
         });
         bar.appendChild(rmBtn);
       }
@@ -509,8 +723,59 @@
     });
   }
 
+  function loadMyWordsPictures() {
+    if (!myWords || typeof myWords.getManyMedia !== 'function') return Promise.resolve(0);
+    var pool = currentPool();
+    var keys = pool.map(function (s) { return s && s.answer ? String(s.answer) : ''; }).filter(Boolean);
+    var sig = keys.join('|');
+    if (!keys.length) { lastMyMediaSig = ''; return Promise.resolve(0); }
+    return myWords.getManyMedia(keys).then(function (found) {
+      lastMyMediaSig = sig;
+      if (!found || typeof found !== 'object') return 0;
+      var loaded = 0;
+      var audioChanged = false;
+      pool.forEach(function (sym) {
+        if (!sym || !sym.answer) return;
+        var mk = typeof myWords.normalizeMediaKey === 'function' ? myWords.normalizeMediaKey(sym.answer) : String(sym.answer).toLowerCase();
+        var ansLower = String(sym.answer).toLowerCase();
+        var entry = found[mk] || found[ansLower] || null;
+        var hasPic = !!(entry && entry.picture && !entry.picture.none && typeof entry.picture.dataUri === 'string' && entry.picture.dataUri);
+        if (hasPic) {
+          var creditText = typeof myWords.creditLine === 'function' && entry.picture.credit ? myWords.creditLine(entry.picture.credit) : "The teacher's own picture.";
+          pictures[sym.answer] = {
+            src: entry.picture.dataUri,
+            alt: sym.display,
+            credit: creditText || "The teacher's own picture.",
+            set: 'custom',
+            fromMyWords: true,
+          };
+          loaded++;
+        } else if (pictures[sym.answer] && pictures[sym.answer].fromMyWords) {
+          delete pictures[sym.answer];
+        }
+        var recUri = entry && entry.recording && typeof entry.recording.dataUri === 'string' && /^data:audio\//i.test(entry.recording.dataUri)
+          ? entry.recording.dataUri : '';
+        if (recUri) {
+          if (myWordAudio[ansLower] !== recUri) audioChanged = true;
+          myWordAudio[ansLower] = recUri;
+          myWordAudio[sym.answer] = recUri;
+        } else if (myWordAudio[ansLower] || myWordAudio[sym.answer]) {
+          delete myWordAudio[ansLower];
+          delete myWordAudio[sym.answer];
+          audioChanged = true;
+        }
+      });
+      if (audioChanged && activeRunner && typeof activeRunner.setWordAudio === 'function') {
+        activeRunner.setWordAudio(mergedWordAudio(wordAudio));
+      }
+      return loaded;
+    }).catch(function () { return 0; });
+  }
+
   function autoFillPictures(quiet) {
-    return ensureSymbolsReady().then(function (bank) {
+    return loadMyWordsPictures().then(function () {
+      return ensureSymbolsReady();
+    }).then(function (bank) {
       var hasMatcherDiagrams = !!(matcher && typeof matcher.matchWord === 'function');
       if (!bank && !hasMatcherDiagrams) {
         if (!quiet) say('Built-in pictures could not load on this page.');
@@ -588,7 +853,7 @@
       pictures: pictures,
       phonemeAudio: phonemeAudio,
       letterAudio: letterAudio,
-      wordAudio: wordAudio,
+      wordAudio: mergedWordAudio(wordAudio),
       audioMode: audioModeValue(),
     });
     ensurePoolWordAudio(pool, resolvedMode, false);
@@ -628,29 +893,90 @@
     return s || fallback || 'symbol-runner';
   }
 
+  function titleStem() {
+    var raw = titleInput ? titleInput.value : '';
+    var clean = String(raw || 'symbol-runner').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+    return clean || 'symbol-runner';
+  }
+  function packetFileName(code) {
+    return titleStem() + (code ? '__' + code : '') + '.html';
+  }
+
+  function resolvePoolClips(pool, resolvedMode, pBank, lBank, wBank) {
+    var clipMap = {};
+    var aMode = audioModeValue();
+    var allWords = mergedWordAudio(wBank);
+    (pool || []).forEach(function (item) {
+      var ansLower = String(item.answer || '').toLowerCase();
+      var uri = '';
+      if (myWordAudio[ansLower] && /^data:audio\//i.test(myWordAudio[ansLower])) {
+        uri = myWordAudio[ansLower];
+      } else if (myWordAudio[item.answer] && /^data:audio\//i.test(myWordAudio[item.answer])) {
+        uri = myWordAudio[item.answer];
+      }
+      if (!uri && runnerCore && typeof runnerCore.resolvePhonemeAudioUri === 'function') {
+        uri = runnerCore.resolvePhonemeAudioUri(item, pBank, {
+          letterAudio: lBank,
+          wordAudio: allWords,
+          audioMode: aMode,
+          modeId: resolvedMode,
+        }) || '';
+      }
+      if (!uri) {
+        var spokenWord = spokenWordForItem(item);
+        if (spokenWord && allWords && typeof allWords[spokenWord] === 'string' && /^data:audio\//i.test(allWords[spokenWord])) {
+          uri = allWords[spokenWord];
+        }
+      }
+      if (uri) {
+        clipMap[item.answer] = uri;
+        clipMap[ansLower] = uri;
+        if (item.display && String(item.display).toLowerCase() === ansLower) {
+          clipMap[item.display] = uri;
+        }
+      }
+    });
+    return clipMap;
+  }
+
   function withAudioBanks(wantAudio, done) {
     var modeId = modeSelect ? modeSelect.value : 'confusable_letters';
     var customVal = customInput ? customInput.value.trim() : '';
     var resolvedMode = customVal ? 'custom' : modeId;
     var pool = currentPool();
+    var poolSig = pool.map(function (s) { return s && s.answer ? String(s.answer) : ''; }).filter(Boolean).join('|');
     var wTargets = wantAudio ? poolWordTargets(pool, resolvedMode) : [];
     var needP = wantAudio && !Object.keys(phonemeAudio).length && typeof root.fetch === 'function';
     var needL = wantAudio && !Object.keys(letterAudio).length && typeof root.fetch === 'function';
     var needW = wantAudio && wTargets.length > 0 && typeof root.fetch === 'function';
-    if (!needP && !needL && !needW) {
-      done(phonemeAudio, letterAudio, wordAudio);
+    var needMy = wantAudio && (resolvedMode === 'custom' || resolvedMode === 'sight_words') && !!poolSig && lastMyMediaSig !== poolSig && !!(myWords && typeof myWords.getManyMedia === 'function');
+    var finish = function () {
+      if (!wantAudio) {
+        done(phonemeAudio, letterAudio, wordAudio, null);
+        return;
+      }
+      var rawClips = resolvePoolClips(pool, resolvedMode, phonemeAudio, letterAudio, wordAudio);
+      if (!Object.keys(rawClips).length) {
+        done(phonemeAudio, letterAudio, wordAudio, rawClips);
+        return;
+      }
+      makeClipsPortable(rawClips).then(function (portable) {
+        done(phonemeAudio, letterAudio, wordAudio, portable);
+      });
+    };
+    if (!needP && !needL && !needW && !needMy) {
+      finish();
       return;
     }
     Promise.all([
       needP ? loadPhonemeAudio() : Promise.resolve(phonemeAudio),
       needL ? loadLetterAudio() : Promise.resolve(letterAudio),
       needW ? ensurePoolWordAudio(pool, resolvedMode, true) : Promise.resolve(wordAudio),
-    ]).then(function () {
-      done(phonemeAudio, letterAudio, wordAudio);
-    });
+      needMy ? loadMyWordsPictures() : Promise.resolve(0),
+    ]).then(finish);
   }
 
-  function buildCurrentPacket(pBank, lBank, wBank) {
+  function buildCurrentPacket(pBank, lBank, wBank, portableClips) {
     var pMode = packetModeValue();
     var untimed = !!(untimedCheck && untimedCheck.checked);
     var tCode = teacherCodeInput ? teacherCodeInput.value.trim() : '';
@@ -665,20 +991,8 @@
       if (pictures[k] && pictures[k].src) picMap[k] = pictures[k];
     });
     var clipMap = {};
-    if (wantAudio && runnerCore && typeof runnerCore.resolvePhonemeAudioUri === 'function') {
-      currentPool().forEach(function (item) {
-        var uri = runnerCore.resolvePhonemeAudioUri(item, pBank, {
-          letterAudio: lBank,
-          wordAudio: wBank,
-          audioMode: aMode,
-          modeId: resolvedMode,
-        });
-        if (uri) {
-          clipMap[item.answer] = uri;
-          clipMap[String(item.answer).toLowerCase()] = uri;
-          if (item.display) clipMap[item.display] = uri;
-        }
-      });
+    if (wantAudio) {
+      clipMap = portableClips || resolvePoolClips(currentPool(), resolvedMode, pBank, lBank, wBank);
     }
     return builder.buildSymbolRunnerPacket({
       loader: loader,
@@ -698,14 +1012,23 @@
     });
   }
 
-  // "Make one for each student": the code names typed in that fold, one on each line (2026-11-17, as on the other makers).
+  // Unified Step 3 code-name / batch .zip fold: 1 line puts that code name in the single file above;
+  // 2-40 lines saves one file per student in one .zip file in 1 click.
+  function cleanRosterLine(raw) {
+    var s = String(raw || '').replace(/^\uFEFF/, '').trim();
+    if (!s) return '';
+    s = s.replace(/^(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '').trim();
+    var col = s.indexOf('\t') >= 0 ? s.split('\t')[0] : (s.indexOf(',') >= 0 ? s.split(',')[0] : s);
+    return col.trim().replace(/^["']+|["']+$/g, '').trim();
+  }
   function batchList() {
     var seen = Object.create(null);
     var out = { names: [], twice: [], unusable: [], over: 0 };
-    String((learnersInput && learnersInput.value) || '').split(/[\r\n,]+/).forEach(function (raw) {
+    String((learnersInput && learnersInput.value) || '').replace(/^\uFEFF/, '').split(/\r?\n/).forEach(function (raw) {
       if (!String(raw || '').trim()) return;
-      var name = builder && typeof builder.codeName === 'function' ? builder.codeName(raw) : String(raw || '').trim();
-      if (!name) { out.unusable.push(String(raw).trim().slice(0, 40)); return; }
+      var cleaned = cleanRosterLine(raw);
+      var name = builder && typeof builder.codeName === 'function' ? builder.codeName(cleaned) : cleaned;
+      if (!name) { out.unusable.push((cleaned || String(raw).trim()).slice(0, 40)); return; }
       var key = name.toLowerCase();
       if (seen[key]) { if (out.twice.indexOf(name) < 0) out.twice.push(name); return; }
       seen[key] = true;
@@ -716,8 +1039,8 @@
   }
 
   function singleCodeName() {
-    var raw = codeNameInput ? codeNameInput.value : '';
-    return builder && typeof builder.codeName === 'function' ? builder.codeName(raw) : String(raw || '').trim();
+    var list = batchList();
+    return list.names.length === 1 ? list.names[0] : '';
   }
 
   function fileSize(bytes) {
@@ -730,61 +1053,84 @@
 
   function drawBatch() {
     var list = batchList();
+    var n = list.names.length;
     var parts = [];
-    if (!list.names.length) parts.push('Type or paste the code names, one on each line.');
-    else parts.push(list.names.length + (list.names.length === 1 ? ' file.' : ' files.'));
+    var btn = $('sr-batch-make');
+    if (n === 0) {
+      parts.push('Leave empty so each student types a code name at the start.');
+      if (btn) btn.hidden = true;
+    } else if (n === 1) {
+      parts.push('Using ' + list.names[0] + ' in the file above (' + packetFileName(list.names[0]) + '). Add another line to save a .zip.');
+      if (btn) btn.hidden = true;
+    } else {
+      var est = preparedBaseHtml ? ', about ' + fileSize(n * preparedBaseHtml.length) + ' in all.' : '.';
+      parts.push(n + ' files' + est);
+      if (btn) {
+        btn.hidden = false;
+        btn.textContent = 'Save .zip for ' + n + ' students';
+      }
+    }
     if (list.over) parts.push('Not used: ' + list.over + ' more. At most ' + MAX_STUDENTS + ' go in one .zip file.');
     if (list.twice.length) parts.push('Listed more than once, used once: ' + list.twice.join(', ') + '.');
     if (list.unusable.length) parts.push('Not used, because a code name needs a letter or a number: ' + list.unusable.join(', ') + '.');
-    if (batchFile) parts = ['Ready: ' + batchFile.count + (batchFile.count === 1 ? ' file' : ' files') + ' in one .zip file, ' + fileSize(batchFile.bytes) + '.'];
     setBatchSaid(parts.join(' '));
   }
 
-  function dropBatchFile() {
-    batchFile = null;
-    var saveBtn = $('sr-batch-save');
-    if (saveBtn) saveBtn.hidden = true;
-  }
-
-  function makeBatch() {
+  function saveBatchZip() {
     setBatchProblem('');
-    dropBatchFile();
     if (!builder || !loader) { setBatchProblem('The part that makes the file did not load. Load the page again.'); return; }
     var list = batchList();
-    if (!list.names.length) { setBatchProblem('Type at least one code name.'); return; }
+    if (list.names.length < 2) { setBatchProblem('Type at least 2 code names to save a .zip file.'); return; }
     if (!root.AlloPacketZip || typeof root.AlloPacketZip.create !== 'function') { setBatchProblem('This page could not load the part that makes .zip files. Load the page again.'); return; }
     var pMode = packetModeValue();
     var wantAudio = pMode !== 'check' && (!includeAudioCheck || includeAudioCheck.checked);
-    setBatchSaid('Making the files.');
-    withAudioBanks(wantAudio, function (pBank, lBank, wBank) {
+    setBatchSaid('Making the .zip file.');
+    var finishZip = function (baseHtml) {
       try {
-        var built = buildCurrentPacket(pBank, lBank, wBank);
-        var baseName = slug(titleInput ? titleInput.value : '', 'symbol-runner');
-        var kindSuffix = pMode === 'check' ? '-check' : '';
         var zip = root.AlloPacketZip.create();
         var encoder = typeof root.TextEncoder === 'function' ? new root.TextEncoder() : null;
         list.names.forEach(function (name) {
-          var htmlOut = builder.withCodeName(built.html, name);
-          zip.add(baseName + '-' + slug(name, 'student') + kindSuffix + '.html', encoder ? encoder.encode(htmlOut) : htmlOut);
+          var htmlOut = builder.withCodeName(baseHtml, name);
+          zip.add(packetFileName(name), encoder ? encoder.encode(htmlOut) : htmlOut);
         });
         var zipParts = zip.finish();
-        batchFile = { parts: zipParts, bytes: zip.bytes || 0, count: list.names.length, name: baseName + kindSuffix + '-files.zip' };
+        var zipName = titleStem() + '__' + list.names.length + '-students.zip';
+        var zipBlob = new root.Blob(zipParts, { type: 'application/zip' });
+        downloadBlob(zipBlob, 'application/zip', zipName);
+        setBatchSaid('Saved ' + zipName + ' (' + fileSize(zip.bytes || 0) + '). Each file\'s name ends with the student\'s code name. Send each student their own file.');
       } catch (err) {
         setBatchProblem('The .zip file could not be made (' + ((err && err.message) || 'unknown problem') + ').');
         drawBatch();
-        return;
       }
-      var saveBtn = $('sr-batch-save');
-      if (saveBtn) saveBtn.hidden = false;
-      drawBatch();
+    };
+    if (!previewDirty && preparedBaseHtml && preparedSig === currentBuildSig()) {
+      finishZip(preparedBaseHtml);
+      return;
+    }
+    withAudioBanks(wantAudio, function (pBank, lBank, wBank, portableClips) {
+      try {
+        var built = buildCurrentPacket(pBank, lBank, wBank, portableClips);
+        finishZip(built.html);
+      } catch (err) {
+        setBatchProblem('The .zip file could not be made (' + ((err && err.message) || 'unknown problem') + ').');
+        drawBatch();
+      }
     });
   }
 
-  function saveBatch() {
-    if (!batchFile) return;
-    var zipBlob = new root.Blob(batchFile.parts, { type: 'application/zip' });
-    downloadBlob(zipBlob, 'application/zip', batchFile.name);
-    setBatchSaid('Saved ' + batchFile.name + '. Each file\'s name ends with the student\'s code name. Send each student their own file.');
+  function loadRosterFile(file) {
+    setBatchProblem('');
+    if (!file) return;
+    if (file.size > MAX_ROSTER_BYTES) { setBatchProblem('That text file is too large. Choose a plain .txt list of code names.'); return; }
+    if (typeof root.FileReader !== 'function') { setBatchProblem('This browser cannot read local files here.'); return; }
+    var reader = new root.FileReader();
+    reader.onload = function () {
+      if (learnersInput) learnersInput.value = String(reader.result || '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+      applySinglePreviewCode();
+      drawBatch();
+    };
+    reader.onerror = function () { setBatchProblem('This browser could not read that file.'); };
+    reader.readAsText(file);
   }
 
   function showAfterSave() {
@@ -804,17 +1150,25 @@
     var pMode = packetModeValue();
     var tCode = teacherCodeInput ? teacherCodeInput.value.trim() : '';
     var wantAudio = pMode !== 'check' && (!includeAudioCheck || includeAudioCheck.checked);
-    withAudioBanks(wantAudio, function (pBank, lBank, wBank) {
+    var finishDownload = function (baseHtml) {
+      var name = singleCodeName();
+      var single = name ? builder.withCodeName(baseHtml, name) : baseHtml;
+      var outName = packetFileName(name);
+      downloadBlob(single, 'text/html;charset=utf-8', outName);
+      say('Saved ' + outName + ', ' + (pMode === 'check' ? 'a 1-minute check.' : 'a practice file.'));
+      showAfterSave();
+    };
+    if (!previewDirty && preparedBaseHtml && preparedSig === currentBuildSig() && !(pMode === 'check' && tCode && tCode.length < 4)) {
+      finishDownload(preparedBaseHtml);
+      return;
+    }
+    withAudioBanks(wantAudio, function (pBank, lBank, wBank, portableClips) {
       try {
-        var built = buildCurrentPacket(pBank, lBank, wBank);
-        var baseName = slug(titleInput ? titleInput.value : '', 'symbol-runner');
-        var kindSuffix = pMode === 'check' ? '-check' : '';
-        var name = singleCodeName();
-        var single = name ? builder.withCodeName(built.html, name) : built.html;
-        var suffix = (name ? ('-' + slug(name, 'student')) : '') + kindSuffix;
-        downloadBlob(single, 'text/html;charset=utf-8', baseName + suffix + '.html');
-        say('Saved ' + baseName + suffix + '.html, ' + (pMode === 'check' ? 'a 1-minute check.' : 'a practice file.'));
-        showAfterSave();
+        var built = buildCurrentPacket(pBank, lBank, wBank, portableClips);
+        preparedBaseHtml = built.html;
+        preparedSig = currentBuildSig();
+        previewDirty = false;
+        finishDownload(built.html);
       } catch (err) {
         say((err && err.message) || 'Could not build that file.');
         if (pMode === 'check' && tCode && /teacher code/i.test(String(err && err.message)) && teacherCodeInput && typeof teacherCodeInput.focus === 'function') {
@@ -825,7 +1179,7 @@
     });
   }
 
-  // Step 3's "The file is ready" line, from the builder's plan (no sounds are needed to count the cards).
+  // Step 3's "The file is ready" line, from the builder's plan (plus file size once prepared).
   function drawSummary() {
     var box = $('sr-summary');
     var lineEl = $('sr-summary-line');
@@ -868,8 +1222,86 @@
       if (plan.rehearsal) parts.push('Rehearsal with known facts: ' + plan.newSymbols.length + ' new, ' + plan.knownSymbols.length + ' known.');
     }
     if (controlValue() === 'lockon') parts.push('The student points at the card first.');
+    if (preparedPreviewHtml) parts.push(fileSize(preparedPreviewHtml.length) + '.');
     lineEl.textContent = parts[0] + '. ' + parts.slice(1).join(' ');
     box.hidden = false;
+  }
+
+  var previewGen = 0;
+  var previewDirty = true;
+  var preparedBaseHtml = '';
+  var preparedPreviewHtml = '';
+  var preparedSig = '';
+
+  function currentBuildSig() {
+    return [
+      modeSelect ? modeSelect.value : '',
+      customInput ? customInput.value.trim() : '',
+      packetModeValue(),
+      controlValue(),
+      viewValue(),
+      untimedCheck ? !!untimedCheck.checked : false,
+      rehearsalCheck ? !!rehearsalCheck.checked : false,
+      knownInput ? knownInput.value.trim() : '',
+      teacherCodeInput ? teacherCodeInput.value.trim() : '',
+      includeAudioCheck ? !!includeAudioCheck.checked : true,
+      audioModeValue(),
+      titleInput ? titleInput.value.trim() : '',
+      Object.keys(pictures).sort().join(','),
+      Object.keys(myWordAudio).sort().join(','),
+    ].join('\x1f');
+  }
+
+  function applySinglePreviewCode() {
+    if (!preparedBaseHtml || !builder) return;
+    var name = singleCodeName();
+    preparedPreviewHtml = name ? builder.withCodeName(preparedBaseHtml, name) : preparedBaseHtml;
+    if (previewSession && typeof previewSession.update === 'function' && previewBlobUrl) {
+      publishPreviewHtml(preparedPreviewHtml);
+    }
+    if (step === 3) drawSummary();
+  }
+
+  function publishPreviewHtml(html) {
+    if (!root.URL || typeof root.URL.createObjectURL !== 'function') return '';
+    if (previewBlobUrl && typeof root.URL.revokeObjectURL === 'function') {
+      try { root.URL.revokeObjectURL(previewBlobUrl); } catch (_) {}
+    }
+    var blob = new root.Blob([html], { type: 'text/html' });
+    previewBlobUrl = root.URL.createObjectURL(blob);
+    preparedPreviewHtml = html;
+    if (handoff && typeof handoff.hostPreview === 'function') {
+      if (previewSession && typeof previewSession.update === 'function') {
+        previewSession.update({ url: previewBlobUrl, html: html });
+      } else {
+        previewSession = handoff.hostPreview({ url: previewBlobUrl, html: html });
+      }
+    }
+    previewDirty = false;
+    return TRY_PAGE + '#' + previewBlobUrl;
+  }
+
+  // Pre-loads and transcodes audio in the background when Step 3 is open, without creating a Blob URL until Try it is clicked.
+  function prepareStep3Preview() {
+    if (!builder || !loader) return;
+    var gen = ++previewGen;
+    var pMode = packetModeValue();
+    var wantAudio = pMode !== 'check' && (!includeAudioCheck || includeAudioCheck.checked);
+    withAudioBanks(wantAudio, function (pBank, lBank, wBank, portableClips) {
+      if (gen !== previewGen) return;
+      try {
+        var built = buildCurrentPacket(pBank, lBank, wBank, portableClips);
+        preparedBaseHtml = built.html;
+        preparedSig = currentBuildSig();
+        var name = singleCodeName();
+        preparedPreviewHtml = name ? builder.withCodeName(preparedBaseHtml, name) : preparedBaseHtml;
+        previewDirty = false;
+        if (previewSession && typeof previewSession.update === 'function' && previewBlobUrl) {
+          publishPreviewHtml(preparedPreviewHtml);
+        }
+        if (step === 3) { drawSummary(); drawBatch(); }
+      } catch (_) {}
+    });
   }
 
   function previewPacket() {
@@ -877,38 +1309,37 @@
       say('Practice file builder is unavailable here.');
       return;
     }
-    var pMode = packetModeValue();
-    var wantAudio = pMode !== 'check' && (!includeAudioCheck || includeAudioCheck.checked);
-    withAudioBanks(wantAudio, function (pBank, lBank, wBank) {
+    // Always open the preview tab synchronously within the click gesture (never after an async fetch, which triggers popup blockers).
+    var html = '';
+    if (!previewDirty && preparedPreviewHtml && preparedSig === currentBuildSig()) {
+      html = preparedPreviewHtml;
+    } else {
       try {
-        var built = buildCurrentPacket(pBank, lBank, wBank);
-        if (previewBlobUrl && root.URL && typeof root.URL.revokeObjectURL === 'function') {
-          try { root.URL.revokeObjectURL(previewBlobUrl); } catch (_) {}
-        }
-        var name = singleCodeName();
-        if (name) built.html = builder.withCodeName(built.html, name);
-        var blob = new root.Blob([built.html], { type: 'text/html' });
-        previewBlobUrl = root.URL.createObjectURL(blob);
-        if (handoff && typeof handoff.hostPreview === 'function') {
-          if (previewSession && typeof previewSession.update === 'function') {
-            previewSession.update({ url: previewBlobUrl, html: built.html });
-          } else {
-            previewSession = handoff.hostPreview({ url: previewBlobUrl, html: built.html });
-          }
-        }
-        var link = doc.createElement('a');
-        link.href = TRY_PAGE + '#' + previewBlobUrl;
-        link.target = '_blank';
-        link.rel = 'noopener';
-        link.hidden = true;
-        doc.body.appendChild(link);
-        link.click();
-        doc.body.removeChild(link);
-        say('Try it opened in a new tab.');
+        var syncBuilt = buildCurrentPacket(phonemeAudio, letterAudio, wordAudio, null);
+        var syncName = singleCodeName();
+        if (syncName) syncBuilt.html = builder.withCodeName(syncBuilt.html, syncName);
+        html = syncBuilt.html;
       } catch (err) {
         say((err && err.message) || 'Could not preview that file.');
+        return;
       }
-    });
+      // If portable audio is still loading, finish in the background and live-update the open preview tab via BroadcastChannel.
+      prepareStep3Preview();
+    }
+    var href = publishPreviewHtml(html);
+    if (!href) {
+      say('Could not preview that file.');
+      return;
+    }
+    var link = doc.createElement('a');
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.hidden = true;
+    doc.body.appendChild(link);
+    link.click();
+    doc.body.removeChild(link);
+    say('Try it opened in a new tab.');
   }
 
   function exportPptxSlides() {
@@ -1024,9 +1455,11 @@
     var parts = verify.readParts(textVal);
     var encodedBytes = rawBytes || (typeof root.TextEncoder === 'function' ? new root.TextEncoder().encode(textVal) : null);
     function tryOtherMaker(fallbackMsg) {
-      var other = reopenKit && typeof reopenKit.read === 'function'
-        ? reopenKit.read(encodedBytes || textVal, { verify: verify, wordSounds: [] })
-        : null;
+      var other = reopenKit && typeof reopenKit.identify === 'function'
+        ? reopenKit.identify(encodedBytes || textVal, { verify: verify })
+        : (reopenKit && typeof reopenKit.read === 'function'
+          ? reopenKit.read(encodedBytes || textVal, { verify: verify, wordSounds: [] })
+          : null);
       if (other && other.page && other.page.href) {
         var msg = other.why || fallbackMsg;
         setReopenStatus(msg, { href: other.page.href, name: other.page.name, bytes: encodedBytes, fileName: fileName });
@@ -1050,7 +1483,7 @@
       tryOtherMaker(notSr);
       return false;
     }
-    if (modeSelect && back.mode && back.mode !== 'custom') {
+    if (modeSelect && back.mode) {
       modeSelect.value = back.mode;
     }
     if (customInput) {
@@ -1100,8 +1533,9 @@
     if (titleInput && typeof back.title === 'string') {
       titleInput.value = back.title;
     }
-    if (codeNameInput && typeof back.learner === 'string') {
-      codeNameInput.value = back.learner;
+    if (learnersInput && typeof back.learner === 'string') {
+      learnersInput.value = back.learner;
+      if (back.learner && $('sr-batch')) $('sr-batch').open = true;
     }
     var reopenedPool = currentPool();
     pictures = {};
@@ -1160,12 +1594,14 @@
     });
   }
 
-  // A change after a save: the saved file and a made .zip no longer match the choices.
+  // A change after a save: the saved file and preview no longer match the choices.
   function choicesChanged() {
+    previewDirty = true;
+    preparedBaseHtml = '';
+    preparedPreviewHtml = '';
     var after = $('sr-after-save');
     if (after) after.hidden = true;
-    if (batchFile) { dropBatchFile(); drawBatch(); }
-    if (step === 3) drawSummary();
+    if (step === 3) { drawSummary(); drawBatch(); prepareStep3Preview(); }
   }
 
   function goTo(wanted, quiet) {
@@ -1184,7 +1620,7 @@
     var productName = nameEl ? String(nameEl.textContent || '').trim() : '';
     doc.title = (productName ? productName + ': ' : '') + 'Make Symbol Runner practice, step ' + step + ' of 3';
     if (step === 2) startLive(); else stopLive();
-    if (step === 3) { drawSummary(); drawBatch(); }
+    if (step === 3) { drawSummary(); drawBatch(); prepareStep3Preview(); }
     if (!quiet) {
       var heading = $('step-' + step + '-title');
       if (heading && typeof heading.focus === 'function') {
@@ -1199,7 +1635,7 @@
     var files = ['packets-symbol-runner.html'];
     Array.prototype.forEach.call(doc.querySelectorAll('link[href]'), function (link) { files.push(link.getAttribute('href')); });
     Array.prototype.forEach.call(doc.querySelectorAll('script[src]'), function (script) { files.push(script.getAttribute('src')); });
-    var text = files.join(', ') + '. Recordings: audio_bank/phonemes.json and audio_bank/letters.json; audio_bank/words.json for common sight words.'
+    var text = files.join(', ') + ' (and lame.min.js when making recordings smaller). Recordings: audio_bank/phonemes.json and audio_bank/letters.json; audio_bank/words.json for common sight words.'
       + ' When a word needs it: word_audio_shards/index.json and the small sound files it names. For Try it: ' + TRY_PAGE + ' and packets-try.js.';
     Array.prototype.forEach.call(doc.querySelectorAll('[data-show-files]'), function (node) { node.textContent = text; });
   }
@@ -1211,7 +1647,7 @@
         savePreferences();
         renderPictureList();
         autoFillPictures(true);
-        if (modeSelect.value === 'sight_words') loadWordAudio();
+        if (modeSelect.value === 'sight_words') ensurePoolWordAudio(currentPool(), 'sight_words', false);
       });
     }
     if (customInput) {
@@ -1264,27 +1700,57 @@
       if (t && t.tagName === 'INPUT' && (t.type === 'radio' || t.type === 'checkbox')) markChoices();
       if (t !== learnersInput) choicesChanged();
     });
-    [customInput, knownInput, teacherCodeInput, titleInput, codeNameInput].forEach(function (input) {
+    [customInput, knownInput, teacherCodeInput, titleInput].forEach(function (input) {
       if (input) input.addEventListener('input', choicesChanged);
     });
-    if (learnersInput) learnersInput.addEventListener('input', function () { dropBatchFile(); setBatchProblem(''); drawBatch(); });
-    if ($('sr-batch-make')) $('sr-batch-make').addEventListener('click', makeBatch);
-    if ($('sr-batch-save')) $('sr-batch-save').addEventListener('click', saveBatch);
+    if ($('sr-code-show') && teacherCodeInput) {
+      $('sr-code-show').addEventListener('click', function () {
+        var shown = teacherCodeInput.type === 'text';
+        teacherCodeInput.type = shown ? 'password' : 'text';
+        this.setAttribute('aria-pressed', String(!shown));
+        this.textContent = shown ? 'Show' : 'Hide';
+        this.setAttribute('aria-label', shown ? 'Show the teacher code' : 'Hide the teacher code');
+      });
+    }
+    if (learnersInput) learnersInput.addEventListener('input', function () { setBatchProblem(''); applySinglePreviewCode(); drawBatch(); });
+    if ($('sr-batch-make')) $('sr-batch-make').addEventListener('click', saveBatchZip);
+    if ($('sr-batch-load') && $('sr-batch-file')) {
+      $('sr-batch-load').addEventListener('click', function () { $('sr-batch-file').value = ''; $('sr-batch-file').click(); });
+      $('sr-batch-file').addEventListener('change', function () {
+        var file = this.files && this.files[0];
+        this.value = '';
+        loadRosterFile(file);
+      });
+    }
     if (autoPicsBtn) autoPicsBtn.addEventListener('click', function () { autoFillPictures(false); });
     if (picFileEl) {
       picFileEl.addEventListener('change', function () {
         var file = picFileEl.files && picFileEl.files[0];
-        if (!file || !importTargetAnswer) return;
-        readFileAsDataUri(file).then(function (uri) {
-          pictures[importTargetAnswer] = {
+        var target = importTargetAnswer;
+        if (!file || !target) return;
+        var readerPromise = (myWords && typeof myWords.resizeToDataUri === 'function' && typeof file.slice === 'function')
+          ? myWords.resizeToDataUri(file).catch(function (err) {
+            if (err && (err.code === 'not_a_picture' || err.code === 'picture_too_big')) throw err;
+            return readFileAsDataUri(file);
+          })
+          : readFileAsDataUri(file);
+        readerPromise.then(function (uri) {
+          pictures[target] = {
             src: uri,
-            alt: importTargetAnswer,
-            credit: 'Custom imported image',
+            alt: target,
+            credit: "The teacher's own picture.",
             set: 'custom',
+            fromMyWords: true,
           };
-          renderPictureList();
-          startLive();
-          say('Updated cue picture for "' + importTargetAnswer + '".');
+          var persist = myWords && typeof myWords.putMedia === 'function'
+            ? myWords.putMedia(target, { picture: { dataUri: uri, credit: { own: true } } }).catch(function () {})
+            : Promise.resolve();
+          return persist.then(function () {
+            renderPictureList();
+            startLive();
+            choicesChanged();
+            say('Updated cue picture for "' + target + '".');
+          });
         }).catch(function (err) {
           say((err && err.message) || 'Could not read image.');
         });
@@ -1305,6 +1771,10 @@
       reopenFile.addEventListener('change', function () {
         var file = reopenFile.files && reopenFile.files[0];
         if (!file) return;
+        if (file.size > MAX_REOPEN_BYTES) {
+          setReopenStatus('This file is too large to be a file made here.');
+          return;
+        }
         if (typeof root.FileReader !== 'function') {
           setReopenStatus('This browser cannot read local files here.');
           return;
@@ -1319,6 +1789,32 @@
       clearBtn.addEventListener('click', function () {
         try {
           root.localStorage.removeItem(STORAGE_KEY);
+          if (modeSelect) modeSelect.value = 'confusable_letters';
+          if (customInput) customInput.value = '';
+          if (knownInput) knownInput.value = '';
+          if (teacherCodeInput) teacherCodeInput.value = '';
+          if (learnersInput) learnersInput.value = '';
+          if (titleInput) titleInput.value = 'Symbol Runner Practice';
+          var defCtrl = doc.querySelector('input[name="sr-control"][value="direct"]');
+          if (defCtrl) defCtrl.checked = true;
+          var defView = doc.querySelector('input[name="sr-view"][value="3d"]');
+          if (defView) defView.checked = true;
+          var defMode = doc.querySelector('input[name="sr-packet-mode"][value="practice"]');
+          if (defMode) defMode.checked = true;
+          if (untimedCheck) untimedCheck.checked = false;
+          if (rehearsalCheck) rehearsalCheck.checked = false;
+          if (includeAudioCheck) includeAudioCheck.checked = true;
+          if (audioModeSelect) audioModeSelect.value = 'auto';
+          if (hcCheck) hcCheck.checked = false;
+          pictures = {};
+          syncPacketModeUi();
+          drawModeLine();
+          markChoices();
+          renderPictureList();
+          drawBatch();
+          drawSettingsNow();
+          choicesChanged();
+          if (step === 2) startLive();
           if (clearStatusEl) clearStatusEl.textContent = 'Done. This browser no longer keeps your choices.';
         } catch (_) {
           if (clearStatusEl) clearStatusEl.textContent = 'Browser storage could not be cleared here.';
@@ -1374,7 +1870,7 @@
     var missed = [];
     raw.split(/[,;\s]+/).forEach(function (tok) {
       var clean = String(tok || '').trim();
-      if (!clean || !/^[A-Za-z0-9]+$/.test(clean) || clean.length > 8) return;
+      if (!clean || !/^[A-Za-z0-9]+$/.test(clean) || clean.length > 16) return;
       var k = clean.toLowerCase();
       if (seen[k] || missed.length >= 8) return;
       seen[k] = true;
@@ -1393,6 +1889,11 @@
     syncPacketModeUi();
     savePreferences();
     renderPictureList();
+    try {
+      if (root.history && typeof root.history.replaceState === 'function' && root.location) {
+        root.history.replaceState(null, '', (root.location.pathname || '') + (root.location.search || ''));
+      }
+    } catch (_) {}
     goTo(2, true);
     say('Loaded ' + missed.length + ' missed symbols for Rehearsal with known facts. They are in step 1, under My own list.');
     return true;
@@ -1519,7 +2020,14 @@
   }
   loadPhonemeAudio();
   loadLetterAudio();
-  if (modeSelect && modeSelect.value === 'sight_words') loadWordAudio();
+  if (myWords && typeof myWords.onChange === 'function') {
+    myWords.onChange(function (change) {
+      if (!change || !change.here) {
+        lastMyMediaSig = '';
+        loadMyWordsPictures().then(function () { renderPictureList(); startLive(); choicesChanged(); });
+      }
+    });
+  }
   takeHanded().then(function (opened) {
     if (!opened) autoFillPictures(true);
   });

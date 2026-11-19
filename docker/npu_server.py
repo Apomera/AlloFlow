@@ -45,7 +45,8 @@ _generation_lock = threading.Lock()
 _session = None
 _tokenizer = None
 _active_id = None
-_allow_model_swap = True
+_allow_model_swap = False
+_require_api_token = False
 
 
 class ContextLimitError(ValueError):
@@ -91,12 +92,37 @@ def request_too_large(_error):
     return api_error("Request body exceeds 256 KiB.", 413)
 
 
+def is_allowed_host(host_header):
+    if not host_header or not isinstance(host_header, str):
+        return False
+    try:
+        hostname = (urlsplit("http://" + host_header.strip()).hostname or "").lower()
+    except ValueError:
+        return False
+    allowed = {"localhost", "127.0.0.1", "::1"}
+    for raw in os.environ.get("ALLOFLOW_NPU_ALLOWED_ORIGINS", "").split(","):
+        val = raw.strip()
+        if not val:
+            continue
+        try:
+            h = (urlsplit(val).hostname or "").lower()
+            if h:
+                allowed.add(h)
+        except ValueError:
+            pass
+    return hostname in allowed
+
+
 @app.before_request
 def guard_browser_origin():
+    if not is_allowed_host(request.host):
+        return api_error("Host header is not allowed.", 403)
     if not is_allowed_origin(request.headers.get("Origin")):
         return api_error("Browser origin is not allowed; configure ALLOFLOW_NPU_ALLOWED_ORIGINS for your school app.", 403)
     if request.method != "OPTIONS" and request.path != "/health":
         expected_token = os.environ.get("ALLOFLOW_NPU_API_TOKEN", "").strip()
+        if _require_api_token and len(expected_token) < 32:
+            return api_error("Server misconfigured: ALLOFLOW_NPU_API_TOKEN (>=32 chars) is required for non-loopback binds.", 503)
         if expected_token:
             auth = request.headers.get("Authorization", "")
             prefix = "Bearer "
@@ -341,16 +367,21 @@ def health():
 
 
 def main(argv=None):
-    global _allow_model_swap
+    global _allow_model_swap, _require_api_token
     parser = argparse.ArgumentParser(description="AlloFlow NPU Server")
     parser.add_argument("--model", default="deepseek-r1-1.5b", choices=list(MODELS.keys()))
     parser.add_argument("--port", type=int, default=11435)
     parser.add_argument("--host", default="127.0.0.1",
-                        help="Bind address (default: this computer only; use a LAN address to share)")
+                        help="Bind address (default: this computer only; non-loopback requires ALLOFLOW_NPU_API_TOKEN >= 32 chars)")
+    parser.add_argument("--allow-model-swap", action="store_true",
+                        help="Allow authenticated clients to switch active models at runtime")
     parser.add_argument("--no-model-swap", action="store_true",
-                        help="Lock the active model against runtime swap requests")
+                        help="Lock the active model against runtime swap requests (default)")
     args = parser.parse_args(argv)
-    _allow_model_swap = not args.no_model_swap
+    _allow_model_swap = bool(args.allow_model_swap and not args.no_model_swap)
+    _require_api_token = args.host not in ("127.0.0.1", "localhost", "::1")
+    if _require_api_token and len(os.environ.get("ALLOFLOW_NPU_API_TOKEN", "").strip()) < 32:
+        raise SystemExit("Refusing to bind non-loopback host without ALLOFLOW_NPU_API_TOKEN (>=32 chars).")
 
     print("""
     ╔══════════════════════════════════════════╗

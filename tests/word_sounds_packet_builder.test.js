@@ -945,3 +945,97 @@ describe('(l) two kinds of unsuitable word: never used, and never offered but us
     expect(typed.manifest.words.used).toContain('sun');
   });
 });
+
+describe('(m) Wave 6B: Easy Sight & Spell (orthography) letterBank and lengthHint scaffold', () => {
+  const wavFor = (key) => 'data:audio/wav;base64,' + Buffer.from('RIFF0000WAVE' + key).toString('base64');
+  const everyWord = new Proxy({}, {
+    get: (_, key) => (typeof key === 'string' ? wavFor(key) : undefined),
+    getOwnPropertyDescriptor: (_, key) => ({ value: wavFor(String(key)), writable: true, enumerable: true, configurable: true }),
+  });
+
+  async function captureOrthographyBoards(words, choices, seed = 7) {
+    let seen = null;
+    const spyLoader = {
+      ...loader,
+      lessonFromPack(rows, opts) {
+        seen = rows.map((r) => ({
+          word: r.word,
+          board: r.activityItems && r.activityItems.orthography ? { ...r.activityItems.orthography } : null,
+        }));
+        return loader.lessonFromPack(rows, opts);
+      },
+    };
+    const built = await builder.buildPacket({
+      words,
+      activities: ['orthography'],
+      choices,
+      seed,
+      core,
+      dictionary,
+      banks: { ...BANKS, kokoroWords: everyWord },
+      loader: spyLoader,
+      wordlist,
+      noFile: true,
+    });
+    return { built, rows: seen };
+  }
+
+  it('adds sorted deterministic letterBank (+4 seeded distractors) and lengthHint on Easy orthography boards', async () => {
+    const words = ['cat', 'ship', 'frog', 'mom', 'desk'];
+    const easyA = await captureOrthographyBoards(words, 'easy', 11);
+    const easyB = await captureOrthographyBoards(words, 'easy', 11);
+    const easyOtherSeed = await captureOrthographyBoards(words, 'easy', 99);
+
+    expect(easyA.rows).toHaveLength(words.length);
+    for (let i = 0; i < words.length; i++) {
+      const { word, board } = easyA.rows[i];
+      const uniqueWordLetters = [...new Set(word.toLowerCase().split(''))];
+      expect(board, word).toBeTruthy();
+      expect(board.lengthHint, word).toBe(true);
+      expect(Array.isArray(board.letterBank), word).toBe(true);
+      expect(board.letterBank, word).toEqual(board.letterBank.slice().sort());
+      expect(new Set(board.letterBank).size, word).toBe(board.letterBank.length);
+      expect(board.letterBank.length, word).toBe(uniqueWordLetters.length + 4);
+      for (const ch of uniqueWordLetters) {
+        expect(board.letterBank, word + ' missing ' + ch).toContain(ch);
+      }
+      const distractors = board.letterBank.filter((ch) => !uniqueWordLetters.includes(ch));
+      expect(distractors, word).toHaveLength(4);
+      expect(distractors.every((ch) => /^[a-z]$/.test(ch)), word).toBe(true);
+      // Same seed gives identical letterBank.
+      expect(easyB.rows[i].board.letterBank, word).toEqual(board.letterBank);
+    }
+    // Different seed produces a different distractor set on at least one word.
+    const sameAcrossSeeds = easyA.rows.every((r, i) =>
+      JSON.stringify(r.board.letterBank) === JSON.stringify(easyOtherSeed.rows[i].board.letterBank)
+    );
+    expect(sameAcrossSeeds).toBe(false);
+  });
+
+  it('omits letterBank and lengthHint on Medium and Hard (all) packets', async () => {
+    const words = ['cat', 'ship', 'frog', 'desk'];
+    const medium = await captureOrthographyBoards(words, 'medium', 11);
+    const hard = await captureOrthographyBoards(words, 'all', 11);
+
+    for (const run of [medium, hard]) {
+      for (const { word, board } of run.rows) {
+        expect(board, word).toBeTruthy();
+        expect(board.letterBank, word).toBeUndefined();
+        expect(board.lengthHint, word).toBeUndefined();
+      }
+    }
+  });
+
+  it('deduplicates repeated word letters cleanly in Easy letterBank while preserving lengthHint', async () => {
+    const easy = await captureOrthographyBoards(['book', 'little', 'bubble', 'mitten'], 'easy', 5);
+    const expectedUnique = { book: ['b', 'k', 'o'], little: ['e', 'i', 'l', 't'], bubble: ['b', 'e', 'l', 'u'], mitten: ['e', 'i', 'm', 'n', 't'] };
+    for (const [word, letters] of Object.entries(expectedUnique)) {
+      const row = easy.rows.find((r) => r.word === word);
+      expect(row && row.board, word).toBeTruthy();
+      expect(row.board.lengthHint, word).toBe(true);
+      expect(row.board.letterBank, word).toEqual(row.board.letterBank.slice().sort());
+      expect(new Set(row.board.letterBank).size, word).toBe(letters.length + 4);
+      for (const ch of letters) expect(row.board.letterBank, word + ' missing ' + ch).toContain(ch);
+    }
+  });
+});

@@ -16,6 +16,44 @@
   st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
   if (document.head) document.head.appendChild(st);
 })();
+// Bespoke Hydrologic Studio Workbench CSS + Light/Dark/High-Contrast/Forced-Colors parity
+(function() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-watercycle-studio-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-watercycle-studio-css';
+  st.textContent = [
+    '.wc-explorer-header.wc-studio-deck { display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 16px; border-radius: 16px; background: linear-gradient(125deg, #f0f9ff 0%, #ecfeff 52%, #f0fdfa 100%); border: 1px solid #93c5fd; box-shadow: 0 8px 22px -16px rgba(15,23,42,0.35); max-width: 100%; box-sizing: border-box; }',
+    '.wc-explorer-root.dark .wc-explorer-header.wc-studio-deck { background: linear-gradient(125deg, #0c1f2e 0%, #102a38 54%, #0f2930 100%); border-color: rgba(56,189,248,0.42); box-shadow: 0 12px 28px -18px rgba(2,6,23,0.75); }',
+    '.wc-studio-toprow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }',
+    '.wc-studio-emblem { width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; background: #e0f2fe; border: 1.5px solid #38bdf8; }',
+    '.wc-explorer-root.dark .wc-studio-emblem { background: #0f293a; border-color: #38bdf8; }',
+    '.wc-studio-subject-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }',
+    '.wc-explorer-root.dark .wc-studio-subject-badge { background: #0c2d40; color: #bae6fd; border-color: #38bdf8; }',
+    '.wc-studio-telemetry { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 8px; border-top: 1px solid rgba(14,116,144,0.18); min-width: 0; }',
+    '.wc-explorer-root.dark .wc-studio-telemetry { border-top-color: rgba(56,189,248,0.22); }',
+    '.wc-studio-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; max-width: 100%; }',
+    '.wc-explorer-root.dark .wc-studio-pill { background: #0b1c28; color: #e0f2fe; border-color: rgba(125,211,252,0.34); }',
+    '.wc-studio-cycle-strip { padding: 6px 8px; border-radius: 10px; background: #ffffff; border: 1px solid #bae6fd; max-width: 100%; overflow: hidden; }',
+    '.wc-explorer-root.dark .wc-studio-cycle-strip { background: #091722; border-color: rgba(56,189,248,0.30); }',
+    '.wc-studio-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 8px; border-top: 1px solid rgba(14,116,144,0.18); min-width: 0; }',
+    '.wc-explorer-root.dark .wc-studio-presets { border-top-color: rgba(56,189,248,0.22); }',
+    '.wc-studio-presets-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #334155; }',
+    '.wc-explorer-root.dark .wc-studio-presets-label { color: #bae6fd; }',
+    '.wc-studio-preset-btn { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 7px 11px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; background: #ffffff; color: #0f172a; border: 1px solid #64748b; transition: background 140ms ease, border-color 140ms ease; max-width: 100%; }',
+    '.wc-studio-preset-btn:hover:not(:disabled) { background: #e0f2fe; border-color: #0284c7; color: #0c4a6e; }',
+    '.wc-explorer-root.dark .wc-studio-preset-btn { background: #0f2433; color: #e0f2fe; border-color: #38bdf8; }',
+    '.wc-explorer-root.dark .wc-studio-preset-btn:hover:not(:disabled) { background: #164e63; border-color: #7dd3fc; color: #ffffff; }',
+    '.wc-studio-preset-btn:focus-visible, .wc-explorer-header.wc-studio-deck button:focus-visible { outline: 3px solid #0284c7; outline-offset: 2px; }',
+    '.wc-explorer-root.dark .wc-studio-preset-btn:focus-visible { outline-color: #7dd3fc; }',
+    '.theme-contrast [data-stem-tool-shell="waterCycle"] .wc-explorer-header.wc-studio-deck, .wc-explorer-root[data-visual-contrast="true"] .wc-explorer-header.wc-studio-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+    '.theme-contrast [data-stem-tool-shell="waterCycle"] :is(.wc-studio-emblem,.wc-studio-subject-badge,.wc-studio-pill,.wc-studio-cycle-strip,.wc-studio-preset-btn), .wc-explorer-root[data-visual-contrast="true"] :is(.wc-studio-emblem,.wc-studio-subject-badge,.wc-studio-pill,.wc-studio-cycle-strip,.wc-studio-preset-btn) { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+    '.theme-contrast [data-stem-tool-shell="waterCycle"] .wc-studio-presets-label, .wc-explorer-root[data-visual-contrast="true"] .wc-studio-presets-label { color: #ffff00 !important; }',
+    '.theme-contrast [data-stem-tool-shell="waterCycle"] .wc-studio-preset-btn:hover:not(:disabled), .wc-explorer-root[data-visual-contrast="true"] .wc-studio-preset-btn:hover:not(:disabled) { background: #00ff00 !important; color: #000000 !important; border-color: #ffff00 !important; }',
+    '@media (forced-colors: active) { .wc-explorer-header.wc-studio-deck, .wc-studio-emblem, .wc-studio-subject-badge, .wc-studio-pill, .wc-studio-cycle-strip, .wc-studio-preset-btn { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; } }',
+    '.wc-pilot-sky-thermal-plot { height: 92px !important; }'
+  ].join('\n');
+  document.head.appendChild(st);
+})();
 
 // stem_tool_watercycle.js - Water Cycle Interactive Simulator
 // Extracted and enhanced with Journey Mode
@@ -5851,12 +5889,13 @@ if (typeof window !== 'undefined') window.WaterCycleAirProfile = wcPrecipAirProf
       // Student AI-off: null unless text AI is usable, so the Hydrologist Tutor, watershed reading and AI quiz hide.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var callGemini=(ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var canvasNarrate=ctx.canvasNarrate;
       return (function(){
-const d = labToolData.waterCycle || {};
+const rawWc = (labToolData && typeof labToolData === 'object') ? labToolData.waterCycle : null;
+const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc : {};
           var isContrast = !!(ctx && ctx.isContrast);
           var isDark = !!(ctx && ctx.isDark) || isContrast;
           // The host keeps this compact chrome on a light card in normal dark mode.
@@ -5865,8 +5904,8 @@ const d = labToolData.waterCycle || {};
           // the host's white card), so the header surface is dark whenever the theme is.
           var isHeaderSurfaceDark = isContrast || isDark;
 
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
-          const updMulti = (obj) => setLabToolData(prev => ({ ...prev, waterCycle: Object.assign({}, prev.waterCycle, obj) }));
+          const upd = (key, val) => { if (typeof setLabToolData !== 'function') return; setLabToolData(prev => { var p = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {}; var cur = (p.waterCycle && typeof p.waterCycle === 'object' && !Array.isArray(p.waterCycle)) ? p.waterCycle : {}; return { ...p, waterCycle: { ...cur, [key]: val } }; }); };
+          const updMulti = (obj) => { if (typeof setLabToolData !== 'function') return; setLabToolData(prev => { var p = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {}; var cur = (p.waterCycle && typeof p.waterCycle === 'object' && !Array.isArray(p.waterCycle)) ? p.waterCycle : {}; return { ...p, waterCycle: Object.assign({}, cur, obj) }; }); };
           const h = React.createElement;
 
           var checkWaterCycleChallenges = function(customState) {
@@ -38245,25 +38284,93 @@ const d = labToolData.waterCycle || {};
               onKeyDown: onWcKey
             },
 
-            React.createElement("div", { className: "wc-explorer-header flex items-center gap-3 mb-3 flex-wrap" },
+            React.createElement("div", { className: "wc-explorer-header wc-studio-deck mb-3" },
+              React.createElement("div", { className: "wc-studio-toprow" },
+                React.createElement("button", { 
+                  onClick: () => setStemLabTool(null), 
+                  className: "wc-watercycle-back min-h-[44px] min-w-[44px] inline-flex items-center justify-center p-1.5 rounded-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]" + (isHeaderSurfaceDark ? " is-contrast" : ""),
+                  'aria-label': t('stem.watercycle.back_to_tools', 'Back to tools') 
+                }, React.createElement(ArrowLeft, { size: 18 })),
 
-              React.createElement("button", { 
-                onClick: () => setStemLabTool(null), 
-                className: "wc-watercycle-back p-1.5 rounded-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]" + (isHeaderSurfaceDark ? " is-contrast" : ""),
-                'aria-label': t('stem.watercycle.back_to_tools', 'Back to tools') 
-              }, React.createElement(ArrowLeft, { size: 18 })),
+                React.createElement("div", { className: "wc-studio-emblem", "aria-hidden": "true" },
+                  React.createElement("svg", { width: 32, height: 32, viewBox: "0 0 44 44", "aria-hidden": "true" },
+                    React.createElement("circle", { cx: 22, cy: 22, r: 19, fill: "none", stroke: isContrast ? "#ffff00" : "#0284c7", strokeWidth: 1.8, strokeDasharray: "5 3" }),
+                    React.createElement("circle", { cx: 31, cy: 13, r: 4.5, fill: isContrast ? "#ffff00" : "#f59e0b" }),
+                    React.createElement("path", { d: "M12 20 C12 16 16 14 19 15 C21 13 26 14 27 17 C29 17 31 19 30 22 L13 22 C11 22 10 21 12 20 Z", fill: isContrast ? "#ffff00" : "#38bdf8" }),
+                    React.createElement("path", { d: "M16 26 L16 31 M22 25 L22 31 M28 26 L28 31", stroke: isContrast ? "#ffff00" : "#0284c7", strokeWidth: 2, strokeLinecap: "round" }),
+                    React.createElement("path", { d: "M9 34 Q16 31 22 34 T35 34", fill: "none", stroke: isContrast ? "#ffff00" : "#0ea5e9", strokeWidth: 2.2, strokeLinecap: "round" })
+                  )
+                ),
 
-              React.createElement("h2", { className: "text-lg font-bold tracking-tight", style: { color: isHeaderSurfaceDark ? "#ffffff" : "#1e293b" } }, t('stem.watercycle.water_cycle', "\uD83C\uDF0A Water Cycle")),
+                React.createElement("h2", { className: "text-lg font-bold tracking-tight", style: { color: isHeaderSurfaceDark ? "#ffffff" : "#1e293b" } }, t('stem.watercycle.water_cycle', "\uD83C\uDF0A Water Cycle")),
 
-              React.createElement("span", {
-                className: "wc-explorer-badge px-2 py-0.5 text-[0.6875rem] font-bold rounded-full border",
-                style: {
-                  backgroundColor: isHeaderSurfaceDark ? "#000000" : "#e0f2fe",
-                  color: isHeaderSurfaceDark ? "#facc15" : "#075985",
-                  borderColor: isHeaderSurfaceDark ? "#facc15" : "#bae6fd"
-                }
-              }, "ANIMATED"),
+                React.createElement("span", { className: "wc-studio-subject-badge" }, t('stem.watercycle.subject_badge', 'Hydrology · Earth Systems')),
 
+                React.createElement("span", {
+                  className: "wc-explorer-badge px-2 py-0.5 text-[0.6875rem] font-bold rounded-full border",
+                  style: {
+                    backgroundColor: isHeaderSurfaceDark ? "#000000" : "#e0f2fe",
+                    color: isHeaderSurfaceDark ? "#facc15" : "#075985",
+                    borderColor: isHeaderSurfaceDark ? "#facc15" : "#bae6fd"
+                  }
+                }, "ANIMATED")
+              ),
+
+              // Live non-spoiler hydrologic telemetry strip
+              React.createElement("div", { className: "wc-studio-telemetry" },
+                React.createElement("span", { className: "wc-studio-pill" }, "\uD83C\uDF21\uFE0F " + t('stem.watercycle.telemetry_temp', 'Temp: ') + currentTemp + "\u00B0C"),
+                React.createElement("span", { className: "wc-studio-pill" }, "\u2600\uFE0F " + t('stem.watercycle.telemetry_solar', 'Solar: ') + currentSolar.toFixed(1) + "\u00D7"),
+                React.createElement("span", { className: "wc-studio-pill" }, "\uD83D\uDCA8 " + t('stem.watercycle.telemetry_wind', 'Wind: ') + currentWind.toFixed(1) + "\u00D7"),
+                React.createElement("span", { className: "wc-studio-pill" }, "\uD83C\uDF27\uFE0F " + t('stem.watercycle.telemetry_rain', 'Rain: ') + landRainIntensity + "%"),
+                React.createElement("span", { className: "wc-studio-pill" }, "\uD83D\uDCA7 " + t('stem.watercycle.telemetry_focus', 'Focus: ') + ((STAGES.find(function(s) { return s.id === resolvedStageId; }) || STAGES[0]).name))
+              ),
+
+              // Live 6-stage Hydrologic Cycle Overview Diagram (inline SVG, >=10.5px labels, theme-safe)
+              !wcFocusMode && React.createElement("div", { className: "wc-studio-cycle-strip" },
+                React.createElement("svg", {
+                  viewBox: "0 0 560 52", role: "img",
+                  "aria-label": t('stem.watercycle.a11y_cycle_overview_bar', 'Six connected hydrologic water-cycle processes highlighting the active stage'),
+                  style: { width: '100%', maxHeight: 56, height: 'auto', display: 'block' }
+                },
+                  React.createElement("line", { x1: 48, y1: 18, x2: 512, y2: 18, stroke: isContrast ? "#ffff00" : isDark ? "#38bdf8" : "#0284c7", strokeWidth: 2, strokeDasharray: "4 3", opacity: isContrast ? 1 : 0.65 }),
+                  [
+                    { id: 'evaporation', short: 'Evap.' },
+                    { id: 'condensation', short: 'Cond.' },
+                    { id: 'precipitation', short: 'Precip.' },
+                    { id: 'infiltration', short: 'Infil.' },
+                    { id: 'transpiration', short: 'Transp.' },
+                    { id: 'collection', short: 'Collect.' }
+                  ].map(function(stNode, idx) {
+                    var cx = 48 + idx * 92.8;
+                    var isCur = resolvedStageId === stNode.id;
+                    var nodeFill = isContrast ? (isCur ? "#ffff00" : "#000000") : isCur ? (isDark ? "#38bdf8" : "#0284c7") : (isDark ? "#0f293a" : "#e0f2fe");
+                    var nodeStroke = isContrast ? "#ffff00" : (isDark ? "#7dd3fc" : "#0369a1");
+                    var txtFill = isContrast ? "#ffff00" : isCur ? (isDark ? "#7dd3fc" : "#075985") : (isDark ? "#cbd5e1" : "#334155");
+                    return React.createElement("g", { key: "wc-node-" + stNode.id },
+                      isCur && !isContrast && React.createElement("circle", { cx: cx, cy: 18, r: 10, fill: isDark ? "#38bdf8" : "#0284c7", opacity: 0.22 }),
+                      React.createElement("circle", { cx: cx, cy: 18, r: isCur ? 6 : 4.5, fill: nodeFill, stroke: nodeStroke, strokeWidth: 1.6 }),
+                      React.createElement("text", { x: cx, y: 42, textAnchor: "middle", fill: txtFill, fontSize: 10.5, fontWeight: isCur ? 800 : 700 }, stNode.short)
+                    );
+                  })
+                )
+              ),
+
+              // One-click Hydrologic Scenario Starters (44px touch targets, hidden in Focus Mode or under quiz/teacher lock)
+              (!wcFocusMode && !(ctx && (ctx.quizLock || ctx.teacherLock))) && React.createElement("div", { className: "wc-studio-presets", role: "group", "aria-label": t('stem.watercycle.a11y_scenario_starters', 'Quick hydrologic scenario presets') },
+                React.createElement("span", { className: "wc-studio-presets-label" }, t('stem.watercycle.quick_scenarios', 'Scenarios:')),
+                [
+                  { id: 'heatwave', label: '\u2600\uFE0F ' + t('stem.watercycle.preset_heatwave', 'Heatwave Surge'), patch: { climTemp: 32, climSolar: 1.8, climWind: 1.2, climateAdjusted: true, activeStage: 'evaporation' } },
+                  { id: 'coldfront', label: '\u2744\uFE0F ' + t('stem.watercycle.preset_cold_front', 'Cold Front Storm'), patch: { climTemp: 2, climSolar: 0.7, climWind: 1.8, landRainIntensity: 85, climateAdjusted: true, activeStage: 'precipitation' } },
+                  { id: 'forest', label: '\uD83C\uDF32 ' + t('stem.watercycle.preset_forested', 'Forested Watershed'), patch: { landCover: 'forest', landPermeability: 'high', landSlope: 'gentle', activeStage: 'infiltration' } },
+                  { id: 'urban', label: '\uD83C\uDFD9\uFE0F ' + t('stem.watercycle.preset_urban', 'Urban Runoff'), patch: { landCover: 'urban', landPermeability: 'low', landRainIntensity: 80, activeStage: 'collection' } },
+                  { id: 'baseline', label: '\u2696\uFE0F ' + t('stem.watercycle.preset_balanced', 'Balanced Baseline'), patch: { climTemp: 15, climSolar: 1, climWind: 1, landRainIntensity: 55, landSaturation: 45, landPermeability: 'medium', landSlope: 'moderate', landCover: 'grass' } }
+                ].map(function(pr) {
+                  return React.createElement("button", {
+                    key: "wc-pre-" + pr.id, type: "button", className: "wc-studio-preset-btn",
+                    onClick: function() { updMulti(pr.patch); }
+                  }, pr.label);
+                })
+              )
             ),
 
             // The four destinations, in one place, in every mode.

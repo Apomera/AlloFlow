@@ -57,6 +57,7 @@ type StoredAccessState = {
   oauthRequest: OAuthAuthorizationRequest;
   verifier: string;
   nonce?: string;
+  browserBindHash: string;
 };
 
 type AccessTokenResponse = {
@@ -194,7 +195,7 @@ function consentPage(
 </form>
 <p class="privacy">AlloFlow stores a pseudonymous account identifier. It does not store your email address in document-job metadata.</p>`,
     nonce,
-    `alloflow_consent=${csrf}; Max-Age=${AUTH_STATE_TTL_SECONDS}; Path=/authorize; Secure; HttpOnly; SameSite=Lax`,
+    `alloflow_consent=${csrf}; Max-Age=${AUTH_STATE_TTL_SECONDS}; Path=/authorize; Secure; HttpOnly; SameSite=Strict`,
   );
 }
 
@@ -280,11 +281,14 @@ async function continueAuthorization(
   const state = randomToken();
   const verifier = randomToken(48);
   const nonce = randomToken();
+  const browserBind = randomToken();
+  const browserBindHash = await sha256Base64Url(browserBind);
   const challenge = await sha256Base64Url(verifier);
   const accessState: StoredAccessState = {
     oauthRequest: stored.oauthRequest,
     verifier,
     nonce,
+    browserBindHash,
   };
   await env.OAUTH_KV.put(
     stateKey("access", state),
@@ -301,13 +305,20 @@ async function continueAuthorization(
   destination.searchParams.set("nonce", nonce);
   destination.searchParams.set("code_challenge", challenge);
   destination.searchParams.set("code_challenge_method", "S256");
+  const redirectHeaders = noStoreHeaders({
+    Location: destination.toString(),
+  });
+  redirectHeaders.append(
+    "Set-Cookie",
+    "alloflow_consent=; Max-Age=0; Path=/authorize; Secure; HttpOnly; SameSite=Strict",
+  );
+  redirectHeaders.append(
+    "Set-Cookie",
+    `alloflow_oauth_state=${browserBind}; Max-Age=${AUTH_STATE_TTL_SECONDS}; Path=/oauth/callback; Secure; HttpOnly; SameSite=Lax`,
+  );
   return new Response(null, {
     status: 302,
-    headers: noStoreHeaders({
-      Location: destination.toString(),
-      "Set-Cookie":
-        "alloflow_consent=; Max-Age=0; Path=/authorize; Secure; HttpOnly; SameSite=Lax",
-    }),
+    headers: redirectHeaders,
   });
 }
 
@@ -333,6 +344,7 @@ async function exchangeAccessCode(
     },
     body,
     redirect: "error",
+    signal: AbortSignal.timeout(15_000),
   });
   if (!response.ok) {
     throw new PilotError("institution_login_failed", 401);
@@ -379,6 +391,16 @@ export function isTransferAccessConfigured(env: PilotEnv): boolean {
   }
 }
 
+const REMOTE_JWKS_CACHE = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
+function getCachedRemoteJWKSet(jwksUrl: string): ReturnType<typeof createRemoteJWKSet> {
+  let cached = REMOTE_JWKS_CACHE.get(jwksUrl);
+  if (!cached) {
+    cached = createRemoteJWKSet(new URL(jwksUrl));
+    REMOTE_JWKS_CACHE.set(jwksUrl, cached);
+  }
+  return cached;
+}
+
 export async function requireTransferPrincipal(
   request: Request,
   env: PilotEnv,
@@ -401,7 +423,7 @@ export async function requireTransferPrincipal(
   try {
     const verified = await jwtVerify(
       assertion,
-      createRemoteJWKSet(new URL(env.ACCESS_JWKS_URL as string)),
+      getCachedRemoteJWKSet(env.ACCESS_JWKS_URL as string),
       {
         issuer: env.ACCESS_ISSUER,
         audience,
@@ -440,7 +462,7 @@ async function verifyAccessIdToken(
   if (!idToken) {
     throw new PilotError("institution_identity_invalid", 401);
   }
-  const keySet = createRemoteJWKSet(new URL(env.ACCESS_JWKS_URL as string));
+  const keySet = getCachedRemoteJWKSet(env.ACCESS_JWKS_URL as string);
   let claims: JWTPayload;
   try {
     const verified = await jwtVerify(idToken, keySet, {
@@ -502,12 +524,18 @@ async function finishAuthorization(
   ) {
     throw new PilotError("authorization_state_invalid", 400);
   }
+  const browserBind = cookieValue(request, "alloflow_oauth_state");
   const stored = await env.OAUTH_KV.get<StoredAccessState>(
     stateKey("access", state),
     "json",
   );
   await env.OAUTH_KV.delete(stateKey("access", state));
-  if (!stored) {
+  if (
+    !stored ||
+    !browserBind ||
+    !stored.browserBindHash ||
+    !constantTimeEqual(await sha256Base64Url(browserBind), stored.browserBindHash)
+  ) {
     throw new PilotError("authorization_state_invalid", 400);
   }
   const scopes = validateAuthRequest(stored.oauthRequest, config.origin);
@@ -538,9 +566,14 @@ async function finishAuthorization(
     props: principal,
     revokeExistingGrants: true,
   });
+  const callbackHeaders = noStoreHeaders({ Location: redirectTo });
+  callbackHeaders.append(
+    "Set-Cookie",
+    "alloflow_oauth_state=; Max-Age=0; Path=/oauth/callback; Secure; HttpOnly; SameSite=Lax",
+  );
   return new Response(null, {
     status: 302,
-    headers: noStoreHeaders({ Location: redirectTo }),
+    headers: callbackHeaders,
   });
 }
 
@@ -679,6 +712,7 @@ async function refreshAccessToken(
       client_secret: env.ACCESS_CLIENT_SECRET as string,
     }),
     redirect: "error",
+    signal: AbortSignal.timeout(15_000),
   });
   if (!response.ok) {
     if (response.status === 400 || response.status === 401) {

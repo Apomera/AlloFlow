@@ -439,4 +439,126 @@ describe('where people are pointed to it', () => {
     expect(read('packets-check.js')).toContain('window.location.hash !== handoff.HASH');
     expect(read('packets-math-practice.js')).toContain('window.location.hash !== handoff.HASH');
   });
+
+  it('Wave 2B/3B: reopens read-along files, shows optional Share results file only when canShare({ files }) is true, and hands off results files in 1 click', async () => {
+    const readAlongHtml = reseal(WORDS_FILE.replace('"activity":"isolation"', '"activity":"read_along"'));
+    const pRa = await openPage();
+    await pRa.choose(readAlongHtml, 'story.html');
+    expect(pRa.$('found').hidden).toBe(false);
+    expect(pRa.$('found-teacher').hidden).toBe(false);
+    pRa.$('change').click();
+    for (let i = 0; i < 50 && !pRa.said.some((m) => /navigation/.test(m)); i++) await wait(10);
+    expect(pRa.$('change-link').getAttribute('href')).toBe('packets-read-along.html');
+    const raBack = await pRa.w.AlloPacketHandoff.take();
+    expect(raBack && raBack.name).toBe('story.html');
+
+    // Without navigator.share / canShare, #run-share stays hidden.
+    const pPlain = await openPage();
+    await pPlain.choose(WORDS_FILE, 'words.html');
+    pPlain.$('start').click();
+    pPlain.post({ kind: 'alloflow-packet-save', name: 'Short-a__Ana__2026-11-19.csv', type: 'text/csv;charset=utf-8', text: '\uFEFF"format"\r\n' });
+    expect(pPlain.$('run-share').hidden).toBe(true);
+
+    // With navigator.share + canShare({ files }) === true, #run-share appears alongside Save it again and shares the saved file on press.
+    const shared = [];
+    const pShare = await openPage();
+    pShare.w.navigator.canShare = (arg) => !!(arg && Array.isArray(arg.files) && arg.files.length === 1);
+    pShare.w.navigator.share = async (arg) => { shared.push(arg); };
+    await pShare.choose(WORDS_FILE, 'words.html');
+    pShare.$('start').click();
+    pShare.post({ kind: 'alloflow-packet-save', name: 'Short-a__Ana__2026-11-19.csv', type: 'text/csv;charset=utf-8', text: '\uFEFF"format"\r\n' });
+    expect(pShare.$('run-share').hidden).toBe(false);
+    expect(pShare.$('run-said').textContent).toBe('Your browser is saving Short-a__Ana__2026-11-19.csv. If nothing appears, press Save it again.');
+    pShare.$('run-share').click();
+    await wait(20);
+    expect(shared).toHaveLength(1);
+    expect(shared[0].files[0].name).toBe('Short-a__Ana__2026-11-19.csv');
+
+    // Dropping a results CSV and clicking #problem-link stores it for packets-results.html#import-results.
+    const pRes = await openPage();
+    const csv = '\uFEFF"format","session_id"\r\n"alloflow-packet-result/1","S-1"\r\n';
+    await pRes.choose(csv, 'student-res.csv');
+    expect(pRes.$('problem-link').getAttribute('href')).toBe('packets-results.html');
+    pRes.$('problem-link').dispatchEvent(new pRes.w.MouseEvent('click', { bubbles: true, cancelable: true }));
+    for (let i = 0; i < 50 && !pRes.said.some((m) => /navigation/.test(m)); i++) await wait(10);
+    const taken = await pRes.w.AlloPacketHandoff.take();
+    expect(taken).toBeTruthy();
+    expect(taken.name).toBe('student-res.csv');
+    expect(new TextDecoder('utf-8', { ignoreBOM: true }).decode(taken.bytes)).toBe(csv);
+
+    // Wave 4B: dropping a .zip archive or results-all bundle explains clearly and offers 1-click Add up results handoff.
+    const pZip = await openPage();
+    const zipBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00]);
+    await pZip.choose(zipBytes, 'class-results.zip');
+    expect(pZip.$('problem-line').textContent).toContain('.zip folder');
+    expect(pZip.$('problem-link').getAttribute('href')).toBe('packets-results.html');
+    pZip.$('problem-link').dispatchEvent(new pZip.w.MouseEvent('click', { bubbles: true, cancelable: true }));
+    for (let i = 0; i < 50 && !pZip.said.some((m) => /navigation/.test(m)); i++) await wait(10);
+    const takenZip = await pZip.w.AlloPacketHandoff.take();
+    expect(takenZip && takenZip.name).toBe('class-results.zip');
+
+    const pBundle = await openPage();
+    await pBundle.choose(JSON.stringify({ kind: 'alloflow-packet-results-bundle', version: 1, sessions: [] }), 'results-all__2026-11-19.json');
+    expect(pBundle.$('problem-line').textContent).toBe('This is a results file, not a practice file. A teacher adds it up on Add up results.');
+    expect(pBundle.$('problem-link').getAttribute('href')).toBe('packets-results.html');
+  });
+
+  it('Wave 7B: sets background inert/aria-hidden while #run is active, ignores drops during a session, rejects corrupt manifest JSON, and guards rapid file selection races', async () => {
+    const p = await openPage();
+    await p.choose(WORDS_FILE, 'words.html');
+    expect(p.$('found').hidden).toBe(false);
+
+    // Start sets inert + aria-hidden on background landmarks; Close restores them.
+    p.$('start').click();
+    expect(p.$('run').hidden).toBe(false);
+    expect(p.$('main').hasAttribute('inert')).toBe(true);
+    expect(p.$('main').getAttribute('aria-hidden')).toBe('true');
+    expect(p.d.querySelector('header.top').getAttribute('aria-hidden')).toBe('true');
+    expect(p.$('run').hasAttribute('inert')).toBe(false);
+
+    // Dropping a file onto #main while running is ignored and leaves the active session untouched.
+    const dropEv = new p.w.Event('drop', { bubbles: true, cancelable: true });
+    dropEv.dataTransfer = { types: ['Files'], files: [new p.w.File(['bad'], 'other.html', { type: 'text/html' })] };
+    p.$('main').dispatchEvent(dropEv);
+    await wait(30);
+    expect(p.$('run').hidden).toBe(false);
+    expect(p.$('problem').hidden).toBe(true);
+
+    p.$('run-close').click();
+    expect(p.$('run').hidden).toBe(true);
+    expect(p.$('main').hasAttribute('inert')).toBe(false);
+    expect(p.$('main').hasAttribute('aria-hidden')).toBe(false);
+
+    // Corrupted #packet-manifest JSON is rejected as damaged instead of running with lost metadata.
+    const pBad = await openPage();
+    const badManifest = WORDS_FILE.replace(/<script type="application\/json" id="packet-manifest">[\s\S]*?<\/script>/, '<script type="application/json" id="packet-manifest">{bad json</script>');
+    await pBad.choose(badManifest, 'broken-manifest.html');
+    expect(pBad.$('found').hidden).toBe(true);
+    expect(pBad.$('problem').hidden).toBe(false);
+    expect(pBad.$('problem-line').textContent).toContain('This file is damaged');
+
+    // Race guard: picking a fast second file while a slow first file is still reading ensures the second file wins.
+    const pRace = await openPage();
+    let resolveSlow;
+    const slowFile = {
+      name: 'slow-first.html',
+      arrayBuffer: () => new Promise((res) => { resolveSlow = () => res(new TextEncoder().encode(WORDS_FILE).buffer); }),
+    };
+    const fastHtml = reseal(WORDS_FILE.replace('"title":"Short a"', '"title":"Fast Second File"'));
+    const fastFile = {
+      name: 'fast-second.html',
+      arrayBuffer: () => Promise.resolve(new TextEncoder().encode(fastHtml).buffer),
+    };
+    const drop1 = new pRace.w.Event('drop', { bubbles: true, cancelable: true });
+    drop1.dataTransfer = { types: ['Files'], files: [slowFile] };
+    pRace.$('main').dispatchEvent(drop1);
+    const drop2 = new pRace.w.Event('drop', { bubbles: true, cancelable: true });
+    drop2.dataTransfer = { types: ['Files'], files: [fastFile] };
+    pRace.$('main').dispatchEvent(drop2);
+    for (let i = 0; i < 40 && pRace.$('found').hidden; i++) await wait(10);
+    expect(pRace.$('found-title').textContent).toBe('Fast Second File');
+    resolveSlow();
+    await wait(40);
+    expect(pRace.$('found-title').textContent).toBe('Fast Second File');
+  });
 });

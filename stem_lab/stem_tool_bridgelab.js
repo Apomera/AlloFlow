@@ -47,7 +47,24 @@
       '@media (max-width:640px),(max-height:500px){' +
       '.selh-bridgelab{height:auto!important;min-height:100%;}' +
       '.selh-bridgelab>[role="tabpanel"]{flex:none!important;overflow:visible!important;}' +
-      '}';
+      '}' +
+      '.selh-bridgelab .bl-hero-deck{position:relative;padding:14px 16px 12px;border-bottom:1px solid rgba(251,191,36,0.28);background:linear-gradient(135deg,#091124 0%,#172540 52%,#6b2d0d 100%);display:flex;flex-direction:column;gap:10px;overflow:hidden;}' +
+      '.selh-bridgelab .bl-hero-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}' +
+      '.selh-bridgelab .bl-hero-brand{display:flex;align-items:center;gap:12px;min-width:0;}' +
+      '.selh-bridgelab .bl-hero-emblem{width:46px;height:46px;border-radius:12px;background:rgba(2,6,23,0.62);border:1px solid rgba(251,191,36,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 18px rgba(2,6,23,0.45);}' +
+      '.selh-bridgelab .bl-hero-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}' +
+      '.selh-bridgelab .bl-hero-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:rgba(2,6,23,0.58);border:1px solid rgba(148,163,184,0.32);color:#f1f5f9;font-size:11px;font-weight:700;white-space:nowrap;}' +
+      '.selh-bridgelab .bl-hero-pill strong{color:#fde68a;font-weight:900;}' +
+      '.selh-bridgelab .bl-preset-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}' +
+      '.selh-bridgelab .bl-preset-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#fcd34d;margin-right:2px;}' +
+      '.selh-bridgelab .bl-preset-chip{padding:4px 10px;min-height:28px;border-radius:999px;border:1px solid rgba(251,191,36,0.34);background:rgba(15,23,42,0.72);color:#fef3c7;font-size:11px;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,transform .12s;}' +
+      '.selh-bridgelab .bl-preset-chip:hover:not(:disabled){background:rgba(245,158,11,0.26);border-color:#fbbf24;transform:translateY(-1px);}' +
+      '.selh-bridgelab .bl-preset-chip[aria-pressed="true"]{background:#f59e0b;color:#0b1220;border-color:#fde68a;font-weight:900;}' +
+      '.selh-bridgelab .bl-preset-chip:disabled{opacity:0.45;cursor:not-allowed;}' +
+      '.theme-contrast .selh-bridgelab .bl-hero-deck{background:#000!important;border-bottom:2px solid #ffff00!important;}' +
+      '.theme-contrast .selh-bridgelab .bl-hero-emblem,.theme-contrast .selh-bridgelab .bl-hero-pill,.theme-contrast .selh-bridgelab .bl-preset-chip{background:#000!important;color:#fff!important;border:1.5px solid #ffff00!important;}' +
+      '.theme-contrast .selh-bridgelab .bl-hero-pill strong,.theme-contrast .selh-bridgelab .bl-preset-lbl{color:#ffff00!important;}' +
+      '.theme-contrast .selh-bridgelab .bl-preset-chip[aria-pressed="true"]{background:#ffff00!important;color:#000!important;}';
     document.head.appendChild(_blVars);
   }
   if (!window.StemLab || !window.StemLab.registerTool) {
@@ -2695,9 +2712,13 @@
         autoDriving: false
       };
 
-      if (!labToolData || !labToolData.bridgeLab) {
+      var _rawBridgeObj = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData) &&
+        labToolData.bridgeLab && typeof labToolData.bridgeLab === 'object' && !Array.isArray(labToolData.bridgeLab))
+        ? labToolData.bridgeLab : null;
+      if (!_rawBridgeObj) {
         setLabToolData(function(prev) {
-          return Object.assign({}, prev, { bridgeLab: {
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          return Object.assign({}, safePrev, { bridgeLab: {
             tab: 'build',
             showBridgeLibrary: false,
             span: 30, height: 6, nBays: 4, loadPerJoint: 50, materialId: 'steel',
@@ -2717,7 +2738,7 @@
           }});
         });
       }
-      var d = bridgeNormalizeSettings(Object.assign({}, DEFAULT_BRIDGE_LAB_STATE, (labToolData && labToolData.bridgeLab) || {}));
+      var d = bridgeNormalizeSettings(Object.assign({}, DEFAULT_BRIDGE_LAB_STATE, _rawBridgeObj || {}));
       var seismicScanInputs = { archetype: d.seismicArchetype, intensityG: d.seismicIntensityG, dampingRatio: d.seismicDampingRatio };
       var seismicScanKey = JSON.stringify(seismicScanInputs);
 
@@ -3026,8 +3047,10 @@
         if (patch.seismicPlaying === true) patch.autoDriving = false;
         if (patch.seismicPlaying === false) bridgeSeismicArmed.current = false;
         setLabToolData(function(prev) {
-          var s = Object.assign({}, (prev && prev.bridgeLab) || {}, patch);
-          return Object.assign({}, prev, { bridgeLab: s });
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevBridge = (safePrev.bridgeLab && typeof safePrev.bridgeLab === 'object' && !Array.isArray(safePrev.bridgeLab)) ? safePrev.bridgeLab : {};
+          var s = Object.assign({}, prevBridge, patch);
+          return Object.assign({}, safePrev, { bridgeLab: s });
         });
       }
 
@@ -3771,11 +3794,11 @@
               h('div', { 'aria-hidden': true, style: { position: 'relative', height: 104 } },
               h('svg', { 'data-motion-position-svg': true, viewBox: '0 0 400 104', preserveAspectRatio: 'none',
                 'aria-hidden': true, focusable: 'false', style: { display: 'block', width: '100%', height: 104, background: '#172338', borderRadius: 5 } },
-                ['deck', 'ground'].map(function(id) { return h('rect', { key: 'lane-' + id, 'data-motion-position-lane': id, x: 0, y: id === 'deck' ? 8 : 48, width: 400, height: 30, rx: 4, fill: id === 'deck' ? '#fbbf24' : '#5eead4', fillOpacity: 0.06 }); }),
+                ['deck', 'ground'].map(function(id) { return h('rect', { key: 'lane-' + id, 'data-motion-position-lane': id, x: 0, y: id === 'deck' ? 8 : 48, width: 400, height: 30, rx: 4, ry: 4, fill: id === 'deck' ? '#fbbf24' : '#5eead4', fillOpacity: 0.06 }); }),
                 h('line', { 'data-motion-position-rest': true, x1: 200, x2: 200, y1: 8, y2: 98, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 4' }),
                 ['deck', 'ground'].map(function(id) {
                   var y = id === 'deck' ? 16 : 56;
-                  return h('rect', { key: id, 'data-motion-resting-shape': id, x: 172, y: y, width: 56, height: 12, rx: 2,
+                  return h('rect', { key: id, 'data-motion-resting-shape': id, x: 172, y: y, width: 56, height: 12, rx: 2, ry: 2,
                     fill: 'none', stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' });
                 }),
                 ['deck', 'ground'].map(function(id) {
@@ -3787,7 +3810,7 @@
                   var deck = id === 'deck', percent = deck ? frame.deckPercent : frame.groundPercent;
                   var y = deck ? 16 : 56, color = deck ? '#fbbf24' : '#5eead4';
                   return h('g', { key: id, 'data-motion-position-body': id, 'data-motion-position-percent': percent, transform: 'translate(' + (percent * 4) + ' 0)' },
-                    h('rect', { x: -28, y: y, width: 56, height: 12, rx: 2, fill: color, fillOpacity: deck ? 0.4 : 0.2, stroke: color, strokeWidth: 1.5 }),
+                    h('rect', { x: -28, y: y, width: 56, height: 12, rx: 2, ry: 2, fill: color, fillOpacity: deck ? 0.4 : 0.2, stroke: color, strokeWidth: 1.5 }),
                     h('g', { 'data-motion-position-texture': id, stroke: color, strokeWidth: 1, opacity: 0.8 },
                       deck ? h('g', null,
                         h('line', { x1: -25, x2: 25, y1: y + 3, y2: y + 3 }),
@@ -8050,7 +8073,7 @@
                       // Horizontal H (outward, into abutment)
                       h('line', { x1: fx, y1: fy, x2: fx - Hpx, y2: fy, stroke: '#ef4444', strokeWidth: 2 }),
                       h('polygon', { points: (fx - Hpx) + ',' + (fy - 3) + ' ' + (fx - Hpx) + ',' + (fy + 3) + ' ' + (fx - Hpx - 5) + ',' + fy, fill: '#ef4444' }),
-                      h('text', { x: fx - Hpx - 10, y: fy + 4, textAnchor: 'end', fill: '#fca5a5', fontSize: 10, fontWeight: 700 }, __alloT('stem.bridgelab.h_out', 'H (out)')),
+                      h('text', { x: Math.max(4, fx - Hpx - 4), y: fy - 8, textAnchor: 'start', fill: '#fca5a5', fontSize: 10, fontWeight: 700 }, __alloT('stem.bridgelab.h_out', 'H (out)')),
                       // Vertical V (downward into ground)
                       h('line', { x1: fx, y1: fy, x2: fx, y2: fy + Vpx, stroke: '#3b82f6', strokeWidth: 2 }),
                       h('polygon', { points: (fx - 3) + ',' + (fy + Vpx) + ' ' + (fx + 3) + ',' + (fy + Vpx) + ' ' + fx + ',' + (fy + Vpx + 5), fill: '#3b82f6' }),
@@ -11110,12 +11133,79 @@
         default:          body = renderBuild();
       }
 
+      var bridgeStarterPresets = [
+        {
+          id: 'steel_warren',
+          label: __alloT('stem.bridgelab.preset_steel_warren', 'Steel Warren 30m'),
+          patch: { tab: 'build', trussStyle: 'warren', span: 30, height: 6, nBays: 4, materialId: 'steel', crossSectionMm2: 12000, lateralBraceEvery: 1, loadMode: 'uniform', loadPerJoint: 50, autoDriving: false, seismicPlaying: false }
+        },
+        {
+          id: 'timber_footbridge',
+          label: __alloT('stem.bridgelab.preset_timber_foot', 'Timber Footbridge 20m'),
+          patch: { tab: 'build', trussStyle: 'warren', span: 20, height: 4, nBays: 4, materialId: 'wood', crossSectionMm2: 18000, lateralBraceEvery: 1, loadMode: 'uniform', loadPerJoint: 20, autoDriving: false, seismicPlaying: false }
+        },
+        {
+          id: 'pratt_highway',
+          label: __alloT('stem.bridgelab.preset_pratt_highway', 'Pratt Highway 45m'),
+          patch: { tab: 'build', trussStyle: 'pratt', span: 45, height: 7.5, nBays: 6, materialId: 'steel', crossSectionMm2: 18000, lateralBraceEvery: 1, loadMode: 'uniform', loadPerJoint: 70, autoDriving: false, seismicPlaying: false }
+        },
+        {
+          id: 'truck_crossing',
+          label: __alloT('stem.bridgelab.preset_truck_crossing', 'Heavy Truck Crossing'),
+          patch: { tab: 'build', trussStyle: 'howe', span: 36, height: 6, nBays: 6, materialId: 'steel', crossSectionMm2: 15000, lateralBraceEvery: 1, loadMode: 'vehicle', vehicleLoad: 250, vehiclePos: 0.5, autoDriving: false, seismicPlaying: false }
+        }
+      ];
+      var bridgeChallengeLocked = !!bridgeChallengeById(d.challengeId);
+
       return h('div', { className: 'selh-bridgelab', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
-        h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, #0f172a))', display: 'flex', alignItems: 'center', gap: 12 } },
-          h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, '🌉'),
-          h('div', null,
-            h('h2', { style: { margin: 0, color: '#fbbf24', fontSize: 20, fontWeight: 900 } }, __alloT('stem.bridgelab.bridge_engineering_lab', 'Bridge Engineering Lab')),
-            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginTop: 2 } }, __alloT('stem.bridgelab.engineering_design_structural_mechanic', 'Engineering Design · Structural Mechanics · NGSS HS-ETS1 + HS-PS2'))
+        h('div', { className: 'bl-hero-deck' },
+          h('div', { className: 'bl-hero-top' },
+            h('div', { className: 'bl-hero-brand' },
+              h('div', { className: 'bl-hero-emblem', 'aria-hidden': 'true' },
+                h('svg', { width: 34, height: 34, viewBox: '0 0 36 36', fill: 'none' },
+                  h('path', { d: 'M3 26 H33', stroke: '#94a3b8', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                  h('path', { d: 'M6 26 L12 11 L18 26 L24 11 L30 26', stroke: '#fbbf24', strokeWidth: 2.4, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                  h('path', { d: 'M12 11 H24', stroke: '#38bdf8', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('path', { d: 'M6 26 V31 M30 26 V31', stroke: '#cbd5e1', strokeWidth: 2.5, strokeLinecap: 'round' }),
+                  h('circle', { cx: 12, cy: 11, r: 2, fill: '#fef3c7' }),
+                  h('circle', { cx: 24, cy: 11, r: 2, fill: '#fef3c7' }),
+                  h('circle', { cx: 18, cy: 26, r: 2, fill: bridgeBriefStatusColor })
+                )
+              ),
+              h('div', null,
+                h('h2', { style: { margin: 0, color: '#fbbf24', fontSize: 20, fontWeight: 900, lineHeight: 1.15 } }, __alloT('stem.bridgelab.bridge_engineering_lab', 'Bridge Engineering Lab')),
+                h('div', { style: { fontSize: 12, color: '#e2e8f0', marginTop: 2 } }, __alloT('stem.bridgelab.engineering_design_structural_mechanic', 'Engineering Design · Structural Mechanics · NGSS HS-ETS1 + HS-PS2'))
+              )
+            ),
+            h('div', { className: 'bl-hero-badges', 'aria-label': __alloT('stem.bridgelab.live_structural_telemetry', 'Live structural telemetry') },
+              h('span', { className: 'bl-hero-pill' }, __alloT('stem.bridgelab.status_span', 'Span') + ' ', h('strong', null, d.span + ' m')),
+              h('span', { className: 'bl-hero-pill' }, bridgeBriefStyle + ' · ', h('strong', null, d.nBays + '×')),
+              h('span', { className: 'bl-hero-pill' }, __alloT('stem.bridgelab.status_material', 'Material') + ' ', h('strong', null, bridgeBriefMat.name)),
+              h('span', { className: 'bl-hero-pill', style: { borderColor: bridgeBriefStatusColor } },
+                h('span', { 'aria-hidden': 'true', style: { width: 7, height: 7, borderRadius: '50%', background: bridgeBriefStatusColor, display: 'inline-block' } }),
+                h('strong', { style: { color: bridgeBriefStatusInk } }, 'SF ' + bridgeFactor(bridgeBriefSF))
+              )
+            )
+          ),
+          h('div', { className: 'bl-preset-bar', role: 'group', 'aria-label': __alloT('stem.bridgelab.starter_bridge_presets', 'Starter bridge presets') },
+            h('span', { className: 'bl-preset-lbl' }, __alloT('stem.bridgelab.presets_label', 'Benchmarks')),
+            bridgeStarterPresets.map(function(preset) {
+              var isMatched = !bridgeChallengeLocked && d.tab === 'build' && d.trussStyle === preset.patch.trussStyle && d.span === preset.patch.span && d.materialId === preset.patch.materialId && d.loadMode === preset.patch.loadMode;
+              return h('button', {
+                key: preset.id,
+                type: 'button',
+                className: 'bl-preset-chip',
+                'aria-pressed': isMatched ? 'true' : 'false',
+                disabled: bridgeChallengeLocked,
+                title: bridgeChallengeLocked ? __alloT('stem.bridgelab.presets_locked_challenge', 'Finish or exit the active design challenge to load starter presets') : preset.label,
+                onClick: function() {
+                  if (bridgeChallengeLocked) return;
+                  playBridgeSound('click');
+                  upd(preset.patch);
+                  announceStatus(preset.label);
+                }
+              }, preset.label);
+            })
           )
         ),
         h('section', { 'data-bridgelab-design-brief': 'true',

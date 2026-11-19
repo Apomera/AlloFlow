@@ -2238,8 +2238,11 @@ var GEOGRAPHY_PROFILES = {
 
   function ensureWeatherMapLibre() {
     if (window.maplibregl && window.maplibregl.Map) return Promise.resolve(window.maplibregl);
+    if (window._isDesktopBundledApp === true) return Promise.reject(new Error('External map engine CDN disabled in Desktop mode'));
     if (window.__weatherMapLibrePromise) return window.__weatherMapLibrePromise;
     var scriptId = 'weather-maplibre-script';
+    var mapLibreJsSri = 'sha384-5+cfbwT0iiub6VsQAdn6yz16nr6sDiQoHx6tm4O8OVYXHYOxcffFmCJBL0dgdvGp';
+    var mapLibreCssSri = 'sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK';
     function attempt(index) {
       return new Promise(function (resolve, reject) {
         if (index >= WEATHER_MAPLIBRE_CDNS.length) {
@@ -2258,7 +2261,9 @@ var GEOGRAPHY_PROFILES = {
           link.id = cssId;
           link.rel = 'stylesheet';
           link.href = source.css;
+          link.integrity = mapLibreCssSri;
           link.crossOrigin = 'anonymous';
+          link.referrerPolicy = 'no-referrer';
           document.head.appendChild(link);
         }
         var script = document.createElement('script');
@@ -2276,8 +2281,10 @@ var GEOGRAPHY_PROFILES = {
         }
         script.id = scriptId;
         script.src = source.script;
+        script.integrity = mapLibreJsSri;
         script.async = true;
         script.crossOrigin = 'anonymous';
+        script.referrerPolicy = 'no-referrer';
         script.addEventListener('load', function () { finish(true); }, { once: true });
         script.addEventListener('error', function () { finish(false); }, { once: true });
         document.head.appendChild(script);
@@ -6184,6 +6191,13 @@ var GEOGRAPHY_PROFILES = {
         var input = event && event.target;
         var file = input && input.files && input.files[0];
         if (!file || typeof FileReader === 'undefined') return;
+        if (Number(file.size) > 2 * 1024 * 1024) {
+          var sizeMsg = 'Weather Systems session files are limited to 2 MB.';
+          if (addToast) addToast(sizeMsg, 'error');
+          if (announce) announce(sizeMsg);
+          if (input) input.value = '';
+          return;
+        }
         var previous = owner.token;
         var token = { reader: null, finished: false };
         owner.token = token;
@@ -6212,7 +6226,7 @@ var GEOGRAPHY_PROFILES = {
             if (!ownsImmersiveSessionImport(token) || token.finished) return;
             token.finished = true;
             try {
-              var payload = JSON.parse(String(reader.result || ''));
+              var payload = JSON.parse(String(reader.result || ''), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
               var importedPatch = validateImmersiveSessionPayload(payload);
               if (!importedPatch) throw new Error('This file is not a supported Weather Systems session.');
               if (!ownsImmersiveSessionImport(token)) return;

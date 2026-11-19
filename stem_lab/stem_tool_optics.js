@@ -6439,7 +6439,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   }
   function _downloadOpticsWaveProfileCsv(tab, state) {
     try {
-      function csvCell(value) { return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"'; }
+      function csvCell(value) { var s = String(value == null ? '' : value); if (typeof value !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s) && !Number.isFinite(Number(s))) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; }
       var distance = tab === 'interference' ? _opticsWaveSetting(tab, state, 'ScreenL', 1) : _opticsWaveSetting(tab, state, 'ScreenL', 1.5);
       var halfRangeM = tab === 'interference' ? .03 : ((state.diffMode || 'single') === 'single' ? .09 : .5);
       var detectorMm = _opticsDetectorMm(tab, state);
@@ -10167,7 +10167,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   }
   function _downloadOpticsTrialsCsv(tab, trials) {
     try {
-      function csvCell(value) { return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"'; }
+      function csvCell(value) { var s = String(value == null ? '' : value); if (typeof value !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s) && !Number.isFinite(Number(s))) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; }
       var rows = [['captured_at', 'topic', 'series', 'x_label', 'x_value', 'x_unit', 'y_label', 'y_value', 'y_unit', 'summary', 'setup_json']];
       (trials || []).forEach(function(trial) {
         rows.push([
@@ -11111,6 +11111,34 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+
+  // Bespoke Wave & Ray Optics Studio CSS + High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-optics-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-optics-studio-css';
+    st.textContent = [
+      '.op-hero-deck { background: linear-gradient(125deg, #0b1120 0%, #172554 50%, #0f172a 100%); border: 1px solid rgba(125,211,252,0.36); border-radius: 18px; padding: 16px 18px; margin-bottom: 16px; color: #f8fafc; box-shadow: 0 14px 32px -20px rgba(11,17,32,0.85); min-width: 0; }',
+      '.op-hero-top { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; min-width: 0; }',
+      '.op-emblem-box { width: 54px; height: 54px; border-radius: 14px; background: linear-gradient(135deg, rgba(56,189,248,0.26), rgba(30,27,75,0.92)); border: 1.5px solid rgba(125,211,252,0.52); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 16px rgba(15,23,42,0.55); }',
+      '.op-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(56,189,248,0.2); border: 1px solid rgba(125,211,252,0.48); color: #e0f2fe; font-size: 10px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.op-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(125,211,252,0.22); }',
+      '.op-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(15,23,42,0.72); border: 1px solid rgba(125,211,252,0.34); color: #f0f9ff; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.op-regime-strip { margin-top: 12px; padding: 8px 10px; border-radius: 12px; background: rgba(15,23,42,0.68); border: 1px solid rgba(125,211,252,0.26); }',
+      '.op-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(125,211,252,0.22); }',
+      '.op-starter-label { font-size: 10.5px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; color: #bae6fd; }',
+      '.op-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(15,23,42,0.78); border: 1px solid rgba(125,211,252,0.38); color: #f0f9ff; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.op-starter-chip:hover:not(:disabled) { background: rgba(56,189,248,0.26); border-color: #7dd3fc; color: #ffffff; }',
+      '.op-starter-chip[data-active="true"] { background: #0369a1; border-color: #7dd3fc; color: #ffffff; }',
+      '.op-hero-deck button:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="opticsLab"] .op-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="opticsLab"] .op-emblem-box, .theme-contrast [data-stem-tool-shell="opticsLab"] .op-subject-badge, .theme-contrast [data-stem-tool-shell="opticsLab"] .op-telemetry-pill, .theme-contrast [data-stem-tool-shell="opticsLab"] .op-regime-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="opticsLab"] .op-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="opticsLab"] .op-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="opticsLab"] .op-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('opticsLab', {
     icon: '🔆',
     label: 'Optics Lab',
@@ -11229,7 +11257,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           return Object.assign({}, prev, { opticsLab: OPTICS_DEFAULTS });
         });
       }
-      var d = labToolData.opticsLab || OPTICS_DEFAULTS;
+      var _rawOp = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData.opticsLab : null;
+      var d = (_rawOp && typeof _rawOp === 'object' && !Array.isArray(_rawOp)) ? _rawOp : OPTICS_DEFAULTS;
 
       // ── Mounted ref for async callback guards (prevents setState after unmount) ──
       var _mounted = React.useRef(true);
@@ -11591,14 +11620,83 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           margin: '0 auto'
         }
       },
-        // Header
-        h('div', { className: 'opticslab-app-header', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
-          h('div', { style: { fontSize: 36 } }, '🔆'),
-          h('div', { style: { flex: 1 } },
-            h('h2', { style: { margin: 0, color: 'var(--op-accent-text, #7dd3fc)', fontSize: 24, fontWeight: 900 } }, t('stem.optics.optics_lab', 'Optics Lab')),
-            h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, t('stem.optics.ap_physics_2_ray_diagrams_snell_s_law_', 'AP Physics 2: ray diagrams, Snell\'s law, mirrors, lenses, interference, diffraction, polarization. Side-by-side sims + calculators.'))
-          )
-        ),
+        // Bespoke Wave & Ray Optics Studio Hero Deck
+        (function() {
+          var opLockedOrQuiz = d.mode === 'quiz' || !!(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked));
+          var opRegime = (d.mode === 'interference' || d.mode === 'diffraction') ? 'wave'
+            : d.mode === 'polarization' ? 'polar'
+            : 'ray';
+          var opDomainLabel = opRegime === 'wave' ? t('stem.optics.regime_wave', 'Wave Interference')
+            : opRegime === 'polar' ? t('stem.optics.regime_polar', 'Transverse Polarization')
+            : t('stem.optics.regime_ray', 'Geometric Ray Optics');
+          return h('div', { className: 'opticslab-app-header op-hero-deck', 'data-optics-hero-deck': 'true' },
+            h('div', { className: 'op-hero-top' },
+              h('div', { className: 'op-emblem-box', 'aria-hidden': 'true' },
+                h('svg', { viewBox: '0 0 46 46', width: 36, height: 36, fill: 'none' },
+                  h('line', { x1: 4, y1: 25, x2: 17, y2: 21, stroke: '#f8fafc', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('polygon', { points: '23,8 36,36 10,36', fill: 'rgba(56,189,248,0.2)', stroke: '#7dd3fc', strokeWidth: 1.8, strokeLinejoin: 'round' }),
+                  h('line', { x1: 28, y1: 20, x2: 42, y2: 14, stroke: '#f43f5e', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                  h('line', { x1: 29, y1: 22, x2: 42, y2: 20, stroke: '#fbbf24', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                  h('line', { x1: 30, y1: 24, x2: 42, y2: 26, stroke: '#34d399', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                  h('line', { x1: 31, y1: 26, x2: 42, y2: 32, stroke: '#a78bfa', strokeWidth: 1.8, strokeLinecap: 'round' })
+                )
+              ),
+              h('div', { style: { flex: '1 1 260px', minWidth: 0 } },
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                  h('span', { className: 'op-subject-badge' }, t('stem.optics.badge_subject', 'Physics · Geometric & Wave Optics'))
+                ),
+                h('h2', { style: { margin: 0, color: '#f8fafc', fontSize: 24, fontWeight: 900, lineHeight: 1.2 } }, t('stem.optics.optics_lab', 'Optics Lab')),
+                h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.45 } }, t('stem.optics.ap_physics_2_ray_diagrams_snell_s_law_', 'AP Physics 2: ray diagrams, Snell\'s law, mirrors, lenses, interference, diffraction, polarization. Side-by-side sims + calculators.'))
+              )
+            ),
+            // Live non-spoiler structural telemetry strip (zero physics-answer leakage)
+            h('div', { className: 'op-telemetry-strip' },
+              h('span', { className: 'op-telemetry-pill' }, '\uD83D\uDD06 ' + t('stem.optics.status_station', 'Station') + ': ' + opCurrentInfo.title),
+              h('span', { className: 'op-telemetry-pill' }, '\uD83C\uDF08 ' + opDomainLabel),
+              h('span', { className: 'op-telemetry-pill' }, '\uD83D\uDCDA ' + (showFullOpticsNav ? t('stem.optics.expanded', 'Expanded') : t('stem.optics.core', 'Core'))),
+              h('span', { className: 'op-telemetry-pill' }, '\u2B50 ' + t('stem.optics.status_mastery', 'AP mastery') + ': ' + opMasteredCount + '/' + opTotalQuestions)
+            ),
+            // Optical Physics Regimes Schematic (inline SVG, >=10.5px labels, non-spoiler)
+            h('div', { className: 'op-regime-strip' },
+              h('svg', {
+                viewBox: '0 0 580 58', role: 'img',
+                'aria-label': t('stem.optics.a11y_optical_regimes_diagram', 'Optical physics regimes: geometric ray optics covers mirrors, refraction, and thin lenses; wave optics covers double-slit interference and diffraction; transverse polarization covers analyzer filters'),
+                style: { width: '100%', maxHeight: 60, height: 'auto', display: 'block' }
+              },
+                h('line', { x1: 174, y1: 29, x2: 208, y2: 29, stroke: '#38bdf8', strokeWidth: 2 }),
+                h('line', { x1: 372, y1: 29, x2: 406, y2: 29, stroke: '#a78bfa', strokeWidth: 2 }),
+                h('rect', { x: 8, y: 7, width: 166, height: 44, rx: 10, fill: opRegime === 'ray' ? 'rgba(56,189,248,0.3)' : 'rgba(15,23,42,0.72)', stroke: opRegime === 'ray' ? '#38bdf8' : '#475569', strokeWidth: opRegime === 'ray' ? 2 : 1.3 }),
+                h('text', { x: 91, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '1. Ray Optics'),
+                h('text', { x: 91, y: 41, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'Mirrors · Snell · Lenses'),
+                h('rect', { x: 208, y: 7, width: 164, height: 44, rx: 10, fill: opRegime === 'wave' ? 'rgba(139,92,246,0.32)' : 'rgba(15,23,42,0.72)', stroke: opRegime === 'wave' ? '#a78bfa' : '#475569', strokeWidth: opRegime === 'wave' ? 2 : 1.3 }),
+                h('text', { x: 290, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '2. Wave Optics'),
+                h('text', { x: 290, y: 41, textAnchor: 'middle', fill: '#ddd6fe', fontSize: 10.5 }, 'Slits · Fringes · Gratings'),
+                h('rect', { x: 406, y: 7, width: 166, height: 44, rx: 10, fill: opRegime === 'polar' ? 'rgba(251,191,36,0.26)' : 'rgba(15,23,42,0.72)', stroke: opRegime === 'polar' ? '#fbbf24' : '#475569', strokeWidth: opRegime === 'polar' ? 2 : 1.3 }),
+                h('text', { x: 489, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '3. Polarization'),
+                h('text', { x: 489, y: 41, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'Filters · Transverse Waves')
+              )
+            ),
+            // One-click Optical Bench Starters (44px touch targets, hidden during quiz/lock)
+            !opLockedOrQuiz && h('div', { className: 'op-starter-bar', role: 'group', 'aria-label': t('stem.optics.a11y_quick_bench_starters', 'Quick optical bench starters') },
+              h('span', { className: 'op-starter-label' }, t('stem.optics.quick_launch', 'Quick benches:')),
+              [
+                { id: 'reflection', icon: '🪞', label: t('stem.optics.starter_reflection', 'Mirrors') },
+                { id: 'refraction', icon: '🌊', label: t('stem.optics.starter_refraction', 'Refraction') },
+                { id: 'lenses', icon: '🔍', label: t('stem.optics.starter_lenses', 'Thin Lenses') },
+                { id: 'interference', icon: '✨', label: t('stem.optics.starter_interference', 'Double-Slit') },
+                { id: 'diffraction', icon: '〰️', label: t('stem.optics.starter_diffraction', 'Diffraction') },
+                { id: 'polarization', icon: '↕️', label: t('stem.optics.starter_polarization', 'Polarization') }
+              ].map(function(st) {
+                return h('button', {
+                  key: 'op-st-' + st.id, type: 'button', className: 'op-starter-chip',
+                  'data-active': d.mode === st.id ? 'true' : 'false',
+                  'data-op-focusable': 'true',
+                  onClick: function() { upd({ mode: st.id }); _opFocusPanelSoon(st.id); }
+                }, h('span', { 'aria-hidden': 'true' }, st.icon), h('span', null, st.label));
+              })
+            )
+          );
+        })(),
         h('section', { className: 'opticslab-focus-panel' + (d.mode === 'home' ? '' : ' opticslab-focus-panel--compact'), 'data-opticslab-focus': 'true' },
           h('div', { className: 'opticslab-focus-grid' },
             h('div', null,

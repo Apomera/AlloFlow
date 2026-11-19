@@ -214,10 +214,10 @@ describe('the store: what a teacher adds for a word', () => {
     expect(usage.count).toBe(3);
     expect(usage.bytes).toBe(rows.reduce((sum, row) => sum + row.bytes, 0));
     expect(usage.bytes).toBeGreaterThan(16000);
-    // list and usage read the small rows only, never the store that holds the files.
+    // list reads rows only; usage reads rows + v2 media in one readonly transaction, never the words store that holds Word Sounds files.
     idb.transactions.length = 0;
     await store.list(); await store.usage();
-    expect(idb.transactions).toEqual([{ names: ['rows'], mode: 'readonly' }, { names: ['rows'], mode: 'readonly' }]);
+    expect(idb.transactions).toEqual([{ names: ['rows'], mode: 'readonly' }, { names: ['rows', 'media'], mode: 'readonly' }]);
     const many = await store.getMany(['CAT', 'dog', 'sun', 'sun', 'not a word', 7]);
     expect(Object.keys(many).sort()).toEqual(['cat', 'sun']);
     expect(many.sun.picture.credit).toEqual({ own: true });
@@ -1410,5 +1410,46 @@ describe('the page, run: nothing is sent uninvited', () => {
     expect(view.$('not-keeping').querySelector('strong').textContent).toBe(myWords.NOT_KEEPING);
     for (const id of ['device', 'online', 'mine']) expect(view.shown(id), id).toBe(false);
     expect(view.calls).toEqual([]);
+  });
+
+  it('reads #from=present&word=cat from the hash and decrements #said-<service> when a thumbnail fails to load', async () => {
+    const view = await openPage({ hash: '#from=present&word=cat' });
+    expect(view.$('word').value).toBe('cat');
+    view.turn('online-on', true);
+    await view.searched();
+    expect(view.$('said-globalsymbols').textContent).toBe('3 pictures.');
+    const imgs = [...view.doc.querySelectorAll('#pics-globalsymbols img')];
+    expect(imgs).toHaveLength(3);
+    const EventCtor = view.doc.defaultView.Event;
+    imgs[0].dispatchEvent(new EventCtor('error'));
+    expect(view.$('said-globalsymbols').textContent).toBe('2 pictures.');
+    imgs[1].dispatchEvent(new EventCtor('error'));
+    imgs[2].dispatchEvent(new EventCtor('error'));
+    expect(view.$('said-globalsymbols').textContent).toBe('No pictures with an open license were found here for this word.');
+  });
+
+  it('Wave 3A: getMedia/putMedia/getManyMedia share standard word entries across makers while storing single symbols and phrases in the sibling media store, and packets-pictures handles #from=vocab and #from=symbol-runner', async () => {
+    const store = newStore();
+    // Standard 2-24 letter word put via putMedia is readable by Word Sounds get() & list() too.
+    await store.putMedia('Habitat', { picture: { dataUri: png(400), credit: { own: true } } });
+    expect((await store.get('habitat')).picture.dataUri).toBe(png(400));
+    // Single letters, digits and phrases route cleanly to the sibling media store without polluting Word Sounds list().
+    await store.putMedia('b', { picture: { dataUri: png(300), credit: { own: true } } });
+    await store.putMedia('ice cream', { picture: { dataUri: jpeg(350), credit: { own: true } } });
+    expect((await store.list()).map((r) => r.word)).toEqual(['habitat']);
+    const many = await store.getManyMedia(['habitat', 'b', 'ice cream', 'missing']);
+    expect(Object.keys(many).sort()).toEqual(['b', 'habitat', 'ice cream']);
+    expect(many.b.picture.dataUri).toBe(png(300));
+    expect(many['ice cream'].picture.dataUri).toBe(jpeg(350));
+    expect(await store.removeMedia('b')).toBe(true);
+    expect(await store.getMedia('b')).toBeNull();
+
+    // packets-pictures.html honors #from=vocab and #from=symbol-runner back links.
+    const vocabView = await openPage({ hash: '#word=habitat&from=vocab' });
+    expect(vocabView.$('back-link').getAttribute('href')).toBe('packets-vocab.html');
+    expect(vocabView.$('back-link').textContent).toBe('Back to Make vocabulary practice');
+    const srView = await openPage({ hash: '#word=cat&from=symbol-runner' });
+    expect(srView.$('back-link').getAttribute('href')).toBe('packets-symbol-runner.html');
+    expect(srView.$('back-link').textContent).toBe('Back to Make Symbol Runner practice');
   });
 });

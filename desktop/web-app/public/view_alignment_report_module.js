@@ -758,11 +758,11 @@ function AlignmentEvidenceMap(p) {
         className: "cursor-pointer min-h-11 flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
       }, item.direction === 'incoming' ? 'Parent/group: ' : 'Child/related: ', item.code ? item.code + ' · ' : '', item.label, item.kind && item.kind !== 'standard' ? ' (' + item.kind + ')' : ''), item.text ? /*#__PURE__*/React.createElement("p", {
         className: "mt-1 text-indigo-900"
-      }, item.text) : null, item.sourceUrl ? /*#__PURE__*/React.createElement("a", {
+      }, item.text) : null, item.sourceUrl && /^https?:\/\//i.test(String(item.sourceUrl).trim()) ? /*#__PURE__*/React.createElement("a", {
         className: "mt-1 inline-flex min-h-11 items-center text-indigo-700 underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700",
-        href: item.sourceUrl,
+        href: String(item.sourceUrl).trim(),
         target: "_blank",
-        rel: "noreferrer"
+        rel: "noopener noreferrer"
       }, "Open source record") : null));
     })) : /*#__PURE__*/React.createElement("p", {
       className: "mt-1 text-indigo-900"

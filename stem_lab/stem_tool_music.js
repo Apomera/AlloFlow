@@ -733,12 +733,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     if (_vsrOsmdPromise) return _vsrOsmdPromise;
     var sources = [];
     try { if (VSR_SCRIPT_SRC) sources.push(new URL('../vendor/opensheetmusicdisplay-2.2.1/opensheetmusicdisplay.min.js', VSR_SCRIPT_SRC).href); } catch (e) { /* jsdelivr only */ }
-    sources.push(VSR_OSMD_URL);
+    if (typeof window === 'undefined' || window._isDesktopBundledApp !== true) sources.push(VSR_OSMD_URL);
     _vsrOsmdPromise = (function next(i) {
       if (i >= sources.length) return Promise.reject(new Error('notation library failed to load'));
       return new Promise(function (resolve) {
         var s = document.createElement('script');
         s.src = sources[i];
+        if (sources[i] === VSR_OSMD_URL) {
+          s.integrity = 'sha384-SN393YK0P5KMe7T1cPYzMSaCAP9VHWjBHw+irRbO7IyqZxGp14EH+p3YOKBwC1KL';
+          s.crossOrigin = 'anonymous';
+          s.referrerPolicy = 'no-referrer';
+        }
         s.async = true;
         s.onload = function () { resolve(!!have()); };
         s.onerror = function () { resolve(false); };
@@ -853,6 +858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     var count = Math.min(12, Math.max(1, Number(opts.count) || 1));
     var w = null;
     try { w = window.open('', '_blank'); } catch (e) { w = null; }
+    try { if (w) w.opener = null; } catch (_) {}
     try { if (w && w.document) w.document.write('<p style="font-family:system-ui,sans-serif;margin:2em">' + vsrEsc(t('stem.music.rg_print_preparing', 'Getting the page ready…')) + '</p>'); } catch (e) { w = null; }
     var codes = [g.code];
     while (codes.length < count) { var c = VSR.newCode(); if (codes.indexOf(c) < 0) codes.push(c); }
@@ -3012,8 +3018,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               var obj = { g: d.seqGrid || {}, m: d.beatMelody || [], b: d.seqBPM || 120, s: d.seqSwing || '0' };
               var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
               var url = location.origin + location.pathname + '#beat=' + b64;
-              (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(url).then(function () { addToast(__alloT('stem.music.beat_url_copied', '\uD83D\uDD17 Beat URL copied!'), 'success'); })
-                .catch(function () { prompt('Copy this URL:', url); });
+              (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(url).then(function () { upd('bpShareFallbackUrl', ''); addToast(__alloT('stem.music.beat_url_copied', '\uD83D\uDD17 Beat URL copied!'), 'success'); })
+                .catch(function () { upd('bpShareFallbackUrl', url); addToast(__alloT('stem.music.beat_url_ready_copy', '\uD83D\uDD17 Clipboard unavailable — copy the share URL below.'), 'info'); });
             } catch (e) { addToast(__alloT('stem.music.share_failed', '\u274C Share failed'), 'error'); }
           }
           React.useEffect(function () {
@@ -3218,7 +3224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               var controller = new AbortController();
               var timeoutId = setTimeout(function() { controller.abort(); }, 30000);
               abortControllers.push(controller);
-              fetch(url, { signal: controller.signal }).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
+              fetch(url, { signal: controller.signal }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }).then(function (buf) {
                 return ctx.decodeAudioData(buf);
               }).then(function (decoded) {
                 clearTimeout(timeoutId);
@@ -5357,29 +5363,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/60 p-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
                   React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, __alloT('stem.music.compositions', "\uD83D\uDCBE Compositions")),
-                  React.createElement("button", { "aria-label": __alloT('stem.music.save', "Save"),
+                  React.createElement("input", {
+                    type: "text",
+                    value: d.bpCompName || '',
+                    onChange: function (e) { upd('bpCompName', e.target.value); },
+                    placeholder: __alloT('stem.music.composition_name_placeholder', 'Composition name...'),
+                    "aria-label": __alloT('stem.music.composition_name_aria', 'Name your composition'),
+                    className: "px-2 py-1 rounded-lg border border-emerald-300 bg-white text-slate-800 text-[0.75rem] w-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700"
+                  }),
+                  React.createElement("button", { type: "button", "aria-label": __alloT('stem.music.save', "Save"),
                     onClick: function () {
-                      var name = prompt('Name your composition:', 'Beat ' + new Date().toLocaleDateString());
-                      if (!name) return;
+                      var name = String(d.bpCompName || '').trim() || ('Beat ' + new Date().toLocaleDateString());
                       var comp = { name: name, grid: Object.assign({}, d.seqGrid || {}), melody: (d.beatMelody || []).slice(), bpm: d.seqBPM || 120, kit: d.activeKit || '', swing: d.seqSwing || '0', scale: d.bpScale || 'major', timestamp: Date.now() };
-                      var saved = JSON.parse(localStorage.getItem('alloflow_beats') || '[]');
-                      saved.push(comp); localStorage.setItem('alloflow_beats', JSON.stringify(saved));
+                      var saved = [];
+                      try { var _sb = JSON.parse(localStorage.getItem('alloflow_beats') || '[]'); if (Array.isArray(_sb)) saved = _sb; } catch (_e) {}
+                      saved.push(comp);
+                      try { localStorage.setItem('alloflow_beats', JSON.stringify(saved)); } catch (_e) {}
+                      upd('bpCompName', '');
                       upd('beatSaveRefresh', Date.now());
                       addToast(__alloT('stem.music.beat_saved', '\uD83D\uDCBE Beat saved!'), 'success');
                     },
-                    className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-all shadow-sm"
+                    className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-all shadow-sm"
                   }, __alloT('stem.music.save_2', "\uD83D\uDCBE Save")),
-                  React.createElement("button", { onClick: sharePattern, className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-blue-700 text-white hover:bg-blue-600 transition-all shadow-sm" }, __alloT('stem.music.share_url', "\uD83D\uDD17 Share URL")),
-                  React.createElement("button", { onClick: exportBeat, disabled: d.bpExporting,
+                  React.createElement("button", { type: "button", onClick: sharePattern, className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-blue-700 text-white hover:bg-blue-600 transition-all shadow-sm" }, __alloT('stem.music.share_url', "\uD83D\uDD17 Share URL")),
+                  React.createElement("button", { type: "button", onClick: exportBeat, disabled: d.bpExporting,
                     className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all shadow-sm " + (d.bpExporting ? 'bg-gray-300 text-gray-800' : 'bg-orange-700 text-white hover:bg-orange-800')
                   }, d.bpExporting ? '\u23F3 Recording...' : '\uD83D\uDCE5 Export'),
-                  React.createElement("button", { "aria-label": __alloT('stem.music.snapshot', "Snapshot"),
+                  React.createElement("button", { type: "button", "aria-label": __alloT('stem.music.snapshot', "Snapshot"),
                     onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'bp-' + Date.now(), tool: 'synth', label: __alloT('stem.music.beat_pad', 'Beat Pad'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.music.snapshot_saved', '\uD83D\uDCF8 Snapshot saved!'), 'success'); },
                     className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-all"
                   }, __alloT('stem.music.snapshot_2', "\uD83D\uDCF8 Snapshot"))
                 ),
+                d.bpShareFallbackUrl && React.createElement("div", { role: "status", className: "flex items-center gap-2 mb-2 bg-white border border-blue-200 rounded-lg p-2" },
+                  React.createElement("input", {
+                    type: "text", readOnly: true, value: d.bpShareFallbackUrl,
+                    "aria-label": __alloT('stem.music.aria_share_url_field', 'Shareable beat URL'),
+                    onFocus: function (e) { e.target.select(); },
+                    className: "flex-1 px-2 py-1 text-xs font-mono text-slate-800 bg-slate-50 border border-slate-300 rounded"
+                  }),
+                  React.createElement("button", { type: "button", onClick: function () { upd('bpShareFallbackUrl', ''); }, "aria-label": __alloT('stem.music.aria_dismiss_share_url', 'Dismiss share URL'), className: "px-2 py-1 rounded text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300" }, "\u2715")
+                ),
                 (function () {
-                  var saved = JSON.parse(localStorage.getItem('alloflow_beats') || '[]');
+                  var saved = [];
+                  try { var _sb = JSON.parse(localStorage.getItem('alloflow_beats') || '[]'); if (Array.isArray(_sb)) saved = _sb; } catch (_e) {}
                   if (saved.length === 0) return React.createElement("p", { className: "text-[0.6875rem] text-emerald-700 italic" }, __alloT('stem.music.no_saved_beats_yet_create_a_pattern_an', "No saved beats yet. Create a pattern and click Save!"));
                   return React.createElement("div", { className: "flex flex-col gap-1 max-h-28 overflow-y-auto" },
                     saved.map(function (comp, ci) {
@@ -5399,8 +5425,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         }, "\u25B6"),
                         React.createElement("button", { "aria-label": __alloFmt('stem.music.aria_delete_saved_beat', 'Delete saved beat: {name}', { name: comp.name }),
                           onClick: function () {
-                            var s = JSON.parse(localStorage.getItem('alloflow_beats') || '[]');
-                            s.splice(ci, 1); localStorage.setItem('alloflow_beats', JSON.stringify(s));
+                            var s = [];
+                            try { var _sb2 = JSON.parse(localStorage.getItem('alloflow_beats') || '[]'); if (Array.isArray(_sb2)) s = _sb2; } catch (_e) {}
+                            s.splice(ci, 1);
+                            try { localStorage.setItem('alloflow_beats', JSON.stringify(s)); } catch (_e) {}
                             upd('beatSaveRefresh', Date.now());
                           },
                           className: "transition-colors px-1.5 py-0.5 rounded text-[0.6875rem] font-bold text-red-700 hover:text-red-700 hover:bg-red-50"
@@ -6493,7 +6521,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     c2.scale(2, 2);
                     var start = performance.now();
                     function drawHs() {
-                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._hsAnim); return; }
+                      if (!cvEl.isConnected) {
+                        cancelAnimationFrame(cvEl._hsAnim);
+                        if (cvEl._hsRo) { try { cvEl._hsRo.disconnect(); } catch (_) {} cvEl._hsRo = null; }
+                        return;
+                      }
                       // Freeze the clock (not the loop) under reduced motion: the
                       // ResizeObserver below still needs repaints, and a static
                       // frame conveys the harmonic series just as well.
@@ -6539,11 +6571,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       cvEl._hsAnim = requestAnimationFrame(drawHs);
                     }
                     drawHs();
-                    var ro = new ResizeObserver(function() {
-                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
-                    });
-                    ro.observe(cvEl);
+                    if (typeof ResizeObserver === 'function') {
+                      var ro = new ResizeObserver(function() {
+                        if (!cvEl.isConnected) { ro.disconnect(); cvEl._hsRo = null; return; }
+                        W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                        cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                      });
+                      cvEl._hsRo = ro;
+                      ro.observe(cvEl);
+                    }
                   },
                   style: { width: '100%', height: '100%', display: 'block' }
                 })

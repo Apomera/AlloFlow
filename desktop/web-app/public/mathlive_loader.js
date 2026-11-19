@@ -15,6 +15,7 @@
   if (window.AlloMathInput && typeof window.AlloMathInput.promptEquation === 'function') return;
 
   var MATHLIVE_VERSION = '0.110.0';
+  var MATHLIVE_SRI = 'sha384-5IN6K0kiaz8MufrTGBvPCP3oDeMjmwe+DDTvuyQLNv6gc634FpKbQfllonjHJPmy';
   var SETTINGS_KEY = 'alloflow_math_input_v1';
 
   function loaderBaseUrl() {
@@ -119,6 +120,7 @@
     var candidate = sources[index];
     var script = document.createElement('script');
     if (candidate && candidate.script && String(candidate.script).indexOf(LOCAL_ASSET_BASE) !== 0) {
+      script.integrity = MATHLIVE_SRI;
       script.crossOrigin = 'anonymous';
       script.referrerPolicy = 'no-referrer';
     }

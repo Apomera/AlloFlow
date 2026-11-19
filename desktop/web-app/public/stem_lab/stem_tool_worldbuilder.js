@@ -57,6 +57,127 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
   })();
 
 
+  // ── WorldBuilder Studio CSS (workbench polish + .theme-contrast parity) ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function') return;
+    if (document.getElementById('allo-worldbuilder-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-worldbuilder-studio-css';
+    st.textContent = [
+      '.wb-hero{background:linear-gradient(135deg,#1e1145 0%,#2d1b69 52%,#172554 100%);border:1px solid rgba(167,139,250,0.42);box-shadow:0 10px 26px rgba(30,17,69,0.22);color:#f8fafc;}',
+      '.wb-hero-pill{background:rgba(15,23,42,0.52);border:1px solid rgba(196,181,253,0.38);color:#f8fafc;}',
+      '.wb-world-card{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
+      '.wb-world-card:hover,.wb-world-card:focus-visible{transform:translateY(-2px);box-shadow:0 12px 24px rgba(109,40,217,0.14);outline:none;}',
+      '.wb-world-card:focus-visible{box-shadow:0 0 0 3px rgba(124,58,237,0.45);}',
+      '.wb-spark-chip{transition:background-color .14s ease,border-color .14s ease;}',
+      '.wb-spark-chip:focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}',
+      '.theme-contrast .wb-hero{background:#000000 !important;border:2px solid #ffff00 !important;box-shadow:none !important;color:#ffffff !important;}',
+      '.theme-contrast .wb-hero-pill{background:#000000 !important;border:1px solid #ffff00 !important;color:#ffff00 !important;}',
+      '.theme-contrast .wb-inquiry-card{background:#000000 !important;border:2px solid #ffff00 !important;color:#ffffff !important;}',
+      '.theme-contrast .wb-world-card{background:#000000 !important;border:2px solid #ffffff !important;color:#ffffff !important;}',
+      '.theme-contrast .wb-world-card:hover,.theme-contrast .wb-world-card:focus-visible{border-color:#ffff00 !important;}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
+  // Bespoke miniature realm illustrations for the 4 world selection cards
+  function renderWorldRealmArt(h, worldId) {
+    if (worldId === 'fantasy') {
+      return h('svg', { viewBox: '0 0 240 68', width: '100%', height: 68, 'aria-hidden': 'true', style: { display: 'block', borderRadius: 10 } },
+        h('defs', null,
+          h('linearGradient', { id: 'wb-sky-fantasy', x1: '0', y1: '0', x2: '1', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#1e1b4b' }),
+            h('stop', { offset: '55%', stopColor: '#4c1d95' }),
+            h('stop', { offset: '100%', stopColor: '#7c3aed' })
+          )
+        ),
+        h('rect', { x: 0, y: 0, width: 240, height: 68, fill: 'url(#wb-sky-fantasy)' }),
+        h('circle', { cx: 186, cy: 19, r: 9, fill: '#fef08a', opacity: 0.92 }),
+        h('circle', { cx: 206, cy: 14, r: 4.5, fill: '#e9d5ff', opacity: 0.8 }),
+        h('circle', { cx: 170, cy: 12, r: 2.5, fill: '#c4b5fd', opacity: 0.85 }),
+        h('path', { d: 'M0,68 L0,46 L38,34 L76,48 L122,30 L170,46 L210,36 L240,48 L240,68 Z', fill: '#2e1065', opacity: 0.75 }),
+        h('path', { d: 'M86,68 L86,36 L94,20 L102,36 L102,42 L112,42 L112,26 L120,10 L128,26 L128,42 L138,42 L138,34 L145,22 L152,34 L152,68 Z', fill: '#ddd6fe', opacity: 0.92 }),
+        h('rect', { x: 117, y: 48, width: 6, height: 20, rx: 3, fill: '#4c1d95' }),
+        h('circle', { cx: 34, cy: 18, r: 1.5, fill: '#ffffff', opacity: 0.8 }),
+        h('circle', { cx: 60, cy: 12, r: 1.2, fill: '#fde68a', opacity: 0.9 }),
+        h('circle', { cx: 222, cy: 26, r: 1.3, fill: '#ffffff', opacity: 0.75 })
+      );
+    }
+    if (worldId === 'scifi') {
+      return h('svg', { viewBox: '0 0 240 68', width: '100%', height: 68, 'aria-hidden': 'true', style: { display: 'block', borderRadius: 10 } },
+        h('defs', null,
+          h('linearGradient', { id: 'wb-sky-scifi', x1: '0', y1: '0', x2: '1', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#020617' }),
+            h('stop', { offset: '60%', stopColor: '#0f172a' }),
+            h('stop', { offset: '100%', stopColor: '#7f1d1d' })
+          )
+        ),
+        h('rect', { x: 0, y: 0, width: 240, height: 68, fill: 'url(#wb-sky-scifi)' }),
+        h('circle', { cx: 196, cy: 48, r: 30, fill: '#dc2626', opacity: 0.55 }),
+        h('circle', { cx: 196, cy: 48, r: 21, fill: '#fb923c', opacity: 0.8 }),
+        h('ellipse', { cx: 112, cy: 36, rx: 56, ry: 12, fill: 'none', stroke: '#38bdf8', strokeWidth: 2, opacity: 0.85 }),
+        h('rect', { x: 104, y: 16, width: 16, height: 40, rx: 4, fill: '#cbd5e1' }),
+        h('rect', { x: 74, y: 31, width: 76, height: 10, rx: 4, fill: '#94a3b8' }),
+        h('circle', { cx: 112, cy: 36, r: 4, fill: '#22d3ee' }),
+        h('circle', { cx: 26, cy: 14, r: 1.4, fill: '#ffffff', opacity: 0.85 }),
+        h('circle', { cx: 54, cy: 48, r: 1.2, fill: '#7dd3fc', opacity: 0.8 }),
+        h('circle', { cx: 152, cy: 14, r: 1.5, fill: '#ffffff', opacity: 0.9 })
+      );
+    }
+    if (worldId === 'mystery') {
+      return h('svg', { viewBox: '0 0 240 68', width: '100%', height: 68, 'aria-hidden': 'true', style: { display: 'block', borderRadius: 10 } },
+        h('defs', null,
+          h('linearGradient', { id: 'wb-sky-mystery', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#0f172a' }),
+            h('stop', { offset: '100%', stopColor: '#1e3a5f' })
+          )
+        ),
+        h('rect', { x: 0, y: 0, width: 240, height: 68, fill: 'url(#wb-sky-mystery)' }),
+        h('circle', { cx: 48, cy: 20, r: 12, fill: '#e2e8f0', opacity: 0.22 }),
+        h('circle', { cx: 48, cy: 20, r: 8, fill: '#f8fafc', opacity: 0.88 }),
+        h('path', { d: 'M104,68 L104,24 L120,8 L136,24 L136,68 Z', fill: '#0b1120', stroke: '#64748b', strokeWidth: 1 }),
+        h('circle', { cx: 120, cy: 34, r: 9, fill: '#fef3c7', stroke: '#94a3b8', strokeWidth: 1.5 }),
+        h('line', { x1: 120, y1: 34, x2: 120, y2: 27, stroke: '#1e293b', strokeWidth: 1.5 }),
+        h('line', { x1: 120, y1: 34, x2: 125, y2: 34, stroke: '#1e293b', strokeWidth: 1.5 }),
+        h('path', { d: 'M0,68 L0,52 L24,42 L48,54 L76,46 L104,54 L136,52 L168,42 L198,54 L224,44 L240,52 L240,68 Z', fill: '#0f172a', opacity: 0.82 }),
+        h('rect', { x: 0, y: 56, width: 240, height: 12, fill: '#94a3b8', opacity: 0.14 })
+      );
+    }
+    return h('svg', { viewBox: '0 0 240 68', width: '100%', height: 68, 'aria-hidden': 'true', style: { display: 'block', borderRadius: 10 } },
+      h('defs', null,
+        h('linearGradient', { id: 'wb-sky-hist', x1: '0', y1: '0', x2: '1', y2: '1' },
+          h('stop', { offset: '0%', stopColor: '#78350f' }),
+          h('stop', { offset: '55%', stopColor: '#b45309' }),
+          h('stop', { offset: '100%', stopColor: '#d97706' })
+        )
+      ),
+      h('rect', { x: 0, y: 0, width: 240, height: 68, fill: 'url(#wb-sky-hist)' }),
+      h('circle', { cx: 190, cy: 24, r: 12, fill: '#fef3c7', opacity: 0.9 }),
+      h('path', { d: 'M40,68 L40,42 Q60,22 80,42 L80,68 Z', fill: '#451a03', opacity: 0.85 }),
+      h('path', { d: 'M98,68 L98,38 Q120,16 142,38 L142,68 Z', fill: '#7c2d12', opacity: 0.9 }),
+      h('rect', { x: 152, y: 34, width: 10, height: 34, fill: '#451a03', opacity: 0.85 }),
+      h('path', { d: 'M0,56 Q60,50 120,56 T240,54 L240,68 L0,68 Z', fill: '#0ea5e9', opacity: 0.55 }),
+      h('path', { d: 'M172,56 L184,38 L194,56 Z', fill: '#fffbeb', opacity: 0.92 })
+    );
+  }
+
+  // Bespoke Quill & Compass Crest Emblem for WriteCraft hero header
+  function renderWriteCraftCrest(h) {
+    return h('svg', { width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+      h('defs', null,
+        h('linearGradient', { id: 'wb-crest-bg', x1: '0', y1: '0', x2: '1', y2: '1' },
+          h('stop', { offset: '0%', stopColor: '#7c3aed' }),
+          h('stop', { offset: '100%', stopColor: '#2563eb' })
+        )
+      ),
+      h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 11, fill: 'url(#wb-crest-bg)', stroke: '#ddd6fe', strokeWidth: 1.5 }),
+      h('circle', { cx: 21, cy: 21, r: 13, fill: 'none', stroke: '#fde68a', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.75 }),
+      h('path', { d: 'M12,30 C16,20 23,12 31,10 C29,18 24,24 16,28 L12,30 Z', fill: '#fef08a', stroke: '#ffffff', strokeWidth: 1 }),
+      h('line', { x1: 12, y1: 30, x2: 26, y2: 15, stroke: '#4c1d95', strokeWidth: 1.4, strokeLinecap: 'round' }),
+      h('circle', { cx: 30, cy: 30, r: 2.2, fill: '#38bdf8' })
+    );
+  }
+
   // ── World Templates ──
   var WORLDS = [
     { id: 'fantasy', name: 'Enchanted Realm', emoji: '🏰', desc: 'A magical kingdom of castles, dragons, and ancient prophecies', rooms: [
@@ -181,7 +302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       // "needs AI" state below instead of a dead UI.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var _wbAiFn = function (fn, kind) {
         return (ctx.aiAvailable !== false && typeof fn === 'function' && !fn._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable(kind, fn))) ? fn : null;
@@ -599,6 +720,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
         if (!file || !callGeminiVision) return;
         // Reset file input so the same file can be re-selected
         e.target.value = '';
+        if (Number(file.size) > 20 * 1024 * 1024) {
+          if (typeof addToast === 'function') addToast('Handwriting photo exceeds 20 MB limit.', 'error');
+          return;
+        }
         upd('hwLoading', true);
         var reader = new FileReader();
         reader.onload = function() {
@@ -1044,90 +1169,126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             fracturing: { label: __alloT('stem.worldbuilder.fracturing', 'Fracturing'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.worldbuilder.society_pulling_apart_hard_mode_storyt', 'Society pulling apart. Hard-mode storytelling — high-stakes choices, factional conflict.') },
             collapsing: { label: __alloT('stem.worldbuilder.collapsing', 'Collapsing'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.worldbuilder.apocalypse_post_apocalypse_territory_s', 'Apocalypse/post-apocalypse territory. Survival > diplomacy.') }
           })[state];
-          // SVG: 5-axis radar
+          // SVG: 5-axis radar (generous viewBox so labels never clip)
           var axes = [
-            { label: __alloT('stem.worldbuilder.pop_pressure', 'Pop pressure'), val: popPressure },
-            { label: __alloT('stem.worldbuilder.conflict', 'Conflict'), val: iq.conflictLevel / 10 },
-            { label: __alloT('stem.worldbuilder.govt_instability', 'Govt instability'), val: (10 - iq.govStability) / 10 },
-            { label: __alloT('stem.worldbuilder.tech_gap', 'Tech gap'), val: (10 - iq.techLevel) / 10 },
-            { label: __alloT('stem.worldbuilder.biome_stress', 'Biome stress'), val: 1 - biome.carrying / 2.5 }
+            { label: __alloT('stem.worldbuilder.pop_pressure', 'Pop pressure'), short: 'Pop', val: popPressure },
+            { label: __alloT('stem.worldbuilder.conflict', 'Conflict'), short: 'Conflict', val: iq.conflictLevel / 10 },
+            { label: __alloT('stem.worldbuilder.govt_instability', 'Govt instability'), short: 'Govt', val: (10 - iq.govStability) / 10 },
+            { label: __alloT('stem.worldbuilder.tech_gap', 'Tech gap'), short: 'Tech', val: (10 - iq.techLevel) / 10 },
+            { label: __alloT('stem.worldbuilder.biome_stress', 'Biome stress'), short: 'Biome', val: 1 - biome.carrying / 2.5 }
           ];
-          var center = 80, radius = 60, n = 5;
+          var cxR = 105, cyR = 94, radius = 56, n = 5;
           var pts = axes.map(function(a, i) {
             var ang = -Math.PI / 2 + (i * 2 * Math.PI / n);
             var r = Math.max(0, Math.min(1, a.val)) * radius;
-            return [center + Math.cos(ang) * r, center + Math.sin(ang) * r];
+            return [cxR + Math.cos(ang) * r, cyR + Math.sin(ang) * r];
+          });
+          var outerPts = axes.map(function(a, i) {
+            var ang = -Math.PI / 2 + (i * 2 * Math.PI / n);
+            return [cxR + Math.cos(ang) * radius, cyR + Math.sin(ang) * radius];
           });
           var labelPts = axes.map(function(a, i) {
             var ang = -Math.PI / 2 + (i * 2 * Math.PI / n);
-            return [center + Math.cos(ang) * (radius + 12), center + Math.sin(ang) * (radius + 12)];
+            return [cxR + Math.cos(ang) * (radius + 18), cyR + Math.sin(ang) * (radius + 16)];
           });
-          return h('div', { className: 'rounded-xl p-3 mb-3', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('h3', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, __alloT('stem.worldbuilder.world_inquiry_predict_the_story_tensio', '🔬 World Inquiry — Explore the Story Tension')),
-            h('p', { className: 'text-[0.625rem] opacity-85 mb-2 leading-snug' }, __alloT('stem.worldbuilder.set_biome_population_tech_conflict_and', 'Set biome, population, technology, conflict, and government, then observe how the modeled world-state changes. The result updates live; record a hypothesis or pattern before writing your first scene.')),
-            h('div', { className: 'inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2', style: { background: sm.color, color: '#000' } }, biome.emoji + ' ' + biome.name + ' · ' + sm.label),
-            h('p', { className: 'text-[0.625rem] opacity-80 mb-2' }, sm.desc),
-            h('div', { className: 'flex gap-3 items-center mb-2 flex-wrap' },
-              h('svg', { role: 'img', 'aria-label': __alloT('stem.worldbuilder.orbit_img', 'Orbit diagram'), width: 160, height: 160, viewBox: '0 0 160 160', style: { flex: '0 0 160px' } },
+          var fragilityPct = Math.max(0, Math.min(100, fragility * 100));
+          var iqPresets = [
+            { id: 'oasis', label: __alloT('stem.worldbuilder.preset_oasis', '🌿 Utopian Oasis'), patch: { biome: 'tropical', popMillions: 45, techLevel: 9, conflictLevel: 1, govStability: 9 } },
+            { id: 'frontier', label: __alloT('stem.worldbuilder.preset_frontier', '⚡ Frontier Tension'), patch: { biome: 'steppe', popMillions: 110, techLevel: 5, conflictLevel: 6, govStability: 5 } },
+            { id: 'brink', label: __alloT('stem.worldbuilder.preset_brink', '🔥 Brink of Collapse'), patch: { biome: 'desert', popMillions: 95, techLevel: 3, conflictLevel: 9, govStability: 2 } }
+          ];
+          return h('div', { className: 'wb-inquiry-card rounded-2xl p-4 mb-3', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#f1f5f9' } },
+            h('div', { className: 'flex items-start justify-between gap-2 flex-wrap mb-1.5' },
+              h('h3', { className: 'text-xs font-black uppercase tracking-wider m-0', style: { color: sm.color } }, __alloT('stem.worldbuilder.world_inquiry_predict_the_story_tensio', '🔬 World Inquiry — Explore the Story Tension')),
+              h('div', { className: 'inline-block px-2.5 py-0.5 rounded-full text-[0.6875rem] font-bold', style: { background: sm.color, color: '#000000' } }, biome.emoji + ' ' + biome.name + ' · ' + sm.label)
+            ),
+            h('p', { className: 'text-xs mb-2 leading-snug', style: { color: '#e2e8f0' } }, __alloT('stem.worldbuilder.set_biome_population_tech_conflict_and', 'Set biome, population, technology, conflict, and government, then observe how the modeled world-state changes. The result updates live; record a hypothesis or pattern before writing your first scene.')),
+            h('p', { className: 'text-xs mb-2.5 px-2.5 py-1.5 rounded-lg', style: { background: 'rgba(2,6,23,0.42)', border: '1px solid rgba(148,163,184,0.28)', color: '#f8fafc' } }, sm.desc),
+            h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-3' },
+              h('span', { className: 'text-[0.6875rem] font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, __alloT('stem.worldbuilder.quick_presets', 'Presets:')),
+              iqPresets.map(function(pr) {
+                return h('button', { key: pr.id, type: 'button', onClick: function() { setIQ(pr.patch); }, className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold', style: { background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(148,163,184,0.45)', cursor: 'pointer' } }, pr.label);
+              })
+            ),
+            h('div', { className: 'flex gap-4 items-center mb-3 flex-wrap' },
+              h('svg', { role: 'img', 'aria-label': __alloT('stem.worldbuilder.orbit_img', 'Orbit diagram'), width: 210, height: 184, viewBox: '0 0 210 184', style: { flex: '0 0 210px', maxWidth: '100%' } },
+                h('circle', { cx: cxR, cy: cyR, r: radius + 4, fill: '#020617', opacity: 0.45 }),
                 [0.25, 0.5, 0.75, 1.0].map(function(s, i) {
                   var rr = s * radius;
                   var poly = '';
                   for (var k = 0; k < n; k++) {
                     var a = -Math.PI / 2 + (k * 2 * Math.PI / n);
-                    poly += (center + Math.cos(a) * rr) + ',' + (center + Math.sin(a) * rr) + ' ';
+                    poly += (cxR + Math.cos(a) * rr) + ',' + (cyR + Math.sin(a) * rr) + ' ';
                   }
-                  return h('polygon', { key: 'g' + i, points: poly.trim(), fill: 'none', stroke: '#1e293b', strokeWidth: 1, strokeDasharray: i === 3 ? '0' : '2 3' });
+                  return h('polygon', { key: 'g' + i, points: poly.trim(), fill: 'none', stroke: i === 3 ? '#475569' : '#334155', strokeWidth: i === 3 ? 1.2 : 0.9, strokeDasharray: i === 3 ? '0' : '2 3' });
                 }),
-                h('polygon', { points: pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: sm.color + '44', stroke: sm.color, strokeWidth: 2 }),
-                pts.map(function(p, i) { return h('circle', { key: 'p' + i, cx: p[0], cy: p[1], r: 3, fill: sm.color }); }),
-                labelPts.map(function(lp, i) { return h('text', { key: 'l' + i, x: lp[0], y: lp[1], textAnchor: 'middle', fill: '#94a3b8', fontSize: 7 }, ['Pop', 'War', 'Govt', 'Tech', 'Bio'][i]); })
+                outerPts.map(function(op, i) {
+                  return h('line', { key: 'sp' + i, x1: cxR, y1: cyR, x2: op[0], y2: op[1], stroke: '#334155', strokeWidth: 0.9 });
+                }),
+                h('polygon', { points: pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: sm.color + '44', stroke: sm.color, strokeWidth: 2.2 }),
+                pts.map(function(p, i) { return h('circle', { key: 'p' + i, cx: p[0], cy: p[1], r: 3.6, fill: sm.color, stroke: '#020617', strokeWidth: 1 }); }),
+                labelPts.map(function(lp, i) { return h('text', { key: 'l' + i, x: lp[0], y: lp[1] + 3, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 9.5, fontWeight: 700 }, axes[i].short); })
               ),
-              h('div', { className: 'flex-1 text-[0.625rem] min-w-[200px]' },
-                h('div', { className: 'font-bold mb-1 opacity-85' }, __alloT('stem.worldbuilder.world_metrics', 'World metrics')),
-                h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.population', 'Population')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.popMillions + 'M (' + (popPressure * 100).toFixed(0) + '% of carrying)')),
-                h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.carrying_cap', 'Carrying cap')), h('span', { className: 'font-mono', style: { color: sm.color } }, maxPop.toFixed(0) + 'M')),
-                h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.fragility_index', 'Fragility index')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, (fragility * 100).toFixed(0) + '%')),
-                h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.story_tension', 'Story tension')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, sm.label))
+              h('div', { className: 'flex-1 text-xs min-w-[200px]' },
+                h('div', { className: 'font-bold mb-1.5 uppercase tracking-wider text-[0.6875rem]', style: { color: '#cbd5e1' } }, __alloT('stem.worldbuilder.world_metrics', 'World metrics')),
+                h('div', { className: 'flex justify-between py-1 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.population', 'Population')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.popMillions + 'M (' + (popPressure * 100).toFixed(0) + '% of carrying)')),
+                h('div', { className: 'flex justify-between py-1 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.carrying_cap', 'Carrying cap')), h('span', { className: 'font-mono', style: { color: sm.color } }, maxPop.toFixed(0) + 'M')),
+                h('div', { className: 'flex justify-between py-1 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.fragility_index', 'Fragility index')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, (fragility * 100).toFixed(0) + '%')),
+                h('div', { className: 'flex justify-between py-1 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.story_tension', 'Story tension')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, sm.label)),
+                // Segmented tension scale meter SVG
+                h('div', { className: 'mt-2.5' },
+                  h('svg', { viewBox: '0 0 220 28', width: '100%', height: 28, 'aria-hidden': 'true', style: { display: 'block' } },
+                    h('rect', { x: 4, y: 10, width: 42, height: 7, rx: 3, fill: '#4ade80' }),
+                    h('rect', { x: 47, y: 10, width: 42, height: 7, fill: '#22d3ee' }),
+                    h('rect', { x: 90, y: 10, width: 42, height: 7, fill: '#facc15' }),
+                    h('rect', { x: 133, y: 10, width: 42, height: 7, fill: '#fb923c' }),
+                    h('rect', { x: 176, y: 10, width: 40, height: 7, rx: 3, fill: '#f87171' }),
+                    h('polygon', { points: (4 + fragilityPct * 2.12) + ',2 ' + (4 + fragilityPct * 2.12 - 4) + ',9 ' + (4 + fragilityPct * 2.12 + 4) + ',9', fill: '#ffffff' }),
+                    h('text', { x: 4, y: 26, fill: '#cbd5e1', fontSize: 7.5, fontWeight: 700 }, 'Utopian'),
+                    h('text', { x: 110, y: 26, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 7.5, fontWeight: 700 }, 'Tense'),
+                    h('text', { x: 216, y: 26, textAnchor: 'end', fill: '#cbd5e1', fontSize: 7.5, fontWeight: 700 }, 'Collapsing')
+                  )
+                )
               )
             ),
-            h('div', { className: 'flex flex-wrap gap-1 mb-2' },
+            h('div', { className: 'flex flex-wrap gap-1.5 mb-2.5' },
               Object.keys(biomes).map(function(b) {
                 var active = iq.biome === b;
-                return h('button', { key: b, 'aria-pressed': active, onClick: function() { setKey('biome', b); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', border: '1px solid ' + (active ? sm.color : '#1e293b'), cursor: 'pointer' } }, biomes[b].emoji + ' ' + biomes[b].name);
+                return h('button', { key: b, type: 'button', 'aria-pressed': active, onClick: function() { setKey('biome', b); }, className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold', style: { background: active ? sm.color : '#0f172a', color: active ? '#000000' : '#e2e8f0', border: '1px solid ' + (active ? sm.color : '#334155'), cursor: 'pointer' } }, biomes[b].emoji + ' ' + biomes[b].name);
               })
             ),
-            h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
-              h('label', { className: 'text-[0.625rem]' },
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-2.5' },
+              h('label', { className: 'text-[0.6875rem]' },
                 h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.worldbuilder.population_m', 'Population (M)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.popMillions)),
                 h('input', { type: 'range', min: 1, max: 500, step: 1, value: iq.popMillions, onChange: function(e) { setKey('popMillions', parseInt(e.target.value, 10)); }, className: 'w-full' })
               ),
-              h('label', { className: 'text-[0.625rem]' },
+              h('label', { className: 'text-[0.6875rem]' },
                 h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.worldbuilder.tech_level_1_10', 'Tech level (1-10)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.techLevel)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.techLevel, onChange: function(e) { setKey('techLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
               ),
-              h('label', { className: 'text-[0.625rem]' },
+              h('label', { className: 'text-[0.6875rem]' },
                 h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.worldbuilder.conflict_1_10', 'Conflict (1-10)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.conflictLevel)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.conflictLevel, onChange: function(e) { setKey('conflictLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
               ),
-              h('label', { className: 'text-[0.625rem]' },
+              h('label', { className: 'text-[0.6875rem]' },
                 h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.worldbuilder.govt_stability', 'Govt stability')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.govStability)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.govStability, onChange: function(e) { setKey('govStability', parseInt(e.target.value, 10)); }, className: 'w-full' })
               )
             ),
             h('div', { className: 'flex gap-2 mb-2' },
-              h('button', { onClick: function() {
+              h('button', { type: 'button', onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, b: iq.biome, p: iq.popMillions, tech: iq.techLevel, conf: iq.conflictLevel, gov: iq.govStability, frag: (fragility * 100).toFixed(0), state: sm.label }]) });
-              }, className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.worldbuilder.log_this_world', '📋 Log this world')),
-              h('button', { onClick: function() { setIQ({ biome: 'temperate', popMillions: 50, techLevel: 5, conflictLevel: 3, govStability: 7 }); }, className: 'px-2 py-1 rounded text-[0.625rem]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.worldbuilder.reset', 'Reset'))
+              }, className: 'flex-1 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.worldbuilder.log_this_world', '📋 Log this world')),
+              h('button', { type: 'button', onClick: function() { setIQ({ biome: 'temperate', popMillions: 50, techLevel: 5, conflictLevel: 3, govStability: 7 }); }, className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold', style: { background: '#0f172a', color: '#e2e8f0', border: '1px solid #334155', cursor: 'pointer' } }, __alloT('stem.worldbuilder.reset', 'Reset'))
             ),
-            iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[0.625rem] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+            iq.log.length > 0 && h('div', { className: 'p-2 rounded-lg text-[0.6875rem] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 74, overflow: 'auto', border: '1px solid #334155', color: '#e2e8f0' } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · ' + e.b + ' · p' + e.p + ' tech' + e.tech + ' conf' + e.conf + ' gov' + e.gov + ' → frag ' + e.frag + '%'); })
             ),
-            h('label', { className: 'block text-[0.625rem] font-bold opacity-85 mb-1' }, __alloT('stem.worldbuilder.your_hypothesis_what_slider_would_tip_', 'Your hypothesis (what slider would tip your world into collapse fastest? Why?)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.worldbuilder.e_g_a_desert_biome_at_carrying_capacit', 'e.g., a desert biome at carrying capacity can survive only if govt stays stable...'), 'aria-label': __alloT('stem.worldbuilder.hypothesis', 'World collapse hypothesis'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.worldbuilder.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
-            iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+            h('label', { className: 'block text-[0.6875rem] font-bold mb-1', style: { color: '#e2e8f0' } }, __alloT('stem.worldbuilder.your_hypothesis_what_slider_would_tip_', 'Your hypothesis (what slider would tip your world into collapse fastest? Why?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.worldbuilder.e_g_a_desert_biome_at_carrying_capacit', 'e.g., a desert biome at carrying capacity can survive only if govt stays stable...'), 'aria-label': __alloT('stem.worldbuilder.hypothesis', 'World collapse hypothesis'), className: 'w-full p-2 rounded-lg text-xs mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#f1f5f9', resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold mb-2', style: { background: '#0f172a', color: sm.color, border: '1px solid #334155', cursor: 'pointer' } }, __alloT('stem.worldbuilder.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+            iq.stuckRevealed && h('div', { className: 'p-2.5 rounded-lg text-xs mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5, color: '#e2e8f0' } },
               h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, __alloT('stem.worldbuilder.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { className: 'pl-4 m-0' },
                 h('li', null, __alloT('stem.worldbuilder.what_does_carrying_capacity_mean_for_a', 'What does "carrying capacity" mean for a story? When does it bend, when does it break?')),
@@ -1136,29 +1297,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 h('li', null, __alloT('stem.worldbuilder.when_is_the_right_time_in_a_story_to_f', 'When is the right time in a story to flip a slider — and would your reader notice?'))
               )
             ),
-            h('label', { className: 'flex items-center gap-2 text-[0.625rem] font-bold cursor-pointer mb-1' },
+            h('label', { className: 'flex items-center gap-2 text-xs font-bold cursor-pointer mb-1', style: { color: '#f1f5f9' } },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, __alloT('stem.worldbuilder.i_can_explain_why_this_combo_yields_th', 'I can explain why this combo yields this story-tension state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.worldbuilder.explain_in_your_own_words', 'Explain in your own words...'), 'aria-label': __alloT('stem.worldbuilder.explanation', 'World-state explanation'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            h('p', { className: 'm-0 text-[0.625rem] italic opacity-60' }, __alloT('stem.worldbuilder.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Carrying capacities are pedagogical heuristics, not population biology; use as story scaffolding, not policy modeling.'))
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.worldbuilder.explain_in_your_own_words', 'Explain in your own words...'), 'aria-label': __alloT('stem.worldbuilder.explanation', 'World-state explanation'), className: 'w-full p-2 rounded-lg text-xs mb-1.5', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#f1f5f9', resize: 'vertical' } }),
+            h('p', { className: 'm-0 text-[0.6875rem] italic', style: { color: '#cbd5e1' } }, __alloT('stem.worldbuilder.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Carrying capacities are pedagogical heuristics, not population biology; use as story scaffolding, not policy modeling.'))
           );
+      };
+
+      // Shared Literary RPG Studio Hero Banner
+      var renderWorkbenchHero = function(showStats) {
+        return h('div', { className: 'wb-hero rounded-2xl p-4 flex items-center gap-3 flex-wrap' },
+          h('button', Object.assign({
+            type: 'button',
+            className: 'p-2 rounded-xl border transition-colors',
+            style: { background: 'rgba(15,23,42,0.55)', borderColor: 'rgba(196,181,253,0.45)', color: '#f8fafc' },
+            'aria-label': __alloT('stem.worldbuilder.back_to_stem_tools', 'Back to STEM tools'),
+            title: __alloT('stem.worldbuilder.back', 'Back')
+          }, a11yClick(function() { ctx.setStemLabTool(null); })),
+            h(ArrowLeft, { size: 18 })
+          ),
+          renderWriteCraftCrest(h),
+          h('div', { className: 'flex-1 min-w-[180px]' },
+            h('div', { className: 'flex items-center gap-2 flex-wrap' },
+              h('h2', { className: 'text-xl font-black m-0', style: { color: '#ffffff' } }, __alloT('stem.worldbuilder.writecraft', '✍️ WriteCraft')),
+              h('span', { className: 'px-2 py-0.5 rounded-full text-[0.625rem] font-extrabold uppercase tracking-wider', style: { background: 'rgba(254,240,138,0.18)', border: '1px solid rgba(254,240,138,0.55)', color: '#fef08a' } }, __alloT('stem.worldbuilder.studio_badge', 'Arts · Literary RPG'))
+            ),
+            h('p', { className: 'text-xs m-0 mt-0.5', style: { color: '#ddd6fe' } }, __alloT('stem.worldbuilder.your_writing_is_your_superpower', 'Your writing IS your superpower'))
+          ),
+          showStats && h('div', { className: 'flex items-center gap-2 flex-wrap' },
+            writingPower > 0 && h('div', { className: 'wb-hero-pill rounded-xl px-2.5 py-1 text-center' },
+              h('div', { className: 'text-sm font-black leading-tight', style: { color: '#fef08a' } }, writingPower),
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, 'POWER')
+            ),
+            writingPower > 0 && h('div', { className: 'wb-hero-pill rounded-xl px-2.5 py-1 text-center' },
+              h('div', { className: 'text-sm font-black leading-tight', style: { color: '#38bdf8' } }, totalXP),
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, 'XP')
+            ),
+            selectedWorld && world && h('div', { className: 'wb-hero-pill rounded-xl px-2.5 py-1 text-center' },
+              h('div', { className: 'text-sm font-black leading-tight', style: { color: '#4ade80' } }, roomsVisited.length + '/' + world.rooms.length),
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, 'ROOMS')
+            ),
+            writingPower > 0 && h('div', { className: 'wb-hero-pill rounded-xl px-2 py-1 text-center' },
+              h('select', {
+                value: gradeLevel,
+                onChange: function(e) { upd('playerGradeLevel', e.target.value); },
+                'aria-label': __alloT('stem.worldbuilder.grade_level', 'Grade level'),
+                className: 'text-[0.6875rem] font-bold rounded-md px-1.5 py-0.5 outline-none focus:ring-2 focus:ring-violet-400',
+                style: { background: '#0f172a', color: '#f8fafc', border: '1px solid #a78bfa' }
+              },
+                GRADE_OPTIONS.map(function(g) {
+                  return h('option', { key: g, value: g }, g);
+                })
+              ),
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mt-0.5', style: { color: '#cbd5e1' } }, 'GRADE')
+            )
+          )
+        );
       };
 
       // Every WriteCraft turn is AI-generated: a student without usable text AI sees a short note, not dead controls.
       if (!callGemini && !ctx.isTeacherMode) {
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200', 'data-wb-needs-ai': 'true' },
-          h('div', { className: 'flex items-center gap-3' },
-            h('button', Object.assign({
-              className: 'p-2 rounded-full hover:bg-violet-100 text-violet-600 transition-colors',
-              'aria-label': __alloT('stem.worldbuilder.back_to_stem_tools', 'Back to STEM tools'),
-              title: __alloT('stem.worldbuilder.back', 'Back')
-            }, a11yClick(function() { ctx.setStemLabTool(null); })),
-              h(ArrowLeft, { size: 20 })
-            ),
-            h('h2', { className: 'text-xl font-black text-slate-800' + onHostInk }, __alloT('stem.worldbuilder.writecraft', '✍️ WriteCraft'))
-          ),
-          h('p', { role: 'status', className: 'rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700' },
+          renderWorkbenchHero(false),
+          h('p', { role: 'status', className: 'rounded-xl border border-slate-300 bg-slate-50 p-4 text-sm text-slate-800' },
             __alloT('stem.worldbuilder.needs_ai_note', 'WriteCraft story turns need AI, which is not available here right now. The World Inquiry below works without it.')),
           renderWorldInquiry()
         );
@@ -1168,42 +1371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
 
         // Header
-        h('div', { className: 'flex items-center gap-3' },
-          h('button', Object.assign({
-            className: 'p-2 rounded-full hover:bg-violet-100 text-violet-600 transition-colors',
-            'aria-label': __alloT('stem.worldbuilder.back_to_stem_tools', 'Back to STEM tools'),
-            title: __alloT('stem.worldbuilder.back', 'Back')
-          }, a11yClick(function() { ctx.setStemLabTool(null); })),
-            h(ArrowLeft, { size: 20 })
-          ),
-          h('div', { className: 'flex-1' },
-            h('h2', { className: 'text-xl font-black text-slate-800' + onHostInk }, __alloT('stem.worldbuilder.writecraft', '✍️ WriteCraft')),
-            h('p', { className: 'text-xs text-slate-600' + onHostInk }, __alloT('stem.worldbuilder.your_writing_is_your_superpower', 'Your writing IS your superpower'))
-          ),
-          writingPower > 0 && h('div', { className: 'flex items-center gap-2' },
-            h('div', { className: 'text-center' },
-              h('div', { className: 'text-lg font-black', style: { color: getQualityTier(writingPower).color } }, writingPower),
-              h('div', { className: 'text-[0.6875rem] text-slate-500 font-bold' }, 'POWER')
-            ),
-            h('div', { className: 'text-center' },
-              h('div', { className: 'text-lg font-black text-amber-600' }, totalXP),
-              h('div', { className: 'text-[0.6875rem] text-slate-500 font-bold' }, 'XP')
-            ),
-            h('div', { className: 'text-center' },
-              h('select', {
-                value: gradeLevel,
-                onChange: function(e) { upd('playerGradeLevel', e.target.value); },
-                'aria-label': __alloT('stem.worldbuilder.grade_level', 'Grade level'),
-                className: 'text-[0.6875rem] font-bold text-violet-600 bg-violet-50 border border-violet-500 rounded-lg px-1 py-0.5 outline-none focus:ring-2 focus:ring-violet-500'
-              },
-                GRADE_OPTIONS.map(function(g) {
-                  return h('option', { key: g, value: g }, g);
-                })
-              ),
-              h('div', { className: 'text-[0.6875rem] text-slate-500 font-bold' }, 'GRADE')
-            )
-          )
-        ),
+        renderWorkbenchHero(true),
 
         // ═══ WORLDBUILDING INQUIRY widget (H7b'') ═══ (renderWorldInquiry, above)
         !selectedWorld && renderWorldInquiry(),
@@ -1279,18 +1447,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     )
               ),
               // Name/class/appearance fields
-              h('div', { className: 'flex-1 space-y-2' },
-                h('div', { className: 'grid grid-cols-3 gap-2' },
+              h('div', { className: 'flex-1 min-w-0 space-y-2' },
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                   h('div', null,
-                    h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, __alloT('stem.worldbuilder.character_name', 'Character Name')),
+                    h('label', { className: 'text-xs font-bold text-slate-700 block mb-1' }, __alloT('stem.worldbuilder.character_name', 'Character Name')),
                     h('input', { type: 'text', value: characterName, onChange: function(e) { upd('characterName', e.target.value); }, placeholder: __alloT('stem.worldbuilder.your_character_s_name', 'Your character\'s name...'), 'aria-label': __alloT('stem.worldbuilder.character_name_2', 'Character name'), className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
                   ),
                   h('div', null,
-                    h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, __alloT('stem.worldbuilder.class_role', 'Class / Role')),
+                    h('label', { className: 'text-xs font-bold text-slate-700 block mb-1' }, __alloT('stem.worldbuilder.class_role', 'Class / Role')),
                     h('input', { type: 'text', value: characterClass, onChange: function(e) { upd('characterClass', e.target.value); }, placeholder: __alloT('stem.worldbuilder.e_g_scholar_explorer', 'e.g., Scholar, Explorer...'), 'aria-label': __alloT('stem.worldbuilder.character_class_or_role', 'Character class or role'), className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
                   ),
                   h('div', null,
-                    h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, __alloT('stem.worldbuilder.grade_level_2', '📚 Grade Level')),
+                    h('label', { className: 'text-xs font-bold text-slate-700 block mb-1' }, __alloT('stem.worldbuilder.grade_level_2', '📚 Grade Level')),
                     h('select', {
                       value: gradeLevel,
                       onChange: function(e) { upd('playerGradeLevel', e.target.value); },
@@ -1305,7 +1473,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   )
                 ),
                 h('div', null,
-                  h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, __alloT('stem.worldbuilder.describe_your_character_s_appearance', '🎨 Describe Your Character\'s Appearance')),
+                  h('label', { className: 'text-xs font-bold text-slate-700 block mb-1' }, __alloT('stem.worldbuilder.describe_your_character_s_appearance', '🎨 Describe Your Character\'s Appearance')),
                   h('textarea', {
                     value: characterAppearance,
                     onChange: function(e) { upd('characterAppearance', e.target.value); },
@@ -1323,16 +1491,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             )
           ),
 
-          // World cards
-          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          // World cards with bespoke miniature SVG realm illustrations
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3.5' },
             WORLDS.map(function(w) {
-              return h('button', { 'aria-label': __alloT('stem.worldbuilder.select_world_to_explore', 'Select world to explore'), key: w.id, onClick: function() { updMulti({ selectedWorld: w.id, currentRoom: w.rooms[0].id, writingPower: 10, roomsVisited: [w.rooms[0].id] }); if (awardStemXP) awardStemXP(5); moveToRoom(w.rooms[0].id); },
-                className: 'p-5 rounded-2xl border-2 border-slate-200 bg-white text-left hover:border-violet-400 hover:shadow-lg transition-all hover:scale-[1.02]'
+              var genreLabel = w.id === 'fantasy' ? 'High Fantasy' : w.id === 'scifi' ? 'Sci-Fi Survival' : w.id === 'mystery' ? 'Gothic Mystery' : 'Historical Epic';
+              return h('button', { type: 'button', 'aria-label': __alloT('stem.worldbuilder.select_world_to_explore', 'Select world to explore') + ': ' + w.name, key: w.id, onClick: function() { updMulti({ selectedWorld: w.id, currentRoom: w.rooms[0].id, writingPower: 10, roomsVisited: [w.rooms[0].id] }); if (awardStemXP) awardStemXP(5); moveToRoom(w.rooms[0].id); },
+                className: 'wb-world-card p-3.5 rounded-2xl border-2 border-slate-200 bg-white text-left hover:border-violet-500 flex flex-col gap-2.5'
               },
-                h('div', { className: 'text-3xl mb-2' }, w.emoji),
-                h('div', { className: 'font-bold text-slate-800' }, w.name),
-                h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, __alloT('stem.worldbuilder.' + (w.id) + '_desc', w.desc)),
-                h('div', { className: 'text-[0.6875rem] text-violet-700 font-bold mt-2' }, w.rooms.length + ' locations to explore')
+                renderWorldRealmArt(h, w.id),
+                h('div', { className: 'flex items-center justify-between gap-2' },
+                  h('div', { className: 'flex items-center gap-1.5 min-w-0' },
+                    h('span', { className: 'text-xl shrink-0', 'aria-hidden': 'true' }, w.emoji),
+                    h('div', { className: 'font-extrabold text-slate-900 truncate' }, w.name)
+                  ),
+                  h('span', { className: 'text-[0.625rem] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 shrink-0' }, genreLabel)
+                ),
+                h('p', { className: 'text-xs text-slate-700 m-0 leading-relaxed' }, __alloT('stem.worldbuilder.' + (w.id) + '_desc', w.desc)),
+                h('div', { className: 'flex items-center justify-between text-[0.6875rem] font-bold pt-1 border-t border-slate-100' },
+                  h('span', { className: 'text-violet-700' }, '🗺️ ' + w.rooms.length + ' locations to explore'),
+                  h('span', { className: 'text-slate-700' }, 'Enter Realm →')
+                )
               );
             })
           )
@@ -1370,15 +1548,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             )
           ),
 
-          // World map — SVG node-link graph of the WHOLE world (the rooms +
-          // their connections form a real graph). Circular auto-layout (rooms
-          // carry no coords); current room highlighted, visited ringed, and the
-          // current room's neighbors are click-to-travel. Replaces the flat
-          // button row that hid the spatial structure.
-          h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
-            h('div', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-widest mb-2' }, __alloT('stem.worldbuilder.world_map', '🗺️ World Map')),
+          // World map — SVG node-link cartography graph of the WHOLE world
+          h('div', { className: 'bg-white rounded-2xl border border-slate-300 p-4 shadow-sm' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
+              h('div', { className: 'text-[0.6875rem] font-extrabold text-slate-700 uppercase tracking-widest' }, __alloT('stem.worldbuilder.world_map', '🗺️ World Map') + ' — ' + world.name),
+              h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-800' }, roomsVisited.length + ' / ' + world.rooms.length + ' discovered')
+            ),
             (function() {
-              var rooms = world.rooms, N = rooms.length, W = 300, Hh = 220, cx = W / 2, cy = 100, R = Math.min(cx, cy) - 36;
+              var rooms = world.rooms, N = rooms.length, W = 340, Hh = 240, cx = W / 2, cy = 114, R = 74;
               var pos = {};
               rooms.forEach(function(rm, i) {
                 var ang = (i / N) * Math.PI * 2 - Math.PI / 2;
@@ -1392,15 +1569,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   var key = rm.id < cid ? rm.id + '|' + cid : cid + '|' + rm.id;
                   if (seen[key]) return; seen[key] = 1;
                   var live = (rm.id === currentRoom || cid === currentRoom);
-                  edges.push(h('line', { key: key, x1: pos[rm.id].x, y1: pos[rm.id].y, x2: pos[cid].x, y2: pos[cid].y, stroke: live ? '#8b5cf6' : '#cbd5e1', strokeWidth: live ? 2.2 : 1.2, opacity: live ? 0.9 : 0.6 }));
+                  edges.push(h('line', { key: key, x1: pos[rm.id].x, y1: pos[rm.id].y, x2: pos[cid].x, y2: pos[cid].y, stroke: live ? '#7c3aed' : '#94a3b8', strokeWidth: live ? 2.6 : 1.3, strokeDasharray: live ? '0' : '4 3', opacity: live ? 0.95 : 0.65 }));
                 });
               });
-              return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 440, display: 'block', margin: '0 auto' }, role: 'img', 'aria-label': 'Map of ' + world.name + '. You are at ' + room.name + '.' },
+              return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 480, display: 'block', margin: '0 auto', borderRadius: 12, background: 'radial-gradient(circle at center, #f5f3ff 0%, #f8fafc 70%, #f1f5f9 100%)', border: '1px solid #e2e8f0' }, role: 'img', 'aria-label': 'Map of ' + world.name + '. You are at ' + room.name + '.' },
+                // Subtle cartography compass rings & cardinal ticks
+                h('circle', { cx: cx, cy: cy, r: R + 22, fill: 'none', stroke: '#e2e8f0', strokeWidth: 1, strokeDasharray: '2 4' }),
+                h('circle', { cx: cx, cy: cy, r: R * 0.52, fill: 'none', stroke: '#e2e8f0', strokeWidth: 0.9, strokeDasharray: '3 4' }),
+                h('text', { x: 14, y: 18, fontSize: 9, fontWeight: 800, fill: '#64748b' }, 'N ↑'),
                 edges,
                 rooms.map(function(rm) {
                   var p = pos[rm.id], isCur = rm.id === currentRoom, isVisited = roomsVisited.indexOf(rm.id) >= 0, canGo = neighbors.indexOf(rm.id) >= 0;
-                  var fill = isCur ? '#ede9fe' : isVisited ? '#f0fdf4' : '#f8fafc';
-                  var stroke = isCur ? '#7c3aed' : isVisited ? '#16a34a' : '#cbd5e1';
+                  var fill = isCur ? '#ede9fe' : isVisited ? '#ecfdf5' : canGo ? '#eff6ff' : '#f8fafc';
+                  var stroke = isCur ? '#6d28d9' : isVisited ? '#15803d' : canGo ? '#2563eb' : '#94a3b8';
                   var bright = isVisited || isCur || canGo;
                   return h('g', { key: rm.id,
                     style: { cursor: canGo ? 'pointer' : 'default' },
@@ -1419,16 +1600,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       moveToRoom(id);
                     }; }(rm.id) : null,
                     'aria-label': canGo ? ('Travel to ' + rm.name) : (rm.name + (isCur ? ' — you are here' : '')) },
-                    isCur ? h('circle', { cx: p.x, cy: p.y, r: 19, fill: 'none', stroke: '#7c3aed', strokeWidth: 1, opacity: 0.5 }) : null,
-                    h('circle', { cx: p.x, cy: p.y, r: 15, fill: fill, stroke: stroke, strokeWidth: isCur ? 3 : 1.8, opacity: bright ? 1 : 0.5 }),
+                    isCur ? h('circle', { cx: p.x, cy: p.y, r: 21, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, strokeDasharray: '3 2', opacity: 0.75 }) : null,
+                    canGo ? h('circle', { cx: p.x, cy: p.y, r: 19, fill: 'none', stroke: '#3b82f6', strokeWidth: 1, opacity: 0.45 }) : null,
+                    h('circle', { cx: p.x, cy: p.y, r: 15.5, fill: fill, stroke: stroke, strokeWidth: isCur ? 3 : 2, opacity: bright ? 1 : 0.7 }),
                     h('text', { x: p.x, y: p.y + 5, textAnchor: 'middle', fontSize: 15 }, rm.emoji),
-                    h('text', { x: p.x, y: p.y + 30, textAnchor: 'middle', fontSize: 8, fontWeight: isCur ? 800 : 600, fill: bright ? '#334155' : '#94a3b8' }, rm.name.length > 16 ? rm.name.slice(0, 15) + '…' : rm.name),
-                    (isVisited && !isCur) ? h('text', { x: p.x + 12, y: p.y - 9, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#16a34a' }, '✓') : null
+                    h('text', { x: p.x, y: p.y + 29, textAnchor: 'middle', fontSize: 8.5, fontWeight: isCur ? 800 : 700, fill: bright ? '#1e293b' : '#475569' }, rm.name.length > 16 ? rm.name.slice(0, 15) + '…' : rm.name),
+                    (isVisited && !isCur) ? h('text', { x: p.x + 12, y: p.y - 10, textAnchor: 'middle', fontSize: 9.5, fontWeight: 800, fill: '#15803d' }, '✓') : null
                   );
                 })
               );
             })(),
-            h('div', { className: 'text-[0.625rem] text-slate-500 text-center mt-1' }, __alloT('stem.worldbuilder.you_are_here_visited_tap_a_connected_l', '🟣 you are here · ✓ visited · tap a connected location to travel'))
+            h('div', { className: 'text-[0.6875rem] text-slate-600 text-center mt-2 font-medium' }, __alloT('stem.worldbuilder.you_are_here_visited_tap_a_connected_l', '🟣 you are here · ✓ visited · tap a connected location to travel'))
           ),
 
           // NPCs in this room
@@ -1690,6 +1872,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               ),
               h('p', { className: 'text-[0.6875rem] text-red-700 mt-1 font-medium' }, __alloT('stem.worldbuilder.write_your_battle_action_describe_how_', '⚔️ Write your battle action! Describe HOW you fight. Reference the weakness for +15 bonus damage!'))
             ),
+            // Sensory writing craft spark chips (guided micro-prompts)
+            h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-2' },
+              h('span', { className: 'text-[0.6875rem] font-bold text-slate-700' }, __alloT('stem.worldbuilder.craft_sparks', '✨ Craft sparks:')),
+              [
+                { id: 'sight', label: '+ Sight & Light', text: 'As shadows shift across the light, ' },
+                { id: 'sound', label: '+ Sound & Motion', text: 'With a sudden echo rushing through the air, ' },
+                { id: 'emotion', label: '+ Inner Resolve', text: 'Steadying my breath with quiet resolve, ' },
+                { id: 'setting', label: '+ Use Surroundings', text: 'Using the textures of the room around me, ' }
+              ].map(function(sp) {
+                return h('button', {
+                  key: sp.id,
+                  type: 'button',
+                  disabled: actionLoading || hwLoading,
+                  onClick: function() {
+                    var prefix = actionText && !/\s$/.test(actionText) ? actionText + ' ' : (actionText || '');
+                    upd('actionText', prefix + sp.text);
+                  },
+                  className: 'wb-spark-chip px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-white border border-violet-300 text-violet-800 hover:bg-violet-100 disabled:opacity-40'
+                }, sp.label);
+              })
+            ),
             h('textarea', {
               value: actionText,
               onChange: handleActionInput,
@@ -1795,8 +1998,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     h('div', { className: 'text-sm font-bold mt-1', style: { color: getQualityTier(actionResult.finalScore || actionResult.qualityScore).color } }, getQualityTier(actionResult.finalScore || actionResult.qualityScore).emoji + ' ' + getQualityTier(actionResult.finalScore || actionResult.qualityScore).label)
                   ),
                   actionResult.strategyScore > 0 && h('div', { className: 'text-center' },
-                    h('div', { className: 'text-2xl font-black text-indigo-600' }, '+', actionResult.strategyScore),
-                    h('div', { className: 'text-[0.6875rem] text-indigo-500 font-bold' }, __alloT('stem.worldbuilder.strategy', '🧠 Strategy'))
+                    h('div', { className: 'text-2xl font-black text-indigo-700' }, '+', actionResult.strategyScore),
+                    h('div', { className: 'text-[0.6875rem] text-indigo-700 font-bold' }, __alloT('stem.worldbuilder.strategy', '🧠 Strategy'))
                   )
                 ),
                 actionResult.weaknessExploited && h('div', { className: 'mt-2 inline-block bg-amber-200 text-amber-800 px-3 py-1 rounded-full text-[0.6875rem] font-bold' }, __alloT('stem.worldbuilder.weakness_exploited', '🎯 Weakness exploited!')),
@@ -1823,7 +2026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               actionResult.enemyWriting && h('div', { className: 'p-4 bg-gradient-to-r from-red-50 to-orange-50' },
                 h('div', { className: 'text-[0.6875rem] font-bold text-red-600 uppercase tracking-widest mb-1 flex items-center gap-1' }, activeBattle ? activeBattle.emoji + ' ' : '', activeBattle ? activeBattle.name + ' Responds' : 'Enemy Responds'),
                 h('p', { className: 'text-sm text-red-900 leading-relaxed font-medium' }, actionResult.enemyWriting),
-                h('p', { className: 'text-[0.6875rem] text-red-400 italic mt-2' }, __alloT('stem.worldbuilder.notice_the_vivid_language_sensory_deta', '📖 Notice the vivid language, sensory details, and figurative writing in the enemy\'s response — learn from how it describes its actions!'))
+                h('p', { className: 'text-[0.6875rem] text-red-700 italic mt-2' }, __alloT('stem.worldbuilder.notice_the_vivid_language_sensory_deta', '📖 Notice the vivid language, sensory details, and figurative writing in the enemy\'s response — learn from how it describes its actions!'))
               ),
 
               // Feedback

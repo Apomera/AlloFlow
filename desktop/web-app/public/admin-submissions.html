@@ -235,10 +235,10 @@
       ${piiList ? '<ul>' + piiList + '</ul>' : '<p class="pii-clean">No PII flags from automated scan.</p>'}
 
       <h3>Affirmations</h3>
-      <div class="checkbox-row"><input type="checkbox" disabled ${affs.author_or_authorized ? "checked" : ""}> Author or authorized submitter</div>
-      <div class="checkbox-row"><input type="checkbox" disabled ${affs.no_pii ? "checked" : ""}> Confirmed no PII</div>
-      <div class="checkbox-row"><input type="checkbox" disabled ${affs.license_agreed ? "checked" : ""}> License agreed</div>
-      <div class="checkbox-row"><input type="checkbox" disabled ${affs.age_eligible ? "checked" : ""}> Age eligible (or adult-on-behalf)</div>
+      <label class="checkbox-row"><input type="checkbox" disabled ${affs.author_or_authorized ? "checked" : ""}> Author or authorized submitter</label>
+      <label class="checkbox-row"><input type="checkbox" disabled ${affs.no_pii ? "checked" : ""}> Confirmed no PII</label>
+      <label class="checkbox-row"><input type="checkbox" disabled ${affs.license_agreed ? "checked" : ""}> License agreed</label>
+      <label class="checkbox-row"><input type="checkbox" disabled ${affs.age_eligible ? "checked" : ""}> Age eligible (or adult-on-behalf)</label>
 
       <details>
         <summary>JSON payload</summary>
@@ -247,11 +247,11 @@
 
       ${isPending ? `
         <div class="actions">
-          <button id="approveBtn" class="primary">Approve and publish</button>
-          <button id="rejectBtn" class="danger">Reject</button>
+          <button type="button" id="approveBtn" class="primary">Approve and publish</button>
+          <button type="button" id="rejectBtn" class="danger">Reject</button>
         </div>
-        <h3>Reviewer notes (optional)</h3>
-        <textarea id="reviewerNotes" class="notes" placeholder="Visible to reviewers; not shown publicly. E.g., why approved, why rejected, suggestions for resubmission."></textarea>
+        <h3 id="reviewerNotesHeading"><label for="reviewerNotes">Reviewer notes (optional)</label></h3>
+        <textarea id="reviewerNotes" class="notes" aria-labelledby="reviewerNotesHeading" placeholder="Visible to reviewers; not shown publicly. E.g., why approved, why rejected, suggestions for resubmission."></textarea>
       ` : `
         <p style="color:var(--slate);font-style:italic;">This submission has already been ${escapeHtml(data.status)}.</p>
         ${data.reviewer_notes ? `<h3>Reviewer notes</h3><pre>${escapeHtml(data.reviewer_notes)}</pre>` : ""}

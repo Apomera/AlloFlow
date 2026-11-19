@@ -47,9 +47,6 @@ module.exports = {
     var L = ctx.L;
     var fact = String(item.word);
     var answer = String(item.answer);
-    var win = ctx.root.ownerDocument.defaultView;
-    var touch = false;
-    try { touch = !!win.matchMedia('(hover: none) and (pointer: coarse)').matches; } catch (_) {}
     var tag = String(item.id || 'fact').replace(/[^a-z0-9-]/gi, '');
     // look: the fact and its answer. type: covered, typed from memory. copy: after a miss, the
     // answer shows and is typed while looking. done: the card is over.
@@ -68,54 +65,26 @@ module.exports = {
       draw();
       focusPad();
     } } }, [L.math_ccc_cover]);
-    // The number pad: digits, delete and Done. The answer box takes a hardware keyboard too; on a
-    // touch screen it has inputmode="none" so the system keyboard stays away.
-    var input = ctx.el('input', { type: 'text', inputmode: touch ? 'none' : 'numeric', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'data-pad-input': '',
-      style: 'display:block;margin:0 auto;max-width:200px;text-align:center;font-size:1.8rem;font-weight:700' });
-    var checkButton = ctx.el('button', { type: 'button', class: 'primary', 'data-key': 'next', 'aria-disabled': 'true', style: 'grid-column:1/-1;min-height:56px;font-size:1.3rem;font-weight:700',
-      on: { click: function () { press('next'); } } }, [L.math_ccc_done]);
-    var set = function (raw) {
-      var v = String(raw == null ? '' : raw).replace(/[^0-9]/g, '').slice(0, 8);
-      if (input.value !== v) input.value = v;
-      checkButton.setAttribute('aria-disabled', v ? 'false' : 'true');
-      if (phase === 'type') slot.textContent = v || '?';
-    };
-    var press = function (key) {
-      if (phase !== 'type' && phase !== 'copy') return;
-      var v = String(input.value || '');
-      if (key === 'back') set(v.slice(0, -1));
-      else if (key === 'next') submit();
-      else if (/^[0-9]$/.test(key)) set(v + key);
-    };
-    // A key pressed with a mouse or a finger leaves the focus in the answer box, so Enter then sends the answer
-    // instead of pressing that key again. A key reached with Tab is still pressed with Enter.
-    var keyButton = function (label, key, name) {
-      return ctx.el('button', { type: 'button', 'data-key': key, 'aria-label': name || false, style: 'min-height:56px;font-size:1.5rem;font-weight:700;padding:6px',
-        on: { mousedown: function (e) { e.preventDefault(); focusPad(); }, click: function () { press(key); } } }, [label]);
-    };
-    var keys = ctx.el('div', { role: 'group', 'aria-label': L.math_ccc_keys, style: 'display:grid;grid-template-columns:repeat(3,minmax(64px,96px));gap:10px;justify-content:center;margin:16px auto 0' },
-      ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(function (d) { return keyButton(d, d); })
-        .concat([ctx.el('span', {}), keyButton('0', '0'), keyButton(String.fromCharCode(0x2190), 'back', L.math_ccc_delete), checkButton]));
-    var pad = ctx.el('div', { 'data-pad': '' }, [input, keys]);
-    input.addEventListener('input', function () { set(input.value); });
-    input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); press('next'); } });
-    // A digit or Backspace typed while a key of the pad has the focus goes to the answer too.
-    keys.addEventListener('keydown', function (e) {
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
-      var k = String(e.key || '');
-      if (/^[0-9]$/.test(k)) { e.preventDefault(); press(k); } else if (k === 'Backspace') { e.preventDefault(); press('back'); }
+    var pad = ctx.keypad({
+      minus: false, inline: true, padAttr: true,
+      keysLabel: L.math_ccc_keys, deleteLabel: L.math_ccc_delete, nextLabel: L.math_ccc_done,
+      canPress: function () { return phase === 'type' || phase === 'copy'; },
+      onChange: function (v) { if (phase === 'type') slot.textContent = v || '?'; },
+      onNext: function () { submit(); },
     });
-    var focusPad = function () { try { input.focus(); } catch (_) {} };
+    var input = pad.input;
+    var set = pad.set;
+    var focusPad = pad.focus;
     var draw = function () {
       var shown = phase !== 'type';
       slot.textContent = shown ? answer : (input.value || '?');
       slot.style.borderStyle = shown ? 'solid' : 'dashed';
       slot.style.borderColor = phase === 'look' ? 'var(--accent)' : phase === 'copy' ? 'var(--warn)' : phase === 'done' ? (outcome ? 'var(--ok)' : 'var(--warn)') : 'var(--muted)';
-      slot.style.background = phase === 'type' ? 'var(--line)' : phase === 'copy' ? 'var(--warn-bg)' : phase === 'done' ? (outcome ? 'var(--ok-bg)' : 'var(--warn-bg)') : '';
-      // While the answer is covered the box below says what to do; the covered line is not read twice.
-      if (phase === 'type') prompt.setAttribute('aria-hidden', 'true'); else prompt.removeAttribute('aria-hidden');
+      slot.style.background = phase === 'type' ? 'var(--soft)' : phase === 'copy' ? 'var(--warn-bg)' : phase === 'done' ? (outcome ? 'var(--ok-bg)' : 'var(--warn-bg)') : '';
+      // Keep the visible problem readable to screen readers in every phase (only hidden when not rendered).
+      prompt.removeAttribute('aria-hidden');
       coverButton.hidden = phase !== 'look';
-      pad.hidden = phase === 'look' || phase === 'done';
+      pad.node.hidden = phase === 'look' || phase === 'done';
       say.textContent = phase === 'look' ? L.math_ccc_look : phase === 'copy' ? L.math_ccc_copy
         : phase === 'type' ? (ctx.attempts() > 0 ? L.math_ccc_again : L.math_ccc_type) : '';
       input.setAttribute('aria-label', phase === 'copy' ? ctx.fmt(L.math_ccc_copy_label, { fact: fact, answer: answer }) : ctx.fmt(L.math_ccc_label, { fact: fact }));
@@ -164,7 +133,7 @@ module.exports = {
     ctx.root.appendChild(prompt);
     ctx.root.appendChild(say);
     ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:center' }, [coverButton]));
-    ctx.root.appendChild(pad);
+    ctx.root.appendChild(pad.node);
     // A card that starts covered (a known fact) is timed from being shown.
     if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); focusPad(); }
     return {
@@ -172,8 +141,7 @@ module.exports = {
       reveal: function (correct) {
         phase = 'done';
         outcome = correct === true;
-        input.setAttribute('readonly', '');
-        checkButton.setAttribute('aria-disabled', 'true');
+        pad.lock();
         draw();
       },
     };

@@ -375,7 +375,7 @@ function _vpAiUsable(kind, fn) {
     if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable(kind, fn);
   } catch (_) {
   }
-  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
 }
 function _vpNormLabel(value) {
   return String(value == null ? "" : value).toLowerCase().normalize("NFKD").replace(/([\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}])\p{M}+/gu, "$1").normalize("NFC").replace(/[\p{P}\p{S}]+/gu, " ").replace(/\s+/g, " ").trim();

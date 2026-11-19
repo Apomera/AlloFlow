@@ -12738,6 +12738,7 @@ window.StemLab = window.StemLab || {
         var packet = buildInterviewPrepPacket();
         try {
           var printWin = window.open('', '_blank');
+          try { if (printWin) printWin.opener = null; } catch (_) {}
           if (!printWin || !printWin.document) throw new Error('print window blocked');
           printWin.document.write('<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>Interview Prep Packet</title><style>body{font-family:Arial,sans-serif;line-height:1.5;color:#0f172a;margin:32px;}pre{white-space:pre-wrap;font:14px/1.5 Arial,sans-serif;}button{padding:10px 14px;border:1px solid #334155;border-radius:8px;background:#0f172a;color:white;font-weight:700;}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print packet</button><pre>' + escapeInterviewPacketHtml(packet) + '</pre></body></html>');
           printWin.document.close();

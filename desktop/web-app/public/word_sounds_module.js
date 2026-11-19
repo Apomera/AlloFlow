@@ -3311,7 +3311,7 @@ const WS_CORE = createWordSoundsCore();
                 type: "button",
                 onClick: handleModeToggle,
                 "aria-label": ts("word_sounds.anchor_switch_compact") || "Switch to compact anchor view",
-                className: "px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
+                className: "px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-900 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
               },
               ts("word_sounds.anchor_compact_btn") || "Compact",
             ),
@@ -8833,14 +8833,23 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         if (!option.googleFont) return "";
         const family = String(option.googleFont).split(":")[0];
         const letters = [...new Set(Array.from(String(text || "") + "0123456789"))].filter((c) => c.trim() && !/[\u0000-\u001f]/.test(c)).sort().join("");
-        const res = await fetch("https://fonts.googleapis.com/css2?family=" + family + ":wght@400;700&display=swap&text=" + encodeURIComponent(letters));
+        const fetchTimed = async (u) => {
+          const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+          const timer = ctrl ? setTimeout(() => ctrl.abort(), 8000) : null;
+          try {
+            return await fetch(u, ctrl ? { signal: ctrl.signal } : undefined);
+          } finally {
+            if (timer) clearTimeout(timer);
+          }
+        };
+        const res = await fetchTimed("https://fonts.googleapis.com/css2?family=" + family + ":wght@400;700&display=swap&text=" + encodeURIComponent(letters));
         if (!res.ok) return "";
         let css = await res.text();
         const urls = [...new Set([...css.matchAll(/url\((['"]?)([^'")]+)\1\)/g)].map((m) => m[2]))];
         if (!urls.length) return "";
         let used = 0;
         for (const url of urls) {
-          const file = await fetch(url);
+          const file = await fetchTimed(url);
           if (!file.ok) return "";
           const buffer = await file.arrayBuffer();
           used += buffer.byteLength;
@@ -8863,7 +8872,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       if (!event) return null;
       // The reading-settings panel keeps its own keys (Escape closes it).
       if (event.target && typeof event.target.closest === "function" && event.target.closest("[data-allo-reading-settings]")) return null;
-      if (event.key === "Escape" || event.key === "Esc") return "end";
+      if (event.key === "Escape" || event.key === "Esc") {
+        if (event.isComposing || event.keyCode === 229) return null;
+        return "end";
+      }
       if (event.altKey || event.ctrlKey || event.metaKey) return null;
       const target = event.target && typeof event.target.closest === "function" ? event.target : null;
       if (target && target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]')) return null;
@@ -10806,6 +10818,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           : [];
       const handleDialogKeyDown = (event, onEscape) => {
         if (event.key === "Escape" && typeof onEscape === "function") {
+          if (event.isComposing || event.keyCode === 229) return;
           event.preventDefault();
           event.stopPropagation();
           onEscape();
@@ -11822,6 +11835,12 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           // Flip the mount flag so the ~25 `if (isMountedRef.current)` guards on
           // post-await / setTimeout setState actually fire after the modal closes.
           isMountedRef.current = false;
+          try {
+            if (audioCtxRef.current && typeof audioCtxRef.current.close === "function") {
+              Promise.resolve(audioCtxRef.current.close()).catch(() => {});
+              audioCtxRef.current = null;
+            }
+          } catch (_) {}
           console.log("[WS-DBG] WordSoundsModal UNMOUNTED");
         };
       }, []);
@@ -16327,7 +16346,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               try {
                 const repairPrompt = `List 3 unique distractor words for "${targetToCheck}" (cannot be the word itself). Return JSON array.`;
                 const repairRes = await callGemini(repairPrompt, true);
-                const repairMatch = repairRes.match(/\[[\s\S]*\]/);
+                const repairMatch = typeof repairRes === 'string' ? repairRes.match(/\[[\s\S]*\]/) : null;
                 if (repairMatch) {
                   const fixed = JSON.parse(repairMatch[0]);
                   const merged = [...uniqueDistractors, ...fixed];
@@ -23040,13 +23059,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         tabIndex: chip ? undefined : 0,
                         "aria-label": chip ? undefined : (ts("word_sounds.sr_empty_box", { n: i + 1 }) || ("Empty box " + (i + 1))),
                         onKeyDown: chip ? undefined : (e) => { if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") { e.preventDefault(); handleSegTargetTap("box", i); } },
-                        className: `w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold transition-all relative ${isError ? "bg-red-50 border-2 border-red-400" : chip ? "scale-100 shadow-md ring-2 ring-violet-200" : "bg-white border-2 border-slate-200 text-slate-600"}`,
-                        style: {
-                          backgroundColor: chip ? chip.color : undefined,
-                          border: chip
-                            ? `2px solid ${chip.color.replace("92%", "60%")}`
-                            : undefined,
-                        },
+                        className: `w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold transition-all relative ${isError ? "bg-red-50 border-2 border-red-400 text-red-900" : chip ? "scale-100 shadow-md bg-violet-50 border-2 border-violet-400 text-slate-800 ring-2 ring-violet-200" : "bg-white border-2 border-slate-200 text-slate-700"}`,
                       },
                       chip
                         ? /*#__PURE__*/ React.createElement(
@@ -23133,15 +23146,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       ? /*#__PURE__*/ React.createElement(
                         "div",
                         { key: chip.id, className: "relative" },
-                            /*#__PURE__*/ React.createElement("input", {
+                        /*#__PURE__*/ React.createElement("input", {
                           "aria-label": t("common.text_field"),
                           className:
-                            "w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center text-center outline-none focus:ring-2 focus:ring-violet-400",
-                          style: {
-                            backgroundColor: chip.color,
-                            borderColor: chip.color.replace("92%", "70%"),
-                            color: "#475569",
-                          },
+                            "w-16 h-16 rounded-full bg-violet-50 border-2 border-b-4 border-violet-400 text-slate-800 font-bold text-xl flex items-center justify-center text-center outline-none focus:ring-2 focus:ring-violet-400",
                           value: chip.phoneme,
                           onChange: (e) =>
                             handleOptionUpdate(idx, e.target.value),
@@ -23179,11 +23187,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                               ? `${PHONEME_GUIDE[chip.phoneme].label}: ${PHONEME_GUIDE[chip.phoneme].tip}\n` + (ts("word_sounds.chip_drag_or_tap") || "Drag to a box, or click or tap to hear it and pick it up, then click or tap a box.")
                               : ts("word_sounds.chip_drag_or_tap") || "Drag to a box, or click or tap to hear it and pick it up, then click or tap a box.",
                           className:
-                            "w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all cursor-grab active:cursor-grabbing" + (isSegPicked(chip, "pool") ? " ring-4 ring-violet-600 ring-offset-2" : ""),
+                            "w-16 h-16 rounded-full bg-violet-50 border-2 border-b-4 border-violet-400 text-slate-800 font-bold text-xl flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all cursor-grab active:cursor-grabbing" + (isSegPicked(chip, "pool") ? " ring-4 ring-violet-600 ring-offset-2" : ""),
                           style: {
-                            backgroundColor: chip.color,
-                            borderColor: chip.color.replace("92%", "70%"),
-                            color: "#475569",
                             touchAction: "none",
                           },
                         },
@@ -25848,14 +25853,62 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (/^[a-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$/.test(docEl.lang || "")) labels.lang = docEl.lang;
           if (docEl.dir === "rtl" || docEl.dir === "ltr") labels.dir = docEl.dir;
         } catch (_) {}
-        // Sounds go in as WAV so they also play on iPads and older Safari,
-        // which may not play the WebM recordings the app stores.
+        // Sounds go in as WAV first so every browser can decode them, then 48 kbps MP3 via
+        // packets_audio_kit.js / lame.min.js when available (6-10x smaller files; silent WAV fallback).
         let audioNote = "";
         if (typeof lib.portableAudio === "function") {
           setTakeHomeStatus(printTr("word_sounds.take_home_audio_preparing", "Getting the sounds ready to play on every device..."));
           const audio = await lib.portableAudio(built.lesson);
           if (audio.failed.length) audioNote = " " + printTr("word_sounds.take_home_audio_not_converted", "{count} sound(s) could not be converted and may not play on iPads.", { count: audio.failed.length });
         }
+        try {
+          if (typeof window.__alloLoadPlugin === "function") {
+            if (!window.AlloPacketAudioKit) await window.__alloLoadPlugin("packets_audio_kit.js");
+            if (!(window.lamejs && window.lamejs.Mp3Encoder)) await window.__alloLoadPlugin("lame.min.js");
+          }
+          let wavToMp3Uri = null;
+          if (window.AlloPacketAudioKit && typeof window.AlloPacketAudioKit.wavUriToMp3Uri === "function") {
+            if ((window.lamejs && window.lamejs.Mp3Encoder) || (typeof window.AlloPacketAudioKit.getMp3 === "function" && await window.AlloPacketAudioKit.getMp3())) {
+              wavToMp3Uri = (uri) => window.AlloPacketAudioKit.wavUriToMp3Uri(uri, 48);
+            }
+          } else if (window.lamejs && window.lamejs.Mp3Encoder) {
+            wavToMp3Uri = (uri) => {
+              const m = /^data:audio\/(?:wav|x-wav|wave);base64,([A-Za-z0-9+/]*=*)$/i.exec(String(uri || ""));
+              if (!m) return null;
+              try {
+                const bin = atob(m[1]), bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                if (bytes.length < 44 || String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) !== "RIFF") return null;
+                const view = new DataView(bytes.buffer);
+                let info = null;
+                for (let at = 12; at + 8 <= bytes.length;) {
+                  const tag = String.fromCharCode(bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]), sz = view.getUint32(at + 4, true);
+                  if (tag === "fmt ") info = { fmt: view.getUint16(at + 8, true), ch: view.getUint16(at + 10, true), rate: view.getUint32(at + 12, true), bits: view.getUint16(at + 22, true) };
+                  if (tag === "data") { if (!info || info.fmt !== 1 || info.ch !== 1 || info.bits !== 16) return null; info.at = at + 8; info.size = Math.min(sz, bytes.length - at - 8); break; }
+                  at += 8 + sz + (sz % 2);
+                }
+                if (!info || !info.at || info.size < 2) return null;
+                const samples = new Int16Array(bytes.buffer.slice(info.at, info.at + info.size - (info.size % 2)));
+                const enc = new window.lamejs.Mp3Encoder(1, info.rate, 48), parts = [];
+                let total = 0;
+                for (let i = 0; i < samples.length; i += 1152) { const p = enc.encodeBuffer(samples.subarray(i, i + 1152)); if (p && p.length) { parts.push(p); total += p.length; } }
+                const tail = enc.flush(); if (tail && tail.length) { parts.push(tail); total += tail.length; }
+                if (!total) return null;
+                const out = new Uint8Array(total); let off = 0;
+                parts.forEach((p) => { out.set(p, off); off += p.length; });
+                let txt = "";
+                for (let i = 0; i < out.length; i += 0x8000) txt += String.fromCharCode.apply(null, out.subarray(i, i + 0x8000));
+                return "data:audio/mpeg;base64," + btoa(txt);
+              } catch (_) { return null; }
+            };
+          }
+          if (wavToMp3Uri && built.lesson && built.lesson.audio && typeof built.lesson.audio === "object") {
+            Object.keys(built.lesson.audio).forEach((key) => {
+              const mp3 = wavToMp3Uri(built.lesson.audio[key]);
+              if (mp3) built.lesson.audio[key] = mp3;
+            });
+          }
+        } catch (_) {}
         const html = lib.buildHtml(built.lesson, { core: WS_CORE, labels });
         const name = "word-sounds-" + takeHomeSlug(built.lesson.title) + ".html";
         const fileBlob = new Blob([html], { type: "text/html;charset=utf-8" });
@@ -25872,17 +25925,125 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ? printTr("word_sounds.take_home_downloaded_send", "Downloaded {file}. Students open it in a browser; it works offline. When they finish online, Send puts their results in your Class Mailbox for 60 days; collect them in the Submission Inbox with Get submissions from Class Mailbox. They can always save a results file instead.", { file: name })
           : printTr("word_sounds.take_home_downloaded", "Downloaded {file}. It works offline, with no account. Students download it, open it in a browser, and save their results file at the end.", { file: name })) + " " + sizeText + audioNote);
       };
+      const parseTakeHomeCsvFallback = (text, lib) => {
+        const src = String(text || "").replace(/^\uFEFF/, "");
+        if (src.indexOf("alloflow-packet-result/1") < 0) return { ok: false, error: "not_a_result" };
+        const firstLine = src.split(/\r?\n/)[0] || "";
+        const sep = /^sep=(.)/i.test(firstLine) ? firstLine.charAt(4) : (firstLine.split("\t").length > firstLine.split(",").length ? "\t" : firstLine.split(";").length > firstLine.split(",").length ? ";" : ",");
+        const rows = [];
+        let row = [], cell = "", inQ = false;
+        for (let i = /^sep=./i.test(firstLine) ? src.indexOf("\n") + 1 : 0; i < src.length; i++) {
+          const ch = src[i];
+          if (inQ) {
+            if (ch === '"' && src[i + 1] === '"') { cell += '"'; i++; }
+            else if (ch === '"') inQ = false;
+            else cell += ch;
+          } else if (ch === '"') inQ = true;
+          else if (ch === sep) { row.push(cell); cell = ""; }
+          else if (ch === "\r" || ch === "\n") { if (ch === "\r" && src[i + 1] === "\n") i++; row.push(cell); if (row.some((c) => c !== "")) rows.push(row); row = []; cell = ""; }
+          else cell += ch;
+        }
+        if (cell !== "" || row.length) { row.push(cell); if (row.some((c) => c !== "")) rows.push(row); }
+        const unguard = (v) => String(v == null ? "" : v).replace(/^'(?=[=+\-@\t\r])/, "");
+        let hdr = -1, idx = {};
+        for (let r = 0; r < rows.length && r < 5 && hdr < 0; r++) {
+          const names = rows[r].map((c) => unguard(c).trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""));
+          if (names.includes("format") && names.includes("session_id") && names.includes("activity")) {
+            names.forEach((n, i) => { if (n && !(n in idx)) idx[n] = i; });
+            hdr = r;
+          }
+        }
+        if (hdr < 0) return { ok: false, error: "not_a_result" };
+        const get = (r, k) => (k in idx && r[idx[k]] != null) ? unguard(r[idx[k]]) : "";
+        let title = "", integrity = null;
+        const items = [], titles = {};
+        let meta = null;
+        rows.slice(hdr + 1).forEach((r) => {
+          const first = unguard(r[0]).trim();
+          if (first.startsWith("#")) {
+            if (first.toLowerCase() === "#integrity" && r[1] && r[2]) integrity = { method: unguard(r[1]).trim().toLowerCase(), value: unguard(r[2]).trim().toLowerCase() };
+            if (first.toLowerCase() === "#summary") r.slice(2).forEach((c) => { const m = /^title=(.*)$/i.exec(unguard(c)); if (m && !title) title = m[1].trim(); });
+            return;
+          }
+          if (get(r, "format") !== "alloflow-packet-result/1") return;
+          if (!meta) meta = { sessionId: get(r, "session_id"), packetId: get(r, "packet_id"), version: get(r, "packet_version"), form: get(r, "form"), mode: get(r, "mode"), learner: get(r, "learner"), startedLocal: get(r, "started_local"), finishedLocal: get(r, "finished_local"), durationS: Number(get(r, "duration_s")) || 0 };
+          const act = get(r, "activity"), actTitle = get(r, "activity_title");
+          if (act && actTitle && !titles[act]) titles[act] = actTitle;
+          const respRaw = get(r, "responses");
+          const responses = respRaw ? respRaw.split(" | ") : [];
+          const tries = Number(get(r, "tries")) || 0;
+          const scored = get(r, "scored");
+          const isPractice = scored === "0" || scored.toLowerCase() === "false" || act === "letter_tracing";
+          const supports = {};
+          get(r, "supports").split(";").forEach((part) => { const p = part.split(":"); if (p.length === 2 && p[0] && Number(p[1]) > 0) supports[p[0]] = Number(p[1]); });
+          items.push({ n: Number(get(r, "item_n")) || items.length + 1, itemId: get(r, "item_id"), activity: act, word: get(r, "word"), target: get(r, "target"),
+            responses, attempts: tries, firstTry: get(r, "first_try") === "1" || get(r, "first_try").toLowerCase() === "true",
+            correct: get(r, "correct") === "1" || get(r, "correct").toLowerCase() === "true",
+            done: tries > 0 || responses.length > 0 || isPractice, ms: Number(get(r, "time_ms")) || 0, supports,
+            practice: isPractice ? (act === "letter_tracing" ? "traced" : "practice") : null, flag: get(r, "flag") });
+        });
+        if (!meta || !items.length) return { ok: false, error: "incomplete" };
+        return lib.parseResult({ kind: "alloflow-take-home-result", schemaVersion: 3, sessionId: meta.sessionId,
+          packet: { id: meta.packetId, version: meta.version, form: meta.form, mode: meta.mode || "practice" },
+          lessonId: meta.packetId, revision: meta.version, lessonTitle: title || meta.packetId, activityTitles: titles,
+          learner: meta.learner, learnerName: meta.learner, startedLocal: meta.startedLocal, finishedLocal: meta.finishedLocal,
+          finishedAt: meta.finishedLocal || meta.startedLocal || "", durationMs: meta.durationS * 1000, items,
+          ...(integrity ? { integrity } : {}) });
+      };
+      const sessionToTakeHomeResult = (s) => {
+        const byActivity = {}, activityTitles = {}, summary = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 };
+        const items = (s.items || []).map((it) => {
+          const act = it.activity || "unknown";
+          if (!activityTitles[act]) activityTitles[act] = it.activityTitle || act;
+          const a = byActivity[act] || (byActivity[act] = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 });
+          const done = !!it.attempted;
+          const practice = it.practice ? (act === "letter_tracing" ? "traced" : "practice") : null;
+          if (practice) { if (done) { summary.practised++; a.practised++; } }
+          else {
+            summary.items++; a.items++;
+            if (done) {
+              summary.done++; a.done++;
+              if (it.firstTry) { summary.firstTry++; a.firstTry++; }
+              else if (it.correct) { summary.afterRetry++; a.afterRetry++; }
+              else { summary.missed++; a.missed++; }
+            }
+          }
+          const supports = {};
+          String(it.supports || "").split(";").forEach((part) => { const p = part.split(":"); if (p.length === 2 && p[0] && Number(p[1]) > 0) supports[p[0]] = Number(p[1]); });
+          return { activity: act, word: it.word || "", target: it.target || "", responses: Array.isArray(it.responses) ? it.responses : [],
+            attempts: Number(it.tries) || 0, firstTry: !!it.firstTry, correct: !!it.correct, done, ms: Number(it.timeMs) || 0, supports, practice, flag: it.flag || "" };
+        });
+        return { ok: true, result: { lessonId: s.packetId || "", revision: s.packetVersion || "", lessonTitle: s.title || s.packetId || "",
+          learnerName: s.learner || "", finishedAt: s.finishedLocal || s.startedLocal || s.date || "", sessionId: s.sessionId || "",
+          items, summary, byActivity, activityTitles, integrity: s.integrity || "absent" } };
+      };
       const handleTakeHomeResults = async (event) => {
         const files = Array.from((event.target && event.target.files) || []);
         if (event.target) event.target.value = "";
         const lib = await takeHomeLib();
         if (!lib || !files.length) return;
-        const read = await Promise.all(files.slice(0, 60).map((file) => (file.size > 2000000 ? Promise.resolve({ ok: false, error: "too_large", name: file.name })
-          : file.text().then((text) => ({ ...lib.parseResult(text), name: file.name }), () => ({ ok: false, error: "unreadable", name: file.name })))));
+        if (!window.AlloPacketResultsReader && typeof window.__alloLoadPlugin === "function") {
+          try { await window.__alloLoadPlugin("packets_results_reader.js"); } catch (_) {}
+        }
+        const reader = window.AlloPacketResultsReader && typeof window.AlloPacketResultsReader.read === "function" ? window.AlloPacketResultsReader : null;
+        const batches = await Promise.all(files.slice(0, 60).map((file) => (file.size > 2000000 ? Promise.resolve([{ ok: false, error: "too_large", name: file.name }])
+          : file.text().then(async (text) => {
+            const trimmed = String(text || "").replace(/^\uFEFF/, "").trim();
+            if (trimmed.charAt(0) === "{") return [{ ...lib.parseResult(text), name: file.name }];
+            if (reader) {
+              const got = await reader.read(text, { name: file.name, lastModified: file.lastModified });
+              if (got && got.ok && Array.isArray(got.sessions) && got.sessions.length) {
+                return got.sessions.map((s) => ({ ...sessionToTakeHomeResult(s), name: file.name }));
+              }
+              return [{ ok: false, error: (got && got.reason) || "not_a_result", name: file.name }];
+            }
+            return [{ ...parseTakeHomeCsvFallback(text, lib), name: file.name }];
+          }, () => [{ ok: false, error: "unreadable", name: file.name }]))));
+        const read = [].concat(...batches);
         setTakeHomeResults((prev) => {
           const next = [...prev];
           read.forEach((entry) => {
-            const id = entry.ok ? entry.result.lessonId + "|" + entry.result.learnerName + "|" + entry.result.finishedAt : "bad|" + entry.name;
+            const id = entry.ok ? (entry.result.sessionId || (entry.result.lessonId + "|" + entry.result.learnerName + "|" + entry.result.finishedAt)) : "bad|" + entry.name;
             if (!next.some((row) => row.id === id)) next.push({ id, ...entry });
           });
           return next;
@@ -26212,8 +26373,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   printTr("word_sounds.take_home_privacy_send", "The file holds these words, their recordings and the answers it checks, so a curious student could find the answers in it. Use it for practice, not tests. It holds no student data. It sends nothing unless you turn on sending, and then only to your own Class Mailbox."))),
               h("section", { className: section, "aria-labelledby": "ws-take-home-back" },
                 h("h3", { id: "ws-take-home-back", className: "font-bold" }, printTr("word_sounds.take_home_results_heading", "Look at returned work")),
-                h("label", { className: "mt-2 block text-sm font-semibold", htmlFor: "ws-take-home-files" }, printTr("word_sounds.take_home_results_pick", "Open results files (.json)")),
-                h("input", { id: "ws-take-home-files", type: "file", accept: ".json,application/json", multiple: true, onChange: handleTakeHomeResults,
+                h("label", { className: "mt-2 block text-sm font-semibold", htmlFor: "ws-take-home-files" }, printTr("word_sounds.take_home_results_pick", "Open results files (.csv or .json)")),
+                h("input", { id: "ws-take-home-files", type: "file", accept: ".csv,.json,text/csv,application/json", multiple: true, onChange: handleTakeHomeResults,
                   className: "mt-1 block text-sm" }),
                 h("p", { className: "mt-1 text-xs text-slate-600" }, printTr("word_sounds.take_home_results_local", "Files are read on this device only. Names are what each student typed, not a verified identity.")),
                 h("p", { className: "mt-1 text-xs text-slate-600" }, printTr("word_sounds.take_home_results_mailbox", "Results students sent to your Class Mailbox: open the Submission Inbox and choose Get submissions from Class Mailbox.")),

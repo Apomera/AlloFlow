@@ -39,7 +39,36 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
-  // ── Accessibility live region (WCAG 4.1.3) ──
+  // ── Bespoke 3D Molecule & Bonding Studio CSS + High-Contrast parity ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-molecule-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-molecule-studio-css';
+    st.textContent = [
+      '.mol-hero-deck { background: linear-gradient(130deg, #0f172a 0%, #1e1b4b 48%, #0c4a6e 100%); border: 1px solid rgba(103,232,249,0.34); border-radius: 18px; padding: 14px 16px; margin-bottom: 12px; color: #f8fafc; box-shadow: 0 14px 32px -20px rgba(15,23,42,0.8); min-width: 0; }',
+      '.mol-hero-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; }',
+      '.mol-hero-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 240px; }',
+      '.mol-back-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border-radius: 10px; background: rgba(15,23,42,0.55); border: 1px solid rgba(148,163,184,0.35); color: #e2e8f0; cursor: pointer; flex-shrink: 0; transition: background 140ms ease, border-color 140ms ease; }',
+      '.mol-back-btn:hover { background: rgba(56,189,248,0.22); border-color: #67e8f9; color: #ffffff; }',
+      '.mol-emblem-box { width: 48px; height: 48px; border-radius: 13px; background: linear-gradient(135deg, rgba(56,189,248,0.28), rgba(30,27,75,0.92)); border: 2px solid rgba(103,232,249,0.52); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 14px rgba(12,74,110,0.45); }',
+      '.mol-subject-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; background: rgba(56,189,248,0.2); border: 1px solid rgba(125,211,252,0.45); color: #e0f2fe; font-size: 10px; line-height: 16px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.mol-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(125,211,252,0.2); }',
+      '.mol-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: rgba(15,23,42,0.62); border: 1px solid rgba(125,211,252,0.32); color: #f0f9ff; font-size: 11px; line-height: 16px; font-weight: 700; white-space: nowrap; }',
+      '.mol-pathway-strip { margin-top: 10px; padding: 7px 9px; border-radius: 12px; background: rgba(15,23,42,0.58); border: 1px solid rgba(125,211,252,0.24); }',
+      '.mol-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(125,211,252,0.2); }',
+      '.mol-starter-label { font-size: 11px; line-height: 16px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #bae6fd; }',
+      '.mol-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 7px 11px; border-radius: 10px; background: rgba(15,23,42,0.72); border: 1px solid rgba(125,211,252,0.34); color: #f0f9ff; font-size: 12px; line-height: 16px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.mol-starter-chip:hover:not(:disabled) { background: rgba(56,189,248,0.26); border-color: #67e8f9; color: #ffffff; }',
+      '.mol-starter-chip[data-active="true"] { background: #0369a1; border-color: #7dd3fc; color: #ffffff; }',
+      '.mol-hero-deck button:focus-visible { outline: 2px solid #67e8f9; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="molecule"] .mol-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="molecule"] .mol-emblem-box, .theme-contrast [data-stem-tool-shell="molecule"] .mol-subject-badge, .theme-contrast [data-stem-tool-shell="molecule"] .mol-telemetry-pill, .theme-contrast [data-stem-tool-shell="molecule"] .mol-pathway-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="molecule"] .mol-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="molecule"] .mol-back-btn, .theme-contrast [data-stem-tool-shell="molecule"] .mol-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="molecule"] .mol-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-live-molecule')) return;
     var lr = document.createElement('div');
@@ -1234,8 +1263,9 @@ window.StemLab = window.StemLab || {
           // `const d`/`upd`; the 3D feature referenced threeLoaded + *Ref without
           // ever declaring them) — molecule crashed on render with everything
           // undefined. d/upd match the last-good version (7b02d155).
-          const d = labToolData.molecule || {};
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, molecule: { ...prev.molecule, [key]: val } }));
+          const _rawMolTd = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData.molecule : null;
+          const d = (_rawMolTd && typeof _rawMolTd === 'object' && !Array.isArray(_rawMolTd)) ? _rawMolTd : {};
+          const upd = (key, val) => setLabToolData(prev => ({ ...(prev && typeof prev === 'object' ? prev : {}), molecule: { ...((prev && prev.molecule && typeof prev.molecule === 'object' && !Array.isArray(prev.molecule)) ? prev.molecule : {}), [key]: val } }));
           const calmDiagrams = d.calmDiagrams !== false;
           const moleculeDisplayStyle = d.moleculeDisplayStyle === 'spheres' ? 'spheres' : 'ball-stick';
           const showAtomLabels = d.showAtomLabels !== false;
@@ -1536,7 +1566,7 @@ window.StemLab = window.StemLab || {
                 var _ens = function(cb){
                   if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
                   var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-                  var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+                  if(window._isDesktopBundledApp===true){cb();return;} var _sri=["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.integrity=_sri[i]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
                 };
                 _ens(function(){
                   try {
@@ -2981,7 +3011,7 @@ window.StemLab = window.StemLab || {
           const playBeep = () => { if (typeof stemBeep === 'function') stemBeep(); };
           const playCelebrate = () => { if (typeof stemCelebrate === 'function') stemCelebrate(); };
 
-          const discovered = d.discoveredCompounds || [];
+          const discovered = Array.isArray(d.discoveredCompounds) ? d.discoveredCompounds : [];
 
           const addElement = (sym) => { const cur = { ...selectedEls }; cur[sym] = (cur[sym] || 0) + 1; upd('selectedElements', cur); };
 
@@ -3207,23 +3237,90 @@ window.StemLab = window.StemLab || {
 return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" + (isDark ? " dark-mode" : ""), 'data-molecule-tool': 'true' },
             React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" } }, typeof d._srMsg === "string" ? d._srMsg : ""),
 
-            // Header
-
-            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
-
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.molecule.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
-
-              // \u2605 The header row sits on the tool root, which paints nothing. In
-              // light and dark that is stem_lab's white card, so slate-800 is
-              // right \u2014 but `contrast` deliberately keeps a pure-BLACK surface
-              // (no white card), where the tool's own name measured 1.44:1.
-              React.createElement("h3", { className: "text-lg font-bold tracking-tight " + (isContrast ? "text-white" : "text-slate-800") }, __alloT('stem.molecule.molecule_lab', "\uD83D\uDD2C Molecule Lab")),
-
-              discovered.length > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full" }, "\uD83E\uDDEA " + discovered.length + "/" + COMPOUNDS.length + " discovered"),
-
-              totalRP > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full" }, "⭐ " + totalRP + " RP")
-
-            ),
+            // Bespoke 3D Molecule & Bonding Studio Hero Deck
+            (function() {
+              var molLockedOrQuiz = !!(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked || (ctx.teacherMode && ctx.teacherMode.locked))) || !!(d.elQuiz && !d.elQuiz.answered);
+              var molStage = mode === 'table' ? 'atoms' : mode === 'reactions' ? 'reactions' : 'bonds';
+              var molModeLabel = mode === 'table' ? __alloT('stem.molecule.mode_table_label', 'Periodic Table')
+                : mode === 'creator' ? __alloT('stem.molecule.mode_creator_label', 'Compound Creator')
+                : mode === 'build' ? __alloT('stem.molecule.mode_build_label', 'Bond Builder')
+                : mode === 'reactions' ? __alloT('stem.molecule.mode_reactions_label', 'Reaction Lab')
+                : __alloT('stem.molecule.mode_viewer_label', '3D Molecule Viewer');
+              return React.createElement("header", { className: "mol-hero-deck", "data-molecule-hero-deck": "true" },
+                React.createElement("div", { className: "mol-hero-top" },
+                  React.createElement("div", { className: "mol-hero-left" },
+                    React.createElement("button", { type: "button", onClick: () => setStemLabTool(null), className: "mol-back-btn", 'aria-label': __alloT('stem.molecule.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                    React.createElement("div", { className: "mol-emblem-box", "aria-hidden": "true" },
+                      React.createElement("svg", { viewBox: "0 0 44 44", width: 34, height: 34, fill: "none" },
+                        React.createElement("ellipse", { cx: 22, cy: 22, rx: 17, ry: 8, transform: "rotate(-28 22 22)", stroke: "#38bdf8", strokeWidth: 1.4, opacity: 0.78 }),
+                        React.createElement("ellipse", { cx: 22, cy: 22, rx: 17, ry: 8, transform: "rotate(32 22 22)", stroke: "#a78bfa", strokeWidth: 1.4, opacity: 0.75 }),
+                        React.createElement("line", { x1: 22, y1: 22, x2: 11, y2: 12, stroke: "#e0f2fe", strokeWidth: 1.8 }),
+                        React.createElement("line", { x1: 22, y1: 22, x2: 34, y2: 14, stroke: "#e0f2fe", strokeWidth: 1.8 }),
+                        React.createElement("line", { x1: 22, y1: 22, x2: 22, y2: 35, stroke: "#e0f2fe", strokeWidth: 1.8 }),
+                        React.createElement("circle", { cx: 22, cy: 22, r: 5.5, fill: "#38bdf8", stroke: "#f0f9ff", strokeWidth: 1.2 }),
+                        React.createElement("circle", { cx: 11, cy: 12, r: 3.5, fill: "#f43f5e", stroke: "#fff1f2", strokeWidth: 1 }),
+                        React.createElement("circle", { cx: 34, cy: 14, r: 3.5, fill: "#34d399", stroke: "#ecfdf5", strokeWidth: 1 }),
+                        React.createElement("circle", { cx: 22, cy: 35, r: 3.5, fill: "#fbbf24", stroke: "#fefce8", strokeWidth: 1 })
+                      )
+                    ),
+                    React.createElement("div", { className: "min-w-0" },
+                      React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-0.5" },
+                        React.createElement("span", { className: "mol-subject-badge" }, __alloT('stem.molecule.badge_subject', 'Chemistry · Molecular Bonding'))
+                      ),
+                      React.createElement("h3", { className: "text-lg font-extrabold tracking-tight text-white m-0 leading-6" }, __alloT('stem.molecule.molecule_lab', "\uD83D\uDD2C Molecule Lab"))
+                    )
+                  ),
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    discovered.length > 0 && React.createElement("span", { className: "mol-telemetry-pill" }, "\uD83E\uDDEA " + discovered.length + "/" + COMPOUNDS.length + " " + __alloT('stem.molecule.discovered_word', 'discovered')),
+                    totalRP > 0 && React.createElement("span", { className: "mol-telemetry-pill" }, "⭐ " + totalRP + " RP")
+                  )
+                ),
+                // Live non-spoiler telemetry strip
+                React.createElement("div", { className: "mol-telemetry-strip" },
+                  React.createElement("span", { className: "mol-telemetry-pill" }, "\uD83E\uDDED " + __alloT('stem.molecule.telemetry_mode', 'Mode: ') + molModeLabel),
+                  React.createElement("span", { className: "mol-telemetry-pill" }, "\u269B\uFE0F " + __alloT('stem.molecule.telemetry_elements', '118 Elements · Periodic Reference')),
+                  React.createElement("span", { className: "mol-telemetry-pill" }, "\uD83D\uDD35 " + (moleculeDisplayStyle === 'spheres' ? __alloT('stem.molecule.telemetry_style_spheres', 'Space-Filling') : __alloT('stem.molecule.telemetry_style_ballstick', 'Ball & Stick'))),
+                  React.createElement("span", { className: "mol-telemetry-pill" }, "\uD83E\uDDEA " + discovered.length + "/" + COMPOUNDS.length + " " + __alloT('stem.molecule.telemetry_compounds', 'Compounds'))
+                ),
+                // Chemistry Workbench Pathway Schematic (inline SVG, >=10.5px labels, non-spoiler)
+                React.createElement("div", { className: "mol-pathway-strip" },
+                  React.createElement("svg", {
+                    viewBox: "0 0 580 60", role: "img",
+                    "aria-label": __alloT('stem.molecule.a11y_chemistry_pathway_diagram', 'Chemistry workbench progression: explore atoms and periodic trends, construct covalent and ionic 3D bonds, then balance chemical reactions and equilibria'),
+                    style: { width: '100%', height: 56, display: 'block' }
+                  },
+                    React.createElement("line", { x1: 174, y1: 30, x2: 208, y2: 30, stroke: "#38bdf8", strokeWidth: 2 }),
+                    React.createElement("line", { x1: 372, y1: 30, x2: 406, y2: 30, stroke: "#a78bfa", strokeWidth: 2 }),
+                    React.createElement("rect", { x: 8, y: 8, width: 166, height: 44, rx: 10, fill: molStage === 'atoms' ? 'rgba(56,189,248,0.32)' : 'rgba(30,41,59,0.68)', stroke: molStage === 'atoms' ? '#38bdf8' : '#475569', strokeWidth: molStage === 'atoms' ? 2 : 1.3 }),
+                    React.createElement("text", { x: 91, y: 26, textAnchor: "middle", fill: "#f8fafc", fontSize: 11.5, fontWeight: 800 }, "1. Atoms & Trends"),
+                    React.createElement("text", { x: 91, y: 42, textAnchor: "middle", fill: "#bae6fd", fontSize: 10.5 }, "118 Elements · Orbitals"),
+                    React.createElement("rect", { x: 208, y: 8, width: 164, height: 44, rx: 10, fill: molStage === 'bonds' ? 'rgba(139,92,246,0.32)' : 'rgba(30,41,59,0.68)', stroke: molStage === 'bonds' ? '#a78bfa' : '#475569', strokeWidth: molStage === 'bonds' ? 2 : 1.3 }),
+                    React.createElement("text", { x: 290, y: 26, textAnchor: "middle", fill: "#f8fafc", fontSize: 11.5, fontWeight: 800 }, "2. Bonds & 3D Geometry"),
+                    React.createElement("text", { x: 290, y: 42, textAnchor: "middle", fill: "#ddd6fe", fontSize: 10.5 }, "VSEPR · Polarity · Build"),
+                    React.createElement("rect", { x: 406, y: 8, width: 166, height: 44, rx: 10, fill: molStage === 'reactions' ? 'rgba(251,191,36,0.26)' : 'rgba(30,41,59,0.68)', stroke: molStage === 'reactions' ? '#fbbf24' : '#475569', strokeWidth: molStage === 'reactions' ? 2 : 1.3 }),
+                    React.createElement("text", { x: 489, y: 26, textAnchor: "middle", fill: "#f8fafc", fontSize: 11.5, fontWeight: 800 }, "3. Reactions & States"),
+                    React.createElement("text", { x: 489, y: 42, textAnchor: "middle", fill: "#fde68a", fontSize: 10.5 }, "Balance · Phases · Labs")
+                  )
+                ),
+                // One-click Chemistry Workflow Starters (44px touch targets, hidden during active quiz/lock)
+                !molLockedOrQuiz && React.createElement("div", { className: "mol-starter-bar", role: "group", "aria-label": __alloT('stem.molecule.quick_starters_label', 'Quick chemistry lab starters') },
+                  React.createElement("span", { className: "mol-starter-label" }, __alloT('stem.molecule.quick_launch', 'Quick launch:')),
+                  [
+                    { id: 'viewer', icon: '\uD83D\uDD2C', label: __alloT('stem.molecule.starter_viewer', '3D Viewer') },
+                    { id: 'creator', icon: '\u2697\uFE0F', label: __alloT('stem.molecule.starter_creator', 'Create Compounds') },
+                    { id: 'build', icon: '\uD83E\uDDF1', label: __alloT('stem.molecule.starter_build', 'Bond Builder') },
+                    { id: 'table', icon: '\uD83D\uDDC2\uFE0F', label: __alloT('stem.molecule.starter_table', 'Periodic Table') },
+                    { id: 'reactions', icon: '\u2696\uFE0F', label: __alloT('stem.molecule.starter_reactions', 'Reactions') }
+                  ].map(function(st) {
+                    return React.createElement("button", {
+                      key: 'mol-st-' + st.id, type: "button", className: "mol-starter-chip",
+                      "data-active": mode === st.id ? "true" : "false",
+                      onClick: function() { upd('moleculeMode', st.id); }
+                    }, React.createElement("span", { "aria-hidden": "true" }, st.icon), React.createElement("span", null, st.label));
+                  })
+                )
+              );
+            })(),
 
             d.fromTool === 'particleLab3d' && d._dismissedParticleHandoff !== (d.handoffId || 'particleLab3d') && React.createElement("section", {
               id: "molecule-particle-handoff-banner",
@@ -4789,10 +4886,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     onScroll: function(event) { syncPeriodicMapViewport(event.currentTarget); }
                   },
 
-                React.createElement("div", { "data-periodic-map-track": "true", style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(32px, 1fr))', gap: '2px', minWidth: '640px' } },
+                React.createElement("div", { "data-periodic-map-track": "true", style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(32px, 1fr))', gap: '2px', minWidth: '646px' } },
 
                   Array.from({ length: 18 }, function(_, groupIndex) {
-                    return React.createElement("span", { key: 'group-' + groupIndex, className: "pb-1 text-center text-[0.5625rem] font-black text-slate-600", "aria-hidden": "true", "data-periodic-group": String(groupIndex + 1) }, groupIndex + 1);
+                    return React.createElement("span", { key: 'group-' + groupIndex, className: "pb-1 text-center text-[0.5625rem] font-black text-slate-600", style: { lineHeight: '14px' }, "aria-hidden": "true", "data-periodic-group": String(groupIndex + 1) }, groupIndex + 1);
                   }),
 
                   PT_LAYOUT.flatMap((row, ri) => {
@@ -6996,7 +7093,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               return h('button', { key: k, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function () { try { setExp({ orbChoice: k }); } catch (e) {} try { var lr = document.getElementById('allo-live-molecule'); if (lr) lr.textContent = oo.label + ' orbital: ' + oo.shape + ', ' + (oo.n - oo.l - 1) + ' radial and ' + oo.l + ' angular nodes.'; } catch (e) {} },
                 className: 'px-2.5 py-1 rounded-md text-xs font-bold border transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'), style: on ? { background: subColor, borderColor: subColor } : {} }, oo.label);
             })),
-          h('div', { className: 'text-[10.5px] text-slate-500 leading-snug mb-2 p-2 rounded-lg bg-slate-50 border border-slate-200' }, __alloT('stem.molecule.orbital_caveat', 'These are exact one-electron (hydrogen-like, Z = 1) orbitals. Real multi-electron atoms keep the same shapes but with shifted sizes and energies. Each subshell is a set (3 p’s, 5 d’s — including the differently-shaped d_z²); we show one representative orientation of each.')),
+          h('div', { className: 'text-[10.5px] text-slate-600 leading-snug mb-2 p-2 rounded-lg bg-slate-50 border border-slate-200' }, __alloT('stem.molecule.orbital_caveat', 'These are exact one-electron (hydrogen-like, Z = 1) orbitals. Real multi-electron atoms keep the same shapes but with shifted sizes and energies. Each subshell is a set (3 p’s, 5 d’s — including the differently-shaped d_z²); we show one representative orientation of each.')),
           h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'minmax(0,260px) minmax(0,1fr)' } },
             // the cloud (canvas) + nucleus
             h('div', null,

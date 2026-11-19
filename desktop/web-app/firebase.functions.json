@@ -37,8 +37,20 @@
             "value": "clear"
           },
           {
+            "key": "Strict-Transport-Security",
+            "value": "max-age=31536000; includeSubDomains"
+          },
+          {
             "key": "X-Content-Type-Options",
             "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "SAMEORIGIN"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
           },
           {
             "key": "Referrer-Policy",
@@ -46,7 +58,7 @@
           },
           {
             "key": "Permissions-Policy",
-            "value": "camera=(), geolocation=(), payment=(), usb=()"
+            "value": "camera=(self), geolocation=(), payment=(), usb=()"
           }
         ]
       },
@@ -105,6 +117,28 @@
           {
             "key": "Cache-Control",
             "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
+        "source": "/data_lab/tutor_plugin*",
+        "headers": [
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors 'self' https://codap.concord.org https://*.concord.org; object-src 'none'; base-uri 'self'"
+          }
+        ]
+      },
+      {
+        "source": "/storage_bridge*",
+        "headers": [
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; form-action 'none'; frame-ancestors 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'self'"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
           }
         ]
       }

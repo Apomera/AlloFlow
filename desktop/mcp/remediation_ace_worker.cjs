@@ -2,8 +2,12 @@
 const fs=require('fs'),path=require('path'),archive=require('./remediation_epub_archive.cjs');
 const cli=process.argv[2],args=process.argv.slice(3),controller=new AbortController();
 let cancelling=false,runner=null,expanded=null;
-process.on('message',async message=>{if(message?.type!=='cancel'||cancelling)return;cancelling=true;controller.abort();try{await runner?.close();}catch(_){}process.exit(130);});
-process.on('exit',()=>{if(expanded){try{fs.rmSync(expanded,{recursive:true,force:true});}catch(_){}}});
+const cleanupExpanded=()=>{if(expanded){const dir=expanded;expanded=null;try{fs.rmSync(dir,{recursive:true,force:true});}catch(_){}}};
+const shutdown=async(code)=>{if(cancelling)return;cancelling=true;controller.abort();try{await runner?.close();}catch(_){}cleanupExpanded();process.exit(code);};
+process.on('message',message=>{if(message?.type==='cancel')shutdown(130);});
+process.on('SIGTERM',()=>shutdown(143));
+process.on('SIGINT',()=>shutdown(130));
+process.on('exit',cleanupExpanded);
 (async()=>{
   const input=args[args.length-1];
   if(!cli||!input||input.startsWith('-'))throw Error('Ace worker requires an EPUB archive.');

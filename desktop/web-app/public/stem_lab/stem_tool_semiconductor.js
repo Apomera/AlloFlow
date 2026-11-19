@@ -13,7 +13,7 @@
   if (typeof document === 'undefined' || !document.head || document.getElementById('allo-semiconductor-hc-css')) return;
   var st = document.createElement('style');
   st.id = 'allo-semiconductor-hc-css';
-  st.textContent = ".theme-contrast [data-stem-tool-shell=\"semiconductor\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+  st.textContent = ".theme-contrast [data-stem-tool-shell=\"semiconductor\"] button[class*=\"bg-gradient\"]{background-image:none!important}.theme-contrast .semiconductor-lab,.theme-contrast .semiconductor-lab .semi-lab-header,.theme-contrast .semiconductor-lab .semi-progress-card,.theme-contrast .semiconductor-lab .semi-workspace,.theme-contrast .semiconductor-lab .semi-study,.theme-contrast .semiconductor-lab .semi-mode-tabs{background:#000000!important;border-color:#ffff00!important;color:#ffffff!important;box-shadow:none!important}.theme-contrast .semiconductor-lab .semi-brand-mark,.theme-contrast .semiconductor-lab .semi-telemetry-pill,.theme-contrast .semiconductor-lab .semi-live-badge{background:#000000!important;border-color:#ffff00!important;color:#ffff00!important;box-shadow:none!important}.theme-contrast .semiconductor-lab .semi-header-kicker{color:#ffff00!important}";
   document.head.appendChild(st);
 })();
 
@@ -1390,7 +1390,7 @@ window.StemLab = window.StemLab || {
       // Student AI-off: null unless text AI is usable, so every "AI Explain" button hides.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
@@ -1404,8 +1404,9 @@ window.StemLab = window.StemLab || {
       var props = ctx.props;
 
       // ═══ STATE INIT GUARD ═══
-      var d = (labToolData && labToolData.semiconductor) || {};
-      var _semiInitialized = !!(labToolData && labToolData.semiconductor);
+      var _semiRaw = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData.semiconductor : null;
+      var d = (_semiRaw && typeof _semiRaw === 'object' && !Array.isArray(_semiRaw)) ? _semiRaw : {};
+      var _semiInitialized = !!(_semiRaw && typeof _semiRaw === 'object' && !Array.isArray(_semiRaw));
       if (!_semiInitialized) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { semiconductor: {
@@ -4631,8 +4632,8 @@ window.StemLab = window.StemLab || {
       // ════════════════════════════════════════════
       // MAIN RENDER
       // ════════════════════════════════════════════
-      var subtool = d.subtool || 'bandgap';
-      var tab = d.mode || 'explore';
+      var subtool = (typeof d.subtool === 'string' && d.subtool) ? d.subtool : 'bandgap';
+      var tab = (typeof d.mode === 'string' && d.mode) ? d.mode : 'explore';
       var navSubtoolIndex = Math.max(0, SUBTOOLS.findIndex(function(item) { return item.id === subtool; }));
 
       function selectSubtool(next) {
@@ -5301,7 +5302,7 @@ window.StemLab = window.StemLab || {
           h('option',{value:'all'},'All lessons'),Object.keys(SEMI_LESSONS).map(function(id){return h('option',{key:id,value:id},SEMI_LESSONS[id]);})),
         h('div',{className:'semi-inspector-controls'},h('button',{type:'button',disabled:!filteredEntries.length,onClick:exportNotebook},'Export filtered entries (.md)'),
           comparisonEntries.length>0&&btn('Clear comparison',function(){upd('notebookCompare',[]);})),
-        d.notebookNotice&&h('p',{role:'status'},d.notebookNotice),
+        typeof d.notebookNotice==='string'&&d.notebookNotice&&h('p',{role:'status'},d.notebookNotice),
         h('section',{'aria-label':t('stem.semiconductor.notebook_comparison','Notebook comparison')},
           h('h4',null,'Compare recorded evidence'),
           h('p',null,comparisonEntries.length===2?'Two entries selected. Uncheck one before choosing another.':'Select up to two entries using their Compare checkboxes.'),
@@ -5334,18 +5335,52 @@ window.StemLab = window.StemLab || {
         })),
         filteredEntries.length>notebookLimit&&btn('Show more entries',function(){upd('notebookLimit',notebookLimit+20);})
       );
+      var activeMatKey = (d.material && MATERIALS[d.material]) ? d.material : 'silicon';
+      var activeMat = MATERIALS[activeMatKey] || MATERIALS.silicon;
+      var activeTempK = Math.round(semiNumber(d.temperature, 300, 50, 800));
+      var activeEg = semiBandGap(activeMat, activeTempK, activeMatKey);
+      var gapPx = Math.max(4, Math.min(20, Math.round(activeEg * 3.4)));
+      var semiChipEmblem = h('svg', { width: 34, height: 34, viewBox: '0 0 34 34', 'aria-hidden': 'true', style: { display: 'block' } },
+        h('rect', { x: 8, y: 8, width: 18, height: 18, rx: 3, fill: '#083344', stroke: '#67e8f9', strokeWidth: 1.8 }),
+        h('rect', { x: 12, y: 12, width: 10, height: 10, rx: 1.5, fill: 'rgba(34,211,238,0.22)', stroke: '#fbbf24', strokeWidth: 1.2 }),
+        h('line', { x1: 14, y1: 17, x2: 20, y2: 17, stroke: '#67e8f9', strokeWidth: 1.5 }),
+        h('circle', { cx: 17, cy: 17, r: 1.8, fill: '#fbbf24' }),
+        [11, 17, 23].map(function(pos) {
+          return h(React.Fragment, { key: 'pin-' + pos },
+            h('line', { x1: pos, y1: 2, x2: pos, y2: 8, stroke: '#67e8f9', strokeWidth: 1.5, strokeLinecap: 'round' }),
+            h('line', { x1: pos, y1: 26, x2: pos, y2: 32, stroke: '#67e8f9', strokeWidth: 1.5, strokeLinecap: 'round' }),
+            h('line', { x1: 2, y1: pos, x2: 8, y2: pos, stroke: '#67e8f9', strokeWidth: 1.5, strokeLinecap: 'round' }),
+            h('line', { x1: 26, y1: pos, x2: 32, y2: pos, stroke: '#67e8f9', strokeWidth: 1.5, strokeLinecap: 'round' })
+          );
+        })
+      );
+      var bandGapTelemetrySvg = tab === 'explore' && h('svg', {
+        width: 132, height: 46, viewBox: '0 0 132 46', 'aria-hidden': 'true',
+        style: { display: 'block', flexShrink: 0, borderRadius: 8, background: 'rgba(2,6,23,0.78)', border: '1px solid rgba(103,232,249,0.34)' }
+      },
+        h('rect', { x: 8, y: 5, width: 52, height: Math.max(6, Math.floor((36 - gapPx) / 2)), rx: 2, fill: 'rgba(56,189,248,0.35)', stroke: '#38bdf8', strokeWidth: 1 }),
+        h('rect', { x: 8, y: 41 - Math.max(6, Math.floor((36 - gapPx) / 2)), width: 52, height: Math.max(6, Math.floor((36 - gapPx) / 2)), rx: 2, fill: 'rgba(167,139,250,0.35)', stroke: '#a78bfa', strokeWidth: 1 }),
+        h('line', { x1: 34, y1: 5 + Math.max(6, Math.floor((36 - gapPx) / 2)), x2: 34, y2: 41 - Math.max(6, Math.floor((36 - gapPx) / 2)), stroke: '#fbbf24', strokeWidth: 1.4, strokeDasharray: '2 2' }),
+        h('text', { x: 68, y: 18, fill: '#67e8f9', fontSize: 10, fontWeight: 800 }, 'Eg ' + activeEg.toFixed(2) + ' eV'),
+        h('text', { x: 68, y: 34, fill: '#fde68a', fontSize: 10, fontWeight: 700 }, activeTempK + ' K')
+      );
       var labHeader = h('header', { className: 'semi-lab-header' },
-        h('span', { className: 'semi-brand-mark', 'aria-hidden': 'true' }, '\uD83D\uDCA1'),
-        h('div', { className: 'semi-header-copy' },
-          h('div', { className: 'semi-header-kicker' }, t('stem.semiconductor.interactive_chip_lab', 'Interactive chip lab')),
+        h('span', { className: 'semi-brand-mark', 'aria-hidden': 'true' }, semiChipEmblem),
+        h('div', { className: 'semi-header-copy', style: { minWidth: 0 } },
+          h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-1' },
+            h('span', { className: 'semi-telemetry-pill', style: { display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(103,232,249,0.45)', background: 'rgba(8,47,73,0.75)', color: '#67e8f9', fontSize: 10, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase' } }, t('stem.semiconductor.subject_badge', 'Engineering · Solid-State')),
+            h('span', { className: 'semi-header-kicker' }, t('stem.semiconductor.interactive_chip_lab', 'Interactive chip lab')),
+            tab === 'explore' && h('span', { className: 'semi-telemetry-pill', style: { display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(251,191,36,0.42)', background: 'rgba(15,23,42,0.72)', color: '#fde68a', fontSize: 10, fontWeight: 800, fontVariantNumeric: 'tabular-nums' } }, (activeMat.symbol || activeMat.name) + ' · ' + activeTempK + ' K')
+          ),
           h('div', { className: 'flex flex-wrap items-baseline gap-2' },
             h('h2', { className: 'm-0 text-xl font-black text-white' }, t('stem.semiconductor.semiconductor_lab_2', 'Semiconductor Lab')),
             h('span', { className: 'text-[0.625rem] font-bold text-slate-300' }, 'v3.0')
           ),
           h('p', { className: 'semi-header-subtitle' }, tab === 'explore'
-            ? getSubtoolLabel(subtool) + ' · Change a control and watch the model respond.'
+            ? getSubtoolLabel(subtool) + ' · ' + t('stem.semiconductor.header_explore_hint', 'Change a control and watch the model respond.')
             : meta.title + ' · ' + progressText)
         ),
+        bandGapTelemetrySvg,
         h('div', { className: 'semi-progress-card' },
           h('div', { className: 'flex items-center justify-between gap-2' },
             h('span', { className: 'semi-live-badge' },

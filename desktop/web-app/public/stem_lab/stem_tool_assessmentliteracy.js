@@ -88,6 +88,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     document.head.appendChild(st);
   })();
 
+  // Assessment Literacy Studio Workbench CSS (Light / Dark / High-Contrast WCAG 2.2 AA)
+  (function() {
+    if (document.getElementById('allo-asslit-workbench-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-asslit-workbench-css';
+    st.textContent = [
+      '.al-workbench { --al-surface: #ffffff; --al-surface-2: #f8fafc; --al-border: #cbd5e1; --al-ink: #0f172a; --al-muted: #475569; --al-accent: #4338ca; }',
+      '.al-hero-deck { position: relative; border-radius: 18px; padding: 20px; margin-bottom: 18px; border: 1px solid rgba(129,140,248,0.45); background: linear-gradient(135deg, #1e1b4b 0%, #312e81 52%, #0f172a 100%); color: #f8fafc; box-shadow: 0 14px 34px rgba(30,27,75,0.26), inset 0 1px 0 rgba(255,255,255,0.12); overflow: hidden; }',
+      '.al-hero-top { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }',
+      '.al-hero-medallion { flex: 0 0 60px; width: 60px; height: 60px; border-radius: 16px; border: 1px solid rgba(165,180,252,0.55); background: radial-gradient(circle at 30% 25%, rgba(129,140,248,0.42), rgba(15,23,42,0.88)); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.34); }',
+      '.al-hero-medallion-bars { display: flex; align-items: flex-end; gap: 3px; height: 24px; margin-bottom: 3px; }',
+      '.al-hero-medallion-bars span { display: block; width: 5px; border-radius: 3px 3px 1px 1px; background: linear-gradient(180deg, #a5f3fc, #818cf8); }',
+      '.al-hero-medallion-tag { font-size: 9px; font-weight: 900; letter-spacing: 0.08em; color: #e0e7ff; line-height: 1; }',
+      '.al-hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; border: 1px solid rgba(165,180,252,0.48); background: rgba(99,102,241,0.24); color: #e0e7ff; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }',
+      '.al-hero-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }',
+      '.al-hero-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(15,23,42,0.52); border: 1px solid rgba(165,180,252,0.34); color: #f1f5f9; }',
+      '.al-hero-pill-accent { background: rgba(16,185,129,0.22); border-color: rgba(110,231,183,0.55); color: #d1fae5; }',
+      '.al-preset-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }',
+      '.al-preset-btn { min-height: 44px; display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 12px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.12); border: 1px solid rgba(199,210,254,0.38); color: #ffffff; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease; }',
+      '.al-preset-btn:hover { background: rgba(255,255,255,0.22); border-color: #c7d2fe; transform: translateY(-1px); }',
+      '.al-preset-btn:focus-visible, .al-inquiry-preset:focus-visible { outline: 3px solid #fde047; outline-offset: 2px; }',
+      '.al-principle-box { margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: rgba(15,23,42,0.52); border: 1px solid rgba(165,180,252,0.32); color: #e0e7ff; font-size: 12px; line-height: 1.5; }',
+      '.al-spectrum-stage { border-radius: 16px; border: 1px solid var(--al-border); background: var(--al-surface); box-shadow: 0 6px 20px rgba(15,23,42,0.06); padding: 14px 16px; margin-bottom: 18px; color: var(--al-ink); }',
+      '.al-spectrum-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }',
+      '.al-spectrum-title { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--al-accent); }',
+      '.al-spectrum-meta { font-size: 12px; font-weight: 700; color: var(--al-muted); }',
+      '.al-spectrum-track { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 8px; }',
+      '.al-spectrum-band { border-radius: 10px; padding: 8px 10px; border: 1px solid transparent; min-width: 0; }',
+      '.al-spectrum-band strong { display: block; font-size: 12px; font-weight: 800; line-height: 1.25; }',
+      '.al-spectrum-band span { display: block; font-size: 11px; margin-top: 2px; line-height: 1.3; }',
+      '.al-spectrum-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--al-muted); padding-top: 6px; border-top: 1px solid var(--al-border); }',
+      '.al-inquiry-preset { min-height: 44px; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; border: 1px solid rgba(148,163,184,0.45); background: #0f172a; color: #f1f5f9; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; }',
+      '.al-inquiry-preset:hover { background: #1e293b; border-color: #2dd4bf; }',
+      '@media (max-width: 680px) { .al-spectrum-track { grid-template-columns: repeat(2, minmax(0, 1fr)); } }',
+      '@media (max-width: 440px) { .al-spectrum-track { grid-template-columns: 1fr; } }',
+      '.dark .al-workbench { --al-surface: #0f172a; --al-surface-2: #1e293b; --al-border: #334155; --al-ink: #f8fafc; --al-muted: #cbd5e1; --al-accent: #a5b4fc; }',
+      '.dark .al-spectrum-stage { box-shadow: 0 8px 24px rgba(2,6,23,0.45); }',
+      '.theme-contrast .al-workbench { --al-surface: #000000; --al-surface-2: #000000; --al-border: #ffffff; --al-ink: #ffffff; --al-muted: #facc15; --al-accent: #facc15; }',
+      '.theme-contrast .al-hero-deck, .theme-contrast .al-spectrum-stage { background: #000000 !important; border: 2px solid #facc15 !important; box-shadow: none !important; color: #ffffff !important; }',
+      '.theme-contrast .al-hero-badge, .theme-contrast .al-hero-pill, .theme-contrast .al-principle-box, .theme-contrast .al-spectrum-band { background: #000000 !important; border: 1px solid #ffffff !important; color: #ffffff !important; }',
+      '.theme-contrast .al-hero-badge, .theme-contrast .al-spectrum-title, .theme-contrast .al-spectrum-meta { color: #facc15 !important; }',
+      '.theme-contrast .al-preset-btn, .theme-contrast .al-inquiry-preset { background: #000000 !important; border: 2px solid #facc15 !important; color: #ffffff !important; }',
+      '.theme-contrast .al-preset-btn:hover, .theme-contrast .al-inquiry-preset:hover { background: #facc15 !important; color: #000000 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // ═══════════════════════════════════════════════════════════════
   // SECTION 1: DATA CONSTANTS
   // ═══════════════════════════════════════════════════════════════
@@ -8561,13 +8608,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       var onHostInk = isContrast ? ' text-white' : '';
       var React = window.React;
       var h = React.createElement;
-      var data = ctx.toolData || {};
+      var data = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setToolData = ctx.setToolData;
       var addToast = ctx.addToast || function() {};
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) ? ctx.callGemini : null; // null = AI controls hidden
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
-      var s = Object.assign({}, defaultState(), data.assessmentLiteracy || {});
+      var savedAL = (data.assessmentLiteracy && typeof data.assessmentLiteracy === 'object' && !Array.isArray(data.assessmentLiteracy)) ? data.assessmentLiteracy : {};
+      var s = Object.assign({}, defaultState(), savedAL);
       var upd = function(patch) {
         setToolData(function(prev) {
           return Object.assign({}, prev, { assessmentLiteracy: Object.assign({}, prev.assessmentLiteracy || defaultState(), patch) });
@@ -8649,25 +8697,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           { id: 'glossary', icon: '\uD83D\uDCD6', label: __alloT('stem.assessmentliteracy.glossary', 'Glossary'), desc: __alloT('stem.assessmentliteracy.60_term_glossary_covering_terms_across', '60+ term glossary covering terms across all modules. Filter by keyword. For navigating a tool with lots of jargon.'), color: 'from-stone-600 to-zinc-700' },
           { id: 'inquiry', icon: '\uD83D\uDD2C', label: __alloT('stem.assessmentliteracy.reliability_inquiry_capstone_sandbox', 'Reliability Inquiry \u2014 Capstone Sandbox'), desc: __alloT('stem.assessmentliteracy.move_four_sliders_instrument_reliabili', 'Move the reliability, SEM, observed-score, and decision-stakes controls, then observe how confidence-interval width and action-readiness change. The result updates live; record a hypothesis or pattern you notice.'), color: 'from-teal-700 to-emerald-700' }
         ];
-        return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
-          h('header', { className: 'mb-6' },
-            h('h1', { className: 'text-2xl md:text-3xl font-black text-indigo-900 mb-2' + onHostInk }, __alloT('stem.assessmentliteracy.assessment_literacy_lab', '\uD83D\uDCCA Assessment Literacy Lab')),
-            h('p', { className: 'text-sm text-slate-700 leading-relaxed' + onHostInk },
-              __alloT('stem.assessmentliteracy.this_tool_doesn_t_measure_you_it_teach', 'This tool doesn\'t measure you. It teaches you how measurement claims are made — and how to tell a validated instrument from a persuasive-sounding one. Build mock batteries. Critique your own results. Learn to navigate employer tests ethically and strategically.')
+        var junkMap = (s.junkMastery && typeof s.junkMastery === 'object' && !Array.isArray(s.junkMastery)) ? s.junkMastery : {};
+        var junkMasteredCount = Object.keys(junkMap).filter(function(k) { return !!junkMap[k]; }).length;
+        var inquiryLogs = (s.relIQ && typeof s.relIQ === 'object' && Array.isArray(s.relIQ.log)) ? s.relIQ.log.length : 0;
+        var isDarkAL = !!ctx.isDark;
+        var studioPresets = [
+          { view: 'inquiry', sub: null, icon: '\uD83D\uDD2C', label: __alloT('stem.assessmentliteracy.preset_ci_sandbox', '95% CI & Reliability Lab') },
+          { view: 'personality', sub: null, icon: '\uD83C\uDFAD', label: __alloT('stem.assessmentliteracy.preset_big5_mbti', 'Big 5 vs MBTI Lab') },
+          { view: 'junk', sub: null, icon: '\uD83D\uDD0D', label: __alloT('stem.assessmentliteracy.preset_junk_capstone', 'Spot the Junk Science') },
+          { view: 'cognitive', sub: 'builder', icon: '\uD83E\uDDE0', label: __alloT('stem.assessmentliteracy.preset_chc_builder', 'CHC Battery Builder') },
+          { view: 'schoolpsych', sub: null, icon: '\uD83C\uDFEB', label: __alloT('stem.assessmentliteracy.preset_iep_sem', 'School Psych & IEP') }
+        ];
+        var reliabilityBands = [
+          { range: 'r < .70', title: __alloT('stem.assessmentliteracy.band_exploratory', 'Exploratory Only'), note: __alloT('stem.assessmentliteracy.band_exploratory_note', 'Too noisy for individual decisions'), bg: isDarkAL ? '#3b0764' : '#fef2f2', bd: isDarkAL ? '#f87171' : '#fca5a5', fg: isDarkAL ? '#fecaca' : '#991b1b' },
+          { range: 'r = .70–.79', title: __alloT('stem.assessmentliteracy.band_research', 'Group Research'), note: __alloT('stem.assessmentliteracy.band_research_note', 'Useful for group averages'), bg: isDarkAL ? '#451a03' : '#fffbeb', bd: isDarkAL ? '#fbbf24' : '#fcd34d', fg: isDarkAL ? '#fde68a' : '#92400e' },
+          { range: 'r = .80–.89', title: __alloT('stem.assessmentliteracy.band_screening', 'Screening & Support'), note: __alloT('stem.assessmentliteracy.band_screening_note', 'Always read with 95% CI'), bg: isDarkAL ? '#082f49' : '#f0f9ff', bd: isDarkAL ? '#38bdf8' : '#7dd3fc', fg: isDarkAL ? '#bae6fd' : '#075985' },
+          { range: 'r ≥ .90', title: __alloT('stem.assessmentliteracy.band_highstakes', 'Individual Decisions'), note: __alloT('stem.assessmentliteracy.band_highstakes_note', 'Clinical & placement standard'), bg: isDarkAL ? '#052e16' : '#ecfdf5', bd: isDarkAL ? '#34d399' : '#6ee7b7', fg: isDarkAL ? '#a7f3d0' : '#065f46' }
+        ];
+        return h('div', { className: 'al-workbench max-w-4xl mx-auto p-4 md:p-6' },
+          h('header', { className: 'al-hero-deck' },
+            h('div', { className: 'al-hero-top' },
+              h('div', { className: 'al-hero-medallion', 'aria-hidden': 'true' },
+                h('div', { className: 'al-hero-medallion-bars' },
+                  h('span', { style: { height: '7px', opacity: 0.72 } }),
+                  h('span', { style: { height: '14px', opacity: 0.86 } }),
+                  h('span', { style: { height: '22px' } }),
+                  h('span', { style: { height: '14px', opacity: 0.86 } }),
+                  h('span', { style: { height: '7px', opacity: 0.72 } })
+                ),
+                h('span', { className: 'al-hero-medallion-tag' }, '95% CI')
+              ),
+              h('div', { style: { flex: '1 1 260px', minWidth: 0 } },
+                h('div', { className: 'al-hero-badge' }, '\u25C6 ' + __alloT('stem.assessmentliteracy.psychometrics_studio_badge', 'Psychometrics & Measurement Science · 10-Module Studio')),
+                h('h1', { className: 'text-2xl md:text-3xl font-black text-white mb-2' }, __alloT('stem.assessmentliteracy.assessment_literacy_lab', '\uD83D\uDCCA Assessment Literacy Lab')),
+                h('p', { className: 'text-sm text-indigo-100 leading-relaxed' },
+                  __alloT('stem.assessmentliteracy.this_tool_doesn_t_measure_you_it_teach', 'This tool doesn\'t measure you. It teaches you how measurement claims are made — and how to tell a validated instrument from a persuasive-sounding one. Build mock batteries. Critique your own results. Learn to navigate employer tests ethically and strategically.')
+                ),
+                h('div', { className: 'al-hero-pills', role: 'list', 'aria-label': __alloT('stem.assessmentliteracy.studio_telemetry_list', 'Studio telemetry summary') },
+                  h('span', { role: 'listitem', className: 'al-hero-pill' }, '\uD83D\uDCDA 10 ' + __alloT('stem.assessmentliteracy.modules_unit', 'modules')),
+                  h('span', { role: 'listitem', className: 'al-hero-pill' }, '\uD83E\uDDE0 ' + CHC_BROAD.length + ' ' + __alloT('stem.assessmentliteracy.chc_strata_unit', 'CHC broad strata')),
+                  h('span', { role: 'listitem', className: 'al-hero-pill' }, '\uD83D\uDCD6 60+ ' + __alloT('stem.assessmentliteracy.glossary_terms_unit', 'glossary terms')),
+                  h('span', { role: 'listitem', className: 'al-hero-pill al-hero-pill-accent' }, '\uD83D\uDD0D ' + junkMasteredCount + ' ' + __alloT('stem.assessmentliteracy.cases_mastered_unit', 'junk-science cases mastered')),
+                  inquiryLogs > 0 && h('span', { role: 'listitem', className: 'al-hero-pill al-hero-pill-accent' }, '\uD83D\uDD2C ' + inquiryLogs + ' ' + __alloT('stem.assessmentliteracy.ci_runs_logged_unit', 'CI runs logged'))
+                ),
+                h('div', { className: 'al-preset-bar', role: 'group', 'aria-label': __alloT('stem.assessmentliteracy.quick_launch_studio_modules', 'Quick launch studio modules') },
+                  studioPresets.map(function(sp) {
+                    return h('button', {
+                      key: 'al-preset-' + sp.view + '-' + (sp.sub || 'root'),
+                      type: 'button',
+                      className: 'al-preset-btn',
+                      onClick: function() { upd({ view: sp.view, sub: sp.sub }); announceSR('Entered ' + sp.label); },
+                      'aria-label': __alloT('stem.assessmentliteracy.open_module_prefix', 'Open ') + sp.label
+                    }, h('span', { 'aria-hidden': 'true' }, sp.icon), h('span', null, sp.label));
+                  })
+                )
+              )
             ),
-            h('div', { className: 'mt-3 p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-xs text-indigo-900' },
+            h('div', { className: 'al-principle-box' },
               h('strong', null, __alloT('stem.assessmentliteracy.design_principle', 'Design principle: ')), __alloT('stem.assessmentliteracy.every_inventory_here_is_for_education_', 'Every inventory here is for education and self-reflection, not diagnosis. Real clinical/educational decisions require a qualified professional administering a full validated battery.')
+            )
+          ),
+          h('section', { className: 'al-spectrum-stage', 'aria-label': __alloT('stem.assessmentliteracy.reliability_spectrum_section', 'Psychometric reliability reference scale') },
+            h('div', { className: 'al-spectrum-head' },
+              h('span', { className: 'al-spectrum-title' }, '\uD83D\uDCCF ' + __alloT('stem.assessmentliteracy.reliability_reference_title', 'Measurement Reliability & Decision-Stakes Spectrum')),
+              h('span', { className: 'al-spectrum-meta' }, __alloT('stem.assessmentliteracy.ctt_relation_badge', 'Classical Test Theory · SEM = SD × √(1−r)'))
+            ),
+            h('div', { className: 'al-spectrum-track' },
+              reliabilityBands.map(function(band) {
+                return h('div', {
+                  key: band.range,
+                  className: 'al-spectrum-band',
+                  style: { background: band.bg, borderColor: band.bd, color: band.fg }
+                },
+                  h('strong', null, band.range + ' · ' + band.title),
+                  h('span', null, band.note)
+                );
+              })
+            ),
+            h('div', { className: 'al-spectrum-foot' },
+              h('span', null, __alloT('stem.assessmentliteracy.spectrum_callout', 'Point scores always carry measurement error — test any pairing live in Reliability Inquiry.')),
+              h('strong', null, __alloT('stem.assessmentliteracy.capstone_progress_label', 'Capstone progress: ') + junkMasteredCount + ' ' + __alloT('stem.assessmentliteracy.verified_unit', 'verified'))
             )
           ),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             modules.map(function(m) {
               return h('button', {
+                type: 'button',
                 key: m.id,
                 onClick: function() { upd({ view: m.id, sub: null }); announceSR('Entered ' + m.label); },
                 // Contrast theme forces yellow ink, so drop the gradient for black.
-                className: 'text-left p-4 rounded-xl ' + (isContrast ? 'bg-black border-2 border-white' : 'bg-gradient-to-br ' + m.color) + ' hover:brightness-110 focus:ring-2 focus:ring-white focus:outline-none transition shadow-lg'
+                className: 'text-left p-4 rounded-xl ' + (isContrast ? 'bg-black border-2 border-white' : 'bg-gradient-to-br ' + m.color + ' border border-white/15') + ' hover:brightness-110 focus:ring-2 focus:ring-white focus:outline-none transition shadow-lg'
               },
-                h('div', { className: 'text-3xl mb-2' }, m.icon),
+                h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, m.icon),
                 h('div', { className: 'text-base font-black text-white mb-1' }, m.label),
                 h('div', { className: 'text-xs text-white leading-snug' }, m.desc)
               );
@@ -9819,13 +9940,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 ? __alloT('stem.assessmentliteracy.implied_sd_ok_body', '— SEM = SD√(1−r) works backwards too. This pairing describes a real-looking instrument (standard scores use SD 15, subtest scaled scores 3).')
                 : __alloT('stem.assessmentliteracy.implied_sd_bad_body', '— no published instrument looks like this. SEM = SD√(1−r), so this reliability and this SEM together require a score scale far wider than any test uses. The interval below is arithmetically correct and describes a test that cannot exist: raise the reliability or lower the SEM.')
             ),
-            h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.confidence_interval_diagram_accessible_label', 'Confidence interval diagram') + ': observed score ' + iq.observed.toFixed(0) + ', 95% confidence interval ' + ciLow.toFixed(1) + ' to ' + ciHigh.toFixed(1) + ', ' + sm.label + '.', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 12 } },
-              h('line', { x1: 30, y1: 60, x2: 290, y2: 60, stroke: '#475569' }),
-              h('rect', { x: Math.max(30, 30 + ((ciLow - 60) / 80) * 260), y: 50, width: Math.max(2, Math.min(260, ((ciHigh - ciLow) / 80) * 260)), height: 20, fill: sm.color, opacity: 0.45 }),
-              h('line', { x1: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y1: 30, x2: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y2: 90, stroke: sm.color, strokeWidth: 2 }),
-              h('text', { x: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y: 26, fill: sm.color, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, iq.observed.toFixed(0)),
-              [60, 80, 100, 120, 140].map(function(v, i) { return h('text', { key: 'x' + i, x: 30 + ((v - 60) / 80) * 260, y: 110, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, v); }),
-              h('text', { x: 160, y: 16, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'observed score with 95% CI · ±' + ciHalf.toFixed(1))
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }, role: 'group', 'aria-label': __alloT('stem.assessmentliteracy.inquiry_presets_group', 'Psychometric benchmark presets') },
+              h('button', { type: 'button', className: 'al-inquiry-preset', onClick: function() { setIQ({ reliability: 0.95, sem: 3.5, observed: 100, stakes: 8 }); } }, __alloT('stem.assessmentliteracy.preset_clinical_battery', 'Clinical Battery (r=.95, SEM=3.5)')),
+              h('button', { type: 'button', className: 'al-inquiry-preset', onClick: function() { setIQ({ reliability: 0.80, sem: 6.5, observed: 100, stakes: 5 }); } }, __alloT('stem.assessmentliteracy.preset_screening_tool', 'Screening Tool (r=.80, SEM=6.5)')),
+              h('button', { type: 'button', className: 'al-inquiry-preset', onClick: function() { setIQ({ reliability: 0.60, sem: 9.5, observed: 100, stakes: 7 }); } }, __alloT('stem.assessmentliteracy.preset_low_reliability', 'Low-Reliability Quiz (r=.60, SEM=9.5)'))
+            ),
+            h('svg', { width: '100%', height: 132, viewBox: '0 0 320 132', role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.confidence_interval_diagram_accessible_label', 'Confidence interval diagram') + ': observed score ' + iq.observed.toFixed(0) + ', 95% confidence interval ' + ciLow.toFixed(1) + ' to ' + ciHigh.toFixed(1) + ', ' + sm.label + '.', style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 12, border: '1px solid rgba(148,163,184,0.3)' } },
+              h('rect', { x: 30 + ((85 - 60) / 80) * 260, y: 34, width: ((115 - 85) / 80) * 260, height: 60, fill: 'rgba(148,163,184,0.08)', stroke: 'rgba(148,163,184,0.22)', strokeDasharray: '3 3' }),
+              h('line', { x1: 30, y1: 66, x2: 290, y2: 66, stroke: '#475569', strokeWidth: 1.5 }),
+              h('rect', { x: Math.max(30, 30 + ((ciLow - 60) / 80) * 260), y: 54, width: Math.max(2, Math.min(260, ((ciHigh - ciLow) / 80) * 260)), height: 24, rx: 4, fill: sm.color, opacity: 0.45 }),
+              h('line', { x1: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y1: 34, x2: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y2: 96, stroke: sm.color, strokeWidth: 2.5 }),
+              h('text', { x: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y: 29, fill: sm.color, fontSize: 11, textAnchor: 'middle', fontWeight: 800 }, iq.observed.toFixed(0)),
+              [60, 80, 100, 120, 140].map(function(v, i) {
+                var tx = 30 + ((v - 60) / 80) * 260;
+                return h('g', { key: 'x' + i },
+                  h('line', { x1: tx, y1: 62, x2: tx, y2: 70, stroke: '#64748b', strokeWidth: 1 }),
+                  h('text', { x: tx, y: 118, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, v)
+                );
+              }),
+              h('text', { x: 160, y: 15, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Observed score with 95% CI · ±' + ciHalf.toFixed(1) + ' (Avg band 85–115)')
             ),
             h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
               h('label', { className: 'text-xs' },

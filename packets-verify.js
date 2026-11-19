@@ -229,7 +229,19 @@
     var line = el('h3', 'verdict-line', r.headline || NOT_CHECKED);
     line.id = 'verdict-' + index;
     line.tabIndex = -1;
-    add(top, el('p', 'kicker', (item.sample ? 'Sample file: ' : 'File: ') + item.name), line, el('p', 'verdict-sub', r.headline ? r.kindLine : r.why));
+    var sub = el('p', 'verdict-sub');
+    if (r.headline) sub.textContent = r.kindLine;
+    else {
+      var why = String(r.why || ''), resultsLabel = 'Add up results', at = why.indexOf(resultsLabel);
+      if (at >= 0) {
+        var link = el('a', '', resultsLabel);
+        link.setAttribute('href', 'packets-results.html');
+        if (at > 0) sub.appendChild(doc.createTextNode(why.slice(0, at)));
+        sub.appendChild(link);
+        if (at + resultsLabel.length < why.length) sub.appendChild(doc.createTextNode(why.slice(at + resultsLabel.length)));
+      } else sub.textContent = why;
+    }
+    add(top, el('p', 'kicker', (item.sample ? 'Sample file: ' : 'File: ') + item.name), line, sub);
     var facts = el('dl', 'facts-row');
     if (r.headline) fact(facts, 'Kind', r.kind === 'older' ? KINDS.older : KINDS[r.identity.mode]);
     fact(facts, 'Size', r.sizeText);

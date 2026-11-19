@@ -53,6 +53,17 @@ def within(child: Path, parent: Path) -> bool:
         return False
 
 
+def write_json_safe(out_arg: str, payload: Any, *, indent: int = 2) -> Path:
+    raw_out = Path(out_arg)
+    if raw_out.is_symlink():
+        raise SourceError("Refusing to write output through a symbolic link.")
+    resolved = raw_out.resolve()
+    if resolved.is_symlink():
+        raise SourceError("Refusing to write output through a symbolic link.")
+    resolved.write_text(json.dumps(payload, indent=indent), encoding="utf-8")
+    return resolved
+
+
 def load_plan(plan_path: Path) -> Dict[str, Any]:
     try:
         plan = json.loads(plan_path.read_text(encoding="utf-8"))
@@ -85,7 +96,13 @@ def validate_plan(plan: Dict[str, Any], root: Path) -> Dict[str, Any]:
             errors.append(where + " must carry path and sha256.")
             continue
         rel = str(entry["path"]).replace("\\", "/")
+        if Path(rel).is_absolute() or rel.startswith("/"):
+            errors.append(where + " must be a relative path under the root.")
+            continue
         candidate = root / rel
+        if candidate.is_symlink():
+            errors.append(where + f" must not be a symlink: {rel}")
+            continue
         if not within(candidate, root):
             errors.append(where + " escapes the root.")
             continue
@@ -143,8 +160,15 @@ def validate_plan(plan: Dict[str, Any], root: Path) -> Dict[str, Any]:
             # mode translates line endings on read AND write, so apply was
             # silently rewriting an LF file as CRLF — 389 phantom bytes the
             # independent verifier had to explain. Bytes must round-trip.
-            with (root / rel).open(encoding="utf-8", errors="replace", newline="") as handle:
-                texts[rel] = handle.read()
+            # Strict UTF-8 decoding prevents silent U+FFFD corruption on legacy encodings.
+            try:
+                with (root / rel).open(encoding="utf-8", newline="") as handle:
+                    texts[rel] = handle.read()
+            except UnicodeDecodeError:
+                errors.append(
+                    where + f" targets non-UTF-8 file {rel}; automatic patching refuses to risk encoding corruption."
+                )
+                continue
         # E-SRC-1 (W3C BAD run, 2026-08-11): byte-identical repeated markup
         # (spacer GIFs x7) is unpatchable under an exactly-once contract. An
         # explicit 1-based `occurrence` targets the Nth match. All positions
@@ -222,11 +246,12 @@ def cmd_validate(args: argparse.Namespace) -> Dict[str, Any]:
 
 def cmd_apply(args: argparse.Namespace) -> Dict[str, Any]:
     root = Path(args.root).resolve()
-    out_dir = Path(args.out_dir).resolve()
+    raw_out_dir = Path(args.out_dir)
+    out_dir = raw_out_dir.resolve()
     if not root.is_dir():
         raise SourceError("--root must be an existing directory.")
-    if out_dir.exists():
-        raise SourceError("Refusing to overwrite an existing --out-dir.")
+    if raw_out_dir.is_symlink() or out_dir.is_symlink() or out_dir.exists():
+        raise SourceError("Refusing to overwrite an existing --out-dir or write through a symlink.")
     if within(out_dir, root):
         raise SourceError("--out-dir must lie outside the root being copied.")
     plan = load_plan(Path(args.plan).resolve())
@@ -256,47 +281,54 @@ def cmd_apply(args: argparse.Namespace) -> Dict[str, Any]:
         ignore=shutil.ignore_patterns(*COPY_EXCLUDE),
     )
 
-    # Position-based application against the ORIGINAL bytes: every span was
-    # located during validation (and the copy's bytes are sha-bound to the
-    # original), so splicing in descending order applies all patches without
-    # any patch shifting or manufacturing another's match.
-    applied: List[Dict[str, Any]] = []
-    per_file_before: Dict[str, str] = {}
-    for rel, spans in validation["_spans"].items():
-        target = out_dir / rel
-        per_file_before[rel] = sha256_file(target)
-        with target.open(encoding="utf-8", errors="replace", newline="") as handle:
-            text = handle.read()
-        for start, end, _, replace in sorted(spans, reverse=True):
-            text = text[:start] + replace + text[end:]
-        with target.open("w", encoding="utf-8", newline="") as handle:
-            handle.write(text)
-    for patch in plan["patches"]:
-        rel = str(patch["file"]).replace("\\", "/")
-        applied.append({
-            "file": rel,
-            "rationale": patch["rationale"],
-            "wcag": patch.get("wcag") or [],
-            "occurrence": patch.get("occurrence"),
-            "changesRenderedText": bool(patch.get("changes_rendered_text")),
-            "sha256Before": per_file_before[rel],
-            "sha256After": sha256_file(out_dir / rel),
-        })
+    try:
+        # Position-based application against the ORIGINAL bytes: every span was
+        # located during validation (and the copy's bytes are sha-bound to the
+        # original), so splicing in descending order applies all patches without
+        # any patch shifting or manufacturing another's match.
+        applied: List[Dict[str, Any]] = []
+        per_file_before: Dict[str, str] = {}
+        for rel, spans in validation["_spans"].items():
+            target = out_dir / rel
+            per_file_before[rel] = sha256_file(target)
+            try:
+                with target.open(encoding="utf-8", newline="") as handle:
+                    text = handle.read()
+            except UnicodeDecodeError as exc:
+                raise SourceError(f"Target file {rel} is not valid UTF-8; aborting apply.", 3) from exc
+            for start, end, _, replace in sorted(spans, reverse=True):
+                text = text[:start] + replace + text[end:]
+            with target.open("w", encoding="utf-8", newline="") as handle:
+                handle.write(text)
+        for patch in plan["patches"]:
+            rel = str(patch["file"]).replace("\\", "/")
+            applied.append({
+                "file": rel,
+                "rationale": patch["rationale"],
+                "wcag": patch.get("wcag") or [],
+                "occurrence": patch.get("occurrence"),
+                "changesRenderedText": bool(patch.get("changes_rendered_text")),
+                "sha256Before": per_file_before[rel],
+                "sha256After": sha256_file(out_dir / rel),
+            })
 
-    manifest = {
-        "schemaVersion": "0.1",
-        "createdAt": utc_now(),
-        "engineVersion": VERSION,
-        "root": root.name,
-        "patchesApplied": applied,
-        "reviewNotes": list(plan.get("review_notes") or []),
-        "note": (
-            "The original tree was not modified. Rebuild this copy if the project needs a build step, "
-            "re-audit the same pages from it, then run compare. The project's own test suite must pass "
-            "on this copy before any merge."
-        ),
-    }
-    (out_dir / "applied-manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        manifest = {
+            "schemaVersion": "0.1",
+            "createdAt": utc_now(),
+            "engineVersion": VERSION,
+            "root": root.name,
+            "patchesApplied": applied,
+            "reviewNotes": list(plan.get("review_notes") or []),
+            "note": (
+                "The original tree was not modified. Rebuild this copy if the project needs a build step, "
+                "re-audit the same pages from it, then run compare. The project's own test suite must pass "
+                "on this copy before any merge."
+            ),
+        }
+        (out_dir / "applied-manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    except Exception:
+        shutil.rmtree(out_dir, ignore_errors=True)
+        raise
     return {"ok": True, "outDir": out_dir.name, "patchesApplied": len(applied), "manifest": "applied-manifest.json"}
 
 
@@ -315,46 +347,101 @@ def cmd_compare(args: argparse.Namespace) -> Dict[str, Any]:
     after = _load(args.after)["audit"]
     plan = load_plan(Path(args.plan).resolve()) if args.plan else None
 
-    before_ids = {v["id"]: v for v in before["axe"]["violations"]}
-    after_ids = {v["id"]: v for v in after["axe"]["violations"]}
-    fixed = sorted(set(before_ids) - set(after_ids))
-    introduced = sorted(set(after_ids) - set(before_ids))
-    remaining = sorted(set(after_ids) & set(before_ids))
+    before_axe = before.get("axe") or {}
+    after_axe = after.get("axe") or {}
+    axe_before_available = bool(before_axe.get("available"))
+    axe_after_available = bool(after_axe.get("available"))
+    axe_complete = axe_before_available and axe_after_available
+
+    before_ids = {v["id"]: v for v in (before_axe.get("violations") or [])}
+    after_ids = {v["id"]: v for v in (after_axe.get("violations") or [])}
+    fixed = sorted(set(before_ids) - set(after_ids)) if axe_complete else []
+    introduced = sorted(set(after_ids) - set(before_ids)) if axe_complete else []
+    remaining = sorted(set(after_ids) & set(before_ids)) if axe_complete else []
+
+    node_regressions: List[Dict[str, Any]] = []
+    node_improvements = 0
+    if axe_complete:
+        for rule_id in remaining:
+            before_nodes = int(before_ids[rule_id].get("nodes") or 0)
+            after_nodes = int(after_ids[rule_id].get("nodes") or 0)
+            if after_nodes > before_nodes:
+                node_regressions.append({
+                    "id": rule_id,
+                    "before": before_nodes,
+                    "after": after_nodes,
+                    "delta": after_nodes - before_nodes,
+                })
+            elif after_nodes < before_nodes:
+                node_improvements += 1
 
     text_changed = before["text"]["sha256"] != after["text"]["sha256"]
     disclosed = bool(plan and any(p.get("changes_rendered_text") for p in plan.get("patches", [])))
 
     unreachable_before = len(before["keyboard"]["unreachable"])
     unreachable_after = len(after["keyboard"]["unreachable"])
+    trap_before = bool(before["keyboard"].get("suspectedTrap"))
+    trap_after = bool(after["keyboard"].get("suspectedTrap"))
 
     problems: List[str] = []
+    if not axe_before_available or not axe_after_available:
+        missing_sides = [
+            side
+            for side, ok in (("before", axe_before_available), ("after", axe_after_available))
+            if not ok
+        ]
+        problems.append(
+            "axe-core was unavailable during the " + " and ".join(missing_sides)
+            + " audit; comparison is incomplete and cannot report improvement."
+        )
     if introduced:
         problems.append("New axe violations were INTRODUCED: " + ", ".join(introduced))
+    if node_regressions:
+        problems.append(
+            "Existing axe violations regressed in failing node count: "
+            + ", ".join(f"{r['id']} ({r['before']}->{r['after']})" for r in node_regressions)
+        )
     if unreachable_after > unreachable_before:
         problems.append("Keyboard reachability regressed.")
+    if trap_after:
+        problems.append(
+            "A keyboard trap was INTRODUCED." if not trap_before else "A keyboard trap remains present."
+        )
     if text_changed and not disclosed:
         problems.append(
             "The rendered text changed but no patch declares changes_rendered_text; "
             "undisclosed content drift is treated as a failure."
         )
-    verdict = "regressed" if problems else ("improved" if (fixed or unreachable_after < unreachable_before) else "unchanged")
+
+    if not axe_complete:
+        verdict = "incomplete"
+    elif problems:
+        verdict = "regressed"
+    elif fixed or node_improvements > 0 or unreachable_after < unreachable_before or (trap_before and not trap_after):
+        verdict = "improved"
+    else:
+        verdict = "unchanged"
 
     return {
         "ok": True,
         "verdict": verdict,
         "problems": problems,
+        "nodeRegressions": node_regressions,
         "axe": {
+            "availableBefore": axe_before_available,
+            "availableAfter": axe_after_available,
             "before": len(before_ids),
             "after": len(after_ids),
             "fixed": fixed,
             "introduced": introduced,
             "remaining": remaining,
+            "nodeRegressions": node_regressions,
         },
         "keyboard": {
             "unreachableBefore": unreachable_before,
             "unreachableAfter": unreachable_after,
-            "suspectedTrapBefore": before["keyboard"]["suspectedTrap"],
-            "suspectedTrapAfter": after["keyboard"]["suspectedTrap"],
+            "suspectedTrapBefore": trap_before,
+            "suspectedTrapAfter": trap_after,
         },
         "outline": {
             "imagesWithoutAlt": [before["outline"]["imagesWithoutAlt"], after["outline"]["imagesWithoutAlt"]],
@@ -477,8 +564,7 @@ def cmd_verify_init(args: argparse.Namespace) -> Dict[str, Any]:
         "items": items,
         "verifier": {"model": "", "context_isolation": "", "read_source_directly": None, "statement": ""},
     }
-    out_path = Path(args.out).resolve()
-    out_path.write_text(json.dumps(worksheet, indent=1), encoding="utf-8")
+    out_path = write_json_safe(args.out, worksheet, indent=1)
     return {"ok": True, "worksheet": out_path.name, "items": len(items),
             "nextStep": "Have a fresh-context reader fill the worksheet, then run verify-check."}
 
@@ -489,9 +575,15 @@ def cmd_verify_check(args: argparse.Namespace) -> Dict[str, Any]:
         worksheet = json.loads(worksheet_path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         raise SourceError(f"Could not read the worksheet: {error}") from error
+    if not isinstance(worksheet, dict):
+        raise SourceError("The worksheet must be a JSON object.", 4)
 
-    expected = _verify_binding(Path(args.plan).resolve(), Path(args.before).resolve(), Path(args.after).resolve())
+    plan_path = Path(args.plan).resolve()
+    plan = load_plan(plan_path)
+    expected = _verify_binding(plan_path, Path(args.before).resolve(), Path(args.after).resolve())
     binding = worksheet.get("binding") or {}
+    if not isinstance(binding, dict):
+        raise SourceError("Worksheet binding is malformed.", 4)
     for key, value in expected.items():
         if str(binding.get(key) or "").lower() != value.lower():
             raise SourceError(
@@ -503,6 +595,23 @@ def cmd_verify_check(args: argparse.Namespace) -> Dict[str, Any]:
     items = worksheet.get("items")
     if not isinstance(items, list) or not items:
         raise SourceError("The worksheet has no items.", 4)
+    if not all(isinstance(item, dict) for item in items):
+        raise SourceError("Every worksheet item must be a JSON object.", 4)
+    plan_patches = plan.get("patches")
+    if not isinstance(plan_patches, list):
+        raise SourceError("The bound patch plan has no patches array.", 4)
+    expected_ids = [f"patch-{index:03d}" for index in range(len(plan_patches))] + [
+        "global-no-behavior-change",
+        "global-completeness",
+        "global-review-notes",
+        "global-keyboard",
+    ]
+    actual_ids = [item.get("id") for item in items]
+    if not all(isinstance(item_id, str) for item_id in actual_ids) or sorted(actual_ids) != sorted(expected_ids):
+        raise SourceError(
+            "Worksheet items do not match the bound patch plan (missing, duplicated, or invented ids).",
+            4,
+        )
     discrepancies: List[Dict[str, Any]] = []
     unreadable: List[Dict[str, Any]] = []
     for item in items:
@@ -525,6 +634,10 @@ def cmd_verify_check(args: argparse.Namespace) -> Dict[str, Any]:
             (discrepancies if status == "discrepancy" else unreadable).append(record)
 
     verifier = worksheet.get("verifier") or {}
+    if not isinstance(verifier, dict):
+        raise SourceError("Worksheet verifier block is malformed.", 4)
+    if not str(verifier.get("model") or "").strip():
+        raise SourceError("The verifier block must declare a non-empty verifier.model.", 4)
     if verifier.get("context_isolation") != "fresh-context" or verifier.get("read_source_directly") is not True:
         raise SourceError(
             "The verifier block must attest context_isolation='fresh-context' and read_source_directly=true.",
@@ -560,7 +673,7 @@ def cmd_verify_check(args: argparse.Namespace) -> Dict[str, Any]:
         "ok": True,
     }
     if args.out:
-        Path(args.out).resolve().write_text(json.dumps(report, indent=1), encoding="utf-8")
+        write_json_safe(args.out, report, indent=1)
     return report
 
 
@@ -620,7 +733,7 @@ def main() -> None:
         elif args.command == "compare":
             result = cmd_compare(args)
             if args.out:
-                Path(args.out).resolve().write_text(json.dumps(result, indent=2), encoding="utf-8")
+                write_json_safe(args.out, result, indent=2)
         elif args.command == "verify-init":
             result = cmd_verify_init(args)
         elif args.command == "verify-check":

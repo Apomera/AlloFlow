@@ -1195,11 +1195,18 @@
   }
 
   // ------------------------------------------------------------------ fetch
+  function _rlFetch(url, opts, timeoutMs) {
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, timeoutMs || 15000) : null;
+    var nextOpts = Object.assign({}, opts || {});
+    if (ctrl && !nextOpts.signal) nextOpts.signal = ctrl.signal;
+    return fetch(url, nextOpts).finally(function () { if (timer) clearTimeout(timer); });
+  }
   function fetchIndex(cb) {
     var tryBase = function (i) {
       if (i >= DATA_BASES.length) { cb(new Error(tr('readinglib_err_unreachable', 'Library data not reachable yet')), null, null); return; }
       var bust = DATA_BASES[i].indexOf('http') === 0 ? '?t=' + Date.now() : '';
-      fetch(DATA_BASES[i] + 'index.json' + bust, { credentials: 'omit', referrerPolicy: 'no-referrer' })
+      _rlFetch(DATA_BASES[i] + 'index.json' + bust, { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (data) {
           if (!data || !Array.isArray(data.books)) throw new Error('bad index shape');
@@ -2634,7 +2641,7 @@
                   w.bookTitle ? e('div', { className: 'text-[11px] text-slate-400 truncate' }, w.bookTitle) : null,
                   w.passage && Number.isInteger(w.page) && props.onReadReflect ? e('button', { type: 'button', className: 'min-h-[44px] text-sm underline font-bold', onClick: function () { stopAll(); props.onReadReflect({ text: w.passage, title: w.bookTitle || w.word, language: w.language, allowAI: w.allowAI === true, anchor: { kind: 'library', resourceId: w.slug, slug: w.slug, section: w.page, page: w.page } }); } }, tr('readinglib_open_saved_passage', 'Open saved passage')) : null),
                 e('button', {
-                  className: 'px-1.5 py-0.5 rounded-lg text-[12px] text-slate-500 hover:text-red-600 hover:bg-red-50 border border-transparent',
+                  className: 'px-1.5 py-0.5 rounded-lg text-[12px] text-slate-600 hover:text-red-700 hover:bg-red-50 border border-transparent',
                   onClick: function () {
                     var next = wordBank.filter(function (x, xi) { return xi !== i; });
                     saveWordBank(next, props.readingScope); setWordBank(next);
@@ -3270,7 +3277,7 @@
       } catch (_) {
         return Promise.reject(new Error('Import endpoint must use HTTPS without embedded credentials.'));
       }
-      return fetch(ep + (ep.indexOf('?') === -1 ? '?' : '&') + 'id=' + encodeURIComponent(String(r.id || '')), { credentials: 'omit', referrerPolicy: 'no-referrer' })
+      return _rlFetch(ep + (ep.indexOf('?') === -1 ? '?' : '&') + 'id=' + encodeURIComponent(String(r.id || '')), { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (res) { return res.json().then(function (d) { if (!res.ok) throw new Error((d && d.error) || ('HTTP ' + res.status)); return d; }); })
         .then(function (data) {
           var book = data && data.book;
@@ -3364,7 +3371,7 @@
         return;
       }
       setStatus(append ? 'loadingMore' : 'loading'); setError('');
-      fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer' })
+      _rlFetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (data) {
           if (seq !== reqSeq.current) return;
@@ -3422,14 +3429,14 @@
     };
     var copyRequests = function () {
       if (!requests.length) return;
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(buildRequestText());
+      var notifySaved = function () { props.addToast && props.addToast(tr('readinglib_req_saved', 'Your request list is saved in this browser.'), 'info'); };
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        Promise.resolve(navigator.clipboard.writeText(buildRequestText())).then(function () {
           props.addToast && props.addToast(tr('readinglib_req_copied', 'Copied the request list — send it to your AlloFlow maintainer.'), 'success');
-          return;
-        }
-      } catch (_) {}
-      props.addToast && props.addToast(tr('readinglib_req_saved', 'Your request list is saved in this browser.'), 'info');
+        }, notifySaved);
+        return;
+      }
+      notifySaved();
     };
     var downloadRequests = function () {
       if (!requests.length) return;
@@ -3448,7 +3455,7 @@
       if (!requests.length) return;
       try {
         window.open('mailto:?subject=' + encodeURIComponent(tr('readinglib_req_subject', 'AlloFlow reading library — book import requests')) +
-          '&body=' + encodeURIComponent(buildRequestText()), '_blank');
+          '&body=' + encodeURIComponent(buildRequestText()), '_blank', 'noopener,noreferrer');
       } catch (_) {}
     };
 
@@ -3725,7 +3732,7 @@
       setCardsStatus('loading');
       var base = index.base || DATA_BASES[0];
       var bust = base.indexOf('http') === 0 ? '?t=' + Date.now() : '';
-      fetch(base + file + bust, { credentials: 'omit', referrerPolicy: 'no-referrer' })
+      _rlFetch(base + file + bust, { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (data) {
           setExtraCards((data && Array.isArray(data.books)) ? data.books : []);
@@ -3831,6 +3838,10 @@
     };
     var importReadingSet = function (file) {
       if (!file) return;
+      if (file.size > 10 * 1024 * 1024) {
+        props.addToast && props.addToast(tr('readinglib_set_import_failed', 'That file is not a valid AlloFlow reading set.'), 'error');
+        return;
+      }
       var read = file.text ? file.text() : new Promise(function (resolve, reject) {
         var reader = new FileReader();
         reader.onload = function () { resolve(String(reader.result || '')); };
@@ -3838,7 +3849,7 @@
         reader.readAsText(file);
       });
       read.then(function (text) {
-        var normalized = normalizeReadingSet(JSON.parse(text));
+        var normalized = normalizeReadingSet(JSON.parse(text, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }));
         if (!normalized) throw new Error('invalid reading set');
         setActiveReadingSet(normalized);
         setSetName(normalized.title);
@@ -4014,7 +4025,7 @@
       if (!entry || !entry.file) return Promise.reject(new Error('Missing book file'));
       var base = index.base || DATA_BASES[0];
       var bust = base.indexOf('http') === 0 ? '?t=' + Date.now() : '';
-      return fetch(base + entry.file + bust, { credentials: 'omit', referrerPolicy: 'no-referrer' })
+      return _rlFetch(base + entry.file + bust, { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
     };
 
@@ -4078,9 +4089,13 @@
     };
     var restoreImports = function (file) {
       if (!file) return;
+      if (file.size > 25 * 1024 * 1024) {
+        props.addToast && props.addToast(tr('readinglib_restore_failed', 'That file is not a valid AlloFlow imports export.'), 'error');
+        return;
+      }
       var read = file.text ? file.text() : new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(String(fr.result || '')); }; fr.onerror = rej; fr.readAsText(file); });
       read.then(function (txt) {
-        var data = JSON.parse(txt);
+        var data = JSON.parse(txt, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
         var books = (data && Array.isArray(data.books)) ? data.books : [];
         var valid = books.filter(function (b) { return b && b.slug && Array.isArray(b.pages) && b.pages.length; });
         if (!valid.length) { props.addToast && props.addToast(tr('readinglib_restore_empty', 'No imported books found in that file.'), 'info'); return; }

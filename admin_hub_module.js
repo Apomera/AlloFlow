@@ -116,8 +116,19 @@ function _adminHubHash(text) {
 async function _adminHubDrivePost(url, body) {
   const safeUrl = _adminHubSafeDriveUrl(url);
   if (!safeUrl) throw new Error("Invalid Drive backup script URL.");
-  const res = await fetch(safeUrl, { method: "POST", body: JSON.stringify(body) });
-  return res.json();
+  const controller = typeof AbortController === "function" ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), 2e4) : null;
+  try {
+    const res = await fetch(safeUrl, {
+      method: "POST",
+      body: JSON.stringify(body),
+      ...controller ? { signal: controller.signal } : {}
+    });
+    if (!res.ok) throw new Error("Drive backup request failed (HTTP " + res.status + ").");
+    return await res.json();
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 async function _adminHubMaybeDriveBackup(opts) {
   const force = !!(opts && opts.force);
@@ -200,6 +211,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
       {
         id: "adminhub-drive-token",
         type: "password",
+        autoComplete: "current-password",
         value: tokenInput,
         onChange: (e) => setTokenInput(e.target.value),
         placeholder: tt("adminhub.drive_token_placeholder", "From setup()"),
@@ -263,7 +275,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
           addToast(tt("adminhub.drive_disconnected", "Drive backup disconnected."), "info");
         }
       },
-      className: "min-h-10 px-3 rounded-lg border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-100"
+      className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-100"
     },
     tt("adminhub.drive_disconnect", "Disconnect")
   )));
@@ -549,7 +561,7 @@ function AdminHubPanel(props) {
       descCls: "text-emerald-700"
     }
   ];
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "adminhub_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "adminhub-title", "aria-describedby": "adminhub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "adminhub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🏛️"), " ", tt("adminhub.title", "Leadership Hub")), /* @__PURE__ */ React.createElement("p", { id: "adminhub-subtitle", className: "text-sm text-slate-600 mt-1" }, tt("adminhub.subtitle", "Tools for principals, coaches, and student-services leaders"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": tt("adminhub.close_aria", "Close Leadership Hub") }, "✕")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, TOOLS.map((tool) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "adminhub_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "adminhub-title", "aria-describedby": "adminhub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "adminhub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🏛️"), " ", tt("adminhub.title", "Leadership Hub")), /* @__PURE__ */ React.createElement("p", { id: "adminhub-subtitle", className: "text-sm text-slate-600 mt-1" }, tt("adminhub.subtitle", "Tools for principals, coaches, and student-services leaders"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": tt("adminhub.close_aria", "Close Leadership Hub") }, "✕")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, TOOLS.map((tool) => {
     const isMaineCase = tool.id === "maineSldPractice";
     const Card = isMaineCase ? "a" : "button";
     return /* @__PURE__ */ React.createElement(
@@ -577,9 +589,9 @@ function AdminHubPanel(props) {
         className: "flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left " + tool.accent
       },
       /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, tool.icon),
-      /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold " + tool.titleCls }, tool.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 " + tool.descCls }, tool.desc), isMaineCase && typeof window.__alloOpenMaineSldPractice !== "function" && /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-semibold mt-2" }, "Opens in a new tab ↗"))
+      /* @__PURE__ */ React.createElement("span", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold " + tool.titleCls }, tool.title), /* @__PURE__ */ React.createElement("span", { className: "block text-xs mt-1 " + tool.descCls }, tool.desc), isMaineCase && typeof window.__alloOpenMaineSldPractice !== "function" && /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-semibold mt-2" }, "Opens in a new tab ↗"))
     );
-  })), /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3", "data-help-key": "adminhub_backup_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-slate-700" }, tt("adminhub.backup_title", "Back up this hub")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-0.5" }, tt("adminhub.backup_desc", "Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe."))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3", "data-help-key": "adminhub_backup_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-slate-700" }, tt("adminhub.backup_title", "Back up this hub")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, tt("adminhub.backup_desc", "Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe."))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -625,10 +637,15 @@ function AdminHubPanel(props) {
         input.onchange = () => {
           const file = input.files && input.files[0];
           if (!file) return;
+          if (file.size > 10 * 1024 * 1024) {
+            addToast(tt("adminhub.restore_too_large", "Backup file exceeds the 10 MB safety limit."), "error");
+            return;
+          }
           const reader = new FileReader();
           reader.onload = () => {
             try {
-              const data = JSON.parse(String(reader.result || ""));
+              const _safeReviver = (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v;
+              const data = JSON.parse(String(reader.result || ""), _safeReviver);
               if (!data || data.format !== ADMIN_HUB_BACKUP_FORMAT || typeof data.keys !== "object" || data.keys === null) {
                 addToast(tt("adminhub.restore_not_backup", "That file is not a Leadership Hub backup."), "error");
                 return;
@@ -675,7 +692,7 @@ function AdminHubPanel(props) {
       className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"
     },
     tt("adminhub.backup_restore", "Restore from backup")
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-2" }, tt("adminhub.backup_caveat", "The file contains whatever the tools store — codes, notes, and settings. Treat it like the confidential records it may describe, and delete old copies per your retention policy.")), /* @__PURE__ */ React.createElement(AdminHubDriveBackup, { tt, addToast })), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[11px] text-slate-500 border-t border-slate-200 pt-3" }, tt("adminhub.covenant", "How this suite handles information: analysis tools use aggregate counts or de-identified codes. Everything you enter stays in your signed-in profile on this device and is never uploaded, protected by your device sign-in rather than by separate encryption. Connecting a district portal adds shared, authenticated records staff can see and acknowledge. Apply your district’s retention rules, and keep a backup so a lost device is not a lost year. Human review stays in control—never an automated verdict about a teacher or student.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px]" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-2" }, tt("adminhub.backup_caveat", "The file contains whatever the tools store — codes, notes, and settings. Treat it like the confidential records it may describe, and delete old copies per your retention policy.")), /* @__PURE__ */ React.createElement(AdminHubDriveBackup, { tt, addToast })), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[11px] text-slate-600 border-t border-slate-200 pt-3" }, tt("adminhub.covenant", "How this suite handles information: analysis tools use aggregate counts or de-identified codes. Everything you enter stays in your signed-in profile on this device and is never uploaded, protected by your device sign-in rather than by separate encryption. Connecting a district portal adds shared, authenticated records staff can see and acknowledge. Apply your district’s retention rules, and keep a backup so a lost device is not a lost year. Human review stays in control—never an automated verdict about a teacher or student.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px]" }, /* @__PURE__ */ React.createElement(
     "a",
     {
       href: "https://alloflow-cdn.pages.dev/guide/for-school-leaders.html",

@@ -98,12 +98,12 @@
         setLink(
             document.getElementById('ideaFeedback'),
             issueUrl('[Idea] ' + subjectName, ideaBody),
-            'Open a public GitHub issue with an idea about ' + subjectName + ' (opens in a new tab)'
+            'Start a public idea issue on GitHub about ' + subjectName + ' (opens in a new tab)'
         );
         setLink(
             document.getElementById('barrierFeedback'),
             issueUrl('[Bug or accessibility barrier] ' + subjectName, problemBody),
-            'Open a public GitHub issue about a bug or accessibility barrier in ' + subjectName + ' (opens in a new tab)'
+            'Start a public problem report on GitHub about ' + subjectName + ' (opens in a new tab)'
         );
         setLink(
             document.getElementById('privateFeedback'),

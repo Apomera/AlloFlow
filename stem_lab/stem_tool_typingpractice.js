@@ -5956,7 +5956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // Student AI-off: AI passage generation and story/prompt images render only when usable.
         var _aiUsable = function (kind, fn) {
           try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-          return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+          return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
         };
         var _tpAiOn = function (fn, kind) { return ctx.aiAvailable !== false && typeof fn === 'function' && !fn._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable(kind, fn)); };
         var tpTextAiOn = _tpAiOn(ctx.callGemini, 'text');
@@ -14933,10 +14933,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     inp.onchange = function(e) {
                       var file = e.target.files && e.target.files[0];
                       if (!file) return;
+                      if (Number(file.size) > 2 * 1024 * 1024) {
+                        addToast('Typing Practice profile files are limited to 2 MB.');
+                        return;
+                      }
                       var reader = new FileReader();
                       reader.onload = async function(ev) {
                         try {
-                          var parsed = JSON.parse(ev.target.result);
+                          var parsed = JSON.parse(ev.target.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
                           if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || parsed._format !== 'alloflow-typing-practice-profile') {
                             addToast('⚠️ Not a Typing Practice profile file.');
                             setAnnounceText(__alloTPT('stem.typingpractice.sr_import_failed_choose_a_typing_practice_profile_js', 'Import failed. Choose a Typing Practice profile JSON file.'));
@@ -15050,12 +15054,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       inp.onchange = function(e) {
                         var file = e.target.files && e.target.files[0];
                         if (!file) return;
+                        if (file.size > 5 * 1024 * 1024) { addToast('⚠️ Backup file exceeds the 5 MB safety limit.'); return; }
                         var reader = new FileReader();
                         reader.onload = async function(ev) {
                           try {
                             var rawBackup = String(ev.target.result || '');
                             if (rawBackup.length > MAX_BACKUP_FILE_CHARS) throw new Error('Backup file exceeds the 5 MB safety limit.');
-                            var parsed = JSON.parse(rawBackup);
+                            var parsed = JSON.parse(rawBackup, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
                             if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || parsed._format !== 'alloflow-typing-practice-backup') {
                               addToast('⚠️ Not a Typing Practice backup file.');
                               setAnnounceText(__alloTPT('stem.typingpractice.sr_restore_failed_choose_a_typing_practice_backup_js', 'Restore failed. Choose a Typing Practice backup JSON file.'));
@@ -21606,6 +21611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   function printIEPReport(report, studentName, notify) {
     try {
       var w = window.open('', '_blank', 'width=720,height=900');
+      try { if (w) w.opener = null; } catch (_) {}
       if (!w) {
         reportTypingPracticeIssue('Please allow popups to print the report, or use Copy and paste into a document.', notify);
         return;

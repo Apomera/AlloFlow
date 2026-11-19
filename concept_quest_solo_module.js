@@ -2772,7 +2772,8 @@ function ConceptQuestSolo({
   const gameLabel = (entry, field = 'name') => tr(entry[field + 'Key'] || 'role_' + entry.id + '_' + field, entry[field] || '');
   const getLocalStorage = () => {
     try {
-      return window.localStorage;
+      const isUnauthStudent = !user?.uid && typeof window !== 'undefined' && (window.__alloStudentView === true || window.__alloLearnerRoleActive === true);
+      return isUnauthStudent ? window.sessionStorage : window.localStorage;
     } catch (_) {
       return null;
     }
@@ -3348,6 +3349,7 @@ function ConceptQuestSolo({
     onClick: resolveTurn,
     className: buttonClass + ' w-full bg-indigo-700 text-white'
   }, item.selfReviewRequired ? tr('solo_finish_review', '3. Record self-review and continue') : tr('solo_resolve', '3. Resolve this turn')))), /*#__PURE__*/React.createElement("aside", {
+    "aria-label": tr('solo_map_and_inventory', 'Adventure map and inventory'),
     className: "space-y-4"
   }, /*#__PURE__*/React.createElement("details", {
     className: "rounded-xl border border-slate-300 bg-white p-4",

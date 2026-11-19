@@ -1679,14 +1679,26 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     // ── Import: a unit file (has unitLayout) OR a plain pack (auto-layout) ──
     function importFile(file) {
       if (!file) return;
+      var MAX_UNIT_IMPORT_BYTES = 25 * 1024 * 1024;
+      if (typeof file.size === 'number' && file.size > MAX_UNIT_IMPORT_BYTES) {
+        addToast((t('throughline.import_failed') || 'Could not import file') + ': file exceeds 25 MB safety limit', 'error');
+        return;
+      }
       var reader = new FileReader();
       reader.onload = async function (ev) {
         try {
-          var parsed = JSON.parse(ev.target.result);
+          var rawText = String(ev.target.result || '');
+          if (rawText.length > MAX_UNIT_IMPORT_BYTES) throw new Error('File exceeds 25 MB safety limit');
+          var parsed = JSON.parse(rawText, function (k, v) {
+            return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+          });
           var packHistory = Array.isArray(parsed && parsed.history) ? parsed.history : [];
           // keep the file's lessons resolvable
-          var imp = {};
-          packHistory.forEach(function (it) { var s = sanitizeLessonItem(it); if (s) imp[s.id] = s; });
+          var imp = Object.create(null);
+          packHistory.forEach(function (it) {
+            var s = sanitizeLessonItem(it);
+            if (s && s.id && s.id !== '__proto__' && s.id !== 'constructor' && s.id !== 'prototype') imp[s.id] = s;
+          });
 
           if (parsed && parsed.unitLayout) {
             var nu = normalizeUnit(parsed.unitLayout);
@@ -1893,9 +1905,72 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     // host provides only two capabilities: onProposeUnit (draft a structure) and
     // onGenerateUnitLesson (run ONE lesson through the shared blueprint engine).
     var genBaseRef = useRef(120);
+    var rootDialogRef = useRef(null);
     var genDialogRef = useRef(null);
     var busyRef = useRef(false);   // synchronous re-entrancy guard for propose/build/retry
     var threeDDialogRef = useRef(null);
+    var subModalOpenRef = useRef(false);
+    subModalOpenRef.current = !!(gen || show3D || pickerForNode || editingNode || editingHeader);
+    // Root modal a11y: move focus inside dialog, isolate background siblings with
+    // inert/aria-hidden, trap Tab, close on Escape, and restore opener focus.
+    useEffect(function () {
+      var el = rootDialogRef.current;
+      if (!el || typeof document === 'undefined') return;
+      var prevFocus = document.activeElement;
+      var blocked = [];
+      try {
+        var cur = el;
+        while (cur && cur.parentElement && cur !== document.body) {
+          var siblings = cur.parentElement.children;
+          for (var i = 0; i < siblings.length; i++) {
+            var sib = siblings[i];
+            if (sib !== cur && sib.nodeType === 1) {
+              blocked.push({ el: sib, hadInert: sib.hasAttribute('inert'), ariaHidden: sib.getAttribute('aria-hidden') });
+              sib.setAttribute('inert', '');
+              sib.setAttribute('aria-hidden', 'true');
+            }
+          }
+          cur = cur.parentElement;
+        }
+      } catch (e) {}
+      function rootFocusables() {
+        var node = rootDialogRef.current; if (!node) return [];
+        return Array.prototype.slice.call(node.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'))
+          .filter(function (n) { return !n.disabled && n.offsetParent !== null && !n.closest('[inert]'); });
+      }
+      try {
+        var f0 = rootFocusables();
+        var t0 = f0[0] || el;
+        if (t0 && t0.focus) t0.focus();
+      } catch (e) {}
+      function onRootKey(ev) {
+        if (subModalOpenRef.current) return;
+        var node = rootDialogRef.current; if (!node) return;
+        if (ev.key === 'Escape') {
+          ev.preventDefault();
+          onClose();
+          return;
+        }
+        if (ev.key !== 'Tab') return;
+        var f = rootFocusables();
+        if (!f.length) { ev.preventDefault(); node.focus(); return; }
+        var first = f[0], last = f[f.length - 1], active = document.activeElement;
+        if (ev.shiftKey && (active === first || !node.contains(active))) { ev.preventDefault(); last.focus(); }
+        else if (!ev.shiftKey && (active === last || !node.contains(active))) { ev.preventDefault(); first.focus(); }
+      }
+      document.addEventListener('keydown', onRootKey, true);
+      return function () {
+        document.removeEventListener('keydown', onRootKey, true);
+        blocked.forEach(function (entry) {
+          try {
+            if (!entry.hadInert) entry.el.removeAttribute('inert');
+            if (entry.ariaHidden === null) entry.el.removeAttribute('aria-hidden');
+            else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+          } catch (e) {}
+        });
+        try { if (prevFocus && prevFocus.isConnected && typeof prevFocus.focus === 'function') prevFocus.focus(); } catch (e) {}
+      };
+    }, []);
     useEffect(function () { genRef.current = gen; }, [gen]);
     useEffect(function () {
       mountedRef.current = true;
@@ -2583,7 +2658,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         h('button', { onClick: function () {
             var txt = 'UNIT OUTLINE — ' + (unit.title || 'Untitled') + (unit.essentialQuestion ? ' (“' + unit.essentialQuestion + '”)' : '') + '\n\n' +
               outline.order.map(function (nid, i) { var n = nodeById[nid]; var it = n && resolveLesson(n.lessonId); return (i + 1) + '. ' + (it ? (it.title || typeLabel(it.type)) : 'Planned lesson') + (it ? '  [' + typeLabel(it.type) + ']' : ''); }).join('\n');
-            try { navigator.clipboard.writeText(txt); addToast(t('throughline.copied') || 'Outline copied', 'success'); } catch (e) { addToast(t('throughline.copy_failed') || 'Copy failed', 'error'); }
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+              Promise.resolve(navigator.clipboard.writeText(txt)).then(function () { addToast(t('throughline.copied') || 'Outline copied', 'success'); }, function () { addToast(t('throughline.copy_failed') || 'Copy failed', 'error'); });
+            } else { addToast(t('throughline.copy_failed') || 'Copy failed', 'error'); }
           },
           style: { flex: 1, padding: '7px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', color: '#334155' } },
           '📋 ' + (t('throughline.copy') || 'Copy'))
@@ -3077,7 +3154,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       )
     );
 
-    return h('div', { style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.85)', zIndex: 100, display: 'flex', flexDirection: 'column' }, role: 'dialog', 'aria-modal': 'true', 'aria-label': TOOL_NAME },
+    return h('div', { ref: rootDialogRef, tabIndex: -1, style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.85)', zIndex: 100, display: 'flex', flexDirection: 'column' }, role: 'dialog', 'aria-modal': 'true', 'aria-label': TOOL_NAME },
       topBar, toolbar, quotaNudge, hint, connectChoice,
       h('div', { style: { flex: 1, position: 'relative', display: 'flex' } }, canvas, outlinePanel, alignmentPanel),
       pickerModal, editModal, headerModal, genModal, threeDModal

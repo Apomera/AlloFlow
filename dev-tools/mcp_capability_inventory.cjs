@@ -20,10 +20,13 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { performance } = require('perf_hooks');
 
 const REPO = path.resolve(__dirname, '..');
 const Driver = require(path.join(REPO, 'desktop/mcp/remediation_headless_driver.cjs'));
+const { makeZip } = require(path.join(REPO, 'desktop/mcp/zip_writer.cjs'));
 const SERVER_SRC = fs.readFileSync(path.join(REPO, 'desktop/mcp/alloflow-remediation-mcp-stdio.cjs'), 'utf8');
 const DRIVER_SRC = fs.readFileSync(path.join(REPO, 'desktop/mcp/remediation_headless_driver.cjs'), 'utf8');
 
@@ -69,6 +72,120 @@ const OUT_OF_BUNDLE_FORMATS = [
 const argv = process.argv.slice(2);
 const jsonOut = (() => { const i = argv.indexOf('--json'); return i === -1 ? null : argv[i + 1]; })();
 const assertParity = argv.includes('--assert-parity');
+const runRuntimeProbes = !argv.includes('--no-runtime-probes') && (assertParity || argv.includes('--runtime-probes'));
+
+const PROBE_PNG_1X1 = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+  'base64',
+);
+const PROBE_HTML = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Parity Probe</title></head>'
+  + '<body><main><h1 id="top">Parity Probe</h1><p>Offline smoke test for 2026 accessibility exports.</p>'
+  + '<table><caption>Summary</caption><thead><tr><th scope="col">Metric</th><th scope="col">Value</th></tr></thead>'
+  + '<tbody><tr><th scope="row">Score</th><td>100</td></tr></tbody></table></main></body></html>';
+
+async function runOfflineSmokeProbes() {
+  const results = [];
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-mcp-parity-probe-'));
+  const prevOfflineAssets = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS;
+  delete process.env.ALLOFLOW_MCP_OFFLINE_ASSETS;
+  const driver = Driver.createDriver({ onLog: () => {} });
+  const runProbe = async (name, fn) => {
+    const t0 = performance.now();
+    try {
+      const detail = await fn();
+      results.push({ name, ok: true, elapsedMs: Math.round(performance.now() - t0), detail });
+    } catch (err) {
+      results.push({ name, ok: false, elapsedMs: Math.round(performance.now() - t0), error: String((err && err.message) || err).slice(0, 400) });
+    }
+  };
+  try {
+    await runProbe('readDocBase64-input-families', async () => {
+      const minimalZip = makeZip([{ name: 'doc.xml', data: '<doc/>' }]);
+      const validFiles = [
+        ['sample.pdf', Buffer.from('%PDF-1.4\n%%EOF\n', 'latin1')],
+        ['sample.docx', minimalZip],
+        ['sample.xlsx', minimalZip],
+        ['sample.png', PROBE_PNG_1X1],
+        ['sample.jpg', Buffer.from([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46])],
+        ['sample.md', Buffer.from('# Heading\nBody text\n', 'utf8')],
+        ['sample.csv', Buffer.from('a,b\n1,2\n', 'utf8')],
+      ];
+      for (const [name, bytes] of validFiles) {
+        const filePath = path.join(tmp, name);
+        fs.writeFileSync(filePath, bytes);
+        const b64 = driver._readDocBase64(filePath);
+        if (!b64 || !Buffer.from(b64, 'base64').equals(bytes)) {
+          throw new Error('readDocBase64 round-trip mismatch for ' + name);
+        }
+      }
+      const badExe = path.join(tmp, 'disallowed.exe');
+      fs.writeFileSync(badExe, Buffer.from('MZ\x90\x00', 'latin1'));
+      let exeRejected = false;
+      try { driver._readDocBase64(badExe); } catch (_) { exeRejected = true; }
+      if (!exeRejected) throw new Error('readDocBase64 accepted disallowed .exe extension');
+
+      const badPng = path.join(tmp, 'corrupt.png');
+      fs.writeFileSync(badPng, Buffer.from('not-a-png', 'utf8'));
+      let pngRejected = false;
+      try { driver._readDocBase64(badPng); } catch (_) { pngRejected = true; }
+      if (!pngRejected) throw new Error('readDocBase64 accepted corrupt .png magic');
+      return validFiles.length + ' families accepted, 2 invalid inputs rejected';
+    });
+
+    await runProbe('offline-exportAltFormat', async () => {
+      const epub = await driver.exportAltFormat({ html: PROBE_HTML, title: 'Parity Probe', format: 'epub' });
+      const epubBuf = Buffer.from(epub.b64 || '', 'base64');
+      if (!epub.valid || epubBuf.slice(38, 58).toString('latin1') !== 'application/epub+zip') {
+        throw new Error('EPUB offline probe failed structural/mimetype check');
+      }
+      const daisy = await driver.exportAltFormat({ html: PROBE_HTML, title: 'Parity Probe', format: 'daisy' });
+      if (!Array.isArray(daisy.entries) || !daisy.entries.includes('dtbook.xml') || !daisy.entries.includes('package.opf')) {
+        throw new Error('DAISY offline probe missing required package entries');
+      }
+      const brf = await driver.exportAltFormat({ html: PROBE_HTML, title: 'Parity Probe', format: 'brf' });
+      const brfText = Buffer.from(brf.b64 || '', 'base64').toString('ascii');
+      if (!brfText.trim() || brfText.replace(/[\x20-\x5f\r\n]/g, '') !== '') {
+        throw new Error('BRF offline probe emitted non-ASCII-braille bytes');
+      }
+      return 'epub=' + epubBuf.length + 'B, daisy=' + daisy.bytes + 'B, brf=' + brf.bytes + 'B';
+    });
+
+    await runProbe('offline-exportAccessibleOffice', async () => {
+      const docx = await driver.exportAccessibleOffice({ html: PROBE_HTML, title: 'Parity Probe', format: 'docx' });
+      const docxBuf = Buffer.from(docx.b64 || '', 'base64');
+      if (docxBuf.length < 100 || docxBuf[0] !== 0x50 || docxBuf[1] !== 0x4B || !docxBuf.includes(Buffer.from('word/document.xml'))) {
+        throw new Error('DOCX offline probe did not return a valid OOXML ZIP');
+      }
+      const odt = await driver.exportAccessibleOffice({ html: PROBE_HTML, title: 'Parity Probe', format: 'odt' });
+      const odtBuf = Buffer.from(odt.b64 || '', 'base64');
+      if (odtBuf.length < 100 || odtBuf[0] !== 0x50 || odtBuf[1] !== 0x4B || !odtBuf.includes(Buffer.from('content.xml'))) {
+        throw new Error('ODT offline probe did not return a valid OpenDocument ZIP');
+      }
+      return 'docx=' + docxBuf.length + 'B, odt=' + odtBuf.length + 'B';
+    });
+
+    await runProbe('offline-accessibleHtml-and-auditHtml', async () => {
+      const outline = await driver.accessibleHtmlTool({ mode: 'outline', html: PROBE_HTML, payload: { maxItems: 50 } });
+      if (!outline || !Array.isArray(outline.items) || !outline.items.some((it) => it.kind === 'heading')) {
+        throw new Error('accessibleHtmlTool outline probe returned no heading item');
+      }
+      const audited = await driver.auditHtml({ html: PROBE_HTML, fileName: 'probe.html', includeAi: false });
+      const doneStatuses = new Set(['passed', 'failed', 'review-required', 'completed']);
+      const axeOk = !!(audited && audited.checks && audited.checks.axe && doneStatuses.has(audited.checks.axe.status) && typeof audited.axeViolations === 'number');
+      const eaOk = !!(audited && audited.checks && audited.checks.equalAccess && doneStatuses.has(audited.checks.equalAccess.status) && typeof audited.equalAccessFailures === 'number');
+      if (!axeOk || !eaOk) {
+        throw new Error('auditHtml offline probe incomplete (axe=' + (audited?.checks?.axe?.status || 'missing') + ', equalAccess=' + (audited?.checks?.equalAccess?.status || 'missing') + ')');
+      }
+      return 'outline=' + outline.items.length + ' items, axeViolations=' + audited.axeViolations + ', eaFailures=' + audited.equalAccessFailures;
+    });
+  } finally {
+    if (prevOfflineAssets === undefined) delete process.env.ALLOFLOW_MCP_OFFLINE_ASSETS;
+    else process.env.ALLOFLOW_MCP_OFFLINE_ASSETS = prevOfflineAssets;
+    try { await driver.close(); } catch (_) {}
+    try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (_) {}
+  }
+  return results;
+}
 
 async function factorySurface() {
   const chrome = Driver.resolveChromium();
@@ -227,6 +344,15 @@ function moduleHomeFor(pattern) {
   gaps.forEach((g, i) => console.log('  ' + (i + 1) + '. ' + g.capability + '  (' + g.functions.join(', ') + ')'));
   if (!gaps.length) console.log('  none');
 
+  const runtimeProbes = runRuntimeProbes ? await runOfflineSmokeProbes() : [];
+  if (runtimeProbes.length) {
+    console.log('\n── Offline runtime smoke probes ──');
+    for (const p of runtimeProbes) {
+      console.log('  [' + (p.ok ? 'PASS' : 'FAIL') + '] ' + p.name + ' (' + p.elapsedMs + 'ms)' + (p.ok ? ' — ' + p.detail : ' — ' + p.error));
+    }
+  }
+  const failedProbes = runtimeProbes.filter((p) => !p.ok);
+
   const parityRegressions = gaps.filter((g) => !SESSION_ONLY_CAPABILITIES.has(g.capability));
   const report = {
     factoryFunctions: fns.length, reachedByConnector: reached.size, mcpTools: tools.length,
@@ -234,6 +360,7 @@ function moduleHomeFor(pattern) {
     capabilities, outOfBundleFormats: formats,
     gaps: gaps.map((g) => g.capability),
     parityRegressions: parityRegressions.map((g) => g.capability),
+    ...(runtimeProbes.length ? { runtimeProbes } : {}),
     note: 'bootModules are loaded for every pipeline run; shippedAssets is the complete connector bundle asset set. A capability that is in the pipeline but not reached is a candidate MCP tool.',
   };
   if (jsonOut) { fs.writeFileSync(jsonOut, JSON.stringify(report, null, 2), 'utf8'); console.log('\nrecord: ' + jsonOut); }
@@ -241,6 +368,9 @@ function moduleHomeFor(pattern) {
     if (parityRegressions.length) {
       throw new Error('MCP capability parity regressed: ' + parityRegressions.map((g) => g.capability).join(', '));
     }
-    console.log('\nPARITY GATE: PASS (' + (capabilities.length - SESSION_ONLY_CAPABILITIES.size) + ' transport-capable areas reached; session-only UI commands excluded explicitly)');
+    if (failedProbes.length) {
+      throw new Error('MCP offline runtime probe(s) failed: ' + failedProbes.map((p) => p.name + ' (' + p.error + ')').join('; '));
+    }
+    console.log('\nPARITY GATE: PASS (' + (capabilities.length - SESSION_ONLY_CAPABILITIES.size) + ' transport-capable areas reached; ' + runtimeProbes.length + ' offline runtime probes passed; session-only UI commands excluded explicitly)');
   }
 })().catch((e) => { console.error('FAILED: ' + ((e && e.message) || e)); process.exit(1); });

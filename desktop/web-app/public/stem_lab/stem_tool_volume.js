@@ -108,9 +108,60 @@ window.StemLab = window.StemLab || {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-volume-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-volume-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"volume\"] :is(.allo-vol-bg-slider,.allo-vol-bg-freeform,.allo-vol-bg-word,.allo-vol-bg-displacement,[id^=\"stem-volume-panel-\"],button[class*=\"bg-gradient-to-\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"volume\"] [id^=\"stem-volume-panel-\"] h3{color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"volume\"] :is(.allo-vol-bg-slider,.allo-vol-bg-freeform,.allo-vol-bg-word,.allo-vol-bg-displacement,[id^=\"stem-volume-panel-\"],[data-volume-command=\"true\"],button[class*=\"bg-gradient-to-\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"volume\"] [id^=\"stem-volume-panel-\"] h3,.theme-contrast [data-stem-tool-shell=\"volume\"] [data-volume-command=\"true\"] h3{color:#ffff00!important}";
     document.head.appendChild(st);
   })();
+
+  // Bespoke isometric SVG solid emblems & shape thumbnails (all font sizes >= 10px)
+  function renderVolumeEmblemSvg(h) {
+    return h('svg', { width: 44, height: 44, viewBox: '0 0 44 44', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+      h('defs', null,
+        h('linearGradient', { id: 'vol-emb-bg', x1: '0', y1: '0', x2: '1', y2: '1' },
+          h('stop', { offset: '0%', stopColor: '#059669' }),
+          h('stop', { offset: '100%', stopColor: '#0284c7' })
+        )
+      ),
+      h('rect', { x: 2, y: 2, width: 40, height: 40, rx: 11, fill: 'url(#vol-emb-bg)', stroke: '#a7f3d0', strokeWidth: 1.5 }),
+      // Isometric cube (top, left, right faces + crisp wireframe edges)
+      h('polygon', { points: '22,9 34,15.5 22,22 10,15.5', fill: '#a7f3d0', stroke: '#ecfdf5', strokeWidth: 1.2 }),
+      h('polygon', { points: '10,15.5 22,22 22,35 10,28.5', fill: '#34d399', stroke: '#ecfdf5', strokeWidth: 1.2 }),
+      h('polygon', { points: '34,15.5 22,22 22,35 34,28.5', fill: '#0d9488', stroke: '#ecfdf5', strokeWidth: 1.2 }),
+      h('line', { x1: 22, y1: 9, x2: 22, y2: 22, stroke: '#ffffff', strokeWidth: 0.9, strokeDasharray: '2 2', opacity: 0.65 })
+    );
+  }
+
+  function renderSolidThumbSvg(h, shapeId, active) {
+    var topFill = active ? '#a7f3d0' : '#d1fae5';
+    var sideFill = active ? '#34d399' : '#6ee7b7';
+    var deepFill = active ? '#10b981' : '#34d399';
+    var stroke = active ? '#ecfdf5' : '#065f46';
+    if (shapeId === 'cylinder') {
+      return h('svg', { width: 38, height: 34, viewBox: '0 0 38 34', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+        h('path', { d: 'M8,9 L8,25 A11,4 0 0,0 30,25 L30,9 Z', fill: sideFill, stroke: stroke, strokeWidth: 1.3 }),
+        h('ellipse', { cx: 19, cy: 9, rx: 11, ry: 4, fill: topFill, stroke: stroke, strokeWidth: 1.3 }),
+        h('path', { d: 'M8,25 A11,4 0 0,1 30,25', fill: 'none', stroke: stroke, strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.7 })
+      );
+    }
+    if (shapeId === 'cone') {
+      return h('svg', { width: 38, height: 34, viewBox: '0 0 38 34', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+        h('path', { d: 'M19,5 L8,26 A11,4 0 0,0 30,26 Z', fill: sideFill, stroke: stroke, strokeWidth: 1.3 }),
+        h('ellipse', { cx: 19, cy: 26, rx: 11, ry: 3.8, fill: deepFill, stroke: stroke, strokeWidth: 1.3 }),
+        h('line', { x1: 19, y1: 5, x2: 19, y2: 26, stroke: stroke, strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.7 })
+      );
+    }
+    if (shapeId === 'pyramid') {
+      return h('svg', { width: 38, height: 34, viewBox: '0 0 38 34', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+        h('polygon', { points: '19,5 7,25 21,30', fill: sideFill, stroke: stroke, strokeWidth: 1.3 }),
+        h('polygon', { points: '19,5 21,30 31,23', fill: deepFill, stroke: stroke, strokeWidth: 1.3 }),
+        h('line', { x1: 7, y1: 25, x2: 31, y2: 23, stroke: stroke, strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.6 })
+      );
+    }
+    return h('svg', { width: 38, height: 34, viewBox: '0 0 38 34', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+      h('polygon', { points: '19,4 32,10.5 19,17 6,10.5', fill: topFill, stroke: stroke, strokeWidth: 1.3 }),
+      h('polygon', { points: '6,10.5 19,17 19,30 6,23.5', fill: sideFill, stroke: stroke, strokeWidth: 1.3 }),
+      h('polygon', { points: '32,10.5 19,17 19,30 32,23.5', fill: deepFill, stroke: stroke, strokeWidth: 1.3 })
+    );
+  }
 
 
   // ── Sound effects ──
@@ -3075,10 +3126,12 @@ window.StemLab = window.StemLab || {
         h('section', { 'data-volume-command': 'true', className: 'overflow-hidden rounded-2xl border border-emerald-300/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950 text-white shadow-xl' },
           h('div', { className: 'p-4 sm:p-5' },
             h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
-              h('div', { className: 'min-w-0' },
-                h('div', { className: 'flex items-center gap-2' },
+              h('div', { className: 'min-w-0 flex-1' },
+                h('div', { className: 'flex items-center gap-2.5 flex-wrap' },
                   h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-300', 'aria-label': __alloT('stem.volume.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-emerald-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-emerald-100 ring-1 ring-emerald-200/30' }, isDisplacement ? 'Measurement lab' : 'Volume design brief')
+                  renderVolumeEmblemSvg(h),
+                  h('span', { className: 'rounded-full bg-emerald-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-emerald-100 ring-1 ring-emerald-200/30' }, isDisplacement ? 'Measurement lab' : 'Volume design brief'),
+                  h('span', { className: 'rounded-full bg-sky-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.14em] text-sky-100 ring-1 ring-sky-200/30' }, 'Math · 3D Geometry')
                 ),
                 h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, __alloT('stem.volume.3d_volume_explorer', '\uD83D\uDCE6 3D Volume Explorer')),
                 h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-emerald-100' }, headerDescription),
@@ -3087,13 +3140,14 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'mt-1 text-sm font-semibold text-white' }, volumeNext)
                 )
               ),
-              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 lg:w-[22rem]' },
                 [
                   { label: 'Mode', value: volumeModeLabel },
                   { label: 'Volume', value: isDisplacement ? ((dispFeedback && dispFeedback.correct) ? dispTrial.measuredVolume + ' mL' : '?') : (answerMasked ? '?' : String(volumeShown)) },
+                  { label: 'Surface', value: isDisplacement ? (dispTrial.initial + ' mL start') : (answerMasked ? '?' : String(surfaceShown)) },
                   { label: 'Solved', value: String(score.correct) }
                 ].map(function(metric) {
-                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2.5 py-2.5 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
                     h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-emerald-200' }, metric.label)
                   );
@@ -3710,14 +3764,37 @@ window.StemLab = window.StemLab || {
             (showLayers != null ? showLayers : dims.h) + ' / ' + dims.h)
         ),
 
-        // Shape selector (slider mode only) — prism / cylinder / cone / pyramid
-        isSlider && h('div', { className: 'bg-white rounded-xl p-2 border border-emerald-200' },
-          h('div', { className: 'flex items-center gap-1 flex-wrap', role: 'radiogroup', 'aria-label': __alloT('stem.volume.shape_selector', 'Shape selector') },
-            h('span', { className: 'text-[0.6875rem] font-bold text-emerald-700 mr-1' }, __alloT('stem.volume.shape', '🔷 Shape:')),
+        // Shape selector (slider mode only) — prism / cylinder / cone / pyramid with isometric SVG solid cards
+        isSlider && h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-200 shadow-sm space-y-2.5' },
+          h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+            h('span', { className: 'text-xs font-extrabold uppercase tracking-wider text-emerald-800' }, __alloT('stem.volume.shape', '🔷 Shape & Solid Family')),
+            h('div', { className: 'flex items-center gap-1.5 flex-wrap' },
+              h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, __alloT('stem.volume.quick_solids', 'Presets:')),
+              [
+                { id: 'cube2', label: '2×2×2 Cube', dims: { l: 2, w: 2, h: 2 } },
+                { id: 'tower', label: '2×2×6 Tower', dims: { l: 2, w: 2, h: 6 } },
+                { id: 'slab', label: '6×4×1 Slab', dims: { l: 6, w: 4, h: 1 } },
+                { id: 'box', label: '5×3×2 Box', dims: { l: 5, w: 3, h: 2 } }
+              ].map(function(pr) {
+                return h('button', {
+                  key: pr.id,
+                  type: 'button',
+                  onClick: function() {
+                    playSound('place');
+                    upd({ dims: pr.dims, showLayers: null });
+                    announceToSR('Loaded ' + pr.label + ' preset.');
+                  },
+                  className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors'
+                }, pr.label);
+              })
+            )
+          ),
+          h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'radiogroup', 'aria-label': __alloT('stem.volume.shape_selector', 'Shape selector') },
             SHAPES_META.map(function(s) {
               var active = shape === s.id;
               return h('button', {
                 key: 's-' + s.id,
+                type: 'button',
                 role: 'radio',
                 'aria-checked': active,
                 onClick: function() {
@@ -3726,18 +3803,24 @@ window.StemLab = window.StemLab || {
                   announceToSR(s.label + ' selected. Formula ' + s.formula);
                 },
                 title: s.formula,
-                className: 'px-2.5 py-1 rounded-md text-[0.6875rem] font-bold transition-all border ' +
-                  (active ? 'bg-emerald-700 text-white border-emerald-700 shadow-inner' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50')
-              }, s.icon + ' ' + s.label);
+                className: 'flex items-center gap-2 p-2 rounded-xl text-left transition-all border-2 ' +
+                  (active ? 'bg-emerald-700 text-white border-emerald-800 shadow-sm' : 'bg-emerald-50/40 text-emerald-900 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-400')
+              },
+                renderSolidThumbSvg(h, s.id, active),
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('div', { className: 'text-xs font-extrabold truncate' }, s.label),
+                  h('div', { className: 'text-[0.6875rem] font-mono truncate ' + (active ? 'text-emerald-100' : 'text-emerald-700') }, s.formula)
+                )
+              );
             })
           ),
-          shape !== 'prism' && !volPredArmed && h('p', { className: 'mt-1.5 text-[0.625rem] text-emerald-600 italic' },
+          shape !== 'prism' && !volPredArmed && h('p', { className: 'mt-1.5 text-[0.6875rem] text-emerald-800 italic' },
             __alloT('stem.volume.visual_is_a_voxel_approximation_built_', '⚠ Visual is a voxel approximation (built from unit cubes). The formula '),
-            h('span', { className: 'font-mono font-bold text-emerald-800' }, (SHAPES_META.find(function(m) { return m.id === shape; }) || {}).formula),
+            h('span', { className: 'font-mono font-bold text-emerald-900' }, (SHAPES_META.find(function(m) { return m.id === shape; }) || {}).formula),
             __alloT('stem.volume.gives_the_exact_analytic_volume', ' gives the exact analytic volume = '),
-            h('span', { className: 'font-bold text-emerald-800' }, formatVolumeWithUnit(analyticVolume(shape, dims.l, dims.w, dims.h)))
+            h('span', { className: 'font-bold text-emerald-900' }, formatVolumeWithUnit(analyticVolume(shape, dims.l, dims.w, dims.h)))
           ),
-          // ── Formula breakdown: shows the formula with current dimensions plugged in ──
+          // ── Formula breakdown + live Base-Layer Stack SVG visual ──
           (function() {
             var sf = SHAPES_META.find(function(m) { return m.id === shape; });
             if (!sf) return null;
@@ -3766,19 +3849,31 @@ window.StemLab = window.StemLab || {
             } else {
               return null;
             }
+            var layerSlices = Math.max(1, Math.min(8, Math.round(H)));
+            var baseAreaVal = Math.round(L * W * 100) / 100;
             return h('div', {
-              className: 'mt-2 bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1.5 font-mono text-[0.6875rem] text-emerald-900',
+              className: 'mt-2 bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between gap-3 flex-wrap',
               role: 'note',
               'aria-label': __alloT('stem.volume.formula_with_dimensions_substituted', 'Formula with dimensions substituted')
             },
-              h('span', { className: 'font-bold text-emerald-700 mr-2' }, sf.formula),
-              h('span', { className: 'text-emerald-600' }, '→ '),
-              h('span', { className: 'text-emerald-800' }, stepStr),
-              h('span', { className: 'text-emerald-600 mx-1' }, '='),
-              // The substituted dimensions stay visible (they are on the sliders anyway);
-              // only the evaluated result is masked while a prediction is armed.
-              h('span', { className: 'font-extrabold text-emerald-900' }, answerMasked ? '?' : resultStr),
-              h('span', { className: 'text-emerald-700 ml-1 not-italic' }, __alloT('stem.volume.cubic_units', ' cubic units'))
+              h('div', { className: 'font-mono text-xs text-emerald-900' },
+                h('span', { className: 'font-bold text-emerald-800 mr-2' }, sf.formula),
+                h('span', { className: 'text-emerald-700' }, '→ '),
+                h('span', { className: 'text-emerald-900' }, stepStr),
+                h('span', { className: 'text-emerald-700 mx-1' }, '='),
+                // The substituted dimensions stay visible (they are on the sliders anyway);
+                // only the evaluated result is masked while a prediction is armed.
+                h('span', { className: 'font-extrabold text-emerald-950 text-sm' }, answerMasked ? '?' : resultStr),
+                h('span', { className: 'text-emerald-800 ml-1 not-italic' }, __alloT('stem.volume.cubic_units', ' cubic units'))
+              ),
+              shape === 'prism' && h('svg', { width: 224, height: 38, viewBox: '0 0 224 38', 'aria-hidden': 'true', style: { flexShrink: 0, maxWidth: '100%' } },
+                Array.from({ length: layerSlices }, function(_, li) {
+                  var y = 30 - li * (24 / layerSlices);
+                  return h('rect', { key: 'ls-' + li, x: 6, y: y, width: 52, height: Math.max(2.5, (20 / layerSlices)), rx: 1.5, fill: li === layerSlices - 1 ? '#059669' : '#34d399', stroke: '#065f46', strokeWidth: 0.7 });
+                }),
+                h('text', { x: 66, y: 16, fontSize: 10, fontWeight: 700, fill: '#065f46', fontFamily: 'monospace' }, 'Base ' + baseAreaVal + ' × ' + H + ' layers'),
+                h('text', { x: 66, y: 30, fontSize: 10, fontWeight: 800, fill: '#047857', fontFamily: 'monospace' }, answerMasked ? 'V = ?' : ('V = ' + resultStr))
+              )
             );
           })()
         ),
@@ -4018,7 +4113,7 @@ window.StemLab = window.StemLab || {
               __alloT('stem.volume.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { id: 'volume-predictor-explanation', 'aria-label': __alloT('stem.volume.a11y_explain_how_each_dimension_contributes_to_total', 'Explain how each dimension contributes to total volume'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
               className: 'w-full text-[0.6875rem] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'mt-2 text-[0.625rem] italic text-slate-500' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: commit-then-check. Volume readouts are masked while a prediction is armed, so the outcome reflects reasoning rather than reading. Discrete 3-band outcome on relative error; no score.'))
+            h('div', { className: 'mt-2 text-[0.625rem] italic text-slate-600' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: commit-then-check. Volume readouts are masked while a prediction is armed, so the outcome reflects reasoning rather than reading. Discrete 3-band outcome on relative error; no score.'))
           );
         })(),
 
@@ -4292,7 +4387,7 @@ window.StemLab = window.StemLab || {
           showSaved && h('div', { className: 'border-t border-emerald-100 pt-2' },
             h('p', { className: 'text-[0.6875rem] font-bold text-indigo-700 mb-1' }, '📂 Saved constructions (' + Object.keys(saved).length + '):'),
             Object.keys(saved).length === 0
-              ? h('p', { className: 'text-[0.6875rem] text-slate-500 italic' }, __alloT('stem.volume.nothing_saved_yet_build_something_and_', 'Nothing saved yet. Build something and click 💾 Save.'))
+              ? h('p', { className: 'text-[0.6875rem] text-slate-600 italic' }, __alloT('stem.volume.nothing_saved_yet_build_something_and_', 'Nothing saved yet. Build something and click 💾 Save.'))
               : h('div', { className: 'space-y-1 max-h-48 overflow-y-auto' },
                   Object.keys(saved).sort(function(a, b) {
                     return (saved[b].createdAt || 0) - (saved[a].createdAt || 0);

@@ -193,8 +193,9 @@ describe('2. Standalone packets-present-export page', () => {
 
     const host = w.document.getElementById('present-export-host');
     expect(host.querySelector('.awp')).not.toBeNull();
-    const sciBtn = w.document.querySelector('[data-starter="science-math"]');
-    sciBtn.click();
+    const wordSource = w.document.getElementById('pe-word-source');
+    wordSource.value = 'starter:science-math';
+    wordSource.dispatchEvent(new w.Event('change', { bubbles: true }));
     await new Promise((r) => setTimeout(r, 30));
     expect(w.document.getElementById('pe-status').textContent).toMatch(/Science and math/i);
   });
@@ -713,8 +714,9 @@ describe('9. Timed 1-minute Symbol Naming Check lifecycle, reopen, results reade
     expect(mdDoc.querySelector('input[name="sr-view"]:checked').value).toBe('grid');
     expect(mdDoc.querySelector('input[name="sr-packet-mode"]:checked').value).toBe('check');
     expect(mdDoc.getElementById('sr-title').value).toBe('Stroop Naming Check');
-    // 2026-11-17: the maker's single code name has its own field (sr-code-name); sr-learners is now the "Make one for each student" list.
-    expect(mdDoc.getElementById('sr-code-name').value).toBe('RedFox4');
+    // 2026-11-19 (Wave 3A): unified Step 3 code-name/batch textarea (#sr-learners) holds 1 line for single file or 2-40 for .zip.
+    expect(mdDoc.getElementById('sr-learners').value).toBe('RedFox4');
+    expect(mdDoc.getElementById('sr-batch').open).toBe(true);
     expect(mdDoc.getElementById('sr-teacher-code').value).toBe('');
 
     // Play the 1-minute check through practice samples + scored items in JSDOM
@@ -899,6 +901,7 @@ describe('12. Wave 3: Vocabulary Maker opt-in diagrams, custom image import, clo
     'packets_verify_core.js',
     'packets_zip.js',
     'packets_handoff.js',
+    'packets_my_words.js',
     'packets_vocab_bank_en.js',
     'word_sounds_symbols_en.js',
     'word_picture_matcher.js',
@@ -967,6 +970,9 @@ describe('12. Wave 3: Vocabulary Maker opt-in diagrams, custom image import, clo
       await new Promise((r) => setTimeout(r, 40));
     }
     expect(p.d.querySelector('[data-type="picture"]').disabled).toBe(false);
+    // 2026-11-19 (Wave 3A): custom binary pictures stay out of localStorage (stored in AlloPacketMyWords IndexedDB / session memory).
+    const storedEdits = JSON.parse(p.w.localStorage.getItem('alloflow-packets-vocab-edits/1') || '{}');
+    expect(JSON.stringify(storedEdits)).not.toContain('data:image/');
 
     const V = p.w.AlloPacketVocab;
     const bank = p.w.AlloVocabBank;
@@ -976,7 +982,7 @@ describe('12. Wave 3: Vocabulary Maker opt-in diagrams, custom image import, clo
     const customRows = V.draftRows({
       words: V.parseWords('habitat, predator, prey, cell, bat, nest').words,
       bank,
-      edits: JSON.parse(p.w.localStorage.getItem('alloflow-packets-vocab-edits/1') || '{}'),
+      edits: { v: 1, words: { predator: { customPicture: { dataUri: PNG_1X1 } }, prey: { customPicture: { dataUri: PNG_1X1 } } }, senses: {} },
       pictures: symbols,
       diagrams: false,
       matcher,
@@ -1490,7 +1496,7 @@ describe('18. Wave 4: Closed RTI loop from packets-results -> packets-vocab, pac
       lessonId,
       revision: 'r1',
       lessonTitle: 'Practice Set',
-      activityTitles: { vocab_meaning: 'Meaning', vocab_blank: 'Sentence', word_building: 'Word building', letter_tracing: 'Letter trace' },
+      activityTitles: { vocab_meaning: 'Meaning', vocab_blank: 'Sentence', word_scramble: 'Word Scramble', letter_tracing: 'Letter trace' },
       learner: 'BlueHeron7',
       learnerName: 'BlueHeron7',
       startedAt: '2026-11-15T14:00:00Z',
@@ -1508,7 +1514,7 @@ describe('18. Wave 4: Closed RTI loop from packets-results -> packets-vocab, pac
     ]))], 'voc-res.json', { type: 'application/json', lastModified: Date.now() });
 
     const wsFile = new rw.File([JSON.stringify(makeResult('ws-1', 'ws-pkt', [
-      { n: 1, itemId: 'wb-1', activity: 'word_building', word: 'ship', responses: ['chip', 'ship'], attempts: 2, firstTry: false, correct: true, done: true, ms: 850 },
+      { n: 1, itemId: 'ws-1', activity: 'word_scramble', word: 'ship', responses: ['chip', 'ship'], attempts: 2, firstTry: false, correct: true, done: true, ms: 850 },
       { n: 2, itemId: 'lt-1', activity: 'letter_tracing', word: 's', responses: ['s'], attempts: 2, firstTry: false, correct: true, done: true, practice: 'traced', ms: 600 },
     ]))], 'ws-res.json', { type: 'application/json', lastModified: Date.now() + 100 });
 
@@ -1759,13 +1765,13 @@ describe('20. Wave 5: Symbol Runner .zip batch export, preview handoff, and lett
     };
     for (const s of d.querySelectorAll('script[src]')) w.eval(read(s.getAttribute('src')));
 
-    // Batch export with 2 code names -> PK zip archive
-    // 2026-11-17: "Make one for each student" is its own fold, as on the other makers: Make the files, then Save the .zip file.
+    // Batch export with 2 code names -> 1-click PK zip archive (Wave 3A canonical Title__N-students.zip).
     d.getElementById('sr-learners').value = 'BlueHeron7\nRedFox4';
+    d.getElementById('sr-learners').dispatchEvent(new w.Event('input', { bubbles: true }));
+    expect(d.getElementById('sr-batch-make').hidden).toBe(false);
+    expect(d.getElementById('sr-batch-make').textContent).toBe('Save .zip for 2 students');
     d.getElementById('sr-batch-make').click();
-    expect(d.getElementById('sr-batch-save').hidden).toBe(false);
-    d.getElementById('sr-batch-save').click();
-    const zipClick = clickedLinks.find((c) => c.download && c.download.endsWith('-files.zip'));
+    const zipClick = clickedLinks.find((c) => c.download && /__2-students\.zip$/.test(c.download));
     expect(zipClick).toBeTruthy();
     expect(zipClick.blob.type).toBe('application/zip');
     const firstChunk = zipClick.blob._rawParts[0];
@@ -1788,7 +1794,8 @@ describe('21. Wave 5: Printable cut-out tabletop sorting cards', () => {
     }));
     const w = dom.window;
     const d = w.document;
-    expect(d.getElementById('pe-export-sorting-cards').getAttribute('type')).toBe('button');
+    expect(d.getElementById('pe-sheet-download').getAttribute('type')).toBe('button');
+    expect(d.querySelector('#pe-sheet-type option[value="sorting-cards"]')).toBeTruthy();
     w.fetch = async () => ({ ok: false, status: 404, json: async () => ({}) });
     w.AlloModules = { WordSoundsSymbols: fakeSymbolsBank() };
     const capturedDownloads = [];
@@ -1843,7 +1850,8 @@ describe('21. Wave 5: Printable cut-out tabletop sorting cards', () => {
       expect(picTiles[0].querySelector('img').getAttribute('src')).toBe(PNG_1X1);
     }
 
-    d.getElementById('pe-export-sorting-cards').click();
+    d.getElementById('pe-sheet-type').value = 'sorting-cards';
+    d.getElementById('pe-sheet-download').click();
     const lastDl = capturedDownloads[capturedDownloads.length - 1];
     expect(lastDl).toBeTruthy();
     expect(lastDl._name).toMatch(/-sorting-cards\.html$/);
@@ -2017,7 +2025,8 @@ describe('25. Wave 6: Printable no-scissors Cloze & Picture-Match Worksheet', ()
     }));
     const w = dom.window;
     const d = w.document;
-    expect(d.getElementById('pe-export-worksheet').getAttribute('type')).toBe('button');
+    expect(d.getElementById('pe-sheet-download').getAttribute('type')).toBe('button');
+    expect(d.querySelector('#pe-sheet-type option[value="worksheet"]')).toBeTruthy();
     w.fetch = async () => ({ ok: false, status: 404, json: async () => ({}) });
     w.AlloModules = { WordSoundsSymbols: fakeSymbolsBank() };
     const capturedDownloads = [];
@@ -2071,7 +2080,8 @@ describe('25. Wave 6: Printable no-scissors Cloze & Picture-Match Worksheet', ()
       expect(pics[0].getAttribute('src')).toBe(PNG_1X1);
     }
 
-    d.getElementById('pe-export-worksheet').click();
+    d.getElementById('pe-sheet-type').value = 'worksheet';
+    d.getElementById('pe-sheet-download').click();
     const lastDl = capturedDownloads[capturedDownloads.length - 1];
     expect(lastDl).toBeTruthy();
     expect(lastDl._name).toMatch(/-worksheet\.html$/);
@@ -2182,7 +2192,8 @@ describe('27. Wave 7: Present & Export async vocabBank + head() lemma enrichment
     }));
     const w = dom.window;
     const d = w.document;
-    expect(d.getElementById('pe-export-bingo').getAttribute('type')).toBe('button');
+    expect(d.getElementById('pe-sheet-download').getAttribute('type')).toBe('button');
+    expect(d.querySelector('#pe-sheet-type option[value="bingo"]')).toBeTruthy();
 
     let bankLoaded = false;
     const bankSenses = {
@@ -2266,7 +2277,8 @@ describe('27. Wave 7: Present & Export async vocabBank + head() lemma enrichment
     expect(fourDoc.querySelectorAll('.bingo-free')).toHaveLength(0);
     expect(fourDoc.querySelectorAll('.bingo-board')[0].querySelectorAll('.bingo-cell')).toHaveLength(16);
 
-    d.getElementById('pe-export-bingo').click();
+    d.getElementById('pe-sheet-type').value = 'bingo';
+    d.getElementById('pe-sheet-download').click();
     const lastDl = capturedDownloads[capturedDownloads.length - 1];
     expect(lastDl).toBeTruthy();
     expect(lastDl._name).toMatch(/-bingo\.html$/);
@@ -2543,7 +2555,8 @@ describe('31. Wave 8: Printable "I Have, Who Has?" Classroom Loop Cards', () => 
       expect(keyRows[4].querySelectorAll('td')[3].textContent.trim().toLowerCase()).toBe(firstWord);
     }
 
-    d.getElementById('pe-export-loop-cards').click();
+    d.getElementById('pe-sheet-type').value = 'loop-cards';
+    d.getElementById('pe-sheet-download').click();
     const lastDl = capturedDownloads[capturedDownloads.length - 1];
     expect(lastDl).toBeTruthy();
     expect(lastDl._name).toMatch(/-loop-cards\.html$/);
@@ -2854,7 +2867,8 @@ describe('35. Wave 9: Printable Classroom Word Wall & Anchor Poster Cards', () =
       expect(doc.querySelector('.teacher-key').textContent).toContain('Lab PNG');
     }
 
-    d.getElementById('pe-export-word-wall').click();
+    d.getElementById('pe-sheet-type').value = 'word-wall';
+    d.getElementById('pe-sheet-download').click();
     const lastDl = capturedDownloads[capturedDownloads.length - 1];
     expect(lastDl).toBeTruthy();
     expect(lastDl._name).toMatch(/-word-wall\.html$/);
@@ -3258,10 +3272,11 @@ describe('41. Wave 10: Present & Export earth-space, civics-geography, and liter
       ['civics-geography', /Civics and geography/i, ['democracy', 'constitution', 'hemisphere']],
       ['literary-craft', /Story and poetry craft/i, ['metaphor', 'hyperbole', 'alliteration']],
     ]) {
-      const btn = w.document.querySelector('[data-starter="' + starter + '"]');
-      expect(btn, starter).toBeTruthy();
-      expect(btn.getAttribute('type')).toBe('button');
-      btn.click();
+      const select = w.document.getElementById('pe-word-source');
+      const opt = select.querySelector('option[value="starter:' + starter + '"]');
+      expect(opt, starter).toBeTruthy();
+      select.value = 'starter:' + starter;
+      select.dispatchEvent(new w.Event('change', { bubbles: true }));
       await new Promise((r) => setTimeout(r, 30));
       expect(w.document.getElementById('pe-status').textContent).toMatch(labelRe);
       for (const sw of sampleWords) {
@@ -3310,5 +3325,239 @@ describe('42. Wave 10: Expanded 6,500+ offline vocab bank, 32,000+ Kokoro word c
     for (const newDiag of ['osmosis', 'biosphere', 'hypotenuse', 'tessellation', 'oxymoron', 'haiku', 'climate', 'magma', 'pythagorean']) {
       expect(matcher.getDiagram(newDiag), newDiag).toBeTruthy();
     }
+  });
+});
+
+describe('43. Wave 6B: Symbol Runner number_size_stroop 2-choice fix and LOOK_ALIKES distractors', () => {
+  function loadSymbolRunnerEnv() {
+    const sb = {
+      window: {},
+      globalThis: {},
+      TextEncoder,
+      TextDecoder,
+      btoa,
+      atob,
+      crypto: webcrypto,
+      structuredClone,
+      Uint8Array,
+      Date,
+      Math,
+    };
+    sb.window = sb;
+    sb.globalThis = sb;
+    vm.runInNewContext(read('word_sounds_take_home_loader.js'), sb);
+    vm.runInNewContext(read('packets_verify_core.js'), sb);
+    vm.runInNewContext(read('symbol_runner_core.js'), sb);
+    vm.runInNewContext(read('packet_symbol_runner_builder.js'), sb);
+    return {
+      builder: sb.AlloPacketSymbolRunner,
+      loader: sb.AlloWordSoundsTakeHome,
+      verify: sb.AlloPacketVerify,
+    };
+  }
+
+  it('gives number_size_stroop cards only the two shown numbers in both practice and check modes', () => {
+    const { builder, loader, verify } = loadSymbolRunnerEnv();
+    const planA = builder.planSymbolRunner({ mode: 'number_size_stroop', count: 24, seed: 'stroop-seed-1' });
+    const planB = builder.planSymbolRunner({ mode: 'number_size_stroop', count: 24, seed: 'stroop-seed-1' });
+    expect(planA.cards.length).toBe(24);
+    expect(planA.cards.map((c) => c.choices)).toEqual(planB.cards.map((c) => c.choices));
+    for (const card of planA.cards) {
+      expect(card.sizePair).toBeTruthy();
+      expect(card.choices).toHaveLength(2);
+      const expected = [String(card.sizePair.left).toLowerCase(), String(card.sizePair.right).toLowerCase()].sort();
+      expect(card.choices.slice().sort()).toEqual(expected);
+      expect(card.choices).toContain(card.answer);
+    }
+
+    for (const packetMode of ['practice', 'check']) {
+      const built = builder.buildSymbolRunnerPacket({
+        loader,
+        mode: 'number_size_stroop',
+        packetMode,
+        count: 12,
+        seed: 'stroop-packet-7',
+        title: 'Size Stroop ' + packetMode,
+      });
+      const report = verify.verifyPacket(built.html);
+      expect(report.ok, packetMode).toBe(true);
+      expect(report.result, packetMode).toBe('closed');
+      expect(report.counts.notExpected, packetMode).toBe(0);
+      expect(report.counts.look, packetMode).toBe(0);
+      expect(report.script.verdict, packetMode).toBe('agree');
+
+      const parts = verify.readParts(built.html);
+      const items = parts.lesson.blocks.flatMap((b) => b.items);
+      expect(items.length).toBeGreaterThanOrEqual(12);
+      for (const item of items) {
+        expect(item.choices, packetMode + ' ' + item.word).toHaveLength(2);
+        const pair = [String(item.sizePair.left).toLowerCase(), String(item.sizePair.right).toLowerCase()].sort();
+        expect(item.choices.slice().sort(), packetMode + ' ' + item.word).toEqual(pair);
+      }
+    }
+  });
+
+  it('prioritizes LOOK_ALIKES distractors for confusable letters and digits when present in the pool', () => {
+    const { builder } = loadSymbolRunnerEnv();
+    const letterPlan = builder.planSymbolRunner({ mode: 'letters_lower', count: 40, seed: 'lookalike-letters' });
+    const expectedLetterAlikes = {
+      b: ['d', 'p'],
+      d: ['b', 'q'],
+      p: ['q', 'b'],
+      q: ['p', 'd'],
+      m: ['w', 'n'],
+      w: ['m'],
+      n: ['u', 'm'],
+      u: ['n'],
+    };
+    let checkedLetters = 0;
+    for (const card of letterPlan.cards) {
+      const alikes = expectedLetterAlikes[card.answer];
+      if (!alikes) continue;
+      checkedLetters += 1;
+      expect(card.choices.length).toBeLessThanOrEqual(6);
+      for (const alike of alikes) {
+        expect(card.choices, card.answer + ' missing look-alike ' + alike).toContain(alike);
+      }
+    }
+    expect(checkedLetters).toBeGreaterThanOrEqual(8);
+
+    const digitPlan = builder.planSymbolRunner({ mode: 'digits_single', count: 20, seed: 'lookalike-digits' });
+    let checkedDigits = 0;
+    for (const card of digitPlan.cards) {
+      if (card.answer === '6') { checkedDigits += 1; expect(card.choices).toContain('9'); }
+      if (card.answer === '9') { checkedDigits += 1; expect(card.choices).toContain('6'); }
+    }
+    expect(checkedDigits).toBeGreaterThanOrEqual(2);
+
+    const teenPlan = builder.planSymbolRunner({ mode: 'digits_teen_decade', count: 32, seed: 'lookalike-teens' });
+    const teenPairs = { '12': '21', '21': '12', '13': '30', '30': '13', '14': '40', '40': '14', '15': '50', '50': '15', '16': '60', '60': '16', '17': '70', '70': '17', '18': '80', '80': '18', '19': '90', '90': '19' };
+    let checkedTeens = 0;
+    for (const card of teenPlan.cards) {
+      const pair = teenPairs[card.answer];
+      if (!pair) continue;
+      checkedTeens += 1;
+      expect(card.choices, card.answer + ' missing ' + pair).toContain(pair);
+      if (card.answer === '13') expect(card.choices).not.toContain('31');
+    }
+    expect(checkedTeens).toBeGreaterThanOrEqual(16);
+
+    const customTeenPlan = builder.planSymbolRunner({
+      mode: 'custom',
+      items: ['13', '30', '31', '14', '40', '15', '50', '16', '60', '17', '70'],
+      count: 22,
+      seed: 'lookalike-custom-teens',
+    });
+    for (const card of customTeenPlan.cards) {
+      if (card.answer === '13') {
+        expect(card.choices).toContain('30');
+        expect(card.choices).toContain('31');
+      }
+    }
+
+    // Look-alikes not present in the pool must never be invented.
+    const noAlikePlan = builder.planSymbolRunner({
+      mode: 'custom',
+      items: ['b', 'a', 'c', 'e', 'f', 'g', 'h'],
+      count: 14,
+      seed: 'no-alike-in-pool',
+    });
+    for (const card of noAlikePlan.cards) {
+      if (card.answer === 'b') {
+        expect(card.choices).not.toContain('d');
+        expect(card.choices).not.toContain('p');
+        expect(card.choices).toHaveLength(6);
+      }
+    }
+  });
+});
+
+describe('44. Wave 7B: Present & Export #words= multi-word phrases, CC BY-SA credits on Flashcards/Frayer, printable guardrails, and 9-20 letter Symbol Runner bridge', () => {
+  it('preserves multi-word phrases in #words=, emits picture credits on Flashcards/Frayer, guards empty/tiny printables, and sends 9-20 letter words to Symbol Runner', async () => {
+    const dom = trackDom(new JSDOM(read('packets-present-export.html'), {
+      runScripts: 'outside-only',
+      url: 'https://packets.example/packets-present-export.html#words=water%20cycle,food%20web,cause%20and%20effect',
+    }));
+    const w = dom.window;
+    const d = w.document;
+    w.fetch = async () => ({ ok: false, status: 404, json: async () => ({}) });
+    const downloads = [];
+    w.URL.createObjectURL = (blob) => { downloads.push(blob); return 'blob:w7-' + downloads.length; };
+    w.URL.revokeObjectURL = () => {};
+    const clickedHrefs = [];
+    w.HTMLAnchorElement.prototype.click = function () { clickedHrefs.push({ href: this.getAttribute('href') || '', download: this.getAttribute('download') || '' }); };
+    w.AlloModules = { WordSoundsSymbols: fakeSymbolsBank() };
+    w.eval(read('word_picture_matcher.js'));
+    w.eval(read('word_practice_annotation_assets.js'));
+    w.eval(read('word_practice_core.js'));
+    w.eval(read('word_practice_media.js'));
+    w.eval(read('word_practice_ui.js'));
+    w.AlloModules.WordPractice.rasterizeImage = async () => PNG_1X1;
+    w.eval(read('packets-present-export.js'));
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Multi-word phrases stay intact (3 items, NOT 7 shattered words).
+    const loadedWords = w.AlloPacketsPresentExport.getController().getPack().items.map((it) => it.word);
+    expect(loadedWords).toEqual(['water cycle', 'food web', 'cause and effect']);
+
+    // Flashcards and Frayer include CC BY-SA picture credits footer (with zero '!').
+    const creditedPack = {
+      title: 'Credit Check',
+      words: [
+        { word: 'habitat', definition: 'natural home', example: 'A pond is a habitat.', image: PNG_1X1, imageCredit: 'Mulberry Symbols · Steve Lee · CC BY-SA 4.0' },
+        { word: 'cell', definition: 'basic unit of life', example: 'Every cell has a membrane.', image: PNG_1X1, imageCredit: 'AlloFlow Curriculum Diagram · Built-in curriculum diagram' },
+      ],
+    };
+    for (const html of [
+      w.AlloWordPracticeMedia.buildFlashcardsHtml(creditedPack),
+      w.AlloWordPracticeMedia.buildFrayerHtml(creditedPack),
+    ]) {
+      expect(html).toContain('<footer class="credits">');
+      expect(html).toContain('Mulberry Symbols');
+      expect(html).toContain('CC BY-SA 4.0');
+      expect(html).toContain('AlloFlow Curriculum Diagram');
+      expect(new JSDOM(html).window.document.body.textContent).not.toContain('!');
+    }
+    // No pictures -> no credits footer.
+    expect(w.AlloWordPracticeMedia.buildFlashcardsHtml({ title: 'Text Only', words: [{ word: 'cat', definition: 'pet' }] })).not.toContain('<footer class="credits">');
+
+    // 1-word loop cards show helpful fallback instead of a broken 1-card self-loop.
+    const oneWordLoop = w.AlloWordPracticeMedia.buildLoopGameHtml({ title: 'Single', words: [{ word: 'cat', definition: 'a small pet' }] });
+    expect(oneWordLoop).toContain('Add at least two words before printing loop cards.');
+    expect(oneWordLoop).not.toContain('Card 1 — Start Card');
+
+    // UI download guardrails: refuse 0 words, refuse 1-word loop-cards, note <8-word Bingo.
+    const area = d.querySelector('.awp-grid .awp-fields textarea');
+    const dlBtn = d.getElementById('pe-sheet-download');
+    const typeSel = d.getElementById('pe-sheet-type');
+    area.value = '';
+    area.dispatchEvent(new w.Event('input', { bubbles: true }));
+    const beforeEmpty = downloads.length;
+    typeSel.value = 'flashcards';
+    dlBtn.click();
+    expect(downloads.length).toBe(beforeEmpty);
+    expect(d.getElementById('pe-status').textContent).toContain('Add at least one word');
+
+    area.value = 'cat';
+    area.dispatchEvent(new w.Event('input', { bubbles: true }));
+    typeSel.value = 'loop-cards';
+    dlBtn.click();
+    expect(downloads.length).toBe(beforeEmpty);
+    expect(d.getElementById('pe-status').textContent).toContain('Add at least 2 words');
+
+    area.value = 'cat\ndog\nsun\nfrog';
+    area.dispatchEvent(new w.Event('input', { bubbles: true }));
+    typeSel.value = 'bingo';
+    dlBtn.click();
+    expect(downloads.length).toBe(beforeEmpty + 1);
+    expect(d.getElementById('pe-status').textContent).toContain('Fewer than 8 words');
+
+    // openInSymbolRunner now passes 9-20 letter curriculum words cleanly (matching packets-symbol-runner.js).
+    const ok = w.AlloPacketsPresentExport.openInSymbolRunner({
+      title: 'Civics',
+      words: [{ word: 'democracy' }, { word: 'constitution' }, { word: 'atmosphere' }],
+    });
+    expect(ok).toBe(true);
+    expect(clickedHrefs.at(-1).href).toBe('packets-symbol-runner.html#symbols=democracy%2Cconstitution%2Catmosphere');
   });
 });

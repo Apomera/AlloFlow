@@ -58,7 +58,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Searchable teacher guide is current
         run: npm run verify:teacher-guide
       - name: Maintained documentation accuracy and local links
@@ -82,9 +82,9 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install React 18 for remediation browser harnesses
-        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix desktop/web-app
       - name: Install local-fixture browser
         run: npx playwright install chromium
       - name: Verify browser delivery policy and actual host loaders
@@ -152,14 +152,14 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             desktop/web-app/package-lock.json
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       # check_stem_render, check_sel_render, check_sel_a11y, check_sel_hub_wcag and
       # check_module_render load React + jsdom from desktop/web-app/node_modules. This job never
       # installed them, so all five printed "SKIPPED - React/jsdom not found" and exited 0: five
       # render gates passing without running. ALLOFLOW_REQUIRE_RENDER_DEPS=1 turns that skip into
       # a failure here (the checkers still skip quietly in lanes that do not install the deps).
       - name: Install desktop web-app dependencies (React + jsdom for the render gates)
-        run: npm install --no-audit --no-fund --prefix desktop/web-app
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix desktop/web-app
       - name: verify:gate (generated modules + render refs + module contracts)
         env:
           ALLOFLOW_REQUIRE_RENDER_DEPS: '1'
@@ -182,9 +182,9 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install React 18 for the Adventure browser harness
-        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix desktop/web-app
       - name: Install Playwright Chromium
         run: npx playwright install chromium
       - name: Run deterministic Adventure journeys
@@ -217,9 +217,9 @@ jobs:
         with:
           node-version: '24'
       - name: Install pinned parser dependencies for native runtime checks
-        run: npm ci --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install locked web-app dependencies for native React harnesses
-        run: npm ci --prefix desktop/web-app --no-audit --no-fund
+        run: npm ci --prefix desktop/web-app --ignore-scripts --no-audit --no-fund
       - name: Run native host, catalog, and project regressions
         run: npm run test:native
 
@@ -257,9 +257,9 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install React 18 for golden-master harnesses
-        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix desktop/web-app
       # About 65 Vitest files drive a real Chromium through Playwright (*_browser, *_wcag_browser,
       # the SEL/STEM a11y sweeps). Without browsers each failed at browserType.launch
       # ("Executable doesn't exist"), so none of them had ever run here. The cache is keyed on the
@@ -310,9 +310,9 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install React 18 for golden-master harnesses
-        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix desktop/web-app
       - name: Run quarantined tests + anti-rot check
         run: npm run test:quarantine
 
@@ -331,9 +331,9 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install React 18 for Research Hub runtime tests
-        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix desktop/web-app
       - name: Verify research integrations
         run: npm run verify:research-integrations
   verify-full:
@@ -352,9 +352,9 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install React 18 for the full verification harnesses
-        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix desktop/web-app
       - name: Install Playwright Chromium
         run: npx playwright install chromium
       # The pipeline gate includes real MCP tests, with the same pinned inputs as unit shards.
@@ -391,7 +391,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install Playwright chromium
         run: npx playwright install chromium
       - name: Smoke — major surfaces open without a fatal error
@@ -412,9 +412,9 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install desktop web-app dependencies
-        run: npm install --no-audit --no-fund --prefix desktop/web-app
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix desktop/web-app
       - name: Install Playwright chromium
         run: npx playwright install chromium
       - name: Heat and Nuclear demand-load recovery
@@ -446,7 +446,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - id: browsers
         name: Install Playwright chromium
         run: npx playwright install chromium
@@ -529,14 +529,17 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install Playwright chromium
         run: npx playwright install --with-deps chromium
       - name: Install veraPDF (official greenfield CLI, headless auto-install)
         run: |
           set -euo pipefail
           python3 -c "from pathlib import Path; import re, xml.etree.ElementTree as ET; p=Path('dev-tools/verapdf_ci_autoinstall.xml'); s=p.read_text(encoding='utf-8'); assert not any('--' in body for body in re.findall(r'<!--(.*?)-->', s, re.S)), 'XML comments may not contain --'; ET.parse(p)"
-          curl -fsSL -o "$RUNNER_TEMP/verapdf-installer.zip" https://software.verapdf.org/releases/verapdf-installer.zip
+          VERAPDF_URL="https://software.verapdf.org/releases/1.30/verapdf-greenfield-1.30.4-installer.zip"
+          VERAPDF_SHA256="04415ef3f149526a3048b9889723e81320ddf013bd891bcc7f0f297f3eadcc23"
+          curl -fsSL -o "$RUNNER_TEMP/verapdf-installer.zip" "$VERAPDF_URL"
+          echo "$VERAPDF_SHA256  $RUNNER_TEMP/verapdf-installer.zip" | sha256sum -c -
           unzip -q "$RUNNER_TEMP/verapdf-installer.zip" -d "$RUNNER_TEMP/verapdf-installer"
           INSTALLER_JAR="$(find "$RUNNER_TEMP/verapdf-installer" -name 'verapdf-izpack-installer-*.jar' | head -1)"
           test -n "$INSTALLER_JAR" || { echo '::error::veraPDF installer jar not found in download'; exit 1; }
@@ -587,7 +590,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install Playwright chromium
         run: npx playwright install chromium
       - name: Render verification (ink coverage + font-subsetting canary)

@@ -8531,7 +8531,7 @@ function EcoPairMeasurement(props) {
       var setToolSnapshots = ctx.setToolSnapshots;
       // Host-handed fn only (a window fallback re-armed AI the host withheld); null hides every AI extra below.
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
-      var callTTS = ctx.callTTS || window.callTTS;
+      var callTTS = typeof ctx.callTTS === 'function' ? ctx.callTTS : null;
 
       // ── State via toolData ──
       var ld = ctx.toolData || {};
@@ -9444,6 +9444,7 @@ function EcoPairMeasurement(props) {
         var report = buildTeacherReport();
         var summary = report.currentSummary;
         var popup = window.open('', '_blank', 'noopener,noreferrer');
+        try { if (popup) popup.opener = null; } catch (_) {}
         if (!popup) { if (addToast) addToast('Allow pop-ups to print the teacher report.', 'warn'); return; }
         popup.document.write('<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Ecosystem teacher report</title><style>body{font-family:system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 20px;color:#172033}h1{color:#0f766e}h2{margin-top:24px;border-bottom:1px solid #cbd5e1;padding-bottom:5px}li{margin:5px 0}.key{font:12px monospace;background:#f1f5f9;padding:8px;word-break:break-all}</style></head><body>' +
           '<h1>Ecosystem experiment report</h1>' +
@@ -13796,7 +13797,7 @@ function EcoPairMeasurement(props) {
             className: 'w-full py-1.5 rounded-lg text-xs font-semibold border border-slate-400 text-slate-600 hover:bg-slate-100 transition-all active:scale-[0.97]' + onHostInk,
             onClick: takeSnapshot
           }, '\uD83D\uDCF7 ' + __alloT('stem.ecosystem.take_snapshot', 'Take Snapshot')),
-          h('button', { 'aria-label': __alloT('stem.ecosystem.export_csv', 'Export CSV'), onClick: function() { try { var _d = (typeof d !== 'undefined' && d && d.data) ? d.data : []; if (!_d.length) return; var _csv = 'step,prey,predator\n' + _d.map(function(p,i){ return i + ',' + (p.prey||0) + ',' + (p.pred||0); }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'ecosystem_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('CSV saved!', 'success'); } catch(e){} }, className: 'w-full py-1.5 mt-1 rounded-lg text-xs font-semibold border border-emerald-500 text-emerald-700', style: { cursor: 'pointer' } }, __alloT('stem.ecosystem.export_csv', 'Export CSV')),
+          h('button', { 'aria-label': __alloT('stem.ecosystem.export_csv', 'Export CSV'), onClick: function() { try { var _d = (typeof d !== 'undefined' && d && d.data) ? d.data : []; if (!_d.length) return; var _csv = 'step,prey,predator\n' + _d.map(function(p,i){ return i + ',' + (p.prey||0) + ',' + (p.pred||0); }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _u = URL.createObjectURL(_b); var _a = document.createElement('a'); _a.href = _u; _a.download = 'ecosystem_' + Date.now() + '.csv'; _a.click(); setTimeout(function(){ try { URL.revokeObjectURL(_u); } catch(_e){} }, 1000); if (typeof addToast === 'function') addToast('CSV saved!', 'success'); } catch(e){} }, className: 'w-full py-1.5 mt-1 rounded-lg text-xs font-semibold border border-emerald-500 text-emerald-700', style: { cursor: 'pointer' } }, __alloT('stem.ecosystem.export_csv', 'Export CSV')),
 
           // ── AI Tutor ──
           callGemini && h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200 space-y-2' },

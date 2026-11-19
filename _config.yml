@@ -62,6 +62,9 @@
     "docs/sel_hub_unwired_content",
     "docs/lesson-board-*",
     "docs/connected-escape-room-*",
-    "docs/allopack-quality-*"
+    "docs/allopack-quality-*",
+    "Claude Token",
+    ".git-token.txt",
+    ".env*"
   ]
 }

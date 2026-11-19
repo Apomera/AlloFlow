@@ -30,18 +30,37 @@ function carryCorrectionsOntoReading(pages, editedText, align) {
   // Pass 1: where each page's words sit in the edited text (in order; a page that does not line up is skipped).
   const placed = [];
   let cursor = 0;
+  let skippedBudget = 0;
   pages.forEach((page, pi) => {
     if (!page || !Array.isArray(page.words) || !page.words.length) return;
     stats.pagesWithBoxes++;
     const pk = page.words.map((w) => key(w && w.t)).filter(Boolean);
     if (!pk.length) return;
-    const span = Math.min(ek.length - cursor, pk.length * 2 + 400);
-    if (span <= 0 || (pk.length + 1) * (span + 1) > 12e6) { stats.skipped.push({ page: pageNo(page, pi), reason: span <= 0 ? 'no edited text left to match' : 'page too large to line up' }); return; }
+    const maxSpanForDp = Math.max(0, Math.floor(12e6 / (pk.length + 1)) - 1);
+    const desiredSpan = pk.length * 2 + 400 + skippedBudget * 2;
+    const span = Math.min(ek.length - cursor, desiredSpan, maxSpanForDp);
+    if (span <= 0 || (pk.length + 1) * (span + 1) > 12e6) {
+      stats.skipped.push({ page: pageNo(page, pi), reason: span <= 0 ? 'no edited text left to match' : 'page too large to line up' });
+      skippedBudget += pk.length;
+      return;
+    }
     const pairs = lcs(pk, ek.slice(cursor, cursor + span));
-    if (pairs.length < Math.max(3, pk.length * 0.5)) { stats.skipped.push({ page: pageNo(page, pi), reason: 'under half of its words line up with the edited text' }); return; }
-    const first = cursor + pairs[0][1], last = cursor + pairs[pairs.length - 1][1];
+    const minPairs = Math.max(3, pk.length * 0.5);
+    if (pairs.length < minPairs) {
+      stats.skipped.push({ page: pageNo(page, pi), reason: 'under half of its words line up with the edited text' });
+      skippedBudget += pk.length;
+      return;
+    }
+    // Trim isolated boundary outliers (e.g. a removed page footer word matching deep inside the next page)
+    // so cursor never jumps past the next page's content.
+    const maxEdgeGap = Math.max(80, pk.length);
+    let loIdx = 0, hiIdx = pairs.length - 1;
+    while (hiIdx - loIdx + 1 > minPairs && (pairs[hiIdx][1] - pairs[hiIdx - 1][1]) > maxEdgeGap) hiIdx--;
+    while (hiIdx - loIdx + 1 > minPairs && (pairs[loIdx + 1][1] - pairs[loIdx][1]) > maxEdgeGap) loIdx++;
+    const first = cursor + pairs[loIdx][1], last = cursor + pairs[hiIdx][1];
     placed.push({ pi, first, last });
     cursor = last + 1;
+    skippedBudget = 0;
   });
   // Pass 2: each page's stretch reaches back to where the previous page ended and on to where the next begins (at most 20
   // words each way), so a misread first or last word (often a heading at the top of a page) has its correction in reach.

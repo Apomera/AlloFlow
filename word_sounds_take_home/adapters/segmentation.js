@@ -110,10 +110,8 @@ module.exports = {
     var locked = function () { return ctx.isDone(); };
     var halt = function () { token++; };
 
-    // Light fills with dark ink (the same in every color theme), each with a darker edge; never the only clue: the
-    // tile's place, its sound and its name (Sound 3, for a screen reader) tell the tiles apart.
-    var FILL = ['#ffe3e3', '#dcebff', '#dff4da', '#fff0c2', '#ece0ff', '#ffe0f0', '#d6f3f1', '#f1e6d2'];
-    var EDGE = ['#b93c3c', '#2f62ad', '#357a30', '#8f6600', '#6d45b5', '#a83c72', '#1f7a78', '#7d6233'];
+    // Theme-driven tiles (2026-11-19): follow every Reading Tools color theme (Default, High Contrast, Soft, Dark,
+    // Ocean, Sunny, Forest) and forced-colors via CSS variables, never hardcoded light-only fills or dark ink.
     var still = !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
     // A "goes here" arrow (a character), and a speaker drawn with borders in the tile's own ink, so it is as dark as the
     // letters (an emoji speaker is pale grey on most devices). No drawing element: a file carries none.
@@ -133,10 +131,10 @@ module.exports = {
       node.textContent = '';
       if (ctx.showLetters) node.appendChild(doc.createTextNode(name(ci))); else node.appendChild(icon('sound'));
     };
-    var tileStyle = function (ci) {
+    var tileStyle = function () {
       return (ctx.showLetters ? 'min-width:64px;height:58px;padding:0 16px;border-radius:999px;' : 'width:64px;height:64px;padding:0;border-radius:50%;')
-        + 'display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;color:#1d2433;touch-action:none;'
-        + 'background:' + FILL[ci % FILL.length] + ';border:3px solid ' + EDGE[ci % EDGE.length] + ';box-shadow:0 3px 0 ' + EDGE[ci % EDGE.length]
+        + 'display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;color:var(--ink);touch-action:none;'
+        + 'background:var(--soft);border:3px solid var(--accent);box-shadow:0 3px 0 var(--accent)'
         + (still ? '' : ';transition:transform .12s ease,box-shadow .12s ease');
     };
     // The line under the boxes: what the last move did (also said through ctx.announce).
@@ -147,7 +145,7 @@ module.exports = {
     var tray = ctx.el('ul', { class: 'row', 'data-seg-tray': '', 'aria-label': L.segmentation_tray, style: 'list-style:none;padding:6px 0;margin:8px 0;gap:12px;justify-content:center' });
     var chipEls = item.chips.map(function (chip, ci) {
       var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-seg-tile': String(ci),
-        'aria-label': ctx.fmt(L.segmentation_pick, { sound: name(ci) }), style: tileStyle(ci),
+        'aria-label': ctx.fmt(L.segmentation_pick, { sound: name(ci) }), style: tileStyle(),
         on: { click: function (e) { if (dragged()) return; onChip(ci, e); }, pointerdown: function (e) { dragStart(e, ci, 'tray', -1); } } });
       face(pick, ci);
       var li = ctx.el('li', {}, [pick]);
@@ -220,15 +218,16 @@ module.exports = {
       for (var i = 0; i < n; i++) boxes[i] = null;
       draw(); tell(L.segmentation_cleared);
     } }, text: L.segmentation_clear });
-    // "Test Sequence" (:18795-18815): each box's sound, 500 ms apart; 600 ms for an empty box.
+    // "Test Sequence" (:18795-18815): each box's sound spaced by ctx.soundGap() (500/800/250 ms); +100 ms for an empty box.
     var playBoxes = ctx.el('button', { type: 'button', on: { click: function () {
       ctx.support('sequenceReplays');
       var mine = ++token, i = 0;
       var step = function () {
         if (mine !== token || !ctx.root.isConnected || i >= n) return;
+        var gap = typeof ctx.soundGap === 'function' ? ctx.soundGap() : 500;
         var ci = boxes[i++];
-        if (ci == null) { win.setTimeout(step, 600); return; }
-        ctx.play(item.chips[ci].audio).then(function () { if (mine === token) win.setTimeout(step, 500); });
+        if (ci == null) { win.setTimeout(step, gap + 100); return; }
+        ctx.play(item.chips[ci].audio).then(function () { if (mine === token) win.setTimeout(step, gap); });
       };
       step();
     } }, text: L.segmentation_play_boxes });
@@ -240,9 +239,12 @@ module.exports = {
         c.li.hidden = boxes.indexOf(ci) >= 0;
         var on = picked === ci;
         c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
-        // Held: it lifts, with a ring in the accent color.
+        // Held: it lifts and flips to the theme accent fill/ink with a ring in the accent color.
+        c.pick.style.background = on ? 'var(--accent)' : 'var(--soft)';
+        c.pick.style.color = on ? 'var(--accent-ink)' : 'var(--ink)';
+        c.pick.style.borderColor = 'var(--accent)';
         c.pick.style.transform = on ? 'translateY(-6px) scale(1.08)' : '';
-        c.pick.style.boxShadow = on ? '0 0 0 3px var(--card), 0 0 0 7px var(--accent)' : '0 3px 0 ' + EDGE[ci % EDGE.length];
+        c.pick.style.boxShadow = on ? '0 0 0 3px var(--card), 0 0 0 7px var(--accent)' : '0 3px 0 var(--accent)';
         if (locked()) c.pick.setAttribute('aria-disabled', 'true');
       });
       boxEls.forEach(function (btn, bi) {
@@ -250,9 +252,9 @@ module.exports = {
         var bad = errors.indexOf(bi) >= 0 && ci != null;
         if (ci == null) { btn.textContent = ''; btn.appendChild(icon('drop')); } else face(btn, ci);
         btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
-        btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : EDGE[ci % EDGE.length];
-        btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? '' : FILL[ci % FILL.length];
-        btn.style.color = ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : '#1d2433';
+        btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--accent)';
+        btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : 'var(--soft)';
+        btn.style.color = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--ink)';
         // While a tile is held, the empty boxes light up: that is where it can go.
         btn.style.boxShadow = holding && ci == null ? '0 0 0 3px var(--accent)' : '';
         btn.style.touchAction = ci == null ? 'manipulation' : 'none';
@@ -356,7 +358,12 @@ module.exports = {
           }
         }
         draw();
-        boxEls.forEach(function (btn) { btn.style.borderColor = 'var(--ok)'; btn.style.background = 'var(--ok-bg)'; });
+        boxEls.forEach(function (btn) {
+          btn.style.borderColor = 'var(--ok)';
+          btn.style.background = 'var(--ok-bg)';
+          btn.style.color = 'var(--ok)';
+          btn.style.boxShadow = '';
+        });
       },
     };
   },

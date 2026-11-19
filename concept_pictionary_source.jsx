@@ -228,7 +228,7 @@ const _cpAiUsable = (kind, fn) => {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn));
   } catch (_) {}
-  return Boolean(typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true));
+  return Boolean(typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)));
 };
 const _usePictionaryDialogFocus = (dialogRef, isActive, onClose) => {
   const onCloseRef = React.useRef(onClose);
@@ -242,13 +242,21 @@ const _usePictionaryDialogFocus = (dialogRef, isActive, onClose) => {
     if (trapStack) trapStack.push(trap);
     const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
       .filter((el) => {
-        if (!el || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert]')) return false;
-        try { if (typeof window !== 'undefined' && window.getComputedStyle && window.getComputedStyle(el).display === 'none') return false; } catch (_) {}
+        if (!el || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        try {
+          if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+            for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+              const cs = window.getComputedStyle(cur);
+              if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+              if (cur === dialog) break;
+            }
+          }
+        } catch (_) {}
         return true;
       });
     try { (getFocusable()[0] || dialog).focus(); } catch (_) {}
     const onKeyDown = (event) => {
-      if (event.defaultPrevented) return;
+      if (event.defaultPrevented || _cpIsImeComposing(event)) return;
       const topTrap = trapStack && trapStack[trapStack.length - 1];
       if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === 'function' && topTrap.root.contains(dialog))) return;
       if (event.key === 'Escape') {
@@ -2403,12 +2411,12 @@ const PictionaryHostView = React.memo((props) => {
   }));
   const sketchParticipants = rosterEntries.filter((entry) => drawerUids.includes(entry.uid));
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center p-2 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={_cpTr(props.t, 'pictionary.host_dialog_title', 'Concept Pictionary host dashboard')}>
+    <div className="fixed inset-0 z-[260] flex items-start justify-center p-2 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={_cpTr(props.t, 'pictionary.host_dialog_title', 'Concept Pictionary host dashboard')}>
       <button type="button" tabIndex={-1} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} aria-label={_cpTr(props.t, 'pictionary.close_host_dialog', 'Close Concept Pictionary host dashboard')} />
       <div
         ref={containerRef}
         tabIndex={-1}
-        className="relative bg-white shadow-2xl w-full max-w-5xl overflow-y-auto border border-slate-200"
+        className="allo-docsuite relative bg-white shadow-2xl w-full max-w-5xl overflow-y-auto border border-slate-200"
         style={isFullscreen
           ? { width: '100vw', height: '100vh', maxWidth: 'none', margin: 0, borderRadius: 0, marginTop: 0 }
           : { borderRadius: '1rem', marginTop: '2rem', marginBottom: '2rem' }
@@ -2417,7 +2425,7 @@ const PictionaryHostView = React.memo((props) => {
         <div className="flex items-start justify-between p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-rose-50 via-orange-50 to-amber-50 gap-3">
           <div className="flex-1 min-w-0">
             <div className="text-[11px] font-bold text-rose-700 uppercase tracking-wider">{activityMode === SKETCH_RESPONSE_ACTIVITY_MODE ? 'Live response' : 'Live game'}</div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-800 mt-0.5">🎨 {activityMode === SKETCH_RESPONSE_ACTIVITY_MODE ? 'Sketch Response' : 'Concept Pictionary'}</h2>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 mt-0.5"><span aria-hidden="true">🎨 </span>{activityMode === SKETCH_RESPONSE_ACTIVITY_MODE ? 'Sketch Response' : 'Concept Pictionary'}</h2>
             <p className="text-xs text-slate-600 mt-1 leading-snug hidden sm:block">{activityMode === SKETCH_RESPONSE_ACTIVITY_MODE ? 'Private P2P canvases with teacher feedback, one revision, moderated anonymous voting, and targeted follow-up.' : 'Multi-drawer collaborative comprehension probe. Strokes + guesses peer-to-peer, never stored.'}</p>
           </div>
           <div className="flex items-start gap-1 flex-shrink-0">
@@ -2541,7 +2549,7 @@ const PictionaryHostView = React.memo((props) => {
                         onClick={() => toggleMuteGuesser(g.uid)}
                         title={mutedGuessers[g.uid] ? 'Unmute this guesser' : 'Mute this guesser (their guesses stop appearing here)'}
                         aria-label={(mutedGuessers[g.uid] ? 'Unmute ' : 'Mute ') + g.codename}
-                        className={`px-1.5 py-0.5 text-[10px] rounded border ${mutedGuessers[g.uid] ? 'bg-slate-700 text-white border-slate-800' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                        className={`px-1.5 py-0.5 text-[10px] rounded border ${mutedGuessers[g.uid] ? 'bg-slate-700 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'}`}
                       >{mutedGuessers[g.uid] ? '🔇' : '🔊'}</button>
                     </li>
                     );
@@ -3126,12 +3134,12 @@ const PictionaryGuestOverlay = React.memo((props) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center p-2 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={_cpTr(props.t, 'pictionary.guest_dialog_title', 'Concept Pictionary')}>
+    <div className="fixed inset-0 z-[260] flex items-start justify-center p-2 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={_cpTr(props.t, 'pictionary.guest_dialog_title', 'Concept Pictionary')}>
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" aria-hidden="true" />
       <div
         ref={guestContainerRef}
         tabIndex={-1}
-        className="relative bg-white shadow-2xl w-full max-w-3xl overflow-y-auto border border-slate-200"
+        className="allo-docsuite relative bg-white shadow-2xl w-full max-w-3xl overflow-y-auto border border-slate-200"
         style={isGuestFullscreen
           ? { width: '100vw', height: '100vh', maxWidth: 'none', margin: 0, borderRadius: 0 }
           : { borderRadius: '1rem', marginTop: '2rem', marginBottom: '2rem' }

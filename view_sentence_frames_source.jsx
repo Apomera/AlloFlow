@@ -190,9 +190,9 @@ function SentenceFramesView(props) {
                                     type="button"
                                     onClick={handleResetScaffolds}
                                     data-help-key="scaffolds_reset"
-                                    className="min-h-11 flex items-center gap-1 text-xs font-bold text-rose-700 hover:text-rose-800 bg-white border border-rose-300 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
+                                    className="min-h-11 flex items-center gap-1 text-xs font-bold text-rose-700 hover:text-rose-800 bg-white border border-rose-300 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none shadow-sm focus-visible:outline-2 focus-visible:outline-rose-600 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-rose-600"
                                     title={t('scaffolds.clear_all')}
-                                    aria-label={t('scaffolds.clear_all')}
+                                    aria-label={`${t('common.reset') || 'Reset'} — ${t('scaffolds.clear_all') || 'Clear all answers'}`}
                                 >
                                     <RefreshCw size={12} aria-hidden="true" /> {t('common.reset')}
                                 </button>
@@ -222,6 +222,7 @@ function SentenceFramesView(props) {
                             <button
                                 type="button"
                                 onClick={handleToggleIsEditingScaffolds}
+                                aria-pressed={isEditingScaffolds}
                                 data-help-key="scaffolds_edit_toggle"
                                 className={`min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-300 hover:bg-rose-50'}`}
                             >
@@ -310,8 +311,8 @@ function SentenceFramesView(props) {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <p id={`scaffold-prompt-${generatedContent.id}-${idx}`} dir="auto" className="text-lg break-words font-medium text-slate-800 mb-1 font-serif px-2 py-1">{item.text}</p>
-                                                    {leveledTextLanguage !== 'English' && item.text_en && <p className="text-sm text-slate-600 italic px-2">{item.text_en}</p>}
+                                                    <p id={`scaffold-prompt-${generatedContent.id}-${idx}`} lang={leveledTextLanguage && leveledTextLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(leveledTextLanguage) : undefined} dir="auto" className="text-lg break-words font-medium text-slate-800 mb-1 font-serif px-2 py-1">{item.text}</p>
+                                                    {leveledTextLanguage !== 'English' && item.text_en && <p lang="en" className="text-sm text-slate-600 italic px-2">{item.text_en}</p>}
                                                     <textarea
                                                         aria-label={`${label('scaffolds.student_response', 'Student response')} ${visibleItemNumbers[idx]}`}
                                                         aria-describedby={`scaffold-prompt-${generatedContent.id}-${idx}`}
@@ -319,7 +320,7 @@ function SentenceFramesView(props) {
                                                         onFocus={(e) => { activeFieldRef.current = { resourceId: generatedContent.id, key: idx, el: e.currentTarget }; }}
                                                         onChange={(e) => handleStudentInput(generatedContent.id, idx, e.target.value)}
                                                         data-help-key="scaffolds_student_input"
-                                                        className="w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-600 focus:border-rose-600 focus:outline-none resize-y bg-slate-50 focus:bg-white transition-all motion-reduce:transition-none font-sans"
+                                                        className="w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-600 focus:border-rose-600 focus-visible:outline-2 focus-visible:outline-rose-600 focus-visible:outline-offset-2 resize-y bg-slate-50 focus:bg-white transition-all motion-reduce:transition-none font-sans"
                                                         rows={3}
                                                         placeholder={isDiscussionPrompts ? label('scaffolds.discussion_placeholder', 'Write your response to the question...') : t('scaffolds.sentence_placeholder')}
                                                     />
@@ -343,7 +344,7 @@ function SentenceFramesView(props) {
                                     rows={getRows(generatedContent?.data?.text)}
                                 />
                             ) : (
-                                <div className="text-lg leading-loose text-slate-800 font-serif px-2 py-1">
+                                <div lang={leveledTextLanguage && leveledTextLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(leveledTextLanguage) : undefined} className="text-lg leading-loose text-slate-800 font-serif px-2 py-1">
                                     {scaffoldParagraphParts(generatedContent?.data?.text).map(({ text: part, responseKey }, i) => (
                                         responseKey ?
                                         <input aria-label={`${label('common.enter_student_responses', 'Student response')} ${(i + 1) / 2}: ${part.replace(/[\[\]]/g, '')}`}
@@ -352,7 +353,7 @@ function SentenceFramesView(props) {
                                             value={studentResponses[generatedContent.id]?.[responseKey] || ''}
                                             onFocus={(e) => { activeFieldRef.current = { resourceId: generatedContent.id, key: responseKey, el: e.currentTarget }; }}
                                             onChange={(e) => handleStudentInput(generatedContent.id, responseKey, e.target.value)}
-                                            dir="auto" className="placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-500 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors motion-reduce:transition-none"
+                                            dir="auto" className="placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-500 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-600 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-600 bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors motion-reduce:transition-none"
                                             placeholder={part.replace(/[\[\]]/g, '')}
                                         /> :
                                         <span key={i}>{part}</span>
@@ -367,12 +368,12 @@ function SentenceFramesView(props) {
                                             aria-label={t('scaffolds.edit_paragraph_translation') || 'Edit paragraph frame translation'}
                                             value={generatedContent?.data?.text_en || ''}
                                             onChange={(e) => handleScaffoldTextChange('text_en', e.target.value)}
-                                            className="w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
+                                            className="w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 resize-none transition-all motion-reduce:transition-none"
                                             rows={getRows(generatedContent?.data?.text_en || '')}
                                             placeholder={t('common.placeholder_translation')}
                                         />
                                     ) : (
-                                        generatedContent?.data?.text_en && <p className="text-slate-600 italic leading-relaxed px-2 py-1">{generatedContent?.data?.text_en}</p>
+                                        generatedContent?.data?.text_en && <p lang="en" className="text-slate-600 italic leading-relaxed px-2 py-1">{generatedContent?.data?.text_en}</p>
                                     )}
                                 </div>
                             )}
@@ -437,12 +438,12 @@ function SentenceFramesView(props) {
                                         aria-label={t('scaffolds.edit_rubric') || 'Edit rubric'}
                                         value={generatedContent?.data?.rubric}
                                         onChange={(e) => handleScaffoldTextChange('rubric', e.target.value)}
-                                        className="w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600 focus:bg-slate-50 rounded p-2 focus:outline-none resize-y font-medium text-slate-700 transition-all motion-reduce:transition-none font-mono"
+                                        className="w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600 focus:bg-slate-50 rounded p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 resize-y font-medium text-slate-700 transition-all motion-reduce:transition-none font-mono"
                                         rows={getRows(generatedContent?.data?.rubric)}
                                         placeholder={t('scaffolds.rubric_placeholder')}
                                     />
                                 ) : (
-                                    <div className="rubric-container prose prose-sm max-w-none text-slate-700 leading-relaxed overflow-x-auto">
+                                    <div tabIndex={0} role="region" aria-label={t('scaffolds.rubric') || 'Rubric'} className="rubric-container prose prose-sm max-w-none text-slate-700 leading-relaxed overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                                         {renderFormattedText(generatedContent?.data?.rubric)}
                                     </div>
                                 )}
@@ -459,7 +460,7 @@ function SentenceFramesView(props) {
                                             aria-label={t('dashboard.grading.student_work_input') || 'Paste student work for grading'}
                                             value={studentWorkInput}
                                             onChange={(e) => setStudentWorkInput(e.target.value)}
-                                            className="w-full p-3 text-sm border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 focus:outline-none resize-y h-32 bg-white"
+                                            className="w-full p-3 text-sm border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 resize-y h-32 bg-white"
                                             placeholder={t('dashboard.grading.work_placeholder')}
                                         />
                                         <button

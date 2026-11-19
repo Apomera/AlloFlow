@@ -10,6 +10,7 @@
     })();
   </script>
   <meta charset="utf-8" />
+  <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#4f46e5" />
   <meta name="description"
@@ -148,12 +149,44 @@
         alloflow_educator_access_code_v1: 1,
         alloflow_educator_access_backoff_v1: 1,
         alloflow_ai_secrets_locked_v1: 1,
+        alloflow_ai_config: 1,
         allo_adminhubdrive_config_v1: 1,
         allo_wcop_delivery_v1: 1,
         allo_educator_evaluation_real_stash_v1: 1,
         allo_educator_evaluation_workspace_v1: 1
       };
-      function isPrivateClassroomKey(key) { return !!PRIVATE_RECOVERY_KEYS[key]; }
+      function isPrivateClassroomKey(key) {
+        if (!key) return false;
+        if (Object.prototype.hasOwnProperty.call(PRIVATE_RECOVERY_KEYS, key)) return true;
+        var s = String(key);
+        return /^(?:alloflow|allo)_(?:sensitive|clinical|psych|behavior_lens|dynamic_assessment|protected_clinical)_/i.test(s)
+          || s.indexOf('protected_clinical_records') >= 0;
+      }
+      function readPrebootBackoff() {
+        try {
+          var raw = localStorage.getItem('alloflow_educator_access_backoff_v1');
+          if (!raw) return { failures: 0, blockedUntil: 0 };
+          var rec = JSON.parse(raw);
+          if (rec && Number.isInteger(rec.failures) && rec.failures >= 0 && Number.isFinite(rec.blockedUntil) && rec.blockedUntil >= 0) {
+            return { failures: rec.failures, blockedUntil: rec.blockedUntil };
+          }
+        } catch (e) {}
+        return { failures: 0, blockedUntil: 0 };
+      }
+      function getPrebootBackoffRetryMs() {
+        return Math.max(0, readPrebootBackoff().blockedUntil - Date.now());
+      }
+      function recordPrebootBackoffFailure() {
+        try {
+          var state = readPrebootBackoff();
+          var failures = state.failures + 1;
+          var delay = failures >= 3 ? Math.min(30000, Math.pow(2, failures - 3) * 1000) : 0;
+          localStorage.setItem('alloflow_educator_access_backoff_v1', JSON.stringify({ failures: failures, blockedUntil: Date.now() + delay }));
+        } catch (e) {}
+      }
+      function clearPrebootBackoff() {
+        try { localStorage.removeItem('alloflow_educator_access_backoff_v1'); } catch (e) {}
+      }
       function getPrebootVerifier() {
         try {
           var raw = localStorage.getItem('alloflow_educator_access_code_v1');
@@ -173,18 +206,21 @@
       function verifyPrebootCode(code) {
         var env = getPrebootVerifier();
         if (!env) return Promise.resolve(true);
+        if (getPrebootBackoffRetryMs() > 0) return Promise.resolve(false);
         var text = String(code == null ? '' : code);
         if (!text || !window.crypto || !window.crypto.subtle) return Promise.resolve(false);
         var salt = b64Bytes(env.salt), expected = b64Bytes(env.hash);
-        var raw = new TextEncoder().encode(text.normalize('NFC'));
+        var raw = new TextEncoder().encode(text);
         return window.crypto.subtle.importKey('raw', raw, { name: 'PBKDF2' }, false, ['deriveBits'])
           .then(function (k) { return window.crypto.subtle.deriveBits({ name: 'PBKDF2', salt: salt, iterations: env.iter, hash: 'SHA-256' }, k, expected.length * 8); })
           .then(function (bits) {
             var actual = new Uint8Array(bits);
-            if (actual.length !== expected.length) return false;
+            if (actual.length !== expected.length) { recordPrebootBackoffFailure(); return false; }
             var diff = 0;
             for (var i = 0; i < actual.length; i++) diff |= actual[i] ^ expected[i];
-            return diff === 0;
+            if (diff === 0) { clearPrebootBackoff(); return true; }
+            recordPrebootBackoffFailure();
+            return false;
           }).catch(function () { return false; });
       }
       function isPrebootHoldActive() {
@@ -260,6 +296,8 @@
       }
       function backup(statusLine) {
         if (!getPrebootVerifier()) return runBackup(statusLine);
+        var waitMs = getPrebootBackoffRetryMs();
+        if (waitMs > 0) { statusLine.textContent = 'Too many attempts. Wait ' + Math.ceil(waitMs / 1000) + 's before trying again.'; return; }
         var codeEl = document.getElementById('loader-access-code');
         statusLine.textContent = 'Checking educator access code...';
         return verifyPrebootCode(codeEl ? codeEl.value : '').then(function (ok) {
@@ -271,16 +309,46 @@
           return runBackup(statusLine);
         });
       }
+      function dbHasProtectedClinicalRecords(dump) {
+        if (!dump || !dump.stores || typeof dump.stores !== 'object') return false;
+        var storeNames = Object.keys(dump.stores);
+        for (var i = 0; i < storeNames.length; i++) {
+          var s = dump.stores[storeNames[i]];
+          var vals = s && Array.isArray(s.values) ? s.values : [];
+          for (var j = 0; j < vals.length; j++) {
+            var v = vals[j];
+            if (v && typeof v === 'object' && v.ns === 'protected_clinical_records') return true;
+          }
+          var keys = s && Array.isArray(s.keys) ? s.keys : [];
+          for (var k = 0; k < keys.length; k++) {
+            if (String(keys[k] || '').indexOf('protected_clinical_records') >= 0) return true;
+          }
+        }
+        return false;
+      }
       function runClearAndReload() {
-        try { localStorage.clear(); } catch (e) {}
+        try {
+          var keep = {};
+          for (var i = 0; i < localStorage.length; i++) {
+            var lk = localStorage.key(i);
+            if (lk && (/^(?:alloflow|allo)_(?:sensitive|clinical|psych|behavior_lens|dynamic_assessment|protected_clinical)_/i.test(lk) || lk.indexOf('protected_clinical_records') >= 0 || lk === 'alloflow_retention_legal_hold_v1')) {
+              keep[lk] = localStorage.getItem(lk);
+            }
+          }
+          localStorage.clear();
+          Object.keys(keep).forEach(function (lk) { try { localStorage.setItem(lk, keep[lk]); } catch (_) {} });
+        } catch (e) {}
         try { sessionStorage.clear(); } catch (e) {}
         var list = (window.indexedDB && indexedDB.databases) ? indexedDB.databases().catch(function () { return []; }) : Promise.resolve([]);
         var reload = function () { location.reload(); };
         list.then(function (dbs) {
           return Promise.all(dbs.map(function (d) {
-            return new Promise(function (resolve) {
-              var req = indexedDB.deleteDatabase(d.name);
-              req.onsuccess = req.onerror = req.onblocked = function () { resolve(); };
+            return readDb(d.name).then(function (dump) {
+              if (dbHasProtectedClinicalRecords(dump)) return;
+              return new Promise(function (resolve) {
+                var req = indexedDB.deleteDatabase(d.name);
+                req.onsuccess = req.onerror = req.onblocked = function () { resolve(); };
+              });
             });
           }));
         }).then(reload, reload);
@@ -293,6 +361,8 @@
           return;
         }
         if (!getPrebootVerifier()) { runClearAndReload(); return; }
+        var waitMs = getPrebootBackoffRetryMs();
+        if (waitMs > 0) { if (warnEl) warnEl.textContent = 'Too many attempts. Wait ' + Math.ceil(waitMs / 1000) + 's before trying again.'; return; }
         var codeEl = document.getElementById('loader-access-code');
         verifyPrebootCode(codeEl ? codeEl.value : '').then(function (ok) {
           if (!ok) {

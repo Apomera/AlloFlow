@@ -7,7 +7,7 @@ For developers and school IT. This document says what is inside the files that P
 3. the file that "Save all of this as one file" makes on the Add up results page,
 4. the rules for versions.
 
-It describes what the code does as of 2026-11-17. The code is the final word. Where the code and its comments disagree, or where this document could not settle a point from the code, it says so in [Known differences](#5-known-differences).
+It describes what the code does as of 2026-11-19. The code is the final word. Where the code and its comments disagree, or where this document could not settle a point from the code, it says so in [Known differences](#5-known-differences).
 
 The code that writes and reads these files:
 
@@ -101,7 +101,7 @@ The value of `lesson` is JSON. Look inside a file calls it "the data block": the
 | `submit` | `null`, or a class mailbox: `{ url, packId, secret, expiresAt }` (1.5). |
 | `mode` | `probe` in a check. `practice`, or absent, in a practice file. |
 | `form`, `timeLimitS`, `check` | A check only. `check` holds the measure, the score unit, the scoring and form versions, untimed settings, and `lock` (a salted hash of the teacher code) when there is one. The answers are scrambled (XOR with a SHA-256 keystream). |
-| `pictures`, `instructionsOnce` | Only when used. |
+| `pictures`, `instructionsOnce`, `repeatMissed`, `sequence` | Only when used. `repeatMissed` (from 2026-11-17) repeats missed Word Sounds questions once more at the end. `sequence` (from 2026-11-18) lists item ids in play order when questions are mixed across activities or ordered by the teacher. |
 | `directions` | From 2026-11-17, only in a check for the youngest students (Quantity Discrimination, Missing Number) made with the recordings of its directions: the ids, in `audio`, of the recordings of the three lines of its Get ready screen, in order. The screen then has a Hear the directions button. The items, the answers and `revision` are the same with or without it. |
 
 ### 1.4 The manifest (`alloflow-packet-manifest`)
@@ -127,7 +127,7 @@ The value of `lesson` is JSON. Look inside a file calls it "the data block": the
 | `fonts` | The credit line of the two reading fonts. |
 | `check` | A check only: `measure`, `scoreUnit`, `scoringVersion`, `formVersion`, `timeLimitS`, `items`, `practiceItems`, `clock`, `answers`, `teacherCode`. `teacherCode` says only whether a code is set, never the code. |
 
-The builders add fields after `buildHtml` has run, for example `builder` (`{ name, seed, ai: "none", words, items, ... }`), `learner` (a code name the file was made for), `pictures`, `vocab` and `speech` (a vocabulary file that reads aloud with the device's own voice). Because the manifest is outside the script, adding a field does not change the script pin.
+The builders add fields after `buildHtml` has run, for example `builder` (`{ name, seed, ai: "none", words, items, order, orderSeed, ... }`, where `order` is `"mixed"`, `"own"` or `"blocks"` from 2026-11-18), `learner` (a code name the file was made for), `pictures`, `vocab` and `speech` (a vocabulary file that reads aloud with the device's own voice). Because the manifest is outside the script, adding a field does not change the script pin.
 
 **The code name.** The student file reads a code name from its own address (`file.html#learner=BlueHeron7`) or from the manifest's `learner` field; the address wins. With a code name, the file keeps its place under the storage key plus `:` and the code name in lower case, so each code name has its own place on a shared device.
 
@@ -313,6 +313,8 @@ Each item line is exactly as written in the CSV (every cell quoted, with the `'`
 
 ## 3. Files of the Add up results page
 
+Add up results (`packets-results.html`) accepts individual `.csv` and `.json` results files, a saved results bundle (3.1), and (from 2026-11-19) `.zip` folders containing `.csv` or `.json` results files (such as LMS bulk downloads), unpacked entirely in the browser (up to 50 MB per archive, up to 500 files, skipping nested `.zip` archives and password-protected entries).
+
 ### 3.1 "Save all of this as one file" (`alloflow-packet-results-bundle`)
 
 The button saves `results-all__<YYYY-MM-DD>.json` (`sample-results-all__...` for the sample results). Dropped on the page again, it opens where the teacher left off. The page also keeps this same object in the browser (localStorage key `alloflow-packets-results/1`) only while "Keep these results on this device" is on.
@@ -327,6 +329,8 @@ The button saves `results-all__<YYYY-MM-DD>.json` (`sample-results-all__...` for
 | `merges` | `[{ from, into }]`: labels the teacher counted as one student. |
 | `apart` | `[[a, b]]`: pairs of labels the teacher said are different students. |
 | `goals` | `[{ learner, measure, value }]`: the goals typed on the page. |
+| `goalDates` | `[{ learner, measure, date }]`: optional goal dates (`YYYY-MM-DD`), added on 2026-11-17. |
+| `paper` | `[{ learner, measure, name, date, value, note }]`: paper scores typed on the page (kept apart from screen results), added on 2026-11-17. |
 
 Each session holds `sessionId`, `learner`, `packetId`, `packetVersion`, `title`, `mode` (`practice`, or `probe` for a check), `form`, `startedLocal`, `finishedLocal`, `start`, `date`, `dateFromFile`, `durationS`, `activeS`, `items`, `stated` (the score as the file stated it), `attempt`, `integrity` (`ok`, `changed`, `absent` or `unchecked`), `source` (`csv` or `json`) and `sourceFile`. The page also saves the counts it worked out, but on reading it ignores them: every value is read again as untrusted text, and every count is made again from the items. A session with no item done is dropped.
 

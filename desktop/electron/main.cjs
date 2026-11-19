@@ -12,7 +12,7 @@ const {
   isAllowedPrivateApiRequest,
   isTrustedAlloSheetGristFrameRequest,
 } = require('./allosheet-request-auth.cjs');
-const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
+const { assertTrustedIpcSender, getIpcSenderUrl, isSameOrigin } = require('./security.cjs');
 const { selectUniqueWindowSource } = require('./coach-window-tracker.cjs');
 
 // ── Build edition ('desktop' | 'admin' | 'remediation' | '' = unflavored) ───
@@ -345,7 +345,21 @@ function configureUpdates(force = false) {
   autoUpdater.channel = channel;
 
   if (genericFeed) {
-    autoUpdater.setFeedURL({ provider: 'generic', url: genericFeed, channel });
+    let parsedFeed;
+    try { parsedFeed = new URL(genericFeed); } catch (_) { parsedFeed = null; }
+    const feedHost = parsedFeed ? String(parsedFeed.hostname || '').replace(/^\[|\]$/g, '').toLowerCase() : '';
+    const isDevLoopback = !app.isPackaged && parsedFeed && parsedFeed.protocol === 'http:' && (feedHost === '127.0.0.1' || feedHost === 'localhost' || feedHost === '::1');
+    if (!parsedFeed || (parsedFeed.protocol !== 'https:' && !isDevLoopback) || parsedFeed.username || parsedFeed.password) {
+      return publishUpdateState({
+        configured: false,
+        provider: 'generic',
+        channel,
+        feed: 'rejected update feed',
+        message: 'Custom update feed URL must use HTTPS.',
+        lastError: 'Invalid ALLOFLOW_UPDATE_FEED_URL protocol.',
+      });
+    }
+    autoUpdater.setFeedURL({ provider: 'generic', url: parsedFeed.toString(), channel });
   }
 
   const provider = genericFeed ? 'generic' : 'github';
@@ -505,7 +519,9 @@ function openExternalIfSafe(url) {
   try {
     const scheme = new URL(url).protocol;
     if (scheme === 'http:' || scheme === 'https:' || scheme === 'mailto:') {
-      shell.openExternal(url);
+      Promise.resolve(shell.openExternal(url)).catch((err) => {
+        logLine('External open failed: ' + String((err && err.message) || err));
+      });
       return true;
     }
   } catch (_) {
@@ -975,6 +991,9 @@ async function updateCoachOverlay(rawPayload) {
         devTools: false,
       },
     });
+    coachOverlayWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    coachOverlayWindow.webContents.on('will-navigate', (event) => { event.preventDefault(); });
+    coachOverlayWindow.webContents.on('will-attach-webview', (event) => { event.preventDefault(); });
     coachOverlayWindow.setIgnoreMouseEvents(true, { forward: true });
     coachOverlayWindow.setAlwaysOnTop(true, 'floating');
     coachOverlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
@@ -1159,6 +1178,10 @@ function createMainWindow() {
     });
   });
 
+  mainWindow.webContents.on('will-attach-webview', (event) => {
+    event.preventDefault();
+  });
+
   mainWindow.webContents.on('will-navigate', (event, url) => {
     if (!isSameOrigin(url, getCommandCenterUrl())) {
       event.preventDefault();
@@ -1170,14 +1193,38 @@ function createMainWindow() {
   mainWindow.loadURL(getCommandCenterUrl());
 }
 
-function handleTrustedIpc(channel, handler) {
-  ipcMain.handle(channel, (event, ...args) => {
+function assertMainWindowSender(event, requireMainFrame = false) {
+  if (!mainWindow || mainWindow.isDestroyed() || event.sender !== mainWindow.webContents) {
+    throw new Error('Blocked desktop IPC request outside the main application window.');
+  }
+  if (requireMainFrame) {
     assertTrustedIpcSender(event, getCommandCenterUrl());
+    if (!event.senderFrame || event.senderFrame.parent !== null) {
+      throw new Error('Blocked privileged desktop IPC request from an embedded subframe.');
+    }
+    return;
+  }
+  const senderUrl = getIpcSenderUrl(event);
+  if (!isSameOrigin(senderUrl, getCommandCenterUrl()) && !isSameOrigin(senderUrl, getBundledAppOrigin())) {
+    throw new Error('Blocked desktop IPC request from an untrusted renderer origin.');
+  }
+}
+
+function handleMainFrameIpc(channel, handler) {
+  ipcMain.handle(channel, (event, ...args) => {
+    assertMainWindowSender(event, true);
     return handler(event, ...args);
   });
 }
 
-handleTrustedIpc('alloflow-desktop:runtime-info', async () => ({
+function handleTrustedIpc(channel, handler) {
+  ipcMain.handle(channel, (event, ...args) => {
+    assertMainWindowSender(event, false);
+    return handler(event, ...args);
+  });
+}
+
+handleMainFrameIpc('alloflow-desktop:runtime-info', async () => ({
   commandCenterUrl: getCommandCenterUrl(),
   version: runtime.VERSION,
   configPath: runtime.getConfigPath(),
@@ -1185,9 +1232,9 @@ handleTrustedIpc('alloflow-desktop:runtime-info', async () => ({
   logPath: getLogPath(),
 }));
 
-handleTrustedIpc('alloflow-desktop:update-status', async () => configureUpdates());
+handleMainFrameIpc('alloflow-desktop:update-status', async () => configureUpdates());
 
-handleTrustedIpc('alloflow-desktop:set-update-channel', async (_event, channel) => {
+handleMainFrameIpc('alloflow-desktop:set-update-channel', async (_event, channel) => {
   const normalized = String(channel || 'latest').toLowerCase() === 'beta' ? 'beta' : 'latest';
   const config = runtime.readConfig();
   runtime.writeConfig({
@@ -1200,7 +1247,7 @@ handleTrustedIpc('alloflow-desktop:set-update-channel', async (_event, channel) 
   return configureUpdates(true);
 });
 
-handleTrustedIpc('alloflow-desktop:check-for-updates', async () => {
+handleMainFrameIpc('alloflow-desktop:check-for-updates', async () => {
   configureUpdates();
   if (!autoUpdater || !updateState.configured) {
     return publishUpdateState({
@@ -1221,7 +1268,7 @@ handleTrustedIpc('alloflow-desktop:check-for-updates', async () => {
   return publishUpdateState();
 });
 
-handleTrustedIpc('alloflow-desktop:download-update', async () => {
+handleMainFrameIpc('alloflow-desktop:download-update', async () => {
   configureUpdates();
   if (!autoUpdater || !updateState.configured) {
     return publishUpdateState({ message: 'Updates are not configured for this build.' });
@@ -1242,7 +1289,7 @@ handleTrustedIpc('alloflow-desktop:download-update', async () => {
   return publishUpdateState();
 });
 
-handleTrustedIpc('alloflow-desktop:install-update', async () => {
+handleMainFrameIpc('alloflow-desktop:install-update', async () => {
   configureUpdates();
   if (!autoUpdater || !updateState.downloaded) {
     return publishUpdateState({ message: 'No downloaded update is ready to install.' });
@@ -1254,13 +1301,13 @@ handleTrustedIpc('alloflow-desktop:install-update', async () => {
   return publishUpdateState();
 });
 
-handleTrustedIpc('alloflow-desktop:set-full-screen', async (_event, enabled) => {
+handleMainFrameIpc('alloflow-desktop:set-full-screen', async (_event, enabled) => {
   if (!mainWindow) return false;
   mainWindow.setFullScreen(Boolean(enabled));
   return mainWindow.isFullScreen();
 });
 
-handleTrustedIpc('alloflow-desktop:is-full-screen', async () => (
+handleMainFrameIpc('alloflow-desktop:is-full-screen', async () => (
   mainWindow ? mainWindow.isFullScreen() : false
 ));
 
@@ -1307,8 +1354,11 @@ function isRevealableExportDir(targetPath) {
 // __ALLO_EXPORT_GUARD_END__
 handleTrustedIpc('remediation:save-files', async (_event, payload) => {
   try {
+    const MAX_EXPORT_FILES = 1000;
+    const MAX_EXPORT_TOTAL_BYTES = 512 * 1024 * 1024;
     const files = (payload && Array.isArray(payload.files)) ? payload.files : [];
     if (files.length === 0) return { error: 'No files to save' };
+    if (files.length > MAX_EXPORT_FILES) return { error: `Too many files to save (limit ${MAX_EXPORT_FILES})` };
 
     const result = await dialog.showOpenDialog(mainWindow, {
       defaultPath: os.homedir(),
@@ -1318,24 +1368,52 @@ handleTrustedIpc('remediation:save-files', async (_event, payload) => {
     });
     if (result.canceled || !result.filePaths[0]) return { canceled: true };
 
+    const isSymlinkPath = (p) => {
+      try { return fs.lstatSync(p).isSymbolicLink(); } catch (_) { return false; }
+    };
+    const selectedRoot = fs.realpathSync(result.filePaths[0]);
     const folderName = safeExportName((payload && payload.folderName) || '', 120) || 'AlloFlow_Export';
-    const baseDir = path.join(result.filePaths[0], folderName);
+    const baseDir = path.join(selectedRoot, folderName);
+    if (isSymlinkPath(baseDir)) {
+      return { error: 'Refusing to save into a symbolic link directory' };
+    }
     fs.mkdirSync(baseDir, { recursive: true });
+    const realBaseDir = fs.realpathSync(baseDir);
+    const relBase = path.relative(selectedRoot, realBaseDir);
+    if (!relBase || relBase.startsWith('..') || path.isAbsolute(relBase)) {
+      return { error: 'Export folder escaped selected directory' };
+    }
 
     let saved = 0;
     let skipped = 0;
+    let totalBytes = 0;
+    const writeFlags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | (fs.constants.O_NOFOLLOW || 0);
     for (const f of files) {
       if (!f || !f.name || typeof f.data !== 'string') continue;
       const safe = safeExportFileName(f.name);
       if (!safe) { skipped++; continue; }
       const buf = f.encoding === 'utf8' ? Buffer.from(f.data, 'utf8') : Buffer.from(f.data, 'base64');
-      fs.writeFileSync(path.join(baseDir, safe), buf);
+      totalBytes += buf.length;
+      if (totalBytes > MAX_EXPORT_TOTAL_BYTES) {
+        return { error: 'Total export size exceeded safety limit' };
+      }
+      const targetPath = path.join(realBaseDir, safe);
+      if (isSymlinkPath(targetPath)) {
+        skipped++;
+        continue;
+      }
+      const fd = fs.openSync(targetPath, writeFlags, 0o600);
+      try {
+        fs.writeFileSync(fd, buf);
+      } finally {
+        fs.closeSync(fd);
+      }
       saved++;
     }
     revealableExportDirs.add(fs.realpathSync(baseDir));
 
-    logLine(`Saved ${saved} file(s) to ${baseDir}` + (skipped ? `; skipped ${skipped} of a type AlloFlow does not export` : ''));
-    return { canceled: false, folder: baseDir, saved, skipped };
+    logLine(`Saved ${saved} file(s) to ${realBaseDir}` + (skipped ? `; skipped ${skipped} of a type AlloFlow does not export` : ''));
+    return { canceled: false, folder: realBaseDir, saved, skipped };
   } catch (error) {
     return { error: String((error && error.message) || error) };
   }
@@ -1372,21 +1450,25 @@ const REMEDIATION_EXTS = new Set(Object.keys(REMEDIATION_MIME_BY_EXT));
 const MAX_REMEDIATION_READ_BYTES = 64 * 1024 * 1024;
 const approvedRemediationRoots = new Set();
 
-function isApprovedRemediationFile(filePath) {
-  if (typeof filePath !== 'string' || !filePath || approvedRemediationRoots.size === 0) return false;
+function resolveApprovedRemediationFile(filePath) {
+  if (typeof filePath !== 'string' || !filePath || approvedRemediationRoots.size === 0) return '';
   try {
     const lstat = fs.lstatSync(filePath);
-    if (lstat.isSymbolicLink() || !lstat.isFile()) return false;
-    if (lstat.size > MAX_REMEDIATION_READ_BYTES) return false;
+    if (lstat.isSymbolicLink() || !lstat.isFile()) return '';
+    if (lstat.size > MAX_REMEDIATION_READ_BYTES) return '';
     const realTarget = fs.realpathSync(filePath);
     for (const root of approvedRemediationRoots) {
       const rel = path.relative(root, realTarget);
-      if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) return true;
+      if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) return realTarget;
     }
-    return false;
+    return '';
   } catch (_) {
-    return false;
+    return '';
   }
+}
+
+function isApprovedRemediationFile(filePath) {
+  return Boolean(resolveApprovedRemediationFile(filePath));
 }
 
 handleTrustedIpc('remediation:select-folder', async () => {
@@ -1439,11 +1521,13 @@ handleTrustedIpc('remediation:select-folder', async () => {
 // extensions are served — the renderer never gets an arbitrary read primitive.
 handleTrustedIpc('remediation:read-file-base64', async (_event, filePath) => {
   try {
-    if (typeof filePath !== 'string' || !REMEDIATION_EXTS.has(path.extname(filePath).toLowerCase()) || !fs.existsSync(filePath) || !isApprovedRemediationFile(filePath)) {
+    const realTarget = resolveApprovedRemediationFile(filePath);
+    if (!realTarget || !REMEDIATION_EXTS.has(path.extname(realTarget).toLowerCase())) {
       return { error: 'File not found' };
     }
-    const buf = fs.readFileSync(filePath);
-    const mimeType = REMEDIATION_MIME_BY_EXT[path.extname(filePath).toLowerCase()];
+    const buf = fs.readFileSync(realTarget);
+    if (buf.length > MAX_REMEDIATION_READ_BYTES) return { error: 'File too large' };
+    const mimeType = REMEDIATION_MIME_BY_EXT[path.extname(realTarget).toLowerCase()];
     return { base64: buf.toString('base64'), sizeBytes: buf.length, mimeType };
   } catch (error) {
     return { error: 'Could not read selected file' };

@@ -130,6 +130,40 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // PlayLab workbench visual identity, starter presets & contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-playlab-workbench-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-playlab-workbench-polish-css';
+    st.textContent = [
+      '.playlab-hero-deck{position:relative;overflow:hidden;border-radius:18px;border:1px solid rgba(56,189,248,.38);background:linear-gradient(135deg,#091529 0%,#0f2942 54%,#0a362c 100%);box-shadow:0 16px 34px rgba(2,6,23,.28);color:#f8fafc;padding:14px 16px;margin-bottom:12px}',
+      '.playlab-hero-deck.is-soccer{border-color:rgba(52,211,153,.42);background:linear-gradient(135deg,#071d18 0%,#0b3527 54%,#0f2942 100%)}',
+      '.playlab-hero-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}',
+      '.playlab-hero-main{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 280px}',
+      '.playlab-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:rgba(56,189,248,.18);border:1px solid rgba(125,211,252,.45);color:#e0f2fe}',
+      '.playlab-hero-deck.is-soccer .playlab-hero-badge{background:rgba(16,185,129,.20);border-color:rgba(110,231,183,.5);color:#d1fae5}',
+      '.playlab-hero-pills{display:flex;flex-wrap:wrap;align-items:center;gap:6px}',
+      '.playlab-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(15,23,42,.68);border:1px solid rgba(148,163,184,.42);color:#e2e8f0}',
+      '.playlab-telemetry-pill strong{color:#fde68a;font-weight:900}',
+      '.playlab-starter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;margin-bottom:10px;border-radius:12px;background:rgba(15,23,42,.82);border:1px solid rgba(56,189,248,.34)}',
+      '.playlab-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#bae6fd;margin-right:2px}',
+      '.playlab-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#0f172a;border:1px solid #64748b;color:#f8fafc;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
+      '.playlab-starter-chip:hover:not(:disabled){background:#1e293b;border-color:#7dd3fc;color:#ffffff}',
+      '.playlab-starter-chip[aria-pressed="true"]{background:#0284c7;border-color:#bae6fd;color:#ffffff}',
+      '.playlab-starter-chip:disabled{opacity:.6;cursor:not-allowed}',
+      '.playlab-stage-legend{position:relative;z-index:1;margin-top:8px;padding:7px 10px;border-radius:10px;background:rgba(2,6,23,.62);border:1px solid rgba(148,163,184,.34);display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;font-size:11px;color:#e2e8f0}',
+      '.playlab-legend-item{display:inline-flex;align-items:center;gap:6px;font-weight:700;min-width:0}',
+      '.playlab-analysis-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:12px}',
+      '.theme-contrast .playlab-hero-deck,.theme-contrast .playlab-gameplan-card,.theme-contrast .playlab-setup-panel,.theme-contrast .playlab-field-shell,.theme-contrast .playlab-toggle-rack,.theme-contrast .playlab-starter-bar,.theme-contrast .playlab-stage-legend{background:#000000!important;border:2px solid #ffffff!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .playlab-hero-deck{border-color:#00ff00!important}',
+      '.theme-contrast .playlab-hero-badge,.theme-contrast .playlab-telemetry-pill,.theme-contrast .playlab-chip,.theme-contrast .playlab-status-pill,.theme-contrast .playlab-metric{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .playlab-telemetry-pill strong,.theme-contrast .playlab-metric b,.theme-contrast .playlab-starter-label{color:#00ff00!important}',
+      '.theme-contrast .playlab-starter-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .playlab-starter-chip[aria-pressed="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   (function() {
     if (document.getElementById('allo-live-playlab')) return;
     var liveRegion = document.createElement('div');
@@ -1941,17 +1975,24 @@ window.StemLab = window.StemLab || {
               setPieceTypesRun: {}
             }
           };
-      if (!labToolData || !labToolData.playlab) {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: PLAYLAB_DEFAULTS });
-        });
+      var rawPl = (labToolData && typeof labToolData === 'object') ? labToolData.playlab : null;
+      if (!rawPl || typeof rawPl !== 'object' || Array.isArray(rawPl)) {
+        if (typeof setLabToolData === 'function') {
+          setLabToolData(function(prev) {
+            var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            return Object.assign({}, basePrev, { playlab: PLAYLAB_DEFAULTS });
+          });
+        }
       }
-      var d = labToolData.playlab || PLAYLAB_DEFAULTS;
-      var workspaceTab = d.workspaceTab || 'field';
+      var d = (rawPl && typeof rawPl === 'object' && !Array.isArray(rawPl)) ? rawPl : PLAYLAB_DEFAULTS;
+      var workspaceTab = (d.workspaceTab === 'scout' || d.workspaceTab === 'field') ? d.workspaceTab : 'field';
       var upd = function(key, val) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var next = Object.assign({}, prev.playlab); next[key] = val;
-          return Object.assign({}, prev, { playlab: next });
+          var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevPl = (basePrev.playlab && typeof basePrev.playlab === 'object' && !Array.isArray(basePrev.playlab)) ? basePrev.playlab : PLAYLAB_DEFAULTS;
+          var next = Object.assign({}, prevPl); next[key] = val;
+          return Object.assign({}, basePrev, { playlab: next });
         });
       };
 
@@ -3863,16 +3904,60 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
-        // Header
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          ArrowLeft && h('button', {
-            onClick: function() { setStemLabTool && setStemLabTool(null); },
-            'data-pl-focusable': 'true', 'aria-label': __alloT('stem.playlab.back_to_stem_lab', 'Back to STEAM Lab'),
-            style: playLabSecondaryButtonStyle({ padding: '6px 10px' })
-          }, __alloT('stem.playlab.back', '← Back')),
-          h('h2', { style: { margin: 0, fontSize: 20 } },
-            (isSoccer ? '⚽ PlayLab — Soccer Tactics' : '🏈 PlayLab — Football Play & Coverage')),
-          h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, __alloT('stem.playlab.every_play_is_a_coordinated_math_probl', 'Every play is a coordinated math problem on a fixed grid.'))
+        // Header — Bespoke Tactical Playbook Hero Deck
+        h('div', { className: 'playlab-hero-deck' + (isSoccer ? ' is-soccer' : ''), 'data-playlab-hero': 'true' },
+          h('div', { className: 'playlab-hero-row' },
+            h('div', { className: 'playlab-hero-main' },
+              ArrowLeft && h('button', {
+                onClick: function() { setStemLabTool && setStemLabTool(null); },
+                'data-pl-focusable': 'true', 'aria-label': __alloT('stem.playlab.back_to_stem_lab', 'Back to STEAM Lab'),
+                style: playLabSecondaryButtonStyle({ padding: '6px 10px', minHeight: 40 })
+              }, __alloT('stem.playlab.back', '← Back')),
+              h('svg', { width: 46, height: 46, viewBox: '0 0 64 64', style: { flexShrink: 0 }, 'aria-hidden': 'true', focusable: 'false' },
+                h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: ctx.isContrast ? '#000000' : (isSoccer ? '#064e3b' : '#0f172a'), stroke: ctx.isContrast ? '#00ff00' : (isSoccer ? '#34d399' : '#38bdf8'), strokeWidth: 2 }),
+                isSoccer
+                  ? h('g', null,
+                      h('rect', { x: 10, y: 14, width: 44, height: 36, rx: 3, fill: 'none', stroke: ctx.isContrast ? '#ffffff' : 'rgba(255,255,255,0.45)', strokeWidth: 1.5 }),
+                      h('line', { x1: 32, y1: 14, x2: 32, y2: 50, stroke: ctx.isContrast ? '#ffffff' : 'rgba(255,255,255,0.4)', strokeWidth: 1.4 }),
+                      h('circle', { cx: 32, cy: 32, r: 7, fill: 'none', stroke: ctx.isContrast ? '#ffffff' : 'rgba(255,255,255,0.4)', strokeWidth: 1.4 }),
+                      h('path', { d: 'M18 40 Q28 24 44 22', fill: 'none', stroke: '#fde047', strokeWidth: 2.2, strokeDasharray: '3 2', strokeLinecap: 'round' }),
+                      h('circle', { cx: 18, cy: 40, r: 3.5, fill: '#38bdf8' }),
+                      h('circle', { cx: 44, cy: 22, r: 3.5, fill: '#4ade80' }),
+                      h('circle', { cx: 44, cy: 22, r: 6.5, fill: 'none', stroke: '#4ade80', strokeWidth: 1.5 })
+                    )
+                  : h('g', null,
+                      h('line', { x1: 10, y1: 42, x2: 54, y2: 42, stroke: ctx.isContrast ? '#ffffff' : 'rgba(148,163,184,0.55)', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+                      h('path', { d: 'M18 42 L18 26 L30 18', fill: 'none', stroke: '#fbbf24', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                      h('path', { d: 'M46 42 L46 22', fill: 'none', stroke: '#34d399', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                      h('circle', { cx: 18, cy: 42, r: 3.4, fill: '#38bdf8' }),
+                      h('circle', { cx: 46, cy: 42, r: 3.4, fill: '#38bdf8' }),
+                      h('path', { d: 'M29 27 L35 33 M35 27 L29 33', stroke: '#f87171', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                      h('circle', { cx: 46, cy: 20, r: 5.5, fill: 'none', stroke: '#34d399', strokeWidth: 1.6 })
+                    )
+              ),
+              h('div', { style: { minWidth: 0 } },
+                h('span', { className: 'playlab-hero-badge' },
+                  isSoccer
+                    ? __alloT('stem.playlab.hero_badge_soccer', 'Tactical Geometry · Pitch & xG')
+                    : __alloT('stem.playlab.hero_badge_football', 'Sports Analytics · Routes & Coverage')),
+                h('h2', { style: { margin: '3px 0 0', fontSize: 20, lineHeight: 1.2, color: '#ffffff' } },
+                  (isSoccer ? '⚽ PlayLab — Soccer Tactics' : '🏈 PlayLab — Football Play & Coverage')),
+                h('span', { style: { display: 'block', marginTop: 2, fontSize: 12, color: '#cbd5e1' } }, __alloT('stem.playlab.every_play_is_a_coordinated_math_probl', 'Every play is a coordinated math problem on a fixed grid.'))
+              )
+            ),
+            h('div', { className: 'playlab-hero-pills', 'aria-label': __alloT('stem.playlab.hero_telemetry', 'Active playbook telemetry') },
+              h('span', { className: 'playlab-telemetry-pill' },
+                isSoccer ? __alloT('stem.playlab.pill_formation', 'Shape') : __alloT('stem.playlab.pill_matchup', 'Call'),
+                ' ', h('strong', null, isSoccer ? formationDef.label : (play.label.split(' ')[0] + ' vs ' + coverage.label.split(' ')[0]))),
+              !isSoccer && h('span', { className: 'playlab-telemetry-pill' },
+                __alloT('stem.playlab.pill_ep', 'EP'), ' ', h('strong', null, expectedPoints(d.yardsToGoal || 75, d.down || 1).toFixed(1))),
+              h('span', { className: 'playlab-telemetry-pill' },
+                __alloT('stem.playlab.pill_explored', 'Studied'), ' ',
+                h('strong', null, String(Object.keys(d.playsViewed || {}).length) + '/' + PLAYS.length)),
+              d.drillActive && h('span', { className: 'playlab-telemetry-pill' },
+                '🎯 ', h('strong', null, __alloT('stem.playlab.pill_drill_active', 'Drill Active')))
+            )
+          )
         ),
         // ── Play Catalog summary band ──
         // Sticky band under the header. Shows count of unique plays/concepts
@@ -4328,6 +4413,56 @@ window.StemLab = window.StemLab || {
                 : (play.label + ' / ' + coverage.label + ' / ' + (d.down || 1) + ' down'))
           )
         ),
+
+        // Quick Starter Matchup Presets (hidden during drills, disabled during live runs)
+        !d.drillActive && (function() {
+          var starters = isSoccer ? [
+            { id: 'soc-tiki', label: __alloT('stem.playlab.starter_soc_tiki', '🔺 4-3-3 Tiki-Taka vs Mid-Block'), formationId: '433', conceptId: 'tikitaka', shapeId: 'midblock' },
+            { id: 'soc-cnt', label: __alloT('stem.playlab.starter_soc_counter', '⚡ 4-4-2 Counter vs High Press'), formationId: '442', conceptId: 'counter', shapeId: 'highpress' },
+            { id: 'soc-ggp', label: __alloT('stem.playlab.starter_soc_press', '🔥 4-2-3-1 Press vs Low Block'), formationId: '4231', conceptId: 'gegenpress', shapeId: 'lowblock' },
+            { id: 'soc-cor', label: __alloT('stem.playlab.starter_soc_corner', '🚩 3-4-3 In-Swinger Corner'), formationId: '343', conceptId: 'corner-in', shapeId: 'lowblock' }
+          ] : [
+            { id: 'fb-smash', label: __alloT('stem.playlab.starter_fb_smash', '🎯 Smash vs Cover 2'), playId: 'smash', coverageId: 'cover2' },
+            { id: 'fb-verts', label: __alloT('stem.playlab.starter_fb_verts', '🚀 4 Verts vs Cover 3'), playId: 'fourverts', coverageId: 'cover3' },
+            { id: 'fb-mesh', label: __alloT('stem.playlab.starter_fb_mesh', '🔥 Mesh vs Cover 1'), playId: 'mesh', coverageId: 'cover1' },
+            { id: 'fb-slant', label: __alloT('stem.playlab.starter_fb_slant', '⚡ Slant vs Blitz'), playId: 'slant', coverageId: 'cover0' }
+          ];
+          return h('div', {
+            className: 'playlab-starter-bar',
+            role: 'group',
+            'aria-label': __alloT('stem.playlab.starter_matchups_aria', 'Starter tactical matchups')
+          },
+            h('span', { className: 'playlab-starter-label' }, __alloT('stem.playlab.starter_matchups_label', 'Quick Matchups:')),
+            starters.map(function(st) {
+              var active = isSoccer
+                ? (d.formationId === st.formationId && d.conceptId === st.conceptId && d.shapeId === st.shapeId)
+                : (d.playId === st.playId && d.coverageId === st.coverageId);
+              return h('button', {
+                key: st.id,
+                type: 'button',
+                className: 'playlab-starter-chip',
+                disabled: !!d.runActive,
+                'aria-pressed': active ? 'true' : 'false',
+                'data-pl-focusable': 'true',
+                onClick: function() {
+                  if (isSoccer) {
+                    setLabToolData(function(prev) {
+                      var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+                      var prevPl = (basePrev.playlab && typeof basePrev.playlab === 'object' && !Array.isArray(basePrev.playlab)) ? basePrev.playlab : PLAYLAB_DEFAULTS;
+                      return Object.assign({}, basePrev, { playlab: Object.assign({}, prevPl, {
+                        formationId: st.formationId, conceptId: st.conceptId, shapeId: st.shapeId, customPositions: {}
+                      }) });
+                    });
+                    plAnnounce('Loaded soccer matchup: ' + st.label);
+                  } else {
+                    loadPlay(st.playId);
+                    loadCoverage(st.coverageId);
+                  }
+                }
+              }, st.label);
+            })
+          );
+        })(),
 
         // Play / Formation picker
         h('div', { role: 'group', 'aria-label': isSoccer ? 'Formation library' : 'Play library',
@@ -4795,7 +4930,32 @@ window.StemLab = window.StemLab || {
                         plAnnounce(plWithPlayer(__alloT('stem.playlab.sr_placed_player', 'Placed {player}. Position saved.'), movePlayer.id) + ' (' + spot.x + ', ' + spot.y + ')');
                       }, style: moveBtnStyle }, m[3]);
                   }));
-              })() : null
+              })() : null,
+              // Inline SVG Tactical Stage Legend
+              h('div', { className: 'playlab-stage-legend', 'aria-label': __alloT('stem.playlab.stage_legend_aria', 'Field diagram key') },
+                h('span', { className: 'playlab-legend-item' },
+                  h('svg', { width: 20, height: 12, viewBox: '0 0 20 12', 'aria-hidden': 'true', focusable: 'false' },
+                    h('line', { x1: 2, y1: 6, x2: 14, y2: 6, stroke: '#fbbf24', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                    h('path', { d: 'M12 2.5 L17 6 L12 9.5', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                  ),
+                  isSoccer ? __alloT('stem.playlab.leg_pass_lane', 'Passing lane') : __alloT('stem.playlab.leg_route_vec', 'Route vector')
+                ),
+                h('span', { className: 'playlab-legend-item' },
+                  h('svg', { width: 16, height: 14, viewBox: '0 0 16 14', 'aria-hidden': 'true', focusable: 'false' },
+                    h('circle', { cx: 8, cy: 7, r: 5.5, fill: 'rgba(16,185,129,0.22)', stroke: '#34d399', strokeWidth: 1.8 })
+                  ),
+                  isSoccer ? __alloT('stem.playlab.leg_open_att', 'Open attacker') : __alloT('stem.playlab.leg_open_rec', 'Open receiver')
+                ),
+                h('span', { className: 'playlab-legend-item' },
+                  h('svg', { width: 18, height: 14, viewBox: '0 0 18 14', 'aria-hidden': 'true', focusable: 'false' },
+                    h('rect', { x: 2, y: 2, width: 14, height: 10, rx: 3, fill: 'rgba(248,113,113,0.26)', stroke: '#f87171', strokeWidth: 1.6 })
+                  ),
+                  isSoccer ? __alloT('stem.playlab.leg_def_block', 'Defensive block') : __alloT('stem.playlab.leg_cov_zone', 'Coverage zone')
+                ),
+                h('span', { className: 'playlab-legend-item', style: { marginLeft: 'auto', color: '#94a3b8' } },
+                  isSoccer ? __alloT('stem.playlab.leg_pitch_scale', '105 × 68 m pitch') : __alloT('stem.playlab.leg_field_scale', '53.3 yd wide · drag players to test geometry')
+                )
+              )
             ),
             // ── Run Play button — the headline action ──
             // A green pill below the canvas that animates the play.
@@ -4868,6 +5028,13 @@ window.StemLab = window.StemLab || {
             // Save prompt — inline form below the toggle row
             d.savePromptOpen ? h('div', {
               role: 'dialog', 'aria-label': __alloT('stem.playlab.save_play_2', 'Save play'),
+              onKeyDown: function(e) {
+                if (e.key === 'Escape' && !(e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229)) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  cancelSavePrompt();
+                }
+              },
               style: { marginTop: 8, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #d946ef', borderRadius: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
             },
               h('label', { htmlFor: 'pl-save-name', style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, __alloT('stem.playlab.play_name', 'Play name:')),
@@ -4876,8 +5043,7 @@ window.StemLab = window.StemLab || {
                 value: d.savePromptName || '',
                 onChange: function(e) { upd('savePromptName', e.target.value); },
                 onKeyDown: function(e) {
-                  if (e.key === 'Enter') commitSavePlay();
-                  else if (e.key === 'Escape') cancelSavePrompt();
+                  if (e.key === 'Enter' && !(e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229)) commitSavePlay();
                 },
                 'data-pl-focusable': 'true', autoFocus: true,
                 className: 'playlab-native-control',
@@ -4930,7 +5096,7 @@ window.StemLab = window.StemLab || {
                     __alloT('stem.playlab.soccer_chance_analysis_copy', 'The live read tracks the final shot location, xG, and how the passing pattern stretches the defensive shape.'))
                 : analysis.length === 0
                 ? h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, fontStyle: 'italic' } }, __alloT('stem.playlab.no_eligible_receivers_running_routes', 'No eligible receivers running routes.'))
-                : h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, fontSize: 12 } },
+                : h('div', { className: 'playlab-analysis-grid' },
                     analysis.slice(0, 3).map(function(r, idx) {
                       var winner = idx === 0;
                       return h('div', {

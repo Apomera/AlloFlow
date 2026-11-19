@@ -127,10 +127,12 @@ function _saiImportMailboxSurveySummary(summary, meta) {
       source: 'mailbox',
       importKey: importKey
     };
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
     items.forEach(function (item, at) {
       var value = row.answers[item.id];
       if (value === undefined || value === null) return;
       var columnKey = aligned ? (itemKeys[at] || item.id) : item.id;
+      if (columnKey === '__proto__' || columnKey === 'constructor' || columnKey === 'prototype') return;
       if (item.type === 'choice') {
         var match = (item.options || []).filter(function (option) { return option.id === value; })[0];
         entry[columnKey] = match ? match.label : String(value);
@@ -1356,12 +1358,18 @@ try {
   var _AC_SYMBOL_ACTIVITIES = {
     symbol_runner: ['Symbol runner', 'symbol_naming']
   };
+  var _AC_READ_ALONG_STRANDS = [
+    ['read_along', 'Read along']
+  ];
+  var _AC_READ_ALONG_ACTIVITIES = {
+    read_along: ['Read along', 'read_along']
+  };
   // The groups in the order shown; '' is "Other activities".
-  var _AC_WS_GROUP_KEYS = _AC_WS_STRANDS.concat(_AC_MATH_FACT_STRANDS, _AC_VOCAB_STRANDS, _AC_SYMBOL_STRANDS).map(function(r) { return r[0]; }).concat(['']);
+  var _AC_WS_GROUP_KEYS = _AC_WS_STRANDS.concat(_AC_MATH_FACT_STRANDS, _AC_VOCAB_STRANDS, _AC_SYMBOL_STRANDS, _AC_READ_ALONG_STRANDS).map(function(r) { return r[0]; }).concat(['']);
   var _AC_WS_SESSION_CAP = 60;
   function _acWsOwn(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
   function _acWsStrandOf(id) {
-    return _acWsOwn(_AC_WS_ACTIVITIES, id) ? _AC_WS_ACTIVITIES[id][1] : _acWsOwn(_AC_MATH_FACT_ACTIVITIES, id) ? _AC_MATH_FACT_ACTIVITIES[id][1] : _acWsOwn(_AC_VOCAB_ACTIVITIES, id) ? _AC_VOCAB_ACTIVITIES[id][1] : _acWsOwn(_AC_SYMBOL_ACTIVITIES, id) ? _AC_SYMBOL_ACTIVITIES[id][1] : '';
+    return _acWsOwn(_AC_WS_ACTIVITIES, id) ? _AC_WS_ACTIVITIES[id][1] : _acWsOwn(_AC_MATH_FACT_ACTIVITIES, id) ? _AC_MATH_FACT_ACTIVITIES[id][1] : _acWsOwn(_AC_VOCAB_ACTIVITIES, id) ? _AC_VOCAB_ACTIVITIES[id][1] : _acWsOwn(_AC_SYMBOL_ACTIVITIES, id) ? _AC_SYMBOL_ACTIVITIES[id][1] : _acWsOwn(_AC_READ_ALONG_ACTIVITIES, id) ? _AC_READ_ALONG_ACTIVITIES[id][1] : '';
   }
   // The player's name for an activity. Pass no t for English (CSV files).
   function _acWsActivityName(t, id) {
@@ -1370,6 +1378,7 @@ try {
     if (id === 'math_rehearsal') return _acWsText(t, 'class_analytics.th_mf_activity_rehearsal', 'Fact rehearsal');
     if (_acWsOwn(_AC_VOCAB_ACTIVITIES, id)) return _acWsText(t, 'class_analytics.th_vc_activity_' + id.slice(6), _AC_VOCAB_ACTIVITIES[id][0]);
     if (id === 'symbol_runner') return _acWsText(t, 'class_analytics.th_sr_activity_runner', 'Symbol runner');
+    if (id === 'read_along') return _acWsText(t, 'class_analytics.th_ra_activity_read_along', 'Read along');
     if (!id || id === 'unknown') return _acWsText(t, 'class_analytics.ws_activity_not_recorded', 'Activity not recorded');
     var plain = String(id).replace(/_/g, ' ').trim();
     return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
@@ -1379,6 +1388,7 @@ try {
     if (row) return _acWsText(t, 'word_sounds.strand_' + key, row[1]);
     if (key === 'vocabulary') return _acWsText(t, 'class_analytics.th_vc_group', 'Vocabulary');
     if (key === 'symbol_naming') return _acWsText(t, 'class_analytics.th_sr_group', 'Symbol naming');
+    if (key === 'read_along') return _acWsText(t, 'class_analytics.th_ra_group', 'Read along');
     return key === 'math_facts' ? _acWsText(t, 'class_analytics.th_mf_group', 'Math facts') : _acWsText(t, 'class_analytics.ws_other_activities', 'Other activities');
   }
   function _acWsNum(value) { var n = Number(value); return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0; }
@@ -1596,14 +1606,14 @@ try {
         a.nm.forEach(function(word) { if (acts[id].nm.indexOf(word) < 0 && acts[id].nm.length < 8) acts[id].nm.push(word); });
       });
     });
-    var known = Object.keys(_AC_WS_ACTIVITIES).concat(Object.keys(_AC_MATH_FACT_ACTIVITIES), Object.keys(_AC_VOCAB_ACTIVITIES));
+    var known = Object.keys(_AC_WS_ACTIVITIES).concat(Object.keys(_AC_MATH_FACT_ACTIVITIES), Object.keys(_AC_VOCAB_ACTIVITIES), Object.keys(_AC_SYMBOL_ACTIVITIES), Object.keys(_AC_READ_ALONG_ACTIVITIES));
     order.sort(function(a, b) { return (known.indexOf(a) < 0 ? 99 : known.indexOf(a)) - (known.indexOf(b) < 0 ? 99 : known.indexOf(b)); });
     return _AC_WS_GROUP_KEYS.map(function(key) {
       var mine = order.filter(function(id) { return _acWsStrandOf(id) === key; });
       var total = { n: 0, g: 0, f: 0, fc: 0, c: 0, x: 0 };
       // Math fact practice is never flagged: a fact being learned is expected to be missed at first.
-      // Nor are vocabulary questions: the words of a unit being taught.
-      var practiceOnly = key === 'math_facts' || key === 'vocabulary';
+      // Nor are vocabulary questions or read-alongs: the words of a unit being taught.
+      var practiceOnly = key === 'math_facts' || key === 'vocabulary' || key === 'read_along';
       var activities = mine.map(function(id) {
         var a = acts[id];
         ['n', 'g', 'f', 'fc', 'c', 'x'].forEach(function(k) { total[k] += a[k]; });
@@ -2329,10 +2339,47 @@ try {
     var mode = _acThText(value, 12).toLowerCase();
     return mode === 'check' ? 'probe' : mode;
   }
-  // The take-home JSON, or a class mailbox copy of it, to one raw session.
+  // The take-home JSON, a class mailbox copy of it, or a results-all bundle from Add up results, to raw sessions.
   function _acThReadJson(data) {
     if (data && typeof data === 'object' && data.kind === 'alloflow-take-home-submission' && data.takeHomeResult && typeof data.takeHomeResult === 'object') data = data.takeHomeResult;
     if (!data || typeof data !== 'object' || Array.isArray(data)) return { ok: false, reason: 'not_results' };
+    if (data.kind === 'alloflow-packet-results-bundle') {
+      var bVer = Number(data.version);
+      if (bVer !== 1) return { ok: false, reason: bVer > 1 ? 'newer' : 'not_results' };
+      if (!Array.isArray(data.sessions)) return { ok: false, reason: 'no_items' };
+      var bundleSessions = [];
+      data.sessions.slice(0, 500).forEach(function(s) {
+        if (!s || typeof s !== 'object' || !Array.isArray(s.items) || !s.items.length) return;
+        var bProbe = _acThMode(s.mode) === 'probe';
+        var rawItems = s.items.slice(0, _AC_TH_MAX_ITEMS).map(function(it) { return it && typeof it === 'object' ? it : {}; });
+        var bInteg = ['ok', 'changed', 'absent', 'unchecked'].indexOf(s.integrity) >= 0 ? s.integrity : 'unchecked';
+        bundleSessions.push({
+          sid: _acThText(s.sessionId, 80),
+          learner: _acThText(s.learner, 60),
+          packetId: _acThText(s.packetId, 80),
+          title: _acThText(s.title, 80) || _acThText(s.packetId, 80),
+          activeSeconds: _acThSeconds(s.activeS),
+          stamps: [s.finishedLocal, s.startedLocal, s.date],
+          startedText: _acThText(s.startedLocal, 40) || _acThText(s.date, 40),
+          prefix: '',
+          items: rawItems.map(function(it) {
+            return _acThItem({
+              itemId: it.itemId, activity: _acThScalar(it.activity), word: it.word, target: it.target, responses: it.responses,
+              correct: it.correct === true, firstTry: it.firstTry === true, tries: it.tries != null ? it.tries : it.attempts,
+              done: it.attempted === true || it.done === true, scored: !(it.practice === true || it.scored === false),
+              digits: bProbe ? [it.digitsCorrect, it.digitsPossible] : null
+            });
+          }),
+          lines: null,
+          integrity: null,
+          bundleIntegrity: bInteg,
+          mode: bProbe ? 'probe' : 'practice',
+          form: _acThText(s.form, 20),
+          score: bProbe ? _acCkScoreFromJson(s.stated || s.score) : null
+        });
+      });
+      return bundleSessions.length ? { ok: true, bundle: true, sessions: bundleSessions } : { ok: false, reason: 'no_items' };
+    }
     if (data.kind !== 'alloflow-take-home-result') {
       var saveFile = ['wordSoundsState', 'studentNickname', 'studentProgressSummary', 'fluencyAssessments', 'gameCompletions', 'adventureState', 'responses', 'timeOnTask', 'profile']
         .some(function(key) { return _acWsOwn(data, key); });
@@ -2421,7 +2468,7 @@ try {
     if (!start) start = _acThSheetStamp(raw.stamps, fileName, raw.seconds);
     var dateFromFile = !start;
     if (!start) start = Number(lastModified) > 0 && Number.isFinite(Number(lastModified)) ? Number(lastModified) : Date.now();
-    var check = 'absent';
+    var check = raw.bundleIntegrity || 'absent';
     if (raw.integrity && raw.integrity.value && raw.lines) {
       var text = raw.prefix + '\n' + raw.lines.join('\n');
       var got = raw.integrity.method === 'fnv1a' ? _acThFnv1a(text) : raw.integrity.method === 'sha256' ? await _acThSha256(text) : '';
@@ -2437,10 +2484,13 @@ try {
       acts: stored, wrong: wrong, integrity: check };
     // The time on the items (files saved from 2026-11-13), shown in the preview. Not kept: nothing reads it later.
     if (raw.activeSeconds !== null && raw.activeSeconds !== undefined) session.activeSeconds = raw.activeSeconds;
-    // A check is a math result, never a Word Sounds session. A vocabulary check is not a math
-    // measure: it is kept with the take-home sessions, under Vocabulary (one try, so first try = right).
-    var vocabCheck = raw.mode === 'probe' && raw.items.length > 0 && raw.items.every(function(it) { return _acWsOwn(_AC_VOCAB_ACTIVITIES, it.activity); });
-    var symbolCheck = raw.mode === 'probe' && raw.items.length > 0 && raw.items.every(function(it) { return _acWsOwn(_AC_SYMBOL_ACTIVITIES, it.activity); });
+    // A check is a math result, never a Word Sounds session. Vocabulary and Symbol Runner checks are not math
+    // measures: they are kept with the take-home sessions under Vocabulary or Symbol naming (one try, so first try = right).
+    var scoreMeasure = raw.score && typeof raw.score.measure === 'string' ? raw.score.measure.toLowerCase() : '';
+    var vocabCheck = raw.mode === 'probe' && (scoreMeasure === 'vocab_items' || scoreMeasure === 'vocab_check'
+      || (raw.items.length > 0 && raw.items.every(function(it) { return _acWsOwn(_AC_VOCAB_ACTIVITIES, it.activity); })));
+    var symbolCheck = raw.mode === 'probe' && (scoreMeasure === 'symbol_naming' || scoreMeasure === 'symbol_runner'
+      || (raw.items.length > 0 && raw.items.every(function(it) { return _acWsOwn(_AC_SYMBOL_ACTIVITIES, it.activity); })));
     if (raw.mode === 'probe' && !vocabCheck && !symbolCheck) {
       session.check = _acCkFromRaw(raw, fileName);
       session.title = session.check.title || session.title;
@@ -2452,7 +2502,13 @@ try {
   async function _acThReadFile(file) {
     var out = { name: _acThText(file && file.name, 120) || 'file', sessions: [], reason: '' };
     try {
-      if (!file || !(Number(file.size) <= _AC_TH_MAX_BYTES)) { out.reason = 'too_big'; return out; }
+      if (!file) { out.reason = 'unreadable'; return out; }
+      var mime = String(file.type || '').toLowerCase();
+      if (/\.zip$/i.test(out.name) || mime === 'application/zip' || mime === 'application/x-zip-compressed') {
+        out.reason = 'zip';
+        return out;
+      }
+      if (!(Number(file.size) <= _AC_TH_MAX_BYTES)) { out.reason = 'too_big'; return out; }
       var text = typeof file.text === 'function' ? await file.text() : await new Promise(function(done, fail) {
         var reader = new FileReader();
         reader.onload = function() { done(String(reader.result || '')); };
@@ -2461,6 +2517,11 @@ try {
       });
       text = String(text == null ? '' : text);
       if (text.length > _AC_TH_MAX_BYTES) { out.reason = 'too_big'; return out; }
+      if (text.length >= 4 && text.charCodeAt(0) === 0x50 && text.charCodeAt(1) === 0x4B
+        && ((text.charCodeAt(2) === 3 && text.charCodeAt(3) === 4) || (text.charCodeAt(2) === 5 && text.charCodeAt(3) === 6))) {
+        out.reason = 'zip';
+        return out;
+      }
       if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
       var head = text.slice(0, 400).replace(/^\s+/, '').charAt(0);
       var read;
@@ -2473,7 +2534,8 @@ try {
       } else read = _acThReadCsv(text);
       if (!read.ok) { out.reason = read.reason; return out; }
       var unknownCheck = false;
-      for (var i = 0; i < read.sessions.length && i < 40; i++) {
+      var maxHere = read.bundle ? 500 : 40;
+      for (var i = 0; i < read.sessions.length && i < maxHere; i++) {
         var session = await _acThSession(read.sessions[i], file.lastModified, out.name);
         // A check of a kind this version does not know is not guessed at.
         if (session.check && !session.check.measure) { unknownCheck = true; continue; }
@@ -2687,6 +2749,7 @@ try {
     return reason === 'too_big' ? _acWsText(t, 'class_analytics.th_reason_too_big', 'This file is too big to be a results file (over 2 MB).')
       : reason === 'empty' ? _acWsText(t, 'class_analytics.th_reason_empty', 'This file is empty.')
       : reason === 'web_page' ? _acWsText(t, 'class_analytics.th_reason_web_page', 'This is a web page, not a results file. Ask the learner for the results file they saved at the end.')
+      : reason === 'zip' ? _acWsText(t, 'class_analytics.th_reason_zip', 'This is a .zip folder. Unzip it first and drop the CSV or JSON results files inside, or open the .zip on Add up results.')
       : reason === 'save_file' ? _acWsText(t, 'class_analytics.th_reason_save_file', 'This is a student save file, not take-home results.')
       : reason === 'newer' ? _acWsText(t, 'class_analytics.th_reason_newer', 'This file was made by a newer version. Update AlloFlow to add it.')
       : reason === 'no_items' ? _acWsText(t, 'class_analytics.th_reason_no_items', 'This results file has no items in it.')
@@ -2890,9 +2953,15 @@ try {
     var flags = (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function(f) { return _acThText(f, 30).toLowerCase(); }).filter(function(f) { return /^[a-z_]+$/.test(f); });
     var tools = (Array.isArray(sc.tools) ? sc.tools : []).slice(0, 12).map(function(x) { return _acThText(x, 40); }).filter(function(x, i, all) { return /^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(x) && all.indexOf(x) === i; });
     var completion = _acThText(sc.completion, 20);
+    var pausedS = _acCkNumber(sc.pausedS);
+    var pauses = _acCkCount(sc.pauses);
+    var directionsHeard = _acCkCount(sc.directionsHeard);
     return { measure: _acThText(sc.measure, 40), score: _acCkNumber(sc.score), unit: _acThText(sc.scoreUnit, 40), timeLimitS: _acCkNumber(sc.timeLimitS), elapsedS: _acCkNumber(sc.elapsedS),
       hiddenS: _acCkNumber(sc.hiddenS), completion: completion === 'complete' || completion === 'time' || completion === 'ended_early' || completion === 'time_up_away' ? completion : '',
       scoringVersion: _acCkCount(sc.scoringVersion), formVersion: _acCkCount(sc.formVersion), attempt: _acCkCount(sc.attempt) || 1, flags: flags, tools: tools,
+      pausedS: pausedS !== null && pausedS > 0 ? Math.round(pausedS * 10) / 10 : null,
+      pauses: pauses !== null && pauses > 0 ? pauses : null,
+      directionsHeard: directionsHeard !== null && directionsHeard > 0 ? directionsHeard : null,
       // Untimed (an accommodation): JSON untimed: true, CSV "timing=untimed".
       untimed: sc.untimed === true || /^(1|true|untimed)$/i.test(_acThText(sc.untimed, 8)) || /^untimed$/i.test(_acThText(sc.timing, 20)), usualTimeLimitS: _acCkNumber(sc.usualTimeLimitS) };
   }
@@ -2907,7 +2976,8 @@ try {
     var get = function(name) { return _acWsOwn(kv, 'k' + name) ? kv['k' + name] : ''; };
     return _acCkScoreFromJson({ measure: get('measure'), score: get('score'), scoreUnit: get('score_unit'), timeLimitS: get('time_limit_s'), elapsedS: get('elapsed_s'), hiddenS: get('hidden_s'),
       completion: get('completion'), scoringVersion: get('scoring_version'), formVersion: get('form_version'), attempt: get('attempt'), flags: get('flags') ? get('flags').split(';') : [],
-      tools: get('tools_used') ? get('tools_used').split(';') : [], timing: get('timing'), usualTimeLimitS: get('usual_time_limit_s') });
+      tools: get('tools_used') ? get('tools_used').split(';') : [], pausedS: get('paused_s'), pauses: get('pauses'), directionsHeard: get('directions_heard'),
+      timing: get('timing'), usualTimeLimitS: get('usual_time_limit_s') });
   }
   // A raw check session to what the dashboard shows and keeps. The counts are
   // made again from the item rows, which the edit check covers. The time
@@ -2962,6 +3032,8 @@ try {
       given: given, attempted: attempted, correct: correct, digitsCorrect: hasDigits ? digitsCorrect : null, digitsPossible: hasDigits ? digitsPossible : null,
       score: score, unit: unit, noScore: noScore, prorated: prorated, completion: completion, elapsedSeconds: sc ? sc.elapsedS : null, timeLimitSeconds: limit,
       hiddenSeconds: sc && sc.hiddenS > 0 ? sc.hiddenS : 0, flags: sc ? sc.flags : [], tools: sc && Array.isArray(sc.tools) ? sc.tools : [], attempt: sc ? sc.attempt : 1,
+      pausedSeconds: sc && sc.pausedS > 0 ? sc.pausedS : 0, pauses: sc && sc.pauses > 0 ? sc.pauses : 0,
+      directionsHeard: sc && sc.directionsHeard > 0 ? sc.directionsHeard : 0,
       recounted: !!(sc && sc.score !== null && score !== null && sc.score !== score), stated: sc ? sc.score : null,
       untimed: untimed, usualTimeLimitSeconds: untimed && sc.usualTimeLimitS > 0 ? sc.usualTimeLimitS : null };
   }
@@ -2975,6 +3047,9 @@ try {
       packetId: c.packetId, title: c.title, completion: c.completion, hiddenSeconds: c.hiddenSeconds, flags: c.flags.slice(), attempt: c.attempt, integrity: session.integrity,
       timeLimitSeconds: c.timeLimitSeconds };
     if (Array.isArray(c.tools) && c.tools.length) home.tools = c.tools.slice();
+    if (c.pausedSeconds > 0) home.pausedSeconds = c.pausedSeconds;
+    if (c.pauses > 0) home.pauses = c.pauses;
+    if (c.directionsHeard > 0) home.directionsHeard = c.directionsHeard;
     if (session.dateFromFile) home.dateFromFile = true;
     if (c.noScore) home.noScore = c.noScore;
     if (c.untimed) { home.untimed = true; home.usualTimeLimitSeconds = c.usualTimeLimitSeconds; }
@@ -3077,6 +3152,7 @@ try {
       : flag === 'two_tabs' ? _acWsText(t, 'class_analytics.th_ck_flag_two_tabs', 'The check was open in two tabs or windows while it ran.')
       : flag === 'time_up_away' ? _acWsText(t, 'class_analytics.th_ck_flag_time_up_away', 'The time ran out while the page was hidden or closed.')
       : flag === 'attempt_unknown' ? _acWsText(t, 'class_analytics.th_ck_flag_attempt_unknown', 'That browser could not keep the count of tries, so the try number may be wrong.')
+      : flag === 'paused' ? _acWsText(t, 'class_analytics.th_ck_flag_paused', 'Paused; the problem on screen at each pause was set aside and not counted.')
       : _acWsText(t, 'class_analytics.th_ck_flag_other', 'The file notes: {flag}.', { flag: String(flag).replace(/_/g, ' ') });
   }
   var _AC_CK_TOOL_LABELS = { textLarger: 'larger text', textLargest: 'largest text', contrastHigh: 'high contrast',
@@ -3086,12 +3162,25 @@ try {
   function _acCkToolLabel(id) { return _acWsOwn(_AC_CK_TOOL_LABELS, id) ? _AC_CK_TOOL_LABELS[id] : String(id || ''); }
   // Things a teacher should know before reading the score, in plain words.
   function _acCkNotes(t, c) {
-    var notes = (Array.isArray(c.flags) ? c.flags : []).slice(0, 8).map(function(flag) { return _acCkFlagText(t, flag); });
+    var flagList = Array.isArray(c.flags) ? c.flags.slice(0, 8) : [];
+    var pausedSecs = c.pausedSeconds >= 1 ? Math.round(c.pausedSeconds) : 0;
+    var notes = flagList.map(function(flag) {
+      if (flag === 'paused' && pausedSecs >= 1) {
+        return _acWsText(t, 'class_analytics.th_ck_flag_paused_time', 'Paused; the problem on screen at each pause was set aside and not counted ({n} {unit} paused in all).', { n: pausedSecs, unit: pausedSecs === 1 ? 'second' : 'seconds' });
+      }
+      return _acCkFlagText(t, flag);
+    });
+    if (pausedSecs >= 1 && flagList.indexOf('paused') < 0) {
+      notes.push(_acWsText(t, 'class_analytics.th_ck_flag_paused_time', 'Paused; the problem on screen at each pause was set aside and not counted ({n} {unit} paused in all).', { n: pausedSecs, unit: pausedSecs === 1 ? 'second' : 'seconds' }));
+    }
     if (c.attempt > 1) notes.push(_acWsText(t, 'class_analytics.th_ck_note_attempt', 'Try {n} of this check on that device.', { n: c.attempt }));
     if (c.prorated) notes.push(_acWsText(t, 'class_analytics.th_ck_note_prorated', 'Every problem was finished early, so the rate uses the time taken.'));
     if (c.untimed) notes.push(_acWsText(t, 'class_analytics.th_ck_note_untimed', 'Untimed (an accommodation): no clock. It is never compared with timed results.'));
     if (c.recounted) notes.push(_acWsText(t, 'class_analytics.th_ck_note_recounted', 'The file gave {stated} as the score. The score shown is worked out from the answers in the file.', { stated: c.stated }));
     if (Array.isArray(c.tools) && c.tools.length) notes.push(_acWsText(t, 'word_sounds.take_home_player_check_review_tools', 'Reading tools used: {tools}.', { tools: c.tools.slice(0, 12).map(_acCkToolLabel).join(', ') }));
+    if (c.directionsHeard > 0) notes.push(c.directionsHeard > 1
+      ? _acWsText(t, 'class_analytics.th_ck_note_directions_many', 'Pressed Hear the directions before starting ({n} times).', { n: c.directionsHeard })
+      : _acWsText(t, 'class_analytics.th_ck_note_directions', 'Pressed Hear the directions before starting.'));
     return notes;
   }
   // One student's results of every measure that has a take-home result, oldest
@@ -3134,6 +3223,9 @@ try {
         flags: home && Array.isArray(r.flags) ? r.flags.filter(function(f) { return typeof f === 'string'; }) : [],
         tools: home && Array.isArray(r.tools) ? r.tools.filter(function(x) { return typeof x === 'string'; }) : [],
         attempt: home ? Number(r.attempt) || 1 : 1, prorated: r.prorated === true, untimed: untimed,
+        pausedSeconds: home && Number(r.pausedSeconds) > 0 ? Number(r.pausedSeconds) : 0,
+        pauses: home && Number(r.pauses) > 0 ? Number(r.pauses) : 0,
+        directionsHeard: home && Number(r.directionsHeard) > 0 ? Number(r.directionsHeard) : 0,
         edited: home && r.integrity === 'changed', dateFromFile: home && r.dateFromFile === true });
     };
     [student.nickname || student.name, student.name].filter(function(name, i, all) { return typeof name === 'string' && name && all.indexOf(name) === i; }).forEach(function(name) {
@@ -3202,9 +3294,13 @@ try {
     try {
       if (!w.AlloWordSoundsTakeHome && typeof w.__alloLoadPlugin === 'function') await w.__alloLoadPlugin('word_sounds_take_home_loader.js');
       if (!w.AlloPacketChecks && typeof w.__alloLoadPlugin === 'function') await w.__alloLoadPlugin('packet_check_builder.js');
+      if (!w.AlloPacketCheckDirections && typeof w.__alloLoadPlugin === 'function') {
+        try { await w.__alloLoadPlugin('packets_check_directions.js'); } catch (_) {}
+      }
     } catch (e) {}
     var loader = w.AlloWordSoundsTakeHome, builder = w.AlloPacketChecks;
-    return loader && builder && typeof loader.buildHtml === 'function' && loader.CHECK_ADAPTERS && typeof builder.buildCheckPacket === 'function' ? { loader: loader, builder: builder } : null;
+    return loader && builder && typeof loader.buildHtml === 'function' && loader.CHECK_ADAPTERS && typeof builder.buildCheckPacket === 'function'
+      ? { loader: loader, builder: builder, directions: w.AlloPacketCheckDirections || null } : null;
   }
   // The words inside the file, in the app's language where a translation
   // exists (word_sounds.take_home_player_<label>, as Word Sounds does for a
@@ -3252,13 +3348,13 @@ try {
     if (!forms || !_acWsOwn(forms, form)) return { ok: false, reason: 'no_form' };
     try {
       var lesson = libs.builder.lessonFromMathForm({ bank: bank, measure: o.measure, grade: grade, form: form });
-      // The heading inside the file, in the app's language when it has one.
+      // The heading inside the file, in the app's language when translated (grade is kept in the filename/packetId only, never shown to students).
       var titleKey = 'class_analytics.th_ck_file_title';
-      var title = '';
-      try { title = typeof o.t === 'function' ? o.t(titleKey) : ''; } catch (e) { title = ''; }
-      title = typeof title === 'string' && title && title !== titleKey
-        ? _acWsText(o.t, titleKey, '', { name: _acCkMeasureName(o.t, _AC_CK_FORM_MEASURES[o.measure]), grade: grade, form: form }) : '';
-      var built = libs.builder.buildCheckPacket({ lesson: lesson, title: title, teacherCode: o.teacherCode || '', loader: libs.loader, labels: _acCkFileLabels(o.t, libs.loader, o.measure) });
+      var rawTitle = '';
+      try { rawTitle = typeof o.t === 'function' ? o.t(titleKey) : ''; } catch (e) { rawTitle = ''; }
+      var title = typeof rawTitle === 'string' && rawTitle && rawTitle !== titleKey && rawTitle !== '{name} check ({grade}{form})'
+        ? _acWsText(o.t, titleKey, '', { name: _acCkMeasureName(o.t, _AC_CK_FORM_MEASURES[o.measure]), grade: '', form: form }).replace(/\(\s+/g, '(').replace(/\s+\)/g, ')') : '';
+      var built = libs.builder.buildCheckPacket({ lesson: lesson, title: title, teacherCode: o.teacherCode || '', loader: libs.loader, labels: _acCkFileLabels(o.t, libs.loader, o.measure), directions: libs.directions });
       return { ok: true, html: built.html, name: info.slug + '-g' + grade + '-' + form + '.html', lesson: lesson, manifest: built.manifest };
     } catch (e) { return { ok: false, reason: 'failed', message: e && e.message ? String(e.message) : '' }; }
   }
@@ -3606,7 +3702,7 @@ try {
             }, '\u23F1 ' + timerMin + ':' + timerSec),
             h('button', { "aria-label": "End Early",
               onClick: onEndEarly,
-              className: 'px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors'
+              className: 'px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-50 rounded-lg transition-colors'
             }, '\u23F9 End Early')
           )
         ),
@@ -4227,8 +4323,12 @@ try {
     const trendChartInstance = React.useRef(null);
     React.useEffect(() => {
       if (typeof Chart !== 'undefined') return;
+      if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return;
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+      script.integrity = 'sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC';
+      script.crossOrigin = 'anonymous';
+      script.referrerPolicy = 'no-referrer';
       script.async = true;
       document.head.appendChild(script);
       return () => {/* keep script loaded */};
@@ -4281,13 +4381,19 @@ try {
       const CHUNK_SIZE = 10;
       let processedCount = 0;
       let allNewStudents = [];
-      for (let i = 0; i < files.length; i += CHUNK_SIZE) {
-        const chunk = files.slice(i, i + CHUNK_SIZE);
+      const MAX_IMPORT_FILES = 250;
+      const MAX_STUDENT_JSON_BYTES = 10 * 1024 * 1024;
+      const safeJsonReviver = (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      const boundedFiles = files.slice(0, MAX_IMPORT_FILES);
+      for (let i = 0; i < boundedFiles.length; i += CHUNK_SIZE) {
+        const chunk = boundedFiles.slice(i, i + CHUNK_SIZE);
         const chunkStudents = [];
         for (const file of chunk) {
           try {
+            if (file && typeof file.size === 'number' && file.size > MAX_STUDENT_JSON_BYTES) continue;
             const text = await file.text();
-            const data = JSON.parse(text);
+            if (text.length > MAX_STUDENT_JSON_BYTES) continue;
+            const data = JSON.parse(text, safeJsonReviver);
             const studentName = data.studentNickname || data.profile?.name || file.name.replace('.json', '').replace(/_/g, ' ');
             // Canonicalize against the roster (two-field codenames + the
             // Assessment Center fingerprint map) so a re-imported file lands under the SAME identity its
@@ -5273,13 +5379,14 @@ try {
       const blob = new Blob(['\uFEFF' + csv], {
         type: 'text/csv;charset=utf-8;'
       });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = url;
       link.download = 'Fluency_Assessments_' + _acLocalDate(new Date()) + '.csv';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
     };
     const renderInsightsPanel = studentName => {
       const insights = generateStudentInsights(studentName);
@@ -5493,14 +5600,15 @@ try {
       const blob = new Blob(['\uFEFF' + csv], {
         type: 'text/csv;charset=utf-8'
       });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = url;
       const stamp = typeof _acLocalDate === 'function' ? _acLocalDate(new Date()) : new Date().toISOString().slice(0, 10);
       link.download = 'AlloFlow_Research_Export_CONFIDENTIAL_' + stamp + '.csv';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
       addToast && addToast(t('toasts.research_csv_exported_with') + students.length + ' students', 'success');
     };
     // ── Session-level CSV export (fidelity log data) ──
@@ -5523,11 +5631,12 @@ try {
       });
       var csv = [headers.map(_acCsvCell).join(',')].concat(rows).join('\n');
       var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
       var link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = url;
       link.download = 'AlloFlow_Session_Log_' + _acLocalDate(new Date()) + '.csv';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+      setTimeout(function() { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
       addToast && addToast(t('toasts.session_log_exported') + log.length + ' sessions)', 'success');
     };
 
@@ -5565,11 +5674,12 @@ try {
       });
       var csv = [headers.map(_acCsvCell).join(',')].concat(rows).join('\n');
       var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
       var link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = url;
       link.download = 'AlloFlow_Survey_Responses_' + _acLocalDate(new Date()) + '.csv';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+      setTimeout(function() { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
       addToast && addToast(t('toasts.survey_responses_exported') + allResponses.length + ' responses)', 'success');
     };
 
@@ -5605,20 +5715,28 @@ try {
       const studyName = (bundle.alloflow_research_mode && bundle.alloflow_research_mode.studyName) || 'study';
       const safeName = String(studyName).replace(/[^a-z0-9_-]/gi, '_').slice(0, 40);
       const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = url;
       link.download = 'AlloFlow_Study_Bundle_' + safeName + '_' + _acLocalDate(new Date()) + '.json';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
       addToast && addToast(t('toasts.study_bundle_exported_re_import'), 'success');
     };
     const importStudyBundle = (file) => {
       if (!file) return;
+      const MAX_BUNDLE_BYTES = 10 * 1024 * 1024;
+      if (typeof file.size === 'number' && file.size > MAX_BUNDLE_BYTES) {
+        addToast && addToast(t('toasts.import_failed_invalid_json'), 'error');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = function (e) {
         let bundle;
         try {
-          bundle = JSON.parse(String(e.target.result || '{}'));
+          bundle = JSON.parse(String(e.target.result || '{}'), function (k, v) {
+            return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+          });
         } catch (err) {
           addToast && addToast(t('toasts.import_failed_invalid_json'), 'error');
           return;
@@ -5905,11 +6023,12 @@ try {
     const handleDownloadYearArchive = async () => {
       if (!await askStudentAnalyticsConfirmation("This archive contains identifiable student records: probes, interventions, goals, CBM scores and progress snapshots.\n\nSave it only to a school-approved location and handle it under your district's FERPA policy.", { title: 'Download confidential year archive', confirmText: 'Download archive' })) return;
       const blob = new Blob([JSON.stringify(buildYearArchive(), null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = url;
       link.download = 'AlloFlow_Student_Records_Archive_CONFIDENTIAL_' + _acLocalDate(new Date()) + '.json';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
       addToast(t('toasts.year_archive_downloaded') || 'Year archive downloaded. Store it under your district records policy.', 'success');
     };
     const handleClearAllStudentRecords = async () => {
@@ -6408,7 +6527,13 @@ try {
     const cqNewId = () => 'cq_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     const generateLabelImage = async (prompt, existingImage) => {
       const fn = (typeof window !== 'undefined') && window.callGeminiImageEdit;
-      if (typeof fn !== 'function') {
+      const aiUsable = (typeof window !== 'undefined')
+        && window.__alloAiSecretsLocked !== true
+        && window.__alloStudentAiDisabled !== true
+        && typeof fn === 'function'
+        && fn._alloQrBlocked !== true
+        && (typeof window.__alloAiUsable !== 'function' || window.__alloAiUsable('imageEdit', fn));
+      if (!aiUsable) {
         addToast && addToast(t('toasts.image_generation_unavailable_callgeminiimageedit_l'), 'error');
         return null;
       }
@@ -6595,7 +6720,7 @@ try {
                           }, cqImageGenBusy ? '…' : (cqImageGenInput.mode === 'refine' ? 'Refine' : 'Generate')),
                           React.createElement('button', {
                             onClick: () => setCqImageGenInput({ qid: null, idx: null, prompt: '', mode: 'generate', field: null }),
-                            className: 'px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 rounded'
+                            className: 'px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 rounded'
                           }, '×')
                         ) : React.createElement('div', { className: 'flex gap-1' },
                           React.createElement('button', {
@@ -6604,7 +6729,7 @@ try {
                           }, cell.image ? '✨ Refine icon' : '🖼️ Generate icon'),
                           cell.image ? React.createElement('button', {
                             onClick: () => cqUpdateCell(q.id, idx, { image: null }, fieldName),
-                            className: 'px-2 py-0.5 text-[11px] text-slate-500 hover:bg-slate-100 rounded'
+                            className: 'px-2 py-0.5 text-[11px] text-slate-600 hover:bg-slate-100 rounded'
                           }, 'Remove icon') : null,
                           qType === 'mcq' ? React.createElement('button', {
                             onClick: () => cqRemoveOption(q.id, idx),
@@ -7214,13 +7339,14 @@ try {
           const blob = new Blob(['\uFEFF' + csv], {
             type: 'text/csv;charset=utf-8'
           });
+          const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
+          link.href = url;
           link.download = 'Fidelity_Log_' + _acLocalDate(new Date()) + '.csv';
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          URL.revokeObjectURL(link.href);
+          setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
         }
       }, '\u{1F4C4} Export Fidelity Log'), React.createElement('button', {
         className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-purple-50 hover:border-purple-600 font-medium text-slate-600 transition-colors',
@@ -7242,13 +7368,14 @@ try {
           const blob = new Blob(['\uFEFF' + csv], {
             type: 'text/csv;charset=utf-8'
           });
+          const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
+          link.href = url;
           link.download = 'Survey_Responses_' + _acLocalDate(new Date()) + '.csv';
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          URL.revokeObjectURL(link.href);
+          setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
         }
       }, '\u{1F4DD} Export Survey Data')));
     };
@@ -7933,15 +8060,16 @@ try {
                     </div>`;
         }
       }
+      const safeStudentName = saEscapeReportText(student.name);
+      const safeDate = saEscapeReportText(date);
       const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Progress Report — ${student.name}</title>
+    <title>Progress Report - ${safeStudentName}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; background: #f8fafc; padding: 32px; line-height: 1.5; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; color: #1e293b; background: #f8fafc; padding: 32px; line-height: 1.5; }
         .report { max-width: 700px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); overflow: hidden; }
         .header { padding: 28px 32px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; }
         .header h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
@@ -7966,8 +8094,8 @@ try {
 <body>
     <div class="report">
         <div class="header">
-            <h1>' + t('print.student_progress_report') + '</h1>
-            <p>${student.name} &bull; ${date}</p>
+            <h1>${saEscapeReportText(t('print.student_progress_report'))}</h1>
+            <p>${safeStudentName} &bull; ${safeDate}</p>
         </div>
         <div class="content">
             <div class="tier-badge" style="background: ${tc.bg}; border: 2px solid ${tc.border};">
@@ -7988,16 +8116,16 @@ try {
             ${selSummaryHtml}
             <div class="section-title">📋 Assessment Basis</div>
             <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
-                ${rti.reasons.map(r => `<span style="font-size: 12px; padding: 4px 10px; border-radius: 20px; background: ${tc.bg}; color: ${tc.color}; font-weight: 600; border: 1px solid ${tc.border};">${r}</span>`).join('')}
+                ${rti.reasons.map(r => `<span style="font-size: 12px; padding: 4px 10px; border-radius: 20px; background: ${tc.bg}; color: ${tc.color}; font-weight: 600; border: 1px solid ${tc.border};">${saEscapeReportText(r)}</span>`).join('')}
             </div>
             <div class="section-title">💡 Recommendations for Home</div>
             <ul class="recommendations">
-                ${rti.recommendations.map(r => `<li>${r}</li>`).join('')}
+                ${rti.recommendations.map(r => `<li>${saEscapeReportText(r)}</li>`).join('')}
             </ul>
             ${runningRecordHtml}
         </div>
         <div class="footer">
-            Generated ${date} &bull; Created with AlloFlow &bull; RTI Progress Monitoring System
+            Generated ${safeDate} &bull; Created with AlloFlow &bull; RTI Progress Monitoring System
         </div>
     </div>
     <button class="print-btn" onclick="window.print()">🖨️ Print This Report</button>
@@ -8077,13 +8205,17 @@ try {
             }
           }
           if (resp.answers && resp.answers.length > 4) {
-            const answerCounts = {};
+            const answerCounts = new Map();
             resp.answers.forEach(a => {
-              answerCounts[a] = (answerCounts[a] || 0) + 1;
+              const k = String(a);
+              answerCounts.set(k, (answerCounts.get(k) || 0) + 1);
             });
-            const maxCount = Math.max(...Object.values(answerCounts));
+            let maxCount = 0;
+            let repeatedAnswer;
+            answerCounts.forEach((c, k) => {
+              if (c > maxCount) { maxCount = c; repeatedAnswer = k; }
+            });
             if (maxCount / resp.answers.length > 0.7) {
-              const repeatedAnswer = Object.entries(answerCounts).find(([_, c]) => c === maxCount)?.[0];
               flags.push({
                 category: 'behavioral_repetitive',
                 match: `Same answer ${maxCount}/${resp.answers.length} times`,
@@ -8839,11 +8971,11 @@ try {
         emoji: '\u{1F4DD}',
         msg: 'Try a quiz to see your score!'
       };
-      const badgeHtml = badgeCount > 0 ? '<div style="margin-top:24px;padding:20px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:16px;border:2px solid #f59e0b40"><h3 style="font-size:18px;font-weight:800;color:#92400e;margin:0 0 12px">\u{1F3C5} My Badges (' + badgeCount + ')</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + Object.entries(badges).map(([name]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#92400e;border:1px solid #f59e0b60">\u{1F396}\u{FE0F} ' + name + '</span>').join('') + '</div></div>' : '';
-      const strengthsHtml = masteredPhonemes.length > 0 ? '<div style="margin-top:20px;padding:20px;background:#f0fdf4;border-radius:16px;border:2px solid #86efac"><h3 style="font-size:18px;font-weight:800;color:#166534;margin:0 0 12px">\u{1F4AA} My Strengths</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + masteredPhonemes.slice(0, 12).map(([phoneme]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#166534;border:1px solid #86efac">✅ ' + phoneme + '</span>').join('') + '</div></div>' : '';
-      const growthHtml = hasHistory ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 16px">\u{1F4C8} My Growth Journey (' + snapshots.length + ' sessions)</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">' + growthCard('Word Sounds', snapshotWsAccuracy(first), snapshotWsAccuracy(latest), '%') + growthCard('Quiz Average', first.quizAvg || 0, latest.quizAvg || 0, '%') + growthCard('Activities', first.totalActivities || 0, latest.totalActivities || 0, '') + '</div><p style="font-size:12px;color:#64748b;text-align:center;font-style:italic">From ' + first.date + ' to ' + latest.date + '</p></div>' : '';
-      const historyHtml = snapshots.length > 0 ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 12px">\u{1F4CB} Session History</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0"><thead><tr style="background:#f8fafc"><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">#</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">Date</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.word_sounds') + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.quiz_avg') + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.activities') + '</th></tr></thead><tbody>' + snapshots.map((s, i) => sessionRow(s, i)).join('') + '</tbody></table></div></div>' : '';
-      const html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + t('learner.my_learning_journey') + '</title><style>@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap);*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#ede9fe 50%,#fce7f3 100%);min-height:100vh;padding:32px}@media print{body{background:white;padding:16px}}</style></head><body><div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><div style="font-size:48px;margin-bottom:8px">\u{1F31F}</div><h1 style="font-size:32px;font-weight:800;color:#1e293b;margin-bottom:4px">' + t('learner.my_learning_journey') + '</h1><p style="color:#64748b;font-size:14px">' + date + (hasHistory ? ' • ' + snapshots.length + ' sessions tracked' + dateRangeLabel : '') + '</p></div><div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:20px;padding:24px;text-align:center;margin-bottom:24px;box-shadow:0 8px 32px rgba(99,102,241,0.3)"><div style="font-size:14px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8;margin-bottom:8px">Level</div><div style="font-size:48px;font-weight:800">' + level + '</div><div style="font-size:16px;font-weight:600;margin-top:4px">' + xp + ' XP earned ' + quizEnc.emoji + '</div><div style="margin-top:12px;font-size:14px;opacity:0.9">' + quizEnc.msg + '</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">' + statCard('\u{1F4DA}', 'Activities', totalActivities, '#6366f1') + statCard('✅', 'Quiz Avg', avgQuizScore !== null ? avgQuizScore + '%' : '—', '#16a34a') + statCard('\u{1F524}', _acWsText(t, 'class_analytics.ws_accuracy_with_retries', 'Word accuracy (with second tries)'), wsAccuracy !== null ? wsAccuracy + '%' : '—', '#0891b2') + (wsFirstTryAccuracy !== null ? statCard('\u{1F3AF}', _acWsText(t, 'class_analytics.ws_first_try_label', 'First try'), wsFirstTryAccuracy + '%', '#0e7490') : '') + '</div>' + growthHtml + historyHtml + _acWsReportTablesHtml(t, sessionData?.wordSoundsState && typeof sessionData.wordSoundsState === 'object' ? sessionData.wordSoundsState : { history: wsHistory }) + badgeHtml + strengthsHtml + '<div style="margin-top:32px;text-align:center;color:#94a3b8;font-size:12px">Generated ' + date + ' • Created with AlloFlow • Keep learning! \u{1F680}</div></div></body></html>';
+      const badgeHtml = badgeCount > 0 ? '<div style="margin-top:24px;padding:20px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:16px;border:2px solid #f59e0b40"><h3 style="font-size:18px;font-weight:800;color:#92400e;margin:0 0 12px">\u{1F3C5} My Badges (' + badgeCount + ')</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + Object.entries(badges).map(([name]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#92400e;border:1px solid #f59e0b60">\u{1F396}\u{FE0F} ' + saEscapeReportText(name) + '</span>').join('') + '</div></div>' : '';
+      const strengthsHtml = masteredPhonemes.length > 0 ? '<div style="margin-top:20px;padding:20px;background:#f0fdf4;border-radius:16px;border:2px solid #86efac"><h3 style="font-size:18px;font-weight:800;color:#166534;margin:0 0 12px">\u{1F4AA} My Strengths</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + masteredPhonemes.slice(0, 12).map(([phoneme]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#166534;border:1px solid #86efac">✅ ' + saEscapeReportText(phoneme) + '</span>').join('') + '</div></div>' : '';
+      const growthHtml = hasHistory ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 16px">\u{1F4C8} My Growth Journey (' + snapshots.length + ' sessions)</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">' + growthCard('Word Sounds', snapshotWsAccuracy(first), snapshotWsAccuracy(latest), '%') + growthCard('Quiz Average', first.quizAvg || 0, latest.quizAvg || 0, '%') + growthCard('Activities', first.totalActivities || 0, latest.totalActivities || 0, '') + '</div><p style="font-size:12px;color:#64748b;text-align:center;font-style:italic">From ' + saEscapeReportText(first.date) + ' to ' + saEscapeReportText(latest.date) + '</p></div>' : '';
+      const historyHtml = snapshots.length > 0 ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 12px">\u{1F4CB} Session History</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0"><thead><tr style="background:#f8fafc"><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">#</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">Date</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + saEscapeReportText(t('learner.word_sounds')) + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + saEscapeReportText(t('learner.quiz_avg')) + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + saEscapeReportText(t('learner.activities')) + '</th></tr></thead><tbody>' + snapshots.map((s, i) => sessionRow(s, i)).join('') + '</tbody></table></div></div>' : '';
+      const html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + saEscapeReportText(t('learner.my_learning_journey')) + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#ede9fe 50%,#fce7f3 100%);min-height:100vh;padding:32px}@media print{body{background:white;padding:16px}}</style></head><body><div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><div style="font-size:48px;margin-bottom:8px">\u{1F31F}</div><h1 style="font-size:32px;font-weight:800;color:#1e293b;margin-bottom:4px">' + saEscapeReportText(t('learner.my_learning_journey')) + '</h1><p style="color:#64748b;font-size:14px">' + saEscapeReportText(date) + (hasHistory ? ' • ' + snapshots.length + ' sessions tracked' + saEscapeReportText(dateRangeLabel) : '') + '</p></div><div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:20px;padding:24px;text-align:center;margin-bottom:24px;box-shadow:0 8px 32px rgba(99,102,241,0.3)"><div style="font-size:14px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8;margin-bottom:8px">Level</div><div style="font-size:48px;font-weight:800">' + level + '</div><div style="font-size:16px;font-weight:600;margin-top:4px">' + xp + ' XP earned ' + quizEnc.emoji + '</div><div style="margin-top:12px;font-size:14px;opacity:0.9">' + quizEnc.msg + '</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">' + statCard('\u{1F4DA}', 'Activities', totalActivities, '#6366f1') + statCard('✅', 'Quiz Avg', avgQuizScore !== null ? avgQuizScore + '%' : '—', '#16a34a') + statCard('\u{1F524}', _acWsText(t, 'class_analytics.ws_accuracy_with_retries', 'Word accuracy (with second tries)'), wsAccuracy !== null ? wsAccuracy + '%' : '—', '#0891b2') + (wsFirstTryAccuracy !== null ? statCard('\u{1F3AF}', _acWsText(t, 'class_analytics.ws_first_try_label', 'First try'), wsFirstTryAccuracy + '%', '#0e7490') : '') + '</div>' + growthHtml + historyHtml + _acWsReportTablesHtml(t, sessionData?.wordSoundsState && typeof sessionData.wordSoundsState === 'object' ? sessionData.wordSoundsState : { history: wsHistory }) + badgeHtml + strengthsHtml + '<div style="margin-top:32px;text-align:center;color:#94a3b8;font-size:12px">Generated ' + saEscapeReportText(date) + ' • Created with AlloFlow • Keep learning! \u{1F680}</div></div></body></html>';
       const blob = new Blob([html], {
         type: 'text/html'
       });
@@ -8870,7 +9002,18 @@ try {
       alloSaveFocus();
       var node = dialogRef.current;
       if (node && typeof node.focus === 'function') { try { node.focus(); } catch (e) {} }
+      var isFocusableVisible = function(el, stopRoot) {
+        if (!el || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+          for (var cur = el; cur && cur !== stopRoot; cur = cur.parentElement) {
+            var cs = window.getComputedStyle(cur);
+            if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+          }
+        }
+        return true;
+      };
       var onKey = function(e) {
+        if (e.isComposing || e.keyCode === 229) return;
         if (e.key === 'Escape') {
           if (subModalOpenRef.current) return;
           e.stopPropagation();
@@ -8878,7 +9021,10 @@ try {
           return;
         }
         if (e.key === 'Tab' && node) {
-          var f = node.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          var f = Array.prototype.filter.call(
+            node.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+            function(el) { return isFocusableVisible(el, node); }
+          );
           if (!f.length) return;
           var first = f[0], last = f[f.length - 1];
           if (e.shiftKey && document.activeElement === first) { e.preventDefault(); if (last.focus) last.focus(); }
@@ -8908,9 +9054,20 @@ try {
       };
     }, [screenerSession && screenerSession.status]);
     var onScreenerKeyDown = function(e) {
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeScreenerResults(); return; }
       if (e.key !== 'Tab' || !screenerDialogRef.current) return;
-      var f = screenerDialogRef.current.querySelectorAll('button:not([disabled])');
+      var root = screenerDialogRef.current;
+      var f = Array.prototype.filter.call(root.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'), function(el) {
+        if (!el || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+          for (var cur = el; cur && cur !== root; cur = cur.parentElement) {
+            var cs = window.getComputedStyle(cur);
+            if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+          }
+        }
+        return true;
+      });
       if (!f.length) return;
       var first = f[0], last = f[f.length - 1];
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }

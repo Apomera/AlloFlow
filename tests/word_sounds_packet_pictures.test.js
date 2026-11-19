@@ -429,7 +429,15 @@ describe('the builder: pictures off', () => {
     // its lowercase skip on the lowercase part, Spelling Bee's first-letter hint never writes a one-letter word, Symbol
     // Runner's dot, ink and size lanes are named by number): those renders only, +460 bytes; the questions are the same
     // 124 and "isolation" is unchanged. The loader without those three edits still gives 7418cfb0.../308702.
-    all: { sha256: '485041c0abd32e1cc51ff29ef87a65857d631bfb066e1036bd61d7e217f45545', bytes: 309162, items: 124 },
+    // Re-pinned 2026-11-19 (Wave 6A in-app parity: isolation middle/last + posKey skipDirections, sentence_match retry
+    // feedback hold, mapping retry warn/drag/span dots/--soft, word_scramble typing/drag, orthography Easy letterBank/
+    // lengthHint/inputmode/shown, missing_letter .tried + typing/Enter, syllable_blending/segmentation soundGap + choices,
+    // syllable_counting focus + Space/Backspace): same 124 items and pictures-off adds zero picture code.
+    // Re-pinned 2026-11-19 (Wave 7A: sound_sort/word_families -again prefix, blending Stop audio + ok===false chain guards,
+    // takeHomeShell trusted 250ms/IME keydown guard): same 124 items and pictures-off still embeds zero picture code.
+    // Re-pinned 2026-11-19 (Wave 8A: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier
+    // .lt-grip null-guard & touch bounds clamp): same 124 items and pictures-off still embeds zero picture code.
+    all: { sha256: '5779e84944d37d022d1ba2899d919bebd652478fb147a1d6a3e20ea8a030a03a', bytes: 334548, items: 124 },
     // Re-pinned 2026-11-12 (evening), as "all" above; the loader before still gives b3221d74.../71353.
     // Re-pinned 2026-11-12 (night), as "all" above; the loader before still gives 202974c1.../79452.
     // Re-pinned 2026-11-13 (polish pass, as "all" above: the R key and the end screen's practice line, +977 bytes); the loader before still gives dc61bb4c.../84670.
@@ -440,7 +448,10 @@ describe('the builder: pictures off', () => {
     // Re-pinned 2026-11-14 (T1 + @i18n P2, as "all" above: done_activity in DEFAULT_LABELS and renderFinish, +62 bytes);
     // the loader before still gives 87bce42c.../94519.
     // Re-pinned 2026-11-18 (the file's own question order, as "all" above, +1048 bytes); the loader before still gives 5110f45b.../153963.
-    isolation: { sha256: '4d0f55344f14251ca7452727ebdca157adffc055e67567474d31886ad105efca', bytes: 155011, items: 5 },
+    // Re-pinned 2026-11-19 (Wave 6A isolation middle/last + posKey/opening/tools shell delta, +466 bytes over Wave 5A); the loader before still gives ad1bf69c.../158928.
+    // Re-pinned 2026-11-19 (Wave 7A: takeHomeShell trusted 250ms/IME keydown guard, +249 bytes over Wave 6A); same 5 items.
+    // Re-pinned 2026-11-19 (Wave 8A: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier null-guard & touch clamp); same 5 items.
+    isolation: { sha256: 'c2c20258759b77eea9e8847a9269b9b32e1748c2f78b6d9b34b0bd91cb8f9884', bytes: 161521, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };
 

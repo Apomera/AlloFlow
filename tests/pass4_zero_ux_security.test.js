@@ -723,7 +723,7 @@ describe('Pass-4 F-55 & F-56: Session mailbox SSRF/rate-limit, sw.js window chec
 
   it('gates sw.js update activation and cache purge on top-level same-origin window clients', () => {
     const sw = read('desktop/web-app/public/sw.js');
-    expect(sw).toContain("const isTrustedTopWindow = (e) => !e.source || (e.source.frameType === 'top-level' && typeof e.source.url === 'string' && e.source.url.startsWith(self.location.origin + '/'))");
+    expect(sw).toContain("const isTrustedTopWindow = (e) => Boolean(e && e.source && e.source.frameType === 'top-level' && typeof e.source.url === 'string' && e.source.url.startsWith(self.location.origin + '/'))");
     expect(sw).toContain('if (isTrustedTopWindow(event)) self.skipWaiting()');
     expect(sw).toContain("event.data.type === 'ALLOFLOW_PURGE_RUNTIME_CACHE'");
     expect(sw).toContain('if (isTrustedTopWindow(event)) event.waitUntil(caches.delete(CACHE_NAME))');

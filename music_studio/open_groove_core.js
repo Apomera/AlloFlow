@@ -1652,7 +1652,7 @@
 
   function ogBuildScale(tonic, mode) {
     var root = ogPitchClassFromName(tonic);
-    var intervals = OG_SCALE_INTERVALS[mode] || OG_SCALE_INTERVALS.minor;
+    var intervals = Object.prototype.hasOwnProperty.call(OG_SCALE_INTERVALS, mode) ? OG_SCALE_INTERVALS[mode] : OG_SCALE_INTERVALS.minor;
     if (root == null) root = 0;
     return intervals.map(function (interval) {
       return OG_NOTE_NAMES[(root + interval) % 12];
@@ -1661,7 +1661,7 @@
 
   function ogBuildChord(root, quality, octave) {
     var safeRoot = ogNormalizeRootName(root);
-    var safeQuality = OG_CHORD_INTERVALS[quality] ? quality : 'major';
+    var safeQuality = Object.prototype.hasOwnProperty.call(OG_CHORD_INTERVALS, quality) ? quality : 'major';
     var safeOctave = ogInt(octave, 3);
     var rootMidi = ogNoteNameToMidi(safeRoot + safeOctave);
     if (rootMidi == null) rootMidi = ogNoteNameToMidi('C' + safeOctave);
@@ -4186,7 +4186,7 @@
       };
     }
     var track = ogFindTrack(project, channelId);
-    var stored = mixer[channelId] || {};
+    var stored = Object.prototype.hasOwnProperty.call(mixer, channelId) ? (mixer[channelId] || {}) : {};
     return {
       id: channelId,
       gain: ogNormalizeMixerGain(stored.gain != null ? stored.gain : track && track.gain, 1),
@@ -4199,6 +4199,9 @@
   function ogSetMixerChannel(project, channelId, updates) {
     updates = updates || {};
     if (!project || !project.mixer) throw new Error('OpenGroove: mixer is not ready');
+    if (channelId === '__proto__' || channelId === 'constructor' || channelId === 'prototype') {
+      throw new Error('OpenGroove: invalid mixer channel id');
+    }
     var channel = ogGetMixerChannel(project, channelId);
     if (updates.gain != null) channel.gain = ogNormalizeMixerGain(updates.gain, channel.gain);
     if (updates.pan != null && channelId !== 'master') channel.pan = ogClamp(updates.pan, -1, 1, channel.pan);
@@ -5569,14 +5572,14 @@
     var effectTrackCount = tracks.filter(function (track) {
       return ogGetTrackEffects(project, track.id).length > 0;
     }).length;
-    var patternScenes = {};
+    var patternScenes = Object.create(null);
     scenes.forEach(function (scene) {
       (scene.patternIds || []).forEach(function (patternId) {
         patternScenes[patternId] = patternScenes[patternId] || [];
         patternScenes[patternId].push({ id: scene.id, name: scene.name });
       });
     });
-    var patternSections = {};
+    var patternSections = Object.create(null);
     timeline.forEach(function (section) {
       (section.patternIds || []).forEach(function (patternId) {
         patternSections[patternId] = patternSections[patternId] || [];
@@ -6854,11 +6857,11 @@
   }
 
   function ogBuildStemAssetSummary(project) {
-    var groups = {};
+    var groups = Object.create(null);
     (project && project.assets || []).forEach(function (asset) {
       if (!asset || !asset.stemRole) return;
       var groupId = asset.stemGroupId || 'ungrouped';
-      if (!groups[groupId]) groups[groupId] = { groupId: groupId, assets: [], roles: {}, readyCount: 0 };
+      if (!groups[groupId]) groups[groupId] = { groupId: groupId, assets: [], roles: Object.create(null), readyCount: 0 };
       groups[groupId].assets.push(asset);
       groups[groupId].roles[asset.stemRole] = asset.id;
       if (asset.dataUrl || asset.sizeBytes || asset.storage === 'external') groups[groupId].readyCount += 1;
@@ -6950,16 +6953,17 @@
 
   function ogBuildLicenseReport(project) {
     var assets = project && Array.isArray(project.assets) ? project.assets : [];
-    var summary = {};
+    var summary = Object.create(null);
     var warnings = [];
     assets.forEach(function (asset) {
       var license = ogSafeString(asset.license, 'Unknown');
       summary[license] = (summary[license] || 0) + 1;
-      if (asset.attributionRequired || OG_REVIEW_LICENSES[license]) {
+      var isReview = Object.prototype.hasOwnProperty.call(OG_REVIEW_LICENSES, license) && OG_REVIEW_LICENSES[license];
+      var isSafe = Object.prototype.hasOwnProperty.call(OG_SAFE_LICENSES, license) && OG_SAFE_LICENSES[license];
+      if (asset.attributionRequired || isReview) {
         warnings.push(asset.name + ' requires attribution (' + license + ').');
-      } else if (!OG_SAFE_LICENSES[license]) {
-        if (OG_REVIEW_LICENSES[license]) warnings.push(asset.name + ' requires attribution (' + license + ').');
-        else warnings.push(asset.name + ' has an export-risk license (' + license + ').');
+      } else if (!isSafe) {
+        warnings.push(asset.name + ' has an export-risk license (' + license + ').');
       }
     });
     return {
@@ -7105,7 +7109,20 @@
     if (!(ogFinite(project.bpm, 0) >= 20 && ogFinite(project.bpm, 0) <= 400)) errors.push('BPM is outside the supported range.');
     if (!Array.isArray(project.timeSignature) || project.timeSignature.length < 2) errors.push('Time signature is missing.');
 
-    var trackIds = {};
+    var MAX_OG_TRACKS = 64;
+    var MAX_OG_PATTERNS = 128;
+    var MAX_OG_ASSETS = 128;
+    var MAX_OG_SCENES = 64;
+    var MAX_OG_ARRANGEMENT = 256;
+    var MAX_OG_PATTERN_BARS = 256;
+    var MAX_OG_EVENTS_PER_PATTERN = 4096;
+    if (Array.isArray(project.tracks) && project.tracks.length > MAX_OG_TRACKS) errors.push('Project exceeds maximum track limit (' + MAX_OG_TRACKS + ').');
+    if (Array.isArray(project.patterns) && project.patterns.length > MAX_OG_PATTERNS) errors.push('Project exceeds maximum pattern limit (' + MAX_OG_PATTERNS + ').');
+    if (Array.isArray(project.assets) && project.assets.length > MAX_OG_ASSETS) errors.push('Project exceeds maximum asset limit (' + MAX_OG_ASSETS + ').');
+    if (Array.isArray(project.scenes) && project.scenes.length > MAX_OG_SCENES) errors.push('Project exceeds maximum scene limit (' + MAX_OG_SCENES + ').');
+    if (Array.isArray(project.arrangement) && project.arrangement.length > MAX_OG_ARRANGEMENT) errors.push('Project exceeds maximum arrangement limit (' + MAX_OG_ARRANGEMENT + ').');
+
+    var trackIds = Object.create(null);
     (project.tracks || []).forEach(function (track) {
       if (!track || !track.id) errors.push('Track is missing an id.');
       else if (trackIds[track.id]) errors.push('Duplicate track id: ' + track.id);
@@ -7119,7 +7136,7 @@
       });
     });
 
-    var assetIds = {};
+    var assetIds = Object.create(null);
     (project.assets || []).forEach(function (asset) {
       if (!asset || !asset.id) errors.push('Asset is missing an id.');
       else if (assetIds[asset.id]) errors.push('Duplicate asset id: ' + asset.id);
@@ -7128,12 +7145,14 @@
       if (asset && asset.storage === 'embedded' && !asset.dataUrl) errors.push('Asset ' + asset.id + ' is marked embedded without embedded data.');
     });
 
-    var patternIds = {};
+    var patternIds = Object.create(null);
     (project.patterns || []).forEach(function (pattern) {
       if (!pattern || !pattern.id) errors.push('Pattern is missing an id.');
       else if (patternIds[pattern.id]) errors.push('Duplicate pattern id: ' + pattern.id);
       else patternIds[pattern.id] = true;
+      if (pattern && ogInt(pattern.bars, 1) > MAX_OG_PATTERN_BARS) errors.push('Pattern ' + (pattern.id || '?') + ' exceeds maximum bar count (' + MAX_OG_PATTERN_BARS + ').');
       if (!Array.isArray(pattern.events)) errors.push('Pattern ' + (pattern && pattern.id || '?') + ' events must be an array.');
+      else if (pattern.events.length > MAX_OG_EVENTS_PER_PATTERN) errors.push('Pattern ' + (pattern && pattern.id || '?') + ' exceeds maximum event limit (' + MAX_OG_EVENTS_PER_PATTERN + ').');
       var length = ogPatternLengthTicks(project, pattern || { bars: 1 });
       (pattern.events || []).forEach(function (event) {
         if (!event.id) errors.push('Event is missing an id.');
@@ -7145,7 +7164,7 @@
       });
     });
 
-    var sceneIds = {};
+    var sceneIds = Object.create(null);
     (Array.isArray(project.scenes) ? project.scenes : []).forEach(function (scene) {
       if (!scene || !scene.id) errors.push('Scene is missing an id.');
       else if (sceneIds[scene.id]) errors.push('Duplicate scene id: ' + scene.id);
@@ -7182,7 +7201,12 @@
   }
 
   function ogParseProject(text) {
-    var parsed = JSON.parse(String(text || '{}'));
+    var raw = String(text || '{}');
+    if (raw.length > 5 * 1024 * 1024) throw new Error('Open Groove project JSON exceeds the 5 MB safety limit.');
+    var parsed = JSON.parse(raw, function (key, value) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+      return value;
+    });
     var errors = ogValidateProject(parsed);
     if (errors.length) throw new Error(errors.join(' '));
     return parsed;

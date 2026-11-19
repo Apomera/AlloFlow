@@ -44,7 +44,7 @@ describe('reviewed deletion of the protected clinical device store', () => {
     const old = h.service.getSession('behavior-lens'); old.storage.setItem('bl_private_case_name', 'SYNTHETIC PRIVATE LEARNER');
     old.transfer('report-writer', { name: 'SYNTHETIC INTAKE' });
     const plan = await h.service.prepareDeletion();
-    expect(plan.scope).toBe('all-protected-clinical-records-on-this-device'); expect(plan.features).toHaveLength(3); expect(plan.pendingTransfers).toBe(1);
+    expect(plan.scope).toBe('all-protected-clinical-records-on-this-device'); expect(plan.features).toHaveLength(SW.FEATURES.length); expect(plan.pendingTransfers).toBe(1);
     expect(JSON.stringify(plan)).not.toMatch(/SYNTHETIC|bl_private_case_name/); expect(Object.isFrozen(plan)).toBe(true); expect(Object.isFrozen(plan.features[0])).toBe(true);
     expect(h.service.getStatus().phase).toBe('deletion-review'); expect(() => old.storage.getItem('bl_private_case_name')).toThrow();
     h.service.cancelDeletion(); expect(h.service.getSession('behavior-lens').storage.getItem('bl_private_case_name')).toBe('SYNTHETIC PRIVATE LEARNER');

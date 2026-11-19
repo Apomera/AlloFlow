@@ -239,7 +239,16 @@
     if (state.canvasMode || state.canvasCandidate && !state.canvasValidated) {
       throw new Error('Desktop runtime requests are unavailable in the Canvas browser workspace.');
     }
-    var response = await window.fetch(path, options || {});
+    var opts = Object.assign({}, options || {});
+    var controller = (!opts.signal && typeof AbortController === 'function') ? new AbortController() : null;
+    var timer = controller ? window.setTimeout(function () { controller.abort(); }, 20000) : null;
+    if (controller) opts.signal = controller.signal;
+    var response;
+    try {
+      response = await window.fetch(path, opts);
+    } finally {
+      if (timer) window.clearTimeout(timer);
+    }
     var payload = null;
     try { payload = await response.json(); } catch (_) {}
     if (!response.ok) {
@@ -1272,6 +1281,7 @@
     var review = byId('artifactReview');
     if (review.hidden) return;
     if (event.key === 'Escape') {
+      if (event.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       cancelArtifact();
       return;
@@ -1301,7 +1311,7 @@
     var raw = Sheet.formatValue(value);
     var trimmed = raw.replace(/^\s+/, '');
     var numeric = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(trimmed);
-    if (!numeric && /^[=+@-]/.test(trimmed)) raw = "'" + raw;
+    if (!numeric && (/^[=+@|-]/.test(trimmed) || /^[\t\r\n]/.test(raw))) raw = "'" + raw;
     return '"' + raw.replace(/"/g, '""') + '"';
   }
 

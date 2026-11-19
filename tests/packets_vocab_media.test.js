@@ -127,4 +127,37 @@ describe('packets_vocab_media bounded parallel shard loading and safe clip looku
     expect(loader.portableAudio).toHaveBeenCalledTimes(1);
     expect(Object.keys(loader.portableAudio.mock.calls[0][0].audio)).toEqual(['habitat']);
   });
+
+  it('awaits async AlloPacketAudioKit load on first build so clips encode to MP3 instead of caching WAV', async () => {
+    const MP3_URI = 'data:audio/mpeg;base64,SUQzBAAAAAA=';
+    window.AlloPacketAudioKit = {
+      getMp3: () => new Promise((r) => setTimeout(() => r(true), 40)),
+      wavUriToMp3Uri: vi.fn(() => MP3_URI),
+    };
+    window.fetch = vi.fn(async (url) => {
+      if (url === 'word_audio_shards/index.json') {
+        return {
+          ok: true, status: 200,
+          text: async () => JSON.stringify({
+            format: 'alloflow-word-audio-index/1',
+            shards: { s1: { file: 's1.json', bytes: 100 } },
+            words: { habitat: 's1' },
+          }),
+        };
+      }
+      return { ok: true, status: 200, text: async () => JSON.stringify({ habitat: CLIP_URI }) };
+    });
+    const loader = {
+      portableAudio: vi.fn(async (todo) => {
+        for (const k of Object.keys(todo.audio)) todo.audio[k] = WAV_URI;
+      }),
+    };
+    try {
+      const out = await window.AlloVocabMedia.clips(['habitat'], loader);
+      expect(out.habitat).toBe(MP3_URI);
+      expect(window.AlloPacketAudioKit.wavUriToMp3Uri).toHaveBeenCalledWith(WAV_URI, 48);
+    } finally {
+      delete window.AlloPacketAudioKit;
+    }
+  });
 });

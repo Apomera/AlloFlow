@@ -228,9 +228,19 @@ function makeDragHandler(s, hostFinder, onMove, wasDraggedRef) {
       el.style.left = (s.x + dx + offsetLeft) + 'px';
       el.style.top = (s.y + dy + offsetTop) + 'px';
     };
-    const upHandler = function (mv) {
+    const cleanup = function () {
       window.removeEventListener('pointermove', moveHandler);
       window.removeEventListener('pointerup', upHandler);
+      window.removeEventListener('pointercancel', cancelHandler);
+      window.removeEventListener('blur', cancelHandler);
+    };
+    const cancelHandler = function () {
+      cleanup();
+      el.style.left = startLeft + 'px';
+      el.style.top = startTop + 'px';
+    };
+    const upHandler = function (mv) {
+      cleanup();
       if (!didMove) {
         // Click-without-drag — restore exact original style (in case a
         // jitter pixel was applied) and let the component's onClick fire.
@@ -254,6 +264,8 @@ function makeDragHandler(s, hostFinder, onMove, wasDraggedRef) {
     };
     window.addEventListener('pointermove', moveHandler);
     window.addEventListener('pointerup', upHandler);
+    window.addEventListener('pointercancel', cancelHandler);
+    window.addEventListener('blur', cancelHandler);
   };
 }
 
@@ -319,10 +331,13 @@ function findAnnoHost(el) {
 // caller wired an onMove), they flip to auto so the user can grab one.
 // Teacher stickers get a subtle indigo ring so they're scannable at a
 // glance vs. student-placed stickers.
+function _ownAnno(obj, key) {
+  return typeof key === 'string' && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
+}
 function StickerNode({ s, draggable, onMove }) {
   if (!s) return null;
   const title = buildStickerTitle(s);
-  const icon = STICKER_ICONS[s.type] || '';
+  const icon = _ownAnno(STICKER_ICONS, s.type) || '';
   const ringClass = s.author === 'teacher'
     ? ' ring-2 ring-indigo-400/70 rounded-full bg-white/80 p-0.5'
     : '';
@@ -351,7 +366,7 @@ function StickerNode({ s, draggable, onMove }) {
 // deferred to a future polish pass.
 function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
   if (!a) return null;
-  const palette = NOTE_COLORS[a.color] || NOTE_COLORS.yellow;
+  const palette = _ownAnno(NOTE_COLORS, a.color) || NOTE_COLORS.yellow;
   const [expanded, setExpanded] = React.useState(!a.content);
   const [draft, setDraft] = React.useState(a.content || '');
   React.useEffect(function () { setDraft(a.content || ''); }, [a.content]);
@@ -478,9 +493,9 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
   // If audio is missing (placeholder during recording, or storage error),
   // render the bubble in a dim state and skip the player.
   const hasAudio = !!a.audioBase64;
-  // Author color: teacher = indigo accent; student = amber accent.
+  // Author color: teacher = indigo accent; student = amber accent (WCAG AA >= 4.5:1 with white text).
   const isT = a.author === 'teacher';
-  const accent = isT ? '#6366f1' : '#f59e0b';
+  const accent = isT ? '#4f46e5' : '#b45309';
   if (!expanded) {
     const isDraggable = !!(draggable && onMove);
     const handleDown = isDraggable ? makeDragHandler(a, findAnnoHost, onMove, wasDraggedRef) : undefined;
@@ -618,7 +633,7 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
 // of the FIRST rect so the underlying content stays readable + clickable.
 function HighlightOverlay({ a, onDelete }) {
   if (!a || !Array.isArray(a.rects) || a.rects.length === 0) return null;
-  const palette = HIGHLIGHT_COLORS[a.color] || HIGHLIGHT_COLORS.yellow;
+  const palette = _ownAnno(HIGHLIGHT_COLORS, a.color) || HIGHLIGHT_COLORS.yellow;
   const title = buildStickerTitle(a) || 'Highlight';
   const titleText = (a.text ? '"' + a.text.slice(0, 80) + (a.text.length > 80 ? '…' : '') + '"  ' : '') + title;
   return (
@@ -701,7 +716,7 @@ function HighlightOverlay({ a, onDelete }) {
 function DrawingOverlay({ a, onDelete }) {
   if (!a) return null;
   const shape = a.shape || 'free';
-  const stroke = (DRAW_COLORS[a.color] || a.color || '#dc2626');
+  const stroke = (_ownAnno(DRAW_COLORS, a.color) || (typeof a.color === 'string' && a.color) || '#dc2626');
   const w = typeof a.width === 'number' ? a.width : 4;
   // Bounding box (fall back to computing from points if not stored)
   let bbx = a.x, bby = a.y, bbw = a.w, bbh = a.h;
@@ -891,7 +906,7 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
   const sh = shape || 'free';
   const isErase = sh === 'erase';
   if (!active) return null;
-  const c = DRAW_COLORS[color] || color || '#dc2626';
+  const c = _ownAnno(DRAW_COLORS, color) || (typeof color === 'string' && color) || '#dc2626';
 
   function getXY(e, host) {
     const rect = host.getBoundingClientRect();
@@ -1235,6 +1250,7 @@ function Toolbar(props) {
             return (
               <button type="button"
                 aria-label={type}
+                aria-pressed={stickerType === type}
                 key={type}
                 onClick={function () { onPickType(type); }}
                 className={'w-6 h-6 flex items-center justify-center rounded-full text-sm hover:scale-125 transition-transform motion-reduce:transition-none motion-reduce:transform-none ' + (stickerType === type ? 'bg-indigo-50 shadow-sm scale-110 ring-1 ring-indigo-200' : 'opacity-60 hover:opacity-100')}
@@ -1263,6 +1279,7 @@ function Toolbar(props) {
               <button type="button"
                 key={key}
                 aria-label={'Note color ' + key}
+                aria-pressed={noteColor === key}
                 onClick={function () { onPickNoteColor(key); }}
                 className={'w-6 h-6 rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 ' + (noteColor === key ? 'ring-2 ring-amber-500 scale-110' : 'opacity-70 hover:opacity-100')}
                 style={{ background: palette.fill, border: '2px solid ' + palette.border }}
@@ -1307,6 +1324,7 @@ function Toolbar(props) {
               <button type="button"
                 key={key}
                 aria-label={'Highlight color ' + key}
+                aria-pressed={highlightColor === key}
                 onClick={function () { onPickHighlightColor(key); }}
                 className={'w-6 h-6 rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 ' + (highlightColor === key ? 'ring-2 ring-yellow-500 scale-110' : 'opacity-70 hover:opacity-100')}
                 style={{ background: palette.fill, border: '2px solid ' + palette.border }}
@@ -1336,6 +1354,7 @@ function Toolbar(props) {
               <button type="button"
                 key={sh}
                 aria-label={DRAW_SHAPE_LABELS[sh] || sh}
+                aria-pressed={drawShape === sh}
                 onClick={function () { onPickDrawShape(sh); }}
                 className={'flex items-center justify-center rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 ' + (drawShape === sh ? (isErase ? 'ring-2 ring-red-500 scale-110 bg-red-50' : 'ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50') : 'opacity-70 hover:opacity-100')}
                 style={{ width: 24, height: 24, fontSize: 14 }}
@@ -1355,6 +1374,7 @@ function Toolbar(props) {
                   <button type="button"
                     key={key}
                     aria-label={'Draw color ' + key}
+                    aria-pressed={drawColor === key}
                     onClick={function () { onPickDrawColor(key); }}
                     className={'w-6 h-6 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 ' + (drawColor === key ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
                     style={{ background: c, border: '2px solid ' + c }}
@@ -1367,7 +1387,7 @@ function Toolbar(props) {
                   current drawColor is one of the keyed presets. */}
               {(function () {
                 const isCustom = DRAW_COLOR_KEYS.indexOf(drawColor) === -1;
-                const currentHex = DRAW_COLORS[drawColor] || drawColor || '#dc2626';
+                const currentHex = _ownAnno(DRAW_COLORS, drawColor) || (typeof drawColor === 'string' && drawColor) || '#dc2626';
                 return (
                   <label
                     className={'relative w-6 h-6 rounded-full overflow-hidden transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 cursor-pointer ' + (isCustom ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
@@ -1407,6 +1427,7 @@ function Toolbar(props) {
                   <button type="button"
                     key={'w' + w}
                     aria-label={'Line width ' + w + 'px'}
+                    aria-pressed={drawWidth === w}
                     onClick={function () { onPickDrawWidth(w); }}
                     className={'flex items-center justify-center rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 ' + (drawWidth === w ? 'ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50' : 'opacity-70 hover:opacity-100')}
                     style={{ width: 24, height: 24 }}
@@ -1475,7 +1496,7 @@ function createNoteFromClick(hostEl, evt, opts) {
   const x = evt.clientX - rect.left + (hostEl.scrollLeft || 0);
   const y = evt.clientY - rect.top + (hostEl.scrollTop || 0);
   const o = opts || {};
-  const color = NOTE_COLORS[o.color] ? o.color : 'yellow';
+  const color = _ownAnno(NOTE_COLORS, o.color) ? o.color : 'yellow';
   return {
     id: Date.now(),
     kind: 'note',
@@ -1648,7 +1669,7 @@ function createHighlightFromSelection(hostEl, selection, opts) {
   }
   if (rects.length === 0) return null;
   const o = opts || {};
-  const color = HIGHLIGHT_COLORS[o.color] ? o.color : 'yellow';
+  const color = _ownAnno(HIGHLIGHT_COLORS, o.color) ? o.color : 'yellow';
   return {
     id: Date.now(),
     kind: 'highlight',

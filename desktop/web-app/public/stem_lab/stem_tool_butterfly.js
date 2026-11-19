@@ -815,6 +815,57 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     return h('svg',{className:'bf-botanical-plate',viewBox:'0 0 420 230',width:420,height:230,'aria-hidden':'true',focusable:'false'},parts);
   }
 
+  function bfFieldEmblem(h){
+    return h('svg',{className:'bf-field-emblem',viewBox:'0 0 44 44',width:40,height:40,'aria-hidden':'true',focusable:'false'},
+      h('rect',{x:1.5,y:1.5,width:41,height:41,rx:11,fill:'var(--bf-wash,#e9eddf)',stroke:'var(--bf-accent,#245c43)',strokeWidth:1.6}),
+      h('circle',{cx:22,cy:22,r:16,fill:'none',stroke:'var(--bf-line,#c8c9b5)',strokeWidth:1,strokeDasharray:'2.5 2.5'}),
+      h('path',{d:'M21 21C16 11 9 8 6 12C4 16 8 23 20 24Z',fill:'#e7862a',stroke:'#1f2a22',strokeWidth:1.4,strokeLinejoin:'round'}),
+      h('path',{d:'M23 21C28 11 35 8 38 12C40 16 36 23 24 24Z',fill:'#e7862a',stroke:'#1f2a22',strokeWidth:1.4,strokeLinejoin:'round'}),
+      h('path',{d:'M20.5 24.5C13 25 9 30 12 34C15 37 20 33 21 26.5Z',fill:'#f0a03e',stroke:'#1f2a22',strokeWidth:1.3,strokeLinejoin:'round'}),
+      h('path',{d:'M23.5 24.5C31 25 35 30 32 34C29 37 24 33 23 26.5Z',fill:'#f0a03e',stroke:'#1f2a22',strokeWidth:1.3,strokeLinejoin:'round'}),
+      h('ellipse',{cx:22,cy:24,rx:1.5,ry:7.5,fill:'#1f2a22'}),
+      h('circle',{cx:22,cy:16,r:1.9,fill:'#1f2a22'}),
+      h('path',{d:'M21.2 14.6C19.5 11.2 18 9.6 16.5 9M22.8 14.6C24.5 11.2 26 9.6 27.5 9',fill:'none',stroke:'#1f2a22',strokeWidth:1.1,strokeLinecap:'round'}),
+      h('circle',{cx:8.8,cy:12.8,r:0.9,fill:'#fffdf6'}),
+      h('circle',{cx:35.2,cy:12.8,r:0.9,fill:'#fffdf6'}),
+      h('circle',{cx:13,cy:33,r:0.8,fill:'#fffdf6'}),
+      h('circle',{cx:31,cy:33,r:0.8,fill:'#fffdf6'})
+    );
+  }
+
+  function bfHabitatTelemetrySvg(h,s,habitatList){
+    var nodes=[
+      {id:'milkweed',x:48,short:__alloT('stem.butterfly.short_milkweed','Milkweed')},
+      {id:'bergamot',x:138,short:__alloT('stem.butterfly.short_bergamot','Bergamot')},
+      {id:'lawn',x:228,short:__alloT('stem.butterfly.short_lawn','Mown')},
+      {id:'restoration',x:324,short:__alloT('stem.butterfly.short_restoration','Plot')}
+    ];
+    var byId={};
+    (habitatList||[]).forEach(function(p){byId[p.id]=p;});
+    var examinedCount=(habitatList||[]).filter(function(p){return evidenceRecorded(s,p);}).length;
+    return h('div',{className:'bf-habitat-strip','aria-hidden':'true'},
+      h('svg',{viewBox:'0 0 380 74',width:380,height:74,className:'bf-habitat-svg','aria-hidden':'true',focusable:'false'},
+        h('rect',{x:1,y:1,width:378,height:72,rx:12,fill:'var(--bf-panel,#fffdf6)',stroke:'var(--bf-line,#c8c9b5)',strokeWidth:1.2}),
+        h('line',{x1:48,y1:34,x2:324,y2:34,stroke:'var(--bf-line,#c8c9b5)',strokeWidth:2,strokeDasharray:'4 4'}),
+        h('text',{x:14,y:16,fill:'var(--bf-gold,#855526)',fontSize:10,fontWeight:700,letterSpacing:'0.08em'},__alloT('stem.butterfly.transect_label','MEADOW TRANSECT')),
+        h('text',{x:366,y:16,textAnchor:'end',fill:'var(--bf-muted,#586657)',fontSize:10,fontWeight:700},examinedCount+'/4 '+__alloT('stem.butterfly.transect_logged','LOGGED')),
+        nodes.map(function(n){
+          var p=byId[n.id];
+          var isDone=!!(p&&evidenceRecorded(s,p));
+          var isHere=s.landed===n.id||s.target===n.id;
+          return h('g',{key:n.id},
+            isHere?h('circle',{cx:n.x,cy:34,r:14,fill:'none',stroke:'var(--bf-gold,#855526)',strokeWidth:1.6,strokeDasharray:'3 2'}):null,
+            h('circle',{cx:n.x,cy:34,r:9.5,fill:isDone?'var(--bf-accent,#245c43)':'var(--bf-wash,#e9eddf)',stroke:isDone?'var(--bf-accent,#245c43)':'var(--bf-muted,#586657)',strokeWidth:1.4}),
+            isDone?h('path',{d:'M'+(n.x-3.5)+' 34.2L'+(n.x-1)+' 36.8L'+(n.x+4)+' 31.2',fill:'none',stroke:'var(--bf-panel,#fffdf6)',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'}):h('circle',{cx:n.x,cy:34,r:2.5,fill:'var(--bf-muted,#586657)'}),
+            isDone&&p&&p.nectar?h('circle',{cx:n.x-13,cy:24,r:3,fill:'#9f6cc2',stroke:'var(--bf-panel,#fffdf6)',strokeWidth:1}):null,
+            isDone&&p&&p.host?h('circle',{cx:n.x+13,cy:24,r:3,fill:'#4e8b43',stroke:'var(--bf-panel,#fffdf6)',strokeWidth:1}):null,
+            h('text',{x:n.x,y:60,textAnchor:'middle',fill:'var(--bf-ink,#263d32)',fontSize:10,fontWeight:isHere?700:600},n.short)
+          );
+        })
+      )
+    );
+  }
+
   function bfIcon(h,kind,size){
     var k=0,ink='#1f2a22';
     function el(tag,attrs){attrs.key=k++;return h(tag,attrs);}
@@ -4954,7 +5005,23 @@ function buildWorld(T,kit) {
     .bf-scene-dock .bf-pilot-label,.bf-scene-dock .bf-pilot-hint{font-size:12px;line-height:1.4}
     .bf-scene-dock .bf-pilot-altitude{width:100%}.bfl .bf-scene-dock .bf-pilot-altitude button{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-width:0;max-width:100%;min-height:44px;padding:7px 8px;font-size:13px;line-height:1.4}.bf-altitude-label{min-width:0;overflow-wrap:anywhere}.bf-pilot-altitude button>span[aria-hidden]{flex-shrink:0}
     .bf-scene-motion{display:inline-block;max-width:100%;margin-bottom:8px;padding:4px 8px;border:1px solid var(--bf-control-border);border-radius:6px;background:var(--bf-wash);color:var(--bf-ink);font-size:12px;line-height:1.5;font-weight:750}
-    @media(forced-colors:active){.bf-scene-motion{background:Canvas;color:CanvasText;border-color:CanvasText}}
+    .bf-workbench-bar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+    .bf-field-emblem{display:block;width:40px;height:40px;flex-shrink:0}
+    .bf-subject-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--bf-accent);background:var(--bf-wash);color:var(--bf-accent);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+    .bf-telemetry-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+    .bf-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;border:1px solid var(--bf-line);background:var(--bf-panel);color:var(--bf-ink);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+    .bf-telemetry-pill strong{color:var(--bf-accent);font-weight:800}
+    .bf-quick-nav{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+    .bfl .bf-quick-chip{min-height:44px;padding:6px 12px;border-radius:999px;border:1px solid var(--bf-line);background:var(--bf-panel);color:var(--bf-ink);font-size:12px;font-weight:700}
+    .bfl .bf-quick-chip:not(:disabled):hover{border-color:var(--bf-accent);background:var(--bf-wash)}
+    .bf-header-visual{display:flex;flex-direction:column;gap:10px;min-width:0}
+    .bf-habitat-strip{width:100%;min-width:0}
+    .bf-habitat-svg{display:block;width:100%;height:auto}
+    .bfl[data-contrast="true"] .bf-subject-badge,.theme-contrast .bfl .bf-subject-badge{background:#000;color:#ffff00;border-color:#ffff00}
+    .bfl[data-contrast="true"] .bf-telemetry-pill,.theme-contrast .bfl .bf-telemetry-pill{background:#000;color:#fff;border-color:#ffff00}
+    .bfl[data-contrast="true"] .bf-telemetry-pill strong,.theme-contrast .bfl .bf-telemetry-pill strong{color:#ffff00}
+    .bfl[data-contrast="true"] .bf-quick-chip,.theme-contrast .bfl .bf-quick-chip{background:#000;color:#ffff00;border-color:#ffff00}
+    @media(forced-colors:active){.bf-scene-motion,.bf-subject-badge,.bf-telemetry-pill,.bfl .bf-quick-chip{background:Canvas;color:CanvasText;border-color:CanvasText}}
     @media(forced-colors:active){.bf-scene-dock{--bf-panel:Canvas;--bf-ink:CanvasText;--bf-muted:CanvasText;--bf-line:CanvasText;--bf-accent:LinkText}.bfl .bf-scene-dock .bf-lens-caption{border-left-color:CanvasText}}
 `;
 
@@ -5628,7 +5695,37 @@ function buildWorld(T,kit) {
       onKeyUp:function(e){if(e.key!==' '&&e.key!=='Enter')return;delete keys.current[key];var node=e.currentTarget;if(holdBlockedClicks.current.has(node))setTimeout(function(){holdBlockedClicks.current.delete(node);},0);},onBlur:function(event){holdBlockedClicks.current.delete(event.currentTarget);delete keys.current[key];if(!sceneMotion.current.paused)stopFlight(s);}});}
     return h('section',{className:'bfl','data-butterfly-root':true,'data-dark':!!ctx.isDark,'data-contrast':!!ctx.isContrast,'aria-label':__alloT('stem.butterfly.a11y_butterfly_habitat_lab',"Butterfly Habitat Lab")},
       h('style',null,CSS),
-      h('header',{className:'bf-header'},h('div',{className:'bf-header-copy'},h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.top_eyebrow','Field study 01 · Mid-Atlantic, North America · Summer')),h('h2',null,__alloT('stem.butterfly.top_title','A meadow through butterfly eyes')),h('p',null,plain(__alloT('stem.butterfly.top_intro_diverse','Fly as a monarch, meet three other meadow butterflies, and discover how flowers and leaves support different stages of life.'),__alloT('stem.butterfly.top_intro_diverse_simple','Fly as a monarch and meet other butterflies. Visit flowers and look at leaves to find out what a monarch needs as it grows.'))),h('div',{className:'bf-header-tools'},button(h(R.Fragment,null,h('span',{'aria-hidden':true},__alloT('stem.butterfly.top_simpler_icon','Aa')+' '),__alloT('stem.butterfly.top_simpler_words','Simpler words')),toggleSimpler,{'aria-pressed':simpler,className:'bf-simpler'}),button(__alloT('stem.butterfly.top_guide_eyebrow','Your field investigation'),function(){jumpTo('guide');},{className:'bf-guide-link'}))),bfBotanicalPlate(h)),
+      h('header',{className:'bf-header'},
+        h('div',{className:'bf-header-copy'},
+          h('div',{className:'bf-workbench-bar'},
+            bfFieldEmblem(h),
+            h('span',{className:'bf-subject-badge'},__alloT('stem.butterfly.subject_badge','Biology · Monarch Ecology')),
+            h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.top_eyebrow','Field study 01 · Mid-Atlantic, North America · Summer'))
+          ),
+          h('h2',null,__alloT('stem.butterfly.top_title','A meadow through butterfly eyes')),
+          h('p',null,plain(__alloT('stem.butterfly.top_intro_diverse','Fly as a monarch, meet three other meadow butterflies, and discover how flowers and leaves support different stages of life.'),__alloT('stem.butterfly.top_intro_diverse_simple','Fly as a monarch and meet other butterflies. Visit flowers and look at leaves to find out what a monarch needs as it grows.'))),
+          h('div',{className:'bf-telemetry-pills',role:'group','aria-label':__alloT('stem.butterfly.a11y_field_telemetry','Field study telemetry')},
+            h('span',{className:'bf-telemetry-pill'},__alloT('stem.butterfly.pill_patches','Patches'),': ',h('strong',null,habitats(s).filter(function(p){return evidenceRecorded(s,p);}).length+'/4')),
+            h('span',{className:'bf-telemetry-pill'},__alloT('stem.butterfly.pill_energy','Energy'),': ',h('strong',null,Math.round(clamp(s.energy,0,100))+'%')),
+            h('span',{className:'bf-telemetry-pill'},__alloT('stem.butterfly.pill_plot','Plot'),': ',h('strong',null,(design(s.restoration.design)||DESIGNS[0]).short)),
+            h('span',{className:'bf-telemetry-pill'},__alloT('stem.butterfly.pill_broods','Broods'),': ',h('strong',null,String(s.lifecycle.broods.length)))
+          ),
+          h('div',{className:'bf-header-tools'},
+            button(h(R.Fragment,null,h('span',{'aria-hidden':true},__alloT('stem.butterfly.top_simpler_icon','Aa')+' '),__alloT('stem.butterfly.top_simpler_words','Simpler words')),toggleSimpler,{'aria-pressed':simpler,className:'bf-simpler'}),
+            button(__alloT('stem.butterfly.top_guide_eyebrow','Your field investigation'),function(){jumpTo('guide');},{className:'bf-guide-link'})
+          ),
+          h('nav',{className:'bf-quick-nav','aria-label':__alloT('stem.butterfly.a11y_quick_stations','Jump to lab stations')},
+            button(__alloT('stem.butterfly.nav_restoration','Restoration plot'),function(){jumpTo('design');},{className:'bf-quick-chip'}),
+            button(__alloT('stem.butterfly.nav_lifecycle','Life cycle'),function(){jumpTo('cycle');},{className:'bf-quick-chip'}),
+            button(__alloT('stem.butterfly.nav_season','Mowing timing'),function(){jumpTo('season');},{className:'bf-quick-chip'}),
+            button(__alloT('stem.butterfly.nav_notebook','Field notebook'),function(){jumpTo('notebook');},{className:'bf-quick-chip'})
+          )
+        ),
+        h('div',{className:'bf-header-visual'},
+          bfBotanicalPlate(h),
+          bfHabitatTelemetrySvg(h,s,habitats(s))
+        )
+      ),
       h('div',{className:'bf-layout',ref:function(node){sections.current.explore=node;},tabIndex:-1},h('div',null,
         h('div',{className:'bf-stage',ref:stage,role:'region',tabIndex:0,'aria-describedby':'bf-scene-caption','aria-label':watchingPollinators?__alloT('stem.butterfly.watch_scene','Watching a meadow butterfly. Space pauses or resumes the whole scene.'):feeding?__alloFill(__alloT('stem.butterfly.hud_stage_aria_feeding','Feeding and pollination close-up. {value1}. Space pauses motion. Read the observation and controls below.'),{value1:feedingStep.title}):watching?__alloFill(__alloT('stem.butterfly.hud_stage_aria_life','Life cycle close-up. {value1} at {value2}. Space pauses stage motion. Read the stage notes and controls below.'),{value1:specimenStage.name,value2:specimen.name}):s.controlMode==='steer'?__alloT('stem.butterfly.a11y_direct_flight_area','Butterfly flight area. W or up to fly forward. A D or left right to turn. S or down to brake. E to rise, Q to lower, G to glide, Space to pause.'):__alloT('stem.butterfly.a11y_butterfly_flight_area_arrow_keys_or_w_a_s_d_to_move_',"Butterfly flight area. Arrow keys or W A S D to move, E to rise, Q to lower, G to glide, Space to pause."),'data-bf-paused':String(s.paused||allMotionPaused),'data-bf-motion-paused':String(allMotionPaused),'data-bf-meadow-clock':sceneMotion.current.clock.toFixed(3),'data-bf-renderer':mapMode?'map':renderer,'data-bf-landed':s.landed||'','data-bf-design':s.restoration.design,'data-bf-pad-visible':String(padVisible)},
           h('div',{className:'bf-viewport'},

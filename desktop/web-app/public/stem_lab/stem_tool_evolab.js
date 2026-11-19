@@ -54,6 +54,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+  // Bespoke Evolutionary Biology Studio CSS + High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-evolab-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-evolab-studio-css';
+    st.textContent = [
+      '.evo-hero-deck { background: linear-gradient(125deg, #0b1f1c 0%, #10322b 52%, #132238 100%); border: 1px solid rgba(110,231,183,0.36); border-radius: 18px; padding: 18px 20px; margin-bottom: 18px; color: #f8fafc; box-shadow: 0 14px 32px -20px rgba(6,78,59,0.75); }',
+      '.evo-emblem-box { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, rgba(16,185,129,0.26), rgba(11,31,28,0.94)); border: 1.5px solid rgba(110,231,183,0.55); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 16px rgba(6,78,59,0.45); }',
+      '.evo-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(52,211,153,0.18); border: 1px solid rgba(110,231,183,0.48); color: #d1fae5; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.evo-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(110,231,183,0.22); }',
+      '.evo-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(2,44,34,0.62); border: 1px solid rgba(110,231,183,0.34); color: #ecfdf5; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.evo-mech-strip { margin-top: 12px; padding: 8px 10px; border-radius: 12px; background: rgba(2,24,28,0.62); border: 1px solid rgba(110,231,183,0.26); }',
+      '.evo-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(110,231,183,0.22); }',
+      '.evo-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #d1fae5; }',
+      '.evo-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(2,44,34,0.72); border: 1px solid rgba(110,231,183,0.38); color: #ecfdf5; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.evo-starter-chip:hover:not(:disabled) { background: rgba(16,185,129,0.34); border-color: #6ee7b7; color: #ffffff; }',
+      '.evo-starter-chip:focus-visible, .evo-hero-deck button:focus-visible { outline: 2px solid #6ee7b7; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-emblem-box, .theme-contrast [data-stem-tool-shell="evoLab"] .evo-subject-badge, .theme-contrast [data-stem-tool-shell="evoLab"] .evo-telemetry-pill, .theme-contrast [data-stem-tool-shell="evoLab"] .evo-mech-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-starter-chip:hover:not(:disabled) { background: #00ff00 !important; border-color: #ffff00 !important; color: #000000 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -6225,8 +6250,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         return moduleId + ':' + Date.now().toString(36) + '-' + _capstoneSourceCounterRef.current + '-' + Math.random().toString(36).slice(2, 8);
       };
 
-      var d = (ctx.toolData && ctx.toolData['evoLab']) || {};
-      var upd = function(key, val) { ctx.update('evoLab', key, val); };
+      var rawEvo = (ctx && ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData['evoLab'] : null;
+      var d = (rawEvo && typeof rawEvo === 'object' && !Array.isArray(rawEvo)) ? rawEvo : {};
+      var upd = function(key, val) { if (ctx && typeof ctx.update === 'function') ctx.update('evoLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[EvoLab]', msg); };
       var callTTS = ctx.callTTS || null;
       // Read-aloud (UDL: multiple means of representation). Host TTS first,
@@ -6696,18 +6722,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var missionItems = mission && Array.isArray(mission.dataMission) ? mission.dataMission : [];
         var missionPlanSummary = mission ? describeCapstoneTrialPlan(mission.trialPlan) : '';
         return h(React.Fragment, null,
-          h('div', { className: 'flex flex-wrap items-center gap-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white p-4 shadow' },
+          h('div', { className: 'flex flex-wrap items-center gap-3 bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700 text-white p-4 shadow border-b border-emerald-400/30' },
             h('button', {
               onClick: function() { setView('menu'); upd('view', 'menu'); },
               'aria-label': t('stem.evolab.back_to_evolab_menu', 'Back to EvoLab menu'),
-              className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors'
+              className: 'min-h-[44px] px-3.5 py-2 rounded-lg bg-black/25 hover:bg-black/40 border border-white/20 font-bold text-sm transition-colors'
             }, t('stem.evolab.menu', '← Menu')),
-            h('span', { className: 'text-3xl' }, props.icon),
-            h('h1', { className: 'text-xl font-black flex-1' }, props.title),
+            h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, props.icon),
+            h('h1', { className: 'text-xl font-black flex-1 min-w-0' }, props.title),
             d.evoCapstone && d.evoCapstone.scenarioId && view !== 'capstone' && h('button', {
               onClick: function() { goto('capstone'); },
               'aria-label': t('stem.evolab.return_to_capstone_project', 'Return to your in-progress Capstone Project'),
-              className: 'px-3 py-1.5 rounded-lg bg-amber-300 text-amber-950 hover:bg-amber-200 font-bold text-sm transition-colors shadow'
+              className: 'min-h-[44px] px-3.5 py-2 rounded-lg bg-amber-300 text-amber-950 hover:bg-amber-200 font-bold text-sm transition-colors shadow'
             }, t('stem.evolab.return_to_project', '🎓 Return to project'))
           ),
           mission && h('aside', {
@@ -8058,11 +8084,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('p', { style: { fontSize: 11, marginTop: 12 } }, t('stem.evolab.island_hero_hint', 'No setup needed · 10-minute first expedition · new worlds to discover'))),
               h('div', { className: 'ei-expedition-art', 'aria-hidden': true }, h('div', { className: 'ei-mini-island' }),
                 h('div', { className: 'ei-mini-creatures' }, [0.25, 0.8, 0.5].map(function(v, i) { return h(IslandPortrait, { key: i, React: React, organism: { genes: { shade: [v,v], fur: [i / 3,i / 3], legs: [0.3,0.6] } } }); }))))),
-          h('div', { className: 'text-center mb-6' },
-            h('div', { className: 'text-6xl mb-3' }, '🧬'),
-            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' + onHostInk }, 'EvoLab'),
-            h('p', { className: 'text-lg text-slate-600 max-w-2xl mx-auto' + onHostInk },
-              t('stem.evolab.evolution_and_natural_selection_see_po', 'Evolution and natural selection — see populations change, build the tree of life, and untangle the most common misconceptions.'))
+          h('div', { className: 'evo-hero-deck' },
+            h('div', { className: 'flex flex-wrap items-center gap-4' },
+              // Bespoke Evolutionary Biology & Phylogeny SVG Emblem
+              h('div', { className: 'evo-emblem-box', 'aria-hidden': 'true' },
+                h('svg', { width: 40, height: 40, viewBox: '0 0 48 48', 'aria-hidden': 'true' },
+                  h('circle', { cx: 24, cy: 24, r: 21, fill: 'rgba(2,24,28,0.8)', stroke: '#6ee7b7', strokeWidth: 1.4, strokeDasharray: '4 3' }),
+                  // Phylogenetic cladogram branches
+                  h('path', { d: 'M12 36 L24 26 L36 36 M24 26 L24 14 M24 20 L34 12 M24 20 L14 12', fill: 'none', stroke: '#34d399', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  h('circle', { cx: 14, cy: 12, r: 3, fill: '#38bdf8' }),
+                  h('circle', { cx: 24, cy: 14, r: 3, fill: '#fbbf24' }),
+                  h('circle', { cx: 34, cy: 12, r: 3, fill: '#f472b6' }),
+                  h('circle', { cx: 24, cy: 26, r: 2.5, fill: '#a7f3d0' })
+                )
+              ),
+              h('div', { className: 'flex-1 min-w-[220px]' },
+                h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
+                  h('h1', { className: 'text-2xl sm:text-3xl font-black text-white tracking-tight m-0' }, 'EvoLab'),
+                  h('span', { className: 'evo-subject-badge' }, __alloT('stem.evolab.subject_badge', 'Evolutionary Biology · Population Genetics'))
+                ),
+                h('p', { className: 'text-sm text-emerald-50/95 leading-relaxed m-0 max-w-3xl' },
+                  t('stem.evolab.evolution_and_natural_selection_see_po', 'Evolution and natural selection — see populations change, build the tree of life, and untangle the most common misconceptions.'))
+              )
+            ),
+            // Live non-spoiler telemetry strip
+            h('div', { className: 'evo-telemetry-strip' },
+              h('span', { className: 'evo-telemetry-pill' }, '\u2705 ' + __alloT('stem.evolab.telemetry_completed', 'Completed: ') + completedCount + ' / ' + totalCount),
+              h('span', { className: 'evo-telemetry-pill' }, '\uD83E\uDDED ' + __alloT('stem.evolab.telemetry_explored', 'Explored: ') + visitedCount + ' / ' + totalCount),
+              h('span', { className: 'evo-telemetry-pill' }, '\uD83D\uDCA1 ' + __alloT('stem.evolab.telemetry_revised', 'Revised Ideas: ') + revisedResolved + ' / ' + revisedTotal),
+              h('span', { className: 'evo-telemetry-pill' }, '\uD83C\uDFDD\uFE0F ' + __alloT('stem.evolab.telemetry_3d_islands', '3D Living Island + 17 Labs'))
+            ),
+            // Evolutionary Mechanism Flow Schematic (inline SVG, >=10.5px labels, translated aria-label)
+            h('div', { className: 'evo-mech-strip' },
+              h('svg', {
+                viewBox: '0 0 560 64', role: 'img',
+                'aria-label': __alloT('stem.evolab.a11y_evolution_mechanism_diagram', 'Evolutionary mechanism flow: Heritable Variation plus Selection or Drift leads to Differential Reproduction and Population Trait Shift'),
+                style: { width: '100%', maxHeight: 68, height: 'auto', display: 'block' }
+              },
+                h('line', { x1: 132, y1: 32, x2: 148, y2: 32, stroke: '#6ee7b7', strokeWidth: 2 }),
+                h('line', { x1: 274, y1: 32, x2: 290, y2: 32, stroke: '#7dd3fc', strokeWidth: 2 }),
+                h('line', { x1: 416, y1: 32, x2: 432, y2: 32, stroke: '#fbbf24', strokeWidth: 2 }),
+                h('rect', { x: 8, y: 10, width: 124, height: 44, rx: 10, fill: 'rgba(52,211,153,0.18)', stroke: '#34d399', strokeWidth: 1.4 }),
+                h('text', { x: 70, y: 28, textAnchor: 'middle', fill: '#ecfdf5', fontSize: 11, fontWeight: 800 }, '1. Variation'),
+                h('text', { x: 70, y: 44, textAnchor: 'middle', fill: '#a7f3d0', fontSize: 10 }, 'Heritable alleles'),
+                h('rect', { x: 148, y: 10, width: 126, height: 44, rx: 10, fill: 'rgba(56,189,248,0.18)', stroke: '#38bdf8', strokeWidth: 1.4 }),
+                h('text', { x: 211, y: 28, textAnchor: 'middle', fill: '#f0f9ff', fontSize: 11, fontWeight: 800 }, '2. Selection / Drift'),
+                h('text', { x: 211, y: 44, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10 }, 'Environment & chance'),
+                h('rect', { x: 290, y: 10, width: 126, height: 44, rx: 10, fill: 'rgba(251,191,36,0.18)', stroke: '#fbbf24', strokeWidth: 1.4 }),
+                h('text', { x: 353, y: 28, textAnchor: 'middle', fill: '#fefce8', fontSize: 11, fontWeight: 800 }, '3. Inheritance'),
+                h('text', { x: 353, y: 44, textAnchor: 'middle', fill: '#fde68a', fontSize: 10 }, 'Traits passed on'),
+                h('rect', { x: 432, y: 10, width: 120, height: 44, rx: 10, fill: 'rgba(244,114,182,0.18)', stroke: '#f472b6', strokeWidth: 1.4 }),
+                h('text', { x: 492, y: 28, textAnchor: 'middle', fill: '#fdf2f8', fontSize: 11, fontWeight: 800 }, '4. Trait Shift'),
+                h('text', { x: 492, y: 44, textAnchor: 'middle', fill: '#fbcfe8', fontSize: 10 }, 'Population evolves')
+              )
+            ),
+            // One-click Evolution Lab Workflow Starters (44px touch targets, hidden when locked)
+            !(ctx && (ctx.quizLock || ctx.teacherLock)) && h('div', { className: 'evo-starter-bar', role: 'group', 'aria-label': __alloT('stem.evolab.a11y_quick_starters', 'Quick evolution lab starters') },
+              h('span', { className: 'evo-starter-label' }, __alloT('stem.evolab.quick_launch', 'Quick launch:')),
+              [
+                { id: 'livingIsland', icon: '🏝️', label: __alloT('stem.evolab.starter_island', 'Living Island 3D') },
+                { id: 'predatorVision', icon: '👁️', label: __alloT('stem.evolab.starter_predator', 'Predator Vision') },
+                { id: 'beakLab', icon: '🐦', label: __alloT('stem.evolab.starter_beak', 'Galápagos Beak Lab') },
+                { id: 'phyloBuilder', icon: '🌳', label: __alloT('stem.evolab.starter_phylo', 'Tree Builder') },
+                { id: 'hardyWeinberg', icon: '🧮', label: __alloT('stem.evolab.starter_hwe', 'Hardy-Weinberg') }
+              ].map(function(st) {
+                return h('button', {
+                  key: 'evo-st-' + st.id, type: 'button', className: 'evo-starter-chip',
+                  onClick: function() { goto(st.id); }
+                }, h('span', { 'aria-hidden': 'true' }, st.icon), h('span', null, st.label));
+              })
+            )
           ),
           h('section', {
             'data-evolab-command': true,

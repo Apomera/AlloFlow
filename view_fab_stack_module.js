@@ -760,7 +760,7 @@ function FabStack(props) {
     let footer = null;
     const measure = () => {
       frame = 0;
-      const candidate = workspace.querySelector("[data-resource-navigation]") || Array.from(workspace.children).find((node) => node.classList.contains("shrink-0") && node.classList.contains("no-print") && node.querySelectorAll(":scope > button").length === 2);
+      const candidate = workspace.querySelector("[data-resource-nav-full], [data-resource-clarity-footer], [data-resource-navigation]") || Array.from(workspace.children).find((node) => node.classList.contains("shrink-0") && node.classList.contains("no-print") && node.querySelectorAll(":scope > button").length === 2);
       if (candidate !== footer) {
         if (footer) observer?.unobserve(footer);
         footer = candidate || null;
@@ -861,6 +861,7 @@ function FabStack(props) {
   };
   const handlePanelKeyDown = (event) => {
     if (event.key !== "Escape") return;
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     event.preventDefault();
     closeStudentTools();
   };

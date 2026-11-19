@@ -217,7 +217,7 @@ describe('walkthrough records apps script contract', () => {
     expect(script).toContain('owner_setup_required');
     expect(script).toContain('setupWalkthroughOwner');
     expect(script).toContain('not_claimed');
-    expect(script).toMatch(/supplied !== stored/);
+    expect(script).toMatch(/!wrTimingSafeEq_\(supplied,\s*stored\)|supplied !== stored/);
   });
 
   it('keeps feedback text out of the notification email', () => {

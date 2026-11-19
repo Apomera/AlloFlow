@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AlloFlow Circuit Shelf</title>
 <!--
@@ -38,12 +39,6 @@
   }
   window.applyAlloFlowTheme = applyAlloFlowTheme;
   applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
-  window.addEventListener('message', function (event) {
-    if (window.opener && event.source !== window.opener) return;
-    var data = event && event.data;
-    if (!data || data.type !== 'alloflow-theme-change') return;
-    applyAlloFlowTheme(data.theme);
-  });
 })();
 </script>
 <style>
@@ -114,9 +109,12 @@
   .backbar { position: absolute; top: 8px; left: 8px; z-index: 5; }
   .backbar button { background: rgba(15,23,42,0.85); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
+  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
+  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to circuit simulator</a>
 <header>
   <h1>🔌 Circuit Shelf</h1>
   <span class="sub">CircuitJS1 by Paul Falstad &amp; Iain Sharp (open source, GPL) + AlloFlow Predict-Explore-Explain coach</span>
@@ -136,7 +134,7 @@
     </div>
     <div class="privacy">Predictions and explanations live in this window only — nothing is saved or graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.</div>
   </aside>
-  <main class="sim" aria-label="Circuit simulator">
+  <main id="main" tabindex="-1" class="sim" aria-label="Circuit simulator">
     <div class="backbar" id="backbar" style="display:none"><button id="backBtn" type="button">← Challenges</button></div>
     <iframe id="simFrame" title="CircuitJS circuit simulator" allow="fullscreen"></iframe>
     <div class="picker" id="picker">
@@ -235,9 +233,11 @@
   }
   window.addEventListener('message', function (event) {
     if (!isTrustedOpenerMessage(event)) return;
+    if (verifiedOpenerOrigin && event.origin !== verifiedOpenerOrigin) return;
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
-    verifiedOpenerOrigin = event.origin;
+    if (!verifiedOpenerOrigin) verifiedOpenerOrigin = event.origin;
+    if (data.type === 'alloflow-theme-change') { if (typeof window.applyAlloFlowTheme === 'function') window.applyAlloFlowTheme(data.theme); return; }
     if (data.type === 'alloccircuit-ready') { openerOk = true; aiAvailable = Boolean(data.ai); renderAiState(); return; }
     if (data.type === 'alloccircuit-ai-response' && data.id && pending[data.id]) {
       var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);

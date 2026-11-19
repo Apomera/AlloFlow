@@ -489,7 +489,8 @@
     }
     if (eocd < 0) return [];
     var count = rd16(eocd + 10);
-    var out = [], p = rd32(eocd + 16);
+    if (count > 200) count = 200;
+    var out = [], p = rd32(eocd + 16), totalExtracted = 0;
     for (var n = 0; n < count; n++) {
       if (p + 46 > u8.length || rd32(p) !== 0x02014b50) break;
       var method = rd16(p + 10), size = rd32(p + 24), nameLen = rd16(p + 28), extraLen = rd16(p + 30), commentLen = rd16(p + 32), lho = rd32(p + 42);
@@ -497,8 +498,13 @@
       for (var c2 = 0; c2 < nameLen; c2++) name += String.fromCharCode(u8[p + 46 + c2]);
       if (method === 0 && lho + 30 <= u8.length && rd32(lho) === 0x04034b50) {
         var dataStart = lho + 30 + rd16(lho + 26) + rd16(lho + 28);
-        var data = u8.slice(dataStart, dataStart + size);
-        if (data.length === size && vsCrc32(data) === rd32(p + 16)) out.push({ name: name, data: data });
+        if (size <= u8.length && dataStart + size <= u8.length && totalExtracted + size <= u8.length) {
+          var data = u8.slice(dataStart, dataStart + size);
+          if (data.length === size && vsCrc32(data) === rd32(p + 16)) {
+            totalExtracted += size;
+            out.push({ name: name, data: data });
+          }
+        }
       }
       p += 46 + nameLen + extraLen + commentLen;
     }
@@ -3661,7 +3667,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                   // right window, right bridge token — plus the one-shot token.
                   if (!ev2.origin || (ev2.origin && ev2.origin !== STUDIO_ORIGIN)) return;
                   if (!vsTakeStore.token || ev2.data.bridge !== vsTakeStore.token) return;
-                  if (vsTakeStore.studioWin && !vsTakeStore.studioWin.closed && ev2.source !== vsTakeStore.studioWin) return;
+                  if (!vsTakeStore.studioWin || vsTakeStore.studioWin.closed || ev2.source !== vsTakeStore.studioWin) return;
                   finish(String(ev2.data.choice || 'stop'));
                 }
                 window.addEventListener('message', onChoice);
@@ -3676,12 +3682,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false, controller: null };
           var summary = null;
           if (result && result.stateSummary && typeof result.stateSummary === 'object') {
-            summary = {};
+            summary = Object.create(null);
             var kept = 0;
             Object.keys(result.stateSummary).forEach(function (k) {
               if (kept >= 60) return;
+              var safeKey = String(k).slice(0, 40);
+              if (safeKey === '__proto__' || safeKey === 'constructor' || safeKey === 'prototype') return;
               var v = result.stateSummary[k];
-              if (typeof v === 'boolean' || typeof v === 'number' || (typeof v === 'string' && v.length <= 60)) { summary[String(k).slice(0, 40)] = v; kept++; }
+              if (typeof v === 'boolean' || typeof v === 'number' || (typeof v === 'string' && v.length <= 60)) { summary[safeKey] = v; kept++; }
             });
           }
           drRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), timedOut: !!(result && result.timedOut), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null, stateSummary: summary });
@@ -3700,7 +3708,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           postToStudio(daReplyTo, Object.assign({ type: 'allostudio-demoaudit-response', id: daReq.id }, payload));
         };
         var auditGemini = propsRef.current.callGemini;
-        if (typeof auditGemini !== 'function') { daRespond({ error: 'AI is not connected right now' }); return; }
+        var auditGeminiUsable = typeof auditGemini === 'function' && (
+          typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
+            ? (function () { try { return !!window.__alloAiUsable('text', auditGemini); } catch (_) { return false; } })()
+            : (!auditGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)))
+        );
+        if (!auditGeminiUsable) { daRespond({ error: 'AI is not connected right now' }); return; }
         var auditGoal = String(daReq.goal || '').slice(0, 300).trim();
         if (!auditGoal) { daRespond({ error: 'no goal to audit' }); return; }
         var auditSteps = (Array.isArray(daReq.steps) ? daReq.steps : []).slice(0, 16).map(function (s) {
@@ -3709,11 +3722,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             outcome: String((s && s.outcome) || 'unknown').slice(0, 40)
           };
         }).filter(function (s) { return s.label; });
-        var auditState = {};
+        var auditState = Object.create(null);
         if (daReq.stateSummary && typeof daReq.stateSummary === 'object') {
           Object.keys(daReq.stateSummary).slice(0, 60).forEach(function (k) {
+            var safeKey = String(k).slice(0, 40);
+            if (safeKey === '__proto__' || safeKey === 'constructor' || safeKey === 'prototype') return;
             var v = daReq.stateSummary[k];
-            if (typeof v === 'boolean' || typeof v === 'number' || (typeof v === 'string' && v.length <= 60)) auditState[String(k).slice(0, 40)] = v;
+            if (typeof v === 'boolean' || typeof v === 'number' || (typeof v === 'string' && v.length <= 60)) auditState[safeKey] = v;
           });
         }
         var auditPrompt = 'You are auditing whether an automated software demo achieved the teacher\'s goal.\n'
@@ -5234,7 +5249,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               }, studioState === 'open' ? T('video_studio.focus_btn', 'Focus the Studio window') : T('video_studio.open_btn', '🎬 Open the Studio window')),
               studioState === 'blocked' && h('span', { className: 'text-xs text-rose-600 font-semibold' }, T('video_studio.blocked_hint', 'Look for the blocked-pop-up icon in the address bar.'))
             ),
-            h('p', { className: 'text-xs text-slate-500 mt-3' }, T('video_studio.privacy_note', 'Local by default: recording, editing, and captioning run in your browser. Optional AI tools may send reviewed text, prompts, or sampled frame sheets through AlloFlow; before recording, close anything with student data and prefer sharing one tab.'))
+            h('p', { className: 'text-xs text-slate-600 mt-3' }, T('video_studio.privacy_note', 'Local by default: recording, editing, and captioning run in your browser. Optional AI tools may send reviewed text, prompts, or sampled frame sheets through AlloFlow; before recording, close anything with student data and prefer sharing one tab.'))
           ),
           // Cinematic Studio lives HERE now (its hub card was removed 2026-07-02):
           // it is the prompt-craft companion for NotebookLM and other AI video
@@ -5250,7 +5265,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           ),
           // Gallery
           h('h3', { className: 'font-semibold text-slate-700 text-sm mb-2' }, T('video_studio.gallery', 'Videos from this session')),
-          videos.length > 0 && h('p', { className: 'text-xs text-slate-500 mb-2' },
+          videos.length > 0 && h('p', { className: 'text-xs text-slate-600 mb-2' },
             T('video_studio.gallery_note', 'Kept on this device — they stay here (even if you close this panel) until you remove them. The ' + VS_MAX_STORED_TAKES + ' most recent are kept; download anything you need to keep for good.') +
             ' ' + videos.length + ' · ' + fmtBytes(videos.reduce(function (s, v) { return s + (Number(v.size) || 0); }, 0))),
           videos.length === 0
@@ -5260,7 +5275,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                   h('video', { src: v.url, controls: true, preload: 'metadata', className: 'w-full sm:w-64 rounded-lg bg-black', 'aria-label': v.title }),
                   h('div', { className: 'flex-1 min-w-0' },
                     h('p', { className: 'font-semibold text-slate-800 text-sm truncate' }, v.title),
-                    h('p', { className: 'text-xs text-slate-500 mb-2' },
+                    h('p', { className: 'text-xs text-slate-600 mb-2' },
                       fmtDur(v.duration) + ' · ' + fmtBytes(v.size) + (v.vtt ? ' · ' + T('video_studio.has_captions', 'captions included') : '') + (v.chapters && v.chapters.length ? ' · chapters' : '') + (v.inserts && v.inserts.length ? ' · inserts' : '') + ((v.inserts || []).filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length ? ' · overlays' : '') + (v.musicBed ? ' · music' : '') + (v.visualPrompts && v.visualPrompts.length ? ' · visual prompts' : '') + (v.localizations && v.localizations.length ? ' · localizations' : '')),
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                       h('input', {

@@ -141,6 +141,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
       '.behaviorlab-3d-part{min-height:40px;padding:8px 12px;border-radius:999px;border:1px solid var(--bl-border);background:rgba(15,23,42,.75);color:var(--bl-text);font-size:11px;font-weight:700;cursor:pointer;}',
       '.behaviorlab-3d-part.is-on{background:var(--bl-amber);color:#0b1220;border-color:var(--bl-amber);}',
       '.theme-contrast .behaviorlab-3d-part.is-on{background:#ffff00;color:#000;}',
+      '.behaviorlab-subject-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;background:rgba(99,102,241,.22);border:1px solid rgba(165,180,252,.45);color:#e0e7ff;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}',
+      '.behaviorlab-telemetry-pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;background:rgba(15,23,42,.68);border:1px solid var(--bl-border);color:var(--bl-text);font-size:10px;font-weight:800;font-variant-numeric:tabular-nums;}',
+      '.behaviorlab-svg-stage{border-radius:14px;border:1px solid var(--bl-border);background:rgba(15,23,42,.72);padding:10px 12px;overflow:hidden;}',
+      '.behaviorlab-cum-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:9px 12px;border-bottom:1px solid rgba(245,158,11,.2);background:rgba(15,23,42,.72);}',
+      '.theme-contrast .behaviorlab-subject-badge,.theme-contrast .behaviorlab-telemetry-pill{background:#000!important;color:#ffff00!important;border-color:#ffff00!important;}',
+      '.theme-contrast .behaviorlab-svg-stage,.theme-contrast .behaviorlab-cum-header{background:#000!important;border-color:#ffff00!important;}',
       '@media (max-width:760px){.behaviorlab-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.behaviorlab-level-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.behaviorlab-sim-header{position:static;}}',
       '@media (max-width:520px){.behaviorlab-tool-shell{padding:2px 0!important;}.behaviorlab-command{padding:13px!important;border-radius:14px!important;}.behaviorlab-level-section{padding:10px;}.behaviorlab-level-heading{align-items:flex-start;}.behaviorlab-level-progress{display:none;}.behaviorlab-level-grid{grid-template-columns:1fr;}.behaviorlab-level-card{min-height:44px;}.behaviorlab-metric{padding:8px 9px;}.behaviorlab-metric-value{font-size:12px;}.behaviorlab-chamber-header{align-items:flex-start;}.behaviorlab-chamber-canvas{min-height:220px;}}',
       '@media (prefers-reduced-motion:reduce){.behaviorlab-level-card{transition:none!important;}.behaviorlab-tool-shell *{scroll-behavior:auto!important;}}',
@@ -1782,13 +1788,14 @@ dataRef.current = d;
             }
             if (_blAnimId.current) cancelAnimationFrame(_blAnimId.current);
             blFrame();
-            // The observer is deliberately NOT disconnected here: this effect has no
-            // dependency array, so it re-runs on every render, and tearing the
-            // observer down each time would mean it never settles. It is rebuilt only
-            // when the canvas element itself changes, and the whole thing dies with
-            // the tool.
-            return function() { if (_blAnimId.current) cancelAnimationFrame(_blAnimId.current); };
-          });
+            return function() {
+              if (_blAnimId.current) { cancelAnimationFrame(_blAnimId.current); _blAnimId.current = 0; }
+              if (_blIoRef.current && _blIoRef.current.io) {
+                try { _blIoRef.current.io.disconnect(); } catch (e) {}
+              }
+              _blIoRef.current = null;
+            };
+          }, []);
 
           // ── Sound effects (Web Audio API) ──
 
@@ -3982,8 +3989,10 @@ dataRef.current = d;
 
 
           // ── Keyboard shortcut: Spacebar to deliver food ──
-          if (!window._blKeyHandler) {
-            window._blKeyHandler = function (e) {
+          window._blReinforceFn = (blLastAction && blPhase === 'running' && blLevel !== 8 && blLevel !== 9) ? reinforceAction : null;
+          window._blAdvanceTickFn = advanceTick; // live rebind — the tick interval must never call a stale closure (same fix class as dataRef above)
+          React.useEffect(function () {
+            var handler = function (e) {
               var target = e.target || {};
               var tag = target.tagName || '';
               var interactive = ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'SUMMARY', 'A'].indexOf(tag) >= 0 || target.isContentEditable;
@@ -3998,16 +4007,21 @@ dataRef.current = d;
                 window._blReinforceFn();
               }
             };
-            document.addEventListener('keydown', window._blKeyHandler);
-          }
-          window._blReinforceFn = (blLastAction && blPhase === 'running' && blLevel !== 8 && blLevel !== 9) ? reinforceAction : null;
-          window._blAdvanceTickFn = advanceTick; // live rebind — the tick interval must never call a stale closure (same fix class as dataRef above)
+            window._blKeyHandler = handler;
+            document.addEventListener('keydown', handler);
+            return function () {
+              document.removeEventListener('keydown', handler);
+              if (window._blKeyHandler === handler) window._blKeyHandler = null;
+              window._blReinforceFn = null;
+              window._blAdvanceTickFn = null;
+            };
+          }, []);
 
           // ── Render cumulative record canvas (not rAF — only needs tick-rate updates) ──
-          setTimeout(function () {
+          React.useEffect(function () {
             var cumCv = document.getElementById('bl-cumrecord-canvas');
             drawCumRecord(cumCv);
-          }, 0);
+          });
 
           // ── Tick timer (independent of canvas rendering) ──
           React.useEffect(function() {
@@ -4076,30 +4090,42 @@ dataRef.current = d;
                     cursor: 'pointer', color: 'var(--bl-text)', fontSize: 14, flexShrink: 0
                   }
                 }, '\u2190'),
-                // Circular accent hero badge \u2014 56px hero size matches
-                // School Behavior Toolkit + Disability Voices + TypingPractice
+                // Bespoke Operant Chamber & Cumulative Record SVG emblem
                 React.createElement("div", { 'aria-hidden': 'true',
                   style: {
-                    width: 56, height: 56, borderRadius: '50%',
-                    background: 'rgba(251,191,36,0.18)',
+                    width: 60, height: 60, borderRadius: 16,
+                    background: 'rgba(15,23,42,0.72)',
                     border: '2px solid #fbbf24',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 28, lineHeight: 1, flexShrink: 0,
-                    boxShadow: '0 4px 16px rgba(251,191,36,0.25)'
+                    flexShrink: 0,
+                    boxShadow: '0 6px 18px rgba(251,191,36,0.22)'
                   }
-                }, '\uD83D\uDC2D'),
+                },
+                  React.createElement('svg', { viewBox: '0 0 64 64', width: 46, height: 46, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
+                    React.createElement('rect', { x: 6, y: 10, width: 52, height: 42, rx: 7, fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+                    React.createElement('line', { x1: 12, y1: 44, x2: 52, y2: 44, stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+                    React.createElement('polyline', { points: '12,42 20,40 26,33 34,31 41,22 50,16', fill: 'none', stroke: '#38bdf8', strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                    React.createElement('circle', { cx: 26, cy: 33, r: 2.8, fill: '#fbbf24' }),
+                    React.createElement('circle', { cx: 41, cy: 22, r: 2.8, fill: '#fbbf24' }),
+                    React.createElement('circle', { cx: 50, cy: 16, r: 3.4, fill: '#34d399' }),
+                    React.createElement('line', { x1: 45, y1: 35, x2: 56, y2: 35, stroke: '#e2e8f0', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                    React.createElement('circle', { cx: 18, cy: 22, r: 4, fill: '#22c55e', opacity: 0.9 })
+                  )
+                ),
                 React.createElement("div", { style: { flex: 1, minWidth: 240 } },
-                  React.createElement("div", { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
+                  React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
                     React.createElement("h2", { style: { margin: 0, color: '#fbbf24', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, __alloT('stem.behaviorlab.h_behavior_lab', 'Behavior Lab')),
-                    // Level chip \u2014 replaces the old single-line subtitle with
-                    // a tabular-nums chip that reads at a glance
+                    React.createElement("span", { className: "behaviorlab-subject-badge" }, __alloT('stem.behaviorlab.subject_badge', 'Science \u00B7 Psychology')),
+                    // Level chip
                     React.createElement("span", { style: {
                       padding: '2px 8px', borderRadius: '999rem',
                       background: 'rgba(251,191,36,0.12)',
                       border: '1px solid rgba(251,191,36,0.40)',
                       color: 'var(--bl-amber-text)', fontSize: 10, fontWeight: 700,
                       fontFamily: 'ui-monospace, Menlo, monospace'
-                    } }, blT('stem.behaviorlab.level_of_total', 'Level {n} / {total}', { n: blLevel, total: LEVELS.length }))
+                    } }, blT('stem.behaviorlab.level_of_total', 'Level {n} / {total}', { n: blLevel, total: LEVELS.length })),
+                    React.createElement("span", { className: "behaviorlab-telemetry-pill" }, blT('stem.behaviorlab.telemetry_mastered', '{done}/{total} mastered', { done: blCompletedLevels.length, total: LEVELS.length })),
+                    React.createElement("span", { className: "behaviorlab-telemetry-pill" }, blT('stem.behaviorlab.telemetry_abc_events', '{n} ABC logs', { n: blAbcLog.length }))
                   ),
                   React.createElement("div", { style: { height: 3, width: 48, borderRadius: '999rem', marginBottom: 6, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } }),
                   React.createElement("div", { style: { fontSize: 12, color: 'var(--bl-text)', fontWeight: 600, lineHeight: 1.5 } },
@@ -4219,6 +4245,53 @@ dataRef.current = d;
                   className: "text-[0.6875rem] leading-relaxed",
                   style: { color: 'var(--bl-muted)', borderLeft: '3px solid var(--bl-amber)', paddingLeft: 10, margin: '2px 0 0' }
                 }, __alloT('stem.behaviorlab.scope_note', 'This lab teaches the concepts of behaviour analysis. It does not qualify anyone to run a functional behaviour assessment or write a behaviour plan \u2014 that is supervised professional work, and the function of a real behaviour is a hypothesis you test with data, not a label you read off a description.')),
+
+                // Three-Term Contingency (A -> B -> C) Schematic SVG tailored to active level
+                (function () {
+                  var aText = blLevel === 5
+                    ? __alloT('stem.behaviorlab.abc_l5_a', 'Green SD vs. Red S-delta')
+                    : blLevel === 9
+                      ? __alloT('stem.behaviorlab.abc_l9_a', 'Tone (CS) before food (US)')
+                      : __alloT('stem.behaviorlab.abc_default_a', 'Chamber cues & lever');
+                  var bText = blLevel === 2
+                    ? __alloT('stem.behaviorlab.abc_l2_b', 'Successive approximations')
+                    : blLevel === 7
+                      ? __alloT('stem.behaviorlab.abc_l7_b', 'Ordered behavior chain')
+                      : blLevel === 8
+                        ? __alloT('stem.behaviorlab.abc_l8_b', 'Any behavior except target')
+                        : blLevel === 9
+                          ? __alloT('stem.behaviorlab.abc_l9_b', 'Anticipatory CR to tone')
+                          : __alloT('stem.behaviorlab.abc_default_b', 'Target operant response');
+                  var cText = blLevel === 3
+                    ? __alloT('stem.behaviorlab.abc_l3_c', 'Withhold food -> burst -> decline')
+                    : blLevel === 4
+                      ? __alloT('stem.behaviorlab.abc_l4_c', 'Scheduled pellet (FR-3)')
+                      : __alloT('stem.behaviorlab.abc_default_c', 'Contingent food pellet');
+                  return React.createElement('div', { className: 'behaviorlab-svg-stage' },
+                    React.createElement('svg', {
+                      viewBox: '0 0 700 106', width: '100%', role: 'img',
+                      'aria-label': __alloT('stem.behaviorlab.abc_diagram_aria', 'Three-term contingency schematic linking Antecedent, Behavior, and Consequence in a learning feedback loop'),
+                      style: { display: 'block', width: '100%', height: 'auto' }
+                    },
+                      React.createElement('rect', { x: 1, y: 1, width: 698, height: 104, rx: 10, fill: 'none', stroke: 'none' }),
+                      React.createElement('rect', { x: 16, y: 16, width: 196, height: 58, rx: 10, fill: '#1e293b', stroke: '#38bdf8', strokeWidth: 1.6 }),
+                      React.createElement('text', { x: 114, y: 36, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 11, fontWeight: 800 }, __alloT('stem.behaviorlab.abc_box_a', 'A \u00B7 ANTECEDENT')),
+                      React.createElement('text', { x: 114, y: 57, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 700 }, aText),
+                      React.createElement('line', { x1: 214, y1: 45, x2: 244, y2: 45, stroke: '#94a3b8', strokeWidth: 2 }),
+                      React.createElement('polygon', { points: '244,40 252,45 244,50', fill: '#94a3b8' }),
+                      React.createElement('rect', { x: 252, y: 16, width: 196, height: 58, rx: 10, fill: '#1e293b', stroke: '#fbbf24', strokeWidth: 1.8 }),
+                      React.createElement('text', { x: 350, y: 36, textAnchor: 'middle', fill: '#fcd34d', fontSize: 11, fontWeight: 800 }, __alloT('stem.behaviorlab.abc_box_b', 'B \u00B7 BEHAVIOR')),
+                      React.createElement('text', { x: 350, y: 57, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 700 }, bText),
+                      React.createElement('line', { x1: 450, y1: 45, x2: 480, y2: 45, stroke: '#94a3b8', strokeWidth: 2 }),
+                      React.createElement('polygon', { points: '480,40 488,45 480,50', fill: '#94a3b8' }),
+                      React.createElement('rect', { x: 488, y: 16, width: 196, height: 58, rx: 10, fill: '#1e293b', stroke: '#34d399', strokeWidth: 1.6 }),
+                      React.createElement('text', { x: 586, y: 36, textAnchor: 'middle', fill: '#6ee7b7', fontSize: 11, fontWeight: 800 }, __alloT('stem.behaviorlab.abc_box_c', 'C \u00B7 CONSEQUENCE')),
+                      React.createElement('text', { x: 586, y: 57, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 700 }, cText),
+                      React.createElement('path', { d: 'M 586 76 C 586 96 350 98 350 78', fill: 'none', stroke: '#fbbf24', strokeWidth: 1.6, strokeDasharray: '5 3' }),
+                      React.createElement('text', { x: 468, y: 98, textAnchor: 'middle', fill: '#fcd34d', fontSize: 10.5, fontWeight: 700 }, __alloT('stem.behaviorlab.abc_feedback_loop', 'Changes future probability of B'))
+                    )
+                  );
+                })(),
 
                 (function () {
 
@@ -4629,9 +4702,17 @@ dataRef.current = d;
 
               React.createElement("div", { className: "flex-1 min-w-0" },
 
-                React.createElement("h2", { className: "text-sm font-extrabold text-white truncate" }, blT('stem.behaviorlab.level_titled', 'Level {n}: {title}', { n: blLevel, title: currentLevel.title })),
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
 
-                React.createElement("p", { className: "text-xs text-amber-300" }, currentLevel.concept)
+                  React.createElement("h2", { className: "text-sm font-extrabold text-white truncate", style: { margin: 0 } }, blT('stem.behaviorlab.level_titled', 'Level {n}: {title}', { n: blLevel, title: currentLevel.title })),
+
+                  React.createElement("span", { className: "behaviorlab-telemetry-pill" }, blT('stem.behaviorlab.sim_ticks_pill', 'Tick {n}', { n: blTick })),
+
+                  React.createElement("span", { className: "behaviorlab-telemetry-pill" }, blT('stem.behaviorlab.sim_reinf_pill', '{n} reinf.', { n: blReinforcements }))
+
+                ),
+
+                React.createElement("p", { className: "text-xs text-amber-300", style: { margin: '2px 0 0' } }, currentLevel.concept)
 
               ),
 
@@ -5977,9 +6058,18 @@ dataRef.current = d;
 
             React.createElement("div", {
 
-              style: Object.assign({ borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(245,158,11,0.2)' }, glass)
+              style: Object.assign({ borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(245,158,11,0.28)' }, glass)
 
             },
+
+              React.createElement('div', { className: 'behaviorlab-cum-header' },
+                React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                  React.createElement('strong', { style: { color: 'var(--bl-amber-text)', fontSize: 12 } }, __alloT('stem.behaviorlab.cum_record_heading', 'Cumulative Response Record')),
+                  React.createElement('span', { className: 'behaviorlab-telemetry-pill' }, blT('stem.behaviorlab.cum_pts_badge', '{n} pts', { n: blCumRecord.length })),
+                  React.createElement('span', { className: 'behaviorlab-telemetry-pill' }, blT('stem.behaviorlab.cum_rate_badge', '{rate}/min', { rate: blTick > 0 ? (blLevelScore / blTick * 60).toFixed(1) : '0.0' }))
+                ),
+                React.createElement('span', { style: { fontSize: 10.5, color: 'var(--bl-muted)', fontWeight: 700 } }, __alloT('stem.behaviorlab.cum_slope_legend', 'Steeper slope = higher response rate'))
+              ),
 
               React.createElement("canvas", {
 

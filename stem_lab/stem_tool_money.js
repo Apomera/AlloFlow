@@ -257,7 +257,7 @@ window.StemLab = window.StemLab || {
       // fn or policy off hides them); teachers keep their prior behaviour.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var moneyAiFn = ctx.callGemini;
       var moneyAiOn = ctx.aiAvailable !== false && typeof moneyAiFn === 'function' && !moneyAiFn._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', moneyAiFn));
@@ -548,8 +548,10 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { style: { position: 'absolute', inset: compact ? 2 : 3, border: '1px solid ' + metaBill.accent + '88', borderRadius: 2 } }),
                 React.createElement('span', { style: { position: 'absolute', left: compact ? 4 : 6, top: compact ? 2 : 3, color: metaBill.accent, fontSize: compact ? 10 : 14, lineHeight: 1, fontWeight: 900 } }, numeral),
                 React.createElement('span', { style: { position: 'absolute', right: compact ? 4 : 6, bottom: compact ? 2 : 3, color: metaBill.accent, fontSize: compact ? 10 : 14, lineHeight: 1, fontWeight: 900 } }, numeral),
-                React.createElement('div', { style: { position: 'absolute', left: '50%', top: '48%', transform: 'translate(-50%,-50%)', width: compact ? 17 : 25, height: compact ? 20 : 29, borderRadius: '50%', border: '1px solid ' + metaBill.accent, background: 'rgba(255,255,255,0.48)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: metaBill.accent, fontSize: compact ? 8 : 11, fontWeight: 900 } }, metaBill.portrait.charAt(0)),
-                React.createElement('span', { style: { position: 'absolute', left: '50%', bottom: compact ? 2 : 3, transform: 'translateX(-50%)', color: metaBill.accent, fontSize: compact ? 5 : 7, fontWeight: 900, whiteSpace: 'nowrap', letterSpacing: '.02em' } }, metaBill.portrait),
+                React.createElement('div', { style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: compact ? 1 : 1.5, pointerEvents: 'none' } },
+                  React.createElement('div', { style: { width: compact ? 14 : 21, height: compact ? 14 : 21, borderRadius: '50%', border: '1px solid ' + metaBill.accent, background: 'rgba(255,255,255,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: metaBill.accent, fontSize: compact ? 7.5 : 10, lineHeight: 1, fontWeight: 900 } }, metaBill.portrait.charAt(0)),
+                  React.createElement('span', { style: { color: metaBill.accent, fontSize: compact ? 5 : 6.5, lineHeight: 1, fontWeight: 900, whiteSpace: 'nowrap', letterSpacing: '.02em' } }, metaBill.portrait)
+                ),
                 React.createElement('div', { style: { position: 'absolute', right: compact ? 15 : 23, top: compact ? 6 : 9, width: compact ? 7 : 10, height: compact ? 7 : 10, borderRadius: '50%', border: '1px solid ' + metaBill.accent, opacity: .75 } }),
                 bill.value === 100 && React.createElement('div', { style: { position: 'absolute', left: '57%', top: 1, bottom: 1, width: compact ? 2 : 3, background: '#1d9bb6aa', transform: 'rotate(-2deg)' } })
               );
@@ -2915,12 +2917,53 @@ window.StemLab = window.StemLab || {
             };
 
             return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-200" },
-              // ── HEADER ──
-              React.createElement("div", { className: "bg-gradient-to-r from-emerald-700 via-green-700 to-teal-700 rounded-2xl p-5 text-white shadow-xl" },
+              // ── HEADER — Bespoke Financial Literacy Workbench Hero ──
+              React.createElement("div", {
+                className: ctx.isContrast
+                  ? "rounded-2xl p-5 text-white border-2 border-white shadow-xl"
+                  : "bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700 rounded-2xl p-5 text-white shadow-xl border border-emerald-500/30",
+                style: {
+                  backgroundColor: ctx.isContrast ? '#000000' : '#065f46',
+                  background: ctx.isContrast ? '#000000' : 'linear-gradient(90deg, #065f46 0%, #047857 52%, #0f766e 100%)'
+                }
+              },
                 React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-3" },
-                  React.createElement("div", null,
-                    React.createElement("h2", { className: "text-xl font-black flex items-center gap-2" }, __alloT('stem.money.money_math', "\uD83D\uDCB5 Money Math")),
-                    React.createElement("p", { className: "text-emerald-50 text-xs mt-1" }, __alloT('stem.money.master_coins_bills_change_budgeting_cu', "Master coins, bills, change, budgeting & currency exchange"))
+                  React.createElement("div", { className: "flex items-center gap-3 min-w-0" },
+                    React.createElement("svg", {
+                      viewBox: "0 0 64 64", width: 46, height: 46, "aria-hidden": "true", focusable: "false",
+                      style: { flexShrink: 0, borderRadius: 12 }
+                    },
+                      React.createElement("rect", { x: 1, y: 1, width: 62, height: 62, rx: 13, fill: ctx.isContrast ? "#000000" : "#022c22", stroke: ctx.isContrast ? "#fde047" : "#34d399", strokeWidth: 2 }),
+                      // Stacked minted coins on left
+                      React.createElement("ellipse", { cx: 22, cy: 46, rx: 12, ry: 4.5, fill: ctx.isContrast ? "#fde047" : "#d97706", stroke: "#fef3c7", strokeWidth: 1.2 }),
+                      React.createElement("ellipse", { cx: 22, cy: 40, rx: 12, ry: 4.5, fill: ctx.isContrast ? "#fde047" : "#f59e0b", stroke: "#fef3c7", strokeWidth: 1.2 }),
+                      React.createElement("ellipse", { cx: 22, cy: 34, rx: 12, ry: 4.5, fill: ctx.isContrast ? "#ffffff" : "#fbbf24", stroke: "#fef3c7", strokeWidth: 1.4 }),
+                      // Banknote ribbon on right
+                      React.createElement("rect", { x: 32, y: 31, width: 22, height: 15, rx: 3, fill: ctx.isContrast ? "#000000" : "#10b981", stroke: ctx.isContrast ? "#ffffff" : "#d1fae5", strokeWidth: 1.5 }),
+                      React.createElement("circle", { cx: 43, cy: 38.5, r: 4, fill: ctx.isContrast ? "#fde047" : "#065f46" }),
+                      // Compound growth trendline above
+                      React.createElement("path", { d: "M12 24 C22 23, 31 20, 48 11", fill: "none", stroke: ctx.isContrast ? "#fde047" : "#6ee7b7", strokeWidth: 2.5, strokeLinecap: "round" }),
+                      React.createElement("path", { d: "M42 10 L49 10.5 L47 17", fill: "none", stroke: ctx.isContrast ? "#fde047" : "#6ee7b7", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round" })
+                    ),
+                    React.createElement("div", { className: "min-w-0" },
+                      React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+                        React.createElement("h2", { className: "text-xl font-black flex items-center gap-2" }, __alloT('stem.money.money_math', "\uD83D\uDCB5 Money Math")),
+                        React.createElement("span", {
+                          className: "px-2 py-0.5 rounded-full text-[0.625rem] font-black uppercase tracking-wider",
+                          style: {
+                            background: ctx.isContrast ? '#fde047' : 'rgba(255,255,255,0.16)',
+                            color: ctx.isContrast ? '#000000' : '#ecfdf5',
+                            border: '1px solid ' + (ctx.isContrast ? '#fde047' : 'rgba(255,255,255,0.28)')
+                          }
+                        }, __alloT('stem.money.subject_badge', 'Math · Financial Literacy'))
+                      ),
+                      React.createElement("p", { className: "text-emerald-50 text-xs mt-1", style: ctx.isContrast ? { color: '#ffffff' } : undefined }, __alloT('stem.money.master_coins_bills_change_budgeting_cu', "Master coins, bills, change, budgeting & currency exchange")),
+                      React.createElement("div", { className: "flex items-center gap-1.5 flex-wrap mt-2" },
+                        React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-black/25 border border-white/25 text-white" }, cur.flag + ' ' + cur.code + ' (' + cur.symbol + ')'),
+                        React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-black/25 border border-white/25 text-white" }, placed.length + ' ' + __alloT('stem.money.hero_pieces', 'pieces on board')),
+                        React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-black/25 border border-white/25 text-white" }, challengeMode ? __alloT('stem.money.challenge_on', 'Challenge on') : __alloT('stem.money.practice_mode', 'Practice mode'))
+                      )
+                    )
                   ),
                   React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
                     // Challenge Mode toggle
@@ -3000,21 +3043,23 @@ window.StemLab = window.StemLab || {
                   inquiry:  { accent: '#155e75', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.money.compound_interest_inquiry', 'Compound Interest Inquiry'), hint: __alloT('stem.money.vary_the_principal_rate_and_time_and_w', 'Vary the principal, rate, and time and watch how compound growth pulls ahead of the contributions alone. An open exploration \u2014 no score, no single right answer.') }
                 };
                 var meta = TAB_META[tab] || TAB_META.coins;
+                var hcBand = !!ctx.isContrast;
+                var darkBand = !!ctx.isDark && !hcBand;
                 return React.createElement('div', {
                   style: {
                     margin: '12px 0 0',
                     padding: '12px 14px',
                     borderRadius: 12,
-                    background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-                    border: '1px solid ' + meta.accent + '55',
-                    borderLeft: '4px solid ' + meta.accent,
+                    background: hcBand ? '#000000' : darkBand ? 'rgba(15,23,42,0.88)' : ('linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)'),
+                    border: '1px solid ' + (hcBand ? '#ffffff' : darkBand ? 'rgba(148,163,184,0.35)' : (meta.accent + '55')),
+                    borderLeft: '4px solid ' + (hcBand ? '#fde047' : darkBand ? '#34d399' : meta.accent),
                     display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
                   }
                 },
                   React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                   React.createElement('div', { style: { flex: 1, minWidth: 220 } },
-                    React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                    React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                    React.createElement('h3', { style: { color: hcBand ? '#fde047' : darkBand ? '#6ee7b7' : meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                    React.createElement('p', { style: { margin: '3px 0 0', color: hcBand ? '#ffffff' : darkBand ? '#cbd5e1' : '#334155', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                   )
                 );
               })(),
@@ -3078,9 +3123,49 @@ window.StemLab = window.StemLab || {
                     )
                   ),
                   placed.length === 0
-                    ? React.createElement("div", { className: "text-center py-8 text-slate-600" },
-                        React.createElement("div", { className: "text-4xl mb-2" }, "\uD83E\uDE99"),
-                        React.createElement("p", { className: "text-xs" }, challengeMode ? 'Add coins/bills, then guess the total!' : 'Click coins or bills to add them here')
+                    ? React.createElement("div", { className: "text-center py-6 text-slate-600" },
+                        React.createElement("svg", { viewBox: "0 0 88 52", width: 72, height: 42, "aria-hidden": "true", focusable: "false", className: "mx-auto mb-2" },
+                          React.createElement("rect", { x: 4, y: 12, width: 80, height: 34, rx: 10, fill: ctx.isContrast ? "#000000" : "#f1f5f9", stroke: ctx.isContrast ? "#ffffff" : "#94a3b8", strokeWidth: 1.8, strokeDasharray: "4 3" }),
+                          React.createElement("circle", { cx: 30, cy: 29, r: 10, fill: ctx.isContrast ? "#fde047" : "#fbbf24", stroke: ctx.isContrast ? "#ffffff" : "#d97706", strokeWidth: 1.6 }),
+                          React.createElement("circle", { cx: 46, cy: 29, r: 8, fill: ctx.isContrast ? "#ffffff" : "#cbd5e1", stroke: ctx.isContrast ? "#000000" : "#64748b", strokeWidth: 1.5 }),
+                          React.createElement("rect", { x: 56, y: 21, width: 20, height: 14, rx: 3, fill: ctx.isContrast ? "#000000" : "#10b981", stroke: ctx.isContrast ? "#fde047" : "#047857", strokeWidth: 1.5 })
+                        ),
+                        React.createElement("p", { className: "text-xs font-semibold" }, challengeMode ? __alloT('stem.money.empty_challenge_hint', 'Add coins/bills, then guess the total!') : __alloT('stem.money.empty_practice_hint', 'Click coins or bills to add them here, or try a starter set:')),
+                        !challengeMode && React.createElement("div", { className: "flex flex-wrap justify-center gap-1.5 mt-3" },
+                          (function () {
+                            var c0 = cur.coins[0], cMid = cur.coins[Math.min(cur.coins.length - 1, 2)] || c0, cHigh = cur.coins[cur.coins.length - 1] || c0;
+                            var b0 = cur.bills[0];
+                            var presets = [
+                              {
+                                id: 'starter-coins',
+                                label: __alloT('stem.money.preset_pocket_coins', 'Pocket coins'),
+                                items: [cHigh, cMid, c0].filter(Boolean)
+                              },
+                              {
+                                id: 'starter-bill-change',
+                                label: __alloT('stem.money.preset_bill_plus_coins', 'Bill + coins'),
+                                items: [b0, cHigh, cMid].filter(Boolean)
+                              },
+                              {
+                                id: 'starter-make-whole',
+                                label: __alloT('stem.money.preset_four_quarters', '4× largest coin'),
+                                items: cHigh ? [cHigh, cHigh, cHigh, cHigh] : []
+                              }
+                            ].filter(function (pr) { return pr.items.length > 0; });
+                            return presets.map(function (pr) {
+                              return React.createElement("button", {
+                                key: pr.id,
+                                type: "button",
+                                onClick: function () {
+                                  var now = Date.now();
+                                  upd('placed', pr.items.map(function (it, idx) { return { name: it.name, value: it.value, id: now + '-p' + idx }; }));
+                                  upd('coinGuess', null); upd('coinGuessFb', null);
+                                },
+                                className: "px-2.5 py-1.5 rounded-full text-[0.6875rem] font-bold border border-emerald-400 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+                              }, pr.label);
+                            });
+                          })()
+                        )
                       )
                     : React.createElement("div", { className: "flex flex-wrap gap-1.5 min-h-[100px]" },
                         placed.map(function (p, pi) {
@@ -3158,7 +3243,7 @@ window.StemLab = window.StemLab || {
                       saved && React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, setCard(saved, __alloT('stem.money.saved_set', 'Saved set')), setCard(placed, __alloT('stem.money.current_set', 'Current set'))),
                       saved && React.createElement('p', { role: 'status', className: 'mt-3 text-sm font-bold text-emerald-900', 'data-equal-value': equal, 'data-different-set': different }, !placed.length ? __alloT('stem.money.build_matching_set', 'Add coins or bills to match the saved total.') : equal && different ? __alloT('stem.money.equivalent_sets_success', 'Same value, different pieces! Explain how both sets make the same total.') : equal ? __alloT('stem.money.same_set_prompt', 'The values match. Try using different denominations.') : __alloT('stem.money.compare_sets_prompt', 'The totals differ. Compare both sets and adjust the counting board.')));
                   })(),
-                  // Normal mode: grouped denomination breakdown and equation.
+                  // Normal mode: grouped denomination breakdown, visual value-share bar, and equation.
                   !challengeMode && placed.length > 0 && React.createElement('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
                     React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
                       React.createElement('div', null,
@@ -3167,6 +3252,48 @@ window.StemLab = window.StemLab || {
                       ),
                       React.createElement('span', { className: 'text-lg font-black text-emerald-700' }, fmt(boardTotal))
                     ),
+                    boardTotal > 0 && cashGroups.length > 0 && (function () {
+                      var barW = 404, barX = 8, barY = 6, barH = 22, curX = barX;
+                      var billPalette = ['#047857', '#0f766e', '#0369a1', '#15803d'];
+                      var coinPalette = ['#d97706', '#b45309', '#64748b', '#7c3aed'];
+                      var segs = cashGroups.map(function (group, gi) {
+                        var share = (group.value * group.count) / boardTotal;
+                        var w = Math.max(2, share * barW);
+                        var x = curX;
+                        curX += w;
+                        var fill = ctx.isContrast
+                          ? (gi % 2 === 0 ? '#fde047' : '#ffffff')
+                          : (group.isBill ? billPalette[gi % billPalette.length] : coinPalette[gi % coinPalette.length]);
+                        return { group: group, x: x, w: w, pct: Math.round(share * 100), fill: fill };
+                      });
+                      return React.createElement('div', { className: 'mb-2.5' },
+                        React.createElement('svg', {
+                          viewBox: '0 0 420 44', width: '100%', role: 'img',
+                          'aria-label': __alloT('stem.money.value_share_aria', 'Denomination value share bar') + ': ' + segs.map(function (s) { return s.group.name + ' ' + s.pct + '%'; }).join(', '),
+                          style: { display: 'block', width: '100%', height: 'auto', maxHeight: '48px' }
+                        },
+                          React.createElement('rect', { x: barX, y: barY, width: barW, height: barH, rx: 6, fill: ctx.isContrast ? '#000000' : '#e2e8f0', stroke: ctx.isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 1 }),
+                          segs.map(function (s, idx) {
+                            return React.createElement('g', { key: 'vseg-' + idx },
+                              React.createElement('rect', {
+                                x: s.x, y: barY, width: Math.min(s.w, Math.max(0, barX + barW - s.x)), height: barH,
+                                rx: idx === 0 || idx === segs.length - 1 ? 4 : 0,
+                                fill: s.fill,
+                                stroke: ctx.isContrast ? '#000000' : '#ffffff',
+                                strokeWidth: 1.2
+                              }),
+                              s.w >= 54 && React.createElement('text', {
+                                x: s.x + s.w / 2, y: barY + 15, textAnchor: 'middle',
+                                fill: ctx.isContrast ? '#000000' : '#ffffff',
+                                style: { fontSize: '10px', fontWeight: 800 }
+                              }, s.pct + '%')
+                            );
+                          }),
+                          React.createElement('text', { x: barX, y: 40, fill: ctx.isContrast ? '#ffffff' : '#475569', style: { fontSize: '10px', fontWeight: 700 } }, __alloT('stem.money.value_share_label', 'Share of total value by denomination')),
+                          React.createElement('text', { x: barX + barW, y: 40, textAnchor: 'end', fill: ctx.isContrast ? '#fde047' : '#047857', style: { fontSize: '10px', fontWeight: 800 } }, fmt(boardTotal))
+                        )
+                      );
+                    })(),
                     React.createElement('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
                       cashGroups.map(function (group) {
                         var definition = group.isBill ? (cur.bills.find(function (bill) { return bill.name === group.name; }) || { name: group.name, value: group.value, color: '#85bb65' }) : (cur.coins.find(function (coin) { return coin.name === group.name; }) || { name: group.name, value: group.value, color: '#C0C0C0', size: 28, label: fmt(group.value) });

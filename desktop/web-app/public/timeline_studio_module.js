@@ -36,7 +36,7 @@
       var pathname = loc.pathname || '';
       var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
       var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
-      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      var isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled) return new URL(path, loc.href).toString();
       if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
     } catch (_) {}
@@ -511,7 +511,16 @@
     var summary = summaryState[0];
     var setSummary = summaryState[1];
 
-    var aiOn = props.aiHintsEnabled !== false && typeof callGemini === 'function';
+    var aiOn = props.aiHintsEnabled !== false && (function () {
+      if (typeof callGemini !== 'function' || callGemini._alloQrBlocked) return false;
+      if (typeof window !== 'undefined') {
+        if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
+        if (typeof window.__alloAiUsable === 'function') {
+          try { return !!window.__alloAiUsable('text', callGemini); } catch (_) { return false; }
+        }
+      }
+      return true;
+    })();
     var lang = props.lang || 'en';
 
     React.useEffect(function () {

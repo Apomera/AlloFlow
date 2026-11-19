@@ -277,9 +277,19 @@ var require_tmp_annotation_suite_entry = __commonJS({
           el.style.left = s.x + dx + offsetLeft + "px";
           el.style.top = s.y + dy + offsetTop + "px";
         };
-        const upHandler = function(mv) {
+        const cleanup = function() {
           window.removeEventListener("pointermove", moveHandler);
           window.removeEventListener("pointerup", upHandler);
+          window.removeEventListener("pointercancel", cancelHandler);
+          window.removeEventListener("blur", cancelHandler);
+        };
+        const cancelHandler = function() {
+          cleanup();
+          el.style.left = startLeft + "px";
+          el.style.top = startTop + "px";
+        };
+        const upHandler = function(mv) {
+          cleanup();
           if (!didMove) {
             el.style.left = startLeft + "px";
             el.style.top = startTop + "px";
@@ -295,6 +305,8 @@ var require_tmp_annotation_suite_entry = __commonJS({
         };
         window.addEventListener("pointermove", moveHandler);
         window.addEventListener("pointerup", upHandler);
+        window.addEventListener("pointercancel", cancelHandler);
+        window.addEventListener("blur", cancelHandler);
       };
     }
     function announceAnnotationMove(message) {
@@ -348,10 +360,13 @@ var require_tmp_annotation_suite_entry = __commonJS({
       }
       return null;
     }
+    function _ownAnno(obj, key) {
+      return typeof key === "string" && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : void 0;
+    }
     function StickerNode({ s, draggable, onMove }) {
       if (!s) return null;
       const title = buildStickerTitle(s);
-      const icon = STICKER_ICONS[s.type] || "";
+      const icon = _ownAnno(STICKER_ICONS, s.type) || "";
       const ringClass = s.author === "teacher" ? " ring-2 ring-indigo-400/70 rounded-full bg-white/80 p-0.5" : "";
       const isDraggable = !!(draggable && onMove);
       const pointerClass = isDraggable ? "" : " pointer-events-none";
@@ -373,7 +388,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
     }
     function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
       if (!a) return null;
-      const palette = NOTE_COLORS[a.color] || NOTE_COLORS.yellow;
+      const palette = _ownAnno(NOTE_COLORS, a.color) || NOTE_COLORS.yellow;
       const [expanded, setExpanded] = React.useState(!a.content);
       const [draft, setDraft] = React.useState(a.content || "");
       React.useEffect(function() {
@@ -508,7 +523,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
       const dur = typeof a.durationSec === "number" ? Math.round(a.durationSec) : null;
       const hasAudio = !!a.audioBase64;
       const isT = a.author === "teacher";
-      const accent = isT ? "#6366f1" : "#f59e0b";
+      const accent = isT ? "#4f46e5" : "#b45309";
       if (!expanded) {
         const isDraggable = !!(draggable && onMove);
         const handleDown = isDraggable ? makeDragHandler(a, findAnnoHost, onMove, wasDraggedRef) : void 0;
@@ -653,7 +668,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
     }
     function HighlightOverlay({ a, onDelete }) {
       if (!a || !Array.isArray(a.rects) || a.rects.length === 0) return null;
-      const palette = HIGHLIGHT_COLORS[a.color] || HIGHLIGHT_COLORS.yellow;
+      const palette = _ownAnno(HIGHLIGHT_COLORS, a.color) || HIGHLIGHT_COLORS.yellow;
       const title = buildStickerTitle(a) || "Highlight";
       const titleText = (a.text ? '"' + a.text.slice(0, 80) + (a.text.length > 80 ? "\u2026" : "") + '"  ' : "") + title;
       return /* @__PURE__ */ React.createElement(React.Fragment, null, a.rects.map(function(r, idx) {
@@ -733,7 +748,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
     function DrawingOverlay({ a, onDelete }) {
       if (!a) return null;
       const shape = a.shape || "free";
-      const stroke = DRAW_COLORS[a.color] || a.color || "#dc2626";
+      const stroke = _ownAnno(DRAW_COLORS, a.color) || typeof a.color === "string" && a.color || "#dc2626";
       const w = typeof a.width === "number" ? a.width : 4;
       let bbx = a.x, bby = a.y, bbw = a.w, bbh = a.h;
       if (bbx == null || bby == null || bbw == null || bbh == null) {
@@ -898,7 +913,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
       const sh = shape || "free";
       const isErase = sh === "erase";
       if (!active) return null;
-      const c = DRAW_COLORS[color] || color || "#dc2626";
+      const c = _ownAnno(DRAW_COLORS, color) || typeof color === "string" && color || "#dc2626";
       function getXY(e, host) {
         const rect = host.getBoundingClientRect();
         return { x: e.clientX - rect.left, y: e.clientY - rect.top };
@@ -1212,6 +1227,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           {
             type: "button",
             "aria-label": type,
+            "aria-pressed": stickerType === type,
             key: type,
             onClick: function() {
               onPickType(type);
@@ -1238,6 +1254,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             type: "button",
             key,
             "aria-label": "Note color " + key,
+            "aria-pressed": noteColor === key,
             onClick: function() {
               onPickNoteColor(key);
             },
@@ -1280,6 +1297,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             type: "button",
             key,
             "aria-label": "Highlight color " + key,
+            "aria-pressed": highlightColor === key,
             onClick: function() {
               onPickHighlightColor(key);
             },
@@ -1306,6 +1324,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             type: "button",
             key: sh,
             "aria-label": DRAW_SHAPE_LABELS[sh] || sh,
+            "aria-pressed": drawShape === sh,
             onClick: function() {
               onPickDrawShape(sh);
             },
@@ -1323,6 +1342,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             type: "button",
             key,
             "aria-label": "Draw color " + key,
+            "aria-pressed": drawColor === key,
             onClick: function() {
               onPickDrawColor(key);
             },
@@ -1333,7 +1353,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
         );
       }), (function() {
         const isCustom = DRAW_COLOR_KEYS.indexOf(drawColor) === -1;
-        const currentHex = DRAW_COLORS[drawColor] || drawColor || "#dc2626";
+        const currentHex = _ownAnno(DRAW_COLORS, drawColor) || typeof drawColor === "string" && drawColor || "#dc2626";
         return /* @__PURE__ */ React.createElement(
           "label",
           {
@@ -1379,6 +1399,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             type: "button",
             key: "w" + w,
             "aria-label": "Line width " + w + "px",
+            "aria-pressed": drawWidth === w,
             onClick: function() {
               onPickDrawWidth(w);
             },
@@ -1432,7 +1453,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
       const x = evt.clientX - rect.left + (hostEl.scrollLeft || 0);
       const y = evt.clientY - rect.top + (hostEl.scrollTop || 0);
       const o = opts || {};
-      const color = NOTE_COLORS[o.color] ? o.color : "yellow";
+      const color = _ownAnno(NOTE_COLORS, o.color) ? o.color : "yellow";
       return {
         id: Date.now(),
         kind: "note",
@@ -1577,7 +1598,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
       }
       if (rects.length === 0) return null;
       const o = opts || {};
-      const color = HIGHLIGHT_COLORS[o.color] ? o.color : "yellow";
+      const color = _ownAnno(HIGHLIGHT_COLORS, o.color) ? o.color : "yellow";
       return {
         id: Date.now(),
         kind: "highlight",

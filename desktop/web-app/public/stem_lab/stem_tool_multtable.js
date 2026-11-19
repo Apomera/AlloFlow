@@ -46,18 +46,23 @@ window.StemLab = window.StemLab || {
     st.textContent = [
       '@keyframes allo-mt-dot-in { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }',
       '@keyframes allo-mt-cell-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(236,72,153,0.55); } 50% { box-shadow: 0 0 0 6px rgba(236,72,153,0); } }',
-      '.allo-mt-dot { animation: allo-mt-dot-in 0.22s ease-out backwards; }',
+      '.allo-mt-dot { animation: allo-mt-dot-in 0.22s ease-out backwards; box-shadow: inset 0 -2px 0 rgba(15,23,42,0.22), 0 1px 2px rgba(15,23,42,0.12); }',
       '.allo-mt-pattern-cell { animation: allo-mt-cell-pulse 1.6s ease-in-out 2; }',
-      '.allo-mt-bg-practice { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(236,72,153,0.10) 0%, rgba(236,72,153,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
-      '.allo-mt-bg-visual   { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10)  0%, rgba(217,119,6,0.04)  35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
-      '.allo-mt-bg-patterns { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(99,102,241,0.10)  0%, rgba(99,102,241,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-mt-bg-practice { background: radial-gradient(circle at 1px 1px, rgba(219,39,119,0.08) 1px, transparent 0) 0 0 / 18px 18px, radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(236,72,153,0.10) 0%, rgba(236,72,153,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-mt-bg-visual   { background: radial-gradient(circle at 1px 1px, rgba(217,119,6,0.09) 1px, transparent 0) 0 0 / 18px 18px, radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10)  0%, rgba(217,119,6,0.04)  35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-mt-bg-patterns { background: radial-gradient(circle at 1px 1px, rgba(99,102,241,0.09) 1px, transparent 0) 0 0 / 18px 18px, radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(99,102,241,0.10)  0%, rgba(99,102,241,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '[data-multtable-root] :is(button, input, select, summary):focus-visible { outline: 3px solid #be185d; outline-offset: 2px; }',
+      '[data-mt-hc="true"] :is(button, input, select, summary):focus-visible, .theme-contrast [data-multtable-root] :is(button, input, select, summary):focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 2px !important; }',
+      '.allo-mt-hero-deck { box-shadow: 0 14px 32px -12px rgba(80,7,36,0.45), inset 0 1px 0 rgba(255,255,255,0.12); }',
+      '.allo-mt-challenge-card { box-shadow: 0 10px 24px -14px rgba(157,23,77,0.25), 0 1px 3px rgba(15,23,42,0.06); }',
       '[data-mt-grid] [role="gridcell"]:focus-visible { outline: 3px solid #1d4ed8; outline-offset: -3px; position: relative; z-index: 1; }',
-      '[data-mt-grid] [role="gridcell"] { cursor: pointer; }',
+      '[data-mt-grid] [role="gridcell"] { cursor: pointer; transition: background-color 0.12s ease; }',
       '[data-mt-sieve-grid] [role="gridcell"]:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 1px; position: relative; z-index: 1; }',
       '[data-mt-theme="dark"] [data-mt-sieve-grid] [role="gridcell"]:focus-visible { outline-color: #fbbf24; }',
       '[data-mt-theme="hc"] [data-mt-sieve-grid] [role="gridcell"]:focus-visible { outline-color: #00ffff; }',
       // WCAG 1.4.3 high contrast: text panels/buttons drop their light or mid-tone gradients.
-      '.theme-contrast [data-stem-tool-shell="multtable"] :is(.allo-mt-bg-practice, .allo-mt-bg-visual, .allo-mt-bg-patterns, .from-amber-50, .from-purple-50, .from-pink-600.to-rose-600, .from-amber-700.to-orange-700) { background-image: none !important; background-color: #000 !important; }',
+      '.theme-contrast [data-stem-tool-shell="multtable"] :is(.allo-mt-bg-practice, .allo-mt-bg-visual, .allo-mt-bg-patterns, .from-amber-50, .from-purple-50, .from-pink-600.to-rose-600, .from-amber-700.to-orange-700), [data-mt-hc="true"] :is(.allo-mt-bg-practice, .allo-mt-bg-visual, .allo-mt-bg-patterns) { background-image: none !important; background-color: #000 !important; border-color: #ffff00 !important; }',
+      '.theme-contrast [data-multtable-command="true"], [data-mt-hc="true"] [data-multtable-command="true"] { background-image: none !important; background-color: #000000 !important; border: 2px solid #ffff00 !important; box-shadow: none !important; }',
       // High contrast (ctx.isContrast sets data-mt-hc on the tool root): light cards go black, dark ink goes white,
       // whether or not the hub's own remap stylesheet is present. Dark chips with white ink keep their colours.
       '[data-mt-hc="true"] :is(.bg-white, .bg-white\\/80, .bg-slate-50, .bg-slate-100, .bg-slate-200, .bg-amber-50, .bg-emerald-50, .bg-fuchsia-50, .bg-indigo-50, .bg-orange-50, .bg-pink-50, .bg-red-50, .bg-sky-50, .bg-violet-50, .bg-emerald-100, .bg-pink-100, .bg-purple-100, .bg-violet-100, .bg-amber-200, .bg-amber-400, [class~="from-amber-50"], [class~="from-purple-50"]) { background-color: #000000 !important; background-image: none !important; }',
@@ -2097,6 +2102,21 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
               h('p', { className: 'text-[0.625rem] font-bold text-violet-800 uppercase tracking-wider mb-1' }, t('stem.multtable.commutativity_twin', '⇄ Commutativity twin')),
               h('p', { className: 'text-sm font-mono font-bold text-violet-900' }, a + TIMES + b + ' = ' + b + TIMES + a + ' = ' + product),
+              (function() {
+                var u = 5, w1 = Math.max(12, b * u), h1 = Math.max(12, a * u), w2 = Math.max(12, a * u), h2 = Math.max(12, b * u);
+                var maxH = Math.max(h1, h2, 30), svgW = w1 + w2 + 56, svgH = maxH + 24;
+                var hcV = mtTheme === 'hc';
+                var cFill1 = hcV ? '#000000' : '#ede9fe', cStr1 = hcV ? '#ffff00' : '#6d28d9';
+                var cFill2 = hcV ? '#000000' : '#fce7f3', cStr2 = hcV ? '#ffffff' : '#be185d';
+                var cTxt = hcV ? '#ffff00' : '#4c1d95';
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, 'aria-hidden': 'true', focusable: 'false', className: 'mt-1.5', style: { width: '100%', maxWidth: Math.min(svgW * 1.3, 240), height: 'auto', display: 'block' } },
+                  h('rect', { x: 8, y: Math.round((maxH - h1) / 2) + 4, width: w1, height: h1, rx: 3, fill: cFill1, stroke: cStr1, strokeWidth: 2 }),
+                  h('text', { x: 8 + w1 / 2, y: svgH - 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: cTxt }, a + '×' + b),
+                  h('text', { x: w1 + 28, y: Math.round(maxH / 2) + 8, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: cTxt }, '='),
+                  h('rect', { x: w1 + 44, y: Math.round((maxH - h2) / 2) + 4, width: w2, height: h2, rx: 3, fill: cFill2, stroke: cStr2, strokeWidth: 2 }),
+                  h('text', { x: w1 + 44 + w2 / 2, y: svgH - 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: cTxt }, b + '×' + a)
+                );
+              })(),
               h('p', { className: 'text-[0.625rem] text-violet-800 italic mt-0.5' }, t('stem.multtable.same_dots_just_turned_sideways_learn_o', 'Same dots, just turned sideways. Learn one fact, know two.'))
             )
           ),
@@ -2532,7 +2552,10 @@ window.StemLab = window.StemLab || {
         }
         var sourceNote = ch.source === 'chosen' ? t('stem.multtable.chosen_note', 'You picked this fact from the table, so it is practice only: it earns no XP.')
           : ch.source === 'drill' ? t('stem.multtable.drill_note', 'Practice-set fact: it counts toward your mastery, not XP, because you saw its answer in the review.') : null;
-        return h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-200', 'data-mt-challenge': 'true' },
+        return h('div', { className: 'bg-pink-50 rounded-xl p-4 border-2 border-pink-200 allo-mt-challenge-card', 'data-mt-challenge': 'true' },
+          h('div', { className: 'flex items-center justify-center mb-1.5', 'aria-hidden': 'true' },
+            h('span', { className: 'inline-flex items-center gap-1 rounded-full border border-pink-300 bg-white px-2.5 py-0.5 text-[0.625rem] font-bold uppercase tracking-wider text-pink-900' }, modeName(ch.mode === 'derive' ? 'derive' : ch.mode === 'divmiss' ? 'equations' : ch.mode))
+          ),
           prompt,
           sourceNote && h('p', { className: 'text-xs text-slate-700 text-center mb-2' }, sourceNote),
           h('div', { className: 'flex gap-2 items-center justify-center flex-wrap' },
@@ -3880,12 +3903,15 @@ window.StemLab = window.StemLab || {
               fmt(t('stem.multtable.flu_clock', 'Clock: {m}:{s}'), { m: Math.floor((tm.timeLeft || 0) / 60), s: String((tm.timeLeft || 0) % 60).padStart(2, '0') }) + (tm.paused ? ' ' + t('stem.multtable.paused', '(paused)') : '')),
             h('button', { type: 'button', onClick: fluPauseToggle, className: 'px-3 rounded-lg text-xs font-bold bg-white text-slate-900 border border-slate-500', style: chipInk(CHIP) }, tm.paused ? t('stem.multtable.flu_resume', 'Resume the clock') : t('stem.multtable.flu_pause', 'Pause the clock'))),
           (!flu || flu.phase === 'done') && h('button', { type: 'button', onClick: fluStart, 'data-mt-flu-start': 'true', className: 'px-4 rounded-lg bg-pink-700 text-white font-bold text-sm', style: hcPrimary }, flu ? t('stem.multtable.flu_again', 'Play another round') : t('stem.multtable.flu_start', 'Start a round')),
-          flu && h('div', { className: 'space-y-2' },
-            h('ol', { className: 'flex gap-1', 'aria-label': fmt(t('stem.multtable.flu_steps', 'Steps climbed: {k} of {n}'), { k: climbed, n: total }), 'data-mt-flu-steps': climbed },
-              Array.from({ length: total }, function(_, i) {
-                var up = i < climbed;
-                return h('li', { key: i, 'aria-hidden': 'true', 'data-mt-climb-step': up ? 'up' : 'down', style: { width: 22, height: 10 + i * 4, alignSelf: 'flex-end', background: up ? CLIMB_INK.up : CLIMB_INK.down, border: '2px solid ' + CLIMB_INK.bd, borderRadius: 3 } });
-              })),
+          flu && h('div', { className: 'space-y-2 rounded-xl border p-3 ' + (mtTheme === 'light' ? 'border-pink-200 bg-pink-50' : ''), style: mtTheme === 'dark' ? { background: '#1e293b', borderColor: '#475569' } : cardStyle() },
+            h('div', { className: 'flex items-end gap-2 overflow-x-auto pb-0.5' },
+              h('ol', { className: 'flex gap-1', 'aria-label': fmt(t('stem.multtable.flu_steps', 'Steps climbed: {k} of {n}'), { k: climbed, n: total }), 'data-mt-flu-steps': climbed },
+                Array.from({ length: total }, function(_, i) {
+                  var up = i < climbed;
+                  return h('li', { key: i, 'aria-hidden': 'true', 'data-mt-climb-step': up ? 'up' : 'down', style: { width: 22, height: 10 + i * 4, alignSelf: 'flex-end', background: up ? CLIMB_INK.up : CLIMB_INK.down, border: '2px solid ' + CLIMB_INK.bd, borderRadius: 3 } });
+                })),
+              h('span', { 'aria-hidden': 'true', className: 'text-sm font-black shrink-0', style: { color: climbed >= total ? (mtTheme === 'hc' ? '#ffff00' : '#047857') : (mtTheme === 'hc' ? '#ffffff' : '#9d174d') } }, climbed >= total ? '🏁' : '⛰️')
+            ),
             h('p', { className: 'text-xs font-bold text-pink-900', style: ink('head') }, fmt(t('stem.multtable.flu_steps', 'Steps climbed: {k} of {n}'), { k: climbed, n: total }))),
           it && h('div', { className: 'rounded-lg border border-pink-200 bg-pink-50 p-3 space-y-2', 'data-mt-flu-play': 'true', style: cardStyle() },
             h('p', { className: 'text-xs font-bold text-pink-900', style: cardInk('head') }, it.again ? t('stem.multtable.flu_again_fact', 'Coming back to a fact you missed') : fmt(t('stem.multtable.flu_fact_n', 'Fact {i} of {n}'), { i: flu.i + 1, n: total })),
@@ -4027,6 +4053,13 @@ window.StemLab = window.StemLab || {
             h('h3', { id: 'mt-path-h', className: 'text-sm font-black text-pink-900', style: cardInk('head') }, t('stem.multtable.path_heading', 'Start here')),
             h('span', { className: 'text-xs font-bold text-slate-800', 'data-mt-path-count': doneCount, style: cardInk('text') },
               fmt(t('stem.multtable.path_count', '{k} of {n} steps done'), { k: doneCount, n: lp.steps.length })),
+            h('div', { 'aria-hidden': 'true', className: 'flex items-center gap-1', style: { width: 72 } },
+              lp.steps.map(function(stItem, si) {
+                return h('span', { key: 'seg-' + si, className: 'h-2 flex-1 rounded-full', style: {
+                  backgroundColor: stItem.done ? (hc ? '#ffff00' : '#059669') : (si === lp.next ? (hc ? '#ffffff' : '#be185d') : (hc ? '#475569' : '#e2e8f0')),
+                  border: hc ? '1px solid #ffff00' : 'none'
+                } });
+              })),
             h('button', { type: 'button', 'aria-expanded': open, 'aria-controls': open ? 'mt-path-list' : undefined, onClick: function() { extUpd({ pathOpen: !open }); },
               className: 'ml-auto px-3 rounded-lg text-xs font-bold bg-white text-pink-900 border border-pink-700', style: chipInk(CHIP) },
               open ? t('stem.multtable.path_hide', 'Hide the steps') : t('stem.multtable.path_show', 'Show all steps'))),
@@ -4123,30 +4156,53 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200', 'data-multtable-root': 'true', 'data-mt-hc': mtTheme === 'hc' ? 'true' : undefined },
 
         // ── Header ──
-        h('section', { 'data-multtable-command': 'true', className: 'overflow-hidden rounded-2xl border border-pink-300/40 bg-gradient-to-br from-slate-950 via-pink-950 to-violet-950 text-white shadow-xl' },
+        h('section', { 'data-multtable-command': 'true', className: 'overflow-hidden rounded-2xl border border-pink-300/40 bg-gradient-to-br from-slate-950 via-pink-950 to-violet-950 text-white shadow-xl allo-mt-hero-deck' },
           h('div', { className: 'p-4 sm:p-5' },
             h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
               h('div', { className: 'min-w-0' },
-                h('div', { className: 'flex items-center gap-2' },
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
                   h('button', { type: 'button', onClick: function() { stopRunQuietly(); setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-pink-300', style: { minWidth: 44, minHeight: 44 }, 'aria-label': t('stem.multtable.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-pink-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-pink-100 ring-1 ring-pink-200/30' }, t('stem.multtable.studio_tag', 'Fact strategy studio'))
+                  h('span', { className: 'inline-flex items-center justify-center rounded-xl border border-pink-200/30 bg-white/10 p-1.5 shrink-0', 'aria-hidden': 'true' },
+                    h('svg', { viewBox: '0 0 36 36', width: 28, height: 28, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
+                      h('rect', { x: 2, y: 2, width: 32, height: 32, rx: 7, fill: mtTheme === 'hc' ? '#000000' : '#500724', stroke: mtTheme === 'hc' ? '#ffff00' : '#f9a8d4', strokeWidth: 1.6 }),
+                      [0, 1, 2].map(function(gr) {
+                        return [0, 1, 2].map(function(gc) {
+                          var diag = gr === gc;
+                          return h('rect', { key: gr + '-' + gc, x: 7 + gc * 8, y: 7 + gr * 8, width: 6, height: 6, rx: 1.5,
+                            fill: diag ? (mtTheme === 'hc' ? '#ffff00' : '#f472b6') : (mtTheme === 'hc' ? '#ffffff' : 'rgba(255,255,255,0.32)') });
+                        });
+                      })
+                    )
+                  ),
+                  h('span', { className: 'rounded-full bg-pink-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-pink-100 ring-1 ring-pink-200/30' }, t('stem.multtable.studio_tag', 'Fact strategy studio')),
+                  h('span', { className: 'rounded-full bg-white/10 px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-[0.14em] text-pink-100 border border-white/15' }, t('stem.multtable.subject_badge', 'Math · Number Sense'))
                 ),
                 h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.multtable.multiplication_table', '🔢 Multiplication Table')),
                 h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-pink-100' }, t('stem.multtable.subtitle', 'Use arrays, patterns, and fact families to reason toward fluent multiplication and division.')),
                 h('p', { className: 'mt-2 text-sm text-white' }, multNext)
               ),
-              h('div', { className: 'hidden sm:grid grid-cols-3 gap-2 lg:w-[22rem]' },
-                [
-                  { k: 'focus', label: t('stem.multtable.metric_focus', 'Focus'), value: multTabLabel },
-                  { k: 'correct', label: t('stem.multtable.metric_correct', 'Correct'), value: String(_ext.totalCorrect || 0) },
-                  { k: 'streak', label: t('stem.multtable.metric_streak', 'Streak'), value: String(_mt.streak || 0) }
-                ].map(function(metric) {
-                  return h('div', { key: metric.k, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
-                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-pink-200' }, metric.label)
-                  );
-                })
-              )
+              (function() {
+                var tracked = Object.keys(factScores).length;
+                var mastered = Object.keys(factScores).filter(function(k) { var s = factScores[k]; return s && Number(s.attempts) >= 2 && Number(s.correct) / Number(s.attempts) >= 0.85; }).length;
+                return h('div', { className: 'hidden sm:flex flex-col gap-2 lg:w-[22rem]' },
+                  h('div', { className: 'grid grid-cols-3 gap-2' },
+                    [
+                      { k: 'focus', label: t('stem.multtable.metric_focus', 'Focus'), value: multTabLabel },
+                      { k: 'correct', label: t('stem.multtable.metric_correct', 'Correct'), value: String(_ext.totalCorrect || 0) },
+                      { k: 'streak', label: t('stem.multtable.metric_streak', 'Streak'), value: String(_mt.streak || 0) }
+                    ].map(function(metric) {
+                      return h('div', { key: metric.k, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                        h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                        h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-pink-200' }, metric.label)
+                      );
+                    })
+                  ),
+                  h('div', { className: 'flex items-center justify-between gap-2 rounded-xl border border-white/15 bg-black/20 px-3 py-1.5 text-[0.6875rem] text-pink-100' },
+                    h('span', { className: 'font-bold' }, fmt(t('stem.multtable.hero_mastery_label', 'Mastery lattice: {m} mastered · {n} tracked'), { m: mastered, n: tracked })),
+                    h('span', { className: 'font-mono font-bold text-white' }, earnedCount + '/' + BADGES.length + ' 🏅')
+                  )
+                );
+              })()
             ),
             h('details', { className: 'mt-3 text-white' }, h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined, minHeight: 32 }, className: 'cursor-pointer text-sm font-bold' }, t('stem.multtable.learning_steps', 'Learning steps')), h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': t('stem.multtable.multiplication_reasoning_pathway','Multiplication reasoning pathway') },
               [

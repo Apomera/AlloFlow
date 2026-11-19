@@ -54,7 +54,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       var pathname = loc.pathname || '';
       var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
       var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
-      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      var isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled) return new URL(path, loc.href).toString();
       if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
     } catch (_) {}
@@ -93,11 +93,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
   // stable, or was it rewritten recently?
   var _liveAmended = null;
 
+  function fetchWithTimeout(url, init, parseFn, ms) {
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function() { ctrl.abort(); }, ms || 12000) : null;
+    var clearT = function() { if (timer !== null) { clearTimeout(timer); timer = null; } };
+    var opts = ctrl ? Object.assign({}, init || {}, { signal: ctrl.signal }) : (init || {});
+    return fetch(url, opts).then(parseFn).then(function(v) { clearT(); return v; }, function(e) { clearT(); throw e; });
+  }
+
   function liveDate() {
     if (_liveDate) return Promise.resolve(_liveDate);
     if (_liveDatePending) return _liveDatePending;
-    _liveDatePending = fetch(ECFR_API + 'versioner/v1/titles.json', { cache: 'no-cache' })
-      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    _liveDatePending = fetchWithTimeout(ECFR_API + 'versioner/v1/titles.json', { cache: 'no-cache' }, function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }, 12000)
       .then(function(j) {
         var t34 = (j.titles || []).filter(function(t) { return t.number === 34; })[0];
         _liveDate = (t34 && t34.up_to_date_as_of) || null;
@@ -144,10 +151,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
     if (_liveSections[key]) return Promise.resolve(_liveSections[key]);
     return liveDate().then(function(date) {
       var url = ECFR_API + 'versioner/v1/full/' + date + '/title-34.xml?part=' + part + '&section=' + number;
-      return fetch(url, { cache: 'no-cache' }).then(function(r) {
+      return fetchWithTimeout(url, { cache: 'no-cache' }, function(r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.text();
-      }).then(function(xml) {
+      }, 15000).then(function(xml) {
         var sec = parseLiveSection(xml, number);
         if (!sec) throw new Error('section not found in live response');
         sec.currentAsOf = date;
@@ -168,10 +175,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
   }
 
   function loadJson(path) {
-    return fetch(corpusUrl(path), { cache: 'no-cache' }).then(function(r) {
+    return fetchWithTimeout(corpusUrl(path), { cache: 'no-cache' }, function(r) {
       if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + path);
       return r.json();
-    });
+    }, 12000);
   }
 
   // Search within a loaded document. Plain substring over the section's own
@@ -352,6 +359,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       var manifest = manifestState[0], setManifest = manifestState[1];
       var errState = React.useState('');
       var loadErr = errState[0], setLoadErr = errState[1];
+      var manifestRetryState = React.useState(0);
+      var manifestRetryTick = manifestRetryState[0], setManifestRetryTick = manifestRetryState[1];
       var docTick = React.useState(0);
       var setDocTick = docTick[1];
       var aiState = React.useState({ busy: false, text: '', forSection: '' });
@@ -366,6 +375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       React.useEffect(function() {
         if (_manifest) { setManifest(_manifest); return; }
         var cancelled = false;
+        setLoadErr('');
         loadJson('law_corpus/manifest.json').then(function(m) {
           _manifest = m;
           if (!cancelled) setManifest(m);
@@ -373,7 +383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           if (!cancelled) setLoadErr(String(e.message || e));
         });
         return function() { cancelled = true; };
-      }, []);
+      }, [manifestRetryTick]);
 
       function ensureDoc(slug, retry) {
         if (!slug || _docs[slug] || _loading[slug]) return;
@@ -604,7 +614,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           h('div', { role: 'alert', className: 'rounded-xl p-4 text-sm', style: { background: 'rgba(190,18,60,0.1)', border: '1px solid rgba(190,18,60,0.4)', color: pal.text } },
             h('p', { className: 'font-bold mb-1' }, __alloT('stem.lawNav.err_title', 'The official text could not be loaded.')),
             h('p', null, __alloT('stem.lawNav.err_body', 'This tool only ever shows regulation text it has actually fetched, so it will not display anything from memory instead. Check your connection and try again, or open the official source directly.')),
-            h('p', { className: 'text-[0.6875rem] mt-2', style: { color: pal.muted } }, loadErr)
+            h('p', { className: 'text-[0.6875rem] mt-2', style: { color: pal.muted } }, loadErr),
+            h('button', {
+              type: 'button',
+              className: 'mt-3 text-xs font-bold rounded-lg px-3 py-2',
+              style: { background: pal.btn, color: '#fff', minHeight: 44 },
+              onClick: function() { setManifestRetryTick(function(n) { return n + 1; }); }
+            }, __alloT('stem.lawNav.doc_err_retry', 'Try again'))
           ),
           disclaimer
         );

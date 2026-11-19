@@ -84,7 +84,7 @@ window.StemLab = window.StemLab || {
     } catch (e) {}
   }
 
-  // Scoped contrast + focus lift (same conventions as the other 3D lab tools).
+  // Scoped contrast + focus lift + Studio Workbench styling (same conventions as the other 3D lab tools).
   (function() {
     if (document.getElementById('allo-freeforms-css')) return;
     var st = document.createElement('style');
@@ -98,15 +98,22 @@ window.StemLab = window.StemLab || {
       // and the title sat on bare white at 1.38:1. Giving the alphas the dark ground
       // they were mixed against fixes all 17 at once, and it belongs HERE rather than
       // on a return: two branches render with this same id.
-      '#allo-free-forms { color: #f8fafc; background: #0f172a; border-radius: 12px; }',
+      '#allo-free-forms { color: #f8fafc; background: radial-gradient(1100px 460px at 8% -10%, rgba(124,58,237,0.22), transparent 60%), radial-gradient(900px 420px at 94% 0%, rgba(14,165,233,0.14), transparent 55%), #0b1120; border: 1px solid #334155; border-radius: 16px; box-shadow: 0 18px 40px -22px rgba(2,6,23,0.75); }',
+      '.theme-contrast #allo-free-forms { background: #000000 !important; color: #ffffff !important; border: 2px solid #fbbf24 !important; box-shadow: none !important; }',
+      '.theme-contrast #allo-free-forms .ff-surface, .theme-contrast #allo-free-forms .ff-card, .theme-contrast #allo-free-forms .ff-hero, .theme-contrast #allo-free-forms .ff-sidebar, .theme-contrast #allo-free-forms .ff-stage { background: #000000 !important; border-color: #fbbf24 !important; color: #ffffff !important; }',
+      '.theme-contrast #allo-free-forms .ff-pill { background: #000000 !important; border-color: #fbbf24 !important; color: #ffff00 !important; }',
       '#allo-free-forms button:focus-visible, #allo-free-forms input:focus-visible, #allo-free-forms select:focus-visible, #allo-free-forms textarea:focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px rgba(250,204,21,0.28) !important; }',
       '#allo-free-forms input::placeholder, #allo-free-forms textarea::placeholder { color: #cbd5e1 !important; opacity: 1 !important; }',
-      '#allo-free-forms .ff-sidebar .text-slate-500 { color: #94a3b8 !important; }',
-      '#allo-free-forms :is(.border-slate-600, .border-slate-700) { border-color: #64748b !important; }',
+      '#allo-free-forms .ff-sidebar .text-slate-500, #allo-free-forms .text-slate-500 { color: #cbd5e1 !important; }',
+      '#allo-free-forms :is(.border-slate-600, .border-slate-700) { border-color: #475569 !important; }',
       '#allo-free-forms .border-violet-700 { border-color: #8b5cf6 !important; }',
-      '#allo-free-forms .ff-card { transition: transform 0.15s ease, border-color 0.15s ease; }',
-      '#allo-free-forms .ff-card:hover { transform: translateY(-2px); border-color: #a78bfa; }',
-      '@media (max-width: 900px) { #allo-free-forms .ff-split { flex-direction: column !important; } #allo-free-forms .ff-sidebar { width: 100% !important; max-height: 42vh; } #allo-free-forms .ff-stage { min-height: 380px; } }',
+      '#allo-free-forms .ff-hero { background: linear-gradient(135deg, rgba(30,41,59,0.92), rgba(15,23,42,0.96)); border: 1px solid rgba(139,92,246,0.38); border-radius: 14px; }',
+      '#allo-free-forms .ff-surface { background: rgba(15,23,42,0.82); border: 1px solid #334155; }',
+      '#allo-free-forms .ff-card { width: 100%; height: 100%; display: flex; flex-direction: column; transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease; }',
+      '#allo-free-forms .ff-card:hover { transform: translateY(-2px); border-color: #a78bfa !important; box-shadow: 0 12px 24px -14px rgba(139,92,246,0.55); background: rgba(30,41,59,0.95); }',
+      '#allo-free-forms .ff-card-svg { background: linear-gradient(180deg, rgba(11,17,32,0.95), rgba(30,27,75,0.45)); border: 1px solid rgba(139,92,246,0.28); border-radius: 10px; }',
+      '#allo-free-forms .ff-stage-bg { background-color: #090e1d; background-image: radial-gradient(rgba(148,163,184,0.16) 1px, transparent 1px); background-size: 22px 22px; }',
+      '@media (max-width: 900px) { #allo-free-forms .ff-split { flex-direction: column !important; } #allo-free-forms .ff-sidebar { width: 100% !important; max-height: 46vh; } #allo-free-forms .ff-stage { min-height: 380px; } }',
       '@media (forced-colors: active) { #allo-free-forms button, #allo-free-forms input, #allo-free-forms textarea { forced-color-adjust: auto; border: 1px solid CanvasText !important; } }'
     ].join('\n');
     document.head.appendChild(st);
@@ -531,6 +538,7 @@ window.StemLab = window.StemLab || {
       var _ht = React.useState(''); var hintText = _ht[0], setHintText = _ht[1];
       var _p3 = React.useState(!!(window.AlloModules && window.AlloModules.Prim3D)); var prim3dReady = _p3[0], setPrim3dReady = _p3[1];
       var _pp = React.useState(0); var selPart = _pp[0], setSelPart = _pp[1];
+      var _cat = React.useState('all'); var pickerCat = _cat[0], setPickerCat = _cat[1];
       var hostRef = React.useRef(null);
       var handleRef = React.useRef(null);
       var undoRef = React.useRef([]);   // bounded in-session undo (doc snapshots)
@@ -955,16 +963,221 @@ window.StemLab = window.StemLab || {
       };
 
       // ═══ UI ═══
-      var BTN = 'min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer';
-      var BTN_GHOST = BTN + ' bg-slate-800/70 border-slate-500 text-slate-200 hover:bg-slate-700';
-      var BTN_HOT = BTN + ' bg-violet-600 border-violet-400 text-white hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed';
+      var BTN = 'min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5';
+      var BTN_GHOST = BTN + ' bg-slate-800/80 border-slate-500 text-slate-100 hover:bg-slate-700 disabled:opacity-45 disabled:cursor-not-allowed';
+      var BTN_HOT = BTN + ' bg-violet-600 border-violet-400 text-white hover:bg-violet-500 disabled:opacity-45 disabled:cursor-not-allowed shadow-sm';
+      var GROUP_ACCENTS = ['#a78bfa', '#38bdf8', '#34d399', '#fbbf24', '#f472b6', '#fb923c'];
+
+      var FORM_FAMILY = {
+        'Venn Diagram': 'compare', 'T-Chart': 'compare', 'Frayer Model': 'compare',
+        'Fishbone': 'cause', 'Cause and Effect': 'cause', 'Flow Chart': 'cause', 'Problem Solution': 'cause',
+        'Story Map': 'inquiry', 'KWL Chart': 'inquiry', 'See-Think-Wonder': 'inquiry', 'Claim-Evidence-Reasoning': 'inquiry',
+        'Structured Outline': 'structure', 'Key Concept Map': 'structure', 'free': 'structure'
+      };
+      var FAMILY_TABS = [
+        { id: 'all', label: t('stem.freeforms.fam_all', 'All Forms') },
+        { id: 'compare', label: t('stem.freeforms.fam_compare', 'Compare & Define') },
+        { id: 'cause', label: t('stem.freeforms.fam_cause', 'Cause & Flow') },
+        { id: 'inquiry', label: t('stem.freeforms.fam_inquiry', 'Story & Inquiry') },
+        { id: 'structure', label: t('stem.freeforms.fam_structure', 'Structure & Free') }
+      ];
+
+      // Bespoke inline SVG architectural schematics for each of the 14 spatial grammars.
+      var renderScaffoldBlueprint = function(type, size) {
+        var w = size === 'sm' ? 42 : 120, hh = size === 'sm' ? 30 : 54;
+        var svgProps = {
+          viewBox: '0 0 120 54', width: w, height: hh, 'aria-hidden': 'true', focusable: 'false',
+          style: { display: 'block', flexShrink: 0 }
+        };
+        var bgGrid = [
+          h('line', { key: 'g1', x1: 8, y1: 46, x2: 112, y2: 46, stroke: 'rgba(148,163,184,0.22)', strokeWidth: 1, strokeDasharray: '2 3' }),
+          h('line', { key: 'g2', x1: 60, y1: 6, x2: 60, y2: 48, stroke: 'rgba(148,163,184,0.14)', strokeWidth: 1 })
+        ];
+        var shapes = [];
+        if (type === 'Structured Outline') {
+          shapes = [
+            h('rect', { key: 's1', x: 14, y: 10, width: 32, height: 9, rx: 3, fill: '#7c3aed', opacity: 0.9 }),
+            h('rect', { key: 's2', x: 34, y: 23, width: 42, height: 9, rx: 3, fill: '#38bdf8', opacity: 0.9 }),
+            h('rect', { key: 's3', x: 56, y: 36, width: 48, height: 9, rx: 3, fill: '#34d399', opacity: 0.9 }),
+            h('path', { key: 'p', d: 'M30 19 L30 27 L34 27 M52 32 L52 40 L56 40', stroke: '#cbd5e1', strokeWidth: 1.5, fill: 'none' })
+          ];
+        } else if (type === 'Venn Diagram') {
+          shapes = [
+            h('circle', { key: 'c1', cx: 46, cy: 27, r: 19, fill: 'rgba(139,92,246,0.34)', stroke: '#a78bfa', strokeWidth: 2 }),
+            h('circle', { key: 'c2', cx: 74, cy: 27, r: 19, fill: 'rgba(56,189,248,0.30)', stroke: '#38bdf8', strokeWidth: 2 }),
+            h('circle', { key: 'm', cx: 60, cy: 27, r: 3.5, fill: '#fbbf24' })
+          ];
+        } else if (type === 'T-Chart') {
+          shapes = [
+            h('rect', { key: 'l', x: 18, y: 12, width: 32, height: 32, rx: 4, fill: 'rgba(139,92,246,0.28)', stroke: '#a78bfa', strokeWidth: 1.8 }),
+            h('rect', { key: 'r', x: 70, y: 12, width: 32, height: 32, rx: 4, fill: 'rgba(56,189,248,0.28)', stroke: '#38bdf8', strokeWidth: 1.8 }),
+            h('line', { key: 'bar', x1: 16, y1: 12, x2: 104, y2: 12, stroke: '#f8fafc', strokeWidth: 2.2 }),
+            h('line', { key: 'div', x1: 60, y1: 12, x2: 60, y2: 45, stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '3 2' })
+          ];
+        } else if (type === 'Fishbone') {
+          shapes = [
+            h('line', { key: 'sp', x1: 16, y1: 27, x2: 96, y2: 27, stroke: '#e2e8f0', strokeWidth: 2.2 }),
+            h('polygon', { key: 'hd', points: '96,19 109,27 96,35', fill: '#fbbf24' }),
+            h('line', { key: 'r1', x1: 30, y1: 11, x2: 42, y2: 27, stroke: '#a78bfa', strokeWidth: 2 }),
+            h('line', { key: 'r2', x1: 54, y1: 11, x2: 66, y2: 27, stroke: '#38bdf8', strokeWidth: 2 }),
+            h('line', { key: 'r3', x1: 30, y1: 43, x2: 42, y2: 27, stroke: '#34d399', strokeWidth: 2 }),
+            h('line', { key: 'r4', x1: 54, y1: 43, x2: 66, y2: 27, stroke: '#f472b6', strokeWidth: 2 })
+          ];
+        } else if (type === 'Cause and Effect') {
+          shapes = [
+            h('circle', { key: 'c1', cx: 22, cy: 15, r: 5.5, fill: '#a78bfa' }),
+            h('circle', { key: 'c2', cx: 22, cy: 39, r: 5.5, fill: '#a78bfa' }),
+            h('rect', { key: 'mid', x: 48, y: 18, width: 24, height: 18, rx: 5, fill: '#fbbf24' }),
+            h('circle', { key: 'e1', cx: 98, cy: 15, r: 5.5, fill: '#34d399' }),
+            h('circle', { key: 'e2', cx: 98, cy: 39, r: 5.5, fill: '#38bdf8' }),
+            h('path', { key: 'a', d: 'M28 17 L47 25 M28 37 L47 29 M73 25 L92 17 M73 29 L92 37', stroke: '#cbd5e1', strokeWidth: 1.6 })
+          ];
+        } else if (type === 'Frayer Model') {
+          shapes = [
+            h('rect', { key: 'q1', x: 16, y: 8, width: 38, height: 16, rx: 3, fill: 'rgba(139,92,246,0.28)', stroke: '#a78bfa', strokeWidth: 1.5 }),
+            h('rect', { key: 'q2', x: 66, y: 8, width: 38, height: 16, rx: 3, fill: 'rgba(56,189,248,0.28)', stroke: '#38bdf8', strokeWidth: 1.5 }),
+            h('rect', { key: 'q3', x: 16, y: 30, width: 38, height: 16, rx: 3, fill: 'rgba(52,211,153,0.28)', stroke: '#34d399', strokeWidth: 1.5 }),
+            h('rect', { key: 'q4', x: 66, y: 30, width: 38, height: 16, rx: 3, fill: 'rgba(244,114,182,0.28)', stroke: '#f472b6', strokeWidth: 1.5 }),
+            h('circle', { key: 'ctr', cx: 60, cy: 27, r: 8.5, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 2 })
+          ];
+        } else if (type === 'KWL Chart') {
+          shapes = [
+            h('path', { key: 'arc', d: 'M20 38 Q60 8 100 32', stroke: '#94a3b8', strokeWidth: 2, fill: 'none', strokeDasharray: '4 3' }),
+            h('circle', { key: 'k', cx: 22, cy: 36, r: 7.5, fill: '#a78bfa' }),
+            h('circle', { key: 'w', cx: 60, cy: 19, r: 8.5, fill: '#38bdf8' }),
+            h('circle', { key: 'l', cx: 98, cy: 32, r: 9, fill: '#34d399' })
+          ];
+        } else if (type === 'See-Think-Wonder') {
+          shapes = [
+            h('polygon', { key: 'tri', points: '60,11 26,41 94,41', fill: 'rgba(139,92,246,0.14)', stroke: '#94a3b8', strokeWidth: 1.5 }),
+            h('circle', { key: 'n1', cx: 60, cy: 11, r: 6.5, fill: '#38bdf8' }),
+            h('circle', { key: 'n2', cx: 26, cy: 41, r: 6.5, fill: '#a78bfa' }),
+            h('circle', { key: 'n3', cx: 94, cy: 41, r: 6.5, fill: '#fbbf24' })
+          ];
+        } else if (type === 'Claim-Evidence-Reasoning') {
+          shapes = [
+            h('rect', { key: 'p1', x: 24, y: 31, width: 14, height: 15, rx: 2, fill: '#34d399' }),
+            h('rect', { key: 'p2', x: 53, y: 31, width: 14, height: 15, rx: 2, fill: '#34d399' }),
+            h('rect', { key: 'p3', x: 82, y: 31, width: 14, height: 15, rx: 2, fill: '#34d399' }),
+            h('rect', { key: 'beam', x: 20, y: 22, width: 80, height: 7, rx: 2, fill: '#38bdf8' }),
+            h('polygon', { key: 'roof', points: '60,7 18,21 102,21', fill: '#a78bfa' })
+          ];
+        } else if (type === 'Story Map') {
+          shapes = [
+            h('path', { key: 'mt', d: 'M12 44 L36 30 L64 10 L86 29 L108 44', stroke: '#a78bfa', strokeWidth: 2.6, fill: 'rgba(139,92,246,0.22)', strokeLinejoin: 'round' }),
+            h('circle', { key: 'pk', cx: 64, cy: 10, r: 4.5, fill: '#fbbf24' }),
+            h('circle', { key: 'p1', cx: 36, cy: 30, r: 3.2, fill: '#38bdf8' }),
+            h('circle', { key: 'p2', cx: 86, cy: 29, r: 3.2, fill: '#34d399' })
+          ];
+        } else if (type === 'Flow Chart') {
+          shapes = [
+            h('path', { key: 'fl', d: 'M18 14 H56 C70 14 70 27 56 27 H44 C30 27 30 41 44 41 H98', stroke: '#38bdf8', strokeWidth: 2.2, fill: 'none' }),
+            h('circle', { key: 'a', cx: 20, cy: 14, r: 4.5, fill: '#a78bfa' }),
+            h('circle', { key: 'b', cx: 52, cy: 27, r: 4.5, fill: '#fbbf24' }),
+            h('circle', { key: 'c', cx: 96, cy: 41, r: 4.5, fill: '#34d399' })
+          ];
+        } else if (type === 'Key Concept Map') {
+          shapes = [
+            h('ellipse', { key: 'o1', cx: 60, cy: 27, rx: 40, ry: 15, fill: 'none', stroke: 'rgba(148,163,184,0.45)', strokeWidth: 1.4 }),
+            h('circle', { key: 'sun', cx: 60, cy: 27, r: 8.5, fill: '#fbbf24' }),
+            h('circle', { key: 'm1', cx: 22, cy: 24, r: 5, fill: '#a78bfa' }),
+            h('circle', { key: 'm2', cx: 96, cy: 22, r: 5, fill: '#38bdf8' }),
+            h('circle', { key: 'm3', cx: 74, cy: 41, r: 5, fill: '#34d399' })
+          ];
+        } else if (type === 'Problem Solution') {
+          shapes = [
+            h('polygon', { key: 'pr', points: '60,17 70,27 60,37 50,27', fill: '#f43f5e' }),
+            h('line', { key: 'l1', x1: 50, y1: 27, x2: 24, y2: 18, stroke: '#94a3b8', strokeWidth: 1.5 }),
+            h('line', { key: 'l2', x1: 70, y1: 27, x2: 96, y2: 18, stroke: '#94a3b8', strokeWidth: 1.5 }),
+            h('line', { key: 'l3', x1: 60, y1: 37, x2: 60, y2: 46, stroke: '#94a3b8', strokeWidth: 1.5 }),
+            h('circle', { key: 's1', cx: 22, cy: 17, r: 6, fill: '#34d399' }),
+            h('circle', { key: 's2', cx: 98, cy: 17, r: 6, fill: '#38bdf8' }),
+            h('circle', { key: 's3', cx: 60, cy: 46, r: 5, fill: '#a78bfa' })
+          ];
+        } else {
+          shapes = [
+            h('polygon', { key: 'pl1', points: '24,18 54,10 74,20 44,28', fill: 'rgba(139,92,246,0.45)', stroke: '#a78bfa', strokeWidth: 1.5 }),
+            h('polygon', { key: 'pl2', points: '44,32 76,24 98,34 66,42', fill: 'rgba(56,189,248,0.4)', stroke: '#38bdf8', strokeWidth: 1.5 }),
+            h('circle', { key: 'st1', cx: 34, cy: 14, r: 2.5, fill: '#fbbf24' }),
+            h('circle', { key: 'st2', cx: 88, cy: 16, r: 2.5, fill: '#34d399' })
+          ];
+        }
+        return h('svg', svgProps, bgGrid, shapes);
+      };
+
+      // Live 2D topology minimap of the student's current composition (always crisp even before/without WebGL).
+      var renderLiveTopologySvg = function(d) {
+        var grps = (d && Array.isArray(d.groups)) ? d.groups : [];
+        var cx = 140, cy = 62;
+        var gNodes = grps.map(function(g, gi) {
+          var ang = (-Math.PI / 2) + (gi / Math.max(1, grps.length)) * Math.PI * 2;
+          var rx = grps.length <= 2 ? 78 : 88, ry = grps.length <= 2 ? 22 : 34;
+          return { g: g, x: cx + Math.cos(ang) * rx, y: cy + Math.sin(ang) * ry, color: GROUP_ACCENTS[gi % GROUP_ACCENTS.length] };
+        });
+        return h('svg', {
+          viewBox: '0 0 280 124', className: 'w-full h-auto block', role: 'img',
+          'aria-label': t('stem.freeforms.minimap_aria', 'Spatial blueprint showing') + ' ' + stats.groups + ' ' + t('stem.freeforms.groups', 'groups') + ' & ' + stats.items + ' ' + t('stem.freeforms.ideas', 'ideas')
+        },
+          h('rect', { x: 1, y: 1, width: 278, height: 122, rx: 10, fill: '#080d1a', stroke: '#334155', strokeWidth: 1 }),
+          h('ellipse', { cx: cx, cy: cy, rx: 94, ry: 38, fill: 'none', stroke: 'rgba(148,163,184,0.18)', strokeWidth: 1, strokeDasharray: '3 3' }),
+          gNodes.map(function(gn) {
+            return h('line', { key: 'ln-' + gn.g.id, x1: cx, y1: cy, x2: gn.x, y2: gn.y, stroke: gn.color, strokeOpacity: 0.45, strokeWidth: 1.5 });
+          }),
+          h('circle', { cx: cx, cy: cy, r: 9, fill: '#7c3aed', stroke: '#ddd6fe', strokeWidth: 1.8 }),
+          gNodes.map(function(gn) {
+            var items = gn.g.items || [];
+            return h('g', { key: 'gn-' + gn.g.id },
+              h('circle', { cx: gn.x, cy: gn.y, r: 6.5, fill: gn.color, stroke: '#0f172a', strokeWidth: 1.5 }),
+              items.slice(0, 6).map(function(it, ii) {
+                var a2 = (ii / Math.max(1, Math.min(items.length, 6))) * Math.PI * 2;
+                var ix = Math.max(12, Math.min(268, gn.x + Math.cos(a2) * 18));
+                var iy = Math.max(12, Math.min(112, gn.y + Math.sin(a2) * 14));
+                var isSel = selectedId === it.id;
+                var hasArt = !!(d.nodeArt && d.nodeArt[it.id]);
+                return h('circle', {
+                  key: it.id, cx: ix, cy: iy, r: isSel ? 5 : 3.4,
+                  fill: hasArt ? '#fbbf24' : '#e2e8f0',
+                  stroke: isSel ? '#facc15' : gn.color,
+                  strokeWidth: isSel ? 2 : 1
+                });
+              })
+            );
+          })
+        );
+      };
+
+      // Quick-start sample seed for empty compositions (one-click inspiration, undoable).
+      var loadStarterSample = function() {
+        if (!doc || !doc.groups || !doc.groups.length) return;
+        var sampleBank = {
+          'Venn Diagram': { title: 'Ocean vs. Desert Ecosystems', lists: [['Coral reefs', 'Saltwater currents'], ['Cacti water storage', 'Extreme night chill'], ['Food webs', 'Adapted predators']] },
+          'Story Map': { title: 'The Lighthouse Signal', lists: [['Storm gathers at dusk'], ['Power fails on the headland'], ['Lantern lit by hand in the gale'], ['Freighter steers clear'], ['Dawn reveals calm harbor']] },
+          'Claim-Evidence-Reasoning': { title: 'Urban Trees Cool Cities', lists: [['Street canopies reduce heat islands'], ['Shaded asphalt is 12°C cooler', 'Satellite thermal maps confirm drops'], ['Evapotranspiration + shade absorb solar energy']] },
+          'Fishbone': { title: 'Why Pollinators Decline', lists: [['Habitat loss', 'Fragmented meadows'], ['Pesticide runoff'], ['Shifting bloom seasons'], ['Parasites & mites']] }
+        };
+        var bank = sampleBank[doc.scaffold];
+        bump(function(d) {
+          if (!d.title && bank) d.title = bank.title;
+          else if (!d.title) d.title = (ffScaffold(d.scaffold) ? ffScaffold(d.scaffold).name : 'My') + ' Exploration';
+          var nid = d.nextId || 1;
+          d.groups = d.groups.map(function(g, gi) {
+            if ((g.items || []).length) return g;
+            var seedList = (bank && bank.lists[gi]) ? bank.lists[gi] : ['Key idea ' + (gi + 1) + 'A', 'Key idea ' + (gi + 1) + 'B'];
+            var added = seedList.map(function(txt) { var id = 'n' + (nid++); return { id: id, text: txt, note: '' }; });
+            return Object.assign({}, g, { items: added });
+          });
+          d.nextId = nid;
+          return d;
+        });
+        announce(t('stem.freeforms.sr_sample_loaded', 'Starter ideas added — edit or replace any idea to make it yours.'));
+      };
 
       // Import confirm strip — shown (on either screen) only when an organizer
       // handoff is pending AND the student already has content to protect.
       var renderImportStrip = function() {
         if (!pendingImport) return null;
-        return h('div', { className: 'mb-3 flex flex-wrap items-center gap-2 bg-amber-950/60 border border-amber-600 rounded-xl p-2', role: 'alert' },
-          h('div', { className: 'text-xs text-amber-200 flex-1 min-w-0' },
+        return h('div', { className: 'mb-3 flex flex-wrap items-center gap-2 bg-amber-950/75 border border-amber-500 rounded-xl p-2.5', role: 'alert' },
+          h('div', { className: 'text-xs text-amber-100 flex-1 min-w-0' },
             '🏛️ ' + t('stem.freeforms.import_prompt', 'Import the organizer') + ' "' + String(pendingImport.main || '').slice(0, 60) + '"? ' + t('stem.freeforms.import_replaces', 'This replaces your current composition.')),
           h('button', { className: BTN_HOT, onClick: function() { consumeImport(true); } }, t('stem.freeforms.import_yes', 'Import')),
           h('button', { className: BTN_GHOST, onClick: function() { consumeImport(false); } }, t('stem.freeforms.import_no', 'Keep mine'))
@@ -973,25 +1186,68 @@ window.StemLab = window.StemLab || {
 
       // ── Picker screen ──
       if (!doc || !doc.scaffold) {
+        var visibleScaffolds = pickerCat === 'all' ? FF_SCAFFOLDS : FF_SCAFFOLDS.filter(function(s) { return FORM_FAMILY[s.type] === pickerCat; });
+        var hasExistingContent = !!(doc && doc.groups && (Array.isArray(doc.groups) ? doc.groups : []).some(function(g) { return (g.items || []).length; }));
         return h('div', { id: 'allo-free-forms', className: 'p-4 md:p-6' },
-          h('div', { className: 'max-w-5xl mx-auto' },
+          h('div', { className: 'max-w-5xl mx-auto space-y-4' },
             renderImportStrip(),
-            h('h2', { className: 'text-2xl font-black text-violet-200 mb-1' }, '\u{1F3DB}️ ' + t('stem.freeforms.title', 'Free Forms')),
-            h('p', { className: 'text-sm text-slate-300 mb-1' }, t('stem.freeforms.tagline', 'Build your own World of Forms: pick an archetypal structure, fill it with YOUR ideas, arrange it in 3D, and sculpt what matters.')),
-            h('p', { className: 'text-xs text-slate-300 mb-4' }, t('stem.freeforms.tagline2', 'You are the author here — the AI only coaches, and only when you ask.')),
-            doc && doc.groups && (Array.isArray(doc.groups) ? doc.groups : []).some(function(g) { return (g.items || []).length; })
-              ? h('p', { className: 'text-xs text-amber-300 mb-3' }, t('stem.freeforms.keep_content_hint', 'Your groups and ideas stay — choosing a form just changes the shape of the space.'))
-              : null,
-            h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3', role: 'list' },
-              FF_SCAFFOLDS.map(function(sc) {
-                return h('div', { key: sc.type, role: 'listitem' }, h('button', {
-                  className: 'ff-card text-left bg-slate-800/70 border-2 border-slate-700 rounded-2xl p-4 min-h-[44px]',
+            // Hero Studio Workbench Header
+            h('div', { className: 'ff-hero p-4 md:p-5' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                h('div', { className: 'flex-1 min-w-[220px]' },
+                  h('div', { className: 'flex flex-wrap items-center gap-2 mb-1.5' },
+                    h('span', { className: 'ff-pill text-[0.6875rem] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-violet-950/90 text-violet-200 border border-violet-500/60' }, '🏛️ ' + t('stem.freeforms.subject_badge', '3D Spatial Studio · Arts & Concept Craft')),
+                    h('span', { className: 'ff-pill text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-sky-200 border border-slate-600' }, FF_SCAFFOLDS.length + ' ' + t('stem.freeforms.spatial_grammars', 'Spatial Grammars'))
+                  ),
+                  h('h2', { className: 'text-2xl md:text-3xl font-black text-white tracking-tight mb-1' }, t('stem.freeforms.title', 'Free Forms')),
+                  h('p', { className: 'text-sm text-slate-200 leading-relaxed' }, t('stem.freeforms.tagline', 'Build your own World of Forms: pick an archetypal structure, fill it with YOUR ideas, arrange it in 3D, and sculpt what matters.')),
+                  h('p', { className: 'text-xs text-slate-300 mt-1' }, t('stem.freeforms.tagline2', 'You are the author here — the AI only coaches, and only when you ask.'))
+                ),
+                // 3-step studio workflow strip
+                h('div', { className: 'ff-surface rounded-xl p-3 text-xs space-y-1.5 min-w-[200px] max-w-xs' },
+                  h('div', { className: 'text-[0.6875rem] font-extrabold uppercase tracking-wider text-violet-300' }, t('stem.freeforms.workflow_heading', 'Studio Workflow')),
+                  h('div', { className: 'text-slate-200' }, '1. ' + t('stem.freeforms.wf_step1', 'Pick a spatial grammar below')),
+                  h('div', { className: 'text-slate-200' }, '2. ' + t('stem.freeforms.wf_step2', 'Author groups, notes & 3D sculptures')),
+                  h('div', { className: 'text-slate-200' }, '3. ' + t('stem.freeforms.wf_step3', 'Arrange in 3D & test your recall'))
+                )
+              ),
+              hasExistingContent
+                ? h('div', { className: 'mt-3 px-3 py-2 rounded-lg bg-amber-950/60 border border-amber-500/60 text-xs text-amber-200 font-medium' },
+                    '✨ ' + t('stem.freeforms.keep_content_hint', 'Your groups and ideas stay — choosing a form just changes the shape of the space.'))
+                : null
+            ),
+            // Form-family filter chips
+            h('div', { className: 'flex flex-wrap items-center gap-2', role: 'group', 'aria-label': t('stem.freeforms.filter_forms', 'Filter forms by purpose') },
+              FAMILY_TABS.map(function(ft) {
+                var active = pickerCat === ft.id;
+                return h('button', {
+                  key: ft.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                  onClick: function() { setPickerCat(ft.id); },
+                  className: 'min-h-[38px] px-3 py-1.5 rounded-full text-xs font-bold border transition-colors cursor-pointer ' +
+                    (active ? 'bg-violet-600 border-violet-300 text-white shadow-sm' : 'bg-slate-900/80 border-slate-600 text-slate-200 hover:bg-slate-800')
+                }, ft.label);
+              })
+            ),
+            // Archetype blueprint grid
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3', role: 'list' },
+              visibleScaffolds.map(function(sc) {
+                return h('div', { key: sc.type, role: 'listitem', className: 'flex' }, h('button', {
+                  type: 'button',
+                  className: 'ff-card text-left bg-slate-900/85 border-2 border-slate-700 rounded-2xl p-3.5 min-h-[44px] gap-2.5',
                   onClick: function() { chooseScaffold(sc.type); },
                   'aria-label': sc.name + '. ' + sc.grammar
                 },
-                  h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, sc.icon),
-                  h('div', { className: 'font-black text-slate-100 text-sm mb-1' }, sc.name),
-                  h('div', { className: 'text-[0.6875rem] leading-snug text-slate-300' }, sc.grammar)
+                  h('div', { className: 'ff-card-svg w-full p-2 flex items-center justify-center' }, renderScaffoldBlueprint(sc.type, 'md')),
+                  h('div', { className: 'flex items-center gap-1.5' },
+                    h('span', { className: 'text-lg leading-none', 'aria-hidden': 'true' }, sc.icon),
+                    h('span', { className: 'font-black text-slate-50 text-sm' }, sc.name)
+                  ),
+                  h('div', { className: 'text-xs leading-snug text-slate-300 flex-1' }, sc.grammar),
+                  h('div', { className: 'flex flex-wrap gap-1 pt-1 border-t border-slate-700/80' },
+                    (sc.starters || []).slice(0, 3).map(function(stLabel, si) {
+                      return h('span', { key: si, className: 'ff-pill text-[0.625rem] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-violet-200 border border-slate-600' }, stLabel);
+                    })
+                  )
                 ));
               })
             )
@@ -1007,37 +1263,52 @@ window.StemLab = window.StemLab || {
       var placedCount = Object.keys(placed).length;
       return h('div', { id: 'allo-free-forms', className: 'p-3 md:p-4', onKeyDown: onRootKeyDown },
         renderImportStrip(),
-        // header
-        h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
-          !inChallenge ? h('button', { className: BTN_GHOST, onClick: backToPicker, 'aria-label': t('stem.freeforms.change_form', 'Change form') }, '← ' + t('stem.freeforms.forms', 'Forms')) : null,
-          h('div', { className: 'text-lg font-black text-violet-200' }, (inChallenge ? '🎯 ' : sc.icon + ' ') + (inChallenge ? t('stem.freeforms.recall_title', 'Recall: rebuild your world') : sc.name)),
-          !inChallenge ? h('div', { className: 'text-[0.6875rem] text-slate-300 hidden md:block flex-1 min-w-0 truncate' }, sc.grammar) : h('div', { className: 'flex-1' }),
-          !inChallenge ? h('div', { className: 'text-[0.6875rem] font-bold text-slate-300 bg-slate-800/70 border border-slate-700 rounded-full px-3 py-1' },
-            stats.groups + ' ' + t('stem.freeforms.groups', 'groups') + ' · ' + stats.items + ' ' + t('stem.freeforms.ideas', 'ideas') + (stats.sculpted ? ' · ' + stats.sculpted + ' ' + t('stem.freeforms.sculpted', 'sculpted') : '')) : null,
-          !inChallenge ? h('button', { className: BTN_GHOST, onClick: doUndo, disabled: !undoRef.current.length, 'aria-label': t('stem.freeforms.undo_tip', 'Undo the last change (Ctrl+Z)'), title: t('stem.freeforms.undo_tip', 'Undo the last change (Ctrl+Z)') }, '↩ ' + t('stem.freeforms.undo', 'Undo')) : null,
-          (modulesReady && !modulesFailed) ? h('button', { className: BTN_GHOST, onClick: doSnapshot, title: t('stem.freeforms.snapshot_tip', 'Save a picture of your 3D world') }, '📷 ' + t('stem.freeforms.snapshot', 'Snapshot')) : null,
-          !inChallenge ? h('button', { className: BTN_GHOST, onClick: doPrint, title: t('stem.freeforms.print_tip', 'Download a printable one-pager (snapshot + your ideas + coach feedback)') }, '🖨 ' + t('stem.freeforms.print', 'One-pager')) : null,
-          (!inChallenge && doc.arrangement) ? h('button', { className: BTN_GHOST, onClick: resetArrangement }, '↺ ' + t('stem.freeforms.reset_arrangement', 'Reset arrangement')) : null,
-          !inChallenge ? h('button', { className: BTN_GHOST, onClick: startChallenge, disabled: !recallEligible,
-            title: recallEligible ? t('stem.freeforms.recall_tip', 'Your ideas fall into a tray — put them back from memory') : t('stem.freeforms.recall_needs_more', 'Add at least 4 ideas across 2 groups first') },
-            '🎯 ' + t('stem.freeforms.recall', 'Test yourself')) : null,
-          (!inChallenge && hasAI) ? h('button', { className: BTN_HOT, onClick: doAssess, disabled: assessBusy || stats.items < 3, 'aria-busy': assessBusy ? 'true' : 'false',
-            title: stats.items < 3 ? t('stem.freeforms.assess_needs_items', 'Add at least 3 ideas first') : t('stem.freeforms.assess_tip', 'Ask the AI coach to look at your whole composition') },
-            (assessBusy ? '… ' : '\u{1F9E0} ') + t('stem.freeforms.assess', 'Assess my composition')) : null
+        // Studio Workbench Header
+        h('div', { className: 'ff-hero p-3 md:p-3.5 mb-3 space-y-2.5' },
+          h('div', { className: 'flex flex-wrap items-center gap-2.5' },
+            !inChallenge ? h('button', { className: BTN_GHOST, onClick: backToPicker, 'aria-label': t('stem.freeforms.change_form', 'Change form') }, '← ' + t('stem.freeforms.forms', 'Forms')) : null,
+            h('div', { className: 'ff-card-svg p-1 shrink-0 hidden sm:block' }, renderScaffoldBlueprint(sc.type, 'sm')),
+            h('div', { className: 'flex-1 min-w-[160px]' },
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('h2', { className: 'text-base md:text-lg font-black text-white m-0' }, (inChallenge ? '🎯 ' : sc.icon + ' ') + (inChallenge ? t('stem.freeforms.recall_title', 'Recall: rebuild your world') : sc.name)),
+                h('span', { className: 'ff-pill text-[0.6875rem] font-bold px-2 py-0.5 rounded-full ' + (inChallenge ? 'bg-amber-950 text-amber-200 border border-amber-500' : 'bg-violet-950 text-violet-200 border border-violet-500/70') },
+                  inChallenge ? t('stem.freeforms.recall_badge', 'Recall Mode') : t('stem.freeforms.studio_badge', '3D Form Studio'))
+              ),
+              !inChallenge ? h('p', { className: 'text-xs text-slate-300 mt-0.5 mb-0' }, sc.grammar) : null
+            ),
+            !inChallenge ? h('div', { className: 'flex flex-wrap items-center gap-1.5', 'aria-label': t('stem.freeforms.metrics_aria', 'Composition metrics') },
+              h('span', { className: 'ff-pill text-xs font-bold text-slate-100 bg-slate-800 border border-slate-600 rounded-full px-2.5 py-1' }, stats.groups + ' ' + t('stem.freeforms.groups', 'groups')),
+              h('span', { className: 'ff-pill text-xs font-bold text-sky-200 bg-slate-800 border border-slate-600 rounded-full px-2.5 py-1' }, stats.items + ' ' + t('stem.freeforms.ideas', 'ideas')),
+              stats.sculpted > 0 ? h('span', { className: 'ff-pill text-xs font-bold text-amber-200 bg-slate-800 border border-amber-500/70 rounded-full px-2.5 py-1' }, '🗿 ' + stats.sculpted + ' ' + t('stem.freeforms.sculpted', 'sculpted')) : null
+            ) : null
+          ),
+          // Action toolbar row
+          h('div', { className: 'flex flex-wrap items-center gap-2 pt-2 border-t border-slate-700/80' },
+            !inChallenge ? h('button', { className: BTN_GHOST, onClick: doUndo, disabled: !undoRef.current.length, 'aria-label': t('stem.freeforms.undo_tip', 'Undo the last change (Ctrl+Z)'), title: t('stem.freeforms.undo_tip', 'Undo the last change (Ctrl+Z)') }, '↩ ' + t('stem.freeforms.undo', 'Undo')) : null,
+            (modulesReady && !modulesFailed) ? h('button', { className: BTN_GHOST, onClick: doSnapshot, title: t('stem.freeforms.snapshot_tip', 'Save a picture of your 3D world') }, '📷 ' + t('stem.freeforms.snapshot', 'Snapshot')) : null,
+            !inChallenge ? h('button', { className: BTN_GHOST, onClick: doPrint, title: t('stem.freeforms.print_tip', 'Download a printable one-pager (snapshot + your ideas + coach feedback)') }, '🖨 ' + t('stem.freeforms.print', 'One-pager')) : null,
+            (!inChallenge && doc.arrangement) ? h('button', { className: BTN_GHOST, onClick: resetArrangement }, '↺ ' + t('stem.freeforms.reset_arrangement', 'Reset arrangement')) : null,
+            !inChallenge ? h('button', { className: BTN_GHOST, onClick: startChallenge, disabled: !recallEligible,
+              title: recallEligible ? t('stem.freeforms.recall_tip', 'Your ideas fall into a tray — put them back from memory') : t('stem.freeforms.recall_needs_more', 'Add at least 4 ideas across 2 groups first') },
+              '🎯 ' + t('stem.freeforms.recall', 'Test yourself')) : null,
+            (!inChallenge && hasAI) ? h('button', { className: BTN_HOT + ' ml-auto', onClick: doAssess, disabled: assessBusy || stats.items < 3, 'aria-busy': assessBusy ? 'true' : 'false',
+              title: stats.items < 3 ? t('stem.freeforms.assess_needs_items', 'Add at least 3 ideas first') : t('stem.freeforms.assess_tip', 'Ask the AI coach to look at your whole composition') },
+              (assessBusy ? '… ' : '\u{1F9E0} ') + t('stem.freeforms.assess', 'Assess my composition')) : null
+          )
         ),
         // split: sidebar + 3D stage
         h('div', { className: 'ff-split flex gap-3 items-stretch' },
           // ── recall panel (challenge) OR authoring sidebar (the accessible source of truth) ──
-          inChallenge ? h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/70 border border-amber-700 rounded-2xl p-3 overflow-y-auto', style: { maxHeight: '72vh' } },
+          inChallenge ? h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/90 border border-amber-500 rounded-2xl p-3.5 overflow-y-auto', style: { maxHeight: '72vh' } },
             h('div', { className: 'text-sm font-black text-amber-200 mb-2' }, '🎯 ' + t('stem.freeforms.recall_heading', 'Rebuild it from memory')),
-            h('p', { className: 'text-xs text-slate-300 leading-snug mb-2' },
+            h('p', { className: 'text-xs text-slate-200 leading-relaxed mb-3' },
               t('stem.freeforms.recall_instructions', 'Every idea fell out of its place into the tray at the bottom. Select an idea in the space, then use the group chips (or the [ and ] keys) to send it home. Nothing is saved during the game.')),
-            h('div', { className: 'text-xs font-bold text-slate-200 bg-slate-800/70 border border-slate-700 rounded-full px-3 py-1.5 inline-block mb-2', role: 'status' },
+            h('div', { className: 'text-xs font-bold text-slate-100 bg-slate-800 border border-slate-600 rounded-full px-3 py-1.5 inline-block mb-3', role: 'status' },
               placedCount + '/' + challenge.targets.length + ' ' + t('stem.freeforms.recall_placed', 'placed')),
-            checked ? h('div', { className: 'text-sm font-black rounded-xl px-3 py-2 mb-2 ' + (checked.complete ? 'bg-emerald-900/60 text-emerald-200 border border-emerald-600' : 'bg-slate-800/70 text-slate-100 border border-slate-600'), role: 'status' },
+            checked ? h('div', { className: 'text-sm font-black rounded-xl px-3 py-2 mb-3 ' + (checked.complete ? 'bg-emerald-900/75 text-emerald-100 border border-emerald-500' : 'bg-slate-800 text-slate-100 border border-slate-500'), role: 'status' },
               (checked.complete ? '🎉 ' : '') + checked.correct + '/' + checked.total + ' ' + t('stem.freeforms.recall_correct', 'correct') +
               (checked.complete ? ' — ' + t('stem.freeforms.recall_complete', 'you rebuilt your whole world!') : '')) : null,
-            h('div', { className: 'flex flex-wrap gap-1 mb-2' },
+            h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
               h('button', { className: BTN_HOT, onClick: checkChallenge, disabled: !placedCount }, '✓ ' + t('stem.freeforms.recall_check', 'Check')),
               h('button', { className: BTN_GHOST, onClick: retryChallenge }, '↺ ' + t('stem.freeforms.recall_retry', 'Retry')),
               h('button', { className: BTN_GHOST, onClick: exitChallenge }, t('stem.freeforms.recall_exit', 'Exit'))
@@ -1046,67 +1317,92 @@ window.StemLab = window.StemLab || {
               ? h('button', { className: BTN_GHOST + ' w-full mb-1', onClick: doHint, disabled: hintBusy, 'aria-busy': hintBusy ? 'true' : 'false' },
                   (hintBusy ? '… ' : '💡 ') + t('stem.freeforms.recall_hint', 'Hint for the selected idea')) : null,
             h('div', { 'aria-live': 'polite' },
-              hintText ? h('p', { className: 'text-xs text-amber-200 bg-amber-950/50 border border-amber-800 rounded-lg p-2 leading-snug' }, '💡 ' + hintText) : null),
+              hintText ? h('p', { className: 'text-xs text-amber-100 bg-amber-950/75 border border-amber-600 rounded-lg p-2.5 leading-snug' }, '💡 ' + hintText) : null),
             // recall history — persisted attempts + which ideas are still settling
-            (doc.recallLog && doc.recallLog.length) ? h('div', { className: 'mt-2' },
-              h('div', { className: 'text-[0.6875rem] font-bold text-slate-300 mb-1' }, '📈 ' + t('stem.freeforms.recall_history', 'Recall history')),
+            (doc.recallLog && doc.recallLog.length) ? h('div', { className: 'mt-3 pt-2 border-t border-slate-700' },
+              h('div', { className: 'text-xs font-bold text-slate-200 mb-1.5' }, '📈 ' + t('stem.freeforms.recall_history', 'Recall history')),
               h('ul', { className: 'space-y-1' }, doc.recallLog.slice().reverse().slice(0, 5).map(function(r, i) {
-                return h('li', { key: i, className: 'text-[0.6875rem] text-slate-300 leading-snug' },
+                return h('li', { key: i, className: 'text-xs text-slate-300 leading-snug' },
                   r.correct + '/' + r.total + (r.missed && r.missed.length ? ' — ' + t('stem.freeforms.recall_still_learning', 'still learning:') + ' ' + r.missed.slice(0, 4).join(', ') : ' 🎉'));
               }))) : null
           )
-          : h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/70 border border-slate-700 rounded-2xl p-3 overflow-y-auto', style: { maxHeight: '72vh' } },
-            h('label', { className: 'block text-[0.6875rem] font-bold text-slate-300 mb-1', htmlFor: 'ff-title' }, t('stem.freeforms.composition_title', 'Composition title')),
-            h('input', {
-              id: 'ff-title', key: 'title-' + rev, defaultValue: doc.title || '',
-              placeholder: t('stem.freeforms.title_placeholder', 'What is this world about?'),
-              className: 'w-full bg-slate-800 border border-slate-500 rounded-lg px-2 py-2 text-sm text-slate-100 mb-3',
-              onBlur: function(e) { if (e.target.value !== doc.title) setTitle(e.target.value); }
-            }),
-            (Array.isArray(doc.groups) ? doc.groups : []).map(function(g) {
-              return h('div', { key: g.id + '-' + rev, className: 'mb-3 bg-slate-800/60 border border-slate-700 rounded-xl p-2' },
-                h('div', { className: 'flex items-center gap-1 mb-1' },
+          : h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/90 border border-slate-700 rounded-2xl p-3.5 overflow-y-auto space-y-3', style: { maxHeight: '72vh' } },
+            // Live spatial topology minimap card
+            h('div', { className: 'ff-surface rounded-xl p-2' },
+              h('div', { className: 'flex items-center justify-between text-[0.6875rem] font-bold text-slate-300 mb-1.5 px-1' },
+                h('span', null, '🧭 ' + t('stem.freeforms.blueprint_map', 'Live Form Blueprint')),
+                h('span', { className: 'text-violet-300' }, stats.notes ? stats.notes + ' ' + t('stem.freeforms.notes_count', 'notes') : sc.name)
+              ),
+              renderLiveTopologySvg(doc)
+            ),
+            h('div', null,
+              h('label', { className: 'block text-xs font-bold text-slate-200 mb-1', htmlFor: 'ff-title' }, t('stem.freeforms.composition_title', 'Composition title')),
+              h('input', {
+                id: 'ff-title', key: 'title-' + rev, defaultValue: doc.title || '',
+                placeholder: t('stem.freeforms.title_placeholder', 'What is this world about?'),
+                className: 'w-full bg-slate-800 border border-slate-500 rounded-lg px-2.5 py-2 text-sm text-slate-50',
+                onBlur: function(e) { if (e.target.value !== doc.title) setTitle(e.target.value); }
+              })
+            ),
+            stats.items === 0 ? h('div', { className: 'rounded-xl bg-violet-950/60 border border-violet-500/60 p-2.5 flex items-center justify-between gap-2' },
+              h('span', { className: 'text-xs text-violet-100 leading-snug' }, t('stem.freeforms.empty_prompt', 'Want to see the 3D form populated first?')),
+              h('button', { type: 'button', className: BTN_HOT + ' shrink-0', onClick: loadStarterSample }, '✨ ' + t('stem.freeforms.try_sample', 'Seed sample'))
+            ) : null,
+            (Array.isArray(doc.groups) ? doc.groups : []).map(function(g, gi) {
+              var accent = GROUP_ACCENTS[gi % GROUP_ACCENTS.length];
+              return h('div', {
+                key: g.id + '-' + rev,
+                className: 'bg-slate-800/75 border border-slate-700 rounded-xl p-2.5',
+                style: { borderLeft: '4px solid ' + accent }
+              },
+                h('div', { className: 'flex items-center gap-1.5 mb-1.5' },
                   h('input', {
                     defaultValue: g.title, 'aria-label': t('stem.freeforms.group_name', 'Group name'),
-                    className: 'flex-1 min-w-0 bg-transparent border border-transparent focus:border-slate-500 rounded px-1 py-1 text-sm font-black text-violet-200',
+                    className: 'flex-1 min-w-0 bg-transparent border border-transparent focus:border-slate-500 rounded px-1.5 py-1 text-sm font-black text-white',
                     onBlur: function(e) { var v = e.target.value.trim(); if (v && v !== g.title) renameGroup(g.id, v); }
                   }),
-                  h('button', { className: 'min-h-[44px] min-w-[44px] rounded-lg text-slate-300 hover:text-rose-300 hover:bg-slate-700', 'aria-label': t('stem.freeforms.delete_group', 'Delete group') + ' ' + g.title, onClick: function() { deleteGroup(g.id); } }, '\u{1F5D1}️')
+                  h('span', { className: 'ff-pill text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-slate-200 border border-slate-600' }, (g.items || []).length),
+                  h('button', { className: 'min-h-[40px] min-w-[40px] rounded-lg text-slate-300 hover:text-rose-300 hover:bg-slate-700', 'aria-label': t('stem.freeforms.delete_group', 'Delete group') + ' ' + g.title, onClick: function() { deleteGroup(g.id); } }, '\u{1F5D1}️')
                 ),
                 (g.items || []).map(function(it) {
                   var isSel = selectedId === it.id;
-                  return h('div', { key: it.id, className: 'flex items-center gap-1 mb-1 rounded-lg ' + (isSel ? 'bg-violet-900/40 ring-1 ring-violet-500' : '') },
+                  var hasArt = !!(doc.nodeArt && doc.nodeArt[it.id]);
+                  return h('div', { key: it.id, className: 'flex items-center gap-1 mb-1 rounded-lg px-0.5 ' + (isSel ? 'bg-violet-900/55 ring-1 ring-violet-400' : 'hover:bg-slate-700/40') },
                     h('button', {
-                      className: 'min-h-[44px] min-w-[32px] text-xs', 'aria-pressed': isSel ? 'true' : 'false',
+                      className: 'min-h-[40px] min-w-[34px] text-xs rounded-md', 'aria-pressed': isSel ? 'true' : 'false',
                       'aria-label': (isSel ? t('stem.freeforms.selected', 'Selected') + ': ' : t('stem.freeforms.select_idea', 'Select idea') + ': ') + it.text,
+                      style: { color: hasArt ? '#fbbf24' : accent },
                       onClick: function() { setSelectedId(isSel ? null : it.id); setSelPart(0); setSculptText(''); }
-                    }, (doc.nodeArt && doc.nodeArt[it.id]) ? '\u{1F5FF}' : '●'),
+                    }, hasArt ? '\u{1F5FF}' : '●'),
                     h('input', {
                       defaultValue: it.text, 'aria-label': t('stem.freeforms.idea_text', 'Idea text'),
                       className: 'flex-1 min-w-0 bg-transparent border border-transparent focus:border-slate-500 rounded px-1 py-1 text-sm text-slate-100',
                       onBlur: function(e) { var v = e.target.value.trim(); if (v && v !== it.text) editItem(g.id, it.id, { text: v }); }
                     }),
-                    h('button', { className: 'min-h-[44px] min-w-[36px] rounded-lg text-slate-500 hover:text-rose-300 hover:bg-slate-700 text-xs', 'aria-label': t('stem.freeforms.delete_idea', 'Delete idea') + ' ' + it.text, onClick: function() { deleteItem(g.id, it.id); } }, '✕')
+                    h('button', { className: 'min-h-[40px] min-w-[36px] rounded-lg text-slate-300 hover:text-rose-300 hover:bg-slate-700 text-xs', 'aria-label': t('stem.freeforms.delete_idea', 'Delete idea') + ' ' + it.text, onClick: function() { deleteItem(g.id, it.id); } }, '✕')
                   );
                 }),
                 h('form', {
-                  className: 'flex gap-1 mt-1',
+                  className: 'flex gap-1.5 mt-1.5',
                   onSubmit: function(e) { e.preventDefault(); var inp = e.target.elements['ff-add-' + g.id]; if (inp) { addItem(g.id, inp.value); inp.value = ''; } }
                 },
-                  h('input', { name: 'ff-add-' + g.id, placeholder: t('stem.freeforms.add_idea_placeholder', 'Add an idea…'), 'aria-label': t('stem.freeforms.add_idea_to', 'Add an idea to') + ' ' + g.title, className: 'flex-1 min-w-0 bg-slate-900 border border-slate-500 rounded-lg px-2 py-1.5 text-sm text-slate-100' }),
+                  h('input', { name: 'ff-add-' + g.id, placeholder: t('stem.freeforms.add_idea_placeholder', 'Add an idea…'), 'aria-label': t('stem.freeforms.add_idea_to', 'Add an idea to') + ' ' + g.title, className: 'flex-1 min-w-0 bg-slate-900 border border-slate-500 rounded-lg px-2.5 py-1.5 text-sm text-slate-100' }),
                   h('button', { type: 'submit', className: BTN_GHOST, 'aria-label': t('stem.freeforms.add_idea_to', 'Add an idea to') + ' ' + g.title }, '+')
                 )
               );
             }),
             h('button', { className: BTN_GHOST + ' w-full', onClick: addGroup }, '+ ' + t('stem.freeforms.add_group', 'Add a group')),
             // selected-idea detail: note + sculpt
-            selected ? h('div', { className: 'mt-3 bg-violet-950/50 border border-violet-700 rounded-xl p-2' },
-              h('div', { className: 'text-xs font-black text-violet-200 mb-1' }, '✦ ' + selected.item.text),
-              h('label', { className: 'block text-[0.6875rem] font-bold text-slate-300 mb-1', htmlFor: 'ff-note' }, t('stem.freeforms.note_label', 'Note to self (shows in 3D)')),
+            selected ? h('div', { className: 'bg-violet-950/65 border border-violet-500 rounded-xl p-3 space-y-2' },
+              h('div', { className: 'flex items-center justify-between gap-2' },
+                h('div', { className: 'text-xs font-black text-violet-100 truncate' }, '✦ ' + selected.item.text),
+                h('span', { className: 'ff-pill text-[0.625rem] font-bold px-2 py-0.5 rounded-full bg-violet-900 text-violet-100 border border-violet-500/60 shrink-0' }, selected.group.title)
+              ),
+              h('label', { className: 'block text-xs font-bold text-slate-200', htmlFor: 'ff-note' }, t('stem.freeforms.note_label', 'Note to self (shows in 3D)')),
               h('textarea', {
                 id: 'ff-note', key: 'note-' + selected.item.id + '-' + rev, defaultValue: selected.item.note || '', rows: 2,
                 placeholder: t('stem.freeforms.note_placeholder', 'Why does this idea live here?'),
-                className: 'w-full bg-slate-900 border border-slate-500 rounded-lg px-2 py-1.5 text-xs text-slate-100 mb-2',
+                className: 'w-full bg-slate-900 border border-slate-500 rounded-lg px-2.5 py-1.5 text-xs text-slate-100',
                 onBlur: function(e) { if (e.target.value !== (selected.item.note || '')) editItem(selected.group.id, selected.item.id, { note: e.target.value }); }
               }),
               // ── Shape studio — sculpt by hand (no AI needed), from a preset,
@@ -1114,43 +1410,46 @@ window.StemLab = window.StemLab || {
               (function() {
                 var P3D = window.AlloModules && window.AlloModules.Prim3D;
                 if (!prim3dReady || !P3D) {
-                  return h('div', { className: 'text-[0.6875rem] text-slate-500', role: 'status' }, t('stem.freeforms.studio_loading', 'Loading the shape studio…'));
+                  return h('div', { className: 'text-xs text-slate-300', role: 'status' }, t('stem.freeforms.studio_loading', 'Loading the shape studio…'));
                 }
                 var recipe = currentRecipe();
                 var norm = recipe ? P3D.normalizeRecipe(recipe) : null;
                 var parts = (norm && norm.parts) || [];
                 var pi = Math.min(selPart, Math.max(0, parts.length - 1));
                 var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩' };
-                var mini = 'min-h-[44px] min-w-[44px] rounded-lg border border-slate-600 bg-slate-900 text-slate-200 text-xs font-bold hover:bg-slate-700';
+                var mini = 'min-h-[40px] min-w-[40px] rounded-lg border border-slate-500 bg-slate-900 text-slate-100 text-xs font-bold hover:bg-slate-700 cursor-pointer';
                 var nudge = function(field, axis, delta, label) {
                   return h('button', { key: field + axis + delta, className: mini, 'aria-label': label, title: label,
                     onClick: function() { doPartOp(function(P, r) { return P.nudgePart(r, pi, field, axis, delta); }); } }, label.split(' ')[0]);
                 };
-                return h('div', null,
-                  h('div', { className: 'text-[0.6875rem] font-bold text-slate-300 mb-1' }, '🗿 ' + t('stem.freeforms.studio_label', 'Shape studio')),
+                return h('div', { className: 'pt-2 border-t border-violet-700/60 space-y-1.5' },
+                  h('div', { className: 'flex items-center justify-between text-xs font-bold text-slate-200' },
+                    h('span', null, '🗿 ' + t('stem.freeforms.studio_label', 'Shape studio')),
+                    parts.length ? h('span', { className: 'text-[0.6875rem] text-amber-200 font-bold' }, parts.length + ' ' + t('stem.freeforms.parts_count', 'parts')) : null
+                  ),
                   // preset shelf — zero-AI quick starts (same recipes the AI emits)
-                  !parts.length ? h('div', { className: 'flex flex-wrap gap-1 mb-1', role: 'group', 'aria-label': t('stem.freeforms.studio_presets', 'Preset shapes') },
+                  !parts.length ? h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': t('stem.freeforms.studio_presets', 'Preset shapes') },
                     (P3D.PRESETS || []).slice(0, 8).map(function(ps) {
                       return h('button', { key: ps.id, className: mini, title: ps.label, 'aria-label': t('stem.freeforms.studio_place_preset', 'Place preset') + ' ' + ps.label,
                         onClick: function() { var r = P3D.getPreset(ps.id); if (r) { setSelPart(0); applyRecipe(selected.item.id, r, t('stem.freeforms.sr_sculpted', 'Sculpture placed')); } } }, ps.emoji);
                     })) : null,
                   // add-a-part row — the hand-building entry point
-                  h('div', { className: 'flex flex-wrap gap-1 mb-1 items-center', role: 'group', 'aria-label': t('stem.freeforms.studio_add_part', 'Add a part') },
-                    h('span', { className: 'text-[0.625rem] text-slate-500 font-bold' }, '+'),
+                  h('div', { className: 'flex flex-wrap gap-1 items-center', role: 'group', 'aria-label': t('stem.freeforms.studio_add_part', 'Add a part') },
+                    h('span', { className: 'text-xs text-slate-300 font-bold px-1' }, '+'),
                     (P3D.SHAPES || []).map(function(shp) {
                       return h('button', { key: shp, className: mini, title: t('stem.freeforms.studio_add', 'Add') + ' ' + shp, 'aria-label': t('stem.freeforms.studio_add', 'Add') + ' ' + shp,
                         onClick: function() { doPartOp(function(P, r) { var n2 = P.addPart(r, shp); return n2; }); setSelPart(parts.length); } }, SHAPE_ICONS[shp] || shp);
                     })),
                   // part list + per-part controls (only when something exists)
-                  parts.length ? h('div', null,
-                    h('div', { className: 'flex flex-wrap gap-1 mb-1', role: 'group', 'aria-label': t('stem.freeforms.studio_parts', 'Parts') },
+                  parts.length ? h('div', { className: 'space-y-1.5' },
+                    h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': t('stem.freeforms.studio_parts', 'Parts') },
                       parts.map(function(p, i) {
                         return h('button', { key: i, className: mini + (i === pi ? ' ring-2 ring-violet-400' : ''), 'aria-pressed': i === pi ? 'true' : 'false',
                           'aria-label': t('stem.freeforms.studio_part', 'Part') + ' ' + (i + 1) + ': ' + p.shape,
                           style: { borderBottom: '3px solid ' + p.color },
                           onClick: function() { setSelPart(i); } }, SHAPE_ICONS[p.shape] || p.shape);
                       })),
-                    h('div', { className: 'grid grid-cols-6 gap-1 mb-1', role: 'group', 'aria-label': t('stem.freeforms.studio_move', 'Move the selected part') },
+                    h('div', { className: 'grid grid-cols-6 gap-1', role: 'group', 'aria-label': t('stem.freeforms.studio_move', 'Move the selected part') },
                       nudge('position', 0, -0.08, '◀ ' + t('stem.freeforms.studio_left', 'Left')),
                       nudge('position', 0, 0.08, '▶ ' + t('stem.freeforms.studio_right', 'Right')),
                       nudge('position', 1, 0.08, '⬆ ' + t('stem.freeforms.studio_up', 'Up')),
@@ -1158,7 +1457,7 @@ window.StemLab = window.StemLab || {
                       nudge('position', 2, 0.08, '↗ ' + t('stem.freeforms.studio_closer', 'Closer')),
                       nudge('position', 2, -0.08, '↙ ' + t('stem.freeforms.studio_farther', 'Farther'))
                     ),
-                    h('div', { className: 'grid grid-cols-6 gap-1 mb-1', role: 'group', 'aria-label': t('stem.freeforms.studio_shape_tools', 'Shape tools') },
+                    h('div', { className: 'grid grid-cols-6 gap-1', role: 'group', 'aria-label': t('stem.freeforms.studio_shape_tools', 'Shape tools') },
                       h('button', { className: mini, title: t('stem.freeforms.studio_bigger', 'Bigger'), 'aria-label': t('stem.freeforms.studio_bigger', 'Bigger'), onClick: function() { doPartOp(function(P, r) { return P.scalePart(r, pi, 1.25); }); } }, '➕'),
                       h('button', { className: mini, title: t('stem.freeforms.studio_smaller', 'Smaller'), 'aria-label': t('stem.freeforms.studio_smaller', 'Smaller'), onClick: function() { doPartOp(function(P, r) { return P.scalePart(r, pi, 0.8); }); } }, '➖'),
                       h('button', { className: mini, title: t('stem.freeforms.studio_spin', 'Spin'), 'aria-label': t('stem.freeforms.studio_spin', 'Spin'), onClick: function() { doPartOp(function(P, r) { return P.nudgePart(r, pi, 'rotation', 1, 30); }); } }, '🔄'),
@@ -1168,34 +1467,42 @@ window.StemLab = window.StemLab || {
                     )
                   ) : null,
                   // AI describe row — optional, same recipe format
-                  hasAI ? h('div', { className: 'flex gap-1 mt-1' },
+                  hasAI ? h('div', { className: 'flex gap-1.5 pt-1' },
                     h('input', { id: 'ff-sculpt', value: sculptText, onChange: function(e) { setSculptText(e.target.value); }, placeholder: t('stem.freeforms.sculpt_label', 'Or describe it…') + ' ' + selected.item.text, 'aria-label': t('stem.freeforms.sculpt_label', 'Or describe it…'), className: 'flex-1 min-w-0 bg-slate-900 border border-slate-500 rounded-lg px-2 py-1.5 text-xs text-slate-100' }),
                     h('button', { className: BTN_HOT, onClick: doSculpt, disabled: sculptBusy, 'aria-busy': sculptBusy ? 'true' : 'false' }, sculptBusy ? '…' : '✨ ' + t('stem.freeforms.sculpt', 'Sculpt'))
                   ) : null,
-                  parts.length ? h('button', { className: BTN_GHOST + ' mt-1 w-full', onClick: doClearArt }, t('stem.freeforms.clear_art', 'Remove sculpture')) : null
+                  parts.length ? h('button', { className: BTN_GHOST + ' w-full', onClick: doClearArt }, t('stem.freeforms.clear_art', 'Remove sculpture')) : null
                 );
               })()
             ) : null
           ),
           // ── 3D stage (cg3d owns its own a11y spine + WebGL fallback) ──
-          h('div', { className: 'ff-stage flex-1 min-w-0 relative bg-[#0b1020] border border-slate-700 rounded-2xl overflow-hidden', style: { minHeight: '540px', maxHeight: '72vh' } },
-            (!modulesReady && !modulesFailed) ? h('div', { className: 'absolute inset-0 flex items-center justify-center text-slate-300 text-sm', role: 'status' }, '\u{1F9ED} ' + t('stem.freeforms.loading_3d', 'Loading the 3D space…')) : null,
-            modulesFailed ? h('div', { className: 'absolute inset-0 flex items-center justify-center text-center p-6 text-slate-300 text-sm', role: 'status' }, '⚠️ ' + t('stem.freeforms.no_3d', 'The 3D space could not load here — your builder panel still works, and everything you write is saved.')) : null,
+          h('div', { className: 'ff-stage ff-stage-bg flex-1 min-w-0 relative border border-slate-600 rounded-2xl overflow-hidden', style: { minHeight: '540px', maxHeight: '72vh' } },
+            (!modulesReady && !modulesFailed) ? h('div', { className: 'absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-slate-200 text-sm text-center', role: 'status' },
+              h('div', { className: 'ff-card-svg p-3' }, renderScaffoldBlueprint(sc.type, 'md')),
+              h('div', { className: 'font-bold text-slate-100' }, '\u{1F9ED} ' + t('stem.freeforms.loading_3d', 'Loading the 3D space…'))
+            ) : null,
+            modulesFailed ? h('div', { className: 'absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6 text-slate-200 text-sm', role: 'status' },
+              h('div', { className: 'max-w-xs w-full' }, renderLiveTopologySvg(doc)),
+              h('div', { className: 'max-w-md' }, '⚠️ ' + t('stem.freeforms.no_3d', 'The 3D space could not load here — your builder panel still works, and everything you write is saved.'))
+            ) : null,
             h('div', { ref: hostRef, className: 'absolute inset-0' })
           )
         ),
         // hint line
-        h('p', { className: 'text-[0.6875rem] text-slate-500 mt-2' }, t('stem.freeforms.stage_hint', 'In the space: drag an idea to place it · drag the background to orbit · scroll to zoom · [ and ] move a selected idea between groups.')),
+        h('div', { className: 'mt-2.5 px-3 py-2 rounded-xl bg-slate-900/75 border border-slate-700/80 text-xs text-slate-300 flex flex-wrap items-center gap-x-4 gap-y-1' },
+          h('span', null, '🖱️ ' + t('stem.freeforms.stage_hint', 'In the space: drag an idea to place it · drag the background to orbit · scroll to zoom · [ and ] move a selected idea between groups.'))
+        ),
         // assessment cards (hidden during recall so the coach can't spoil answers)
         (!inChallenge && doc.assessment) ? h('div', { className: 'mt-3 grid md:grid-cols-3 gap-3', 'aria-label': t('stem.freeforms.coach_heading', 'Coaching feedback') },
-          [['strengths', '\u{1F4AA}', t('stem.freeforms.strengths', 'What is working')],
-           ['questions', '\u{1F914}', t('stem.freeforms.questions', 'Questions to consider')],
-           ['suggestions', '\u{1F331}', t('stem.freeforms.suggestions', 'Next build steps')]].map(function(cfg) {
+          [['strengths', '\u{1F4AA}', t('stem.freeforms.strengths', 'What is working'), '#34d399'],
+           ['questions', '\u{1F914}', t('stem.freeforms.questions', 'Questions to consider'), '#fbbf24'],
+           ['suggestions', '\u{1F331}', t('stem.freeforms.suggestions', 'Next build steps'), '#a78bfa']].map(function(cfg) {
             var list = doc.assessment[cfg[0]] || [];
             if (!list.length) return null;
-            return h('div', { key: cfg[0], className: 'bg-slate-900/70 border border-slate-700 rounded-2xl p-3' },
-              h('div', { className: 'text-xs font-black text-violet-200 mb-2' }, cfg[1] + ' ' + cfg[2]),
-              h('ul', { className: 'space-y-1' }, list.map(function(s, i) { return h('li', { key: i, className: 'text-xs text-slate-300 leading-snug' }, s); }))
+            return h('div', { key: cfg[0], className: 'ff-surface rounded-2xl p-3.5', style: { borderTop: '3px solid ' + cfg[3] } },
+              h('div', { className: 'text-xs font-black text-white mb-2' }, cfg[1] + ' ' + cfg[2]),
+              h('ul', { className: 'space-y-1.5 pl-4 list-disc' }, list.map(function(s, i) { return h('li', { key: i, className: 'text-xs text-slate-200 leading-relaxed' }, s); }))
             );
           })
         ) : null

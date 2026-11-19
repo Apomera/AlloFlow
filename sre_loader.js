@@ -131,6 +131,15 @@
     return settings.allowRemoteFallback ? urls.slice() : urls.slice(0, 1);
   }
 
+  var CDN_SRI_BY_URL = {
+    'https://cdn.jsdelivr.net/npm/speech-rule-engine@4.1.4/lib/sre.js': 'sha384-RFEHlLg7RolVm5zsqvYvmFpV0NW1O62ov3t5grZyMEdgfyizSH9R2UuIcEFIme6q',
+    'https://unpkg.com/speech-rule-engine@4.1.4/lib/sre.js': 'sha384-RFEHlLg7RolVm5zsqvYvmFpV0NW1O62ov3t5grZyMEdgfyizSH9R2UuIcEFIme6q',
+    'https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js': 'sha384-ISVKFwYYJAOKPcfkYhBVHjUVYLIiuwCEo/+yfuDsetu3KNavSmw5JEelaaIEItLj',
+    'https://unpkg.com/temml@0.10.34/dist/temml.min.js': 'sha384-ISVKFwYYJAOKPcfkYhBVHjUVYLIiuwCEo/+yfuDsetu3KNavSmw5JEelaaIEItLj',
+    'https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/Temml-Local.css': 'sha384-xx094ITgUB4ApCj202/MtYiB+v/Be6wjvY5B9h5hUYuLQxcFzQTqe6Sr2kH9OvIJ',
+    'https://unpkg.com/temml@0.10.34/dist/Temml-Local.css': 'sha384-xx094ITgUB4ApCj202/MtYiB+v/Be6wjvY5B9h5hUYuLQxcFzQTqe6Sr2kH9OvIJ'
+  };
+
   function loadScriptChain(urls, isReady) {
     return new Promise(function (resolve, reject) {
       (function tryAt(index) {
@@ -140,6 +149,9 @@
         if (index > 0 || (urls[index] && String(urls[index]).indexOf('https://') === 0)) {
           script.crossOrigin = 'anonymous';
           script.referrerPolicy = 'no-referrer';
+        }
+        if (CDN_SRI_BY_URL[urls[index]]) {
+          script.integrity = CDN_SRI_BY_URL[urls[index]];
         }
         script.src = urls[index];
         script.async = true;
@@ -167,6 +179,9 @@
         if (index > 0 || (urls[index] && String(urls[index]).indexOf('https://') === 0)) {
           link.crossOrigin = 'anonymous';
           link.referrerPolicy = 'no-referrer';
+        }
+        if (CDN_SRI_BY_URL[urls[index]]) {
+          link.integrity = CDN_SRI_BY_URL[urls[index]];
         }
         link.href = urls[index];
         link.setAttribute('data-allo-temml-css', urls[index]);
@@ -299,6 +314,78 @@
     return value.trim();
   }
 
+  var ALLOWED_MATHML_TAGS = {
+    math: 1, mi: 1, mn: 1, mo: 1, ms: 1, mtext: 1, mspace: 1, mrow: 1,
+    mfrac: 1, msqrt: 1, mroot: 1, mstyle: 1, mpadded: 1, mphantom: 1,
+    mfenced: 1, menclose: 1, msub: 1, msup: 1, msubsup: 1, munder: 1,
+    mover: 1, munderover: 1, mmultiscripts: 1, mprescripts: 1, none: 1,
+    mtable: 1, mtr: 1, mtd: 1, mlabeledtr: 1, maligngroup: 1, malignmark: 1,
+    semantics: 1, annotation: 1
+  };
+  var ALLOWED_MATHML_ATTRS = {
+    xmlns: 1, display: 1, mathvariant: 1, mathsize: 1, mathcolor: 1,
+    mathbackground: 1, dir: 1, stretchy: 1, symmetric: 1, fence: 1,
+    separator: 1, lspace: 1, rspace: 1, minsize: 1, maxsize: 1, largeop: 1,
+    movablelimits: 1, accent: 1, accentunder: 1, linethickness: 1,
+    numalign: 1, denomalign: 1, bevelled: 1, columnalign: 1, rowalign: 1,
+    columnspacing: 1, rowspacing: 1, columnlines: 1, rowlines: 1, frame: 1,
+    framespacing: 1, equalrows: 1, equalcolumns: 1, rowspan: 1, columnspan: 1,
+    width: 1, height: 1, depth: 1, voffset: 1, notation: 1, open: 1, close: 1,
+    separators: 1, encoding: 1, 'class': 1, 'aria-label': 1, 'aria-hidden': 1,
+    role: 1, scriptlevel: 1, displaystyle: 1, form: 1
+  };
+
+  function sanitizeMathML(raw) {
+    var extracted = extractMathElement(raw);
+    if (!extracted) return null;
+    if (typeof DOMParser !== 'function') return null;
+    try {
+      var doc = new DOMParser().parseFromString(extracted, 'text/html');
+      var root = doc.body && doc.body.querySelector('math');
+      if (!root) return null;
+      var walk = function (node) {
+        var children = Array.prototype.slice.call(node.childNodes || []);
+        for (var i = 0; i < children.length; i += 1) {
+          var child = children[i];
+          if (child.nodeType === 3) continue;
+          if (child.nodeType !== 1) {
+            if (child.parentNode) child.parentNode.removeChild(child);
+            continue;
+          }
+          var tag = String(child.tagName || '').toLowerCase();
+          if (!ALLOWED_MATHML_TAGS[tag]) {
+            if (child.parentNode) child.parentNode.removeChild(child);
+            continue;
+          }
+          var attrs = Array.prototype.slice.call(child.attributes || []);
+          for (var j = 0; j < attrs.length; j += 1) {
+            var name = String(attrs[j].name || '').toLowerCase();
+            var val = String(attrs[j].value || '');
+            if (!ALLOWED_MATHML_ATTRS[name] || /(?:javascript|vbscript|data)\s*:/i.test(val)) {
+              child.removeAttribute(attrs[j].name);
+            }
+          }
+          walk(child);
+        }
+      };
+      var rootAttrs = Array.prototype.slice.call(root.attributes || []);
+      for (var k = 0; k < rootAttrs.length; k += 1) {
+        var rName = String(rootAttrs[k].name || '').toLowerCase();
+        var rVal = String(rootAttrs[k].value || '');
+        if (!ALLOWED_MATHML_ATTRS[rName] || /(?:javascript|vbscript|data)\s*:/i.test(rVal)) {
+          root.removeAttribute(rootAttrs[k].name);
+        }
+      }
+      walk(root);
+      var out = root.outerHTML;
+      if (!out || !/^<math[\s>]/i.test(out)) return null;
+      if (/<(?:script|img|svg|iframe|object|embed|style|form|a)\b|\bon[a-z]+\s*=|(?:javascript|vbscript)\s*:/i.test(out)) return null;
+      return out;
+    } catch (_) {
+      return null;
+    }
+  }
+
   function extractMathElement(src) {
     var match = String(src).match(/<math[\s>][\s\S]*?<\/math>/i);
     return match ? match[0] : null;
@@ -317,7 +404,7 @@
       } catch (_) { return null; }
       if (!html || html.indexOf('<math') === -1) return null;
       if (/temml-error|<merror|<script|javascript:/i.test(html)) return null;
-      return extractMathElement(html);
+      return sanitizeMathML(html);
     });
   }
 
@@ -331,7 +418,7 @@
     var options = opts || {};
     var src = String(input == null ? '' : input).trim();
     if (!src) return Promise.resolve(null);
-    if (/^<math[\s>]/i.test(src)) return Promise.resolve(extractMathElement(src));
+    if (/^<math[\s>]/i.test(src)) return Promise.resolve(sanitizeMathML(src));
     var settings = effectiveSettings(options);
     return latexToMathML(stripLatexDelims(src), settings, inputDisplayMode(src, options), true);
   }

@@ -66,8 +66,18 @@ class FluxSecurity:
 
         admitted = False
         try:
-            if any(sum(k.lower() == field for k, _ in pairs) > 1 for field in (b'origin', b'authorization', b'content-length')):
+            if any(sum(k.lower() == field for k, _ in pairs) > 1 for field in (b'host', b'origin', b'authorization', b'content-length')):
                 raise IntakeError(400, 'ambiguous-headers')
+            raw_host = headers.get(b'host', b'').decode('latin-1').strip()
+            if raw_host:
+                host_only = (urlsplit('http://' + raw_host).hostname or '').lower()
+                allowed_hosts = {'localhost', '127.0.0.1', '::1', 'flux'}
+                for o in self.origins:
+                    oh = (urlsplit(o).hostname or '').lower()
+                    if oh:
+                        allowed_hosts.add(oh)
+                if host_only not in allowed_hosts:
+                    raise IntakeError(403, 'host-not-allowed')
             if origin and origin not in self.origins:
                 raise IntakeError(403, 'origin-not-allowed')
             if scope['method'] == 'OPTIONS':

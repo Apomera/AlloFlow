@@ -100,6 +100,7 @@ const FALLBACK_LANGUAGE_OPTIONS = [
   // works even when CF Pages is briefly unavailable.
   useEffect(() => {
     let cancelled = false;
+    let activeCtrl = null;
     const urls = [
       './lang/manifest.json',
       'https://alloflow-cdn.pages.dev/lang/manifest.json',
@@ -107,8 +108,12 @@ const FALLBACK_LANGUAGE_OPTIONS = [
     ];
     (async () => {
       for (const u of urls) {
+        if (cancelled) return;
+        const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        activeCtrl = ctrl;
+        const timer = ctrl ? setTimeout(() => ctrl.abort(), 8000) : null;
         try {
-          const r = await fetch(u, { cache: 'no-cache' });
+          const r = await fetch(u, ctrl ? { cache: 'no-cache', signal: ctrl.signal } : { cache: 'no-cache' });
           if (!r.ok) continue;
           const m = await r.json();
           if (m && Array.isArray(m.available)) {
@@ -127,10 +132,17 @@ const FALLBACK_LANGUAGE_OPTIONS = [
             return;
           }
         } catch (_) { /* try next URL */ }
+        finally {
+          if (timer !== null) clearTimeout(timer);
+          if (activeCtrl === ctrl) activeCtrl = null;
+        }
       }
       // Silent fallback — picker still works with English + Custom only.
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      if (activeCtrl) { try { activeCtrl.abort(); } catch (_) {} }
+    };
   }, []);
   // English is always available (it's the source language, not in the manifest).
   // Other languages come from the Cloudflare manifest so the picker stays in sync
@@ -160,7 +172,7 @@ const FALLBACK_LANGUAGE_OPTIONS = [
   };
   const optionLabel = (entry) => {
     const endonym = entry.endonym || entry.value;
-    const suffix = PROVENANCE_SUFFIX[entry.provenance] || '';
+    const suffix = Object.prototype.hasOwnProperty.call(PROVENANCE_SUFFIX, entry.provenance) ? PROVENANCE_SUFFIX[entry.provenance] : '';
     if (endonym === entry.value) return entry.value + suffix;
     return endonym + ' — ' + entry.value + suffix;
   };
@@ -255,7 +267,7 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                 {/* The help anchor lives on the visible button, not the hidden input: a tour step
                     or help-mode click resolving the key must land on something a user can see. */}
                 <button type="button"
-                    onClick={() => fileInputRef.current.click()} data-help-key="ui_lang_import_btn"
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()} data-help-key="ui_lang_import_btn"
                     className="min-h-11 min-w-11 inline-flex items-center justify-center p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
                     title={languageCopy('language_selector.upload_tooltip', 'Import Language Pack')}
                     aria-label={languageCopy('language_selector.upload_tooltip', 'Import Language Pack')}

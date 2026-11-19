@@ -51,13 +51,14 @@ const ALLOWED_AI_SENTENCES = [
   'This page runs without AI.',                                                                  // the tagline, in the title, the description and the h1
   'This page runs without AI. No account. Nothing you choose leaves your device.',    // the proof line
   'Run AI.',                                                                 // a list item under "A practice file cannot"
+  'With optional computer voice (AI, runs on this device)',                  // demarcated secondary block for optional on-device voice pages
   VOICES_SAID,                                                               // the voices, said exactly
 ];
 // British spellings and usages that must not reach a US teacher.
 const BRITISH = /practis|standardis|licence|colour|\bmarking\b|\bmarked\b|\btick(?:ed|s)?\b|USB stick|\bwhilst\b|\bmaths\b|favour|behaviour|\bcentre\b/i;
 const STRICT = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; form-action 'none'; base-uri 'none'";
 const CSP = {
-  'packets.html': STRICT,
+  'packets.html': STRICT.replace("img-src 'self';", "img-src 'self'; connect-src 'none';"),
   // The maker shows a teacher's own picture and plays a recording, both held in the page as data: addresses. Nothing more.
   'packets-make.html': STRICT.replace("img-src 'self';", "img-src 'self' data:; media-src data:; connect-src 'self';"),
   // The preview shows a built practice file, which carries its script and styles inside itself. A browser hands
@@ -319,7 +320,7 @@ describe('the pages as files', () => {
       ['Make a 1-minute naming check', [['Make a 1-minute naming check', 'packets-symbol-runner.html#check-mode']]],
       ['Make a vocabulary check', [['Make a vocabulary check', 'packets-vocab.html#check-mode']]],
       ['Add up results', [['Add up results', 'packets-results.html']]],
-      ['Present and export word cards', [['Present and export word cards', 'packets-present-export.html']]],
+      ['Present & print word cards', [['Present & print word cards', 'packets-present-export.html']]],
       ['Check it yourself', [['Check it yourself', '#check']]]]);
     // 2026-11-16: the student's way in was a text link 3,215 px down a phone page; it now leads the section.
     const door = doc.querySelector('section[aria-label="What you can do here"] > .student-door');
@@ -329,8 +330,16 @@ describe('the pages as files', () => {
     expect(parse('packets-open.html').querySelector('h1').textContent).toBe('Open a practice file or check');
     // 2026-11-16: the hero is the headline, one line and the scope; the sizes and the voice note sit under the cards, so a maker is on the first screen.
     expect([...doc.querySelector('.hero .wrap').children].map((node) => node.tagName + '.' + node.className)).toEqual(['H1.', 'P.lead', 'P.scope']);
+    // 2026-11-19 (Wave 2B): optional on-device voice tools sit in a demarcated .voice-door block right after the 4 Practice cards.
+    const voiceDoor = doc.querySelector('.voice-door');
+    expect(voiceDoor).toBeTruthy();
+    expect(voiceDoor.querySelector('#voice-door-title').textContent).toBe('With optional computer voice (AI, runs on this device)');
+    expect([...voiceDoor.querySelectorAll('.voice-card a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
+      ['Make a read-along', 'packets-read-along.html'],
+      ['Make recordings with a computer voice', 'packets-voice.html'],
+    ]);
     // 2026-11-17: then the About page (who makes it, how to report a problem).
-    expect([...doc.querySelector('.cards + .door-notes').children].map((node) => node.className)).toEqual(['facts', 'scope', 'scope']);
+    expect([...doc.querySelector('.cards + .door-notes').children].map((node) => node.className)).toEqual(['facts', 'scope']);
     expect(doc.querySelector('.door-notes a[href="packets-about.html"]').textContent).toBe('About Packets');
     expect([parse('packets-make.html').querySelector('h1').textContent, parse('packets-math-practice.html').querySelector('h1').textContent, parse('packets-check.html').querySelector('h1').textContent])
       .toEqual(['Make Word Sounds practice', 'Make math fact practice', 'Make a math check']);
@@ -618,10 +627,10 @@ describe('the maker, run with the real builder', () => {
     expect(cannotBuild).toEqual(expect.arrayContaining(['Syllable Claps', 'Read & Match']));
     const heldNames = held.map((id) => core.ACTIVITY_SKILLS[id].name);
     const totalNotOffered = held.length + cannotBuild.length;
-    // 2026-11-14 (T1): #not-offered is folded into a closed <details> with a short count summary and full list inside.
-    expect(page.$('not-offered').tagName).toBe('DETAILS');
-    expect(page.$('not-offered').open).toBe(false);
-    expect(page.$('not-offered-summary').textContent).toBe(totalNotOffered + ' more ' + (totalNotOffered === 1 ? 'activity is' : 'activities are') + ' not in this version');
+    // 2026-11-19 (Wave 2B): #not-offered-text sits inside the unified closed #about-levels fold in step 2.
+    expect(page.$('about-levels').tagName).toBe('DETAILS');
+    expect(page.$('about-levels').open).toBe(false);
+    expect(page.$('about-levels').contains(page.$('not-offered-text'))).toBe(true);
     expect(page.$('not-offered-text').textContent).toBe('Not in this version: ' + (heldNames.length ? (heldNames.length > 1 ? and(heldNames) : heldNames[0]) + ' (not enough recorded sounds yet). ' : '')
       + and(cannotBuild) + ' (they cannot be made from a word list alone yet).');
     // Today that is Word Families: most word endings (-ug, -ip) have no recording.
@@ -890,25 +899,25 @@ describe('the maker, run with the real builder', () => {
     expect([...page.$('f-stage').querySelectorAll('option')].map((option) => option.value)).toEqual(['', ...stages.map((row) => row.id), 'wider:challenging', 'wider:advanced']);
     expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(stages.map((row) => row.frameworkLabel)), 'Past the levels (by how rare a word is)']);
     expect(page.$('stage-hint').textContent).toBe('Each level keeps to the letter patterns taught up to it.');
-    expect(page.seen('stage-why')).toBe(false);
+    expect(page.$('stage-why-text').hidden).toBe(true);
+    const aboutLevels = page.$('about-levels');
+    expect(page.seen('about-levels') && !aboutLevels.open).toBe(true);
+    expect(aboutLevels.querySelector('summary').textContent).toBe('About these levels');
     for (const row of stages) {
       page.set('f-stage', row.id);
-      // One short line under the stage; the builder's long note waits, closed, behind "Why".
+      // One short line under the stage; the builder's long note waits, closed, inside "About these levels".
       const line = page.$('stage-hint').textContent;
       expect(line.length, row.id + ': ' + line).toBeLessThan(100);
       expect(line, row.id).toMatch(/(?:sounds?|syllables?|Words of any length)\.(?: Not yet checked against a source\.)?$/);
       expect(line.includes('Not yet checked against a source.'), row.id).toBe(row.verified === false);
       for (const word of (/^New here: ([a-z, ]+)\./.exec(line) || ['', ''])[1].split(', ').filter(Boolean)) expect(row.label, row.id).toContain(word);
-      expect(page.seen('stage-why') && !page.$('stage-why').open, row.id).toBe(true);
-      expect(page.$('stage-why').querySelector('summary').textContent, row.id).toBe('Why this level has these words');
+      expect(page.$('stage-why-text').hidden, row.id).toBe(false);
       expect(page.$('stage-why-text').textContent, row.id).toContain(row.note);
-      // 2026-11-18 (owner): named by what it practices, never by grade (the grade is in "Grade for each level", below).
+      // 2026-11-18 (owner): named by what it practices, never by grade (the grade is in "About these levels", below).
       expect(page.$('f-stage').selectedOptions[0].textContent, row.id).toBe(LEVEL_NAMES[row.id]);
     }
-    // "Grade for each level": closed, every row under its curriculum with its grade, then the wider levels with none.
-    const key = page.$('stage-key');
-    expect(page.seen('stage-key') && !key.open).toBe(true);
-    expect(key.querySelector('summary').textContent).toBe('Grade for each level');
+    // "About these levels": closed, every row under its curriculum with its grade, then the wider levels with none.
+    const key = page.$('stage-key-body');
     expect([...key.querySelectorAll('.stage-key-head')].map((p) => p.textContent)).toEqual([...new Set(stages.map((row) => row.frameworkLabel))]);
     expect([...key.querySelectorAll('li')].map((li) => li.textContent)).toEqual([
       ...stages.map((row) => LEVEL_NAMES[row.id] + ' — ' + row.label.split(':')[0].trim()),
@@ -1057,7 +1066,7 @@ describe('the maker, run with the real builder', () => {
     page.$('save').click();
     expect(page.downloads).toEqual([{ name: 'Word-Sounds-sh-words-version-A.html', href: 'blob:https://packets.test/' + page.files.length }]);
     expect(page.seen('after-save')).toBe(true);
-    expect(page.$('after-save').textContent).toContain('#learner=CodeName');
+    expect(page.$('batch').textContent).toContain('#learner=CodeName');
     expect(page.$('after-save').querySelectorAll('ol li')).toHaveLength(3);
 
     // A shorter file uses fewer of the words and says which were not needed. The sounds are not fetched again.
@@ -1758,11 +1767,13 @@ describe('the maker: borderline words and the kindergarten line', () => {
     expect(british.$('f-stage').querySelector('option[value="Year 1"]')).toBeTruthy();
     expect(british.$('f-stage-other').checked).toBe(true);
     british.dom.window.close();
-    // After saving: the code-name tip is one closed box, and step 3 of "What to do next" links to Add up results.
+    // Wave 2B: the code-name tip sits inside the unified closed #batch fold in step 3; step 3 of "What to do next" links to Add up results.
     const doc = parse('packets-make.html');
-    const tip = doc.getElementById('learner-tip');
-    expect(tip.tagName === 'DETAILS' && !tip.hasAttribute('open') && tip.closest('#after-save')).toBeTruthy();
-    expect(tip.querySelector('summary').textContent).toBe("Fill in a student's code name for them");
+    const batch = doc.getElementById('batch');
+    expect(batch.tagName === 'DETAILS' && !batch.hasAttribute('open')).toBe(true);
+    expect(batch.querySelector('summary').textContent).toBe('Put student code names in the file');
+    expect(batch.contains(doc.getElementById('learner-tip-line'))).toBe(true);
+    expect(doc.getElementById('learner-tip-line').textContent).toContain('#learner=CodeName');
     expect([...doc.querySelectorAll('#after-save ol a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Add up results', 'packets-results.html']]);
     // 2026-11-17: the words of the practice file's own main button (save_work).
     expect(doc.querySelector('#after-save ol').textContent).toContain('presses the main button at the end, Save my work.');
@@ -2188,7 +2199,7 @@ describe('the two small scripts', () => {
     good.dom.window.close();
   });
 
-  it('the preview page serves all three makers: it says "file" and "student", and offers each maker when a preview is gone', () => {
+  it('the preview page serves all three makers: it says "file" and "student", and offers each maker when a preview is gone', async () => {
     const doc = parse('packets-try.html');
     expect(doc.title).toBe('Try the file');
     expect(doc.querySelector('.try-bar').textContent.replace(/\s+/g, ' ').trim()).toBe('Preview This is the file a student gets. Nothing you do here is kept. Close this tab to go back to the maker.');
@@ -2196,16 +2207,36 @@ describe('the two small scripts', () => {
     const problem = doc.getElementById('try-problem');
     expect(problem.querySelector('h2').textContent).toBe('The preview is not here any more');
     expect(problem.querySelector('p').textContent).toBe('A preview lasts while the maker page stays open on the file it made. Go back to the maker and press Try it again. Or start a new file.');
-    // The three makers, as equals, in the order of the front door, each under the name its own page gives itself.
+    // Wave 2B: one clear primary link back to Packets (no 3 competing primary buttons).
     expect([...problem.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href'), a.className])).toEqual([
-      ['Make Word Sounds practice', 'packets-make.html', 'btn btn-primary'], ['Make math fact practice', 'packets-math-practice.html', 'btn btn-primary'], ['Make a math check', 'packets-check.html', 'btn btn-primary']]);
+      ['Back to Packets', 'packets.html', 'btn btn-primary']]);
     for (const a of problem.querySelectorAll('a')) expect(existsSync(a.getAttribute('href')), a.getAttribute('href')).toBe(true);
-    // Nothing a person reads or hears names one kind of file: the three links above are the only exception. A teacher's page says
+    // Nothing a person reads or hears names one kind of file: the link above is the only navigation. A teacher's page says
     // "student" (2026-11-12), never "learner".
     const said = [doc.title, doc.querySelector('.try-bar').textContent, doc.getElementById('try-wait').textContent, problem.querySelector('h2').textContent, problem.querySelector('p').textContent,
       doc.querySelector('noscript').textContent, ...(read('packets-try.js').match(/'[^'\n]*'/g) || [])].join('\n');
     expect(said).toContain('The file a student gets');
     expect(said).not.toMatch(/practice|math|check|learner/i);
+
+    // Wave 2B: Present toggles its label to Exit present, and declined fullscreen keeps the tab visible + Escape exits cleanly.
+    const tryDom = new JSDOM(read('packets-try.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/packets-try.html#blob:https://packets.test/ok' });
+    tryDom.window.fetch = () => Promise.resolve({ ok: true, text: () => Promise.resolve('<!doctype html><html><head><title>x</title></head><body>ok</body></html>') });
+    tryDom.window.URL.createObjectURL = () => 'blob:https://packets.test/copy';
+    tryDom.window.URL.revokeObjectURL = () => {};
+    tryDom.window.document.documentElement.requestFullscreen = () => Promise.reject(new Error('denied'));
+    tryDom.window.eval(read('packets-try.js'));
+    await new Promise((r) => setTimeout(r, 30));
+    const presentBtn = tryDom.window.document.getElementById('try-present');
+    expect(presentBtn.textContent).toBe('Present');
+    presentBtn.click();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(tryDom.window.document.body.classList.contains('try-present')).toBe(true);
+    expect(presentBtn.textContent).toBe('Exit present');
+    expect(tryDom.window.document.querySelector('.try-tab').getAttribute('aria-label')).toContain('Escape');
+    tryDom.window.dispatchEvent(new tryDom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(tryDom.window.document.body.classList.contains('try-present')).toBe(false);
+    expect(presentBtn.textContent).toBe('Present');
+    tryDom.window.close();
   });
 });
 
@@ -2343,7 +2374,7 @@ describe('the maker: quick make, the word count, Pick different words and More o
     expect(inside('more-2')).toEqual(['f-sound', 'f-position', 'f-shape', 'f-stage-other', 'version=A', 'version=B', 'version=C', 'f-find', 'f-only-pictures', 'f-add']);
     expect(doc.getElementById('panel-pick').compareDocumentPosition(doc.getElementById('more-2')) & 4).toBeTruthy();
     for (const id of ['group-add', 'pick-list', 'pick-out-box']) expect(doc.getElementById(id).closest('#more-2'), id).not.toBeNull();
-    expect(inside('more-3')).toEqual(['length=short', 'length=regular', 'length=long', 'length=custom', 'f-pictures', 'f-directions-once', 'f-repeat-missed', 'f-code-name']); // 2026-11-17
+    expect(inside('more-3')).toEqual(['length=short', 'length=regular', 'length=long', 'length=custom', 'f-pictures', 'f-directions-once', 'f-repeat-missed']); // 2026-11-19 Wave 2B: student code names unified into #batch
     for (const id of ['more-1', 'more-2', 'more-3']) {
       const box = doc.getElementById(id);
       expect(box.tagName, id).toBe('DETAILS');
@@ -2372,5 +2403,55 @@ describe('the maker: quick make, the word count, Pick different words and More o
     page.$('back-2').click();
     expect(page.$('more-1-now').textContent).toBe('activities mixed, Choices: Easy');
     expect(page.$('more-1').open).toBe(true);
+  }, 120000);
+
+  it('Wave 8B: exposes Easy Choices for Sight & Spell (orthography) alone and keeps Step 3 pictures summary & Forget in sync', async () => {
+    const yesPicWords = wordlist.rows()
+      .filter((r) => (r.kokoro || r.shards) && !r.borderline && /^[a-z]{3,5}$/.test(r.word) && PICTURE_INDEX.has(r.word))
+      .map((r) => r.word)
+      .slice(0, 3);
+    expect(yesPicWords).toHaveLength(3);
+
+    const page = await openMaker({ pictures: true });
+    // 1. Select ONLY orthography (Sight & Spell) -> Choices selector stays visible and builds Easy scaffold.
+    for (const box of page.d.querySelectorAll('#strands input[type="checkbox"]:checked')) box.click();
+    const orthoBox = page.d.querySelector('#strands input[type="checkbox"][value="orthography"]');
+    expect(orthoBox).toBeTruthy();
+    orthoBox.click();
+    expect(page.$('choice-level-field').hidden).toBe(false);
+    expect(page.$('more-1-now').textContent).toBe('Choices: Medium');
+    page.set('f-choices', 'easy');
+    expect(page.$('more-1-now').textContent).toBe('Choices: Easy');
+
+    // 2. Enter Step 3 with pictured words -> #f-pictures is checked AND #more-3-now immediately says "pictures".
+    page.$('next-1').click();
+    page.choose('mode', 'own');
+    page.set('f-own', yesPicWords.join(' '));
+    await page.until(() => page.$('own-line').textContent === '3 of 3 words can be used.', 'three pictured words');
+    page.$('next-2').click();
+    expect(page.$('f-pictures').checked).toBe(true);
+    expect(page.$('more-3-now').textContent).toContain(', pictures');
+    expect(page.$('more-3-now').textContent).not.toContain('no pictures');
+    await ready(page);
+    const orthoLesson = lessonOf(page.built());
+    expect(manifestOf(page.built()).builder.choices).toBe('easy');
+    const orthoItem = orthoLesson.blocks[0].items[0];
+    expect(Array.isArray(orthoItem.letterBank)).toBe(true);
+    expect(orthoItem.lengthHint).toBe(true);
+
+    // 3. Uncheck pictures, then click "Forget my choices" -> picturesChoice resets back to auto-ON on next Step 3 visit.
+    page.$('f-pictures').click();
+    expect(page.$('f-pictures').checked).toBe(false);
+    expect(page.$('more-3-now').textContent).toContain('no pictures');
+    page.$('forget').click();
+    page.$('next-1').click();
+    page.choose('mode', 'own');
+    page.set('f-own', yesPicWords.join(' '));
+    await page.until(() => page.$('own-line').textContent === '3 of 3 words can be used.', 'three pictured words after forget');
+    page.$('next-2').click();
+    expect(page.$('f-pictures').checked).toBe(true);
+    expect(page.$('more-3-now').textContent).toContain(', pictures');
+    expect(page.$('more-3-now').textContent).not.toContain('no pictures');
+    page.dom.window.close();
   }, 120000);
 });

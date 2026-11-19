@@ -423,39 +423,50 @@
 
   async function _loadManifest() {
     if (_manifestReady) return _manifestReady;
-    _manifestReady = (async () => {
+    const pending = (async () => {
       const URLS = [
         'https://alloflow-cdn.pages.dev/lang/manifest.json',
         'https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/manifest.json'
       ];
       for (const u of URLS) {
+        const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+        const timer = ctrl ? setTimeout(() => ctrl.abort(), 8000) : null;
         try {
-          const r = await fetch(u);
+          const r = await fetch(u, ctrl ? { signal: ctrl.signal } : undefined);
           if (!r.ok) continue;
           const m = await r.json();
           if (m && Array.isArray(m.available)) {
-            _MANIFEST = { available: m.available, by_slug: {} };
+            const bySlug = Object.create(null);
             m.available.forEach((entry) => {
-              if (entry && entry.slug) _MANIFEST.by_slug[entry.slug] = entry;
+              if (entry && typeof entry.slug === 'string' && entry.slug && entry.slug !== '__proto__' && entry.slug !== 'constructor' && entry.slug !== 'prototype') {
+                bySlug[entry.slug] = entry;
+              }
             });
+            _MANIFEST = { available: m.available, by_slug: bySlug };
             return;
           }
         } catch (_) {}
+        finally {
+          if (timer) clearTimeout(timer);
+        }
       }
+      if (!_MANIFEST.available.length && _manifestReady === pending) _manifestReady = null;
       // Silent fallback — matcher still works on ALIASES alone
     })();
+    _manifestReady = pending;
     return _manifestReady;
   }
 
   // Public: match(userInput) → { slug, display, confidence } or null
   async function match(userInput) {
     if (!userInput || typeof userInput !== 'string') return null;
+    const own = Object.prototype.hasOwnProperty;
     const raw = userInput.trim();
     const norm = _normalize(raw);
     if (!norm) return null;
 
     // 1) Exact-alias hit (case-insensitive normalized)
-    if (ALIASES[norm]) {
+    if (own.call(ALIASES, norm)) {
       const display = ALIASES[norm];
       return { slug: _slugify(display), display, confidence: 1.0, source: 'alias-exact' };
     }
@@ -471,7 +482,7 @@
     // 3) Wait for manifest then try slug-exact against available packs
     await _loadManifest();
     const wantSlug = _slugify(raw);
-    if (_MANIFEST.by_slug[wantSlug]) {
+    if (own.call(_MANIFEST.by_slug, wantSlug)) {
       const e = _MANIFEST.by_slug[wantSlug];
       return { slug: wantSlug, display: e.display || raw, confidence: 1.0, source: 'manifest-exact' };
     }
@@ -497,7 +508,7 @@
     if (best && bestScore >= 0.7) {
       // Resolve to display name
       let display = null;
-      if (ALIASES[best]) display = ALIASES[best];
+      if (own.call(ALIASES, best)) display = ALIASES[best];
       if (!display) {
         const matchVal = Object.values(ALIASES).find((v) => _normalize(v) === best);
         if (matchVal) display = matchVal;

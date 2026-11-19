@@ -20,7 +20,7 @@ function _mathViewAiUsable() {
   try {
     if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', window.callGemini);
   } catch (_) {}
-  try { return !(window.callGemini && window.callGemini._alloQrBlocked) && window.__alloStudentAiDisabled !== true; } catch (_) { return false; }
+  try { return !(window.callGemini && window.callGemini._alloQrBlocked) && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; } catch (_) { return false; }
 }
 function _mathAuthoredHintCount(steps) {
   var n = (Array.isArray(steps) ? steps : []).filter(function (s) { return s && typeof s === 'object' && String(s.explanation || s.latex || '').trim(); }).length;
@@ -1762,12 +1762,13 @@ function MathView(props) {
                                         value={mathEditInput}
                                         onChange={(e) => setMathEditInput(e.target.value)}
                                         onKeyDown={(e) => {
-                                            if (e.key !== "Enter" || !mathEditInput.trim() || isMathEditingChat || isProcessing || !canHandleMathEdit) return;
+                                            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+if (e.key !== "Enter" || !mathEditInput.trim() || isMathEditingChat || isProcessing || !canHandleMathEdit) return;
                                             e.preventDefault();
                                             handleMathEdit(mathEditInput, mathResourceId);
                                         }}
                                         placeholder={tr('math.edit_placeholder_examples', 'e.g. Make these easier, add 2 more division problems, change to a space theme...')}
-                                        className="flex-1 px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white placeholder-slate-400"
+                                        className="flex-1 px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white placeholder-slate-500"
                                         aria-label={t("a11y.edit_math_problems")}
                                         aria-busy={isMathEditingChat || isProcessing}
                                         disabled={!canSetMathEditInput || isMathEditingChat || isProcessing}

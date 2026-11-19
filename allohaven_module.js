@@ -9919,15 +9919,19 @@
     if (!step || !dec) {
       return h('div', {
         role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'ah-story-error-title',
         style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 175, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }
       },
         h('div', { style: { background: palette.bg, padding: '28px', borderRadius: '14px', textAlign: 'center', maxWidth: '420px' } },
-          h('h3', { style: { color: palette.text, marginBottom: '10px' } }, 'Story can\'t be walked'),
+          h('h3', { id: 'ah-story-error-title', style: { color: palette.text, marginBottom: '10px' } }, 'Story can\'t be walked'),
           h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55' } },
             'A decoration in this story is missing — it may have been removed from the room. Edit the story to fix or replace it.'),
           h('button', {
+            type: 'button',
+            autoFocus: true,
             onClick: p.onClose,
-            style: { marginTop: '14px', background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+            style: { marginTop: '14px', minHeight: '44px', background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
           }, 'Close')
         )
       );
@@ -12052,7 +12056,16 @@
         companionName: stats.companion && stats.companion.name,
         companionSpecies: stats.companion && stats.companion.species
       };
-      if (typeof callGemini !== 'function') {
+      var canUseNarrativeAi = (function () {
+        if (typeof callGemini !== 'function') return false;
+        if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+          try { return !!window.__alloAiUsable('text', callGemini); } catch (_) { return false; }
+        }
+        if (callGemini._alloQrBlocked) return false;
+        if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+        return true;
+      })();
+      if (!canUseNarrativeAi) {
         // No AI — clear loading and surface a graceful 'no narrative' state.
         setStateField('tenureNarrative', {
           loading: false,
@@ -12154,6 +12167,7 @@
           return;
         }
         if (e.key !== 'Escape') return;
+        if (e.isComposing || e.keyCode === 229) return;
         // Ignore Esc during active Pomodoro (accidental cancel guard)
         if (state.pomodoroState && state.pomodoroState.active) return;
         // Ignore until welcome card dismissed
@@ -12168,7 +12182,7 @@
       };
       window.addEventListener('keydown', handler);
       return function() { window.removeEventListener('keydown', handler); };
-    }, [props.isOpen, state.activeModal, state.onboardingSeen, state.pomodoroState.active]);
+    }, [props.isOpen, state.activeModal, state.onboardingSeen, Boolean(state.pomodoroState && state.pomodoroState.active)]);
 
     // ── Pomodoro tick interval (250ms) ──
     // Only runs while the timer is active. Re-renders the mm:ss display.
@@ -12226,12 +12240,10 @@
         } catch (e) {}
         try {
           setTimeout(function() {
-            try {
-              if (ar.source && typeof ar.source.stop === 'function') ar.source.stop();
-              if (ar.crackleTimer) clearInterval(ar.crackleTimer);
-              if (ar.lfoSource && typeof ar.lfoSource.stop === 'function') ar.lfoSource.stop();
-              if (ar.ctx && typeof ar.ctx.close === 'function') ar.ctx.close();
-            } catch (e2) {}
+            try { if (ar.source && typeof ar.source.stop === 'function') ar.source.stop(); } catch (e2) {}
+            try { if (ar.crackleTimer) clearInterval(ar.crackleTimer); } catch (e2) {}
+            try { if (ar.lfoSource && typeof ar.lfoSource.stop === 'function') ar.lfoSource.stop(); } catch (e2) {}
+            try { if (ar.ctx && typeof ar.ctx.close === 'function') ar.ctx.close(); } catch (e2) {}
           }, 600);
         } catch (e) {}
         audioRef.current = null;
@@ -12980,6 +12992,7 @@
 
     function startVoiceCapture(onTranscript) {
       if (!speechSupported) return;
+      stopVoiceCapture();
       // Shared-module path
       if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
         var controller = window.AlloFlowVoice.initWebSpeechCapture({
@@ -13064,6 +13077,9 @@
       }
       setIsRecording(false);
     }
+    useEffect(function() {
+      return function() { stopVoiceCapture(); };
+    }, []);
 
     // ── Memory palace handlers ──
     // Open the memory modal scoped to a specific decoration. The
@@ -16691,7 +16707,7 @@
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '2px', marginBottom: '8px' } },
           h('button', {
             onClick: function() { openHavenWalk3D(state); },
-            'aria-label': __alloT('allohaven.walk_your_haven_in_3d','Walk your haven in 3D'),
+            'aria-label': 'Walk in 3D — ' + __alloT('allohaven.walk_your_haven_in_3d','Walk your haven in 3D'),
             title: __alloT('allohaven.see_every_room_decoration_and_portfolio_arti','See every room, decoration, and portfolio artifact as one walkable 3D palace'),
             style: {
               display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -17145,7 +17161,7 @@
           }, 'Portfolio' + (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0 ? ' - ' + state.studentArtifacts.length : '')),
           h('button', {
             onClick: function() { setStateField('activeModal', 'breathe'); },
-            'aria-label': __alloT('allohaven.open_breathing_pacer_for_self_care','Open breathing pacer for self-care'),
+            'aria-label': 'Breathe — ' + __alloT('allohaven.open_breathing_pacer_for_self_care','Open breathing pacer for self-care'),
             style: secondaryBtnStyle(palette)
           }, '🫁 Breathe'),
           // Grounding (Phase 2p.31) — sibling self-care affordance.
@@ -17336,6 +17352,7 @@
           'data-ah-decoration-id': decoration.id,
           'aria-keyshortcuts': 'Alt+ArrowLeft Alt+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+PageUp Alt+PageDown',
           'aria-label': 'Decoration: ' + label
+            + (decoration.isStarter ? ' (starter)' : '')
             + (decoration.studentReflection ? ' (with reflection)' : '')
             + (hasMemoryContent
                 ? ' (with ' + memoryDescription
@@ -17758,7 +17775,7 @@
                 setStateField('roomMode', liveMode ? 'build' : 'live');
               },
               'aria-pressed': liveMode ? 'true' : 'false',
-              'aria-label': liveMode ? 'Switch to build mode (placement UI visible)' : 'Switch to live mode (room rests)',
+              'aria-label': liveMode ? 'Live — switch to build mode (placement UI visible)' : 'Build — switch to live mode (room rests)',
               title: liveMode ? 'Currently in Live mode · click for Build' : 'Currently in Build mode · click for Live',
               style: {
                 display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -18065,7 +18082,7 @@
       if (!companion || !companion.species) {
         return h('button', {
           onClick: function() { setStateField('activeModal', 'companion-setup'); },
-          'aria-label': __alloT('allohaven.add_a_study_buddy_companion','Add a study buddy companion'),
+          'aria-label': 'Add a buddy — ' + __alloT('allohaven.add_a_study_buddy_companion','Add a study buddy companion'),
           title: __alloT('allohaven.pick_a_critter_that_lives_in_your_room','Pick a critter that lives in your room'),
           style: {
             position: 'absolute',
@@ -19318,6 +19335,7 @@
 
       return h('div', {
         role: 'dialog',
+        'aria-modal': 'true',
         'aria-label': phaseLabel + ' timer · ' + timeStr + ' remaining',
         'aria-live': 'off',
         style: {
@@ -19409,12 +19427,12 @@
             (phase === 'short-break' || phase === 'long-break') ? h('button', {
               onClick: function() { setStateField('activeModal', 'breathe'); },
               style: Object.assign({}, secondaryBtnStyle(palette), { borderColor: palette.accent, color: palette.accent }),
-              'aria-label': __alloT('allohaven.open_breathing_pacer','Open breathing pacer')
+              'aria-label': 'Breathe — ' + __alloT('allohaven.open_breathing_pacer','Open breathing pacer')
             }, '🫁 Breathe') : null,
             (phase === 'short-break' || phase === 'long-break') ? h('button', {
               onClick: function() { setStateField('activeModal', 'grounding'); },
               style: Object.assign({}, secondaryBtnStyle(palette), { borderColor: palette.accent, color: palette.accent }),
-              'aria-label': __alloT('allohaven.open_grounding_exercise','Open grounding exercise')
+              'aria-label': 'Grounding — ' + __alloT('allohaven.open_grounding_exercise','Open grounding exercise')
             }, '🧷 Grounding') : null,
             h('button', {
               onClick: cancelPomodoro,
@@ -27138,14 +27156,19 @@
                   var reader = new FileReader();
                   reader.onload = async function(e) {
                     try {
-                      var parsed = JSON.parse(e.target.result);
+                      var parsed = JSON.parse(e.target.result, function(k, v) {
+                        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+                      });
                       if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.decorations)) {
                         addToast('Not a valid AlloHaven backup file.');
                         return;
                       }
                       var ok = await askAlloHavenConfirmation('Restore from this backup? This replaces all current data: decorations, journal, tokens, stories, and settings. This cannot be undone.', { title: 'Restore AlloHaven backup', confirmText: 'Replace all data' });
                       if (!ok) return;
-                      var merged = Object.assign({}, DEFAULT_STATE, parsed);
+                      var merged = Object.assign({}, DEFAULT_STATE);
+                      Object.keys(DEFAULT_STATE).forEach(function(k) {
+                        if (Object.prototype.hasOwnProperty.call(parsed, k) && parsed[k] !== undefined) merged[k] = parsed[k];
+                      });
                       setStateMulti(merged);
                       addToast('✅ Backup restored.');
                     } catch (err) {

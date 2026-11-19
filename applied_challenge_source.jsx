@@ -1737,7 +1737,7 @@ function renderAppliedChallengePreset(value, preset, t) {
     body += section(_apsT(t, 'applied_challenge.stage.' + stage.id, stage.label), fields.map(phase => '<article><h3>' + esc(phase.label.replace(/^\d+\.\s*/, '')) + '</h3>' + (teaching ? text(phase.prompt) + blank : text(phase.text || tr('export.not_recorded', 'Not recorded yet'))) + '</article>').join(''));
   }
   if (teaching && data.plan.visualMode !== 'none') {
-    body += section(tr('export.organizer', 'Compare possibilities and evidence'), '<table><thead><tr><th>' + esc(tr('ledger.claim', 'Claim, option, or position')) + '</th><th>' + esc(tr('ledger.evidence', 'Evidence or lesson connection')) + '</th><th>' + esc(tr('ledger.tradeoff', 'Tradeoff, constraint, or uncertainty')) + '</th></tr></thead><tbody>' + [1, 2].map(() => '<tr><td>' + blank + '</td><td>' + blank + '</td><td>' + blank + '</td></tr>').join('') + '</tbody></table>');
+    body += section(tr('export.organizer', 'Compare possibilities and evidence'), '<table><thead><tr><th scope="col">' + esc(tr('ledger.claim', 'Claim, option, or position')) + '</th><th scope="col">' + esc(tr('ledger.evidence', 'Evidence or lesson connection')) + '</th><th scope="col">' + esc(tr('ledger.tradeoff', 'Tradeoff, constraint, or uncertainty')) + '</th></tr></thead><tbody>' + [1, 2].map(() => '<tr><td>' + blank + '</td><td>' + blank + '</td><td>' + blank + '</td></tr>').join('') + '</tbody></table>');
   }
   if (!teaching) {
     if (m.sourceRecords.length) body += section(tr('sources.heading', 'Saved outside sources'), text(tr('sources.boundary', 'Citation details are separate from your writing. A source-check note records your review; it does not verify a claim. Links are not opened by AI.')) + m.sourceRecords.map(source => '<article><h3><a href="' + esc(source.url) + '" rel="noopener noreferrer">' + esc(source.title || source.url) + '</a></h3>' + text(source.connectionLabel) + text([source.author, source.publicationDate].filter(Boolean).join(' · ')) + (source.foundAt ? text(tr('sources.found', 'Found on') + ' ' + source.foundAt) : '') + text(source.reviewNote || tr('sources.not_recorded', 'Source check not recorded')) + '</article>').join(''));
@@ -1812,12 +1812,11 @@ function appliedChallengeAiDoor(kind, t) {
 }
 
 function appliedChallengeAiUsable(kind, fn) {
-  if (typeof fn !== 'function') return false;
+  if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
   try {
-    if (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) return false;
-    if (fn._alloQrBlocked) return false;
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
-  } catch (_) {}
+  } catch (_) { return false; }
   return true;
 }
 
@@ -3253,7 +3252,7 @@ function AppliedChallengeView(props) {
         </>}
       </aside>}
       <div className='aps-grid'>{renderReference()}<div className='min-w-0 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5'>
-        {!reviewOpen && reviewReturn === recoveryScope && <aside className='mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-orange-50 p-3 applied-challenge-no-print'><p className='text-sm text-orange-950'>{tx('applied_challenge.review_next.editing', 'Editing from your review')}</p><button type='button' className='aps-button' onClick={() => { setReviewReturn(null); setReviewOpen(true); }}>{tx('applied_challenge.review_next.return', 'Return to my review')}</button></aside>}
+        {!reviewOpen && reviewReturn === recoveryScope && <aside aria-label={tx('applied_challenge.review_next.editing', 'Editing from your review')} className='mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-orange-50 p-3 applied-challenge-no-print'><p className='text-sm text-orange-950'>{tx('applied_challenge.review_next.editing', 'Editing from your review')}</p><button type='button' className='aps-button' onClick={() => { setReviewReturn(null); setReviewOpen(true); }}>{tx('applied_challenge.review_next.return', 'Return to my review')}</button></aside>}
         {reviewOpen ? renderReview() : <>{(focusMode ? [currentStage] : APPLIED_CHALLENGE_STAGES).map(renderStage)}{renderHelp()}<nav aria-label={tx('applied_challenge.focus.move', 'Move between steps')} className='mt-6 flex flex-wrap justify-between gap-3 applied-challenge-no-print'><button type='button' className='aps-button' disabled={stageIndex === 0} onClick={() => goToStage(stageIndex - 1)}>{tx('applied_challenge.focus.back', 'Back')}</button><button type='button' className='aps-button aps-primary' onClick={() => stageIndex < 4 ? goToStage(stageIndex + 1) : setReviewOpen(true)}>{stageIndex < 4 ? _apsFill(tx('applied_challenge.focus.continue', 'Continue to {stage}'), { stage: stageLabel(APPLIED_CHALLENGE_STAGES[stageIndex + 1]) }) : tx('applied_challenge.review.heading', 'Review my response')}</button></nav></>}
       </div></div>
     </>}

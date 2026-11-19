@@ -14007,6 +14007,7 @@
   function pr4Print(el, title, __alloT) {
     var body = pr4CloneHtml(el), win = null;
     try { win = window.open('', '_blank'); } catch (e) { win = null; }
+    try { if (win) win.opener = null; } catch (_) {}
     if (win) {
       try {
         win.document.open(); win.document.write(pr4Document(title, body, false, __alloT)); win.document.close();

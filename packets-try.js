@@ -17,8 +17,13 @@
   var barHost = doc.getElementById('try-edit');
   var frame = null;
   var blobUrl = '';
-  var createdDynamic = false;
-  var snapItems = {};
+  var snapItems = Object.create(null);
+  var MAX_SNAP_KEYS = 64;
+  var MAX_SNAP_VALUE = 512 * 1024;
+  function isSafeSnapKey(key) {
+    return typeof key === 'string' && key.length > 0 && key.length <= 256
+      && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
+  }
   var channel = null;
   var pendingFocus = '';
   var busyBar = false;
@@ -35,15 +40,20 @@
     return at >= 0 ? clean.slice(0, at) + block + clean.slice(at) : block + clean;
   }
 
+  function revokeBlob() {
+    if (blobUrl && typeof URL.revokeObjectURL === 'function') {
+      try { URL.revokeObjectURL(blobUrl); } catch (_) {}
+      blobUrl = '';
+    }
+  }
+
   function showHtml(html) {
     if (!frame) return;
-    if (createdDynamic && blobUrl && typeof URL.revokeObjectURL === 'function') {
-      try { URL.revokeObjectURL(blobUrl); } catch (_) {}
-    }
-    createdDynamic = !!blobUrl;
+    revokeBlob();
     blobUrl = URL.createObjectURL(new Blob([withSnapshot(html, snapItems)], { type: 'text/html' }));
     frame.src = blobUrl;
   }
+  window.addEventListener('pagehide', revokeBlob);
 
   // 2026-11-18: "Hide answers" leaves the question's word out of the bar (the word is the answer in Word Sounds and
   // vocabulary), for a preview shown to a class. Off when a preview opens; this page keeps nothing in the browser.
@@ -108,7 +118,11 @@
     }
     barHost.hidden = false;
     if (!busyBar && pendingFocus) {
-      var target = barHost.querySelector('[data-preview-act="' + pendingFocus + '"]');
+      var target = null;
+      var actBtns = barHost.querySelectorAll('[data-preview-act]');
+      for (var ai = 0; ai < actBtns.length; ai++) {
+        if (actBtns[ai].getAttribute('data-preview-act') === pendingFocus) { target = actBtns[ai]; break; }
+      }
       pendingFocus = '';
       if (target && !target.disabled) target.focus();
       else {
@@ -137,6 +151,7 @@
     presenting = !!on;
     doc.body.classList.toggle('try-present', presenting);
     presentBtn.setAttribute('aria-pressed', String(presenting));
+    presentBtn.textContent = presenting ? 'Exit present' : 'Present';
     tab.hidden = !presenting;
     setOpen(false);
     if (presenting && !hideAnswers) { hideAnswers = true; answersByPresent = true; if (lastBar) renderBar(lastBar); }
@@ -144,15 +159,26 @@
     var root = doc.documentElement;
     if (presenting) {
       var ask = root.requestFullscreen || root.webkitRequestFullscreen;
+      var onDeclined = function () {
+        wentFull = false;
+        if (!presenting) return;
+        tab.hidden = false;
+        tab.setAttribute('aria-label', 'Top bar (press Escape to exit)');
+        try { tab.focus(); } catch (_) {}
+      };
       if (ask && !fullNow()) {
         wentFull = true;
         try {
           var asked = ask.call(root);
-          if (asked && typeof asked.catch === 'function') asked.catch(function () { wentFull = false; });
-        } catch (_) { wentFull = false; }
+          if (asked && typeof asked.catch === 'function') asked.catch(onDeclined);
+          if (frame) frame.focus();
+        } catch (_) { onDeclined(); }
+      } else {
+        wentFull = false;
+        if (frame) frame.focus();
       }
-      if (frame) frame.focus();
     } else {
+      tab.setAttribute('aria-label', 'Top bar');
       var leave = doc.exitFullscreen || doc.webkitExitFullscreen;
       if (wentFull && fullNow() && leave) { try { leave.call(doc); } catch (_) {} }
       wentFull = false;
@@ -161,11 +187,13 @@
   if (presentBtn && tab) {
     presentBtn.addEventListener('click', function () { setPresent(!presenting); });
     tab.addEventListener('click', function () { setOpen(!doc.body.classList.contains('try-open')); });
-    doc.addEventListener('keydown', function (event) {
+    var onEscape = function (event) {
       if (!presenting || event.key !== 'Escape') return;
       setPresent(false);
       presentBtn.focus();
-    });
+    };
+    doc.addEventListener('keydown', onEscape);
+    window.addEventListener('keydown', onEscape);
     var onFull = function () { if (presenting && wentFull && !fullNow()) setPresent(false); };
     doc.addEventListener('fullscreenchange', onFull);
     doc.addEventListener('webkitfullscreenchange', onFull);
@@ -182,7 +210,17 @@
       if (msg.type === 'preview-bar') { renderBar(msg.bar || msg); return; }
       if (msg.type === 'preview-reload') {
         if (typeof msg.html !== 'string' || !/^<!doctype html>/i.test(msg.html) || msg.html.indexOf('id="packet-manifest"') < 0) return;
-        if (msg.snapshot && typeof msg.snapshot === 'object') snapItems = msg.snapshot;
+        if (msg.snapshot && typeof msg.snapshot === 'object' && !Array.isArray(msg.snapshot)) {
+          var nextSnap = Object.create(null);
+          var snapKeys = Object.keys(msg.snapshot);
+          for (var si = 0; si < snapKeys.length && si < MAX_SNAP_KEYS; si++) {
+            var sk = snapKeys[si];
+            if (!isSafeSnapKey(sk)) continue;
+            var sv = msg.snapshot[sk];
+            if (typeof sv === 'string' && sv.length <= MAX_SNAP_VALUE) nextSnap[sk] = sv;
+          }
+          snapItems = nextSnap;
+        }
         showHtml(msg.html);
         if (msg.bar) renderBar(msg.bar);
         return;
@@ -190,11 +228,17 @@
       if (msg.type === 'preview-stop') { renderBar({ hidden: true }); }
     };
     window.addEventListener('message', function (event) {
-      if (!frame || event.source !== frame.contentWindow) return;
+      if (!frame || event.source !== frame.contentWindow || (event.origin && event.origin !== 'null')) return;
       var d = event.data;
-      if (!d || typeof d !== 'object' || d.kind !== STORE_KIND || typeof d.key !== 'string') return;
-      if (d.value == null) delete snapItems[d.key];
-      else snapItems[d.key] = String(d.value);
+      if (!d || typeof d !== 'object' || d.kind !== STORE_KIND || !isSafeSnapKey(d.key)) return;
+      if (d.value == null) {
+        delete snapItems[d.key];
+      } else {
+        var strVal = String(d.value);
+        if (strVal.length > MAX_SNAP_VALUE) return;
+        if (!Object.prototype.hasOwnProperty.call(snapItems, d.key) && Object.keys(snapItems).length >= MAX_SNAP_KEYS) return;
+        snapItems[d.key] = strVal;
+      }
       channel.postMessage({ type: 'preview-store', id: address, key: d.key, value: d.value == null ? null : String(d.value) });
     });
     channel.postMessage({ type: 'preview-hello', id: address });

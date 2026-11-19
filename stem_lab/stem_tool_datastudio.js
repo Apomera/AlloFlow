@@ -219,7 +219,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
             }
           };
           var modeSwitcher = React.createElement("div", {
-            className: "flex items-center gap-2 flex-wrap mb-3",
+            className: "flex items-center gap-2 flex-wrap mt-2",
             role: "group", "aria-label": t('stem.datastudio.mode_group', 'Choose a workspace')
           },
             [
@@ -228,11 +228,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
             ].map(function (m) {
               var on = studioMode === m.id;
               return React.createElement("button", {
-                style: { minHeight: 44, whiteSpace: "normal", overflowWrap: "anywhere" }, key: m.id,
+                style: isContrast
+                  ? { minHeight: 40, whiteSpace: "normal", overflowWrap: "anywhere", background: '#000000', color: on ? '#00ff00' : '#ffff00', border: '2px solid ' + (on ? '#00ff00' : '#ffff00') }
+                  : { minHeight: 40, whiteSpace: "normal", overflowWrap: "anywhere", background: on ? '#ffffff' : 'rgba(2,6,23,0.34)', color: on ? '#0c4a6e' : '#f0fdfa', border: '1px solid ' + (on ? '#ffffff' : 'rgba(255,255,255,0.35)') },
+                key: m.id,
                 onClick: function () { if (!on) switchMode(m.id); },
                 "aria-pressed": on,
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors " +
-                  (on ? "bg-cyan-700 text-white border-cyan-700" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50")
+                className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-colors"
               }, m.label);
             })
           );
@@ -723,72 +725,112 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
 
 
-          // Dark theme
+          // Theme palette (light, dark, and high-contrast)
 
-          var _bg = isDark || isContrast ? '#0f172a' : '#f0fdfa';
+          var _bg = isContrast ? '#000000' : (isDark ? '#0b1220' : '#f0fdfa');
 
-          var _text = isDark || isContrast ? '#e0e7ff' : '#1e293b';
+          var _text = isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#0f172a');
 
-          var _card = isDark || isContrast ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.06)';
+          var _card = isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.88)' : '#ffffff');
 
-          var _border = isDark || isContrast ? 'rgba(6,182,212,0.2)' : 'rgba(6,182,212,0.15)';
+          var _border = isContrast ? '#ffff00' : (isDark ? 'rgba(56,189,248,0.28)' : '#bae6fd');
 
-          var _accent = isDark || isContrast ? '#22d3ee' : '#0e7490';
+          var _accent = isContrast ? '#ffff00' : (isDark ? '#22d3ee' : '#0e7490');
 
-          var _muted = isDark || isContrast ? '#94a3b8' : '#475569';
+          var _muted = isContrast ? '#ffff00' : (isDark ? '#94a3b8' : '#475569');
 
-          var _btnBg = '#0e7490'; // cyan-700 both themes: white label clears 4.5:1 (was cyan-500/600 → 2.9/3.7)
+          var _btnBg = isContrast ? '#000000' : '#0e7490'; // cyan-700 clears 4.5:1 with white
 
-          var _svgBg = isDark || isContrast ? '#1e293b' : '#ffffff';
+          var _btnFg = isContrast ? '#00ff00' : '#ffffff';
+
+          var _btnBorder = isContrast ? '#00ff00' : '#0e7490';
+
+          var _svgBg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff');
+
+          var _heroBg = isContrast ? '#000000' : (isDark ? 'linear-gradient(135deg,#082f49,#0f172a 58%,#134e4a)' : 'linear-gradient(135deg,#0c4a6e,#0e7490 58%,#0f766e)');
 
 
 
           // SVG dimensions
 
-          var W = 440, H = 320, pad = 50;
+          var W = 460, H = 330, pad = 54;
 
-          var chartTop = 45; // extra top margin so title doesn't overlap data
+          var chartTop = 46; // extra top margin so title doesn't overlap data
 
 
 
-          return React.createElement("div", { className: "p-4 space-y-4 rounded-2xl", style: { color: _text, background: _bg } },
+          return React.createElement("div", { className: "p-4 space-y-4 rounded-2xl", style: { color: _text, background: _bg, border: isContrast ? '2px solid #ffff00' : '1px solid ' + _border } },
 
-            // Header
+            // Bespoke Data Analytics Workbench Header
 
-            React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-2" },
+            React.createElement("div", {
+              className: "rounded-2xl p-4",
+              style: {
+                background: _heroBg,
+                border: isContrast ? '2px solid #ffff00' : '1px solid rgba(103,232,249,0.32)',
+                color: isContrast ? '#ffff00' : '#ffffff',
+                boxShadow: isContrast ? 'none' : '0 12px 28px rgba(8,47,73,0.18)'
+              }
+            },
+              React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between" },
 
-              React.createElement("div", null,
+                React.createElement("div", { className: "min-w-0 flex-1" },
 
-                React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, t('stem.datastudio.data_studio', "📊 Charts & Graphs")),
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-widest mb-1", style: { color: isContrast ? '#ffff00' : '#a5f3fc' } },
+                    t('stem.datastudio.kicker', "DATA LITERACY · VISUAL ANALYTICS")),
 
-                React.createElement("p", { className: "text-xs", style: { color: _muted } }, t('stem.datastudio.create_charts_import_data_explore_stat', "Create charts, import data & explore statistics")),
+                  React.createElement("h3", { className: "text-xl font-black flex items-center gap-2", style: { color: isContrast ? '#ffff00' : '#ffffff', margin: 0 } }, t('stem.datastudio.data_studio', "📊 Charts & Graphs")),
 
-                modeSwitcher
+                  React.createElement("p", { className: "text-xs mt-1 mb-2", style: { color: isContrast ? '#ffff00' : '#e0f2fe' } }, t('stem.datastudio.create_charts_import_data_explore_stat', "Create charts, import data & explore statistics")),
+
+                  modeSwitcher
+
+                ),
+
+                React.createElement("div", { className: "flex flex-wrap gap-2 items-start" },
+
+                  React.createElement("button", { onClick: function () { updDS('workspaceTab', workspaceTab === 'analyze' ? 'chart' : 'analyze'); },
+
+                    className: "px-3 py-2 rounded-xl text-xs font-bold",
+
+                    style: { minHeight: 40, background: workspaceTab === 'analyze' ? (isContrast ? '#000000' : '#ffffff') : (isContrast ? '#000000' : 'rgba(255,255,255,0.14)'), color: workspaceTab === 'analyze' ? (isContrast ? '#00ff00' : '#0c4a6e') : (isContrast ? '#ffff00' : '#ffffff'), border: '1px solid ' + (isContrast ? '#00ff00' : 'rgba(255,255,255,0.38)') }
+
+                  }, workspaceTab === 'analyze' ? '📈 Chart View' : '📊 Analyze'),
+
+                  React.createElement("button", { "aria-label": t('stem.datastudio.back', "Back"),
+
+                    onClick: function () { setStemLabTool(null); },
+
+                    className: "px-3 py-2 rounded-xl text-xs font-bold",
+
+                    style: { minHeight: 40, background: isContrast ? '#000000' : 'rgba(255,255,255,0.14)', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(255,255,255,0.34)'), color: isContrast ? '#ffff00' : '#ffffff' }
+
+                  }, t('stem.datastudio.back_2', "← Back"))
+
+                )
 
               ),
-
-              React.createElement("div", { className: "flex flex-wrap gap-2" },
-
-                React.createElement("button", { onClick: function () { updDS('workspaceTab', workspaceTab === 'analyze' ? 'chart' : 'analyze'); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold",
-
-                  style: { background: workspaceTab === 'analyze' ? _btnBg : _card, color: workspaceTab === 'analyze' ? '#fff' : _text, border: '1px solid ' + _border }
-
-                }, workspaceTab === 'analyze' ? '📈 Chart View' : '📊 Analyze'),
-
-                React.createElement("button", { "aria-label": t('stem.datastudio.back', "Back"),
-
-                  onClick: function () { setStemLabTool(null); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold",
-
-                  style: { background: _card, border: '1px solid ' + _border, color: _text }
-
-                }, t('stem.datastudio.back_2', "← Back"))
-
+              // Live KPI Telemetry Strip
+              displayRows.length > 0 && React.createElement("div", {
+                className: "flex flex-wrap gap-2 mt-3 pt-3",
+                role: "list",
+                "aria-label": t('stem.datastudio.live_kpi_aria', "Live dataset metrics"),
+                style: { borderTop: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(255,255,255,0.2)') }
+              },
+                [
+                  { k: 'Rows', v: displayRows.length + (displayRows.length !== dataRows.length ? '/' + dataRows.length : '') },
+                  { k: 'Mean', v: mean.toFixed(1) },
+                  { k: 'Median', v: median.toFixed(1) },
+                  { k: 'Range', v: range.toFixed(1) },
+                  { k: 'Trend', v: trendDirection }
+                ].map(function (kpi) {
+                  return React.createElement("span", {
+                    key: kpi.k, role: "listitem",
+                    className: "px-2.5 py-1 rounded-full text-[11px] font-bold",
+                    style: { background: isContrast ? '#000000' : 'rgba(2,6,23,0.32)', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(255,255,255,0.24)'), color: isContrast ? '#ffff00' : '#f0fdfa' }
+                  }, kpi.k + ': ' + kpi.v);
+                })
               )
-
             ),
 
 
@@ -801,7 +843,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 React.createElement("p", { className: "text-[0.6875rem]", style: { color: _muted } }, recommendationReason)
               ),
               React.createElement("button", { onClick: applyChartRecommendation, disabled: chartType === recommendedChart, className: "px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50",
-                style: { background: chartType === recommendedChart ? _card : _btnBg, color: chartType === recommendedChart ? _muted : '#fff', border: '1px solid ' + _border },
+                style: { background: chartType === recommendedChart ? _card : _btnBg, color: chartType === recommendedChart ? _muted : _btnFg, border: '1px solid ' + (chartType === recommendedChart ? _border : _btnBorder) },
                 "aria-label": t('stem.datastudio.apply_chart_coach_recommendation','Apply Chart Coach recommendation') }, chartType === recommendedChart ? "Using suggestion" : "Use this chart")
             ),
 
@@ -810,19 +852,19 @@ var d = (labToolData && labToolData._dataStudio) || {};
             React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2", role: "group", "aria-label": t('stem.datastudio.chart_type','Chart type') },
 
               CHART_TYPES.map(function (ct) {
-
+                var activeType = chartType === ct.id;
                 return React.createElement("button", { key: ct.id,
 
                   onClick: function () { if (ct.id !== chartType) { var used = Object.assign({}, d.chartTypesUsed || {}); used[ct.id] = true; updDSMany({ chartType: ct.id, chartTypesUsed: used }); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, ct.label + ' explored'); } },
 
-                  className: "p-2 rounded-xl text-center transition-all",
-                  "aria-pressed": chartType === ct.id, "data-chart-type": ct.id, "aria-describedby": chartType === ct.id ? "data-studio-chart-purpose" : undefined,
+                  className: "p-2.5 rounded-xl text-center transition-all",
+                  "aria-pressed": activeType, "data-chart-type": ct.id, "aria-describedby": activeType ? "data-studio-chart-purpose" : undefined,
 
-                  style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere", background: chartType === ct.id ? _btnBg : _card, color: chartType === ct.id ? '#fff' : _text, border: '1px solid ' + (chartType === ct.id ? _accent : _border) }
+                  style: { minHeight: 48, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere", background: activeType ? _btnBg : _card, color: activeType ? _btnFg : _text, border: (activeType ? '2px solid ' + _btnBorder : '1px solid ' + _border), boxShadow: activeType && !isContrast ? '0 4px 12px rgba(14,116,144,0.22)' : 'none' }
 
                 },
 
-                  React.createElement("div", { className: "text-lg" }, ct.icon),
+                  React.createElement("div", { className: "text-lg", "aria-hidden": "true" }, ct.icon),
 
                   React.createElement("div", { className: "text-[0.6875rem] font-bold" }, ct.label)
 
@@ -834,7 +876,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
 
 
-            React.createElement("p", { id: "data-studio-chart-purpose", className: "text-sm", style: { color: _text } }, chartPurposes[chartType]),
+            React.createElement("p", { id: "data-studio-chart-purpose", className: "text-xs font-semibold px-3 py-2 rounded-lg", style: { color: _text, background: _card, borderLeft: '4px solid ' + _accent, borderTop: '1px solid ' + _border, borderRight: '1px solid ' + _border, borderBottom: '1px solid ' + _border } }, chartPurposes[chartType]),
 
             // Chart title
 
@@ -849,7 +891,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
               className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
 
               style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
-              onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
+              onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #0e7490'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
             }),
 
@@ -857,7 +899,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             // ── SVG Chart Rendering ──
 
-            React.createElement("details", { className: "rounded-xl p-2", style: { background: _card, border: '1px solid ' + _border } },
+            React.createElement("details", { className: "rounded-xl p-2.5", style: { background: _card, border: '1px solid ' + _border } },
               React.createElement("summary", { className: "text-xs font-bold cursor-pointer", style: { color: _accent } }, "Chart settings"),
               React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" },
                 React.createElement("label", { className: "text-[0.6875rem] font-bold" }, "Horizontal axis label",
@@ -872,7 +914,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 React.createElement("span", { className: "text-[0.6875rem] font-bold mr-2" }, "Palette:"),
                 ['accessible', 'vibrant', 'monochrome'].map(function(option) {
                   return React.createElement("button", { key: option, onClick: function() { updDS('palette', option); }, "aria-pressed": palette === option,
-                    className: "mr-1 px-2 py-1 rounded text-[0.625rem] font-bold", style: { background: palette === option ? _btnBg : _svgBg, color: palette === option ? '#fff' : _text, border: '1px solid ' + _border } },
+                    className: "mr-1 px-2 py-1 rounded text-[0.625rem] font-bold", style: { background: palette === option ? _btnBg : _svgBg, color: palette === option ? _btnFg : _text, border: '1px solid ' + (palette === option ? _btnBorder : _border) } },
                     option === 'accessible' ? "Color-safe" : option.charAt(0).toUpperCase() + option.slice(1));
                 })
               ),
@@ -886,19 +928,25 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 React.createElement("input", { type: "range", min: 0, max: 12, step: 1, value: histogramBins, onChange: function(e) { updDS('histogramBins', Number(e.target.value)); }, className: "block w-full mt-1", "aria-label": t('stem.datastudio.histogram_bins_zero_uses_automatic_binning','Histogram bins; zero uses automatic binning') }))
             ),
 
-            React.createElement("div", { className: "rounded-2xl overflow-hidden", style: { border: '1px solid ' + _border } },
+            React.createElement("div", { className: "rounded-2xl overflow-hidden", style: { border: (isContrast ? '2px solid #ffff00' : '1px solid ' + _border), background: _svgBg, boxShadow: isContrast ? 'none' : '0 8px 24px rgba(15,23,42,0.08)' } },
 
               React.createElement("svg", { viewBox: '0 0 ' + W + ' ' + H, className: "w-full", role: "img", "data-datastudio-chart": "true",
                 "aria-label": chartTitle + '. ' + (CHART_TYPES.find(function(ct) { return ct.id === chartType; }) || { label: chartType }).label + ' with ' + displayRows.length + ' data points.',
-                style: { background: _svgBg, maxHeight: '340px' } },
+                style: { background: _svgBg, maxHeight: '360px', display: 'block' } },
                 React.createElement("title", null, chartTitle),
                 React.createElement("desc", null, (descriptionRows.length ? descriptionRows.map(function(row, i) { return chartType === 'scatter' ? row.label + ': x ' + getScatterX(row, i) + ', y ' + row.value : row.label + ': ' + row.value; }).join('; ') : 'No data points are currently visible.') + (displayRows.length > descriptionRows.length ? '; plus ' + (displayRows.length - descriptionRows.length) + ' additional points available in the data table.' : '') + (dataSource ? ' Source: ' + dataSource + '.' : '')),
-                chartType !== 'pie' && xAxisLabel && React.createElement("text", { x: W / 2, y: H - 7, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _muted } }, xAxisLabel),
-                chartType !== 'pie' && yAxisLabel && React.createElement("text", { x: 12, y: H / 2, textAnchor: "middle", transform: "rotate(-90 12 " + (H / 2) + ")", style: { fontSize: '9px', fontWeight: 'bold', fill: _muted } }, yAxisLabel),
+                React.createElement("defs", null,
+                  React.createElement("linearGradient", { id: "ds-line-area-grad", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                    React.createElement("stop", { offset: "0%", stopColor: _accent, stopOpacity: 0.28 }),
+                    React.createElement("stop", { offset: "100%", stopColor: _accent, stopOpacity: 0.02 })
+                  )
+                ),
+                chartType !== 'pie' && xAxisLabel && React.createElement("text", { x: W / 2, y: H - 8, textAnchor: "middle", style: { fontSize: '9.5px', fontWeight: 'bold', fill: _muted } }, xAxisLabel),
+                chartType !== 'pie' && yAxisLabel && React.createElement("text", { x: 14, y: H / 2, textAnchor: "middle", transform: "rotate(-90 14 " + (H / 2) + ")", style: { fontSize: '9.5px', fontWeight: 'bold', fill: _muted } }, yAxisLabel),
 
                 // Title
 
-                React.createElement("text", { x: W / 2, y: 18, textAnchor: "middle", style: { fontSize: '13px', fontWeight: 'bold', fill: _text } }, chartTitle),
+                React.createElement("text", { x: W / 2, y: 21, textAnchor: "middle", style: { fontSize: '13.5px', fontWeight: 'bold', fill: _text } }, chartTitle),
 
 
 
@@ -948,19 +996,29 @@ var d = (labToolData && labToolData._dataStudio) || {};
                       var barH = Math.abs(barZeroY - valueY);
                       var x = pad + i * gap + (gap - barW) / 2;
                       var y = Math.min(barZeroY, valueY);
-                      var valueLabelY = row.value < 0 ? y + barH + 12 : y - 4;
+                      var valueLabelY = row.value < 0 ? Math.min(H - pad - 4, y + barH + 11) : Math.max(chartTop - 4, y - 4);
 
                       return React.createElement("g", { key: 'bar' + i },
 
-                        React.createElement("rect", { x: x, y: y, width: barW, height: barH, rx: 3, fill: COLORS[i % COLORS.length], opacity: 0.85 }),
+                        React.createElement("rect", { x: x, y: y, width: barW, height: Math.max(1, barH), rx: 4, fill: COLORS[i % COLORS.length], opacity: 0.9 },
+                          React.createElement("title", null, row.label + ': ' + row.value)),
 
-                        effectiveDataLabels && React.createElement("text", { x: x + barW / 2, y: valueLabelY, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, row.value),
+                        effectiveDataLabels && React.createElement("text", { x: x + barW / 2, y: valueLabelY, textAnchor: "middle", style: { fontSize: '10.5px', fontWeight: 'bold', fill: _text } }, row.value),
 
-                        React.createElement("text", { x: x + barW / 2, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '8px', fill: _muted } }, row.label.length > 6 ? row.label.substring(0, 5) + '..' : row.label)
+                        React.createElement("text", { x: x + barW / 2, y: H - pad + 13, textAnchor: "middle", style: { fontSize: '8.5px', fill: _muted } }, row.label.length > 7 ? row.label.substring(0, 6) + '…' : row.label)
 
                       );
 
-                    })
+                    }),
+                    // Live mean reference line
+                    showStats && displayRows.length > 1 && (function () {
+                      var meanY = chartTop + ((barScaleMax - mean) / barScaleRange) * (H - pad - chartTop);
+                      if (meanY < chartTop || meanY > H - pad) return null;
+                      return React.createElement("g", { key: "bar-mean-ref" },
+                        React.createElement("line", { x1: pad, y1: meanY, x2: W - 12, y2: meanY, stroke: _accent, strokeWidth: 1.3, strokeDasharray: "5 3", opacity: 0.85 }),
+                        React.createElement("text", { x: W - 14, y: Math.max(chartTop + 9, meanY - 4), textAnchor: "end", style: { fontSize: '8.5px', fontWeight: 'bold', fill: _accent } }, 'Mean ' + mean.toFixed(1))
+                      );
+                    })()
 
                   );
 
@@ -1000,9 +1058,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       var midAngle = startAngle + angle / 2;
 
-                      var lx = cx + (r + 16) * Math.cos(midAngle);
+                      var lx = Math.max(46, Math.min(W - 46, cx + (r + 18) * Math.cos(midAngle)));
 
-                      var ly = cy + (r + 16) * Math.sin(midAngle);
+                      var ly = Math.max(36, Math.min(H - 14, cy + (r + 16) * Math.sin(midAngle)));
 
                       var pct = total > 0 ? Math.round(row.value / total * 100) : 0;
 
@@ -1010,7 +1068,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         return React.createElement("g", { key: 'pie' + i },
 
-                          React.createElement("circle", { cx: cx, cy: cy, r: r, fill: COLORS[0], opacity: 0.85 }),
+                          React.createElement("circle", { cx: cx, cy: cy, r: r, fill: COLORS[0], opacity: 0.88 }),
 
                           React.createElement("text", { x: cx, y: cy + 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: '#fff' } }, '100%')
 
@@ -1024,15 +1082,19 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                           d: 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z',
 
-                          fill: COLORS[i % COLORS.length], opacity: 0.85, stroke: _svgBg, strokeWidth: 1.5
+                          fill: COLORS[i % COLORS.length], opacity: 0.9, stroke: _svgBg, strokeWidth: 2
 
-                        }),
+                        }, React.createElement("title", null, row.label + ': ' + row.value + ' (' + pct + '%)')),
 
-                        effectiveDataLabels && pct >= 5 && React.createElement("text", { x: lx, y: ly + 3, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, row.label.substring(0, 5) + ' ' + pct + '%')
+                        effectiveDataLabels && pct >= 5 && React.createElement("text", { x: lx, y: ly + 3, textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 'bold', fill: _text } }, row.label.substring(0, 6) + ' ' + pct + '%')
 
                       );
 
-                    })
+                    }),
+                    // Crisp donut center summary medallion
+                    React.createElement("circle", { key: "pie-hub", cx: cx, cy: cy, r: Math.round(r * 0.38), fill: _svgBg, stroke: _border, strokeWidth: 1.5 }),
+                    React.createElement("text", { key: "pie-hub-lbl", x: cx, y: cy - 3, textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 'bold', fill: _muted } }, "TOTAL"),
+                    React.createElement("text", { key: "pie-hub-val", x: cx, y: cy + 12, textAnchor: "middle", style: { fontSize: '12px', fontWeight: '900', fill: _text } }, Number(total.toFixed(1)))
 
                   );
 
@@ -1098,13 +1160,16 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       var yPos = (H - pad) - frac * (H - pad - chartTop);
 
-                      return React.createElement("text", { key: 'lyl' + i, x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal);
+                      return React.createElement("g", { key: 'lyl' + i },
+                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '10.5px', fill: _muted } }, yVal),
+                        showGridlines && React.createElement("line", { x1: pad, y1: yPos, x2: W - 12, y2: yPos, stroke: _muted, strokeWidth: 0.25, strokeDasharray: "3 3" })
+                      );
 
                     }),
 
-                    React.createElement("path", { d: areaD, fill: _accent, opacity: 0.08 }),
+                    React.createElement("path", { d: areaD, fill: "url(#ds-line-area-grad)" }),
 
-                    React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.5, strokeLinecap: "round", strokeLinejoin: "round", style: { filter: 'drop-shadow(0 0 4px ' + _accent + ')' } }),
+                    React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.8, strokeLinecap: "round", strokeLinejoin: "round" }),
 
                     trendEls,
 
@@ -1191,7 +1256,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
                     React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY - 18, x2: scaleBox(whiskerMin), y2: plotY + 18, stroke: _accent, strokeWidth: 2 }),
                     React.createElement("line", { x1: scaleBox(whiskerMax), y1: plotY - 18, x2: scaleBox(whiskerMax), y2: plotY + 18, stroke: _accent, strokeWidth: 2 }),
                     React.createElement("rect", { x: scaleBox(q1), y: boxTop, width: Math.max(1, scaleBox(q3) - scaleBox(q1)), height: boxHeight, rx: 4, fill: _accent, opacity: 0.2, stroke: _accent, strokeWidth: 2 }),
-                    React.createElement("line", { x1: scaleBox(median), y1: boxTop, x2: scaleBox(median), y2: boxTop + boxHeight, stroke: '#ef4444', strokeWidth: 3 }),
+                    React.createElement("line", { x1: scaleBox(median), y1: boxTop, x2: scaleBox(median), y2: boxTop + boxHeight, stroke: '#dc2626', strokeWidth: 3 }),
+                    React.createElement("polygon", { points: scaleBox(mean) + ',' + (plotY - 6) + ' ' + (scaleBox(mean) + 6) + ',' + plotY + ' ' + scaleBox(mean) + ',' + (plotY + 6) + ' ' + (scaleBox(mean) - 6) + ',' + plotY, fill: _accent, stroke: _svgBg, strokeWidth: 1.5 },
+                      React.createElement("title", null, 'Mean: ' + mean.toFixed(2))),
                     outliers.map(function(row, i) { return React.createElement("circle", { key: 'box-outlier-' + i, cx: scaleBox(row.value), cy: plotY, r: 5, fill: '#f59e0b', stroke: _svgBg, strokeWidth: 2 }); }),
                     React.createElement("line", { x1: plotLeft, y1: H - pad, x2: plotRight, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
                     tickValues.map(function(value, i) { return React.createElement("g", { key: 'box-tick-' + i },
@@ -1229,13 +1296,22 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   return React.createElement("g", null,
 
-                    React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.6 }),
 
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.6 }),
+
+                    [0, 0.5, 1].map(function (frac, gi) {
+                      var gy = (H - pad) - frac * (H - pad - chartTop);
+                      var gVal = Math.round(maxCount * frac);
+                      return React.createElement("g", { key: 'hgy-' + gi },
+                        React.createElement("text", { x: pad - 5, y: gy + 3, textAnchor: "end", style: { fontSize: '10px', fill: _muted } }, gVal),
+                        showGridlines && frac > 0 && React.createElement("line", { x1: pad, y1: gy, x2: W - 10, y2: gy, stroke: _muted, strokeWidth: 0.25, strokeDasharray: "3 3" })
+                      );
+                    }),
 
                     bins.map(function (bin, i) {
 
-                      var bh = maxCount > 0 ? (bin.count / maxCount) * (H - pad - 28) : 0;
+                      var bh = maxCount > 0 ? (bin.count / maxCount) * (H - pad - chartTop) : 0;
 
                       var x = pad + i * ((W - 2 * pad) / numBins) + 1;
 
@@ -1243,11 +1319,12 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       return React.createElement("g", { key: 'hb' + i },
 
-                        React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: COLORS[i % COLORS.length], opacity: 0.85, rx: 2 }),
+                        React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: COLORS[i % COLORS.length], opacity: 0.88, rx: 3 },
+                          React.createElement("title", null, bin.lo.toFixed(1) + '–' + bin.hi.toFixed(1) + ': ' + bin.count + ' items')),
 
-                        effectiveDataLabels && bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, bin.count),
+                        effectiveDataLabels && bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: Math.max(chartTop - 4, y - 4), textAnchor: "middle", style: { fontSize: '10.5px', fontWeight: 'bold', fill: _text } }, bin.count),
 
-                        React.createElement("text", { x: x + bw / 2, y: H - pad + 11, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
+                        React.createElement("text", { x: x + bw / 2, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7.5px', fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
 
                       );
 
@@ -1378,7 +1455,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 className: "px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold ml-auto transition-all",
 
-                style: { background: showTrendline ? '#ef4444' : _card, color: showTrendline ? '#fff' : _text, border: '1px solid ' + (showTrendline ? '#ef4444' : _border) }
+                style: { background: showTrendline ? (isContrast ? '#000000' : '#b91c1c') : _card, color: showTrendline ? (isContrast ? '#00ff00' : '#ffffff') : _text, border: '1px solid ' + (showTrendline ? (isContrast ? '#00ff00' : '#b91c1c') : _border) }
 
               }, showTrendline ? '📉 Trendline On' : '📉 Trendline')
 
@@ -1430,6 +1507,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     if (file) {
 
+                      if (file.size > 10 * 1024 * 1024) { if (addToast) addToast('CSV file exceeds the 10 MB safety limit.', 'error'); return; }
+
                       var reader = new FileReader();
 
                       reader.onload = function (ev) { handleCSVImport(ev.target.result); };
@@ -1464,7 +1543,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   a.href = url; a.download = ((chartTitle || 'data').replace(/[^a-z0-9 _-]/gi, '').trim() || 'data') + '.csv';
 
-                  a.click(); URL.revokeObjectURL(url);
+                  a.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 
                 },
 
@@ -1480,7 +1559,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   var blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' });
                   var url = URL.createObjectURL(blob), a = document.createElement('a');
                   a.href = url; a.download = (((chartTitle || 'chart').replace(/[^a-z0-9 _-]/gi, '').trim() || 'chart') + '.svg');
-                  a.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 0);
+                  a.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                   if (addToast) addToast('Chart exported as SVG.', 'success');
                 }, className: "px-3 py-2 rounded-xl text-xs font-bold transition-all", style: { background: _card, border: '1px solid ' + _border, color: _accent }
               }, "Export SVG"),
@@ -1498,7 +1577,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   };
                   var blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }), url = URL.createObjectURL(blob), a = document.createElement('a');
                   a.href = url; a.download = (((chartTitle || 'analysis').replace(/[^a-z0-9 _-]/gi, '').trim() || 'analysis') + '.json');
-                  a.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 0);
+                  a.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                   if (addToast) addToast('Analysis report exported.', 'success');
                 }, className: "px-3 py-2 rounded-xl text-xs font-bold transition-all", style: { background: _card, border: '1px solid ' + _border, color: _accent } }, "Export JSON")
 
@@ -1902,7 +1981,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         className: "px-2 py-0.5 rounded-md text-[0.6875rem] font-bold transition-all",
 
-                        style: { background: active ? _accent : 'transparent', color: active ? '#fff' : _text, border: '1px solid ' + _border }
+                        style: { background: active ? _btnBg : 'transparent', color: active ? _btnFg : _text, border: '1px solid ' + (active ? _btnBorder : _border) }
 
                       }, L.label);
 
@@ -1920,7 +1999,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     className: "px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all disabled:opacity-50",
 
-                    style: { background: _accent, color: '#fff' }
+                    style: { background: _btnBg, color: _btnFg, border: '1px solid ' + _btnBorder }
 
                   }, aiLoading ? '\u23F3 Thinking...' : (aiStory ? '\uD83D\uDD04 Re-tell' : '\uD83E\uDDE0 Tell the story'))
 
@@ -1945,46 +2024,56 @@ var d = (labToolData && labToolData._dataStudio) || {};
               else if (iq.zoomX > 150 || iq.zoomY > 150) state = 'overzoomed';
               else if (iq.zoomX < 60 && iq.zoomY < 60) state = 'tooBroad';
               else state = 'legible';
-              var sm = {
-                invisible:  { label: t('stem.datastudio.nearly_invisible_low_opacity', '\uD83D\uDC7B Nearly invisible (low opacity)'), color: '#94a3b8', bg: '#f1f5f9', border: '#cbd5e1' },
-                overzoomed: { label: t('stem.datastudio.over_zoomed_lose_context', '\uD83D\uDD0D Over-zoomed (lose context)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+              var sm = isContrast ? {
+                invisible:  { label: t('stem.datastudio.nearly_invisible_low_opacity', '\uD83D\uDC7B Nearly invisible (low opacity)'), color: '#ffff00', bg: '#000000', border: '#ffff00' },
+                overzoomed: { label: t('stem.datastudio.over_zoomed_lose_context', '\uD83D\uDD0D Over-zoomed (lose context)'), color: '#ffff00', bg: '#000000', border: '#ffff00' },
+                tooBroad:   { label: t('stem.datastudio.too_broad_lose_detail', '\uD83D\uDD2D Too broad (lose detail)'), color: '#ffff00', bg: '#000000', border: '#ffff00' },
+                legible:    { label: t('stem.datastudio.legible_visualization', '\uD83D\uDFE2 Legible visualization'), color: '#00ff00', bg: '#000000', border: '#00ff00' }
+              }[state] : isDark ? {
+                invisible:  { label: t('stem.datastudio.nearly_invisible_low_opacity', '\uD83D\uDC7B Nearly invisible (low opacity)'), color: '#cbd5e1', bg: '#1e293b', border: '#475569' },
+                overzoomed: { label: t('stem.datastudio.over_zoomed_lose_context', '\uD83D\uDD0D Over-zoomed (lose context)'), color: '#fca5a5', bg: '#450a0a', border: '#b91c1c' },
+                tooBroad:   { label: t('stem.datastudio.too_broad_lose_detail', '\uD83D\uDD2D Too broad (lose detail)'), color: '#67e8f9', bg: '#083344', border: '#0891b2' },
+                legible:    { label: t('stem.datastudio.legible_visualization', '\uD83D\uDFE2 Legible visualization'), color: '#86efac', bg: '#052e16', border: '#16a34a' }
+              }[state] : {
+                invisible:  { label: t('stem.datastudio.nearly_invisible_low_opacity', '\uD83D\uDC7B Nearly invisible (low opacity)'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' },
+                overzoomed: { label: t('stem.datastudio.over_zoomed_lose_context', '\uD83D\uDD0D Over-zoomed (lose context)'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' },
                 tooBroad:   { label: t('stem.datastudio.too_broad_lose_detail', '\uD83D\uDD2D Too broad (lose detail)'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9' },
-                legible:    { label: t('stem.datastudio.legible_visualization', '\uD83D\uDFE2 Legible visualization'), color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+                legible:    { label: t('stem.datastudio.legible_visualization', '\uD83D\uDFE2 Legible visualization'), color: '#047857', bg: '#ecfdf5', border: '#86efac' }
               }[state];
-              return React.createElement('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-cyan-300 space-y-2' },
-                React.createElement('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.datastudio.chart_visuals_discovery', '\uD83D\uDCCA Chart visuals discovery')),
-                React.createElement('p', { className: 'text-[0.6875rem] text-slate-700' }, t('stem.datastudio.sliders_for_opacity_zoom_x_zoom_y_disc', 'Sliders for opacity, zoom X, zoom Y. Discrete 4-state visual legibility. No score, no reveal.')),
+              return React.createElement('div', { className: 'mt-3 p-3 rounded-xl space-y-2', style: { background: _card, border: '1px solid ' + _border, color: _text } },
+                React.createElement('h3', { className: 'text-sm font-black', style: { color: _accent } }, t('stem.datastudio.chart_visuals_discovery', '\uD83D\uDCCA Chart visuals discovery')),
+                React.createElement('p', { className: 'text-[0.6875rem]', style: { color: _muted } }, t('stem.datastudio.sliders_for_opacity_zoom_x_zoom_y_disc', 'Sliders for opacity, zoom X, zoom Y. Discrete 4-state visual legibility. No score, no reveal.')),
                 React.createElement('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
                   React.createElement('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label)
                 ),
-                React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                   [{ k: 'opacity', l: 'Opacity %' }, { k: 'zoomX', l: 'Zoom X %' }, { k: 'zoomY', l: 'Zoom Y %' }].map(function(s) {
                     return React.createElement('div', { key: s.k },
-                      React.createElement('label', { htmlFor: 'cv-' + s.k, className: 'block text-[0.625rem] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                      React.createElement('label', { htmlFor: 'cv-' + s.k, className: 'block text-[0.625rem] font-bold', style: { color: _text } }, s.l + ': ', React.createElement('span', { className: 'font-mono', style: { color: _accent } }, iq[s.k])),
                       React.createElement('input', { id: 'cv-' + s.k, type: 'range', min: 0, max: 200, step: 5, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.opacity, x: iq.zoomX, y: iq.zoomY, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[0.625rem] font-bold text-slate-700 border border-slate-300' }, t('stem.datastudio.log', '\uD83D\uDCCB Log')),
-                  React.createElement('button', { onClick: function() { setIQ({ opacity: 80, zoomX: 100, zoomY: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[0.625rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.datastudio.reset', '\u21BA Reset'))
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.opacity, x: iq.zoomX, y: iq.zoomY, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: _svgBg, color: _text, border: '1px solid ' + _border } }, t('stem.datastudio.log', '\uD83D\uDCCB Log')),
+                  React.createElement('button', { onClick: function() { setIQ({ opacity: 80, zoomX: 100, zoomY: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-semibold', style: { background: _svgBg, color: _muted, border: '1px solid ' + _border } }, t('stem.datastudio.reset', '\u21BA Reset'))
                 ),
                 React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.datastudio.hypothesis_when_is_a_chart_most_legibl', 'Hypothesis: When is a chart most legible?'),
                   'aria-label': t('stem.datastudio.hypothesis_when_is_a_chart_most_legibl', 'Chart legibility hypothesis'),
-                  className: 'w-full text-[0.6875rem] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[0.625rem] font-bold text-amber-800 border border-amber-300' }, t('stem.datastudio.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
-                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[0.625rem] text-slate-700' },
+                  className: 'w-full text-[0.6875rem] rounded p-1.5 font-mono leading-snug', style: { background: _svgBg, color: _text, border: '1px solid ' + _border }, rows: 2 }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: _svgBg, color: isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#92400e'), border: '1px solid ' + (isContrast ? '#ffff00' : '#d97706') } }, t('stem.datastudio.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded text-[0.625rem]', style: { background: _svgBg, border: '1px solid ' + (isContrast ? '#ffff00' : '#d97706'), color: _text } },
                   React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5' },
                     React.createElement('li', null, t('stem.datastudio.tufte_rules_maximize_data_ink_ratio_wh', 'Tufte rules: maximize data-ink ratio. What does that mean?')),
                     React.createElement('li', null, t('stem.datastudio.when_does_zoom_obscure_context', 'When does zoom obscure context?')))),
-                React.createElement('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold text-emerald-800 cursor-pointer' },
+                React.createElement('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold cursor-pointer', style: { color: isContrast ? '#ffff00' : (isDark ? '#6ee7b7' : '#065f46') } },
                   React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
                   t('stem.datastudio.i_understand_explain_in_own_words', 'I understand \u2014 explain in own words')),
                 iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.datastudio.explain_chart_visualization_principles', 'Explain chart visualization principles.'),
                   'aria-label': t('stem.datastudio.explain_chart_visualization_principles', 'Explain chart visualization principles'),
-                  className: 'w-full text-[0.6875rem] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-                React.createElement('div', { className: 'text-[0.5625rem] italic text-slate-500' }, t('stem.datastudio.design_note_discrete_4_state_visual_ma', 'Design note: discrete 4-state visual marker; no aesthetic score; no reveal \u2014 by design.'))
+                  className: 'w-full text-[0.6875rem] rounded p-1.5 font-mono leading-snug mt-1', style: { background: _svgBg, color: _text, border: '1px solid ' + _border }, rows: 3 }),
+                React.createElement('div', { className: 'text-[0.5625rem] italic', style: { color: _muted } }, t('stem.datastudio.design_note_discrete_4_state_visual_ma', 'Design note: discrete 4-state visual marker; no aesthetic score; no reveal \u2014 by design.'))
               );
             })()
 

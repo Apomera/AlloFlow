@@ -64,7 +64,7 @@ const AllobotEvidence = (() => {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
       return Boolean(window.__alloAiUsable(kind, fn));
     }
-    return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true);
+    return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true));
   }
   function _evSanitizeUntrusted(value) {
     return String(value == null ? '' : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]+>/gi, '[redacted-tag]');
@@ -76,7 +76,7 @@ const AllobotEvidence = (() => {
     const request = plan(userText);
     if (!request) return null;
     const base = { ...request, sources: [], checkedAt: new Date().toISOString() };
-    const backend = window.AlloFlowChatPrivacy.destination(deps.callGemini).backend;
+    const backend = window.AlloFlowChatPrivacy?.destination?.(deps.callGemini)?.backend || config().backend || 'gemini';
     if (config().allobotWebSearch === false || (backend !== 'gemini' && config().allobotWebSearch !== true)) return { ...base, status: 'disabled' };
     const managed = window.ALLOFLOW_MANAGED_AI_POLICY;
     if (managed != null && (managed.version !== 1 || managed.allowExternalSearch !== true)) return { ...base, query: undefined, status: 'managed-disabled' };

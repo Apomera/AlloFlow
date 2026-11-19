@@ -1149,8 +1149,23 @@
     const title = String((pack && pack.title) || (input && input.title) || fallbackTitle).trim() || fallbackTitle;
     return { title, items };
   }
+  function printableCreditsFooter(items) {
+    const list = Array.isArray(items) ? items : [];
+    if (!list.some(it => it && it.imgSrc)) return '';
+    const seen = new Set(), credits = [];
+    list.forEach(it => {
+      if (!it || !it.imgSrc) return;
+      const c = String(it.imgCredit || '').replace(/!/g, '.').trim();
+      if (c && !seen.has(c)) { seen.add(c); credits.push(c); }
+    });
+    const text = credits.length
+      ? 'Picture credits: ' + credits.map(escHtml).join('; ') + '.'
+      : 'Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0.';
+    return '<footer class="credits">' + text + '</footer>';
+  }
   function buildFlashcardsHtml(input, rawOptions = {}) {
     const data = printableCardsData(input, rawOptions, 'Word Flashcards');
+    const creditsHtml = printableCreditsFooter(data.items);
     const rows = data.items.map(it => {
       const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
       const picHtml = it.imgSrc ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + escHtml(it.imgAlt || it.word) + '">' : '';
@@ -1183,6 +1198,7 @@
       '.elkonin-box{border:2px solid #334155;min-width:28px;height:30px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border-radius:4px}',
       '.card-pic{width:76px;height:76px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff;flex-shrink:0}',
       '.back-text p{margin:0 0 6px;font-size:14px;line-height:1.4}',
+      '.credits{margin-top:16px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:11px;color:#475569;line-height:1.4}',
       '@media print{body{margin:10mm} .noprint{display:none}}',
       '</style>',
       '</head>',
@@ -1190,12 +1206,14 @@
       '<h1>' + escHtml(data.title) + ' — Cut-and-Fold Flashcards</h1>',
       '<p class="directions">Cut across each card row, fold along the dashed line, and tape or glue the front and back together.</p>',
       rows,
+      creditsHtml,
       '</body>',
       '</html>',
     ].join('\n');
   }
   function buildFrayerHtml(input, rawOptions = {}) {
     const data = printableCardsData(input, rawOptions, 'Frayer Study Sheets');
+    const creditsHtml = printableCreditsFooter(data.items);
     const cards = data.items.map(it => {
       const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
       const picBlock = it.imgSrc
@@ -1232,12 +1250,14 @@
       '.card-pic{max-width:86px;max-height:86px;object-fit:contain;display:block}',
       '.sketch-space{height:64px;border:1px dashed #94a3b8;border-radius:4px;display:grid;place-items:center;font-size:12px;color:#64748b}',
       '.write-lines div{border-bottom:1px solid #94a3b8;height:26px}',
+      '.credits{margin-top:16px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:11px;color:#475569;line-height:1.4}',
       '@media print{body{margin:10mm} .frayer-card{page-break-inside:avoid;break-inside:avoid}}',
       '</style>',
       '</head>',
       '<body>',
       '<h1>' + escHtml(data.title) + ' — Frayer Study Sheets</h1>',
       cards,
+      creditsHtml,
       '</body>',
       '</html>',
     ].join('\n');
@@ -1555,7 +1575,7 @@
     const items = data.items || [];
     const order = sortingOrder(items.length, 313);
     const chain = order.map(idx => items[idx]);
-    const cardsHtml = chain.length
+    const cardsHtml = chain.length >= 2
       ? chain.map((cur, i) => {
           const next = chain[(i + 1) % chain.length];
           const boxes = cur.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
@@ -1567,7 +1587,7 @@
           const whoClue = nextDef || nextEx || ('the word with sound boxes: ' + next.boxes.join(' / '));
           const roleTag = i === 0
             ? 'Card 1 — Start Card'
-            : (i === chain.length - 1 && chain.length > 1 ? ('Card ' + (i + 1) + ' — Loops to Card 1') : ('Card ' + (i + 1)));
+            : (i === chain.length - 1 ? ('Card ' + (i + 1) + ' — Loops to Card 1') : ('Card ' + (i + 1)));
           return '<article class="loop-card" data-step="' + (i + 1) + '">'
             + '<div class="loop-tag">' + escHtml(roleTag) + '</div>'
             + '<div class="loop-have"><div class="loop-label">I have</div><div class="loop-word">' + escHtml(cur.word) + '</div>'
@@ -1577,7 +1597,7 @@
             + '</article>';
         }).join('\n')
       : '<article class="loop-card"><div class="loop-have"><div class="loop-label">Add words</div><p class="loop-clue">Add at least two words before printing loop cards.</p></div></article>';
-    const keyRows = chain.map((cur, i) => {
+    const keyRows = chain.length >= 2 ? chain.map((cur, i) => {
       const next = chain[(i + 1) % chain.length];
       const nextDef = blankedSentence(next.definition, next.word);
       const nextEx = blankedSentence(next.example, next.word);
@@ -1586,7 +1606,7 @@
         ? ('Yes' + (cur.imgCredit ? ' (' + escHtml(cur.imgCredit) + ')' : ''))
         : 'None';
       return '<tr><td>' + (i + 1) + '</td><td><strong>' + escHtml(cur.word) + '</strong></td><td>' + escHtml(whoClue) + '</td><td><strong>' + escHtml(next.word) + '</strong></td><td>' + picInfo + '</td></tr>';
-    }).join('\n');
+    }).join('\n') : '';
     return [
       '<!doctype html>',
       '<html lang="en">',

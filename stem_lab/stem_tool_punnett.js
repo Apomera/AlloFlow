@@ -1232,6 +1232,8 @@ window.StemLab = window.StemLab || {
           var awardXP = ctx.awardXP;
           var setToolSnapshots = ctx.setToolSnapshots;
           var band = getGradeBand(ctx);
+          var isContrastNow = !!ctx.isContrast;
+          var isDarkNow = !!ctx.isDark;
 
           // ── State ──
           var d = labToolData.punnett || {};
@@ -1443,7 +1445,7 @@ window.StemLab = window.StemLab || {
           // ═══ AI TUTOR ═══
           // Student AI-off: the Tutor toggle and panel render only when text AI is usable.
           var _pnAiFn = ctx.callGemini, _pnAiOk = false;
-          try { _pnAiOk = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') ? !!window.__alloAiUsable('text', _pnAiFn) : !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true); } catch (_) {}
+          try { _pnAiOk = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') ? !!window.__alloAiUsable('text', _pnAiFn) : !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)); } catch (_) {}
           var pnAiOn = ctx.aiAvailable !== false && typeof _pnAiFn === 'function' && !_pnAiFn._alloQrBlocked && (!!ctx.isTeacherMode || _pnAiOk);
           var showAI = !!d._showAI;
           var aiResponse = d._aiResponse || '';
@@ -2221,12 +2223,26 @@ window.StemLab = window.StemLab || {
                 className: 'punnett-control border border-slate-200 bg-white text-slate-700',
                 'aria-label': __alloT('stem.punnett.a11y_back_to_stem_tools', 'Back to STEM tools')
               }, h(ArrowLeft, { size: 18, 'aria-hidden': 'true' })),
-              h('div', { className: 'min-w-0' },
-                h('div', { className: 'flex items-center gap-2 flex-wrap' },
-                  h('h2', { ref: headingRef, 'data-punnett-title': 'true', tabIndex: -1, className: 'text-base sm:text-lg font-black text-slate-800 m-0' }, '🧬 Punnett Square Lab'),
-                  h('span', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 text-[0.625rem] font-bold rounded-full' }, 'GENETICS v3')
+              h('div', { className: 'flex items-center gap-2.5 min-w-0' },
+                // Bespoke Molecular Genetics DNA Double-Helix Emblem SVG
+                h('svg', {
+                  viewBox: '0 0 40 40', width: 38, height: 38, className: 'shrink-0',
+                  'aria-hidden': 'true'
+                },
+                  h('rect', { x: 2, y: 2, width: 36, height: 36, rx: 10, fill: isContrastNow ? '#000000' : '#4c1d95', stroke: isContrastNow ? '#ffff00' : '#a78bfa', strokeWidth: 1.8 }),
+                  h('path', { d: 'M 12 8 C 28 14, 12 26, 28 32', fill: 'none', stroke: isContrastNow ? '#00ff00' : '#34d399', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                  h('path', { d: 'M 28 8 C 12 14, 28 26, 12 32', fill: 'none', stroke: isContrastNow ? '#ffff00' : '#c4b5fd', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                  h('line', { x1: 15, y1: 12, x2: 25, y2: 12, stroke: isContrastNow ? '#ffff00' : '#fde68a', strokeWidth: 1.6 }),
+                  h('line', { x1: 14, y1: 20, x2: 26, y2: 20, stroke: isContrastNow ? '#00ff00' : '#67e8f9', strokeWidth: 1.6 }),
+                  h('line', { x1: 15, y1: 28, x2: 25, y2: 28, stroke: isContrastNow ? '#ffff00' : '#fde68a', strokeWidth: 1.6 })
                 ),
-                h('p', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' }, currentSub.label + ' · ' + currentSub.desc)
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                    h('h2', { ref: headingRef, 'data-punnett-title': 'true', tabIndex: -1, className: 'text-base sm:text-lg font-black text-slate-800 m-0' }, '🧬 Punnett Square Lab'),
+                    h('span', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 text-[0.625rem] font-bold rounded-full' }, 'GENETICS v3')
+                  ),
+                  h('p', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' }, currentSub.label + ' · ' + currentSub.desc)
+                )
               ),
               h('div', { className: 'punnett-topbar-actions' },
                 h('span', { className: 'px-2 py-1 bg-sky-50 text-sky-700 text-[0.6875rem] font-bold rounded-lg border border-sky-100' }, '⭐ ' + (d.researchPoints || 0) + ' RP'),
@@ -2550,6 +2566,73 @@ window.StemLab = window.StemLab || {
                   h('p', { style: { margin: '7px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5 } }, crossReadout)
                 )
               ),
+
+              // Live Chromosome Segregation & Genotype Ratio Visual Stage SVG
+              (function() {
+                var p1a = parent1Gametes[0] || parent1[0] || 'A', p1b = parent1Gametes[1] || parent1[1] || 'a';
+                var p2a = parent2Gametes[0] || parent2[0] || 'A', p2b = parent2Gametes[1] || parent2[1] || 'a';
+                var gKeys = countKeys.slice(0, 4);
+                var segColors = isContrastNow
+                  ? ['#00ff00', '#ffff00', '#00ff00', '#ffff00']
+                  : ['#7c3aed', '#2563eb', '#059669', '#d97706'];
+                var barX = 186;
+                var totalBarW = 160;
+                return h('div', {
+                  className: 'mb-3 rounded-xl border p-3 shadow-sm',
+                  style: {
+                    background: isContrastNow ? '#000000' : '#ffffff',
+                    borderColor: isContrastNow ? '#ffff00' : '#ddd6fe'
+                  }
+                },
+                  h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1.5' },
+                    h('span', { className: 'text-[0.6875rem] font-black uppercase tracking-wider', style: { color: isContrastNow ? '#ffff00' : '#6d28d9' } }, __alloT('stem.punnett.segregation_diagram', 'Meiosis Allele Segregation & Offspring Proportions')),
+                    h('span', { className: 'text-[0.6875rem] font-mono font-bold', style: { color: isContrastNow ? '#00ff00' : '#475569' } }, (isSexLinked ? parent1Gametes.join('/') : parent1.join('')) + ' \u00D7 ' + (isSexLinked ? parent2Gametes.join('/') : parent2.join('')))
+                  ),
+                  h('svg', {
+                    viewBox: '0 0 360 98',
+                    width: '100%',
+                    role: 'img',
+                    'aria-label': __alloT('stem.punnett.segregation_svg_aria', 'Chromatid allele segregation and proportional offspring genotype diagram')
+                  },
+                    // Left: Parent 1 & Parent 2 Chromatid Pairs
+                    h('rect', { x: 8, y: 8, width: 162, height: 82, rx: 10, fill: isContrastNow ? '#000000' : '#f8fafc', stroke: isContrastNow ? '#ffff00' : '#e2e8f0', strokeWidth: 1.4 }),
+                    h('text', { x: 89, y: 22, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#475569' }, 'GAMETE SEGREGATION'),
+                    // Parent 1 chromatids
+                    h('rect', { x: 24, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : '#ede9fe', stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 2 }),
+                    h('line', { x1: 26, y1: 54, x2: 44, y2: 54, stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 3 }),
+                    h('text', { x: 35, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#00ff00' : '#5b21b6' }, p1a),
+                    h('rect', { x: 52, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : '#ede9fe', stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 2 }),
+                    h('line', { x1: 54, y1: 54, x2: 72, y2: 54, stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 3 }),
+                    h('text', { x: 63, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#00ff00' : '#5b21b6' }, p1b),
+                    // Cross multiplier symbol
+                    h('text', { x: 89, y: 58, textAnchor: 'middle', fontSize: 14, fontWeight: 900, fill: isContrastNow ? '#ffff00' : '#64748b' }, '\u00D7'),
+                    // Parent 2 chromatids
+                    h('rect', { x: 104, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : '#dbeafe', stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 2 }),
+                    h('line', { x1: 106, y1: 54, x2: 124, y2: 54, stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 3 }),
+                    h('text', { x: 115, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#ffff00' : '#1d4ed8' }, p2a),
+                    h('rect', { x: 132, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : '#dbeafe', stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 2 }),
+                    h('line', { x1: 134, y1: 54, x2: 152, y2: 54, stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 3 }),
+                    h('text', { x: 143, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#ffff00' : '#1d4ed8' }, p2b),
+                    // Right: Proportional Offspring Genotype Stacked Bar
+                    h('rect', { x: 178, y: 8, width: 174, height: 82, rx: 10, fill: isContrastNow ? '#000000' : '#f8fafc', stroke: isContrastNow ? '#ffff00' : '#e2e8f0', strokeWidth: 1.4 }),
+                    h('text', { x: 265, y: 22, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#475569' }, 'OFFSPRING GENOTYPE MIX'),
+                    gKeys.map(function(gk, gi) {
+                      var w = Math.round((counts[gk] / 4) * totalBarW);
+                      var seg = h('g', { key: 'gs' + gk },
+                        h('rect', { x: barX, y: 32, width: Math.max(8, w - 2), height: 26, rx: 5, fill: segColors[gi % segColors.length], stroke: isContrastNow ? '#000000' : '#ffffff', strokeWidth: 1.5 }),
+                        h('text', { x: barX + w / 2 - 1, y: 49, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#000000' : '#ffffff' }, gk)
+                      );
+                      barX += w;
+                      return seg;
+                    }),
+                    // Compact genotype ratio labels beneath bar
+                    gKeys.map(function(gk, gi) {
+                      var lx = 186 + gi * Math.floor(160 / Math.max(1, gKeys.length));
+                      return h('text', { key: 'gl' + gk, x: lx, y: 76, fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#ffff00' : segColors[gi % segColors.length] }, gk + ':' + (counts[gk] * 25) + '%');
+                    })
+                  )
+                );
+              })(),
 
               // Punnett Grid
               h('div', { className: 'punnett-grid-shell', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.punnett.a11y_punnett_square_results_scroll_horizontally_on_s', 'Punnett square results; scroll horizontally on small screens') },
@@ -3990,6 +4073,41 @@ window.StemLab = window.StemLab || {
                   h('div', { id: 'punnett-discovery-state', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, className: 'text-base font-black', style: { color: stateMeta.color } }, stateMeta.label),
                   h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1 font-mono' }, 'p = ' + iq.p + '%, q = ' + (100 - iq.p) + '%, Δp ≈ ' + (deltaP * 100).toFixed(2) + '%')
                 ),
+                // Live Hardy-Weinberg Genotype & Next-Gen Shift SVG
+                (function() {
+                  var pp = pFrac * pFrac, pq2 = 2 * pFrac * q, qq = q * q;
+                  var barTotal = 280;
+                  var wAA = Math.max(2, Math.round(pp * barTotal));
+                  var wAa = Math.max(2, Math.round(pq2 * barTotal));
+                  var waa = Math.max(2, barTotal - wAA - wAa);
+                  var xCur = 30 + Math.round(pFrac * barTotal);
+                  var xNext = 30 + Math.round(newP * barTotal);
+                  return h('div', {
+                    className: 'mb-3 p-2.5 rounded-xl border',
+                    style: { background: isContrastNow ? '#000000' : '#f8fafc', borderColor: isContrastNow ? '#ffff00' : '#e2e8f0' }
+                  },
+                    h('svg', {
+                      viewBox: '0 0 340 84',
+                      width: '100%',
+                      role: 'img',
+                      'aria-label': 'Hardy-Weinberg genotype proportions: AA ' + Math.round(pp * 100) + ' percent, Aa ' + Math.round(pq2 * 100) + ' percent, aa ' + Math.round(qq * 100) + ' percent'
+                    },
+                      h('text', { x: 30, y: 14, fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#475569' }, 'HARDY-WEINBERG GENOTYPES (p\u00B2 + 2pq + q\u00B2 = 1)'),
+                      h('rect', { x: 30, y: 20, width: wAA, height: 18, rx: 3, fill: isContrastNow ? '#00ff00' : '#7c3aed' }),
+                      h('rect', { x: 30 + wAA, y: 20, width: wAa, height: 18, rx: 3, fill: isContrastNow ? '#ffff00' : '#0ea5e9' }),
+                      h('rect', { x: 30 + wAA + wAa, y: 20, width: waa, height: 18, rx: 3, fill: isContrastNow ? '#ffffff' : '#f59e0b' }),
+                      h('text', { x: 30, y: 50, fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#00ff00' : '#6d28d9' }, 'AA ' + Math.round(pp * 100) + '%'),
+                      h('text', { x: 170, y: 50, textAnchor: 'middle', fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#0369a1' }, 'Aa ' + Math.round(pq2 * 100) + '%'),
+                      h('text', { x: 310, y: 50, textAnchor: 'end', fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#ffffff' : '#b45309' }, 'aa ' + Math.round(qq * 100) + '%'),
+                      // Allele frequency shift vector p -> p'
+                      h('line', { x1: 30, y1: 68, x2: 310, y2: 68, stroke: isContrastNow ? '#ffff00' : '#cbd5e1', strokeWidth: 3, strokeLinecap: 'round' }),
+                      h('circle', { cx: xCur, cy: 68, r: 5, fill: isContrastNow ? '#ffff00' : '#6d28d9' }),
+                      Math.abs(xNext - xCur) >= 2 && h('line', { x1: xCur, y1: 68, x2: xNext, y2: 68, stroke: isContrastNow ? '#00ff00' : '#dc2626', strokeWidth: 3.5 }),
+                      h('circle', { cx: xNext, cy: 68, r: 4, fill: isContrastNow ? '#00ff00' : '#dc2626', stroke: '#ffffff', strokeWidth: 1.2 }),
+                      h('text', { x: 170, y: 81, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: isContrastNow ? '#ffff00' : '#475569' }, 'Next-generation shift: p = ' + iq.p + '% \u2192 p\u2032 = ' + (newP * 100).toFixed(1) + '%')
+                    )
+                  );
+                })(),
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3' },
                   [
                     { key: 'p',         label: 'allele freq p (%)',  val: iq.p,         min: 1,  max: 99, step: 1 },

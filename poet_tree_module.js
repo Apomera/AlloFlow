@@ -993,7 +993,7 @@
     var onClose = props.onClose;
     var onCallGemini = props.onCallGemini;
     // Learner AI off: the host may hand a blocked fn (truthy). Teacher behaviour is unchanged.
-    var ptTextAi = !!onCallGemini && !onCallGemini._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    var ptTextAi = typeof onCallGemini === 'function' && !onCallGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', onCallGemini))));
     var onCallTTS = props.onCallTTS;
     var onCallImagen = props.onCallImagen;
     var onCallGeminiImageEdit = props.onCallGeminiImageEdit;
@@ -1407,10 +1407,16 @@
       var file = input && input.files && input.files[0];
       if (!file) return;
       if (input) input.value = '';
+      if (file.size > 10 * 1024 * 1024) {
+        setBackupPreview(null);
+        setBackupPreviewError('Backup file exceeds the 10 MB safety limit.');
+        addToast && addToast('Backup file exceeds the 10 MB safety limit.', 'error');
+        return;
+      }
       var reader = new FileReader();
       reader.onload = function () {
         try {
-          var prepared = normalizeLocalBackupPayload(JSON.parse(String(reader.result || '')));
+          var prepared = normalizeLocalBackupPayload(JSON.parse(String(reader.result || ''), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }));
           setBackupPreview({ fileName: String(file.name || 'poettree-local-backup.json').slice(0, 160), backup: prepared });
           setBackupPreviewError('');
           announcePT('Backup loaded for review.');
@@ -1553,10 +1559,14 @@
       var file = input && input.files && input.files[0];
       if (!file) return;
       if (input) input.value = '';
+      if (file.size > 10 * 1024 * 1024) {
+        addToast && addToast('Library file exceeds the 10 MB safety limit.', 'error');
+        return;
+      }
       var reader = new FileReader();
       reader.onload = function () {
         try {
-          var payload = JSON.parse(String(reader.result || ''));
+          var payload = JSON.parse(String(reader.result || ''), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
           var incoming = Array.isArray(payload) ? payload : (payload && Array.isArray(payload.poems) ? payload.poems : []);
           var skipped = 0;
           var normalized = incoming.map(function (item, index) {
@@ -2184,11 +2194,14 @@
     }, [onCallGemini, rhymeQuery]);
 
     var copyRhyme = useCallback(function (word) {
-      try {
-        navigator.clipboard.writeText(word);
-        addToast && addToast('"' + word + '" copied to clipboard.', 'success');
-        announcePT('Copied ' + word + ' to clipboard.');
-      } catch (e) {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        Promise.resolve(navigator.clipboard.writeText(word)).then(function () {
+          addToast && addToast('"' + word + '" copied to clipboard.', 'success');
+          announcePT('Copied ' + word + ' to clipboard.');
+        }, function () {
+          addToast && addToast(tr('Copy failed — long-press the word instead.'), 'info');
+        });
+      } else {
         addToast && addToast(tr('Copy failed — long-press the word instead.'), 'info');
       }
     }, [addToast]);
@@ -2748,10 +2761,14 @@
       var file = input && input.files && input.files[0];
       if (!file) return;
       if (input) input.value = '';
+      if (file.size > 10 * 1024 * 1024) {
+        addToast && addToast('Revision history file exceeds the 10 MB safety limit.', 'error');
+        return;
+      }
       var reader = new FileReader();
       reader.onload = function () {
         try {
-          var payload = JSON.parse(String(reader.result || ''));
+          var payload = JSON.parse(String(reader.result || ''), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
           var incoming = Array.isArray(payload) ? payload : (payload && Array.isArray(payload.revisions) ? payload.revisions : []);
           var skipped = 0;
           var imported = incoming.map(function (item, index) {
@@ -3707,7 +3724,6 @@
                 return e('button', { key: f.id,
                   onClick: function () { setForm(f); announcePT('Selected form: ' + f.name); },
                   'aria-pressed': selected ? 'true' : 'false',
-                  'aria-label': tr(f.name) + ' — ' + tr(f.tagline),
                   style: { textAlign: 'left', padding: '14px', borderRadius: '12px', border: selected ? '2px solid ' + TEAL : '1px solid #e5e7eb', background: selected ? TEAL_LIGHT : '#fff', cursor: 'pointer' }
                 },
                   e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
@@ -4136,7 +4152,7 @@
                     'aria-label': tr('Replace your poem with this rewrite'),
                     style: { padding: '6px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
                   }, '✓ Replace mine'),
-                  e('button', { onClick: function () { try { navigator.clipboard.writeText(rewriteResult.poem); addToast && addToast(tr('Rewrite copied to clipboard.'), 'success'); } catch (er) {} },
+                  e('button', { onClick: function () { if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') { Promise.resolve(navigator.clipboard.writeText(rewriteResult.poem)).then(function () { addToast && addToast(tr('Rewrite copied to clipboard.'), 'success'); }, function () {}); } },
                     'aria-label': tr('Copy rewrite to clipboard'),
                     style: { padding: '6px 14px', background: '#fff', color: '#581c87', border: '1px solid #c4b5fd', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
                   }, '📋 Copy'),
@@ -4248,7 +4264,7 @@
                   ),
                   dailyPrompt && e('div', { role: 'region', 'aria-live': 'polite', style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#78350f', fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.5 } },
                     '"' + dailyPrompt + '"',
-                    e('button', { onClick: function () { try { navigator.clipboard.writeText(dailyPrompt); addToast && addToast(tr('Prompt copied.'), 'success'); } catch (er) {} },
+                    e('button', { onClick: function () { if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') { Promise.resolve(navigator.clipboard.writeText(dailyPrompt)).then(function () { addToast && addToast(tr('Prompt copied.'), 'success'); }, function () {}); } },
                       'aria-label': tr('Copy prompt to clipboard'),
                       style: { marginLeft: '8px', padding: '2px 8px', background: 'transparent', border: '1px solid #fcd34d', color: '#78350f', borderRadius: '4px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', verticalAlign: 'middle' }
                     }, '📋 copy')

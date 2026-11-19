@@ -5,9 +5,9 @@
 // held to that page's rule too, and a broken script load hangs nothing there. This check catches that kind of fault.
 //   1. Every Packets page opens with no error, no refused load ("Content Security Policy", "Refused to") and no failed
 //      request to this site.
-//   2. Student files made by the real builders (math practice, a math check, vocabulary, a read-along, Word Sounds) open
-//      on their own, inside Open a practice file (a srcdoc frame) and inside Try it (a blob: frame); each starts, shows
-//      a question, loads its reading fonts, and the browser refuses nothing.
+//   2. Student files made by the real builders (math practice, a math check, vocabulary, a read-along, Symbol Runner,
+//      Word Sounds) open on their own, inside Open a practice file (a srcdoc frame) and inside Try it (a blob: frame);
+//      each starts, shows a question, loads its reading fonts, and the browser refuses nothing.
 // "Skipped is not passed": a state that could not be reached is counted as a failure.
 //
 //   node dev-tools/check_packets_smoke.cjs          (about 1 to 3 minutes; one browser)
@@ -43,8 +43,8 @@ function serve() {
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({ server, base: 'http://127.0.0.1:' + server.address().port + '/' })));
 }
 
-// Student files, made in node by the real builders.
-function makeFiles() {
+// Student files, made in node by the real builders (all 6 activity types).
+async function makeFiles() {
   const g = { crypto: require('node:crypto').webcrypto };
   g.window = g;
   new Function('window', fs.readFileSync(path.join(ROOT, 'word_sounds_take_home_loader.js'), 'utf8')).call(g, g);
@@ -54,26 +54,34 @@ function makeFiles() {
   out.mathPractice = MP.buildMathPracticePacket({ lesson: MP.lessonFromMathPractice({ loader, mode: 'ccc', factSet: 'mul-7' }), loader }).html;
   const PC = require(path.join(ROOT, 'packet_check_builder.js'));
   out.mathCheck = PC.buildCheckPacket({ lesson: PC.lessonFromMathProblems({ title: 'Smoke check', problems: PC.parseProblems('2+3, 7-4, 6x7, 9+8'), timeLimitS: 60 }), loader }).html;
+  const VB = require(path.join(ROOT, 'packet_vocab_builder.js'));
+  const vbank = require(path.join(ROOT, 'tests/fixtures/packets_vocab_bank_fixture.js'));
+  await vbank.load();
+  const rows = VB.draftRows({ words: VB.parseWords('habitat, predator, prey, cell, bat, adapt, camouflage').words, bank: vbank });
+  out.vocab = VB.buildVocabPacket({ lesson: VB.lessonFromVocab({ loader, rows, types: ['meaning', 'word', 'blank'], mode: 'practice' }), loader, rows, bank: vbank }).html;
   const RA = require(path.join(ROOT, 'packet_read_along_builder.js'));
   const sentences = RA.splitPassage('The kite sailed over the trees. Mia looked for it all afternoon.');
   const clip = 'data:audio/mpeg;base64,' + Buffer.from([0xff, 0xf3, 0x44, 0xc4]).toString('base64');
   out.readAlong = RA.buildReadAlongPacket({ made: RA.lessonFromReadAlong({ loader, title: 'Smoke read-along', sentences, clips: Object.fromEntries(sentences.map((s) => [RA.clipKey(s.text), clip])) }), loader }).html;
+  const SR = require(path.join(ROOT, 'packet_symbol_runner_builder.js'));
+  out.symbolRunner = SR.buildSymbolRunnerPacket({ loader, symbolMode: 'confusable_letters', packetMode: 'practice', control: 'direct', count: 8, title: 'Smoke symbol runner' }).html;
   try {
     const tool = require(path.join(ROOT, 'dev-tools/make_word_sounds_packet.cjs'));
     const parts = tool.loadParts();
     const banks = tool.loadBanks({ shards: false });
     out.wordSounds = null;
-    out._wordSoundsPromise = parts.builder.buildPacket({ words: ['cat', 'dog', 'sun'], activities: ['isolation'], seed: 7, core: parts.core, dictionary: parts.dictionary, banks, loader: parts.loader, wordlist: parts.wordlist, allowUnconverted: true })
-      .then((r) => { out.wordSounds = r.html; }, () => {});
+    try {
+      const r = await parts.builder.buildPacket({ words: ['cat', 'dog', 'sun'], activities: ['isolation'], seed: 7, core: parts.core, dictionary: parts.dictionary, banks, loader: parts.loader, wordlist: parts.wordlist, allowUnconverted: true });
+      out.wordSounds = r.html;
+    } catch (_) { /* counted as skipped below */ }
   } catch (_) { /* counted as skipped below */ }
   return out;
 }
 
-(async () => {
+async function main() {
   const results = [];
   const check = (name, ok, detail) => { results.push({ name, ok: !!ok, detail }); console.log((ok ? 'PASS ' : 'FAIL ') + name + (detail ? ' | ' + JSON.stringify(detail).slice(0, 300) : '')); };
-  const files = makeFiles();
-  if (files._wordSoundsPromise) await files._wordSoundsPromise;
+  const files = await makeFiles();
   const { server, base } = await serve();
   const browser = await playwright[ENGINE].launch({ headless: true });
   const context = await browser.newContext(PHONE
@@ -159,4 +167,7 @@ function makeFiles() {
   const failed = results.filter((r) => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks pass.');
   process.exitCode = failed.length ? 1 : 0;
-})().catch((e) => { console.error(e); process.exitCode = 1; });
+}
+
+if (require.main === module) main().catch((e) => { console.error(e); process.exitCode = 1; });
+module.exports = { makeFiles };

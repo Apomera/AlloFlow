@@ -391,7 +391,17 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         return;
       }
       if (e.key !== "Tab") return;
-      const focusable = Array.from(currentDialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.disabled && !el.hidden && !el.closest("[inert]") && el.getAttribute("aria-hidden") !== "true");
+      const focusable = Array.from(currentDialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+        if (!el || el.disabled || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]') || el.getAttribute("aria-hidden") === "true") return false;
+        if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+          for (let cur = el; cur && cur !== currentDialog.parentElement; cur = cur.parentElement) {
+            const cs = window.getComputedStyle(cur);
+            if (cs && (cs.display === "none" || cs.visibility === "hidden")) return false;
+            if (cur === currentDialog) break;
+          }
+        }
+        return true;
+      });
       if (!focusable.length) {
         e.preventDefault();
         currentDialog.focus();
@@ -542,7 +552,17 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     }
     if (e.key !== "Tab") return;
     if (!dialog) return;
-    const focusable = Array.from(dialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.disabled && !el.hidden && !el.closest("[inert]") && el.getAttribute("aria-hidden") !== "true");
+    const focusable = Array.from(dialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (!el || el.disabled || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]') || el.getAttribute("aria-hidden") === "true") return false;
+      if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+        for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          const cs = window.getComputedStyle(cur);
+          if (cs && (cs.display === "none" || cs.visibility === "hidden")) return false;
+          if (cur === dialog) break;
+        }
+      }
+      return true;
+    });
     if (!focusable.length) {
       e.preventDefault();
       dialog.focus();
@@ -559,7 +579,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     }
   };
   if (!isOpen) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: cx("fixed inset-0 z-[300] backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300", styles.overlay) }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: cx("fixed inset-0 z-[300] backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300", styles.overlay) }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: dialogRef,
@@ -576,7 +596,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       {
         type: "button",
         onClick: onClose,
-        className: cx("absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none", styles.secondary, styles.focusOffset),
+        className: cx("absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none", styles.secondary, styles.focusOffset),
         "aria-label": t("common.close")
       },
       /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })
@@ -711,7 +731,7 @@ const DraftFeedbackInterface = React.memo(({
     )));
   }
   if (status === "mastery") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-8 text-center animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "mb-8 relative inline-block" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(Trophy, { size: 120, className: "text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -top-4 -right-12 bg-white border-2 border-yellow-400 text-yellow-600 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md" }, t("mastery.mastery_achieved"))), /* @__PURE__ */ React.createElement("h2", { className: cx("text-5xl font-black mb-4 tracking-tight", styles.title), role: "status", "aria-live": "polite" }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xl mb-8 max-w-2xl mx-auto", styles.text) }, t("mastery.mastery_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto" }, (typeof finalScore === "number" || typeof gradingDetails?.rawScore === "number") && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.final_score")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, typeof finalScore === "number" ? finalScore : gradingDetails.rawScore)), /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.drafts")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, draftCount)), typeof xpEarned === "number" && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.xp_earned")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, "+", xpEarned))), gradingDetails?.feedback?.strength && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl shadow-sm text-left mb-8 max-w-3xl mx-auto", styles.panel) }, /* @__PURE__ */ React.createElement("h4", { className: cx("font-bold flex items-center gap-2 mb-2", styles.title) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current" }), " ", t("mastery.teacher_feedback")), /* @__PURE__ */ React.createElement("p", { className: cx("italic", styles.text) }, '"', gradingDetails.feedback.strength, '"')), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-8 text-center animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "mb-8 relative inline-block" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(Trophy, { size: 120, className: "text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -top-4 -right-12 bg-white border-2 border-amber-500 text-amber-800 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md" }, t("mastery.mastery_achieved"))), /* @__PURE__ */ React.createElement("h2", { className: cx("text-5xl font-black mb-4 tracking-tight", styles.title), role: "status", "aria-live": "polite" }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xl mb-8 max-w-2xl mx-auto", styles.text) }, t("mastery.mastery_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto" }, (typeof finalScore === "number" || typeof gradingDetails?.rawScore === "number") && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.final_score")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, typeof finalScore === "number" ? finalScore : gradingDetails.rawScore)), /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.drafts")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, draftCount)), typeof xpEarned === "number" && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.xp_earned")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, "+", xpEarned))), gradingDetails?.feedback?.strength && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl shadow-sm text-left mb-8 max-w-3xl mx-auto", styles.panel) }, /* @__PURE__ */ React.createElement("h4", { className: cx("font-bold flex items-center gap-2 mb-2", styles.title) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current" }), " ", t("mastery.teacher_feedback")), /* @__PURE__ */ React.createElement("p", { className: cx("italic", styles.text) }, '"', gradingDetails.feedback.strength, '"')), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

@@ -1044,41 +1044,87 @@
   };
   function treeSymbol(parent, x, y, size, aspen = false, small = false, deciduous = false) {
     const g = svg("g", { transform: "translate(" + x + " " + y + ") scale(" + size + ")" });
-    g.append(svg("path", { d: "M0 0v-18", stroke: "#655943", "stroke-width": small ? 2 : 3 }));
+    g.append(svg("ellipse", { cx: 2, cy: 1, rx: small ? 9 : 13, ry: 4, fill: "rgba(25,61,50,0.16)" }));
+    g.append(svg("path", { d: "M0 0v-18", stroke: "#5c4f3b", "stroke-width": small ? 2.2 : 3.2, "stroke-linecap": "round" }));
     if (aspen) {
-      g.append(svg("ellipse", { cx: 0, cy: -25, rx: 12, ry: 16, fill: small ? "#d0dd83" : "#aec783" }));
+      g.append(svg("ellipse", { cx: 0, cy: -25, rx: 12, ry: 16, fill: small ? "#d0dd83" : "#a8c67a" }));
+      g.append(svg("ellipse", { cx: -3, cy: -28, rx: 5, ry: 8, fill: "#dce89a", opacity: 0.65 }));
     } else if (deciduous) {
-      g.append(svg("path", { d: "M-14-13C-24-20-14-34-7-31C-10-48 11-48 12-32C27-34 28-14 14-12Z", fill: small ? "#a3c7ac" : "#376650" }));
-    } else g.append(svg("path", { d: "M0-44L-16-14H-9L-18-4H18L9-14H16Z", fill: small ? "#a3c7ac" : "#376650" }));
+      g.append(svg("path", { d: "M-14-13C-24-20-14-34-7-31C-10-48 11-48 12-32C27-34 28-14 14-12Z", fill: small ? "#8ebc9c" : "#2f5f49" }));
+      g.append(svg("circle", { cx: -4, cy: -27, r: 7, fill: small ? "#b7d8be" : "#4b8568", opacity: 0.55 }));
+    } else {
+      g.append(svg("path", { d: "M0-44L-16-14H-9L-18-4H18L9-14H16Z", fill: small ? "#8ebc9c" : "#2c5a45" }));
+      g.append(svg("path", { d: "M0-44L-6-22H3L0-44Z", fill: "#5a9375", opacity: 0.5 }));
+    }
     parent.append(g);
   }
   function landscape(view, selectLocation, selected) {
     const shell = document.createElement("div");
     shell.className = "landscape " + view.campaignId;
     const drawing = svg("svg", { viewBox: "0 0 640 455", "aria-hidden": "true", focusable: "false", preserveAspectRatio: "xMidYMid slice" });
-    drawing.append(svg("rect", { width: 640, height: 455, fill: view.campaignId === "watershed" ? "#dfe8d3" : "#e5e7cd" }));
+    const defs = svg("defs", {});
+    const gid = "fj-" + view.campaignId + "-" + Math.random().toString(36).slice(2, 7);
+    const skyGrad = svg("linearGradient", { id: gid + "-bg", x1: "0%", y1: "0%", x2: "100%", y2: "100%" });
+    skyGrad.append(
+      svg("stop", { offset: "0%", "stop-color": view.campaignId === "watershed" ? "#e4eed9" : "#eaecd4" }),
+      svg("stop", { offset: "55%", "stop-color": view.campaignId === "watershed" ? "#d7e5cb" : "#dfe4c5" }),
+      svg("stop", { offset: "100%", "stop-color": view.campaignId === "watershed" ? "#cbdcb9" : "#d5ddba" })
+    );
+    const riverGrad = svg("linearGradient", { id: gid + "-riv", x1: "0%", y1: "0%", x2: "0%", y2: "100%" });
+    riverGrad.append(
+      svg("stop", { offset: "0%", "stop-color": "#a8d8d6" }),
+      svg("stop", { offset: "50%", "stop-color": "#d9f3f2" }),
+      svg("stop", { offset: "100%", "stop-color": "#87bfc0" })
+    );
+    defs.append(skyGrad, riverGrad);
+    drawing.append(defs);
+    drawing.append(svg("rect", { width: 640, height: 455, fill: "url(#" + gid + "-bg)" }));
     if (view.campaignId === "watershed") {
-      drawing.append(svg("path", { d: "M0 0H640V115Q492 50 349 98T0 115Z", fill: "#c2d0b9" }));
-      drawing.append(svg("path", { d: "M0 50Q164-13 269 47T640 60", fill: "none", stroke: "#b5c5ae", "stroke-width": 2 }));
-      drawing.append(svg("path", { d: "M-30 356Q146 229 275 318T690 351V470H-30Z", fill: "#c5d8b8" }));
-      for (let i = 0; i < 7; i++) drawing.append(svg("path", { d: "M-30 " + (130 + i * 38) + "Q100 " + (40 + i * 40) + " 223 " + (100 + i * 37) + "T680 " + (100 + i * 44), fill: "none", stroke: "#c9d5bd", "stroke-width": 1.5 }));
-      drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "#95beba", "stroke-width": 46 }));
-      drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "#d5efed", "stroke-width": 28 }));
-      drawing.append(svg("path", { d: "M350-25C365 75 194 78 239 170S417 195 350 290S200 357 246 475", fill: "none", stroke: "#88babb", "stroke-width": 2, "stroke-dasharray": "20 12", opacity: 0.7 }));
-      [[70, 100, 1.1], [122, 158, 0.8], [167, 63, 0.9], [80, 277, 1.1], [126, 340, 0.75], [463, 87, 0.9], [523, 142, 0.8], [573, 71, 1.1], [522, 322, 0.85], [592, 390, 0.9]].forEach((t) => treeSymbol(drawing, ...t));
-      for (let i = 0; i < 5; i++) drawing.append(svg("path", { d: "M420 " + (207 + i * 12) + "l118 27", stroke: "#b7bd85", "stroke-width": 7 }));
+      // Topographic highland ridge & valley shelves
+      drawing.append(svg("path", { d: "M0 0H640V122Q492 54 349 102T0 120Z", fill: "#bdd0b2" }));
+      drawing.append(svg("path", { d: "M0 0H640V68Q460 22 310 60T0 72Z", fill: "#afc5a3", opacity: 0.7 }));
+      drawing.append(svg("path", { d: "M0 50Q164-13 269 47T640 60", fill: "none", stroke: "#9fb796", "stroke-width": 1.8 }));
+      drawing.append(svg("path", { d: "M-30 356Q146 229 275 318T690 351V470H-30Z", fill: "#bfd5b1" }));
+      for (let i = 0; i < 7; i++) drawing.append(svg("path", { d: "M-30 " + (130 + i * 38) + "Q100 " + (40 + i * 40) + " 223 " + (100 + i * 37) + "T680 " + (100 + i * 44), fill: "none", stroke: "#c1d0b5", "stroke-width": 1.4, opacity: 0.85 }));
+      // Wetland pools near floodplain
+      drawing.append(svg("ellipse", { cx: 235, cy: 274, rx: 52, ry: 22, fill: "#a9cec4", opacity: 0.55 }));
+      drawing.append(svg("ellipse", { cx: 295, cy: 292, rx: 34, ry: 14, fill: "#a9cec4", opacity: 0.45 }));
+      // River channel: outer bank, main channel, highlight current
+      drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "#7eaead", "stroke-width": 50, "stroke-linecap": "round" }));
+      drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "url(#" + gid + "-riv)", "stroke-width": 32, "stroke-linecap": "round" }));
+      drawing.append(svg("path", { d: "M350-25C365 75 194 78 239 170S417 195 350 290S200 357 246 475", fill: "none", stroke: "#ffffff", "stroke-width": 2.2, "stroke-dasharray": "18 14", opacity: 0.72 }));
+      // Riparian & highland conifers
+      [[70, 100, 1.1], [122, 158, 0.85], [167, 63, 0.9], [80, 277, 1.1], [126, 340, 0.78], [186, 212, 0.82], [463, 87, 0.92], [523, 142, 0.82], [573, 71, 1.1], [522, 322, 0.85], [592, 390, 0.9]].forEach((t) => treeSymbol(drawing, ...t));
+      // Agricultural contour rows
+      for (let i = 0; i < 5; i++) drawing.append(svg("path", { d: "M420 " + (207 + i * 12) + "l118 27", stroke: "#b7bd85", "stroke-width": 7, "stroke-linecap": "round" }));
+      // Town rooftops
       [[410, 354], [451, 364], [489, 385]].forEach(([x, y]) => {
-        drawing.append(svg("rect", { x, y, width: 24, height: 20, rx: 2, fill: "#ddd3b7" }));
-        drawing.append(svg("path", { d: "M" + (x - 4) + " " + y + "l16-12 16 12Z", fill: "#8d8b74" }));
+        drawing.append(svg("rect", { x: x + 2, y: y + 3, width: 24, height: 20, rx: 2, fill: "rgba(25,61,50,0.14)" }));
+        drawing.append(svg("rect", { x, y, width: 24, height: 20, rx: 2, fill: "#e6ddc3", stroke: "#9c947d", "stroke-width": 1 }));
+        drawing.append(svg("path", { d: "M" + (x - 4) + " " + y + "l16-12 16 12Z", fill: "#7d7b64" }));
       });
+      // Subtle naturalist compass rose (bottom-left)
+      const comp = svg("g", { transform: "translate(44 414)", opacity: 0.75 });
+      comp.append(svg("circle", { cx: 0, cy: 0, r: 16, fill: "#f6f4eb", stroke: "#5c7567", "stroke-width": 1.2 }));
+      comp.append(svg("polygon", { points: "0,-12 3.5,0 0,3 -3.5,0", fill: "#193d32" }));
+      comp.append(svg("polygon", { points: "0,12 3.5,0 0,-3 -3.5,0", fill: "#8ca192" }));
+      drawing.append(comp);
     } else {
       view.locations.forEach((patch, i) => {
         const x = 42 + i % 3 * 188, y = 29 + Math.floor(i / 3) * 135;
-        drawing.append(svg("rect", { x, y, width: 178, height: 125, rx: 20, fill: patch.habitat === "damp" ? "#c3d9c9" : patch.habitat === "sheltered" ? "#cfddbc" : "#e2d9b5", stroke: "#f4f1e4", "stroke-width": 3 }));
-        if (patch.gap) drawing.append(svg("ellipse", { cx: x + 87, cy: y + 46, rx: 56, ry: 29, fill: "#f4eec0", opacity: 0.8 }));
-        patch.trees.forEach((t, j) => treeSymbol(drawing, x + 42 + j * 42, y + 53, t.descendant ? 0.55 : 0.9, t.species === "aspen", t.descendant, true));
+        drawing.append(svg("rect", { x: x + 3, y: y + 4, width: 178, height: 125, rx: 20, fill: "rgba(25,61,50,0.1)" }));
+        drawing.append(svg("rect", { x, y, width: 178, height: 125, rx: 20, fill: patch.habitat === "damp" ? "#bed8c7" : patch.habitat === "sheltered" ? "#cadcb6" : "#e3d9b1", stroke: "#f7f4e8", "stroke-width": 3 }));
+        if (patch.habitat === "damp") {
+          drawing.append(svg("ellipse", { cx: x + 135, cy: y + 96, rx: 26, ry: 12, fill: "#9ec5bc", opacity: 0.55 }));
+        }
+        if (patch.gap) {
+          drawing.append(svg("ellipse", { cx: x + 87, cy: y + 46, rx: 60, ry: 31, fill: "#fbf4bf", opacity: 0.72 }));
+          drawing.append(svg("ellipse", { cx: x + 87, cy: y + 46, rx: 38, ry: 19, fill: "#fef9d6", opacity: 0.68 }));
+        }
+        patch.trees.forEach((t, j) => treeSymbol(drawing, x + 42 + j * 42, y + 58, t.descendant ? 0.58 : 0.92, t.species === "aspen", t.descendant, true));
       });
-      drawing.append(svg("path", { d: "M606 0q-28 93 2 158t-1 153t8 180", fill: "none", stroke: "#94b9b0", "stroke-width": 9 }));
+      drawing.append(svg("path", { d: "M606 0q-28 93 2 158t-1 153t8 180", fill: "none", stroke: "#7eb0a8", "stroke-width": 12, "stroke-linecap": "round" }));
+      drawing.append(svg("path", { d: "M606 0q-28 93 2 158t-1 153t8 180", fill: "none", stroke: "#c8e6e1", "stroke-width": 4, "stroke-dasharray": "12 10" }));
     }
     shell.append(drawing);
     const waterPositions = { headwaterStreams: [51, 17], forestBuffer: [22, 39], floodplainWetlands: [42, 60], riverMainstem: [44, 85], agriculturalWatershed: [76, 49], suburbanEdges: [76, 82] };
@@ -1089,14 +1135,19 @@
       button.className = "map-location";
       button.setAttribute("aria-label", loc.name + ", " + loc.value + " " + loc.unit);
       button.setAttribute("aria-pressed", String(selected === loc.id));
+      const health = view.campaignId === "watershed" ? (loc.value >= 70 ? "high" : loc.value >= 55 ? "mid" : "low") : (loc.value >= 2 ? "high" : loc.value === 1 ? "mid" : "low");
+      button.dataset.health = health;
       const coords = view.campaignId === "watershed" ? waterPositions[loc.id] : [20.5 + i % 3 * 29.3, 26 + Math.floor(i / 3) * 29.7];
       button.style.left = coords[0] + "%";
       button.style.top = coords[1] + "%";
+      const dot = document.createElement("span");
+      dot.className = "loc-dot " + health;
+      dot.setAttribute("aria-hidden", "true");
       const label = document.createElement("span");
       label.textContent = shortNames[loc.id] || loc.name;
       const count = document.createElement("strong");
       count.textContent = loc.value;
-      button.append(label, count);
+      button.append(dot, label, count);
       button.addEventListener("click", () => selectLocation(loc.id));
       shell.append(button);
     }
@@ -1349,10 +1400,38 @@
     }
     function renderHome() {
       main.replaceChildren();
-      if (options.embedded) main.append(el("p", "embedded-label", isSEL ? "PRACTICE JOURNEYS \xB7 OPTIONAL PILOT" : "FIELD JOURNEYS \xB7 OPTIONAL PILOT"));
-      const intro = el("section", "intro");
-      intro.append(el("p", "eyebrow", "EXPLORE \xB7 CHOOSE \xB7 RETURN"), el("h1", "", isSEL ? "A place for\nyour voice." : "Small choices.\nLiving worlds."), el("p", "", isSEL ? "Practice asking for support through four connected encounters. Choose a response, write your own, or use both." : "Step into a place that changes with your decisions. Follow a river through ten years of restoration, or help a grove leave a next generation."));
-      main.append(intro, makeNotice());
+      const savedCount = (() => {
+        try {
+          return storage ? listRuns(storage, adapters).length : 0;
+        } catch {
+          return 0;
+        }
+      })();
+      const hero = el("section", "station-hero");
+      const heroTop = el("div", "station-hero-top");
+      const badgeRow = el("div", "station-badges");
+      badgeRow.append(
+        el("span", "station-pill", isSEL ? "\u2726 Practice Journeys \xB7 SEL Studio" : "\u{1F33F} Ecology Field Station \xB7 Science"),
+        el("span", "station-pill soft", savedCount + (savedCount === 1 ? " saved journey" : " saved journeys"))
+      );
+      const intro = el("div", "intro");
+      intro.append(
+        badgeRow,
+        el("p", "eyebrow", "EXPLORE \xB7 CHOOSE \xB7 RETURN"),
+        el("h1", "", isSEL ? "A place for\nyour voice." : "Small choices.\nLiving worlds."),
+        el("p", "", isSEL ? "Practice asking for support through four connected encounters. Choose a response, write your own, or use both." : "Step into a place that changes with your decisions. Follow a river through ten years of restoration, or help a grove leave a next generation.")
+      );
+      const emblem = svg("svg", { viewBox: "0 0 88 88", width: 76, height: 76, "aria-hidden": "true", focusable: "false", class: "station-emblem" });
+      emblem.append(
+        svg("circle", { cx: 44, cy: 44, r: 40, fill: "#e6efe0", stroke: "#7d9b84", "stroke-width": 1.6 }),
+        svg("circle", { cx: 44, cy: 44, r: 30, fill: "none", stroke: "#9ab39d", "stroke-width": 1, "stroke-dasharray": "4 3" }),
+        svg("path", { d: "M44 18 C32 30 28 46 44 66 C60 46 56 30 44 18 Z", fill: "#2d6150" }),
+        svg("path", { d: "M44 24 V66", stroke: "#e6efe0", "stroke-width": 1.8, "stroke-linecap": "round" }),
+        svg("path", { d: "M44 40 L36 33 M44 49 L52 42", stroke: "#e6efe0", "stroke-width": 1.5, "stroke-linecap": "round" })
+      );
+      heroTop.append(intro, emblem);
+      hero.append(heroTop);
+      main.append(hero, makeNotice());
       if (entryCampaign) {
         const entry = el("div", "entry-note");
         entry.append(el("p", "", "Start a separate journey or resume one below. Your original campaign stays where you left it."), button("Show all journeys", () => {
@@ -1382,7 +1461,19 @@
         seed.maxLength = 32;
         seed.spellcheck = false;
         seedLabel.append(seed);
-        if (a.kind !== "sel") body.append(seedLabel);
+        if (a.kind !== "sel") {
+          body.append(seedLabel);
+          const presets = el("div", "seed-presets");
+          presets.setAttribute("aria-label", "Suggested world seeds");
+          ["FIELD-01", "PENOBSCOT", "NORTHWOODS"].forEach((code) => {
+            const chip = button(code, () => {
+              seed.value = code;
+              seed.focus();
+            }, "seed-chip");
+            presets.append(chip);
+          });
+          body.append(presets);
+        }
         body.append(button("Begin " + a.label, () => startJourney(a, seed.value), "primary"));
         card.append(art, body);
         cards.append(card);
@@ -1635,6 +1726,16 @@
           const metric = el("div", "metric"), value = el("span", "metric-value", m.value);
           value.append(el("small", "", m.unit));
           metric.append(value, el("span", "metric-label", m.label));
+          const maxMatch = typeof m.unit === "string" && m.unit.match(/\/(\d+)/);
+          if (maxMatch && Number.isFinite(Number(m.value))) {
+            const pct = Math.max(0, Math.min(100, Math.round((Number(m.value) / Number(maxMatch[1])) * 100)));
+            const track = el("div", "metric-track");
+            track.setAttribute("aria-hidden", "true");
+            const fill = el("div", "metric-fill");
+            fill.style.width = pct + "%";
+            track.append(fill);
+            metric.append(track);
+          }
           metrics.append(metric);
         });
         left.append(metrics);
@@ -1980,19 +2081,55 @@
       const root = host.current.shadowRoot || host.current.attachShadow({ mode: "open" });
       const style = document.createElement("style");
       style.textContent = styles_default.replace(":root{", ":host{") + `
-      :host{display:block;border-radius:12px;container-type:inline-size;line-height:1.5}
-      main{min-height:0;padding:26px 0;margin:0 24px}
+      :host{display:block;border-radius:16px;container-type:inline-size;line-height:1.5;border:1px solid var(--line);box-shadow:0 12px 28px -18px rgba(25,61,50,0.22)}
+      main{min-height:0;padding:24px 0;margin:0 24px}
       .embedded-label{font-size:12px;letter-spacing:.06em;color:var(--muted);margin:0 0 20px}
+      .station-hero{background:linear-gradient(135deg,#eef5e7 0%,#f8f7ef 62%,#edf2e4 100%);border:1px solid #c6d4bd;border-radius:16px;padding:22px 24px;margin-bottom:26px}
+      .station-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+      .station-hero .intro{margin:0;max-width:650px}
+      .station-hero .intro h1{margin-bottom:10px}
+      .station-hero .intro>p:last-child{margin-bottom:0;font-size:16px}
+      .station-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+      .station-pill{display:inline-flex;align-items:center;font-size:11px;font-weight:750;letter-spacing:.04em;padding:4px 11px;border-radius:999px;background:#193d32;color:#fffef5;border:1px solid #193d32}
+      .station-pill.soft{background:#fffef8;color:var(--ink);border:1px solid var(--control-line)}
+      .station-emblem{flex-shrink:0}
+      .campaign-card{box-shadow:0 10px 22px -16px rgba(25,61,50,0.28);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+      .campaign-card:hover{transform:translateY(-2px);box-shadow:0 16px 28px -16px rgba(25,61,50,0.38);border-color:#8aa790}
+      .seed-presets{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+      .seed-chip{min-height:32px;padding:4px 10px;font-size:11px;font-weight:700;letter-spacing:.05em;border-radius:999px}
+      .loc-dot{width:8px;height:8px;border-radius:999px;display:inline-block;flex-shrink:0}
+      .loc-dot.high{background:#15803d}.loc-dot.mid{background:#b45309}.loc-dot.low{background:#b91c1c}
+      .map-location{transition:transform .14s ease,box-shadow .14s ease,background-color .14s ease}
+      .map-location:hover{transform:translate(-50%,-52%);box-shadow:0 6px 14px rgba(25,61,50,0.22)}
+      .map-location[aria-pressed=true] .loc-dot{background:#fde047}
+      .metric{background:#fffef8;border:1px solid var(--line);border-radius:10px;padding:10px 11px}
+      .metric:last-child{border-right:1px solid var(--line)}
+      .metric-track{height:5px;border-radius:999px;background:#e3e7da;margin-top:8px;overflow:hidden}
+      .metric-fill{height:100%;border-radius:999px;background:var(--accent)}
+      .scene{box-shadow:0 8px 20px -16px rgba(25,61,50,0.24)}
+      .action{transition:transform .12s ease,background-color .14s ease,border-color .14s ease}
+      .action:hover:not(:disabled){transform:translateY(-1px)}
       @container(max-width:720px){
-        main{margin:0 16px;padding:22px 0}
+        main{margin:0 16px;padding:20px 0}
+        .station-hero{padding:18px}.station-emblem{display:none}
         .campaign-grid,.journey,.journal{grid-template-columns:1fr;gap:22px}
         .journey-heading{display:block}.header-actions{margin-top:16px}
         .scene,.card-body{padding:20px}.card-body>p{min-height:0}
         .map-location{font-size:10px}.grove .map-location{min-height:44px}
         .grove .map-location span{max-width:58px;white-space:normal}
+        .metrics{grid-template-columns:repeat(2,1fr)}
       }
+      :host([data-theme="dark"]){--ink:#f1f5f9;--muted:#cbd5e1;--paper:#0f172a;--line:#334155;--control-line:#475569;--accent:#34d399;color-scheme:dark}
+      :host([data-theme="dark"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art,.metric){background:#1e293b;color:#f1f5f9;border-color:#475569}
+      :host([data-theme="dark"]) .station-hero{background:linear-gradient(135deg,#0f2922 0%,#0f172a 65%,#132a24 100%);border-color:#334155;color:#f1f5f9}
+      :host([data-theme="dark"]) .station-pill{background:#065f46;color:#ecfdf5;border-color:#34d399}
+      :host([data-theme="dark"]) .station-pill.soft{background:#1e293b;color:#f1f5f9;border-color:#475569}
+      :host([data-theme="dark"]) .metric-track{background:#334155}
+      :host([data-theme="dark"]) :is(p,.scene-meta .eyebrow,.action-hint,.map-caption,.location-info p){color:#cbd5e1}
+      :host([data-theme="dark"]) button:focus-visible{outline-color:#93c5fd}
+      :host([data-theme="dark"]) .map-location{background:#1e293b;color:#f1f5f9}
       :host([data-theme="contrast"]){--ink:#fff;--muted:#eee;--paper:#000;--line:#aaa;--control-line:#aaa;--accent:#fff;color-scheme:dark}
-      :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art){background:#000;color:#fff;border-color:#fff}
+      :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art,.station-hero,.metric,.station-pill){background:#000;color:#fff;border-color:#fff;box-shadow:none}
       :host([data-theme="contrast"]) :is(p,.scene-meta .eyebrow,.action-hint,.map-caption,.location-info p){color:#eee}
       :host([data-theme="contrast"]) button:focus-visible{outline-color:#ff0}
       :host([data-theme="contrast"]) .map-location{background:#000;color:#fff}

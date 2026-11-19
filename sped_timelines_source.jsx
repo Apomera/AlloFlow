@@ -25,17 +25,46 @@ const SPED_TYPES = [
   { id: 'custom', label: 'Other deadline', keyLabel: 'Start date' },
 ];
 
+function spedVaultBackend() {
+  try {
+    const sw = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SensitiveWorkspace;
+    if (!sw || typeof sw.getStatus !== 'function') return { mode: 'local', storage: localStorage };
+    const phase = sw.getStatus()?.phase;
+    if (phase === 'ready') {
+      const sess = typeof sw.getSession === 'function' ? sw.getSession('sped-timelines') : null;
+      if (sess && sess.storage) return { mode: 'vault', storage: sess.storage };
+    }
+    if (phase === 'locked' || phase === 'setup' || phase === 'locking') return { mode: 'locked', storage: null };
+  } catch (_) {}
+  return { mode: 'local', storage: localStorage };
+}
+
 function spedLoad(key, fallback) {
   try {
-    const raw = localStorage.getItem(key);
+    const b = spedVaultBackend();
+    if (b.mode === 'locked') return fallback;
+    let raw = b.mode === 'vault' ? b.storage.getItem(key) : localStorage.getItem(key);
+    if (!raw && b.mode === 'vault') {
+      try { raw = localStorage.getItem(key); } catch (_) {}
+    }
     if (!raw) return fallback;
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(raw, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
     return parsed == null ? fallback : parsed;
   } catch (_) { return fallback; }
 }
 
 function spedStore(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+  try {
+    const b = spedVaultBackend();
+    if (b.mode === 'locked') return;
+    const serialized = JSON.stringify(value);
+    if (b.mode === 'vault') {
+      b.storage.setItem(key, serialized);
+      try { localStorage.removeItem(key); } catch (_) {}
+    } else {
+      localStorage.setItem(key, serialized);
+    }
+  } catch (_) {}
 }
 
 function spedNextId() {
@@ -122,7 +151,7 @@ const SPED_BAND_META = {
 
 function spedRollup(cases, today) {
   const counts = { overdue: 0, urgent: 0, soon: 0, ok: 0, undated: 0, done: 0 };
-  const providerMap = {};
+  const providerMap = Object.create(null);
   const banded = (cases || []).map((c) => {
     const band = spedBand(c, today);
     counts[band] += 1;
@@ -254,8 +283,14 @@ function SpedTimelinesPanel(props) {
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest('details:not([open])');
       if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
-      const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let node = el; node && node !== dialog.parentElement; node = node.parentElement) {
+          const st = window.getComputedStyle(node);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+          if (node === dialog) break;
+        }
+      }
+      return true;
     });
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
@@ -347,10 +382,17 @@ function SpedTimelinesPanel(props) {
   };
 
   const importJson = (file) => {
+    const MAX_SPED_IMPORT_BYTES = 10 * 1024 * 1024;
+    if (!file || (typeof file.size === 'number' && file.size > MAX_SPED_IMPORT_BYTES)) {
+      addToast(tt('spedtl.import_failed', 'Import failed: ') + 'file exceeds 10 MB safety limit', 'error');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const data = JSON.parse(String(reader.result));
+        const rawText = String(reader.result || '');
+        if (rawText.length > MAX_SPED_IMPORT_BYTES) throw new Error('file exceeds 10 MB safety limit');
+        const data = JSON.parse(rawText, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
         if (!data || data.kind !== 'alloflow-sped-timelines') { addToast(tt('spedtl.import_bad', 'That file is not a SpEd Timelines export.'), 'error'); return; }
         setCases((list) => {
           const have = new Set(list.map((x) => x.id));

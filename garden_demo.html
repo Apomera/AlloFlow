@@ -7,15 +7,17 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(180deg, #e0f2fe 0%, #f0fdf4 40%, #fefce8 80%, #fef3c7 100%); min-height: 100vh; color: #1f2937; }
+  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
+  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #1e293b; color: #fff; font-weight: 700; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  :focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
   .header { text-align: center; padding: 32px 20px 16px; }
   .header h1 { font-size: 32px; font-weight: 900; letter-spacing: -0.5px; }
-  .header .sub { font-size: 14px; color: #6b7280; margin-top: 4px; }
-  .header .badge { display: inline-block; margin-top: 8px; padding: 4px 16px; background: #dcfce7; border: 2px solid #4ade80; border-radius: 20px; font-size: 14px; font-weight: 700; color: #15803d; }
+  .header .sub { font-size: 14px; color: #4b5563; margin-top: 4px; }
+  .header .badge { display: inline-block; margin-top: 8px; padding: 4px 16px; background: #dcfce7; border: 2px solid #4ade80; border-radius: 20px; font-size: 14px; font-weight: 700; color: #166534; }
 
   /* Summary pills */
   .summary { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 16px auto; max-width: 600px; }
-  .pill { display: flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
-  .pill:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .pill { display: flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; border: 2px solid transparent; transition: all 0.2s; }
   .pill.active { border-color: currentColor; }
 
   /* Garden beds */
@@ -24,24 +26,24 @@
   .bed-header { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
   .bed-header .icon { font-size: 22px; }
   .bed-header .label { font-size: 16px; font-weight: 800; }
-  .bed-header .count { font-size: 13px; opacity: 0.7; }
+  .bed-header .count { font-size: 13px; }
   .words { display: flex; flex-wrap: wrap; gap: 10px; }
 
   /* Word cards */
-  .word-card { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px; background: rgba(255,255,255,0.88); border-radius: 14px; border: 3px solid; min-width: 85px; max-width: 105px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; }
+  .word-card { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px; background: rgba(255,255,255,0.92); color: #1f2937; font: inherit; border-radius: 14px; border: 3px solid; min-width: 85px; max-width: 105px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; }
   .word-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
   .word-card:active { transform: scale(0.95); }
   .word-card .symbol { width: 52px; height: 52px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
   .word-card .name { font-size: 14px; font-weight: 700; text-align: center; line-height: 1.2; }
-  .word-card .translation { font-size: 10px; font-weight: 600; color: #6366f1; font-style: italic; }
+  .word-card .translation { font-size: 11px; font-weight: 600; color: #4338ca; font-style: italic; }
   .word-card .heart { position: absolute; bottom: 4px; right: 6px; font-size: 10px; }
   .word-card .core { position: absolute; top: 3px; left: 5px; font-size: 7px; background: #dbeafe; color: #1d4ed8; padding: 1px 4px; border-radius: 4px; font-weight: 700; }
 
   /* Wish stars */
   .wishes { background: linear-gradient(180deg, #1e1b4b, #312e81); border-radius: 16px; padding: 16px; margin-bottom: 12px; text-align: center; }
-  .wishes h3 { font-size: 13px; color: #c4b5fd; font-weight: 700; margin-bottom: 10px; }
-  .wish-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; background: rgba(196,181,253,0.2); border: 1px solid #7c3aed; border-radius: 20px; font-size: 13px; font-weight: 600; color: #e0e7ff; margin: 3px; }
-  .wishes .note { font-size: 10px; color: #818cf8; margin-top: 8px; font-style: italic; }
+  .wishes h2 { font-size: 13px; color: #e0e7ff; font-weight: 700; margin-bottom: 10px; }
+  .wish-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; background: rgba(196,181,253,0.2); border: 1px solid #a78bfa; border-radius: 20px; font-size: 13px; font-weight: 600; color: #f5f3ff; margin: 3px; }
+  .wishes .note { font-size: 11px; color: #c7d2fe; margin-top: 8px; font-style: italic; }
 
   /* Animations */
   @keyframes breathe { 0% { opacity: 0.7; transform: scale(0.97); } 100% { opacity: 1; transform: scale(1); } }
@@ -52,15 +54,16 @@
   .anim-glow { animation: glow 2.5s ease-in-out infinite; }
   .anim-float { animation: float 3s ease-in-out infinite; }
   .anim-tap { animation: tap 0.4s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .anim-breathe, .anim-glow, .anim-float, .anim-tap, .spoken.visible { animation: none !important; transition: none !important; } }
 
   /* Milestone */
-  .milestone { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 16px; background: #fef9c3; border: 2px solid #facc15; border-radius: 20px; font-size: 14px; font-weight: 700; color: #92400e; }
+  .milestone { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 16px; background: #fef9c3; border: 2px solid #facc15; border-radius: 20px; font-size: 14px; font-weight: 700; color: #78350f; }
 
   /* CTA */
   .cta { text-align: center; padding: 24px; }
-  .cta a { display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #7c3aed, #4338ca); color: #fff; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 16px; box-shadow: 0 8px 24px rgba(124,58,237,0.3); transition: transform 0.2s; }
+  .cta a { display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #6d28d9, #4338ca); color: #fff; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 16px; box-shadow: 0 8px 24px rgba(124,58,237,0.3); transition: transform 0.2s; }
   .cta a:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(124,58,237,0.4); }
-  .cta .note { font-size: 12px; color: #6b7280; margin-top: 8px; }
+  .cta .note { font-size: 12px; color: #4b5563; margin-top: 8px; }
 
   /* Responsive */
   @media (max-width: 600px) { .header h1 { font-size: 24px; } .word-card { min-width: 70px; max-width: 90px; } .word-card .symbol { width: 40px; height: 40px; font-size: 20px; } .word-card .name { font-size: 12px; } }
@@ -71,25 +74,28 @@
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to word garden</a>
 
-<div class="header">
-  <div style="font-size: 42px; margin-bottom: 4px;">🌱</div>
+<header class="header">
+  <div style="font-size: 42px; margin-bottom: 4px;" aria-hidden="true">🌱</div>
   <h1>Brave Eagle's Word Garden</h1>
   <div class="sub">A demo of AlloFlow's vocabulary tracking system</div>
   <div class="badge">42 words growing!</div>
-  <div class="milestone">✨ 42 — the answer is in the questions you ask</div>
-</div>
+  <div class="milestone"><span aria-hidden="true">✨</span> 42 — the answer is in the questions you ask</div>
+</header>
 
+<main id="main" tabindex="-1">
 <div class="summary" id="summary"></div>
 
 <div class="garden" id="garden"></div>
 
 <div class="cta">
-  <a href="https://alloflow-cdn.pages.dev/app/" target="_blank">Try AlloFlow Free →</a>
+  <a href="https://alloflow-cdn.pages.dev/app/" target="_blank" rel="noopener noreferrer">Try AlloFlow Free →</a>
   <div class="note">Open source · No login required · Zero student data collected</div>
 </div>
+</main>
 
-<div class="spoken" id="spoken"></div>
+<div class="spoken" id="spoken" role="status" aria-live="polite"></div>
 
 <script>
 // Sample vocabulary data — simulates what a real student's garden would contain
@@ -172,9 +178,9 @@ function render() {
 
   // Wish stars
   if (wishes.length) {
-    html += '<div class="wishes"><h3>💫 Wishes waiting to grow</h3><div>';
-    wishes.forEach(function(w) { html += '<span class="wish-chip anim-float">💫 ' + w + '</span>'; });
-    html += '</div><div class="note">These words are waiting to become real</div></div>';
+    html += '<section class="wishes" aria-label="Wishes waiting to grow"><h2><span aria-hidden="true">💫</span> Wishes waiting to grow</h2><div>';
+    wishes.forEach(function(w) { html += '<span class="wish-chip anim-float"><span aria-hidden="true">💫</span> ' + w + '</span>'; });
+    html += '</div><div class="note">These words are waiting to become real</div></section>';
   }
 
   // Beds
@@ -189,26 +195,26 @@ function render() {
       sprout: 'linear-gradient(180deg,#dcfce7,#bbf7d0)',
       seed: 'linear-gradient(180deg,#fef3c7,#fde68a)'
     };
-    html += '<div class="bed" style="background:' + bedBg[level] + '">';
-    html += '<div class="bed-header"><span class="icon">' + g.icon + '</span><span class="label" style="color:' + g.color + '">' + g.label + '</span><span class="count" style="color:' + g.color + '">(' + bed.length + ')</span></div>';
+    html += '<section class="bed" style="background:' + bedBg[level] + '" aria-label="' + g.label + ' words">';
+    html += '<h2 class="bed-header"><span class="icon" aria-hidden="true">' + g.icon + '</span><span class="label" style="color:' + g.color + '">' + g.label + '</span><span class="count" style="color:' + g.color + '">(' + bed.length + ')</span></h2>';
     html += '<div class="words">';
     bed.forEach(function(w) {
       var anim = level === 'seed' ? 'anim-breathe' : level === 'mastered' ? 'anim-glow' : '';
-      html += '<div class="word-card ' + anim + '" style="border-color:' + g.border + (level === 'mastered' ? ';box-shadow:0 0 12px rgba(250,204,21,0.4)' : '') + '" onclick="speakWord(\'' + w.label.replace(/'/g, "\\'") + '\')" role="button" tabindex="0" aria-label="' + w.label + '">';
+      html += '<button type="button" class="word-card ' + anim + '" style="border-color:' + g.border + (level === 'mastered' ? ';box-shadow:0 0 12px rgba(250,204,21,0.4)' : '') + '" onclick="speakWord(\'' + w.label.replace(/'/g, "\\'") + '\', this)" aria-label="Speak ' + w.label + (w.tl ? ', Somali: ' + w.tl : '') + '">';
       if (w.core) html += '<span class="core">CORE</span>';
-      html += '<div class="symbol" style="background:' + g.bg + '">' + w.emoji + '</div>';
-      html += '<div class="name">' + w.label + (w.voice ? ' <span style="font-size:10px">❤️</span>' : '') + '</div>';
-      if (w.tl) html += '<div class="translation">' + w.tl + '</div>';
-      if (w.voice) html += '<span class="heart">❤️</span>';
-      html += '</div>';
+      html += '<span class="symbol" aria-hidden="true" style="background:' + g.bg + '">' + w.emoji + '</span>';
+      html += '<span class="name">' + w.label + '</span>';
+      if (w.tl) html += '<span class="translation" lang="so">' + w.tl + '</span>';
+      if (w.voice) html += '<span class="heart" aria-hidden="true">❤️</span>';
+      html += '</button>';
     });
-    html += '</div></div>';
+    html += '</div></section>';
   });
 
   garden.innerHTML = html;
 }
 
-function speakWord(label) {
+function speakWord(label, btn) {
   var el = document.getElementById('spoken');
   el.textContent = '🔊 ' + label;
   el.classList.add('visible');
@@ -220,9 +226,11 @@ function speakWord(label) {
   }
   setTimeout(function() { el.classList.remove('visible'); }, 1500);
   // Tap animation on the clicked card
-  event.currentTarget.classList.remove('anim-tap');
-  void event.currentTarget.offsetWidth;
-  event.currentTarget.classList.add('anim-tap');
+  if (btn) {
+    btn.classList.remove('anim-tap');
+    void btn.offsetWidth;
+    btn.classList.add('anim-tap');
+  }
 }
 
 render();

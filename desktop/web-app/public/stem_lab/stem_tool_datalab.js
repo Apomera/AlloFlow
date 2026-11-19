@@ -39,12 +39,27 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 (function () {
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
-  // WCAG 1.4.3 high contrast: the forced green button ink sits on the indigo/sky gradient at 4.3:1
+  // WCAG 1.4.3 high contrast + Data Lab studio micro-transitions
   (function() {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-datalab-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-datalab-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"dataLab\"] button:is([class*=\"bg-gradient-to-\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}";
+    st.textContent = [
+      ".theme-contrast [data-stem-tool-shell=\"dataLab\"] button:is([class*=\"bg-gradient-to-\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}",
+      "[data-datalab-launcher] button{transition:transform 120ms ease,background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease}",
+      "[data-datalab-launcher] button:not([disabled]):hover{transform:translateY(-1px)}",
+      "[data-datalab-launcher] :focus-visible{outline:3px solid #6366f1;outline-offset:2px}",
+      "@media (prefers-reduced-motion:reduce){[data-datalab-launcher] button{transition:none!important;transform:none!important}}",
+      "[data-datalab-theme=\"dark\"] .bg-white,[data-datalab-theme=\"dark\"] .bg-slate-50{background-color:#0f172a!important;color:#e2e8f0!important;border-color:#334155!important}",
+      "[data-datalab-theme=\"dark\"] .text-slate-900,[data-datalab-theme=\"dark\"] .text-slate-800,[data-datalab-theme=\"dark\"] .text-slate-700{color:#f1f5f9!important}",
+      "[data-datalab-theme=\"dark\"] .text-slate-600{color:#cbd5e1!important}",
+      "[data-datalab-theme=\"dark\"] .border-slate-300,[data-datalab-theme=\"dark\"] .border-slate-500{border-color:#334155!important}",
+      "[data-datalab-theme=\"dark\"] input,[data-datalab-theme=\"dark\"] select,[data-datalab-theme=\"dark\"] textarea{background-color:#020617!important;color:#f8fafc!important;border-color:#475569!important}",
+      "[data-datalab-theme=\"contrast\"] .bg-white,[data-datalab-theme=\"contrast\"] .bg-slate-50{background-color:#000!important;color:#fff!important;border-color:#ffff00!important}",
+      "[data-datalab-theme=\"contrast\"] .text-slate-900,[data-datalab-theme=\"contrast\"] .text-slate-800,[data-datalab-theme=\"contrast\"] .text-slate-700,[data-datalab-theme=\"contrast\"] .text-slate-600{color:#fff!important}",
+      "[data-datalab-theme=\"contrast\"] h2,[data-datalab-theme=\"contrast\"] h3{color:#ffff00!important}",
+      "[data-datalab-theme=\"contrast\"] :focus-visible{outline:3px solid #00ff00!important;outline-offset:2px}"
+    ].join('\n');
     document.head.appendChild(st);
   })();
 
@@ -109,7 +124,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       var pathname = loc.pathname || '';
       var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
       var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
-      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      var isAlloHosted = /^alloflow-cdn\.pages\.dev$/i.test(host) || /^(?:(?:www|app|cdn)\.)?alloflow\.org$/i.test(host);
       if (isDesktopBundled) return new URL(path, loc.href).toString();
       if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
     } catch (_) {}
@@ -476,10 +491,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       // a fixed 680 px dark panel with its own #0f172a ground.) Coloured status
       // ink has no contrast-theme remap, so it is picked here.
       var isContrast = ctx.theme === 'contrast' || ctx.isContrast === true;
+      var isDark = !isContrast && (ctx.isDark === true || ctx.theme === 'dark');
       var ink = {
-        ok: isContrast ? 'text-yellow-300' : 'text-emerald-800',
-        warn: isContrast ? 'text-yellow-300' : 'text-amber-800',
-        info: isContrast ? 'text-yellow-300' : 'text-sky-800'
+        ok: isContrast ? 'text-yellow-300' : (isDark ? 'text-emerald-300' : 'text-emerald-800'),
+        warn: isContrast ? 'text-yellow-300' : (isDark ? 'text-amber-300' : 'text-amber-800'),
+        info: isContrast ? 'text-yellow-300' : (isDark ? 'text-sky-300' : 'text-sky-800')
       };
       var card = 'bg-slate-50 rounded-xl p-3 border border-slate-300 text-xs text-slate-700';
       var smallBtn = 'min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold border border-slate-500 bg-white text-slate-800 hover:bg-slate-100';
@@ -487,6 +503,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       var steps = learningPath(catalog, band, completed, graphsMade);
       var nextIdx = -1;
       steps.forEach(function (s, i) { if (nextIdx === -1 && !s.claimDone) nextIdx = i; });
+      var pathDoneCount = steps.filter(function (s) { return s.claimDone; }).length;
+      var safeAsked = (typeof slice.askedCount === 'number' && isFinite(slice.askedCount) && slice.askedCount >= 0) ? Math.floor(slice.askedCount) : 0;
+      var safeOpened = !!slice.opened;
 
       // A flex <summary> loses its marker, so each disclosure shows a caret.
       function caret() { return h('span', { 'aria-hidden': 'true', className: 'text-slate-600' }, '▾'); }
@@ -495,22 +514,130 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           type: 'button',
           onClick: function () { openDataLab(); },
           className: primary ? primaryBtn : smallBtn,
+          style: primary ? { backgroundColor: isContrast ? '#000000' : '#4338ca', color: isContrast ? '#ffff00' : '#ffffff', border: isContrast ? '2px solid #00ff00' : '1px solid #4338ca' } : undefined,
           'data-datalab-open': primary ? 'primary' : 'secondary',
           'aria-label': desktop ? t('stem.dataLab.desktop_open_title', 'Open the Data Lab in your web browser') : t('stem.dataLab.open_title', 'Open the Data Lab in a new window (CODAP workspace with the AlloFlow tutor)')
         }, desktop ? t('stem.dataLab.desktop_open_btn', '📊 Open Data Lab in my web browser') : t('stem.dataLab.open', '📊 Open Data Lab'));
       }
 
-      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 w-full text-slate-800', 'data-datalab-launcher': 'true' },
-        typeof setStemLabTool === 'function' && h('button', {
-          onClick: returnToCatalog,
-          className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 active:scale-[0.97]',
-          'aria-label': t('stem.dataLab.back_to_tools', 'Back to STEAM Lab tools')
+      // Bespoke 4-Phase Socratic Data Inquiry Pipeline (pure HTML/CSS geometric stage; zero data-spoiling and zero <svg>/<canvas> per dataLab_engage invariant)
+      function renderInquiryPipeline() {
+        var bg = isContrast ? '#000000' : (isDark ? '#0b1220' : '#0f172a');
+        var nodeBg = isContrast ? '#000000' : '#1e293b';
+        var inkMain = isContrast ? '#ffff00' : '#f8fafc';
+        var inkSub = isContrast ? '#ffffff' : '#cbd5e1';
+        var colActive = isContrast ? '#00ff00' : '#38bdf8';
+        var colDone = isContrast ? '#00ff00' : '#34d399';
+        var colIdle = isContrast ? '#ffff00' : '#475569';
+        var phases = [
+          { num: '1', label: t('stem.dataLab.pipe_predict', 'Predict'), sub: t('stem.dataLab.pipe_predict_sub', 'Lock idea first'), done: safeOpened || completed.length > 0, active: !safeOpened },
+          { num: '2', label: t('stem.dataLab.pipe_explore', 'Explore'), sub: t('stem.dataLab.pipe_explore_sub', 'Drag in CODAP'), done: loadedSets.length > 0 || safeOpened, active: safeOpened && !graphsMade.length },
+          { num: '3', label: t('stem.dataLab.pipe_graph', 'Graph'), sub: t('stem.dataLab.pipe_graph_sub', 'Check pattern'), done: graphsMade.length > 0, active: safeOpened && !graphsMade.length },
+          { num: '4', label: t('stem.dataLab.pipe_cer', 'Claim (CER)'), sub: t('stem.dataLab.pipe_cer_sub', 'Evidence & test'), done: completed.length > 0, active: graphsMade.length > 0 && !completed.length }
+        ];
+        return h('div', {
+          role: 'region',
+          'aria-label': t('stem.dataLab.pipeline_aria', 'Four-step scientific data inquiry workflow: Predict, Explore in CODAP, Graph Check, and Claim with Evidence'),
+          style: {
+            borderRadius: '14px',
+            padding: '12px',
+            border: isContrast ? '2px solid #ffff00' : '1px solid ' + (isDark ? '#334155' : '#1e293b'),
+            backgroundColor: bg,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+            gap: '8px'
+          }
         },
-          ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
-          h('span', null, t('stem.dataLab.back_to_tools', 'Back to STEAM Lab tools'))
+          phases.map(function (ph) {
+            var stCol = ph.done ? colDone : (ph.active ? colActive : colIdle);
+            return h('div', {
+              key: ph.num,
+              style: {
+                padding: '10px 8px',
+                borderRadius: '10px',
+                backgroundColor: nodeBg,
+                border: (ph.done || ph.active ? '2px solid ' : '1px solid ') + stCol,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                gap: '4px',
+                minWidth: 0
+              }
+            },
+              h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  width: '26px', height: '26px', borderRadius: '999px',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: bg, border: '2px solid ' + stCol,
+                  color: ph.done ? colDone : inkMain, fontSize: '11px', fontWeight: 800
+                }
+              }, ph.done ? '✓' : ph.num),
+              h('div', { style: { fontSize: '12px', fontWeight: 800, color: inkMain, lineHeight: 1.2 } }, ph.label),
+              h('div', { style: { fontSize: '10.5px', fontWeight: 600, color: inkSub, lineHeight: 1.25 } }, ph.sub)
+            );
+          })
+        );
+      }
+
+      var heroBannerStyle = isContrast
+        ? { backgroundColor: '#000000', border: '2px solid #ffff00', borderRadius: '16px', padding: '16px', color: '#ffff00' }
+        : { backgroundColor: '#1e1b4b', background: isDark ? 'linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #0b1220 100%)' : 'linear-gradient(135deg, #1e1b4b 0%, #3730a3 52%, #0f172a 100%)', border: '1px solid rgba(165,180,252,0.32)', borderRadius: '16px', padding: '16px', color: '#ffffff', boxShadow: '0 8px 24px rgba(30,27,75,0.24)' };
+      var pillHeroStyle = isContrast
+        ? { fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px', backgroundColor: '#000000', border: '1px solid #ffff00', color: '#ffff00' }
+        : { fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '999px', backgroundColor: 'rgba(15,23,42,0.58)', border: '1px solid rgba(199,210,254,0.35)', color: '#eef2ff' };
+
+      return h('div', {
+        className: 'flex flex-col gap-4 animate-in fade-in duration-300 w-full text-slate-800',
+        'data-datalab-launcher': 'true',
+        'data-datalab-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'),
+        style: {
+          backgroundColor: isContrast ? '#000000' : (isDark ? '#020617' : 'transparent'),
+          padding: (isDark || isContrast) ? '14px' : '2px',
+          borderRadius: (isDark || isContrast) ? '16px' : undefined,
+          minWidth: 0
+        }
+      },
+        // Bespoke Data Science Observatory Hero Workbench Header
+        h('header', { style: heroBannerStyle },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 260px', minWidth: 0 } },
+              // Bespoke Data Lab Geometric Emblem (pure HTML/CSS bars & nodes — zero SVG/Canvas)
+              h('div', { 'aria-hidden': 'true', style: { width: '46px', height: '46px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '4px', padding: '9px 8px', backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.45)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(165,180,252,0.4)', boxSizing: 'border-box' } },
+                h('span', { style: { width: '6px', height: '12px', borderRadius: '3px', backgroundColor: isContrast ? '#ffff00' : '#818cf8' } }),
+                h('span', { style: { width: '6px', height: '20px', borderRadius: '3px', backgroundColor: isContrast ? '#00ff00' : '#34d399' } }),
+                h('span', { style: { width: '6px', height: '15px', borderRadius: '3px', backgroundColor: isContrast ? '#ffff00' : '#38bdf8' } }),
+                h('span', { style: { width: '6px', height: '26px', borderRadius: '3px', backgroundColor: isContrast ? '#00ff00' : '#fbbf24' } })),
+              h('div', { style: { minWidth: 0 } },
+                h('div', { style: { fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: isContrast ? '#00ff00' : '#c7d2fe', marginBottom: '2px' } },
+                  t('stem.dataLab.badge_subject', 'Technology · Math · CODAP Data Science Studio')),
+                h('h2', { className: 'text-lg font-bold', style: { margin: 0, color: isContrast ? '#ffff00' : '#ffffff', lineHeight: 1.25 } },
+                  t('stem.dataLab.title', '📊 Data Lab — real data science, Socratic style')))),
+            typeof setStemLabTool === 'function' && h('button', {
+              type: 'button',
+              onClick: returnToCatalog,
+              className: 'inline-flex w-fit items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-colors active:scale-[0.97]',
+              style: {
+                backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.62)',
+                color: isContrast ? '#ffff00' : '#ffffff',
+                border: isContrast ? '2px solid #ffff00' : '1px solid rgba(199,210,254,0.45)',
+                cursor: 'pointer'
+              },
+              'aria-label': t('stem.dataLab.back_to_tools', 'Back to STEAM Lab tools')
+            },
+              ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
+              h('span', null, t('stem.dataLab.back_to_tools', 'Back to STEAM Lab tools'))
+            )),
+          // Live Telemetry Pills
+          h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '11px' } },
+            h('span', { style: pillHeroStyle }, bandLabelMap(t)[band] || band),
+            h('span', { style: pillHeroStyle }, t('stem.dataLab.pill_path', 'Path: ') + pathDoneCount + '/' + steps.length),
+            h('span', { style: pillHeroStyle }, t('stem.dataLab.pill_graphs', 'Graphs Checked: ') + graphsMade.length),
+            h('span', { style: pillHeroStyle }, t('stem.dataLab.pill_questions', 'Questions Asked: ') + safeAsked),
+            h('span', { style: pillHeroStyle }, aiOn ? t('stem.dataLab.pill_ai_on', 'Socratic AI Tutor: ON') : t('stem.dataLab.pill_ai_off', 'Built-in Prompts Mode')))
         ),
-        h('h2', { className: 'text-lg font-bold text-slate-900' },
-          t('stem.dataLab.title', '📊 Data Lab — real data science, Socratic style')),
+        renderInquiryPipeline(),
         renderHero(),
         desktopState === 'sent' && h('p', { className: 'text-xs ' + ink.info, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
           t('stem.dataLab.desktop_opened_note', 'The Data Lab was sent to your web browser. If it did not open, copy the link and paste it into your browser.')),
@@ -563,16 +690,22 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         renderPath(),
         h('details', { className: card, 'aria-labelledby': 'datalab-starters-h' },
           h('summary', { className: 'cursor-pointer min-h-[44px] flex items-center gap-1' },
-            h('span', { id: 'datalab-starters-h', className: 'text-sm font-bold text-slate-800' }, t('stem.dataLab.starters_heading', 'Starter datasets inside')), caret()),
+            h('span', { id: 'datalab-starters-h', className: 'text-sm font-bold text-slate-800' }, t('stem.dataLab.starters_heading', 'Starter datasets inside') + ' (' + catalog.length + ')'), caret()),
           h('p', { className: 'mb-2' }, t('stem.dataLab.starters_intro', 'Each one comes with investigation questions for your grade. You predict first, explore in CODAP, then write a claim with evidence.')),
-          h('ul', { className: 'space-y-1.5' }, catalog.map(function (ds) {
-            return h('li', { key: ds.id },
-              h('span', { className: 'font-bold text-slate-800' }, ds.title),
-              h('span', null, ' — ' + __alloOneWord(t('stem.dataLab.starter_meta', '{rows} rows, {cols} columns. Source: {source}.')
-                .replace('{rows}', function () { return String(ds.rows.length); })
-                .replace('{cols}', function () { return String(ds.attributes.length); })
-                .replace('{source}', function () { return ds.source.name; }))),
-              loadedSets.indexOf(ds.id) !== -1 ? h('span', { className: ink.ok }, ' ✓ ' + t('stem.dataLab.starter_opened', 'You have opened this one.')) : null);
+          h('ul', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', listStyle: 'none', padding: 0, margin: 0 } }, catalog.map(function (ds) {
+            var isOpened = loadedSets.indexOf(ds.id) !== -1;
+            return h('li', { key: ds.id, style: { padding: '10px 12px', borderRadius: '10px', border: isContrast ? '1px solid #ffff00' : ('1px solid ' + (isDark ? '#334155' : '#cbd5e1')), backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff'), minWidth: 0 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '6px' } },
+                h('span', { className: 'font-bold text-slate-800', style: { fontSize: '12.5px' } }, ds.title),
+                isOpened ? h('span', { className: ink.ok, style: { fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap' } }, '✓ ' + t('stem.dataLab.starter_opened', 'You have opened this one.')) : null),
+              h('div', { style: { fontSize: '11.5px', marginTop: '4px', lineHeight: 1.45 } },
+                __alloOneWord(t('stem.dataLab.starter_meta', '{rows} rows, {cols} columns. Source: {source}.')
+                  .replace('{rows}', function () { return String(ds.rows.length); })
+                  .replace('{cols}', function () { return String(ds.attributes.length); })
+                  .replace('{source}', function () { return ds.source.name; }))),
+              h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' } },
+                h('span', { style: { fontSize: '10.5px', fontWeight: 700, padding: '2px 7px', borderRadius: '999px', backgroundColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#eef2ff'), border: isContrast ? '1px solid #ffff00' : '1px solid ' + (isDark ? '#475569' : '#c7d2fe'), color: isContrast ? '#ffff00' : (isDark ? '#a5b4fc' : '#3730a3') } },
+                  ds.investigations.length + ' ' + t('stem.dataLab.starter_inv_count', 'investigations'))));
           })),
           h('p', { className: 'mt-2' }, t('stem.dataLab.progress_line', 'Investigations finished on this device: {done}.').replace('{done}', function () { return String(completed.length); }))),
         isTeacher && h(TeacherPanel, { React: React, t: t, ink: ink, catalog: catalog, assignment: assignment, band: band, completed: completed, graphsMade: graphsMade, loadedSets: loadedSets, slice: slice, setLabToolData: setLabToolData, announceToSR: announceToSR }),
@@ -607,12 +740,32 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             openButton(true));
         }
         var s = steps[nextIdx];
+        var pctDone = steps.length ? Math.round((pathDoneCount / steps.length) * 100) : 0;
         return h('section', { className: 'rounded-xl p-4 border-2 border-sky-600 bg-white text-slate-800', 'aria-labelledby': 'datalab-path-h', 'data-datalab-hero': s.inv.id },
-          heading,
-          h('p', { className: 'text-xs font-bold mt-1 ' + ink.info }, t('stem.dataLab.path_step_label', 'Step {n} of {total}').replace('{n}', function () { return String(nextIdx + 1); }).replace('{total}', function () { return String(steps.length); })),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+            heading,
+            h('span', { className: 'text-xs font-bold ' + ink.info }, t('stem.dataLab.path_step_label', 'Step {n} of {total}').replace('{n}', function () { return String(nextIdx + 1); }).replace('{total}', function () { return String(steps.length); }))),
+          // Visual Learning Path Stepper Track (fixed-height bar + numbered step dots)
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', marginBottom: '10px', flexWrap: 'wrap' } },
+            h('div', { style: { flex: '1 1 160px', height: '8px', borderRadius: '999px', backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#e2e8f0'), border: isContrast ? '1px solid #ffff00' : 'none', overflow: 'hidden' } },
+              h('div', { style: { width: pctDone + '%', height: '8px', backgroundColor: isContrast ? '#00ff00' : '#0284c7' } })),
+            h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' }, 'aria-hidden': 'true' },
+              steps.map(function (stItem, idx) {
+                var isCur = idx === nextIdx;
+                return h('span', {
+                  key: stItem.inv.id,
+                  style: {
+                    width: '20px', height: '20px', borderRadius: '999px', fontSize: '10.5px', fontWeight: 800,
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: stItem.claimDone ? (isContrast ? '#00ff00' : '#059669') : (isCur ? (isContrast ? '#ffff00' : '#4338ca') : (isContrast ? '#000000' : (isDark ? '#1e293b' : '#e2e8f0'))),
+                    color: stItem.claimDone ? (isContrast ? '#000000' : '#ffffff') : (isCur ? (isContrast ? '#000000' : '#ffffff') : (isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'))),
+                    border: isContrast ? '1px solid #ffff00' : 'none'
+                  }
+                }, stItem.claimDone ? '✓' : String(idx + 1));
+              }))),
           h('p', { id: 'datalab-hero-q', className: 'text-lg font-bold leading-snug mt-1' }, s.inv.question),
           h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, t('stem.dataLab.assigned_dataset', 'Dataset: {title}').replace('{title}', function () { return s.ds.title; })),
-          h('button', { type: 'button', className: primaryBtn, 'data-path-hero': s.inv.id, 'aria-describedby': 'datalab-hero-q',
+          h('button', { type: 'button', className: primaryBtn, style: { backgroundColor: isContrast ? '#000000' : '#4338ca', color: isContrast ? '#ffff00' : '#ffffff', border: isContrast ? '2px solid #00ff00' : '1px solid #4338ca' }, 'data-path-hero': s.inv.id, 'aria-describedby': 'datalab-hero-q',
             onClick: function () { openDataLab(s.inv.id); } }, t('stem.dataLab.hero_start', 'Start')));
       }
 
@@ -838,6 +991,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   }
   function csvCell(v) {
     var s = String(v == null ? '' : v);
+    if (typeof v !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s) && !Number.isFinite(Number(s))) s = "'" + s;
     return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
   // ds: a normalized dataset ({ attributes: [{ name, unit }], rows }).

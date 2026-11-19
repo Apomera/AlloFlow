@@ -54,6 +54,22 @@ function validateArchiveListing(listing, options = {}) {
   return entries.length;
 }
 
+function validateVerboseArchiveListing(verboseListing, maxEntries) {
+  const lines = String(verboseListing || '')
+    .split(/\n/)
+    .map((line) => line.replace(/\r$/, ''))
+    .filter((line) => line.trim() !== '');
+  if (!lines.length) throw new Error('The Grist Desktop archive contains no entries.');
+  if (lines.length > maxEntries) throw new Error('The Grist Desktop archive contains too many entries.');
+  for (const line of lines) {
+    const modeChar = line.trimStart().charAt(0);
+    if (modeChar === 'l' || modeChar === 'h' || modeChar === 'b' || modeChar === 'c' || modeChar === 'p' || / -> /.test(line)) {
+      throw new Error('The Grist Desktop archive contains a link or special file entry, which is not permitted.');
+    }
+  }
+  return lines.length;
+}
+
 function runTar(spawnImpl, command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const child = spawnImpl(command, args, {
@@ -157,6 +173,13 @@ function createWindowsZipExtractor(options = {}) {
       resolveEntryPath,
       maxEntries: Number(limits.maxEntries),
     });
+    const verboseListing = await runTar(spawnImpl, tarPath, ['-tvf', archivePath], {
+      cwd: destinationDir,
+      env,
+      signal,
+      maxStdoutBytes: MAX_LISTING_BYTES,
+    });
+    validateVerboseArchiveListing(verboseListing.stdout, Number(limits.maxEntries));
     await runTar(spawnImpl, tarPath, ['-xf', archivePath, '-C', destinationDir], {
       cwd: destinationDir,
       env,
@@ -170,4 +193,5 @@ module.exports = {
   createWindowsZipExtractor,
   resolveWindowsTarPath,
   validateArchiveListing,
+  validateVerboseArchiveListing,
 };

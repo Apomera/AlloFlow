@@ -188,6 +188,31 @@ async function validatePdf(filepath) {
     for (const page of pages) _walkFonts(resolve(page.node.get(nm('Resources'))), 0);
   } catch (_) { /* font-walk is best-effort */ }
 
+  // Annotated pages /Tabs /S (PDF/UA-1 §7.18.3), /ParentTree, and XMP /Metadata + dc:title (§7.1)
+  let pagesWithAnnots = 0, pagesWithAnnotsTabsS = 0;
+  try {
+    for (const page of pages) {
+      const pAnnots = resolve(page.node.get(nm('Annots')));
+      if (!pAnnots || typeof pAnnots.size !== 'function' || pAnnots.size() === 0) continue;
+      pagesWithAnnots++;
+      if (String(page.node.get(nm('Tabs')) || '') === '/S') pagesWithAnnotsTabsS++;
+    }
+  } catch (_) { /* best-effort */ }
+  let xmpText = '', xmpUnreadable = false, hasMetadataStream = false;
+  try {
+    const metaStream = resolve(catalog.get(nm('Metadata')));
+    if (metaStream) {
+      hasMetadataStream = true;
+      const metaFilter = metaStream.dict && metaStream.dict.get ? metaStream.dict.get(nm('Filter')) : null;
+      const metaBytes = metaStream.contents || (metaStream.getContents && metaStream.getContents());
+      if (metaFilter) xmpUnreadable = true;
+      else if (metaBytes) xmpText = Buffer.from(metaBytes).toString('utf8');
+    }
+  } catch (_) { xmpUnreadable = true; }
+  const xmpDcTitleMatch = xmpText.match(/<dc:title\b[^>]*>([\s\S]*?)<\/dc:title>/i);
+  const xmpDcTitleText = xmpDcTitleMatch ? xmpDcTitleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+  const hasParentTree = !!(stRoot && stRoot.get && resolve(stRoot.get(nm('ParentTree'))));
+
   // Walk the structure tree
   const elems = stRoot ? walkStructTree(stRoot, ctx) : [];
   const leaves = elems.filter(e => LEAF_ROLES.includes(e.role));
@@ -207,6 +232,7 @@ async function validatePdf(filepath) {
   const passOrFail = (rule, ok, detail) => checks.push({ rule, status: ok ? 'pass' : 'fail', detail: detail || '' });
 
   passOrFail('StructTreeRoot present', !!stRoot);
+  passOrFail('StructTreeRoot has /ParentTree', hasParentTree, hasParentTree ? 'present' : '(missing)');
   passOrFail('MarkInfo /Marked true', String(markedRaw) === 'true');
   passOrFail('Primary language set (/Lang)', !!langRaw, langRaw ? String(langRaw) : '');
   passOrFail('Structure tree has content (rootK not null)', elems.length > 0, elems.length + ' elements');
@@ -220,6 +246,15 @@ async function validatePdf(filepath) {
   passOrFail('All page fonts embedded (no SR-breaking substitution)',
     fontsTotal === 0 || fontsEmbedded === fontsTotal,
     fontsEmbedded + '/' + fontsTotal + ' fonts embedded');
+  passOrFail('Pages with annotations set /Tabs /S (PDF/UA 7.18.3)',
+    pagesWithAnnots === 0 || pagesWithAnnotsTabsS === pagesWithAnnots,
+    pagesWithAnnots === 0 ? '0 annotated pages' : pagesWithAnnotsTabsS + '/' + pagesWithAnnots + ' annotated pages with /Tabs /S');
+  passOrFail('XMP metadata stream present (/Metadata, PDF/UA 7.1)',
+    hasMetadataStream,
+    hasMetadataStream ? (xmpUnreadable ? 'present (compressed)' : 'present') : '(missing)');
+  passOrFail('XMP dc:title non-empty (PDF/UA 7.1)',
+    xmpUnreadable ? true : (hasMetadataStream && !!xmpDcTitleText),
+    xmpUnreadable ? 'XMP compressed — checked externally' : (xmpDcTitleText ? xmpDcTitleText.slice(0, 80) : '(missing/empty)'));
   // §7.1/§7.2 coverage honesty (2026-06-19 parity): structure-level self-check does NOT parse
   // page content streams, so it cannot confirm every operator is marked /Artifact or tagged with a
   // reachable MCID — the gap veraPDF caught on scanned docs. Surfaced as WARN, never a silent pass.
@@ -248,11 +283,16 @@ async function validatePdf(filepath) {
     isEncrypted,
     catalogChecks: {
       hasStructTreeRoot: !!stRoot,
+      hasParentTree,
+      hasMetadataStream,
+      xmpDcTitle: xmpDcTitleText || null,
       marked: String(markedRaw),
       lang: langRaw ? String(langRaw) : null,
       docTitle: docTitle ? String(docTitle).slice(0, 200) : null,
       displayDocTitle: displayDocTitle ? String(displayDocTitle) : null,
       hasOutline: !!outlines,
+      pagesWithAnnots,
+      pagesWithAnnotsTabsS,
       fontsTotal,
       fontsEmbedded,
     },

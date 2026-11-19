@@ -1044,6 +1044,7 @@
           && !rawBridge._alloQrBlocked
           && (typeof window === 'undefined' || (
             window.__alloStudentAiDisabled !== true
+            && window.__alloAiSecretsLocked !== true
             && (typeof window.__alloAiUsable !== 'function' || window.__alloAiUsable('audio', rawBridge))
           ));
         var bridge = bridgeAllowed ? rawBridge : null;

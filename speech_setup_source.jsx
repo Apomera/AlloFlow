@@ -160,11 +160,27 @@ function SpeechSetupPanel(props) {
       var top = stack[stack.length - 1];
       return top === trap || Boolean(top && top.root && dialog && dialog.contains(top.root) && top.root === dialog);
     };
+    var getFocusables = function(d) {
+      if (!d || typeof d.querySelectorAll !== 'function') return [];
+      return Array.prototype.slice.call(
+        d.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+      ).filter(function(el) {
+        if (!el || el.disabled || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]') || el.getAttribute('aria-hidden') === 'true') return false;
+        if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+          for (var cur = el; cur && cur !== d.parentElement; cur = cur.parentElement) {
+            var cs = window.getComputedStyle(cur);
+            if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+            if (cur === d) break;
+          }
+        }
+        return true;
+      });
+    };
     var focusTimer = setTimeout(function() {
       var d = dialogRef.current;
       if (!d) return;
       if (d.contains(document.activeElement) && document.activeElement !== d) return;
-      var firstFocusable = d.querySelector('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      var firstFocusable = getFocusables(d)[0];
       try {
         if (firstFocusable && typeof firstFocusable.focus === 'function') firstFocusable.focus();
         else d.focus();
@@ -181,11 +197,7 @@ function SpeechSetupPanel(props) {
         return;
       }
       if (event.key !== 'Tab') return;
-      var focusables = Array.prototype.slice.call(
-        d.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
-      ).filter(function(el) {
-        return !el.disabled && !el.hidden && !el.closest('[inert]') && el.getAttribute('aria-hidden') !== 'true';
-      });
+      var focusables = getFocusables(d);
       if (!focusables.length) {
         event.preventDefault();
         try { d.focus(); } catch (_) {}
@@ -224,7 +236,8 @@ function SpeechSetupPanel(props) {
           if (!progress || !mountedRef.current || checkPhaseRef.current !== 'idle') return;
           if (progress.phase === 'model-fetch-progress') {
             if (progress.file && typeof progress.loaded === 'number') filesRef.current[progress.file] = { loaded: progress.loaded };
-            var summary = downloadSummary(filesRef.current, TIER_SIZES_MB[progress.tier]);
+            var tierMb = Object.prototype.hasOwnProperty.call(TIER_SIZES_MB, progress.tier) ? TIER_SIZES_MB[progress.tier] : 0;
+            var summary = downloadSummary(filesRef.current, tierMb);
             setDownload({ tier: progress.tier, key: progress.profile, percent: summary.percent, loadedMb: summary.loadedMb });
           } else if (progress.phase === 'model-loaded') {
             filesRef.current = {};

@@ -69,8 +69,13 @@ function StudyTimerModal(props) {
       if (!el || el.hidden || el.getAttribute("aria-hidden") === "true" || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest("details:not([open])");
       if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
-      const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
-      return !style || style.display !== "none" && style.visibility !== "hidden";
+      if (typeof window.getComputedStyle === "function") {
+        for (let cur = el; cur && cur !== dialog; cur = cur.parentElement) {
+          const style = window.getComputedStyle(cur);
+          if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+        }
+      }
+      return true;
     });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
@@ -175,7 +180,7 @@ function StudyTimerModal(props) {
       {
         ref: dialogRef,
         tabIndex: -1,
-        className: "bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none",
+        className: "allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none",
         role: "dialog",
         "aria-modal": "true",
         "aria-labelledby": "study-timer-title",
@@ -188,11 +193,11 @@ function StudyTimerModal(props) {
           "aria-label": t("common.close_study_timer"),
           "data-help-key": "timer_close_btn",
           onClick: handleSetShowStudyTimerModalToFalse,
-          className: "absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+          className: "absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none"
         },
-        /* @__PURE__ */ React.createElement(X, { size: 20 })
+        /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })
       ),
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-indigo-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Clock, { size: 20, className: "text-indigo-600" })), /* @__PURE__ */ React.createElement("h3", { id: "study-timer-title", className: "font-black text-lg" }, t("timer.title"))),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-indigo-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Clock, { size: 20, className: "text-indigo-600", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h3", { id: "study-timer-title", className: "font-black text-lg" }, t("timer.title"))),
       /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "study-timer-task", className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("timer.label_task")), /* @__PURE__ */ React.createElement(
         "input",
         {

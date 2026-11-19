@@ -105,7 +105,7 @@ describe('the guide for school IT and Find a picture say what is true of every p
 const opened = [];
 afterAll(() => { opened.forEach((w) => { try { w.close(); } catch (_) {} }); });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-const PAGE_SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_zip.js', 'packets_handoff.js', 'packets_vocab_bank_en.js',
+const PAGE_SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_zip.js', 'packets_handoff.js', 'packets_my_words.js', 'packets_vocab_bank_en.js',
   'word_sounds_symbols_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', 'packets-vocab.js'];
 async function maker() {
   const dom = new JSDOM(read('packets-vocab.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://site.test/packets-vocab.html' });

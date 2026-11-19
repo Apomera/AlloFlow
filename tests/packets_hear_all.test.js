@@ -129,7 +129,7 @@ describe('Hear all in Word Sounds files', () => {
   });
 
   it('the activities the app exports with choice recordings ask for it too (manipulation, syllable blending), and none starts it by itself', () => {
-    for (const id of ['blending', 'rhyming', 'word_families', 'sound_sort', 'manipulation', 'syllable_blending']) {
+    for (const id of ['blending', 'rhyming', 'word_families', 'sound_sort', 'manipulation']) {
       const src = TH.ADAPTERS[id].render.toString();
       expect(src, id).toContain('ctx.hearAll(');
       expect(src, id).toContain('auto: false');
@@ -137,8 +137,8 @@ describe('Hear all in Word Sounds files', () => {
     // Activities where hearing the choices would give the answer away, or whose choices are not recordings, have none.
     for (const id of ['decoding', 'read_sentence', 'read_passage', 'sentence_match', 'counting', 'missing_letter', 'orthography', 'spelling_bee', 'word_scramble'])
       expect(TH.ADAPTERS[id].render.toString(), id).not.toContain('hearAll');
-    // Find Sounds, Break it Down and Sound Mapping open with the question and the word only: the reading tool may start them.
-    for (const id of ['isolation', 'segmentation', 'mapping']) { expect(TH.ADAPTERS[id].render.toString(), id).toContain('ctx.hearAll('); expect(TH.ADAPTERS[id].render.toString(), id).not.toContain('auto: false'); }
+    // Find Sounds, Break it Down, Sound Mapping and Syllable Blending open without reading the choices: the reading tool may start them.
+    for (const id of ['isolation', 'segmentation', 'mapping', 'syllable_blending']) { expect(TH.ADAPTERS[id].render.toString(), id).toContain('ctx.hearAll('); expect(TH.ADAPTERS[id].render.toString(), id).not.toContain('auto: false'); }
   });
 });
 

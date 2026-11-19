@@ -10,15 +10,23 @@ const SEND_TIMEOUT = 15000;
 const RETRY_DELAY = 60000;
 const SCAN_LEASE = 300000;
 const MAX_SCAN_PAGES = 40;
-const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff' };
+const PRIVATE_HEADERS = {
+  'Cache-Control': 'no-store, private',
+  'Referrer-Policy': 'no-referrer',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
+  'X-Robots-Tag': 'noindex, nofollow',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+};
 const DEFINITE_REJECTIONS = new Set(['E_VALIDATION_ERROR', 'E_FIELD_MISSING', 'E_TOO_MANY_RECIPIENTS', 'E_SENDER_NOT_VERIFIED', 'E_RECIPIENT_NOT_ALLOWED', 'E_RECIPIENT_SUPPRESSED', 'E_SENDER_DOMAIN_NOT_AVAILABLE', 'E_CONTENT_TOO_LARGE', 'E_RATE_LIMIT_EXCEEDED', 'E_DAILY_LIMIT_EXCEEDED']);
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 const only = (value, keys) => object(value) && Object.keys(value).every(key => keys.includes(key));
 const validOperation = value => typeof value === 'string' && value === value.trim() && OPERATION.test(value);
 const errorResult = (error, status = 400) => ({ ok: false, error, httpStatus: status });
-const response = (body, status = body.httpStatus || 200) => {
+const response = (body, status = body.httpStatus || 200, extraHeaders = {}) => {
   const { httpStatus, ...payload } = body;
-  return new Response(JSON.stringify(payload), { status, headers: { 'Content-Type': 'application/json', ...PRIVATE_HEADERS } });
+  return new Response(JSON.stringify(payload), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...PRIVATE_HEADERS, ...extraHeaders } });
 };
 
 const localClock = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
@@ -43,7 +51,9 @@ export function nextNewYorkNine(now) {
 }
 
 async function authorized(request, expected) {
-  const match = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
+  const header = request.headers.get('Authorization') || '';
+  if (header.length > 1024) return false;
+  const match = header.match(/^Bearer\s+(\S+)$/i);
   if (!match || !expected) return false;
   const encode = new TextEncoder();
   const [left, right] = await Promise.all([match[1], expected].map(value => crypto.subtle.digest('SHA-256', encode.encode(value))));
@@ -292,7 +302,8 @@ export default {
     if (existing && now >= existing.resetAt) AUTH_FAILURES.delete(ip);
     const current = AUTH_FAILURES.get(ip);
     if (current && current.count >= AUTH_MAX_FAILS) {
-      return response(errorResult('Too many authentication attempts.', 429));
+      const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
+      return response(errorResult('Too many authentication attempts.', 429), 429, { 'Retry-After': String(retryAfter) });
     }
     if (!(await authorized(request, env.ADMIN_TOKEN))) {
       const next = current ? { count: current.count + 1, resetAt: current.resetAt } : { count: 1, resetAt: now + AUTH_WINDOW_MS };

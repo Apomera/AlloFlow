@@ -321,10 +321,10 @@
     nativeImageCapable = false;
     state.appBridgeReady = false;
     state.appBridgeStatus = null;
-    for (const pending of appBridgePending.values()) {
-      clearTimeout(pending.timer);
     const frame = $('#app-frame');
     if (frame) delete frame.dataset.bridgeReady;
+    for (const pending of appBridgePending.values()) {
+      clearTimeout(pending.timer);
       pending.reject(new Error('The AlloFlow app view reloaded.'));
     }
     appBridgePending.clear();
@@ -334,20 +334,39 @@
   window.addEventListener('message', handleAppBridgeMessage);
 
   async function api(path, options = {}) {
-    const response = await fetch(path, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
-      },
-    });
-    const body = await response.json();
-    if (!response.ok) {
-      const error = new Error(body.error || response.statusText);
-      error.body = body;
-      throw error;
+    const callerSignal = options && options.signal;
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const cancel = controller ? () => controller.abort() : null;
+    if (controller && callerSignal) {
+      if (callerSignal.aborted) controller.abort();
+      else callerSignal.addEventListener('abort', cancel, { once: true });
     }
-    return body;
+    const timeout = controller ? setTimeout(cancel, 30000) : null;
+    try {
+      const response = await fetch(path, {
+        ...options,
+        ...(controller ? { signal: controller.signal } : {}),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {}),
+        },
+      });
+      let body = null;
+      try {
+        body = await response.json();
+      } catch (_) {
+        body = null;
+      }
+      if (!response.ok) {
+        const error = new Error((body && body.error) || response.statusText || ('HTTP ' + response.status));
+        error.body = body;
+        throw error;
+      }
+      return body;
+    } finally {
+      if (timeout !== null) clearTimeout(timeout);
+      if (callerSignal && cancel) { try { callerSignal.removeEventListener('abort', cancel); } catch (_) {} }
+    }
   }
 
   function setText(selector, value) {
@@ -502,7 +521,13 @@
       : 'Waiting for ' + state.health.appUrl;
     setText('#app-status', appStatus);
     $('#app-url').value = state.health.appUrl || '';
-    $('#open-app-link').href = bundledAppLaunchUrl() || '#';
+    const rawAppLink = bundledAppLaunchUrl();
+    let safeAppLink = '#';
+    try {
+      const parsedAppLink = new URL(rawAppLink);
+      if (parsedAppLink.protocol === 'http:' || parsedAppLink.protocol === 'https:') safeAppLink = parsedAppLink.href;
+    } catch (_) {}
+    $('#open-app-link').href = safeAppLink;
     const frame = $('#app-frame');
     const nextFrameUrl = state.health.appReachable ? bundledAppLaunchUrl() : 'about:blank';
     if (frame && frame.src !== nextFrameUrl) {
@@ -743,7 +768,12 @@
     $('#schoolbox-mode-select').value = box.mode || 'desktop-host';
     $('#schoolbox-port').value = box.port || 32174;
     $('#schoolbox-include-gpu').checked = Boolean(box.includeGpu);
-    $('#open-schoolbox-link').href = url;
+    let safeSchoolBoxLink = '#';
+    try {
+      const parsedBox = new URL(url);
+      if (parsedBox.protocol === 'http:' || parsedBox.protocol === 'https:') safeSchoolBoxLink = parsedBox.href;
+    } catch (_) {}
+    $('#open-schoolbox-link').href = safeSchoolBoxLink;
     $('#setup-schoolbox').disabled = isDistrictMode || !stack.stackAvailable;
     $('#start-schoolbox').disabled = isDistrictMode || box.mode === 'disabled' || status.status === 'missing-app-build' || !stack.stackAvailable || !docker.available;
     $('#stop-schoolbox').disabled = !(status.services || []).some((service) => service.reachable);

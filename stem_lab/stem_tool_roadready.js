@@ -13785,7 +13785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // and Drive Reflection hide.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       // AI gate (default OFF). Coach Mode (a 35s loop that ships driving telemetry
@@ -24093,7 +24093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var _ens = function(cb){
               if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
               var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-              var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+              if(window._isDesktopBundledApp===true){cb();return;} var _sri=["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.integrity=_sri[i]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
             };
             _ens(function(){
               try {
@@ -36895,7 +36895,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var stamp = localDayKey();
                     var a = document.createElement('a');
                     a.href = url; a.download = 'roadready_progress_' + stamp + '.json'; a.click();
-                    URL.revokeObjectURL(url);
+                    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                     addToast('💾 Progress saved');
                   } catch (saveErr) {
                     addToast('Save failed: ' + (saveErr && saveErr.message ? saveErr.message : 'unknown'));
@@ -36941,7 +36941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var stamp = localDayKey();
                     var a = document.createElement('a');
                     a.href = url; a.download = 'roadready_journal_' + stamp + '.md'; a.click();
-                    URL.revokeObjectURL(url);
+                    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                     addToast('📓 Journal exported');
                   } catch (jErr) {
                     addToast('Export failed.');
@@ -36959,10 +36959,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   onChange: function(e) {
                     var file = e.target.files && e.target.files[0];
                     if (!file) return;
+                    if (file.size > 5 * 1024 * 1024) { addToast('Save file exceeds the 5 MB limit.'); return; }
                     var reader = new FileReader();
                     reader.onload = function(ev) {
                       try {
-                        var parsed = JSON.parse(ev.target.result);
+                        var parsed = JSON.parse(ev.target.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
                         if (!parsed || parsed.tool !== 'roadReady') {
                           addToast('Not a RoadReady save file.'); return;
                         }
@@ -39756,7 +39757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var url = URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = url; a.download = 'roadready_parent_check_' + new Date().toISOString().slice(0,10) + '.md'; a.click();
-                URL.revokeObjectURL(url);
+                setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                 addToast('📋 Report exported');
               } catch(_) { addToast('Export failed.'); }
             },
@@ -39982,7 +39983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var url = URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = url; a.download = 'roadready_logbook_' + localDayKey() + '.md'; a.click();
-                URL.revokeObjectURL(url);
+                setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                 addToast('📔 Logbook exported');
               } catch(_) { addToast('Export failed.'); }
             },
@@ -42032,7 +42033,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var url = URL.createObjectURL(blob);
                   var a = document.createElement('a');
                   a.href = url; a.download = 'drivers_pledge_' + (d.driverName || 'signed').replace(/\s+/g,'_') + '.md'; a.click();
-                  URL.revokeObjectURL(url);
+                  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                   addToast('📜 Pledge exported');
                 } catch(_) { addToast('Export failed'); }
               },
@@ -43056,7 +43057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var url = URL.createObjectURL(blob);
               var a = document.createElement('a');
               a.href = url; a.download = 'post_crash_protocol.md'; a.click();
-              URL.revokeObjectURL(url);
+              setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
               addToast('📄 Protocol exported');
             } catch(_) { addToast('Export failed.'); }
           },
@@ -45539,6 +45540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var el = document.getElementById('roadready-certificate');
             if (!el) return;
             var w = window.open('', '_blank');
+            try { if (w) w.opener = null; } catch (_) {}
             if (!w || !w.document) {
               addToast('Pop-up blocked — please allow pop-ups for this site to print the certificate.');
               return;

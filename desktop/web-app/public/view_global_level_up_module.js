@@ -136,7 +136,7 @@ function GlobalLevelUpModal({
       "aria-modal": "true",
       "aria-labelledby": "global-level-up-title",
       "aria-describedby": "global-level-up-description",
-      className: "bg-white rounded-3xl p-5 sm:p-8 md:p-12 text-center shadow-2xl border-4 border-yellow-400 relative overflow-y-auto max-h-[calc(100vh-1rem)] max-w-sm w-full transform transition-all animate-in zoom-in-50 duration-500 motion-reduce:animate-none motion-reduce:transform-none",
+      className: "allo-docsuite bg-white rounded-3xl p-5 sm:p-8 md:p-12 text-center shadow-2xl border-4 border-yellow-400 relative overflow-y-auto max-h-[calc(100vh-1rem)] max-w-sm w-full transform transition-all animate-in zoom-in-50 duration-500 motion-reduce:animate-none motion-reduce:transform-none",
       onClick: (event) => event.stopPropagation()
     },
     /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(250,204,21,1)0%,rgba(255,255,255,0)70%)] animate-pulse motion-reduce:animate-none" }),

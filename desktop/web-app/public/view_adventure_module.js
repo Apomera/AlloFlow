@@ -1647,10 +1647,13 @@ function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
       return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function (el) {
         if (!el || el.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
         var closedDetails = el.closest('details:not([open])');
-        if (closedDetails && !el.closest('summary')) return false;
+        if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
         if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
-          var cs = window.getComputedStyle(el);
-          if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+          for (var cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+            var cs = window.getComputedStyle(cur);
+            if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+            if (cur === dialog) break;
+          }
         }
         return true;
       });
@@ -4449,7 +4452,7 @@ function normalizeOfflineStory(raw) {
 
 // Reachability over the choice graph. forward: from start; back: scenes that can reach an ending.
 function _offlineGraph(story) {
-  var byId = {};
+  var byId = Object.create(null);
   story.scenes.forEach(function (scene) {
     if (scene.id && !byId[scene.id]) byId[scene.id] = scene;
   });
@@ -4460,8 +4463,8 @@ function _offlineGraph(story) {
       return byId[to];
     });
   };
-  var reach = {},
-    depth = {};
+  var reach = Object.create(null),
+    depth = Object.create(null);
   if (byId[story.start]) {
     var queue = [story.start];
     reach[story.start] = true;
@@ -4477,7 +4480,7 @@ function _offlineGraph(story) {
       });
     }
   }
-  var exits = {};
+  var exits = Object.create(null);
   Object.keys(byId).forEach(function (id) {
     if (byId[id].ending) exits[id] = true;
   });
@@ -4524,7 +4527,7 @@ function validateOfflineStory(story) {
     };
   }
   if (story.scenes.length > OFFLINE_LIMITS.maxScenes) add(errors, 'too_big');
-  var seen = {};
+  var seen = Object.create(null);
   story.scenes.forEach(function (scene) {
     if (!scene.id) {
       add(errors, 'missing_id');
@@ -4576,7 +4579,7 @@ function repairOfflineStory(input, options) {
   var continueLabel = _offlineStr(opts.continueLabel, OFFLINE_LIMITS.maxLabel) || 'Continue';
   var story = normalizeOfflineStory(input);
   var fixes = [];
-  var seen = {};
+  var seen = Object.create(null);
   story.scenes = story.scenes.filter(function (scene) {
     if (!scene.id || seen[scene.id]) {
       fixes.push('dropped_scene');
@@ -4593,7 +4596,7 @@ function repairOfflineStory(input, options) {
     story.start = story.scenes[0].id;
     fixes.push('set_start');
   }
-  var ids = {};
+  var ids = Object.create(null);
   story.scenes.forEach(function (scene) {
     ids[scene.id] = true;
   });
@@ -4893,7 +4896,7 @@ async function generateOfflineStory(settings) {
 // Scenes in breadth-first order from start with depth and inbound counts (for the map).
 function outlineOfflineStory(story) {
   var graph = _offlineGraph(story);
-  var inbound = {};
+  var inbound = Object.create(null);
   story.scenes.forEach(function (scene) {
     if (!scene.ending) scene.choices.forEach(function (c) {
       inbound[c.to] = (inbound[c.to] || 0) + 1;

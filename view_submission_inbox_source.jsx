@@ -57,13 +57,104 @@ async function siTakeHomeLib() {
   }
   return window.AlloWordSoundsTakeHome || null;
 }
+async function siTakeHomeResultsReader() {
+  if (window.AlloPacketResultsReader && typeof window.AlloPacketResultsReader.read === 'function') return window.AlloPacketResultsReader;
+  if (typeof window.__alloLoadPlugin === 'function') {
+    try { await window.__alloLoadPlugin('packets_results_reader.js'); } catch (_) {}
+  }
+  return (window.AlloPacketResultsReader && typeof window.AlloPacketResultsReader.read === 'function') ? window.AlloPacketResultsReader : null;
+}
+function siSessionToTakeHomeResult(s) {
+  var byActivity = {}, activityTitles = {}, summary = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 };
+  var items = (s.items || []).map(function (it) {
+    var act = it.activity || 'unknown';
+    if (!activityTitles[act]) activityTitles[act] = it.activityTitle || act;
+    var a = byActivity[act] || (byActivity[act] = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 });
+    var done = !!it.attempted;
+    var practice = it.practice ? (act === 'letter_tracing' ? 'traced' : 'practice') : null;
+    if (practice) { if (done) { summary.practised++; a.practised++; } }
+    else {
+      summary.items++; a.items++;
+      if (done) {
+        summary.done++; a.done++;
+        if (it.firstTry) { summary.firstTry++; a.firstTry++; }
+        else if (it.correct) { summary.afterRetry++; a.afterRetry++; }
+        else { summary.missed++; a.missed++; }
+      }
+    }
+    return { activity: act, word: it.word || '', target: it.target || '', responses: Array.isArray(it.responses) ? it.responses : [],
+      attempts: Number(it.tries) || 0, firstTry: !!it.firstTry, correct: !!it.correct, done: done, ms: Number(it.timeMs) || 0, practice: practice, flag: it.flag || '' };
+  });
+  return {
+    lessonId: s.packetId || '', revision: s.packetVersion || '', lessonTitle: s.title || s.packetId || '',
+    learnerName: s.learner || '', finishedAt: s.finishedLocal || s.startedLocal || s.date || '', sessionId: s.sessionId || '',
+    items: items, summary: summary, byActivity: byActivity, activityTitles: activityTitles, integrity: s.integrity || 'absent'
+  };
+}
+function siParseTakeHomeCsvFallback(text, lib) {
+  var src = String(text || '').replace(/^\uFEFF/, '');
+  if (src.indexOf('alloflow-packet-result/1') < 0) return { ok: false };
+  var firstLine = src.split(/\r?\n/)[0] || '';
+  var sep = /^sep=(.)/i.test(firstLine) ? firstLine.charAt(4) : (firstLine.split('\t').length > firstLine.split(',').length ? '\t' : firstLine.split(';').length > firstLine.split(',').length ? ';' : ',');
+  var rows = [], row = [], cell = '', inQ = false;
+  for (var i = /^sep=./i.test(firstLine) ? src.indexOf('\n') + 1 : 0; i < src.length; i++) {
+    var ch = src[i];
+    if (inQ) {
+      if (ch === '"' && src[i + 1] === '"') { cell += '"'; i++; }
+      else if (ch === '"') inQ = false;
+      else cell += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === sep) { row.push(cell); cell = ''; }
+    else if (ch === '\r' || ch === '\n') { if (ch === '\r' && src[i + 1] === '\n') i++; row.push(cell); if (row.some(function (c) { return c !== ''; })) rows.push(row); row = []; cell = ''; }
+    else cell += ch;
+  }
+  if (cell !== '' || row.length) { row.push(cell); if (row.some(function (c) { return c !== ''; })) rows.push(row); }
+  var unguard = function (v) { return String(v == null ? '' : v).replace(/^'(?=[=+\-@\t\r])/, ''); };
+  var hdr = -1, idx = {};
+  for (var r = 0; r < rows.length && r < 5 && hdr < 0; r++) {
+    var names = rows[r].map(function (c) { return unguard(c).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); });
+    if (names.indexOf('format') >= 0 && names.indexOf('session_id') >= 0 && names.indexOf('activity') >= 0) {
+      names.forEach(function (n, k) { if (n && !(n in idx)) idx[n] = k; });
+      hdr = r;
+    }
+  }
+  if (hdr < 0) return { ok: false };
+  var get = function (rw, k) { return (k in idx && rw[idx[k]] != null) ? unguard(rw[idx[k]]) : ''; };
+  var title = '', integrity = null, items = [], titles = {}, meta = null;
+  rows.slice(hdr + 1).forEach(function (rw) {
+    var first = unguard(rw[0]).trim();
+    if (first.charAt(0) === '#') {
+      if (first.toLowerCase() === '#integrity' && rw[1] && rw[2]) integrity = { method: unguard(rw[1]).trim().toLowerCase(), value: unguard(rw[2]).trim().toLowerCase() };
+      if (first.toLowerCase() === '#summary') rw.slice(2).forEach(function (c) { var m = /^title=(.*)$/i.exec(unguard(c)); if (m && !title) title = m[1].trim(); });
+      return;
+    }
+    if (get(rw, 'format') !== 'alloflow-packet-result/1') return;
+    if (!meta) meta = { sessionId: get(rw, 'session_id'), packetId: get(rw, 'packet_id'), version: get(rw, 'packet_version'), form: get(rw, 'form'), mode: get(rw, 'mode'), learner: get(rw, 'learner'), startedLocal: get(rw, 'started_local'), finishedLocal: get(rw, 'finished_local'), durationS: Number(get(rw, 'duration_s')) || 0 };
+    var act = get(rw, 'activity'), actTitle = get(rw, 'activity_title');
+    if (act && actTitle && !titles[act]) titles[act] = actTitle;
+    var respRaw = get(rw, 'responses'), responses = respRaw ? respRaw.split(' | ') : [], tries = Number(get(rw, 'tries')) || 0;
+    var scored = get(rw, 'scored'), isPractice = scored === '0' || scored.toLowerCase() === 'false' || act === 'letter_tracing';
+    items.push({ n: Number(get(rw, 'item_n')) || items.length + 1, itemId: get(rw, 'item_id'), activity: act, word: get(rw, 'word'), target: get(rw, 'target'),
+      responses: responses, attempts: tries, firstTry: get(rw, 'first_try') === '1' || get(rw, 'first_try').toLowerCase() === 'true',
+      correct: get(rw, 'correct') === '1' || get(rw, 'correct').toLowerCase() === 'true', done: tries > 0 || responses.length > 0 || isPractice,
+      ms: Number(get(rw, 'time_ms')) || 0, practice: isPractice ? (act === 'letter_tracing' ? 'traced' : 'practice') : null, flag: get(rw, 'flag') });
+  });
+  if (!meta || !items.length || !lib) return { ok: false };
+  var payload = { kind: 'alloflow-take-home-result', schemaVersion: 3, sessionId: meta.sessionId,
+    packet: { id: meta.packetId, version: meta.version, form: meta.form, mode: meta.mode || 'practice' },
+    lessonId: meta.packetId, revision: meta.version, lessonTitle: title || meta.packetId, activityTitles: titles,
+    learner: meta.learner, learnerName: meta.learner, startedLocal: meta.startedLocal, finishedLocal: meta.finishedLocal,
+    finishedAt: meta.finishedLocal || meta.startedLocal || '', durationMs: meta.durationS * 1000, items: items };
+  if (integrity) payload.integrity = integrity;
+  return lib.parseResult(payload);
+}
 function siTakeHomeMark(item) { return !item.done ? '–' : item.firstTry ? '✓' : item.correct ? '↻' : '✗'; }
 function siTakeHomeResult(result) {
   var h = React.createElement;
   var s = result.summary;
   var cell = { padding: '4px 8px', borderTop: '1px solid #e2e8f0', textAlign: 'left', verticalAlign: 'top' };
-  return h('section', { 'data-si-take-home': 'true', 'aria-label': tr('Word Sounds take-home results'), style: { margin: '0 0 12px', padding: 12, border: '1px solid #c7d2fe', borderRadius: 8, background: '#fff' } },
-    h('div', { style: { fontWeight: 700, color: '#312e81' } }, tr('Word Sounds take-home: {first} of {total} right on the first try', { first: s.firstTry, total: s.items })),
+  return h('section', { 'data-si-take-home': 'true', 'aria-label': tr('Take-home practice results'), style: { margin: '0 0 12px', padding: 12, border: '1px solid #c7d2fe', borderRadius: 8, background: '#fff' } },
+    h('div', { style: { fontWeight: 700, color: '#312e81' } }, tr('{title}: {first} of {total} right on the first try', { title: result.lessonTitle || tr('Take-home practice'), first: s.firstTry, total: s.items })),
     h('div', { style: { fontSize: '0.8rem', color: '#475569', marginTop: 2 } },
       tr('{retry} right after a retry, {missed} missed, {left} not done. The name is what the student typed.', { retry: s.afterRetry, missed: s.missed, left: s.items - s.done })),
     h('table', { style: { width: '100%', marginTop: 8, borderCollapse: 'collapse', fontSize: '0.85rem' } },
@@ -3702,9 +3793,16 @@ function siIsolateAlloSheetReview(dialog) {
 function siTrapAlloSheetReviewFocus(event, container) {
   if (event.key !== 'Tab' || !container) return;
   var focusable = Array.from(container.querySelectorAll(
-    'button:not([disabled]), input:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+    'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
   )).filter(function(node) {
-    return !node.hidden && node.getAttribute('aria-hidden') !== 'true';
+    if (node.hidden || node.getAttribute('aria-hidden') === 'true' || node.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+    if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+      for (var cur = node; cur && cur !== container; cur = cur.parentElement) {
+        var st = window.getComputedStyle(cur);
+        if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+      }
+    }
+    return true;
   });
   if (!focusable.length) {
     event.preventDefault();
@@ -4095,6 +4193,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
 
   const containDialogFocus = (event, container) => {
     if (event.key === 'Escape') {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       onClose();
       return;
@@ -4102,7 +4201,16 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     if (event.key !== 'Tab' || !container) return;
     const focusable = Array.from(container.querySelectorAll(
       'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
-    )).filter(node => !node.hidden && node.getAttribute('aria-hidden') !== 'true');
+    )).filter(node => {
+      if (node.hidden || node.getAttribute('aria-hidden') === 'true' || node.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let cur = node; cur && cur !== container; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+        }
+      }
+      return true;
+    });
     if (!focusable.length) { event.preventDefault(); container.focus(); return; }
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
@@ -4306,15 +4414,26 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   const importPresets = async (e) => {
     const file = e.target?.files?.[0];
     if (!file) return;
+    const MAX_PRESETS_BYTES = 5 * 1024 * 1024;
+    const safeJsonReviver = (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
     try {
+      if (typeof file.size === 'number' && file.size > MAX_PRESETS_BYTES) {
+        addToast && addToast(tr('Preset file is too large to import.'), 'error');
+        return;
+      }
       const text = await file.text();
-      const parsed = JSON.parse(text);
-      if (!parsed || parsed.kind !== 'alloflow-rubric-presets' || !parsed.presets) {
+      if (text.length > MAX_PRESETS_BYTES) {
+        addToast && addToast(tr('Preset file is too large to import.'), 'error');
+        return;
+      }
+      const parsed = JSON.parse(text, safeJsonReviver);
+      if (!parsed || parsed.kind !== 'alloflow-rubric-presets' || !parsed.presets || typeof parsed.presets !== 'object' || Array.isArray(parsed.presets)) {
         addToast && addToast(tr('Not a valid AlloFlow presets file.'), 'error');
         return;
       }
       const incoming = parsed.presets;
-      const conflicts = Object.keys(incoming).filter(k => rubricPresets[k]);
+      const isSafePresetKey = (k) => k && k !== '__proto__' && k !== 'constructor' && k !== 'prototype';
+      const conflicts = Object.keys(incoming).filter(k => isSafePresetKey(k) && Object.prototype.hasOwnProperty.call(rubricPresets, k));
       let overwriteAll = false;
       if (conflicts.length > 0) {
         overwriteAll = await requestConfirmation({
@@ -4329,7 +4448,8 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       const next = { ...rubricPresets };
       let added = 0, skipped = 0, overwritten = 0;
       Object.entries(incoming).forEach(([k, p]) => {
-        if (next[k]) {
+        if (!isSafePresetKey(k) || !p || typeof p !== 'object') return;
+        if (Object.prototype.hasOwnProperty.call(next, k)) {
           if (overwriteAll) {
             next[k] = { ...p, lastUsed: new Date().toISOString() };
             overwritten++;
@@ -4367,8 +4487,12 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     const file = e.target?.files?.[0];
     if (!file) return;
     try {
+      if (typeof file.size === 'number' && file.size > 1024 * 1024) {
+        addToast && addToast(tr('Not a valid AlloFlow class key file.'), 'error');
+        return;
+      }
       const text = await file.text();
-      const data = JSON.parse(text);
+      const data = JSON.parse(text, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
       if (data.kind !== 'alloflow-class-key' || !data.privateJwk) {
         addToast && addToast(tr('Not a valid AlloFlow class key file.'), 'error');
         return;
@@ -4406,13 +4530,52 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       try {
       try {
         const text = await f.text();
+        // CSV results file saved by an AlloFlow Packet (default student download format).
+        const looksCsv = /\.csv$/i.test(f.name || '') || text.slice(0, 500).indexOf('alloflow-packet-result/1') >= 0;
+        if (looksCsv) {
+          const reader = await siTakeHomeResultsReader();
+          let csvResults = [];
+          if (reader) {
+            const got = await reader.read(text, { name: f.name, lastModified: f.lastModified });
+            if (got && got.ok && Array.isArray(got.sessions) && got.sessions.length) {
+              csvResults = got.sessions.map(siSessionToTakeHomeResult);
+            }
+          } else {
+            const lib = await siTakeHomeLib();
+            const parsed = siParseTakeHomeCsvFallback(text, lib);
+            if (parsed && parsed.ok && parsed.result) csvResults = [parsed.result];
+          }
+          if (!csvResults.length) {
+            newRows.push({ fileName: f.name, nickname: '?', status: 'error', error: tr('This take-home results file could not be read.') });
+            continue;
+          }
+          for (const r of csvResults) {
+            const takeHomeKey = ['take-home', r.lessonId, r.learnerName, r.finishedAt].join('|');
+            const already = queue.concat(newRows).some(row => row && row.payload && row.payload.takeHomeKey === takeHomeKey);
+            if (already) continue;
+            const nickname = siStableIdentityValue(r.learnerName || '') || '?';
+            const title = r.lessonTitle || 'Take-home practice';
+            newRows.push({
+              fileName: f.name,
+              nickname,
+              docTitle: title,
+              timestamp: r.finishedAt || null,
+              encryptedBlob: null,
+              payload: { kind: 'alloflow-take-home', nickname, docTitle: title, timestamp: r.finishedAt || null, responses: {}, takeHome: r, takeHomeKey },
+              status: 'decrypted',
+              error: null,
+              mailboxReceipt: null
+            });
+          }
+          continue;
+        }
         // Plain-JSON submission (student saved offline with no class key) — the file
         // content IS the decrypted payload, so add it as already-decrypted (no key needed).
         const looksJson = /\.json$/i.test(f.name || '') || text.trim().charAt(0) === '{';
         if (looksJson) {
           try {
             const p = JSON.parse(text);
-            // Word Sounds take-home: a saved results file, or the same result
+            // Take-home packet results: a saved results file, or the same result
             // delivered by the Class Mailbox. A second copy of the same attempt
             // (saved AND sent, or imported twice) is not added again.
             if (p && (p.kind === 'alloflow-take-home-result' || p.kind === 'alloflow-take-home-submission')) {
@@ -4427,13 +4590,14 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               const already = queue.concat(newRows).some(row => row && row.payload && row.payload.takeHomeKey === takeHomeKey);
               if (already) continue;
               const nickname = siStableIdentityValue(r.learnerName || (typeof p.studentName === 'string' ? p.studentName : '')) || '?';
+              const title = r.lessonTitle || 'Take-home practice';
               newRows.push({
                 fileName: f.name,
                 nickname,
-                docTitle: r.lessonTitle || 'Word Sounds take-home',
+                docTitle: title,
                 timestamp: r.finishedAt || null,
                 encryptedBlob: null,
-                payload: { kind: 'alloflow-take-home', nickname, docTitle: r.lessonTitle || 'Word Sounds take-home', timestamp: r.finishedAt || null, responses: {}, takeHome: r, takeHomeKey },
+                payload: { kind: 'alloflow-take-home', nickname, docTitle: title, timestamp: r.finishedAt || null, responses: {}, takeHome: r, takeHomeKey },
                 status: 'decrypted',
                 error: null,
                 mailboxReceipt: (p.mailboxReceipt && typeof p.mailboxReceipt === 'object') ? p.mailboxReceipt : null
@@ -5073,7 +5237,11 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     if (!row || row.status !== 'decrypted' || !row.payload) return { ok: false, reason: tr('not decrypted') };
     const rowGrades = grades[idx] || {};
     if (Object.keys(rowGrades).length === 0) return { ok: false, reason: tr('no grades') };
-    const existing = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
+    let existing = {};
+    try {
+      const parsed = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) existing = parsed;
+    } catch (_) { existing = {}; }
     const nickname = row.payload.nickname || 'unknown';
     const docTitle = row.payload.docTitle || 'untitled';
     const className = (classKeyMeta && classKeyMeta.className) || (rosterKey && rosterKey.className) || '';
@@ -5285,7 +5453,11 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   // Delete a gradebook entry by storage key.
   const deleteGradebookEntry = (storageKey) => {
     try {
-      const existing = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
+      let existing = {};
+    try {
+      const parsed = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) existing = parsed;
+    } catch (_) { existing = {}; }
       delete existing[storageKey];
       localStorage.setItem('alloflow_offline_grades', JSON.stringify(existing));
       setGradebookRefresh(t => t + 1);
@@ -6153,7 +6325,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             tr('📥 Import student submissions')
           ),
           /*#__PURE__*/React.createElement('p', { id: 'submission-inbox-description', style: { margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b' } },
-            tr('Load your class key, then drop in the encrypted .alloflow.html files students sent you.')
+            tr('Add student submission files or collect them from Class Mailbox. Load a class key only if decrypting .alloflow.html files.')
           )
         ),
         /*#__PURE__*/React.createElement('button', {
@@ -6165,40 +6337,14 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
 
       // Body
       /*#__PURE__*/React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '18px 22px' } },
-        // Step 1: class key
-        /*#__PURE__*/React.createElement('div', { style: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '14px 16px', marginBottom: 14 } },
-          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
-            /*#__PURE__*/React.createElement('div', null,
-              /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#1e3a8a', marginBottom: 2 } }, tr('1. Class key file')),
-              privateJwk
-                ? /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#1e40af' } },
-                    tr('✓ Loaded'),
-                    classKeyMeta?.className ? ' for "' + classKeyMeta.className + '"' : '',
-                    classKeyMeta?.createdAt ? ' (created ' + classKeyMeta.createdAt.slice(0, 10) + ')' : ''
-                  )
-                : /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#64748b' } },
-                    tr('Pick the class-key_*.alloflow file you saved when setting up offline submissions.')
-                  )
-            ),
-            /*#__PURE__*/React.createElement('button', {
-              type: 'button', onClick: () => keyInputRef.current?.click(),
-              style: { padding: '8px 16px', background: privateJwk ? '#f1f5f9' : '#2563eb', color: privateJwk ? '#475569' : 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
-            }, privateJwk ? tr('🔁 Load different key') : tr('🔑 Load class key'))
-          ),
-          /*#__PURE__*/React.createElement('input', {
-            ref: keyInputRef, type: 'file', accept: '.alloflow,application/json',
-            onChange: handleKeyFile, style: { display: 'none' }, 'aria-label': tr('Class key file')
-          })
-        ),
-
-        // Step 2: submission files
+        // Primary action: student submission files + Class Mailbox pickup
         /*#__PURE__*/React.createElement('div', { style: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '14px 16px', marginBottom: 14 } },
           /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
             /*#__PURE__*/React.createElement('div', null,
-              /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#166534', marginBottom: 2 } }, tr('2. Student submission files')),
+              /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#166534', marginBottom: 2 } }, tr('Student submission files')),
               /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#475569' } },
                 queue.length === 0
-                  ? tr('Select the files students saved — encrypted .alloflow.html (needs the class key) or plain .json (no key needed).')
+                  ? tr('Select the files students saved — plain .json (no key needed) or encrypted .alloflow.html (uses your class key below).')
                   : (queue.length + ' file' + (queue.length === 1 ? '' : 's') + ' loaded · ' +
                      (counts.decrypted || 0) + ' decrypted · ' +
                      (counts.pending || 0) + ' pending · ' +
@@ -6217,7 +6363,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             )
           ),
           /*#__PURE__*/React.createElement('input', {
-            ref: subInputRef, type: 'file', accept: '.html,.alloflow.html,text/html,.json,application/json', multiple: true,
+            ref: subInputRef, type: 'file', accept: '.html,.alloflow.html,text/html,.json,application/json,.csv,text/csv', multiple: true,
             onChange: handleSubmissionFiles, style: { display: 'none' }, 'aria-label': tr('Submission files')
           }),
           /*#__PURE__*/React.createElement('div', { 'data-si-mailbox-pull': 'true', style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 10, paddingTop: 10, borderTop: '1px dashed #bbf7d0' } },
@@ -6245,6 +6391,42 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                 ),
             /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'data-si-mailbox-status': 'true', style: { flexBasis: '100%', fontSize: '0.8rem', color: mbPull.needsUpdate ? '#92400e' : '#334155' } }, mbPull.msg)
           )
+        ),
+
+        // Optional class key — collapsed unless needed for encrypted .alloflow.html files or already loaded
+        /*#__PURE__*/React.createElement('details', {
+          open: (privateJwk || (counts.pending || 0) > 0) ? true : undefined,
+          style: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '10px 16px', marginBottom: 14 }
+        },
+          /*#__PURE__*/React.createElement('summary', {
+            style: { cursor: 'pointer', fontWeight: 700, color: '#1e3a8a', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }
+          },
+            /*#__PURE__*/React.createElement('span', null,
+              tr('🔑 Class key file (only for encrypted .alloflow.html files)'),
+              privateJwk ? ' · ' + tr('✓ Loaded') : ((counts.pending || 0) > 0 ? ' · ' + (counts.pending + ' ' + tr('waiting for key')) : '')
+            )
+          ),
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 10, paddingTop: 10, borderTop: '1px solid #bfdbfe' } },
+            /*#__PURE__*/React.createElement('div', null,
+              privateJwk
+                ? /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#1e40af' } },
+                    tr('✓ Loaded'),
+                    classKeyMeta?.className ? ' for "' + classKeyMeta.className + '"' : '',
+                    classKeyMeta?.createdAt ? ' (created ' + classKeyMeta.createdAt.slice(0, 10) + ')' : ''
+                  )
+                : /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#64748b' } },
+                    tr('Pick the class-key_*.alloflow file you saved when setting up offline submissions.')
+                  )
+            ),
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button', onClick: () => keyInputRef.current?.click(),
+              style: { padding: '8px 16px', background: privateJwk ? '#f1f5f9' : '#2563eb', color: privateJwk ? '#475569' : 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
+            }, privateJwk ? tr('🔁 Load different key') : tr('🔑 Load class key'))
+          ),
+          /*#__PURE__*/React.createElement('input', {
+            ref: keyInputRef, type: 'file', accept: '.alloflow,application/json',
+            onChange: handleKeyFile, style: { display: 'none' }, 'aria-label': tr('Class key file')
+          })
         ),
 
         // Class rubric panel — shown whenever ≥1 row is decrypted. Optional
@@ -7368,7 +7550,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         role: 'presentation',
         style: { position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 10 }
       },
-        /*#__PURE__*/React.createElement('div', { ref: anchorDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'anchor-dialog-title', 'aria-describedby': 'anchor-dialog-description', tabIndex: -1, onKeyDown: event => { event.stopPropagation(); if (event.key === 'Escape') { event.preventDefault(); cancelPendingAnchor(); return; } containDialogFocus(event, anchorDialogRef.current); }, style: { background: 'white', borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.25)', maxWidth: 540, width: '100%', padding: '20px 24px', border: pendingAnchor.mode === 'manual' ? '2px solid #7dd3fc' : '2px solid #fde68a' } },
+        /*#__PURE__*/React.createElement('div', { ref: anchorDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'anchor-dialog-title', 'aria-describedby': 'anchor-dialog-description', tabIndex: -1, onKeyDown: event => { event.stopPropagation(); if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); cancelPendingAnchor(); return; } containDialogFocus(event, anchorDialogRef.current); }, style: { background: 'white', borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.25)', maxWidth: 540, width: '100%', padding: '20px 24px', border: pendingAnchor.mode === 'manual' ? '2px solid #7dd3fc' : '2px solid #fde68a' } },
           /*#__PURE__*/React.createElement('h3', { id: 'anchor-dialog-title', style: { margin: '0 0 8px 0', fontSize: '1.05rem', fontWeight: 800, color: pendingAnchor.mode === 'manual' ? '#075985' : '#92400e' } }, tr(pendingAnchor.mode === 'manual' ? 'Score this response' : '📌 Anchor this response')),
           /*#__PURE__*/React.createElement('p', { id: 'anchor-dialog-description', style: { margin: '0 0 12px 0', fontSize: '0.85rem', color: '#64748b' } },
             tr(pendingAnchor.mode === 'manual'
@@ -7411,7 +7593,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             /*#__PURE__*/React.createElement('button', {
               type: 'button', onClick: confirmPendingAnchor,
               disabled: !pendingScoreValid,
-              style: { padding: '8px 16px', background: pendingAnchor.mode === 'manual' ? '#0284c7' : '#f59e0b', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: !pendingScoreValid ? 'not-allowed' : 'pointer', opacity: !pendingScoreValid ? 0.55 : 1, fontSize: '0.88rem' }
+              style: { padding: '8px 16px', background: pendingAnchor.mode === 'manual' ? '#0369a1' : '#b45309', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: !pendingScoreValid ? 'not-allowed' : 'pointer', opacity: !pendingScoreValid ? 0.55 : 1, fontSize: '0.88rem' }
             }, tr(pendingAnchor.mode === 'manual' ? 'Save score' : '📌 Add anchor'))
           )
         )
@@ -7427,7 +7609,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
           tabIndex: -1,
           onKeyDown: event => {
             event.stopPropagation();
-            if (event.key === 'Escape') { event.preventDefault(); finishConfirmation(false); return; }
+            if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); finishConfirmation(false); return; }
             containDialogFocus(event, confirmationDialogRef.current);
           },
           style: { background: 'white', borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.3)', maxWidth: 480, width: '100%', padding: '22px 24px', border: '2px solid #fecaca' }

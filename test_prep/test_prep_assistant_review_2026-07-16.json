@@ -6,8 +6,8 @@
   "status": "reviewed-target-not-met",
   "snapshot": {
     "algorithm": "sha256",
-    "generatedAt": "2026-10-10T19:32:52.437Z",
-    "hash": "569c2044db345a0f1c80ca93fcabc4d01d4815927e2e2ec017eb7299878e0e80"
+    "generatedAt": "2026-11-19T20:34:49.586Z",
+    "hash": "3a8ac90fd5d07198774300b53cdcbc5665a5e9260f101539d3dde04bd56168f2"
   },
   "standard": {
     "target": "500 genuinely distinct exam-style questions per non-EPPP pack",
@@ -129,8 +129,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 296,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "d8f61df57ed847ce0d262078603554db038bd3fbbc9d5668a54c1fbe6a5b4b05",
-      "itemsSha256": "9894da8379a5963a73b86194c84179a61421b09a762c5c3a4a2d951e5f0e1429"
+      "packSha256": "320e0968b36766be49b95d238e28ebbdc08be6c294b850d05394c2f38459871d",
+      "itemsSha256": "56bd74a26108b5d5d28805c5c02a438d91e5ad256ebc6719de25f4e0aea742c0"
     },
     {
       "stem": "early_childhood_5025",
@@ -148,8 +148,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 295,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "b63cd365b036c8a11c9599fcfc993e8d1c74c8d2c4e68ccd8b6885543706e322",
-      "itemsSha256": "68a2d426baa64bb1276fa983c6400d951c706d73bb0972efd9aa896a63f8039a"
+      "packSha256": "6ec17ffd98ff3cc892f78b574110d05da5e76357a6f5c0536f1bc7e6de881220",
+      "itemsSha256": "9ce78ed13f5e07197fde2805dfe5e277f328bb63c0220b1c46a845a596f1320f"
     },
     {
       "stem": "educational_leadership_5412",
@@ -167,8 +167,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "3c91cb7c2b8417bed3b3fcca99ee47c96908dcf6234cfdfd9d68c1100374d705",
-      "itemsSha256": "c63d685c2247da25686529830b6887ec1ef1194b2c661c0ff7036e1276779a9f"
+      "packSha256": "2c9f6c9455907b1da4df926763639f35836f79ecba9cf0abbfb8643d3a55a13c",
+      "itemsSha256": "7039f5abf955ca55957d3fe52d6265730fae160549fac168f6cce963a502b441"
     },
     {
       "stem": "esol_5362",
@@ -205,8 +205,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 0,
       "verdict": "reviewed-target-met",
-      "packSha256": "4c71cfb7010a78fbbdee1114a4704a0d8bcbcaeb37c61c1c91e5eb891c60b4f5",
-      "itemsSha256": "39c016af4d7f0849f9194537adbe7152d7a64519101706e54309a824034c90f3"
+      "packSha256": "04096d9b8f622855a7e6d24f5dba18838a7dd25c6c94d685a7a6f87173c30725",
+      "itemsSha256": "a08c438b78306a181e322652d2d2dc0e1d716b00107f080568f4e7006d2b85e0"
     },
     {
       "stem": "plt_5_9_5623",
@@ -338,8 +338,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "54203c9aef413552efa426e9fcee4fa88406be107d1927e4340f86fe76842c73",
-      "itemsSha256": "cd780d7d24bf7c01ec7599d62a7385f3c7292b99467de38238de22f53ba1224d"
+      "packSha256": "344c0f31724977707ad192223b9b19fc8f624c220e8cf3ac0b2b5adf44729070",
+      "itemsSha256": "ee932323edeaa89bdfd349c57adabed44747f2ccd3f5907e02bffce1bfb37836"
     },
     {
       "stem": "school_librarian_5312",
@@ -357,8 +357,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 365,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "02650e2c7f756eeb62e3a910c2001df860b62ec25e6e5de0cf61e94cd146ed99",
-      "itemsSha256": "8941238fedea371635805cca5228cabb3dd8d7e6104f1c3494c8b482cfc01323"
+      "packSha256": "9bc3969566046cbd95252a0ed701e616a68b6851c93e251cba4de921862ce919",
+      "itemsSha256": "39ff11c88a63665c0015031139a5cbe49a89cf08b955c01d845d38ed93cdbdfc"
     },
     {
       "stem": "school_psychologist_5403",
@@ -376,8 +376,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "2c9a24d25f85c99aadc729c76396b0c974071ef542ddbaedceabdbd916a51e61",
-      "itemsSha256": "3ba95e41576d587a9cc1b6b71a269cdaeddd510bd3be5db4962f09f73b71b146"
+      "packSha256": "88f097b215019b00e1ccd13ebc0e12d6b6f77962823336cb30204e3b8e369d5a",
+      "itemsSha256": "7920288cd83c97235c6bdf2031a905146a9ea41dedac687c8b69420079d05d39"
     },
     {
       "stem": "special_education_5355",

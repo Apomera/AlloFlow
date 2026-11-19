@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; frame-src https:; connect-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AlloFlow Timeline Studio</title>
 <!--
@@ -20,7 +22,7 @@
   With no opener, a built-in sample + the manual builder still work. Nothing
   here is persisted.
 -->
-<link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@knight-lab/timelinejs@3.9.2/dist/css/timeline.css" integrity="sha384-tsNgcB1c5rl0DaLAKGId4pXHpQnZrA1njWqdAqQ9C4J+w0Ja/RpModKaao0xAVc5" crossorigin="anonymous" referrerpolicy="no-referrer">
 <script>
 (function () {
   function applyAlloFlowTheme(value) {
@@ -31,12 +33,6 @@
   }
   window.applyAlloFlowTheme = applyAlloFlowTheme;
   applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
-  window.addEventListener('message', function (event) {
-    if (!window.opener || event.source !== window.opener) return;
-    var data = event && event.data;
-    if (!data || data.type !== 'alloflow-theme-change') return;
-    applyAlloFlowTheme(data.theme);
-  });
 })();
 </script>
 <style>
@@ -63,7 +59,10 @@
   :root[data-theme="contrast"] input,
   :root[data-theme="contrast"] select,
   :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
-  :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
+  :focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px; }
+  :root[data-theme="light"] :focus-visible { outline-color: #1d4ed8 !important; }
+  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: #1e293b; color: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 2px solid #facc15; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { left: 8px; }
   @media (forced-colors: active) {
     button, input, select, textarea, a { forced-color-adjust: auto; }
   }
@@ -96,17 +95,19 @@
   button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .evlist { font-size: 12px; color: var(--dim); }
   .evlist .ev { padding: 5px 0; border-bottom: 1px solid var(--line); }
-  .privacy { padding: 8px 14px; border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; line-height: 1.45; margin-top: auto; }
-  .credit { padding: 4px 14px 6px; font-size: 10px; color: #94a3b8; }
+  .privacy { padding: 8px 14px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--dim); line-height: 1.45; margin-top: auto; }
+  .credit { padding: 4px 14px 6px; font-size: 10px; color: var(--dim); }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to timeline</a>
 <header>
   <h1>🕰️ Timeline Studio</h1>
   <span class="sub">TimelineJS by Knight Lab (open source, MPL) + AlloFlow</span>
   <span class="spacer"></span>
   <button id="builderBtn" type="button" aria-expanded="false" aria-controls="drawer">✍️ Add events</button>
 </header>
+<main id="main" tabindex="-1" style="flex:1 1 auto;display:flex;flex-direction:column;min-height:0">
 <div id="timeline-embed"></div>
 <div class="empty" id="empty">
   <div>
@@ -114,6 +115,7 @@
     <p>Go back to AlloFlow, paste a reading, and press <b>Build the timeline</b> — it will appear here. Or press <b>✍️ Add events</b> to build one by hand.</p>
   </div>
 </div>
+</main>
 
 <aside class="drawer" id="drawer" aria-label="Manual timeline builder" inert>
   <div class="drawer-head">
@@ -140,9 +142,9 @@
   <div class="privacy">Nothing here is saved — the timeline lives in this window only.</div>
 </aside>
 
-<div class="credit">Timeline rendering by <a href="https://timeline.knightlab.com" target="_blank" rel="noopener noreferrer" style="color:#94a3b8">TimelineJS · Knight Lab</a> (MPL). Thank you.</div>
+<footer class="credit">Timeline rendering by <a href="https://timeline.knightlab.com" target="_blank" rel="noopener noreferrer" style="color:#cbd5e1">TimelineJS · Knight Lab</a> (MPL). Thank you.</footer>
 
-<script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@knight-lab/timelinejs@3.9.2/dist/js/timeline.js" integrity="sha384-GCqlJpX2zGMsRRDed2w8YgTIUQRYGVn26rZKsDZ5wcKDyLZtAEGQMeCwUuq7jlNa" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 (function () {
   'use strict';
@@ -235,29 +237,101 @@
     if (!event || event.source !== window.opener) return false;
     return isTrustedOrigin(event.origin);
   }
+  function escapeTimelineText(val) {
+    return String(val == null ? '' : val)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
   function sanitizeTimelineHtmlField(val) {
     if (typeof val !== 'string') return val;
-    return val
-      .replace(/<\s*\/?\s*(?:script|iframe|frame|frameset|object|embed|form|meta|link|base|style|svg|math|template)\b[^>]*>/gi, '')
-      .replace(/\bon[a-z]+\s*=/gi, 'data-blocked-ev=')
-      .replace(/(?:javascript|vbscript|data)\s*:/gi, 'blocked:');
+    if (typeof DOMParser !== 'function') return escapeTimelineText(val);
+    try {
+      var doc = new DOMParser().parseFromString('<!DOCTYPE html><body>' + val, 'text/html');
+      var ALLOWED = { P: 1, BR: 1, STRONG: 1, B: 1, EM: 1, I: 1, U: 1, SMALL: 1, SUP: 1, SUB: 1, SPAN: 1, UL: 1, OL: 1, LI: 1, BLOCKQUOTE: 1, CODE: 1, A: 1 };
+      var walk = function (node) {
+        var kids = Array.prototype.slice.call(node.childNodes || []);
+        for (var i = 0; i < kids.length; i += 1) {
+          var child = kids[i];
+          if (child.nodeType === 3) continue;
+          if (child.nodeType !== 1) { if (child.parentNode) child.parentNode.removeChild(child); continue; }
+          var tag = String(child.tagName || '').toUpperCase();
+          if (!ALLOWED[tag]) {
+            if (/^(?:SCRIPT|STYLE|IFRAME|FRAME|FRAMESET|OBJECT|EMBED|SVG|MATH|TEMPLATE|NOSCRIPT|IMG|AUDIO|VIDEO|SOURCE|LINK|META|BASE|FORM)$/i.test(tag)) {
+              if (child.parentNode) child.parentNode.removeChild(child);
+            } else {
+              var txt = doc.createTextNode(child.textContent || '');
+              if (child.parentNode) child.parentNode.replaceChild(txt, child);
+            }
+            continue;
+          }
+          var attrs = Array.prototype.slice.call(child.attributes || []);
+          for (var j = 0; j < attrs.length; j += 1) {
+            var an = String(attrs[j].name || '').toLowerCase();
+            var av = String(attrs[j].value || '').trim();
+            if (tag === 'A' && an === 'href' && /^https?:\/\//i.test(av)) {
+              child.setAttribute('rel', 'noopener noreferrer');
+              child.setAttribute('target', '_blank');
+              continue;
+            }
+            if (tag === 'A' && (an === 'rel' || an === 'target')) continue;
+            child.removeAttribute(attrs[j].name);
+          }
+          walk(child);
+        }
+      };
+      walk(doc.body);
+      return doc.body.innerHTML;
+    } catch (_) {
+      return escapeTimelineText(val);
+    }
   }
   function scrubTimelineObject(tl) {
     if (!tl || typeof tl !== 'object') return tl;
+    function safeHttpUrl(v) {
+      if (typeof v !== 'string') return '';
+      var trimmed = v.trim();
+      return /^https?:\/\//i.test(trimmed) ? trimmed : '';
+    }
+    function scrubDate(dt) {
+      if (!dt || typeof dt !== 'object') return;
+      if (typeof dt.display_date === 'string') dt.display_date = escapeTimelineText(dt.display_date);
+      ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'].forEach(function (k) {
+        if (dt[k] != null && dt[k] !== '') {
+          var n = parseInt(String(dt[k]), 10);
+          if (isFinite(n)) dt[k] = n; else delete dt[k];
+        }
+      });
+    }
     function scrubSlide(s) {
       if (!s || typeof s !== 'object') return;
       if (s.text && typeof s.text === 'object') {
         if (typeof s.text.headline === 'string') s.text.headline = sanitizeTimelineHtmlField(s.text.headline);
         if (typeof s.text.text === 'string') s.text.text = sanitizeTimelineHtmlField(s.text.text);
       }
+      if (typeof s.group === 'string') s.group = escapeTimelineText(s.group);
+      if (typeof s.display_date === 'string') s.display_date = escapeTimelineText(s.display_date);
+      scrubDate(s.start_date);
+      scrubDate(s.end_date);
       if (s.media && typeof s.media === 'object') {
         if (typeof s.media.caption === 'string') s.media.caption = sanitizeTimelineHtmlField(s.media.caption);
         if (typeof s.media.credit === 'string') s.media.credit = sanitizeTimelineHtmlField(s.media.credit);
-        if (typeof s.media.url === 'string' && !/^(?:https?:)?\/\//i.test(s.media.url.trim())) s.media.url = '';
+        if (typeof s.media.alt === 'string') s.media.alt = escapeTimelineText(s.media.alt);
+        if (typeof s.media.title === 'string') s.media.title = escapeTimelineText(s.media.title);
+        if (typeof s.media.url === 'string') s.media.url = safeHttpUrl(s.media.url);
+        if (typeof s.media.link === 'string') s.media.link = safeHttpUrl(s.media.link);
+        if (typeof s.media.thumbnail === 'string') s.media.thumbnail = safeHttpUrl(s.media.thumbnail);
+      }
+      if (s.background && typeof s.background === 'object') {
+        if (typeof s.background.url === 'string') s.background.url = safeHttpUrl(s.background.url);
+        if (typeof s.background.color === 'string' && !/^#[0-9a-f]{3,8}$/i.test(s.background.color.trim())) s.background.color = '';
       }
     }
     scrubSlide(tl.title);
     if (Array.isArray(tl.events)) tl.events.forEach(scrubSlide);
+    if (Array.isArray(tl.eras)) tl.eras.forEach(scrubSlide);
     return tl;
   }
   window.__alloTimelineTrust = { isTrustedOrigin: isTrustedOrigin, isTrustedOpenerMessage: isTrustedOpenerMessage };
@@ -266,9 +340,14 @@
     // may drive this window. TimelineJS renders the text fields as HTML, so an
     // unguarded listener let any page that opened this URL inject markup here.
     if (!isTrustedOpenerMessage(event)) return;
+    if (verifiedOpenerOrigin && event.origin !== verifiedOpenerOrigin) return;
     var msg = event && event.data;
     if (!msg || typeof msg.type !== 'string') return;
-    verifiedOpenerOrigin = event.origin;
+    if (!verifiedOpenerOrigin) verifiedOpenerOrigin = event.origin;
+    if (msg.type === 'alloflow-theme-change') {
+      if (typeof window.applyAlloFlowTheme === 'function') window.applyAlloFlowTheme(msg.theme);
+      return;
+    }
     if (msg.type === 'allotimeline-data' && msg.timeline && typeof msg.timeline === 'object') {
       data = scrubTimelineObject(msg.timeline);
       ensureData();
@@ -304,11 +383,13 @@
       if (!year) document.getElementById('mYear').focus(); else document.getElementById('mHeadline').focus();
       return;
     }
+    var parsedYear = parseInt(year, 10);
+    if (!isFinite(parsedYear)) { document.getElementById('mYear').focus(); return; }
     var d = ensureData();
-    var sd = { year: year };
-    if (month) sd.month = month;
-    if (day) sd.day = day;
-    d.events.push({ start_date: sd, text: { headline: headline, text: text } });
+    var sd = { year: parsedYear };
+    if (month) { var parsedMonth = parseInt(month, 10); if (isFinite(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12) sd.month = parsedMonth; }
+    if (day) { var parsedDay = parseInt(day, 10); if (isFinite(parsedDay) && parsedDay >= 1 && parsedDay <= 31) sd.day = parsedDay; }
+    d.events.push({ start_date: sd, text: { headline: escapeTimelineText(headline), text: escapeTimelineText(text) } });
     // Sort chronologically by year (numeric), then month, then day.
     d.events.sort(function (a, b) {
       var ay = parseInt((a.start_date && a.start_date.year) || 0, 10), by = parseInt((b.start_date && b.start_date.year) || 0, 10);

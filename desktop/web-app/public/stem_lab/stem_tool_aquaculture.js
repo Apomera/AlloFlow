@@ -8655,7 +8655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var _ens = function(cb){
         if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
         var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-        var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+        if(window._isDesktopBundledApp===true){cb();return;} var _sri=["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.integrity=_sri[i]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
       };
       _ens(function(){
         try {
@@ -9313,6 +9313,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   // ───────────────────────────────────────────────────────────
   // REGISTER
   // ───────────────────────────────────────────────────────────
+  // Bespoke Sustainable Aquaculture Studio CSS + High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-aquaculture-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-aquaculture-studio-css';
+    st.textContent = [
+      '.aqc-hero-deck { background: linear-gradient(125deg, #042f2e 0%, #0b3a4a 55%, #111827 100%); border: 1px solid rgba(94,234,212,0.36); border-radius: 18px; padding: 16px 18px; margin-bottom: 14px; color: #f8fafc; box-shadow: 0 14px 32px -20px rgba(2,24,22,0.85); min-width: 0; }',
+      '.aqc-hero-top { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; min-width: 0; }',
+      '.aqc-emblem-box { width: 54px; height: 54px; border-radius: 14px; background: linear-gradient(135deg, rgba(45,212,191,0.28), rgba(4,47,46,0.94)); border: 1.5px solid rgba(94,234,212,0.52); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 16px rgba(2,24,22,0.5); }',
+      '.aqc-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(45,212,191,0.2); border: 1px solid rgba(94,234,212,0.48); color: #99f6e4; font-size: 10px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.aqc-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(94,234,212,0.22); }',
+      '.aqc-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(3,23,20,0.72); border: 1px solid rgba(94,234,212,0.34); color: #f0fdfa; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.aqc-cycle-strip { margin-top: 12px; padding: 8px 10px; border-radius: 12px; background: rgba(3,23,20,0.68); border: 1px solid rgba(94,234,212,0.26); }',
+      '.aqc-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(94,234,212,0.22); }',
+      '.aqc-starter-label { font-size: 10.5px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; color: #99f6e4; }',
+      '.aqc-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(3,23,20,0.78); border: 1px solid rgba(94,234,212,0.38); color: #f0fdfa; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.aqc-starter-chip:hover:not(:disabled) { background: rgba(45,212,191,0.26); border-color: #99f6e4; color: #ffffff; }',
+      '.theme-contrast [data-stem-tool-shell="aquacultureLab"] .aqc-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="aquacultureLab"] .aqc-emblem-box, .theme-contrast [data-stem-tool-shell="aquacultureLab"] .aqc-subject-badge, .theme-contrast [data-stem-tool-shell="aquacultureLab"] .aqc-telemetry-pill, .theme-contrast [data-stem-tool-shell="aquacultureLab"] .aqc-cycle-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="aquacultureLab"] .aqc-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="aquacultureLab"] .aqc-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   window.StemLab.registerTool('aquacultureLab', {
     label: 'AquacultureLab: Mussel Farm Sim',
     title: 'AquacultureLab: Mussel Farm Sim',
@@ -9341,7 +9366,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var h = React ? React.createElement : null;
     var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
 
-    var stateInit = loadState();
+    var rawStateInit = loadState();
+    var stateInit = (rawStateInit && typeof rawStateInit === 'object' && !Array.isArray(rawStateInit)) ? rawStateInit : {};
     var tabHook = useState(typeof stateInit.lastTopic === 'string' ? stateInit.lastTopic : 'home');
     var tab = tabHook[0], setTab = tabHook[1];
     var navSearchHook = useState('');
@@ -10248,7 +10274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           ? '<p><strong>Mission performance:</strong> ' + summary.elapsedSeconds + ' seconds \u00B7 ' + summary.fuelRemaining + '% fuel remaining \u00B7 ' + summary.buoyViolations + ' navigation corrections \u00B7 ' + summary.droppersDeployed + '/5 droppers</p>'
           : '<p><strong>Mission performance:</strong> ' + summary.droppersDeployed + '/5 droppers deployed in guided mode</p>';
         var verification = summary.decisionId ? '<p><strong>Verification response:</strong> ' + aqEscapeHtml(summary.decisionLabel) + ' - ' + aqEscapeHtml(summary.decisionOutcome) + ' <span>(' + summary.decisionAttempts + ' attempt' + (summary.decisionAttempts === 1 ? '' : 's') + ')</span></p>' : '';
-        return '<div class="mission-samples">' + fieldContext + performance + verification + '<table><caption>Paired boat-probe record</caption><thead><tr><th>Depth</th><th>Temperature</th><th>Salinity</th><th>Dissolved oxygen</th><th>pH</th><th>Chlorophyll-a</th></tr></thead><tbody>' +
+        return '<div class="mission-samples">' + fieldContext + performance + verification + '<table><caption>Paired boat-probe record</caption><thead><tr><th scope="col">Depth</th><th scope="col">Temperature</th><th scope="col">Salinity</th><th scope="col">Dissolved oxygen</th><th scope="col">pH</th><th scope="col">Chlorophyll-a</th></tr></thead><tbody>' +
           sampleRow('Surface', summary.surfaceReading) + sampleRow('Crop depth', summary.cropDepthReading) + '</tbody></table><p class="area">These paired readings are learning evidence, not a food-safety or harvest-status determination.</p></div>';
       }
       var missionMarkup = portfolio.missions.length ? portfolio.missions.map(function(item) {
@@ -11565,6 +11591,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         { id: 'permits', label: 'Build the farm case', detail: 'Review lease tiers, hearings, costs, safety, and market choices.', tab: 'lease', tone: '#fbbf24' }
       ];
       return h('div', null,
+        // Bespoke Sustainable Aquaculture Studio Hero Deck
+        h('section', { className: 'aqc-hero-deck', 'data-aquaculture-hero-deck': 'true', 'aria-labelledby': 'aqc-hero-title' },
+          h('div', { className: 'aqc-hero-top' },
+            h('div', { className: 'aqc-emblem-box', 'aria-hidden': 'true' },
+              h('svg', { viewBox: '0 0 46 46', width: 36, height: 36, fill: 'none' },
+                h('line', { x1: 8, y1: 11, x2: 38, y2: 11, stroke: '#5eead4', strokeWidth: 2, strokeLinecap: 'round' }),
+                h('line', { x1: 16, y1: 11, x2: 16, y2: 33, stroke: '#99f6e4', strokeWidth: 1.4, strokeDasharray: '2 2' }),
+                h('line', { x1: 30, y1: 11, x2: 30, y2: 33, stroke: '#99f6e4', strokeWidth: 1.4, strokeDasharray: '2 2' }),
+                h('ellipse', { cx: 16, cy: 19, rx: 4, ry: 2.5, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1 }),
+                h('ellipse', { cx: 16, cy: 26, rx: 4, ry: 2.5, fill: '#2dd4bf', stroke: '#ccfbf1', strokeWidth: 1 }),
+                h('ellipse', { cx: 30, cy: 19, rx: 4, ry: 2.5, fill: '#2dd4bf', stroke: '#ccfbf1', strokeWidth: 1 }),
+                h('ellipse', { cx: 30, cy: 26, rx: 4, ry: 2.5, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1 }),
+                h('path', { d: 'M6 38 Q15 34 23 38 T40 38', stroke: '#38bdf8', strokeWidth: 1.8, strokeLinecap: 'round' })
+              )
+            ),
+            h('div', { style: { flex: '1 1 260px', minWidth: 0 } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                h('span', { className: 'aqc-subject-badge' }, __alloT('stem.aquaculture.badge_subject', 'Marine Science · Sustainable Aquaculture')),
+                h('span', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase' } }, __alloT('stem.aquaculture.estuary_studio', 'Estuarine Farm & Ecosystem Studio'))
+              ),
+              h('h2', { id: 'aqc-hero-title', style: { margin: '0 0 4px', color: '#f8fafc', fontSize: 22, fontWeight: 900, lineHeight: 1.2 } }, '\uD83E\uDDAA ' + __alloT('stem.aquaculture.hero_title', 'AquacultureLab: Shellfish & Ecosystem Workbench')),
+              h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12.5, lineHeight: 1.5, maxWidth: 720 } }, __alloT('stem.aquaculture.hero_subtitle', 'Model carrying capacity, dissolved oxygen, phytoplankton food webs, and responsible marine farm operations from estuarine probe readings to harvest evidence.'))
+            )
+          ),
+          // Live non-spoiler telemetry strip
+          h('div', { className: 'aqc-telemetry-strip' },
+            h('span', { className: 'aqc-telemetry-pill' }, '\uD83E\uDDED ' + __alloT('stem.aquaculture.telemetry_topics', 'Topics: ') + visitedTopicCount + '/' + (allTopicIds.length - 1)),
+            h('span', { className: 'aqc-telemetry-pill' }, '\u2693 ' + __alloT('stem.aquaculture.telemetry_missions', 'Missions: ') + completedCount + '/' + MISSIONS.length),
+            h('span', { className: 'aqc-telemetry-pill' }, '\uD83E\uDDEA ' + ecosystemExperimentCount + ' ' + __alloT('stem.aquaculture.telemetry_experiments', 'Experiments')),
+            h('span', { className: 'aqc-telemetry-pill' }, '\uD83E\uDDAA ' + musselFieldCheckCount + ' ' + __alloT('stem.aquaculture.telemetry_checks', 'Mussel Checks'))
+          ),
+          // Estuarine Aquaculture Carrying-Capacity Schematic (inline SVG, >=10.5px labels)
+          h('div', { className: 'aqc-cycle-strip' },
+            h('svg', {
+              viewBox: '0 0 580 58', role: 'img',
+              'aria-label': __alloT('stem.aquaculture.a11y_carrying_capacity_diagram', 'Sustainable aquaculture system flow: estuarine temperature, salinity, and plankton feed filter-feeding shellfish and kelp crops, balanced against dissolved oxygen and carrying capacity evidence'),
+              style: { width: '100%', maxHeight: 60, height: 'auto', display: 'block' }
+            },
+              h('line', { x1: 174, y1: 29, x2: 208, y2: 29, stroke: '#5eead4', strokeWidth: 2 }),
+              h('line', { x1: 372, y1: 29, x2: 406, y2: 29, stroke: '#60a5fa', strokeWidth: 2 }),
+              h('rect', { x: 8, y: 7, width: 166, height: 44, rx: 10, fill: 'rgba(20,184,166,0.24)', stroke: '#5eead4', strokeWidth: 1.5 }),
+              h('text', { x: 91, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '1. Estuarine Inputs'),
+              h('text', { x: 91, y: 41, textAnchor: 'middle', fill: '#99f6e4', fontSize: 10.5 }, 'Tides · Salinity · Plankton'),
+              h('rect', { x: 208, y: 7, width: 164, height: 44, rx: 10, fill: 'rgba(56,189,248,0.22)', stroke: '#38bdf8', strokeWidth: 1.5 }),
+              h('text', { x: 290, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '2. Multi-Trophic Farm'),
+              h('text', { x: 290, y: 41, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'Mussels · Oysters · Kelp'),
+              h('rect', { x: 406, y: 7, width: 166, height: 44, rx: 10, fill: 'rgba(251,191,36,0.22)', stroke: '#fbbf24', strokeWidth: 1.5 }),
+              h('text', { x: 489, y: 25, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11.5, fontWeight: 800 }, '3. Carrying Capacity'),
+              h('text', { x: 489, y: 41, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'DO · Probe Data · Leases')
+            )
+          ),
+          // One-click Aquaculture Workflow Starters (44px touch targets, hidden under lock)
+          !(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked)) && h('div', { className: 'aqc-starter-bar', role: 'group', 'aria-label': __alloT('stem.aquaculture.a11y_quick_starters', 'Quick aquaculture lab starters') },
+            h('span', { className: 'aqc-starter-label' }, __alloT('stem.aquaculture.quick_launch', 'Quick launch:')),
+            [
+              { id: 'sim', icon: '⛵', label: __alloT('stem.aquaculture.starter_sim', '3D Farm Sim') },
+              { id: 'ecosystem', icon: '🌿', label: __alloT('stem.aquaculture.starter_ecosystem', 'Ecosystem Builder') },
+              { id: 'chart', icon: '🗺️', label: __alloT('stem.aquaculture.starter_chart', 'River Chart') },
+              { id: 'musseldeep', icon: '🦪', label: __alloT('stem.aquaculture.starter_mussel', 'Mussel Health') },
+              { id: 'species', icon: '🧬', label: __alloT('stem.aquaculture.starter_species', 'Crop Biology') },
+              { id: 'lease', icon: '📋', label: __alloT('stem.aquaculture.starter_lease', 'Lease & Permits') }
+            ].map(function(st) {
+              return h('button', {
+                key: 'aqc-st-' + st.id, type: 'button', className: 'aqc-starter-chip',
+                onClick: function() { navigateToTopic(st.id, st.label); }
+              }, h('span', { 'aria-hidden': 'true' }, st.icon), h('span', null, st.label));
+            })
+          )
+        ),
         lastContentLocation && h('section', { className: 'aq-resume-card', role: 'status', 'aria-label': __alloT('stem.aquaculture.a11y_resume_aquaculture_learning', 'Resume aquaculture learning'),
           style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '11px 13px', marginBottom: 12, borderRadius: 12, background: 'linear-gradient(110deg, rgba(11,43,40,0.98), rgba(7,31,29,0.96))', border: '1px solid #5c8580' } },
           h('div', null,

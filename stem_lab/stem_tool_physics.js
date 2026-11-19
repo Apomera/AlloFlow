@@ -1319,7 +1319,7 @@ window.StemLab = window.StemLab || {
       // Student AI-off: null unless text AI is usable, so the AI physics tutor hides.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
@@ -6240,6 +6240,18 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer .phys-tier3-accent{color:var(--phys-accent)}
               #physics-fs-outer .phys-tier3-status{margin-top:8px;padding:9px 12px;border-radius:9px;border:1px solid var(--phys-line);background:var(--phys-soft);color:var(--phys-ink);font-size:12px;font-weight:700}
               #physics-fs-outer[data-physics-theme="contrast"] [data-physics-snapshot]{background:#000!important;background-image:none!important;color:#ff0!important;border:1px solid #ff0!important}
+              #physics-fs-outer .phys-hero-strip{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:10px 24px;border-top:1px solid #2b4c63;background:rgba(7,22,36,.42)}
+              #physics-fs-outer .phys-hero-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,35,54,.72);border:1px solid rgba(140,216,230,.34);color:#d0e8f2;white-space:nowrap}
+              #physics-fs-outer .phys-hero-pill strong{color:#8cd8e6;font-weight:900}
+              #physics-fs-outer .phys-preset-group{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-left:auto}
+              #physics-fs-outer .phys-preset-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#aee1ec;margin-right:2px}
+              #physics-fs-outer .phys-preset-chip{display:inline-flex;align-items:center;gap:4px;min-height:34px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:750;background:rgba(255,255,255,.09);border:1px solid rgba(140,216,230,.4);color:#eef7fb;cursor:pointer;transition:background-color .15s,border-color .15s}
+              #physics-fs-outer .phys-preset-chip:hover:not(:disabled){background:rgba(140,216,230,.22);border-color:#8cd8e6;color:#ffffff}
+              #physics-fs-outer .phys-preset-chip:disabled{opacity:.48;cursor:not-allowed}
+              #physics-fs-outer[data-physics-theme="contrast"] .phys-hero-strip{background:#000!important;border-top:1px solid #fff!important}
+              #physics-fs-outer[data-physics-theme="contrast"] .phys-hero-pill{background:#000!important;border:1px solid #ff0!important;color:#ff0!important}
+              #physics-fs-outer[data-physics-theme="contrast"] .phys-hero-pill strong,#physics-fs-outer[data-physics-theme="contrast"] .phys-preset-lbl{color:#0f0!important}
+              #physics-fs-outer[data-physics-theme="contrast"] .phys-preset-chip{background:#000!important;border:2px solid #0f0!important;color:#ff0!important}
               @media(prefers-reduced-motion:reduce){#physics-fs-outer :is(button,input,summary){transition:none!important;animation:none!important}}
             `),
             (ctx.renderTutorial || function () { return null; })('physics', ctx._tutPhysics || []),
@@ -6251,6 +6263,19 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   React.createElement("div", { className: "min-w-0" },
                     React.createElement("div", { className: "phys-command-title" },
                       React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': __alloT('stem.physics.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                      (function() {
+                        var angRad = (((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) * Math.PI) / 180;
+                        var vx = +(12 + 20 * Math.cos(angRad)).toFixed(1);
+                        var vy = +(48 - 20 * Math.sin(angRad)).toFixed(1);
+                        return React.createElement("svg", { width: 48, height: 48, viewBox: "0 0 64 64", className: "shrink-0", 'aria-hidden': 'true', focusable: 'false' },
+                          React.createElement("rect", { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : 'rgba(6,18,32,0.72)', stroke: isContrast ? '#00ff00' : 'rgba(140,216,230,0.52)', strokeWidth: 1.5 }),
+                          React.createElement("line", { x1: 10, y1: 48, x2: 54, y2: 48, stroke: isContrast ? '#ffffff' : '#64748b', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                          React.createElement("path", { d: "M12 48 Q32 10 52 48", fill: "none", stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 2, strokeDasharray: "4 3" }),
+                          React.createElement("line", { x1: 12, y1: 48, x2: vx, y2: vy, stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 2.8, strokeLinecap: 'round' }),
+                          React.createElement("circle", { cx: 12, cy: 48, r: 3.2, fill: '#f8fafc' }),
+                          React.createElement("circle", { cx: vx, cy: vy, r: 2.8, fill: isContrast ? '#00ff00' : '#fbbf24' })
+                        );
+                      })(),
                       React.createElement("div", { style: { minWidth: 0 } },
                         React.createElement("p", { className: "phys-command-eyebrow" }, __alloT('stem.physics.projectile_mission', 'Projectile mission')),
                         React.createElement("h3", { className: "font-black" }, __alloT('stem.physics.physics_simulator', 'Physics Simulator')))
@@ -6269,6 +6294,28 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     })
                   )
                 ),
+                (function() {
+                  var presetLocked = !!(d.targetMode || d.obstacleMode || d.challengeActive);
+                  var applyPhysPreset = function(patch) {
+                    if (presetLocked || typeof setLabToolData !== 'function') return;
+                    setLabToolData(function(prev) {
+                      var cur = (prev && prev.physics && typeof prev.physics === 'object') ? prev.physics : {};
+                      return Object.assign({}, prev, { physics: Object.assign({}, cur, patch, { predictionResult: null }) });
+                    });
+                  };
+                  return React.createElement("div", { className: "phys-hero-strip" },
+                    React.createElement("span", { className: "phys-hero-pill" }, __alloT('stem.physics.pill_gravity', 'g'), " ", React.createElement("strong", null, Number(d.gravity || 9.8).toFixed(2) + " m/s²")),
+                    React.createElement("span", { className: "phys-hero-pill" }, __alloT('stem.physics.pill_height', 'h₀'), " ", React.createElement("strong", null, Number(d.launchHeight || 0).toFixed(0) + " m")),
+                    React.createElement("span", { className: "phys-hero-pill" }, __alloT('stem.physics.pill_drag', 'Drag'), " ", React.createElement("strong", null, d.airResist ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
+                    React.createElement("div", { className: "phys-preset-group", role: "group", 'aria-label': __alloT('stem.physics.a11y_launch_presets', 'Starter launch configurations') },
+                      React.createElement("span", { className: "phys-preset-lbl" }, __alloT('stem.physics.presets_label', 'Setups:')),
+                      React.createElement("button", { type: "button", className: "phys-preset-chip", disabled: presetLocked, onClick: function() { applyPhysPreset({ angle: 45, velocity: 25, launchHeight: 0, airResist: false, gravity: 9.8 }); } }, "📐 " + __alloT('stem.physics.preset_45', '45° Optimal')),
+                      React.createElement("button", { type: "button", className: "phys-preset-chip", disabled: presetLocked, onClick: function() { applyPhysPreset({ angle: 70, velocity: 28, launchHeight: 0, airResist: false, gravity: 9.8 }); } }, "🏹 " + __alloT('stem.physics.preset_high_arc', '70° High Arc')),
+                      React.createElement("button", { type: "button", className: "phys-preset-chip", disabled: presetLocked, onClick: function() { applyPhysPreset({ angle: 0, velocity: 20, launchHeight: 15, airResist: false, gravity: 9.8 }); } }, "⛰️ " + __alloT('stem.physics.preset_cliff', 'Cliff Drop')),
+                      React.createElement("button", { type: "button", className: "phys-preset-chip", disabled: presetLocked, onClick: function() { applyPhysPreset({ angle: 45, velocity: 18, launchHeight: 0, airResist: false, gravity: 1.62 }); } }, "🌙 " + __alloT('stem.physics.preset_moon', 'Moon g'))
+                    )
+                  );
+                })(),
                 React.createElement("div", { className: "phys-next" },
                   React.createElement("div", { style: { minWidth: 0 } },
                     React.createElement("p", { className: "phys-next-label" }, __alloT('stem.physics.recommended_next_move', 'Recommended next move'))),

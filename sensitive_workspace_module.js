@@ -14,7 +14,7 @@
     return fallback == null ? key : fallback;
   }
   var root = typeof window !== 'undefined' ? window : globalThis;
-  var FEATURES = ['behavior-lens', 'dynamic-assessment', 'report-writer'];
+  var FEATURES = ['behavior-lens', 'dynamic-assessment', 'report-writer', 'educator-evaluation', 'sped-timelines', 'mtss-triage'];
   var META = 'clinical-setup';
   var KIND = 'alloflow-clinical-record-bucket';
   var BACKUP_KIND = 'alloflow-sensitive-workspace-backup';
@@ -23,7 +23,10 @@
   var PREFIXES = {
     'behavior-lens': ['behaviorLens_', 'bl_', 'allo_behaviorlens_'],
     'dynamic-assessment': ['alloflow_dynamic_assessment_', 'alloflow_da_'],
-    'report-writer': ['allo_rw_']
+    'report-writer': ['allo_rw_'],
+    'educator-evaluation': ['allo_educator_evaluation_'],
+    'sped-timelines': ['allo_sped_'],
+    'mtss-triage': ['allo_mtss_']
   };
   var clone = function (x) { return x == null ? x : JSON.parse(JSON.stringify(x)); };
   var own = function (x, k) { return Object.prototype.hasOwnProperty.call(x, k); };
@@ -284,7 +287,7 @@
       });
     }
     async function unlock(password) {
-      return credentialAction(async function (started) { checkLocal(); await init(); if (state.phase !== 'locked') throw failure('PROTECTED_LOCK_REQUIRED', 'Save and lock the current workspace before unlocking another copy.'); await controller.unlock(password); await hydrate(started); recoveryCode = ''; verifiedBackup = null; return status(); });
+      return credentialAction(async function (started) { checkLocal(); await init(); if (state.phase !== 'locked') throw failure('PROTECTED_LOCK_REQUIRED', 'Save and lock the current workspace before unlocking another copy.'); await controller.unlock(password); await hydrate(started); recoveryCode = ''; verifiedBackup = null; recordAudit('unlock', 'password'); return status(); });
     }
     async function renewRecovery() {
       return credentialAction(async function (started) {
@@ -495,12 +498,37 @@
         } finally { verifier.lock(); }
       });
     }
+    var detachedWindows = new Set();
+    var auditEvents = [];
+    var MAX_AUDIT_EVENTS = 100;
+    function recordAudit(action, detail) {
+      try {
+        auditEvents.push({
+          at: date(),
+          action: String(action || 'event').slice(0, 48),
+          detail: detail ? String(detail).slice(0, 64) : ''
+        });
+        if (auditEvents.length > MAX_AUDIT_EVENTS) auditEvents.splice(0, auditEvents.length - MAX_AUDIT_EVENTS);
+      } catch (_) {}
+    }
+    function registerDetachedWindow(win) {
+      if (!win || typeof win.close !== 'function') return;
+      detachedWindows.add(win);
+    }
+    function closeDetachedWindows() {
+      detachedWindows.forEach(function (w) {
+        try { if (w && !w.closed) w.close(); } catch (_) {}
+      });
+      detachedWindows.clear();
+    }
     function lock(reason) {
       if (lockInFlight) return lockInFlight;
       lockInFlight = performLock(reason).finally(function () { lockInFlight = null; }); return lockInFlight;
     }
     async function performLock(reason) {
       if (disposed) throw aborted();
+      closeDetachedWindows();
+      recordAudit('lock', reason || 'manual');
       // A deletion review is already staging the real editors. Let that save
       // settle before locking; cancelling it mid-flush could strand its draft.
       if (credentialBusy && state.phase === 'locking' && credentialCompletion) await credentialCompletion;
@@ -674,6 +702,7 @@
     function touch() { lastActivity = Number(now()); }
     function dispose() {
       disposed = true; ticket++; cancelTimer(); if (idleTimer) clearInterval(idleTimer);
+      closeDetachedWindows();
       lifecycleListeners.forEach(function (entry) { root.removeEventListener(entry[0], entry[1]); }); lifecycleListeners = [];
       if (channel) channel.close(); channel = null;
       controller.lock(); keyActive = false; generation++; epoch++; maps.clear(); transfers.clear(); setupMeta = null; recoveryCode = ''; stagedStore = null; pendingSeed = null; staging = false; setupBaseDeletedMarker = null; listeners.clear(); flushers.clear(); discardDeletionReview();
@@ -682,6 +711,7 @@
       function listen(name, fn) { root.addEventListener(name, fn, { passive: name !== 'beforeunload' }); lifecycleListeners.push([name, fn]); }
       ['pointerdown', 'keydown', 'focus'].forEach(function (name) { listen(name, touch); });
       listen('beforeunload', function (e) { if (keyActive && (dirty.size || flushers.size)) { e.preventDefault(); e.returnValue = ''; } });
+      listen('pagehide', function () { closeDetachedWindows(); });
       if (typeof root.BroadcastChannel === 'function') {
         channel = new root.BroadcastChannel('alloflow-protected-clinical-records-v1');
         channel.onmessage = function (event) {
@@ -694,6 +724,8 @@
     return { init: init, setup: setup, unlock: unlock, renewRecovery: renewRecovery, finishSetup: finishSetup, recover: recover, restore: restore,
       getSession: getSession, isSession: isSession, getStatus: status, subscribe: function (fn) { listeners.add(fn); return function () { listeners.delete(fn); }; },
       flush: flush, lock: lock, exportBackup: backup, touch: touch, dispose: dispose, checkLocal: checkLocal,
+      registerDetachedWindow: registerDetachedWindow, closeDetachedWindows: closeDetachedWindows,
+      recordAuditEvent: recordAudit, getAuditLog: function () { return auditEvents.slice(); },
       prepareDeletion: prepareDeletion, cancelDeletion: cancelDeletion, deleteClinicalRecords: deleteClinicalRecords, reconcileDeletion: reconcileDeletion,
       attachView: function () { viewCount++; state.activeViews = viewCount; notify(); return function () { viewCount = Math.max(0, viewCount - 1); state.activeViews = viewCount; notify(); }; } };
   }
@@ -871,7 +903,7 @@
         form.restoreRecovery ? field('restoreNewPassword', 'New saved-records password (at least 10 characters)') : null,
         h('label', null, 'Encrypted backup file ', h('input', { type: 'file', accept: '.json,application/json', disabled: busy, onChange: function (e) {
           var file = e.target.files && e.target.files[0]; e.target.value = ''; if (!file) return;
-          act(async function (assertContext) { if (file.size > 200 * 1024 * 1024) throw failure('PROTECTED_BACKUP_INVALID', 'This backup exceeds the supported size.'); var text = await file.text(); assertContext(); var data = JSON.parse(text); await service.restore(data, form.backupSecret, form.restoreRecovery, form.restoreNewPassword); });
+          act(async function (assertContext) { if (file.size > 200 * 1024 * 1024) throw failure('PROTECTED_BACKUP_INVALID', 'This backup exceeds the supported size.'); var text = await file.text(); assertContext(); var data = JSON.parse(text, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); await service.restore(data, form.backupSecret, form.restoreRecovery, form.restoreNewPassword); });
         } })), h('p', null, 'Enter the backup password or recovery key before choosing a file. Existing protected or readable clinical records are never replaced by this restore.')) : null,
       props.onClose ? button('Back to ordinary tools', function () { act(async function (_assertContext, assertView) { if (service) await service.lock('setup-close'); assertView(); props.onClose(); }); }) : null,
       h('p', { style: { fontSize: 14 } }, 'Protection here covers the clinical records in these tools on this device. School approval, managed devices, approved AI services, other application stores, and shared-service authorization remain separate requirements.'));
@@ -891,6 +923,9 @@
     getSession: function (f) { return defaultService ? defaultService.getSession(f) : null; },
     getStatus: function () { return defaultService ? defaultService.getStatus() : { phase: 'loading' }; },
     lock: function (reason) { return defaultService ? defaultService.lock(reason) : Promise.resolve(); },
+    registerDetachedWindow: function (win) { if (defaultService && typeof defaultService.registerDetachedWindow === 'function') defaultService.registerDetachedWindow(win); },
+    recordAuditEvent: function (action, detail) { if (defaultService && typeof defaultService.recordAuditEvent === 'function') defaultService.recordAuditEvent(action, detail); },
+    getAuditLog: function () { return defaultService && typeof defaultService.getAuditLog === 'function' ? defaultService.getAuditLog() : []; },
     FEATURES: FEATURES.slice(), BACKUP_KIND: BACKUP_KIND };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof window !== 'undefined') { root.AlloModules = root.AlloModules || {}; root.AlloModules.SensitiveWorkspace = api; if (root.dispatchEvent && root.Event) root.dispatchEvent(new root.Event('alloflow:module-registry-changed')); }

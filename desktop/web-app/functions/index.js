@@ -44,8 +44,11 @@ function configuredOrigins() {
 function setSecurityHeaders(res) {
   res.set("Cache-Control", "no-store");
   res.set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+  res.set("Cross-Origin-Resource-Policy", "same-origin");
   res.set("Referrer-Policy", "no-referrer");
+  res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   res.set("X-Content-Type-Options", "nosniff");
+  res.set("X-Frame-Options", "DENY");
 }
 
 function applyCors(req, res) {
@@ -96,6 +99,43 @@ function clientIpHash(req) {
   if (!candidate) return "";
   const salt = String(process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "alloflow");
   return crypto.createHash("sha256").update(salt + ":ip:" + candidate).digest("hex");
+}
+
+async function readBoundedResponseText(response, maxBytes) {
+  const declared = Number(response.headers.get("content-length") || 0);
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    try { await response.body?.cancel?.(); } catch (_) {}
+    return null;
+  }
+  if (!response.body || typeof response.body.getReader !== "function") {
+    const raw = await response.text();
+    return Buffer.byteLength(raw, "utf8") <= maxBytes ? raw : null;
+  }
+  const reader = response.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = value instanceof Uint8Array ? value : new Uint8Array(value);
+      total += chunk.byteLength;
+      if (total > maxBytes) {
+        try { await reader.cancel(); } catch (_) {}
+        return null;
+      }
+      chunks.push(chunk);
+    }
+  } finally {
+    try { reader.releaseLock(); } catch (_) {}
+  }
+  const combined = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder("utf-8").decode(combined);
 }
 
 async function enforceRateLimit(uid, scope = "search", limit = SEARCH_REQUESTS_PER_MINUTE, req = null) {
@@ -213,14 +253,21 @@ exports.searchProxy = onRequest(
         method: "POST",
         headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
         body: JSON.stringify({ q: query, num }),
+        redirect: "error",
         signal: controller.signal,
       });
       if (!upstream.ok) {
+        try { await upstream.body?.cancel?.(); } catch (_) {}
         console.error("[searchProxy] upstream status", upstream.status);
         sendError(res, 502, "search-provider-error");
         return;
       }
-      const data = await upstream.json();
+      const rawText = await readBoundedResponseText(upstream, 512 * 1024);
+      if (rawText === null) {
+        sendError(res, 502, "search-provider-error");
+        return;
+      }
+      const data = JSON.parse(rawText);
       const results = (Array.isArray(data.organic) ? data.organic : []).slice(0, num).map((item) => ({
         url: safeHttpUrl(item && item.link),
         title: safeText(item && item.title, 300),
@@ -282,8 +329,8 @@ exports.sourceFetchProxy = onRequest(
       return;
     }
 
-    const sourceUrl = safeText(req.body && req.body.url, MAX_SOURCE_URL_LENGTH);
-    if (!sourceUrl) {
+    const sourceUrl = typeof (req.body && req.body.url) === "string" ? req.body.url.trim() : "";
+    if (!sourceUrl || sourceUrl.length > MAX_SOURCE_URL_LENGTH) {
       sendError(res, 400, "invalid-url");
       return;
     }

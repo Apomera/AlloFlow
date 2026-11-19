@@ -128,8 +128,19 @@ async function _adminHubDrivePost(url, body) {
   if (!safeUrl) throw new Error('Invalid Drive backup script URL.');
   // String body on purpose: text/plain avoids a CORS preflight the Apps
   // Script web app cannot answer (the Class Mailbox transport pattern).
-  const res = await fetch(safeUrl, { method: 'POST', body: JSON.stringify(body) });
-  return res.json();
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), 20000) : null;
+  try {
+    const res = await fetch(safeUrl, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      ...(controller ? { signal: controller.signal } : {})
+    });
+    if (!res.ok) throw new Error('Drive backup request failed (HTTP ' + res.status + ').');
+    return await res.json();
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 /**
@@ -232,7 +243,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
                 <label htmlFor="adminhub-drive-token" className="block text-[11px] font-bold text-slate-700 mb-0.5">
                   {tt('adminhub.drive_token_label', 'Backup token')}
                 </label>
-                <input id="adminhub-drive-token" type="password" value={tokenInput} onChange={(e) => setTokenInput(e.target.value)}
+                <input id="adminhub-drive-token" type="password" autoComplete="current-password" value={tokenInput} onChange={(e) => setTokenInput(e.target.value)}
                   placeholder={tt('adminhub.drive_token_placeholder', 'From setup()')}
                   className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs" />
               </div>
@@ -292,7 +303,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
               addToast(tt('adminhub.drive_disconnected', 'Drive backup disconnected.'), 'info');
             }
           }}
-          className="min-h-10 px-3 rounded-lg border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-100">
+          className="min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-100">
           {tt('adminhub.drive_disconnect', 'Disconnect')}
         </button>
       </div>
@@ -500,7 +511,7 @@ function AdminHubPanel(props) {
 
   return (
     <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
-      <div ref={dialogRef} tabIndex={-1} data-help-key="adminhub_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="adminhub-title" aria-describedby="adminhub-subtitle" onClick={(e) => e.stopPropagation()}>
+      <div ref={dialogRef} tabIndex={-1} data-help-key="adminhub_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="adminhub-title" aria-describedby="adminhub-subtitle" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 id="adminhub-title" className="text-xl font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">🏛️</span> {tt('adminhub.title', 'Leadership Hub')}</h2>
@@ -531,11 +542,11 @@ function AdminHubPanel(props) {
               }}
               className={'flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left ' + tool.accent}>
               <span className="text-3xl mt-1" aria-hidden="true">{tool.icon}</span>
-              <div>
-                <h3 className={'font-bold ' + tool.titleCls}>{tool.title}</h3>
-                <p className={'text-xs mt-1 ' + tool.descCls}>{tool.desc}</p>
+              <span className="block">
+                <span className={'block font-bold ' + tool.titleCls}>{tool.title}</span>
+                <span className={'block text-xs mt-1 ' + tool.descCls}>{tool.desc}</span>
                 {isMaineCase && typeof window.__alloOpenMaineSldPractice !== 'function' && <span className="block text-xs font-semibold mt-2">Opens in a new tab ↗</span>}
-              </div>
+              </span>
             </Card>;
           })}
         </div>
@@ -546,7 +557,7 @@ function AdminHubPanel(props) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
               <h3 className="text-xs font-black uppercase tracking-wide text-slate-700">{tt('adminhub.backup_title', 'Back up this hub')}</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">{tt('adminhub.backup_desc', 'Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe.')}</p>
+              <p className="text-[11px] text-slate-600 mt-0.5">{tt('adminhub.backup_desc', 'Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe.')}</p>
             </div>
             <div className="flex gap-2 shrink-0">
               <button type="button" data-help-key="adminhub_backup_export"
@@ -575,10 +586,15 @@ function AdminHubPanel(props) {
                   input.onchange = () => {
                     const file = input.files && input.files[0];
                     if (!file) return;
+                    if (file.size > 10 * 1024 * 1024) {
+                      addToast(tt('adminhub.restore_too_large', 'Backup file exceeds the 10 MB safety limit.'), 'error');
+                      return;
+                    }
                     const reader = new FileReader();
                     reader.onload = () => {
                       try {
-                        const data = JSON.parse(String(reader.result || ''));
+                        const _safeReviver = (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+                        const data = JSON.parse(String(reader.result || ''), _safeReviver);
                         if (!data || data.format !== ADMIN_HUB_BACKUP_FORMAT || typeof data.keys !== 'object' || data.keys === null) {
                           addToast(tt('adminhub.restore_not_backup', 'That file is not a Leadership Hub backup.'), 'error'); return;
                         }
@@ -633,7 +649,7 @@ function AdminHubPanel(props) {
           <p className="text-[11px] text-amber-800 mt-2">{tt('adminhub.backup_caveat', 'The file contains whatever the tools store — codes, notes, and settings. Treat it like the confidential records it may describe, and delete old copies per your retention policy.')}</p>
           <AdminHubDriveBackup tt={tt} addToast={addToast} />
         </div>
-        <p className="mt-3 text-[11px] text-slate-500 border-t border-slate-200 pt-3">
+        <p className="mt-3 text-[11px] text-slate-600 border-t border-slate-200 pt-3">
           {/* Revised 2026-08-17 (Aaron's call, and he is right): the old text
               forbade real personnel or student information on-device. That was
               written as if the risk were a shared machine. On a managed 1:1

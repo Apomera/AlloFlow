@@ -71,21 +71,68 @@ function localInstallRoots(options) {
   return roots.filter((r) => fs.existsSync(path.join(r, 'epubcheck.jar')));
 }
 
+const MAX_ARCHIVE_BYTES = 100 * 1024 * 1024;
+const DOWNLOAD_TIMEOUT_MS = 60000;
+
 function download(url, dest, redirects = 0) {
   return new Promise((resolve, reject) => {
     if (redirects > 5) return reject(new Error('Too many redirects fetching ' + url));
-    https.get(url, { headers: { 'user-agent': 'alloflow-fetch-epubcheck' } }, (res) => {
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch (_) {
+      return reject(new Error('Invalid download URL: ' + url));
+    }
+    if (parsedUrl.protocol !== 'https:') {
+      return reject(new Error('Refusing non-HTTPS download URL: ' + parsedUrl.protocol));
+    }
+    let settled = false;
+    const fail = (err) => {
+      if (settled) return;
+      settled = true;
+      reject(err);
+    };
+    const req = https.get(parsedUrl.href, { headers: { 'user-agent': 'alloflow-fetch-epubcheck' } }, (res) => {
       if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
         res.resume();
-        return resolve(download(new URL(res.headers.location, url).toString(), dest, redirects + 1));
+        let nextUrl;
+        try {
+          nextUrl = new URL(res.headers.location, parsedUrl.href);
+        } catch (_) {
+          return fail(new Error('Invalid redirect URL while fetching ' + parsedUrl.href));
+        }
+        if (nextUrl.protocol !== 'https:') {
+          return fail(new Error('Refusing non-HTTPS redirect to ' + nextUrl.protocol));
+        }
+        settled = true;
+        return resolve(download(nextUrl.href, dest, redirects + 1));
       }
-      if (res.statusCode !== 200) { res.resume(); return reject(new Error('HTTP ' + res.statusCode + ' fetching ' + url)); }
+      if (res.statusCode !== 200) { res.resume(); return fail(new Error('HTTP ' + res.statusCode + ' fetching ' + parsedUrl.href)); }
+      const contentLength = Number(res.headers['content-length'] || 0);
+      if (Number.isFinite(contentLength) && contentLength > MAX_ARCHIVE_BYTES) {
+        res.resume();
+        return fail(new Error('Archive exceeds maximum allowed size (' + MAX_ARCHIVE_BYTES + ' bytes)'));
+      }
       const out = fs.createWriteStream(dest);
+      let received = 0;
+      res.on('data', (chunk) => {
+        received += chunk.length;
+        if (received > MAX_ARCHIVE_BYTES) {
+          req.destroy();
+          out.destroy();
+          try { fs.unlinkSync(dest); } catch (_) {}
+          fail(new Error('Archive download exceeded maximum allowed size (' + MAX_ARCHIVE_BYTES + ' bytes)'));
+        }
+      });
       res.pipe(out);
-      out.on('finish', () => out.close(resolve));
-      out.on('error', reject);
-      res.on('error', reject);
-    }).on('error', reject);
+      out.on('finish', () => out.close(() => { if (!settled) { settled = true; resolve(); } }));
+      out.on('error', (err) => { try { fs.unlinkSync(dest); } catch (_) {} fail(err); });
+      res.on('error', (err) => { out.destroy(); try { fs.unlinkSync(dest); } catch (_) {} fail(err); });
+    });
+    req.setTimeout(DOWNLOAD_TIMEOUT_MS, () => {
+      req.destroy(new Error('Timed out fetching ' + parsedUrl.href));
+    });
+    req.on('error', fail);
   });
 }
 

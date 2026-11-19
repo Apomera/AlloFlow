@@ -155,10 +155,10 @@ module.exports = {
       if (auto !== true) ctx.support('storyReadBacks');
       if (!item.readBackByLine) { mark(-1); ctx.play(item.readBack[0]); return; }
       var step = function (i) {
-        if (mine !== run) return;
+        if (mine !== run || !ctx.root.isConnected) return;
         if (i >= item.readBack.length) { mark(-1); return; }
         mark(i);
-        ctx.play(item.readBack[i]).then(function () { step(i + 1); });
+        ctx.play(item.readBack[i]).then(function (ok) { if (mine !== run || ok === false) { if (mine === run) mark(-1); return; } step(i + 1); });
       };
       step(0);
     };

@@ -126,16 +126,15 @@ function EndSessionPreview({
     } catch (_) {}
     const getFocusable = root => Array.from(root.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(el => {
       if (el.disabled || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
-      let ancestor = el.parentElement;
-      while (ancestor && ancestor !== root) {
-        if (ancestor.matches && ancestor.matches('details:not([open])')) {
-          const directSummary = ancestor.querySelector(':scope > summary');
+      for (let cur = el; cur && cur !== root; cur = cur.parentElement) {
+        if (cur !== el && cur.matches && cur.matches('details:not([open])')) {
+          const directSummary = cur.querySelector(':scope > summary');
           if (el !== directSummary) return false;
         }
-        ancestor = ancestor.parentElement;
+        const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(cur) : null;
+        if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
       }
-      const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-      return !st || st.display !== 'none' && st.visibility !== 'hidden';
+      return true;
     });
     const onKeyDown = event => {
       if (event.defaultPrevented) return;

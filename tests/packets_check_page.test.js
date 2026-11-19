@@ -151,14 +151,14 @@ describe('the page as files', () => {
       "    if (!reopenKit || !handoff || typeof handoff.take !== 'function' || window.location.hash !== handoff.HASH) return;",
       "    try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}",
     ]);
-    // It makes nothing that loads: the only elements it creates are text, the choices, the sheets of the paper copy, and
+    // It makes nothing that loads: the only elements it creates are text, the choices, the Preview Restore button (2026-11-19 Wave 4B), the sheets of the paper copy, and
     // the link that hands over the file.
     const made = new Set([...source.matchAll(/\b(?:el|createElement)\('(\w+)'/g)].map((m) => m[1]));
-    expect([...made].sort()).toEqual(['a', 'dd', 'dt', 'input', 'label', 'li', 'ol', 'p', 'section', 'span']);
+    expect([...made].sort()).toEqual(['a', 'button', 'dd', 'dt', 'input', 'label', 'li', 'ol', 'p', 'section', 'span']);
     expect(source.match(/createElement\(/g)).toHaveLength(2);
     expect(source).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML|document\.write|\.src\s*=|setAttribute\('(?:src|action|srcset)'/);
-    // 2026-11-14 (T1/makers2): sets href only for the preview page blob and the reopen-page link to another maker on this site.
-    expect(source.match(/setAttribute\('href'[^)]*\)/g)).toEqual(["setAttribute('href', TRY_PAGE + '#' + fileUrl)", "setAttribute('href', page.href)"]);
+    // 2026-11-19 (Wave 2B): sets href only for the preview page blob (initial build + instant 1-line code-name patch) and the reopen-page link to another maker on this site.
+    expect(source.match(/setAttribute\('href'[^)]*\)/g)).toEqual(["setAttribute('href', TRY_PAGE + '#' + fileUrl)", "setAttribute('href', TRY_PAGE + '#' + fileUrl)", "setAttribute('href', page.href)"]);
     expect(source.match(/\.href\s*=[^;]*;/g)).toEqual(['.href = url;']);
     // The one thing it keeps is one key in this browser.
     expect(source.match(/localStorage\.\w+\([^)]*/g)).toEqual(['localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, check: state.check, grades: state.grades, version: state.version,\n        problems: state.problems, title: state.title, readyTitle: state.readyTitle, time: state.time, skip: state.skip }',
@@ -177,14 +177,14 @@ describe('the page as files', () => {
       expect(existsSync(address === './' ? 'index.html' : address), address).toBe(true);
     }
     const named = read(SCRIPT).match(/'[\w./-]+\.(?:json|html|js|css|svg)'/g) || [];
-    expect(named).toEqual(["'packets-try.html'"]);
+    expect(named).toEqual(["'packets-try.html'", "'packets-results.html'"]);
     for (const quoted of named) expect(existsSync(quoted.slice(1, -1)), quoted).toBe(true);
     // Try it goes through the preview page of the site, which shows a built file in a sandboxed frame.
     expect(read('packets-try.js')).toContain("frame.setAttribute('sandbox', 'allow-scripts allow-downloads')");
     // That page serves this maker too: it calls a check "the file", never a practice file, and leads back here when a preview is gone.
     const preview = parse('packets-try.html');
     expect(preview.querySelector('.try-bar p').textContent).toBe('This is the file a student gets. Nothing you do here is kept. Close this tab to go back to the maker.');
-    expect([...preview.querySelectorAll('#try-problem a')].map((a) => [a.textContent, a.getAttribute('href')])).toContainEqual(['Make a math check', PAGE]);
+    expect([...preview.querySelectorAll('#try-problem a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Back to Packets', 'packets.html']]);
     expect(read('packets-try.js')).toContain("frame.title = 'The file a student gets'");
     expect((read('packets-try.js').match(/'[^'\n]*'/g) || []).join('\n')).not.toMatch(/practice|learner/i);
   });
@@ -272,7 +272,7 @@ describe('the page as files', () => {
     for (const node of doc.querySelectorAll('[tabindex="-1"]')) expect(node.matches('button, a, input, select, textarea, summary'), node.id).toBe(false);
     // Messages are announced: a reason that stops a step is an alert, and progress is a status.
     for (const id of ['step-1-problem', 'step-2-problem', 'batch-problem']) expect(doc.getElementById(id).getAttribute('role'), id).toBe('alert');
-    for (const id of ['form-line', 'own-line', 'code-line', 'making-said', 'forget-said', 'code-name-said', 'batch-said']) expect(doc.getElementById(id).getAttribute('role'), id).toBe('status');
+    for (const id of ['form-line', 'own-line', 'code-line', 'making-said', 'forget-said', 'batch-said']) expect(doc.getElementById(id).getAttribute('role'), id).toBe('status');
     // One primary button on each step; on a phone it takes the full width (packets.css).
     for (const step of doc.querySelectorAll('section.sheet')) expect(step.querySelectorAll('.btn-primary').length, step.id).toBe(1);
     expect(read('packets.css')).toMatch(/@media \(max-width: 29\.99rem\) \{\s*\.actions \.btn-primary \{ flex: 1 1 100%; \}/);
@@ -334,11 +334,12 @@ describe('the page as files', () => {
     for (const text of ['This stops casual looking, not a determined person.', 'It is a lock on the screen, not secret writing', "check_about: 'This is a check to see how you are doing. It is not for a grade.'",
       "check_ready_one_try: 'You get one try for each one. You cannot go back.'", "check_about_clock: 'The clock uses the time on this device. It keeps going when you leave the page.'",
       "save_csv: 'Save results as a spreadsheet file (CSV)'", '(?:^#|&)learner=', "check_teacher_open: 'For the teacher: show results'"]) expect(loaderSource, text).toContain(text);
-    expect(doc.getElementById('after-save').textContent).toContain('#learner=CodeName');
-    // The code-name tip waits in one closed box; step 3 links to Add up results by its name; the save button is the file's main one.
-    const tip = doc.getElementById('learner-tip');
-    expect(tip.tagName === 'DETAILS' && !tip.hasAttribute('open') && tip.contains(doc.querySelector('#after-save code'))).toBe(true);
-    expect(tip.querySelector('summary').textContent).toBe("Fill in a student's code name for them");
+    // Wave 2B: the code-name tip & batch code-name controls live inside one closed step-3 fold (#batch).
+    const batch = doc.getElementById('batch');
+    expect(batch.tagName === 'DETAILS' && !batch.hasAttribute('open')).toBe(true);
+    expect(batch.querySelector('summary').textContent).toBe('Put student code names in the file');
+    expect(doc.getElementById('learner-tip-line').textContent).toContain('#learner=CodeName');
+    expect(batch.contains(doc.getElementById('learner-tip-line'))).toBe(true);
     expect([...doc.querySelectorAll('#after-save ol a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Add up results', 'packets-results.html']]);
     expect(squash(doc.getElementById('after-save').querySelector('ol').textContent)).toContain('presses the main button at the end, Save results as a spreadsheet file (CSV).');
     expect(squash(doc.getElementById('after-save').querySelector('ol').textContent)).toContain('If your school uses AlloFlow, its Class Analytics reads these results files too.'); // 2026-11-17: plain for a Packets-only teacher
@@ -360,8 +361,9 @@ describe('the page as files', () => {
     // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). The scripts are about 0.96 MB ("about 1 MB").
     expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 1 MB.');
     expect(megabytes).toBeGreaterThan(0.9);
-    // Re-pinned 2026-11-17 from 1.05: the six recorded lines of directions (packets_check_directions.js, 0.17 MB). The scripts are about 1.13 MB ("about 1 MB").
-    expect(megabytes).toBeLessThan(1.2);
+    // Re-pinned 2026-11-17 from 1.05: the six recorded lines of directions (packets_check_directions.js, 0.17 MB).
+    // Re-pinned 2026-11-19 (Waves 5-7): take-home loader parity/a11y + worksheet/roster paste (~1.20 MB, still "about 1 MB").
+    expect(megabytes).toBeLessThan(1.25);
     // "About 110 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
     // Re-pinned 2026-11-12 from about 90 KB: every file now carries the reading tools (about 17 KB in a check).
     // Re-pinned 2026-11-12 from about 110 KB: every file carries Hear all and the reading tool "Read the choices" (hearAllIn),
@@ -379,7 +381,8 @@ describe('the page as files', () => {
     // Re-pinned 2026-11-16 from 140000: every file carries the two reading fonts (+42.5 KB); the page says "About 190 KB".
     // 2026-11-17: Quantity Discrimination and Missing Number (the first 6 + 9) carry the recording of their directions: about 90 KB more.
     // The page says "About 200 KB" (203 KB today) and, for those two, "about 295 KB" (294 KB).
-    sizes.forEach((bytes, i) => expect(Math.abs(bytes - (i < 15 ? 295000 : 200000)), i + ': ' + bytes + ' bytes').toBeLessThan(10000));
+    // 2026-11-19 (Waves 5-7): ~212 KB / ~304 KB after player parity/a11y upgrades.
+    sizes.forEach((bytes, i) => expect(Math.abs(bytes - (i < 15 ? 295000 : 200000)), i + ': ' + bytes + ' bytes').toBeLessThan(15000));
   });
 });
 
@@ -660,7 +663,8 @@ describe('a ready check, from the choice to a file that runs', () => {
       // Re-pinned 2026-11-13 from 120000, with the page note ("About 130 KB", above).
       // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB).
       // 2026-11-17 (later): 203 KB with the end screen and the timing; the two checks for the youngest students carry their directions (294 KB).
-      expect(Math.abs(bytes - (id === 'quantity_discrimination' || id === 'missing_number' ? 295000 : 200000))).toBeLessThan(10000);
+      // 2026-11-19 (Waves 5-7): ~212 KB / ~304 KB after player parity/a11y upgrades.
+      expect(Math.abs(bytes - (id === 'quantity_discrimination' || id === 'missing_number' ? 295000 : 200000))).toBeLessThan(15000);
       const size = Math.round(bytes / 1000) + ' KB';
       const time = minutes(data.timeLimit).replace(/^./, (c) => c.toUpperCase());
       // What there is to answer has the check's own word: "questions" for Quantity Discrimination, "problems" for the others.
@@ -1270,7 +1274,7 @@ describe('the paper copy', () => {
     const button = doc.getElementById('print');
     expect([button.textContent, button.className, button.hidden, button.getAttribute('aria-describedby')]).toEqual(['Print a paper copy', 'btn', true, 'print-note']);
     expect(doc.getElementById('print-note').textContent).toBe('For a student with no device: the same problems in the same order, on paper. The answers and how to score them are on a teacher page, on a sheet of its own.');
-    expect([...doc.getElementById('step-3').querySelectorAll('input, select, textarea')].map((n) => n.id)).toEqual(['f-title', 'f-code-name', 'f-batch-names', 'f-batch-rotate']);
+    expect([...doc.getElementById('step-3').querySelectorAll('input, select, textarea')].map((n) => n.id)).toEqual(['f-title', 'f-batch-names', 'batch-file', 'f-batch-rotate']);
 
     // Everything in the print stylesheet is for print: the screen is untouched.
     const css = read(PRINT_CSS);
@@ -1532,5 +1536,127 @@ describe('the paper copy', () => {
     p2.$('next-2').click();
     expect(p2.$('f-title').value).toBe('Friday check');
     p2.dom.window.close();
+  });
+
+  it('Wave 2B: synchronously patches 1 code name, offers 1-click Save .zip for 2+ names, loads .txt roster, and hands off wrong files in 1 click', async () => {
+    const p = openPage();
+    p.choose('check', 'math_computation');
+    p.$('next-1').click();
+    p.choose('grade', '2');
+    p.$('next-2').click();
+    await p.until(() => p.seen('save'), 'check built');
+    const tryBefore = p.$('try').getAttribute('href');
+
+    // 1 line synchronously personalizes the file above without hiding #summary.
+    p.$('f-batch-names').value = 'BlueHeron7';
+    p.$('f-batch-names').dispatchEvent(new p.w.Event('input', { bubbles: true }));
+    expect(p.seen('summary')).toBe(true);
+    expect(p.seen('batch-make')).toBe(false);
+    expect(p.$('summary-rows').textContent).toContain('BlueHeron7');
+    expect(p.$('try').getAttribute('href')).not.toBe(tryBefore);
+    p.$('save').click();
+    expect(p.downloads.at(-1).name).toMatch(/__BlueHeron7\.html$/);
+
+    // 2+ lines show 1-click "Save .zip for 2 students" and save immediately on click.
+    p.$('f-batch-names').value = 'BlueHeron7\nRedFox2';
+    p.$('f-batch-names').dispatchEvent(new p.w.Event('input', { bubbles: true }));
+    expect(p.seen('batch-make')).toBe(true);
+    expect(p.$('batch-make').textContent).toBe('Save .zip for 2 students');
+    p.$('batch-make').click();
+    expect(p.downloads.at(-1).name).toMatch(/__2-students\.zip$/);
+
+    // Zero-storage .txt roster loader fills #f-batch-names cleanly.
+    const txt = new p.w.File(['Owl4\nPine8\nRiver3\n'], 'roster.txt', { type: 'text/plain' });
+    Object.defineProperty(p.$('batch-file'), 'files', { configurable: true, value: [txt] });
+    p.$('batch-file').dispatchEvent(new p.w.Event('change', { bubbles: true }));
+    await p.until(() => /Owl4/.test(p.$('f-batch-names').value), 'roster loaded');
+    expect(p.$('batch-make').textContent).toBe('Save .zip for 3 students');
+
+    // 1-click wrong-file auto-handoff for a results CSV dropped on packets-check.html.
+    const handed = [];
+    p.w.AlloPacketHandoff = { HASH: '#open-file', RESULTS_HASH: '#import-results', redirect: async (file, href, hash) => { handed.push({ name: file.name, href, hash }); } };
+    const csv = '\uFEFF"format","session_id"\r\n"alloflow-packet-result/1","S-1"\r\n';
+    Object.defineProperty(p.$('reopen-file'), 'files', { configurable: true, value: [new p.w.File([csv], 'res.csv', { type: 'text/csv' })] });
+    p.$('reopen-file').dispatchEvent(new p.w.Event('change', { bubbles: true }));
+    await p.until(() => p.seen('reopen-page'), 'wrong file note');
+    expect(p.$('reopen-page').getAttribute('href')).toBe('packets-results.html');
+    p.$('reopen-page').dispatchEvent(new p.w.MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(handed).toEqual([{ name: 'res.csv', href: 'packets-results.html', hash: '#import-results' }]);
+    p.dom.window.close();
+  });
+
+  it('Wave 4B: preserves Try-it preview removals across read-only Back-to-Step-2 visits and offers Restore', async () => {
+    let previewOpts = null;
+    const p = openPage();
+    p.w.AlloPacketHandoff = {
+      HASH: '#open-file',
+      RESULTS_HASH: '#import-results',
+      hostPreview: (opts) => { previewOpts = opts; return { update: () => {}, stop: () => {} }; },
+    };
+    p.choose('check', 'math_computation');
+    p.$('next-1').click();
+    p.choose('grade', '2');
+    p.$('next-2').click();
+    await p.until(() => p.seen('save') && previewOpts, 'check built with preview');
+    const beforeItems = Number((p.$('summary-facts').textContent.match(/^(\d+)/) || [])[1]);
+    const lessonMatch = /var lesson=(.*);\nvar labels=/.exec(previewOpts.html);
+    const firstScored = previewOpts.describe(JSON.parse(lessonMatch[1])).find((it) => !it.sample);
+    await previewOpts.onAction({ action: 'remove', item: firstScored, index: 0 });
+    expect(Number((p.$('summary-facts').textContent.match(/^(\d+)/) || [])[1])).toBe(beforeItems - 1);
+    expect(p.$('preview-note') && p.$('preview-note').textContent).toContain('1 question removed in Preview.');
+
+    // Read-only Back to Step 2 and return to Step 3 preserves the removal.
+    p.$('back-3').click();
+    p.$('next-2').click();
+    await p.until(() => p.seen('save'), 'rebuilt after Back');
+    expect(Number((p.$('summary-facts').textContent.match(/^(\d+)/) || [])[1])).toBe(beforeItems - 1);
+    expect(p.$('preview-restore')).toBeTruthy();
+
+    // Clicking Restore brings back the full check and clears the note.
+    p.$('preview-restore').click();
+    await p.until(() => p.seen('save') && !p.$('preview-note'), 'restored full check');
+    expect(Number((p.$('summary-facts').textContent.match(/^(\d+)/) || [])[1])).toBe(beforeItems);
+    p.dom.window.close();
+  });
+
+  it('Wave 7B: cleans pasted worksheet math problems and cleans large .txt rosters without mid-name truncation', async () => {
+    const p = openPage();
+    p.choose('check', 'own');
+    p.$('next-1').click();
+    p.$('f-problems').value = '\uFEFF1. 7 + 8 =\n2) 12 \u2013 5 = ?\n\u2022 6 \u00b7 4 = ___\n- 3 - 5 = \u22122';
+    p.$('f-problems').dispatchEvent(new p.w.Event('input', { bubbles: true }));
+    await p.until(() => /4 of 4 problems can be used/.test(p.$('own-line').textContent), 'worksheet lines parsed');
+    expect([...p.$('own-list').querySelectorAll('li.is-ok')]).toHaveLength(4);
+
+    // Still strictly rejects decimals and wrong stated answers.
+    p.$('f-problems').value = '2.5 + 1\n7 + 8 = 16';
+    p.$('f-problems').dispatchEvent(new p.w.Event('input', { bubbles: true }));
+    await p.until(() => /0 of 2 problems/.test(p.$('own-line').textContent), 'bad problems rejected');
+    expect(p.$('own-list').textContent).toContain('Whole numbers only.');
+    expect(p.$('own-list').textContent).toContain('7 + 8 is 15, not 16.');
+
+    // Switch to a ready check -> Step 3 -> load a 45-student BOM + numbered + TSV/CSV roster (> 2400 chars).
+    p.$('back-2').click();
+    p.choose('check', 'math_computation');
+    p.$('next-1').click();
+    p.choose('grade', '2');
+    p.$('next-2').click();
+    await p.until(() => p.seen('save'), 'ready check built');
+
+    const rosterLines = ['\uFEFF1. Blue Heron 7\tGroup A\tExtra padding text to exceed 2400 characters across the file'];
+    for (let i = 2; i <= 45; i++) {
+      rosterLines.push(`${i}) StudentCode${String(i).padStart(2, '0')}, Grade 2, Classroom Room 204 Extra Column`);
+    }
+    const rawRoster = rosterLines.join('\r\n');
+    expect(rawRoster.length).toBeGreaterThan(2600);
+    const txt = new p.w.File([rawRoster], 'class-roster.txt', { type: 'text/plain' });
+    Object.defineProperty(p.$('batch-file'), 'files', { configurable: true, value: [txt] });
+    p.$('batch-file').dispatchEvent(new p.w.Event('change', { bubbles: true }));
+    await p.until(() => /Blue Heron 7/.test(p.$('f-batch-names').value), 'large roster loaded');
+    expect(p.$('f-batch-names').value.split('\n')[0]).toBe('Blue Heron 7');
+    expect(p.$('f-batch-names').value.split('\n')[44]).toBe('StudentCode45');
+    expect(p.$('batch-make').textContent).toBe('Save .zip for 40 students');
+    expect(p.$('batch-said').textContent).toContain('Not used: 5 more code names.');
+    p.dom.window.close();
   });
 });

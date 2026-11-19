@@ -26,8 +26,11 @@ function readGlossaryImageFile(file, signal, allowSvg = false) {
 async function searchGlossaryMulberry(query, signal) {
   const q = String(query || '').trim();
   if (!q) return [];
+  if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+    throw new Error('Online Mulberry symbol search is disabled in offline Desktop mode.');
+  }
   // The glossary's primary term column is English, independent of UI language.
-  const response = await fetch('https://globalsymbols.com/api/v1/labels/search?query=' + encodeURIComponent(q) + '&symbolset=mulberry&language=eng&language_iso_format=639-3&limit=30', { signal });
+  const response = await fetch('https://globalsymbols.com/api/v1/labels/search?query=' + encodeURIComponent(q) + '&symbolset=mulberry&language=eng&language_iso_format=639-3&limit=30', { signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
   if (!response.ok) throw new Error('Mulberry search is unavailable. Please try again.');
   const rows = await response.json();
   if (!Array.isArray(rows)) throw new Error('Mulberry search returned an unexpected response.');
@@ -40,9 +43,14 @@ async function searchGlossaryMulberry(query, signal) {
   }).slice(0, 30);
 }
 async function prepareGlossaryMulberry(result, signal) {
+  if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+    throw new Error('Online Mulberry symbol download is disabled in offline Desktop mode.');
+  }
   if (!/^https:\/\//i.test(result?.url || '')) throw new Error('This symbol has no usable image.');
-  const response = await fetch(result.url, { signal });
+  const response = await fetch(result.url, { signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
   if (!response.ok) throw new Error('The symbol could not be downloaded. Please try again.');
+  const declaredLen = Number(response.headers?.get?.('content-length') || 0);
+  if (Number.isFinite(declaredLen) && declaredLen > 10 * 1024 * 1024) throw new Error('The symbol image exceeds the 10 MB limit.');
   const source = await readGlossaryImageFile(await response.blob(), signal, true);
   // Rasterize SVGs for the same image editing/export paths as uploaded pictures.
   // Credit travels inside the image, including exports that copy only image bytes.

@@ -81,8 +81,11 @@
   // A word as a teacher types it: letters (any language), apostrophes, hyphens and single spaces, 1 to 40
   // characters, outer punctuation and quotes dropped. '' when nothing usable is left.
   function normalizeWord(value) {
-    var t = text(value).normalize ? text(value).normalize('NFC') : text(value);
-    t = t.replace(/\s+/g, ' ').trim().replace(/^[\s"'“”‘’.!?:()[\]{}]+|[\s"“”.!?:()[\]{}]+$/g, '');
+    var raw = text(value).replace(/^\uFEFF/, '');
+    var t = raw.normalize ? raw.normalize('NFC') : raw;
+    t = t.replace(/\s+/g, ' ').trim().replace(/^[\s"“”.!?:()[\]{}]+|[\s"“”.!?:()[\]{}]+$/g, '');
+    if (/^['‘].*['’]$/.test(t) && t.length > 2) t = t.slice(1, -1).trim();
+    t = t.replace(/^[\s"'“”‘’.!?:()[\]{}]+|[\s"“”.!?:()[\]{}]+$/g, '');
     if (!t || t.length > 40) return '';
     var ok = true;
     try { ok = new RegExp("^[\\p{L}\\p{M}][\\p{L}\\p{M}'’ -]*$", 'u').test(t); } catch (_) { ok = /^[A-Za-z][A-Za-z' -]*$/.test(t); }
@@ -92,8 +95,9 @@
   // "habitat, prey\npredator" -> { words: [{ text, word, key }], unusable: [text], twice: [word], over: n }
   function parseWords(value) {
     var out = { words: [], unusable: [], twice: [], over: 0 }, seen = {};
-    text(value).split(/[\n,;]+/).forEach(function (part) {
-      var raw = part.trim();
+    text(value).replace(/^\uFEFF/, '').split(/[\n,;]+/).forEach(function (part) {
+      var raw = part.replace(/^\uFEFF/, '').trim()
+        .replace(/^(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '').trim();
       if (!raw) return;
       var word = normalizeWord(raw);
       if (!word) { out.unusable.push(raw.slice(0, 40)); return; }
@@ -380,27 +384,41 @@
     }
     if (!found.length) return { ask: '', why: 'The sentence does not have the word as it is written in your list, or with a plain ending like -s, -ed or -ing. Edit the sentence.' };
     if (found.length > 1) return { ask: '', why: 'The word is in the sentence more than once. Edit the sentence.' };
-    var f = found[0], a = /(?:^|\s)(an?)\s+$/i.exec(s.slice(0, f.at));
+    var f = found[0], a = /(?:^|[\s"“‘'(\[])(an?)\s+$/i.exec(s.slice(0, f.at));
     // The answer is the word as the sentence has it, with the list's first letter (a capital where the list has one).
     var answer = keyOf(f.text) === w ? normalizeWord(word) : withCase(keyOf(f.text), word);
     return { ask: s.slice(0, f.at) + '___' + s.slice(f.at + f.text.length), article: a ? a[1].toLowerCase() : '', answer: answer, form: f.form, why: '' };
   }
-  function vowelStart(word) { return /^[aeiou]/i.test(line(word)); }
+  // True when a word is spoken starting with a vowel sound (takes "an"), false for a consonant sound (takes "a").
+  // Prevents grammatical giveaways on silent-h words (hour, honest, honor, heir, herb*) and consonant-sound vowel
+  // spellings (uni-/use-/usa-/usu-/util-/eu-/ew-/one/once) such as "a unified whole" vs "a invited whole".
+  function vowelSoundStart(word) {
+    var w = line(word).toLowerCase().replace(/^[^a-z]+/, '');
+    if (!w) return false;
+    if (/^(?:hour|honest|honor|honour|heir|herb(?:al|ivor|s)?\b|herbal|herbivor)/i.test(w)) return true;
+    if (!/^[aeiou]/.test(w)) return false;
+    if (/^(?:one(?:\b|[-'])|once\b)/i.test(w)) return false;
+    if (/^(?:eu|ew)/i.test(w)) return false;
+    if (/^u(?:s[aeu]|til|top|k[eu]|ra|ri|ro|vul|nanim|biquit|tensil)/i.test(w)) return false;
+    if (/^uni(?!(?:dent|mp|nc|nd|nf|nh|nj|nl|nm|nn|np|nr|ns|nt|nv))/i.test(w)) return false;
+    return true;
+  }
   // Wrong words for a blank (2026-11-13: of the same kind as the word, noun with noun, and in the sentence's form).
   //   1. Words from the teacher's list (the trial: related words often fit the sentence too), the bank's "does not fit"
   //      words first, written in the sentence's form; a word that cannot be is left out.
   //   2. When the list has too few: the bank's own words that do not fit this sentence (sense.blanks, checked for it and
   //      already in its form), only while the sentence is the bank's own.
   //   3. Words of the list whose kind is not known (a word the bank does not have), as typed, when no form is needed.
-  // After "a" the word must start with a consonant letter, after "an" with a vowel letter, so the article is not a clue.
+  // After "a" choices must start with a consonant sound, after "an" with a vowel sound, so the article is never a clue.
   function blankPool(row, rows, b, bank) {
     var out = [], seen = {}, base = keyOf(row.base || row.word), form = b.form;
     seen[row.key] = seen[keyOf(b.answer)] = true;
-    // After a or an every choice starts with the same kind of letter as the answer (a unified whole: then all with a vowel).
+    var needVowel = b.article ? vowelSoundStart(b.answer) : false;
+    // After a or an every choice starts with the same kind of sound as the answer (a unified whole -> consonant sounds, never "a invited").
     // listed: a word of the teacher's list, which must not be one a student could take for this one (looksAlike).
     var add = function (w, listed) {
       var k = keyOf(w);
-      if (!k || seen[k] || (b.article && vowelStart(w) !== vowelStart(b.answer))) return;
+      if (!k || seen[k] || (b.article && vowelSoundStart(w) !== needVowel)) return;
       var h = headOf(bank, k);
       if (h && h === base) return;
       if (sameFamily(base, k, bank) || (listed && looksAlike(row, k, bank, listed.def ? [listed.def] : []))) return;
@@ -424,9 +442,8 @@
   function blankShort(row, b) {
     var kind = row.pos ? row.pos + 's' : 'words';
     var how = b.form ? ' that can be written like ' + b.answer : '';
-    // An answer whose first letter is not the article's kind (a unified whole) needs choices that start like it does.
-    var odd = !!b.article && vowelStart(b.answer) !== (b.article === 'an');
-    var after = odd ? ' start with a ' + (vowelStart(b.answer) ? 'vowel' : 'consonant') + ', as "' + b.answer + '" does after "' + b.article + '"' : ' can go after "' + b.article + '"';
+    var odd = !!b.article && vowelSoundStart(b.answer) !== (b.article === 'an');
+    var after = odd ? ' start with a ' + (vowelSoundStart(b.answer) ? 'vowel' : 'consonant') + ' sound, as "' + b.answer + '" does after "' + b.article + '"' : ' can go after "' + b.article + '"';
     return 'Fill the blank needs 3 other ' + kind + ' from your list' + how + (b.article ? (how ? ' and' : ' that') + after : '')
       + '. Add words to the list' + (b.article || b.form ? ', or edit the sentence.' : '.');
   }
@@ -977,6 +994,7 @@
     if (o.diagrams === true || media.pictured.some(function (p) { return p.set === 'diagram'; })) recipe.diagrams = true;
     var noPicture = rows.filter(function (r) { return r.pictureOff; }).map(function (r) { return r.word; });
     if (noPicture.length) recipe.noPicture = noPicture;
+    if (!check && o.repeatMissed === true) recipe.repeatMissed = true;
     // A practice file holds its answers anyway, so it also keeps what the teacher chose and changed, for "Open a file I made".
     if (!check) recipe.rows = rows.map(function (r) { return { word: r.word, sense: r.senseId, def: r.def, example: r.example, pos: r.pos || '', own: !!r.own, wrong: r.wrong.map(function (c) { return { id: c.id || '', word: c.word, def: c.def, from: c.from || '' }; }), blank: r.blank ? r.blank.wrong.slice() : [] }; });
     var speech = read ? { engine: 'speechSynthesis', when: 'only when the student presses Read aloud, Hear it or Hear all, or turns on Read the choices in the reading tools', voices: 'a voice that runs on this device (localService); none that needs the internet', sends: 'nothing' }
@@ -995,7 +1013,7 @@
   // words: [word], senses: { key: senseId }, rows: [...] (a practice file only), teacherCode }
   function readBack(parts) {
     var p = parts || {}, m = isObject(p.manifest) ? p.manifest : {}, v = isObject(m.vocab) ? m.vocab : null, lesson = isObject(p.lesson) ? p.lesson : {};
-    var out = { ok: false, why: '', title: '', mode: 'practice', types: [], readAloud: true, voices: true, diagrams: false, noPicture: [], learner: '', words: [], senses: {}, rows: [], teacherCode: false };
+    var out = { ok: false, why: '', title: '', mode: 'practice', types: [], readAloud: true, voices: true, diagrams: false, repeatMissed: false, noPicture: [], learner: '', words: [], senses: {}, rows: [], teacherCode: false };
     if (!v) { out.why = 'This file was not made on this page.'; return out; }
     out.ok = true;
     out.title = line(m.title || lesson.title, 120);
@@ -1004,6 +1022,7 @@
     out.readAloud = v.readAloud !== false;
     out.voices = v.voices !== false;
     out.diagrams = v.diagrams === true;
+    out.repeatMissed = out.mode !== 'check' && (v.repeatMissed === true || lesson.repeatMissed === true);
     out.noPicture = (Array.isArray(v.noPicture) ? v.noPicture : []).map(normalizeWord).filter(Boolean).slice(0, MAX_WORDS);
     out.learner = codeName(m.learner);
     out.teacherCode = isObject(lesson.check) && isObject(lesson.check.lock);

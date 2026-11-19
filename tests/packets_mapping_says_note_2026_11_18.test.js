@@ -34,7 +34,6 @@ function open(html) {
   return { w, d, played,
     start: () => { d.getElementById('learner-name').value = 'Fox1'; buttons().find((b) => b.textContent === 'Start').click(); },
     word: () => { const p = [...d.querySelectorAll('#app p')].find((n) => /^The word: /.test(n.textContent)); return p ? p.textContent.replace('The word: ', '') : ''; },
-    listen: (spelling) => buttons().find((b) => b.getAttribute('aria-label') === 'Listen to the sound of ' + spelling),
     pick: (spelling) => buttons().find((b) => b.getAttribute('aria-label') === 'Pick up ' + spelling),
     notes: () => [...d.querySelectorAll('[data-mapping-says]')].map((n) => n.textContent),
   };
@@ -42,15 +41,16 @@ function open(html) {
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 describe('Sound Mapping notes for surprising spellings', () => {
-  it('explains the s of "dogs" the first time it is played, and keeps the note', async () => {
+  it('explains the s of "dogs" the first time it is played, and keeps the note (with no redundant Listen button)', async () => {
     const f = open(await build(['dogs']));
     f.start(); await wait(20);
     expect(f.word()).toBe('dogs');
+    expect([...f.d.querySelectorAll('#app button')].filter((b) => /^Listen to the sound of /.test(b.getAttribute('aria-label') || ''))).toHaveLength(0);
     expect(f.notes()).toEqual([]);
-    f.listen('s').click(); await wait(20);
+    f.pick('s').click(); await wait(20);
     expect(f.played.some((src) => src === clip('phonemes/z'))).toBe(true);
     expect(f.notes()).toEqual(['s says /z/ here.']);
-    f.listen('s').click(); await wait(20);
+    f.pick('s').click(); await wait(20);
     f.pick('d').click(); await wait(20);
     expect(f.notes()).toEqual(['s says /z/ here.']);
     expect(f.d.querySelector('[data-mapping-notes]').getAttribute('aria-live')).toBe('polite');
@@ -60,8 +60,8 @@ describe('Sound Mapping notes for surprising spellings', () => {
     const f = open(await build(['cats']));
     f.start(); await wait(20);
     expect(f.word()).toBe('cats');
-    f.listen('s').click(); await wait(20);
-    f.listen('c').click(); await wait(20);
+    f.pick('s').click(); await wait(20);
+    f.pick('c').click(); await wait(20);
     expect(f.notes()).toEqual([]);
   });
 
@@ -74,13 +74,13 @@ describe('Sound Mapping notes for surprising spellings', () => {
     const lesson = JSON.parse(/var lesson=(.*);\nvar labels=/.exec(html)[1]);
     const f = open(html);
     f.start(); await wait(20);
-    f.listen('s').click(); await wait(20);
-    f.listen('s').click(); await wait(20);
+    f.pick('s').click(); await wait(20);
+    f.pick('s').click(); await wait(20);
     const saved = JSON.parse(f.w.localStorage.getItem('alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision));
     expect(saved.items[0].supports.spellingNotes).toBe(1);
     const plain = open(await build(['cats']));
     plain.start(); await wait(20);
-    plain.listen('s').click(); await wait(20);
+    plain.pick('s').click(); await wait(20);
     const lessonCats = JSON.parse(/var lesson=(.*);\nvar labels=/.exec(await build(['cats']))[1]);
     const savedCats = JSON.parse(plain.w.localStorage.getItem('alloflow-take-home:' + lessonCats.lessonId + ':' + lessonCats.revision));
     expect(savedCats.items[0].supports.spellingNotes).toBeUndefined();
@@ -107,8 +107,8 @@ describe('Sound Mapping notes for surprising spellings', () => {
       const ctx = { root: d.getElementById('root'), el, L, check, fmt: (s, p) => String(s).replace(/\{(\w+)\}/g, (m, k) => (p && k in p ? p[k] : m)),
         play() {}, playAll() {}, stop() {}, announce() {}, support: (name) => supports.push(name), isDone: () => false, answer: () => 'retry', attempts: () => 0 };
       loader.ADAPTERS.mapping.render(item, ctx);
-      const listen = [...d.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Listen to the sound of s');
-      listen.click();
+      const chip = [...d.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Pick up s');
+      chip.click();
       return { notes: [...d.querySelectorAll('[data-mapping-says]')].map((n) => n.textContent), supports };
     };
     expect(run(true)).toEqual({ notes: [], supports: ['soundListens'] });
@@ -120,7 +120,7 @@ describe('Sound Mapping notes for surprising spellings', () => {
       const f = open(await build([word]));
       f.start(); await wait(20);
       expect(f.word(), word).toBe(word);
-      const chips = [...f.d.querySelectorAll('#app button')].filter((b) => /^Listen to the sound of /.test(b.getAttribute('aria-label') || ''));
+      const chips = [...f.d.querySelectorAll('#app button')].filter((b) => /^Pick up /.test(b.getAttribute('aria-label') || ''));
       for (const b of chips) { b.click(); await wait(10); }
       const got = Object.fromEntries(f.notes().map((t) => { const m = /^(\w+) says \/(\w+)\/ here\.$/.exec(t); return [m[1], m[2]]; }));
       expect(got, word).toEqual(expected);

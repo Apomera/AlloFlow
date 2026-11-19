@@ -15,6 +15,7 @@
   var KEY = 'waiting';
   var LIFETIME_MS = 10 * 60 * 1000;
   var HASH = '#open-file';
+  var RESULTS_HASH = '#import-results';
   var PREVIEW_CHANNEL = 'alloflow-packets-preview';
 
   function open() {
@@ -50,7 +51,7 @@
     var name = String((file && file.name) || 'file.html').slice(0, 160);
     var bytes = file && file.bytes;
     if (!bytes || typeof bytes.byteLength !== 'number') return Promise.reject(new Error('There is no file to hand over.'));
-    return run('readwrite', function (store) { store.put({ id: KEY, name: name, bytes: bytes, at: Date.now() }); return null; });
+    return run('readwrite', function (store) { store.put({ id: KEY, name: name, bytes: bytes, at: Date.now() }); return null; }).then(function () { return true; });
   }
   function take() {
     return run('readwrite', function (store) {
@@ -65,6 +66,22 @@
   }
   function clear() { return run('readwrite', function (store) { store.delete(KEY); return null; }); }
 
+  function redirect(file, href, hash) {
+    var target = String(href || '').trim();
+    if (!/^packets[\w-]*\.html$/.test(target)) return Promise.reject(new Error('This page cannot hand the file over there.'));
+    var suffix = typeof hash === 'string' && /^#[a-z0-9-]+$/i.test(hash) ? hash : HASH;
+    return api.put(file).then(function () {
+      if (root.location) root.location.href = target + suffix;
+      return true;
+    });
+  }
+
+  function safeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
+
   function readJsonBlock(html, id) {
     var needle = '<script type="application/json" id="' + id + '">';
     var from = String(html || '').indexOf(needle);
@@ -72,7 +89,7 @@
     from += needle.length;
     var to = html.indexOf('</script>', from);
     if (to < 0) return null;
-    try { return JSON.parse(html.slice(from, to)); } catch (_) { return null; }
+    try { return safeJsonParse(html.slice(from, to)); } catch (_) { return null; }
   }
 
   function readLessonBlock(html) {
@@ -90,7 +107,7 @@
     var end = text.indexOf(';\nvar labels=', start);
     if (end < 0) end = text.indexOf(';\r\nvar labels=', start);
     if (end < 0) return null;
-    try { return JSON.parse(text.slice(start, end)); } catch (_) { return null; }
+    try { return safeJsonParse(text.slice(start, end)); } catch (_) { return null; }
   }
 
   function lessonInfo(html, describe) {
@@ -187,9 +204,12 @@
       // Without the word ("Activity — word": in Word Sounds and vocabulary the word is the answer), for "Hide answers".
       var dash = String(item.label).indexOf(' \u2014 ');
       var quiet = (item.sample ? 'Sample' : 'Question ' + (cur + 1) + ' of ' + items.length) + (dash > 0 ? ': ' + String(item.label).slice(0, dash) : dash < 0 ? ': ' + item.label : '');
-      var buttons = [{ action: 'remove', label: 'Remove question', disabled: !!(item.sample || realCount <= 1) }];
-      if (!item.sample && item.canSwap) buttons.push({ action: 'swap', label: 'Change wrong answers', disabled: false });
-      if (!item.sample && item.canTogglePicture) buttons.push({ action: 'picture', label: item.noPicture ? 'Include picture' : 'Leave out picture', disabled: false });
+      var buttons = [];
+      if (typeof opts.onAction === 'function') {
+        buttons.push({ action: 'remove', label: 'Remove question', disabled: !!(item.sample || realCount <= 1) });
+        if (!item.sample && item.canSwap) buttons.push({ action: 'swap', label: 'Change wrong answers', disabled: false });
+        if (!item.sample && item.canTogglePicture) buttons.push({ action: 'picture', label: item.noPicture ? 'Include picture' : 'Leave out picture', disabled: false });
+      }
       return { hidden: false, where: where, whereQuiet: quiet, buttons: buttons, said: state.said, busy: state.busy };
     }
 
@@ -212,7 +232,7 @@
         if (msg.value == null) { state.index = 0; state.finished = false; state.parsed = null; }
         else {
           try {
-            var parsed = JSON.parse(String(msg.value));
+            var parsed = safeJsonParse(String(msg.value));
             if (parsed && typeof parsed === 'object') {
               state.parsed = parsed;
               if (typeof parsed.index === 'number') state.index = Math.max(0, Math.min(parsed.index, Math.max(0, info.items.length - 1)));
@@ -249,7 +269,7 @@
           state.said = String(res.said || '');
           var snapshot = buildResumeSnapshot(info, state.parsed, clamped);
           if (info.storageKey && snapshot[info.storageKey]) {
-            try { state.parsed = JSON.parse(snapshot[info.storageKey]); } catch (_) {}
+            try { state.parsed = safeJsonParse(snapshot[info.storageKey]); } catch (_) {}
           }
           sendAll({ type: 'preview-reload', html: res.html, snapshot: snapshot, bar: makeBar() });
         }, function (err) {
@@ -281,7 +301,7 @@
     };
   }
 
-  var api = { put: put, take: take, clear: clear, hostPreview: hostPreview, HASH: HASH, PREVIEW_CHANNEL: PREVIEW_CHANNEL, DB_NAME: DB_NAME, LIFETIME_MS: LIFETIME_MS };
+  var api = { put: put, take: take, clear: clear, redirect: redirect, hostPreview: hostPreview, HASH: HASH, RESULTS_HASH: RESULTS_HASH, PREVIEW_CHANNEL: PREVIEW_CHANNEL, DB_NAME: DB_NAME, LIFETIME_MS: LIFETIME_MS };
   root.AlloPacketHandoff = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

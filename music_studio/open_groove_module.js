@@ -283,6 +283,10 @@
     var selectedBarPair = React.useState(0);
     var selectedBar = selectedBarPair[0];
     var setSelectedBar = selectedBarPair[1];
+    var masterMutedPair = React.useState(false);
+    var masterMuted = masterMutedPair[0];
+    var setMasterMuted = masterMutedPair[1];
+    var masterMutedRef = React.useRef(false);
     var keyboardOctavePair = React.useState(3);
     var keyboardOctave = keyboardOctavePair[0];
     var setKeyboardOctave = keyboardOctavePair[1];
@@ -507,6 +511,11 @@
           try { activeStream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
         }
         clearTransportSchedule(false);
+        var engine = engineRef.current;
+        engineRef.current = null;
+        if (engine && engine.ctx && typeof engine.ctx.close === 'function') {
+          try { engine.ctx.close(); } catch (_) {}
+        }
       };
     }, []);
 
@@ -889,7 +898,20 @@
         if (showError) addToast(engineRef.current.reason || 'Audio is unavailable in this browser.', 'error');
         return null;
       }
+      if (engineRef.current.master && engineRef.current.master.gain) {
+        engineRef.current.master.gain.value = masterMutedRef.current ? 0 : 0.85;
+      }
       return engineRef.current;
+    }
+
+    function toggleMasterMute() {
+      var next = !masterMutedRef.current;
+      masterMutedRef.current = next;
+      setMasterMuted(next);
+      if (engineRef.current && engineRef.current.master && engineRef.current.master.gain) {
+        engineRef.current.master.gain.value = next ? 0 : 0.85;
+      }
+      ogAnnounce(next ? 'Master audio muted' : 'Master audio unmuted');
     }
 
     function restoreEmbeddedSamplesFor(nextProject, quiet) {
@@ -2232,7 +2254,7 @@
       var ink = themeMode === 'contrast' ? '#ffffff' : themeMode === 'dark' ? '#f8fafc' : '#111827';
       var paper = themeMode === 'contrast' ? '#000000' : themeMode === 'dark' ? '#020617' : '#ffffff';
       var accent = themeMode === 'contrast' ? '#ffff00' : themeMode === 'dark' ? '#5eead4' : '#0f766e';
-      var muted = themeMode === 'contrast' ? '#ffffff' : themeMode === 'dark' ? '#94a3b8' : '#94a3b8';
+      var muted = themeMode === 'contrast' ? '#ffffff' : themeMode === 'dark' ? '#cbd5e1' : '#475569';
       var activeStaffPlaybackBarIndex = staffPlaybackActive ? staffPlaybackBarIndex : -1;
       var playbackMeasure = activeStaffPlaybackBarIndex >= 0 ? staffEngraving.measures[activeStaffPlaybackBarIndex] : null;
       var playbackTick = staffPlaybackActive ? Math.max(0, Number(transportView.tick) || 0) : -1;
@@ -3052,6 +3074,12 @@
 
     function importMusicXmlFile(file) {
       if (!file) return;
+      var MAX_MUSICXML_BYTES = 5 * 1024 * 1024;
+      if (typeof file.size === 'number' && file.size > MAX_MUSICXML_BYTES) {
+        addToast('MusicXML file exceeds the 5 MB safety limit.', 'error');
+        if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
+        return;
+      }
       if (/\.mxl$/i.test(file.name || '')) {
         addToast('Compressed .mxl files are not supported yet. Export as .musicxml or .xml first.', 'info');
         if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
@@ -3059,7 +3087,13 @@
       }
       var reader = new FileReader();
       reader.onload = function () {
-        importMusicXmlText(String(reader.result || ''), file.name || 'MusicXML file');
+        var text = String(reader.result || '');
+        if (text.length > MAX_MUSICXML_BYTES) {
+          addToast('MusicXML content exceeds the 5 MB safety limit.', 'error');
+          if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
+          return;
+        }
+        importMusicXmlText(text, file.name || 'MusicXML file');
         if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
       };
       reader.onerror = function () {
@@ -3076,6 +3110,9 @@
     function loadProjectFromText() {
       try {
         var text = jsonRef.current ? jsonRef.current.value : '';
+        if (String(text || '').length > 5 * 1024 * 1024) {
+          throw new Error('Project text exceeds the 5 MB safety limit.');
+        }
         if (/^\s*</.test(text) || /<score-(partwise|timewise)\b/i.test(text)) {
           importMusicXmlText(text, 'Text area');
           return;
@@ -3602,6 +3639,13 @@
               'aria-pressed': loopEnabled,
               'aria-label': loopEnabled ? 'Loop On — turn loop mode off' : 'Loop Off — turn loop mode on'
             }, loopEnabled ? 'Loop On' : 'Loop Off'),
+            h('button', {
+              type: 'button',
+              style: Object.assign({}, styles.transportButton, masterMuted ? styles.muteButtonOn : null),
+              onClick: toggleMasterMute,
+              'aria-pressed': masterMuted,
+              'aria-label': masterMuted ? 'Muted — unmute master audio' : 'Mute — mute master audio'
+            }, masterMuted ? 'Muted' : 'Mute'),
             h('button', { style: styles.transportButton, onClick: resetDemo, 'aria-label': 'Reset — demo pattern' }, 'Reset'),
             h('button', {
               style: Object.assign({}, styles.transportButton, !canUndo ? styles.disabledButton : null),
@@ -3728,9 +3772,8 @@
                   key: pad.id,
                   style: Object.assign({}, styles.pad, selected ? styles.padSelected : null),
                   'aria-pressed': selected,
-                  'aria-label': pad.name + ' pad',
                   onClick: function () { setSelectedPadId(pad.id); triggerPad(pad); }
-                }, h('span', { style: styles.padIndex }, String(pad.index + 1)), h('span', { style: styles.padName }, pad.name));
+                }, h('span', { style: styles.padIndex }, String(pad.index + 1)), ' ', h('span', { style: styles.padName }, pad.name));
               }))),
 
           h('section', workspaceSectionProps('steps', 'og-steps-title'),
@@ -4855,22 +4898,22 @@
               h('button', { style: styles.smallButton, onClick: saveProject }, 'Prepare JSON'),
               h('button', { style: styles.smallButton, onClick: saveThinProject }, 'Thin JSON'),
               h('button', { style: styles.smallButton, onClick: loadProjectFromText }, 'Load Text'),
-              h('button', { style: styles.smallButton, onClick: function () { saveDraftNow(true); }, 'aria-label': 'Save browser draft' }, 'Save Draft'),
+              h('button', { style: styles.smallButton, onClick: function () { saveDraftNow(true); }, 'aria-label': 'Save Draft (browser)' }, 'Save Draft'),
               h('button', {
                 style: Object.assign({}, styles.smallButton, !draftMeta ? styles.disabledButton : null),
                 onClick: restoreDraft,
                 disabled: !draftMeta,
-                'aria-label': 'Restore browser draft'
+                'aria-label': 'Restore Draft (browser)'
               }, 'Restore Draft'),
               h('button', {
                 style: Object.assign({}, styles.smallButton, !draftMeta ? styles.disabledButton : null),
                 onClick: clearDraft,
                 disabled: !draftMeta,
-                'aria-label': 'Clear browser draft'
+                'aria-label': 'Clear Draft (browser)'
               }, 'Clear Draft'),
               h('button', { style: styles.smallButton, onClick: downloadProject }, 'Download'),
               h('button', { style: styles.smallButton, onClick: prepareMusicXml }, 'MusicXML'),
-              h('button', { style: styles.smallButton, onClick: openMusicXmlPicker, 'aria-label': 'Import MusicXML notation file' }, 'Import XML'),
+              h('button', { style: styles.smallButton, onClick: openMusicXmlPicker, 'aria-label': 'Import XML (MusicXML notation file)' }, 'Import XML'),
               h('input', {
                 ref: musicXmlInputRef,
                 type: 'file',

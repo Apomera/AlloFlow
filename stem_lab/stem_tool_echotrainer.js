@@ -46,7 +46,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   if (!document.getElementById('echotrainer-a11y-css')) {
     var _s = document.createElement('style');
     _s.id = 'echotrainer-a11y-css';
-    _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .echotrainer-focus-canvas:focus-visible { outline: 3px solid #38bdf8 !important; outline-offset: 3px; }';
+    _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .echotrainer-focus-canvas:focus-visible { outline: 3px solid #38bdf8 !important; outline-offset: 3px; } [data-echotrainer-root] button { transition: transform 120ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease; } [data-echotrainer-root] button:not([disabled]):hover { transform: translateY(-1px); } [data-echotrainer-root] button:focus-visible, [data-echotrainer-root] summary:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }';
     document.head.appendChild(_s);
   }
 
@@ -710,7 +710,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         }));
       };
       var React = ctx.React; var h = React.createElement; var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef; var useCallback = React.useCallback;
-      var d = (ctx.toolData && ctx.toolData['echoTrainer']) || {};
+      var rawTD = (ctx && ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData : {};
+      var d = (rawTD['echoTrainer'] && typeof rawTD['echoTrainer'] === 'object' && !Array.isArray(rawTD['echoTrainer'])) ? rawTD['echoTrainer'] : {};
       // Live ref to `d` for continuous loops. Two useEffects (3D render
       // loop at ~line 980 and 2D minimap loop at ~line 1407) read d.X
       // game-state values (viewMode, bumps, waypointIdx, runHistory,
@@ -1177,7 +1178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           var _ens = function(cb){
             if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
             var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-            var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+            if(window._isDesktopBundledApp===true){cb();return;} var _sri=["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.integrity=_sri[i]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
           };
           _ens(function(){
             try {
@@ -1605,9 +1606,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       // ══════════════════════════════════════════════════════════
       useEffect(function() {
         if (!canvasRef.current) return;
-        var canvas = canvasRef.current; var gfx = canvas.getContext('2d'); var running = true; var goalCheckTimer2d = 0;
+        var canvas = canvasRef.current; var gfx = canvas.getContext('2d'); var running = true; var rafId2d = 0; var goalCheckTimer2d = 0;
         function loop2d() {
-          if (!running) return; requestAnimationFrame(loop2d);
+          if (!running) return; rafId2d = requestAnimationFrame(loop2d);
           // Live-read tool state so the minimap (and the 2D fallback when
           // WebGL isn't available) reflects current viewMode / bumps /
           // run-history rather than mount-time values.
@@ -1749,7 +1750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
         }
         loop2d();
-        return function() { running = false; };
+        return function() { running = false; if (rafId2d) { try { cancelAnimationFrame(rafId2d); } catch (_) {} rafId2d = 0; } };
       }, [seed, envType, has3D, viewMode, diffId]);
 
       function cycleViewMode() {
@@ -1799,10 +1800,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           ? { label: t('stem.echotrainer.audio_only', 'Audio Only'), color: isDark ? '#ddd6fe' : '#6d28d9', bg: isDark ? '#2e1065' : '#f5f3ff', border: '#8b5cf6' }
           : { label: t('stem.echotrainer.reveal_mode', 'Reveal Mode'), color: isDark ? '#fecaca' : '#b91c1c', bg: isDark ? '#450a0a' : '#fef2f2', border: '#ef4444' };
       // Read inline at three sites; one guarded local covers all of them.
-      var runHistorySafe = Array.isArray(d.runHistory) ? d.runHistory : [];
+      var runHistorySafe = Array.isArray(d.runHistory) ? d.runHistory.filter(function(r) { return r && typeof r === 'object' && typeof r.time === 'number' && isFinite(r.time); }) : [];
       var runCount = runHistorySafe.length;
       var bestRun = null;
-      (Array.isArray(d.runHistory) ? d.runHistory : []).forEach(function(run) { if (!bestRun || run.time < bestRun.time) bestRun = run; });
+      runHistorySafe.forEach(function(run) { if (!bestRun || run.time < bestRun.time) bestRun = run; });
       var briefingStats = [
         { label: t('stem.echotrainer.goals_found', 'Goals Found'), value: goalsFound },
         { label: t('stem.echotrainer.audio_wins', 'Audio Wins'), value: blindWins },
@@ -1810,64 +1811,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         { label: t('stem.echotrainer.best_run', 'Best Run'), value: bestRun ? bestRun.time + 's' : t('stem.echotrainer.none_yet', 'New') }
       ];
 
-      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%',
+      var heroBgStyle = isContrast
+        ? { padding: '14px 16px', borderRadius: '14px', backgroundColor: '#000000', border: '2px solid #ffff00', color: '#ffff00' }
+        : { padding: '14px 16px', borderRadius: '14px', backgroundColor: '#1e1b4b', background: isDark ? 'linear-gradient(135deg, #0f172a 0%, #312e81 55%, #1e1b4b 100%)' : 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 55%, #0f172a 100%)', border: '1px solid rgba(165,180,252,0.35)', color: '#ffffff', boxShadow: '0 8px 24px rgba(30,27,75,0.24)' };
+      var heroPillStyle = isContrast
+        ? { fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px', backgroundColor: '#000000', border: '1px solid #ffff00', color: '#ffff00' }
+        : { fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '999px', backgroundColor: 'rgba(15,23,42,0.58)', border: '1px solid rgba(199,210,254,0.35)', color: '#eef2ff' };
+
+      return h('div', { 'data-echotrainer-root': 'true', 'data-echotrainer-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%',
         // ★This tool already branches on isDark for its panels
         // (isDark ? '#1e293b' : '#f8fafc') but painted no ground of its own, so in dark
         // theme those dark panels floated on the host's white card and every element
         // between them took a dark ink onto white: #94a3b8 on #ffffff x10. Give the
         // isDark branch the canvas it already assumes.
-        background: isDark ? '#0f172a' : '#ffffff', borderRadius: 12, padding: 10 } },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
-          h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': t('stem.echotrainer.back_to_stem_lab', 'Back to STEAM Lab'), style: { background: isDark ? '#1e293b' : '#f1f5f9', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), borderRadius: '8px', padding: '6px 12px', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', t('stem.echotrainer.stem_lab', ' STEAM Lab')),
-          h('div', { style: { fontSize: '18px', fontWeight: 900, color: isDark ? '#e2e8f0' : '#1e293b' } }, t('stem.echotrainer.echo_navigator', '\uD83C\uDFA7 Echo Navigator')),
-          has3D ? h('span', { style: { fontSize: '10px', fontWeight: 800, color: etint('#3b82f6'), background: isDark ? '#1e3a5f' : '#eff6ff', padding: '2px 8px', borderRadius: '6px', border: '1px solid #3b82f680' } }, '3D') : null,
-          h('div', { style: { fontSize: '11px', color: isDark ? '#94a3b8' : '#64748b', marginLeft: '8px' } }, t('stem.echotrainer.navigate_by_sound_alone', 'Navigate by sound alone'))
-        ),
+        background: isContrast ? '#000000' : (isDark ? '#0b1220' : '#f8fafc'), borderRadius: 16, padding: 14, border: isContrast ? '2px solid #ffff00' : ('1px solid ' + (isDark ? '#1e293b' : '#cbd5e1')), minWidth: 0 } },
+        // Bespoke Acoustic Observatory Hero Header
+        h('header', { style: heroBgStyle },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 240px', minWidth: 0 } },
+              // Bespoke Acoustic Sonar Emblem SVG
+              h('div', { 'aria-hidden': 'true', style: { width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.48)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(165,180,252,0.4)' } },
+                h('svg', { viewBox: '0 0 40 40', width: 32, height: 32, 'aria-hidden': 'true' },
+                  h('circle', { cx: 12, cy: 20, r: 4, fill: isContrast ? '#00ff00' : '#c4b5fd' }),
+                  h('path', { d: 'M18 13 Q24 20 18 27', fill: 'none', stroke: isContrast ? '#ffff00' : '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                  h('path', { d: 'M23 9 Q32 20 23 31', fill: 'none', stroke: isContrast ? '#00ff00' : '#818cf8', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('line', { x1: 33, y1: 8, x2: 33, y2: 32, stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' })
+                )),
+              h('div', { style: { minWidth: 0 } },
+                h('div', { style: { fontSize: '10px', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: isContrast ? '#00ff00' : '#c7d2fe', marginBottom: '2px' } },
+                  t('stem.echotrainer.badge_subject', 'Science · Tech · Acoustic Echolocation Lab')),
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+                  h('div', { style: { fontSize: '19px', fontWeight: 900, color: isContrast ? '#ffff00' : '#ffffff', lineHeight: 1.2 } }, t('stem.echotrainer.echo_navigator', '\uD83C\uDFA7 Echo Navigator')),
+                  has3D ? h('span', { style: { fontSize: '10px', fontWeight: 800, color: isContrast ? '#000000' : '#ffffff', backgroundColor: isContrast ? '#00ff00' : '#2563eb', padding: '2px 8px', borderRadius: '6px' } }, '3D') : null),
+                h('div', { style: { fontSize: '12px', color: isContrast ? '#ffffff' : '#e0e7ff', marginTop: '2px' } }, t('stem.echotrainer.navigate_by_sound_alone', 'Navigate by sound alone')))),
+            h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': t('stem.echotrainer.back_to_stem_lab', 'Back to STEAM Lab'), style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.6)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(199,210,254,0.45)', borderRadius: '9px', padding: '6px 12px', color: isContrast ? '#ffff00' : '#ffffff', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', t('stem.echotrainer.stem_lab', ' STEAM Lab'))),
+          // Live Telemetry Pills
+          h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '10px' } },
+            h('span', { style: heroPillStyle }, currentEnv.icon + ' ' + currentEnv.name),
+            h('span', { style: heroPillStyle }, has3D ? t('stem.echotrainer.pill_3d', '3D HRTF Spatial Audio') : t('stem.echotrainer.pill_2d', '2D Sonar Map')),
+            h('span', { style: heroPillStyle }, viewTone.label),
+            h('span', { style: heroPillStyle }, diff.icon + ' ' + diff.label),
+            h('span', { style: heroPillStyle }, t('stem.echotrainer.pill_clicks', 'Clicks: ') + (d.clicks || 0) + ' · ' + t('stem.echotrainer.pill_goals', 'Goals: ') + goalsFound))),
         h('section', {
           'data-echotrainer-briefing': 'true',
           'aria-labelledby': 'echotrainer-briefing-title',
-          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px', padding: '16px', borderRadius: '14px', border: '1px solid ' + (isDark ? 'rgba(129, 140, 248, 0.42)' : '#c7d2fe'), background: isDark ? 'linear-gradient(135deg, #0f172a 0%, #111827 48%, #1e1b4b 100%)' : 'linear-gradient(135deg, #eef2ff 0%, #f8fafc 56%, #ecfeff 100%)', boxShadow: isDark ? 'inset 0 0 38px rgba(99,102,241,0.12)' : '0 12px 30px rgba(79,70,229,0.08)' }
+          style: isContrast
+            ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px', padding: '16px', borderRadius: '14px', border: '2px solid #ffff00', backgroundColor: '#000000' }
+            : { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px', padding: '16px', borderRadius: '14px', border: '1px solid ' + (isDark ? 'rgba(129, 140, 248, 0.42)' : '#c7d2fe'), backgroundColor: isDark ? '#0f172a' : '#eef2ff', background: isDark ? 'linear-gradient(135deg, #0f172a 0%, #111827 48%, #1e1b4b 100%)' : 'linear-gradient(135deg, #eef2ff 0%, #f8fafc 56%, #ecfeff 100%)', boxShadow: isDark ? 'inset 0 0 38px rgba(99,102,241,0.12)' : '0 8px 24px rgba(79,70,229,0.08)' }
         },
           h('div', { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: '12px' } },
-            h('div', { style: { color: isDark ? '#a5b4fc' : '#4338ca', fontSize: '11px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase' } }, t('stem.echotrainer.sonar_briefing', 'Sonar Briefing')),
-            h('h2', { id: 'echotrainer-briefing-title', style: { margin: 0, color: isDark ? '#f8fafc' : '#111827', fontSize: 'clamp(22px, 4vw, 32px)', lineHeight: 1.08, fontWeight: 900 } }, t('stem.echotrainer.sonar_briefing_title', 'Build a map from echoes')),
-            h('p', { style: { margin: 0, color: isDark ? '#dbeafe' : '#334155', fontSize: '13px', lineHeight: 1.55, maxWidth: '62ch' } }, t('stem.echotrainer.sonar_briefing_copy', 'Emit a click, listen for timing and direction, then move slowly toward the goal while the map appears one pulse at a time.')),
+            h('div', { style: { color: isContrast ? '#00ff00' : (isDark ? '#a5b4fc' : '#4338ca'), fontSize: '11px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase' } }, t('stem.echotrainer.sonar_briefing', 'Sonar Briefing')),
+            h('h2', { id: 'echotrainer-briefing-title', style: { margin: 0, color: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#111827'), fontSize: 'clamp(22px, 4vw, 32px)', lineHeight: 1.08, fontWeight: 900 } }, t('stem.echotrainer.sonar_briefing_title', 'Build a map from echoes')),
+            h('p', { style: { margin: 0, color: isContrast ? '#ffffff' : (isDark ? '#dbeafe' : '#334155'), fontSize: '13px', lineHeight: 1.55, maxWidth: '62ch' } }, t('stem.echotrainer.sonar_briefing_copy', 'Emit a click, listen for timing and direction, then move slowly toward the goal while the map appears one pulse at a time.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px' } },
               briefingStats.map(function(stat) {
-                return h('div', { key: stat.label, style: { padding: '10px 12px', borderRadius: '10px', background: isDark ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.78)', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#dbeafe') } },
-                  h('div', { style: { color: isDark ? '#bfdbfe' : '#1d4ed8', fontSize: '17px', fontWeight: 900 } }, stat.value),
-                  h('div', { style: { marginTop: '2px', color: isDark ? '#cbd5e1' : '#475569', fontSize: '11px', fontWeight: 800 } }, stat.label)
+                return h('div', { key: stat.label, style: { padding: '10px 12px', borderRadius: '10px', backgroundColor: isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.85)'), border: isContrast ? '1px solid #ffff00' : ('1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#dbeafe')) } },
+                  h('div', { style: { color: isContrast ? '#00ff00' : (isDark ? '#bfdbfe' : '#1d4ed8'), fontSize: '17px', fontWeight: 900 } }, stat.value),
+                  h('div', { style: { marginTop: '2px', color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontSize: '11px', fontWeight: 800 } }, stat.label)
                 );
               })
             ),
             h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-              h('button', { onClick: emitClick, style: { padding: '10px 16px', borderRadius: '10px', border: '1px solid #c4b5fd', background: isDark ? '#6d28d9' : '#5b21b6', color: '#fff', fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, t('stem.echotrainer.emit_sonar', 'Emit Sonar')),
-              h('button', { onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '10px 14px', borderRadius: '10px', border: '1px solid ' + viewTone.border, background: viewTone.bg, color: viewTone.color, fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, viewTone.label),
-              h('span', { style: { alignSelf: 'center', padding: '6px 10px', borderRadius: '10px', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#cbd5e1'), color: isDark ? '#e2e8f0' : '#334155', background: isDark ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.7)', fontSize: '12px', fontWeight: 800 } }, currentEnv.name + ' - ' + diff.label)
+              h('button', { onClick: emitClick, style: { padding: '10px 16px', borderRadius: '10px', border: isContrast ? '2px solid #00ff00' : '1px solid #c4b5fd', backgroundColor: isContrast ? '#000000' : (isDark ? '#6d28d9' : '#5b21b6'), color: isContrast ? '#00ff00' : '#fff', fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, t('stem.echotrainer.emit_sonar', 'Emit Sonar')),
+              h('button', { onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '10px 14px', borderRadius: '10px', border: isContrast ? '2px solid #ffff00' : ('1px solid ' + viewTone.border), backgroundColor: isContrast ? '#000000' : viewTone.bg, color: isContrast ? '#ffff00' : viewTone.color, fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, viewTone.label),
+              h('span', { style: { alignSelf: 'center', padding: '6px 10px', borderRadius: '10px', border: isContrast ? '1px solid #ffff00' : ('1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#cbd5e1')), color: isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), backgroundColor: isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.8)'), fontSize: '12px', fontWeight: 800 } }, currentEnv.name + ' - ' + diff.label)
             )
           ),
-          h('div', { style: { minHeight: '230px', borderRadius: '13px', border: '1px solid ' + (isDark ? 'rgba(96,165,250,0.38)' : '#bfdbfe'), background: isDark ? 'radial-gradient(circle at 42% 45%, rgba(59,130,246,0.24), rgba(2,6,23,0.9) 68%)' : 'radial-gradient(circle at 42% 45%, rgba(147,197,253,0.48), rgba(248,250,252,0.95) 70%)', overflow: 'hidden', position: 'relative' } },
+          h('div', { style: { minHeight: '230px', borderRadius: '13px', border: isContrast ? '2px solid #ffff00' : ('1px solid ' + (isDark ? 'rgba(96,165,250,0.38)' : '#bfdbfe')), backgroundColor: isContrast ? '#000000' : (isDark ? '#020617' : '#eff6ff'), background: isContrast ? '#000000' : (isDark ? 'radial-gradient(circle at 42% 45%, rgba(59,130,246,0.24), rgba(2,6,23,0.9) 68%)' : 'radial-gradient(circle at 42% 45%, rgba(147,197,253,0.48), rgba(248,250,252,0.95) 70%)'), overflow: 'hidden', position: 'relative' } },
             h('svg', { viewBox: '0 0 320 230', width: '100%', height: '100%', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', minHeight: '230px' } },
               h('defs', null,
                 h('radialGradient', { id: 'echoPulseGlow', cx: '42%', cy: '50%', r: '55%' },
-                  h('stop', { offset: '0%', stopColor: '#a78bfa', stopOpacity: '0.52' }),
-                  h('stop', { offset: '70%', stopColor: '#60a5fa', stopOpacity: '0.13' }),
+                  h('stop', { offset: '0%', stopColor: isContrast ? '#ffff00' : '#a78bfa', stopOpacity: isContrast ? '0.25' : '0.52' }),
+                  h('stop', { offset: '70%', stopColor: isContrast ? '#00ff00' : '#60a5fa', stopOpacity: '0.13' }),
                   h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: '0' })
                 )
               ),
-              h('rect', { x: 0, y: 0, width: 320, height: 230, fill: isDark ? '#020617' : '#eff6ff', opacity: 0.28 }),
+              h('rect', { x: 0, y: 0, width: 320, height: 230, fill: isContrast ? '#000000' : (isDark ? '#020617' : '#eff6ff'), opacity: isContrast ? 1 : 0.28 }),
               [34, 62, 92, 126].map(function(r, idx) {
-                return h('circle', { key: r, cx: 136, cy: 116, r: r, fill: idx === 0 ? 'url(#echoPulseGlow)' : 'none', stroke: idx % 2 ? '#a78bfa' : '#60a5fa', strokeWidth: idx === 0 ? 2.4 : 1.4, strokeOpacity: 0.68 - idx * 0.12, strokeDasharray: idx > 1 ? '5 7' : undefined });
+                return h('circle', { key: r, cx: 136, cy: 116, r: r, fill: idx === 0 ? 'url(#echoPulseGlow)' : 'none', stroke: isContrast ? (idx % 2 ? '#ffff00' : '#00ff00') : (idx % 2 ? '#a78bfa' : '#60a5fa'), strokeWidth: idx === 0 ? 2.4 : 1.4, strokeOpacity: isContrast ? 0.95 : (0.68 - idx * 0.12), strokeDasharray: idx > 1 ? '5 7' : undefined });
               }),
-              h('circle', { cx: 136, cy: 116, r: 8, fill: '#c4b5fd' }),
-              h('path', { d: 'M210 38 L270 64 L270 166 L210 192 Z', fill: isDark ? '#172554' : '#dbeafe', stroke: '#60a5fa', strokeOpacity: 0.68 }),
-              h('path', { d: 'M210 38 L210 192', stroke: '#93c5fd', strokeWidth: 4, strokeLinecap: 'round' }),
-              h('circle', { cx: 252, cy: 116, r: 13, fill: '#fbbf24', opacity: 0.9 }),
-              h('path', { d: 'M144 114 C178 96 196 88 214 72', stroke: '#c4b5fd', strokeWidth: 2, strokeDasharray: '5 6', fill: 'none' }),
-              h('path', { d: 'M214 158 C190 150 166 136 144 120', stroke: '#34d399', strokeWidth: 2, strokeDasharray: '5 6', fill: 'none' }),
-              h('text', { x: 18, y: 28, fill: isDark ? '#dbeafe' : '#1e3a8a', fontSize: 12, fontWeight: 900 }, currentEnv.icon + ' ' + currentEnv.name),
-              h('text', { x: 18, y: 47, fill: isDark ? '#cbd5e1' : '#475569', fontSize: 10, fontWeight: 700 }, has3D ? '3D spatial audio ready' : '2D audio map ready'),
-              h('text', { x: 222, y: 205, fill: isDark ? '#fde68a' : '#92400e', fontSize: 10, fontWeight: 900 }, t('stem.echotrainer.goal_echo', 'Goal echo'))
+              h('circle', { cx: 136, cy: 116, r: 8, fill: isContrast ? '#00ff00' : '#c4b5fd' }),
+              h('path', { d: 'M210 38 L270 64 L270 166 L210 192 Z', fill: isContrast ? '#000000' : (isDark ? '#172554' : '#dbeafe'), stroke: isContrast ? '#ffff00' : '#60a5fa', strokeOpacity: isContrast ? 1 : 0.68 }),
+              h('path', { d: 'M210 38 L210 192', stroke: isContrast ? '#ffff00' : '#93c5fd', strokeWidth: 4, strokeLinecap: 'round' }),
+              h('circle', { cx: 252, cy: 116, r: 13, fill: isContrast ? '#ffff00' : '#fbbf24', opacity: 0.95 }),
+              h('path', { d: 'M144 114 C178 96 196 88 214 72', stroke: isContrast ? '#ffff00' : '#c4b5fd', strokeWidth: 2, strokeDasharray: '5 6', fill: 'none' }),
+              h('path', { d: 'M214 158 C190 150 166 136 144 120', stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth: 2, strokeDasharray: '5 6', fill: 'none' }),
+              h('text', { x: 18, y: 28, fill: isContrast ? '#ffff00' : (isDark ? '#dbeafe' : '#1e3a8a'), fontSize: 12, fontWeight: 900 }, currentEnv.icon + ' ' + currentEnv.name),
+              h('text', { x: 18, y: 47, fill: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569'), fontSize: 10.5, fontWeight: 700 }, has3D ? '3D spatial audio ready' : '2D audio map ready'),
+              h('text', { x: 222, y: 205, fill: isContrast ? '#ffff00' : (isDark ? '#fde68a' : '#92400e'), fontSize: 10.5, fontWeight: 900 }, t('stem.echotrainer.goal_echo', 'Goal echo'))
             )
           )
         ),
@@ -1900,18 +1931,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               h('rect', { x: 0, y: 0, width: 500, height: 160, fill: isDark ? '#0f172a' : '#f8fafc', rx: 8 }),
               h('circle', { cx: 60, cy: 80, r: 18, fill: '#6366f1', opacity: 0.9 }),
               h('text', { x: 60, y: 85, textAnchor: 'middle', fontSize: '16', fill: '#fff' }, '\uD83C\uDFA7'),
-              h('text', { x: 60, y: 115, textAnchor: 'middle', fontSize: '9', fill: isDark ? '#94a3b8' : '#64748b', fontWeight: 700 }, 'You'),
+              h('text', { x: 60, y: 115, textAnchor: 'middle', fontSize: '10.5', fill: isDark ? '#cbd5e1' : '#475569', fontWeight: 700 }, 'You'),
               h('rect', { x: 410, y: 20, width: 12, height: 120, fill: '#475569', rx: 3 }),
-              h('text', { x: 416, y: 155, textAnchor: 'middle', fontSize: '9', fill: isDark ? '#94a3b8' : '#64748b', fontWeight: 700 }, t('stem.echotrainer.wall', 'Wall')),
+              h('text', { x: 416, y: 155, textAnchor: 'middle', fontSize: '10.5', fill: isDark ? '#cbd5e1' : '#475569', fontWeight: 700 }, t('stem.echotrainer.wall', 'Wall')),
               h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 2, opacity: 0.7 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.7', to: '0', dur: '2s', repeatCount: 'indefinite' })),
               h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.5 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.5', to: '0', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' })),
               h('circle', { cx: 410, cy: 70, r: 0, fill: 'none', stroke: '#22c55e', strokeWidth: 2, opacity: 0 }, h('animate', { attributeName: 'r', from: '0', to: '180', dur: '2s', begin: '1s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', values: '0;0.6;0', dur: '2s', begin: '1s', repeatCount: 'indefinite' })),
               h('line', { x1: 90, y1: 68, x2: 200, y2: 68, stroke: '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowOut)' }),
-              h('text', { x: 145, y: 62, textAnchor: 'middle', fontSize: '8', fill: '#a78bfa', fontWeight: 600 }, t('stem.echotrainer.click', 'Click \u2192')),
+              h('text', { x: 145, y: 60, textAnchor: 'middle', fontSize: '10', fill: isDark ? '#c4b5fd' : '#6d28d9', fontWeight: 700 }, t('stem.echotrainer.click', 'Click \u2192')),
               h('line', { x1: 390, y1: 92, x2: 280, y2: 92, stroke: '#4ade80', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowBack)' }),
-              h('text', { x: 335, y: 106, textAnchor: 'middle', fontSize: '8', fill: '#4ade80', fontWeight: 600 }, t('stem.echotrainer.echo', '\u2190 Echo')),
-              h('rect', { x: 190, y: 125, width: 120, height: 24, rx: 6, fill: isDark ? '#1e293b' : '#f0f9ff', stroke: isDark ? '#334155' : '#bae6fd' }),
-              h('text', { x: 250, y: 141, textAnchor: 'middle', fontSize: '9', fill: isDark ? '#7dd3fc' : '#0369a1', fontWeight: 700 }, t('stem.echotrainer.delay_distance_2_343_m_s', 'Delay = Distance \u00d7 2 \u00f7 343 m/s')),
+              h('text', { x: 335, y: 108, textAnchor: 'middle', fontSize: '10', fill: isDark ? '#4ade80' : '#15803d', fontWeight: 700 }, t('stem.echotrainer.echo', '\u2190 Echo')),
+              h('rect', { x: 170, y: 124, width: 160, height: 26, rx: 6, fill: isDark ? '#1e293b' : '#f0f9ff', stroke: isDark ? '#334155' : '#bae6fd' }),
+              h('text', { x: 250, y: 141, textAnchor: 'middle', fontSize: '10.5', fill: isDark ? '#7dd3fc' : '#0369a1', fontWeight: 700 }, t('stem.echotrainer.delay_distance_2_343_m_s', 'Delay = Distance \u00d7 2 \u00f7 343 m/s')),
               h('defs', null, h('marker', { id: 'arrowOut', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#a78bfa' })), h('marker', { id: 'arrowBack', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#4ade80' })))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '10px', fontSize: '10px' } },
@@ -2194,7 +2225,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
 
         // === H7b'' inquiry widget: echo timing ===
         (function() {
-          var iq = d._echoHunt || { distance: 10, speed: 340, surface: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          var rawIQ = (d._echoHunt && typeof d._echoHunt === 'object' && !Array.isArray(d._echoHunt)) ? d._echoHunt : {};
+          var safeDist = (typeof rawIQ.distance === 'number' && isFinite(rawIQ.distance)) ? Math.max(0.5, Math.min(100, rawIQ.distance)) : 10;
+          var safeSpeed = (typeof rawIQ.speed === 'number' && isFinite(rawIQ.speed) && rawIQ.speed > 0) ? Math.max(200, Math.min(400, rawIQ.speed)) : 340;
+          var safeSurf = (typeof rawIQ.surface === 'number' && isFinite(rawIQ.surface)) ? Math.max(0, Math.min(100, rawIQ.surface)) : 50;
+          var iq = Object.assign({ distance: safeDist, speed: safeSpeed, surface: safeSurf, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, rawIQ, { distance: safeDist, speed: safeSpeed, surface: safeSurf, log: Array.isArray(rawIQ.log) ? rawIQ.log : [] });
           function setIQ(patch) { upd('_echoHunt', Object.assign({}, iq, patch)); }
           var echoMs = (iq.distance * 2 / iq.speed) * 1000;
           var state;
@@ -2202,21 +2237,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           else if (echoMs < 100) state = 'crisp';
           else if (echoMs < 250) state = 'distinct';
           else state = 'reverb';
-          var sm = {
-            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect', '\u26A1 Too fast (no echo detect)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi', 'Surface too close. Brain merges echo with click.') },
+          var sm = isContrast ? {
+            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect', '\u26A1 Too fast (no echo detect)'), color: '#ffff00', bg: '#000000', border: '#ffff00', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi', 'Surface too close. Brain merges echo with click.') },
+            crisp:    { label: t('stem.echotrainer.crisp_echo', '\uD83D\uDFE2 Crisp echo'), color: '#00ff00', bg: '#000000', border: '#00ff00', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa', 'Optimal range. Brain can localize surface.') },
+            distinct: { label: t('stem.echotrainer.distinct_delay', '\uD83D\uDFE1 Distinct delay'), color: '#ffff00', bg: '#000000', border: '#ffff00', desc: t('stem.echotrainer.surface_noticeable_but_distant', 'Surface noticeable but distant.') },
+            reverb:   { label: t('stem.echotrainer.reverberant', '\uD83D\uDD0A Reverberant'), color: '#ffff00', bg: '#000000', border: '#ffff00', desc: t('stem.echotrainer.far_surface_multiple_bounces', 'Far surface, multiple bounces.') }
+          }[state] : isDark ? {
+            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect', '\u26A1 Too fast (no echo detect)'), color: '#fca5a5', bg: '#450a0a', border: '#ef4444', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi', 'Surface too close. Brain merges echo with click.') },
+            crisp:    { label: t('stem.echotrainer.crisp_echo', '\uD83D\uDFE2 Crisp echo'), color: '#6ee7b7', bg: '#064e3b', border: '#10b981', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa', 'Optimal range. Brain can localize surface.') },
+            distinct: { label: t('stem.echotrainer.distinct_delay', '\uD83D\uDFE1 Distinct delay'), color: '#fde68a', bg: '#451a03', border: '#f59e0b', desc: t('stem.echotrainer.surface_noticeable_but_distant', 'Surface noticeable but distant.') },
+            reverb:   { label: t('stem.echotrainer.reverberant', '\uD83D\uDD0A Reverberant'), color: '#ddd6fe', bg: '#2e1065', border: '#8b5cf6', desc: t('stem.echotrainer.far_surface_multiple_bounces', 'Far surface, multiple bounces.') }
+          }[state] : {
+            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect', '\u26A1 Too fast (no echo detect)'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi', 'Surface too close. Brain merges echo with click.') },
             crisp:    { label: t('stem.echotrainer.crisp_echo', '\uD83D\uDFE2 Crisp echo'), color: '#065f46', bg: '#ecfdf5', border: '#86efac', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa', 'Optimal range. Brain can localize surface.') },
-            distinct: { label: t('stem.echotrainer.distinct_delay', '\uD83D\uDFE1 Distinct delay'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.echotrainer.surface_noticeable_but_distant', 'Surface noticeable but distant.') },
-            reverb:   { label: t('stem.echotrainer.reverberant', '\uD83D\uDD0A Reverberant'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.echotrainer.far_surface_multiple_bounces', 'Far surface, multiple bounces.') }
+            distinct: { label: t('stem.echotrainer.distinct_delay', '\uD83D\uDFE1 Distinct delay'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.echotrainer.surface_noticeable_but_distant', 'Surface noticeable but distant.') },
+            reverb:   { label: t('stem.echotrainer.reverberant', '\uD83D\uDD0A Reverberant'), color: '#5b21b6', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.echotrainer.far_surface_multiple_bounces', 'Far surface, multiple bounces.') }
           }[state];
-          return h('div', { style: { margin: '8px', padding: '12px', background: isDark ? '#1e293b' : '#fff', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 8 } },
-            h('h3', { style: { fontSize: 13, fontWeight: 800, color: isDark ? '#67e8f9' : '#155e75', marginBottom: 6 } }, t('stem.echotrainer.echo_timing_discovery', '\uD83C\uDFB5 Echo timing discovery')),
-            h('p', { style: { fontSize: 11, color: isDark ? '#cbd5e1' : '#475569', marginBottom: 8 } }, t('stem.echotrainer.sliders_for_distance_speed_surface_dis', 'Sliders for distance, speed, surface. Discrete 4-state echo. No score, no reveal.')),
-            h('div', { style: { padding: 10, borderRadius: 6, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 8 } },
-              h('div', { style: { fontSize: 13, fontWeight: 900, color: sm.color } }, sm.label),
-              h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
-              h('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontFamily: 'monospace' } }, 'Round-trip \u2248 ' + echoMs.toFixed(1) + ' ms')
+
+          // Live Acoustic Pulse-Echo Oscilloscope coordinates
+          var maxMs = 600;
+          var echoX = 48 + Math.min(1, echoMs / maxMs) * 476;
+          var fusionX = 48 + (30 / maxMs) * 476;
+          var crispX = 48 + (100 / maxMs) * 476;
+          var echoAmp = 6 + (iq.surface / 100) * 32;
+          var wallX = 72 + ((iq.distance - 0.5) / 99.5) * 440;
+          var oscBg = isContrast ? '#000000' : '#090d1a';
+          var oscInk = isContrast ? '#ffff00' : '#e2e8f0';
+          var oscGrid = isContrast ? '#444400' : '#1e293b';
+
+          return h('div', { style: { margin: '4px 0', padding: '14px', backgroundColor: isContrast ? '#000000' : (isDark ? '#111827' : '#ffffff'), border: isContrast ? '2px solid #ffff00' : ('1px solid ' + (isDark ? '#334155' : '#cbd5e1')), borderRadius: 14, minWidth: 0 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: 8 } },
+              h('h3', { style: { margin: 0, fontSize: 14, fontWeight: 900, color: isContrast ? '#ffff00' : (isDark ? '#67e8f9' : '#155e75') } }, t('stem.echotrainer.echo_timing_discovery', '\uD83C\uDFB5 Echo timing discovery')),
+              // Quick acoustic scenario presets
+              h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } },
+                [
+                  { id: 'close', lbl: t('stem.echotrainer.preset_close', 'Close Wall (2m)'), d: 2, s: 343, sr: 85 },
+                  { id: 'crisp', lbl: t('stem.echotrainer.preset_crisp', 'Crisp Hall (12m)'), d: 12, s: 343, sr: 90 },
+                  { id: 'canyon', lbl: t('stem.echotrainer.preset_canyon', 'Canyon (48m)'), d: 48, s: 343, sr: 75 },
+                  { id: 'glass', lbl: t('stem.echotrainer.preset_glass', 'Faint Glass (15m)'), d: 15, s: 343, sr: 25 }
+                ].map(function(pr) {
+                  return h('button', {
+                    key: pr.id, type: 'button',
+                    onClick: function() { setIQ({ distance: pr.d, speed: pr.s, surface: pr.sr }); },
+                    style: { padding: '4px 9px', borderRadius: '999px', fontSize: 11, fontWeight: 700, cursor: 'pointer', border: isContrast ? '1px solid #ffff00' : ('1px solid ' + (isDark ? '#334155' : '#cbd5e1')), backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f1f5f9'), color: isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#334155') }
+                  }, pr.lbl);
+                }))),
+            h('p', { style: { fontSize: 11.5, color: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569'), marginBottom: 10, marginTop: 0 } }, t('stem.echotrainer.sliders_for_distance_speed_surface_dis', 'Sliders for distance, speed, surface. Discrete 4-state echo. No score, no reveal.')),
+            // Live Acoustic Pulse-Echo Oscilloscope & Path SVG
+            h('div', { style: { borderRadius: 10, overflow: 'hidden', border: isContrast ? '2px solid #ffff00' : '1px solid #1e293b', marginBottom: 10, backgroundColor: oscBg } },
+              h('svg', { viewBox: '0 0 560 124', width: '100%', style: { display: 'block', maxHeight: '140px' }, role: 'img', 'aria-label': t('stem.echotrainer.oscilloscope_aria', 'Live acoustic pulse-echo oscilloscope showing click at 0 ms and returning echo at ') + echoMs.toFixed(1) + ' ms' },
+                h('rect', { x: 0, y: 0, width: 560, height: 124, fill: oscBg }),
+                // Top track: Spatial distance path
+                h('line', { x1: 48, y1: 26, x2: wallX, y2: 26, stroke: isContrast ? '#ffff00' : '#818cf8', strokeWidth: 2, strokeDasharray: '4 3' }),
+                h('circle', { cx: 48, cy: 26, r: 7, fill: isContrast ? '#00ff00' : '#818cf8' }),
+                h('rect', { x: wallX, y: 12, width: 10, height: 28, rx: 3, fill: isContrast ? '#ffff00' : '#38bdf8', opacity: Math.max(0.25, iq.surface / 100) }),
+                h('text', { x: 48, y: 48, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: oscInk }, '0m'),
+                h('text', { x: Math.min(510, wallX + 5), y: 48, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: isContrast ? '#00ff00' : '#7dd3fc' }, iq.distance + 'm (' + iq.surface + '%)'),
+                // Bottom track: Time-domain waveform
+                h('rect', { x: 48, y: 60, width: Math.max(4, fusionX - 48), height: 42, fill: isContrast ? '#222200' : 'rgba(239,68,68,0.18)' }),
+                h('rect', { x: fusionX, y: 60, width: Math.max(4, crispX - fusionX), height: 42, fill: isContrast ? '#002200' : 'rgba(16,185,129,0.16)' }),
+                h('line', { x1: 48, y1: 102, x2: 530, y2: 102, stroke: oscGrid, strokeWidth: 1.5 }),
+                // Outgoing click pulse at t=0
+                h('path', { d: 'M 48 102 L 51 64 L 54 102', fill: 'none', stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 2.5 }),
+                // Returning echo pulse at t=echoMs
+                h('path', { d: 'M ' + (echoX - 4).toFixed(1) + ' 102 L ' + echoX.toFixed(1) + ' ' + (102 - echoAmp).toFixed(1) + ' L ' + (echoX + 4).toFixed(1) + ' 102', fill: 'none', stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth: 2.8 }),
+                h('text', { x: 48, y: 117, textAnchor: 'start', fontSize: 10, fontWeight: 700, fill: oscInk }, '0 ms (Click)'),
+                h('text', { x: 280, y: 117, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? '#00ff00' : '#34d399' }, 'Echo: ' + echoMs.toFixed(1) + ' ms'),
+                h('text', { x: 530, y: 117, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: oscInk }, '600 ms')
+              )
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 8 } },
+            h('div', { style: { padding: 10, borderRadius: 8, textAlign: 'center', backgroundColor: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
+              h('div', { style: { fontSize: 13.5, fontWeight: 900, color: sm.color } }, sm.label),
+              h('div', { style: { fontSize: 11.5, color: isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), marginTop: 4 } }, sm.desc),
+              h('div', { style: { fontSize: 11, color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#334155'), marginTop: 4, fontFamily: 'monospace', fontWeight: 700 } }, 'Round-trip \u2248 ' + echoMs.toFixed(1) + ' ms')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 8 } },
               [{ k: 'distance', l: 'Distance (m)', mn: 0.5, mx: 100, st: 0.5 },
                { k: 'speed', l: 'Speed (m/s)', mn: 200, mx: 400, st: 5 },
                { k: 'surface', l: 'Reflect (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {

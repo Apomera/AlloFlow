@@ -36,13 +36,15 @@
     symbol: { href: 'packets-symbol-runner.html', name: 'Make Symbol Runner practice', reopens: true },
     math: { href: 'packets-math-practice.html', name: 'Make math fact practice', reopens: true },
     check: { href: 'packets-check.html', name: 'Make a math check', reopens: true },
-    read: { href: 'packets-read-along.html', name: 'Make a read-along', reopens: false },
+    read: { href: 'packets-read-along.html', name: 'Make a read-along', reopens: true },
   };
 
   var verify = null, handoff = null;
   var current = null;   // the chosen file: { name, bytes, html, title, kind, base, bridged, fingerprint }
   var session = null;   // the running file: { frame, keys, count, lastSave, file, warned }
+  var pendingProblemFile = null;
   var pushed = false;
+  var chooseRun = 0;
 
   var isObject = function (value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
   var count = function (n, one, many) { return n + ' ' + (n === 1 ? one : many); };
@@ -54,7 +56,16 @@
   var storage = function () { try { return window.localStorage || null; } catch (_) { return null; } };
   function owners() {
     var s = storage();
-    try { var held = s && JSON.parse(s.getItem(OWNERS) || '{}'); return isObject(held) ? held : {}; } catch (_) { return {}; }
+    var out = Object.create(null);
+    try {
+      var held = s && JSON.parse(s.getItem(OWNERS) || '{}', function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
+      if (isObject(held)) {
+        Object.keys(held).forEach(function (k) {
+          if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype' && typeof held[k] === 'string') out[k] = held[k];
+        });
+      }
+    } catch (_) {}
+    return out;
   }
   function keepOwners(map) {
     var s = storage();
@@ -63,11 +74,11 @@
   }
   // A name the chosen file may use: its own, or its own with a code name after it.
   function ours(file, key) {
-    return typeof key === 'string' && !!file.base && (key === file.base || (key.indexOf(file.base + ':') === 0 && key.length <= file.base.length + 200));
+    return typeof key === 'string' && key !== '__proto__' && key !== 'constructor' && key !== 'prototype' && !!file.base && (key === file.base || (key.indexOf(file.base + ':') === 0 && key.length <= file.base.length + 200));
   }
   // What is kept for this file, by this same file.
   function keptFor(file) {
-    var s = storage(), out = {};
+    var s = storage(), out = Object.create(null);
     if (!s || !file.fingerprint) return out;
     var map = owners();
     try {
@@ -138,6 +149,8 @@
   }
 
   function problem(line, link) {
+    current = null;
+    pendingProblemFile = link && link.file ? { file: link.file, href: link.href, hash: link.hash } : null;
     show('found', false);
     show('drop', true);
     setText('problem-line', line);
@@ -175,31 +188,60 @@
   }
 
   function choose(file) {
-    if (!file) return;
+    if (!file || session) return;
+    if (Number(file.size) > 60 * 1024 * 1024) {
+      problem('This file is larger than 60 MB, so it is not a practice file.');
+      return;
+    }
+    var run = ++chooseRun;
     show('problem', false);
     show('change-note', false);
     say('Reading the file.');
     readBytes(file).then(function (bytes) {
+      if (run !== chooseRun || session) return null;
       var parts = verify.readParts(bytes);
       if (parts.refused === 'too_big') { problem('This file is larger than 60 MB, so it is not a practice file.'); return null; }
       if (parts.refused === 'empty') { problem('This file is empty. Ask your teacher to send it again.'); return null; }
       if (parts.refused) { problem('This browser could not read the file.'); return null; }
-      if (parts.kind === 'results') { problem('This is a results file, not a practice file. A teacher adds it up on Add up results.', { href: 'packets-results.html', name: 'Add up results' }); return null; }
+      if (parts.kind === 'results') {
+        problem('This is a results file, not a practice file. A teacher adds it up on Add up results.', {
+          href: 'packets-results.html',
+          name: 'Add up results',
+          hash: handoff && handoff.RESULTS_HASH ? handoff.RESULTS_HASH : '#import-results',
+          file: { name: String(file.name || 'results.csv').slice(0, 160), bytes: bytes },
+        });
+        return null;
+      }
+      if (parts.kind === 'zip') {
+        problem('This is a .zip folder, not a single practice file. Unzip it first and choose one .html file inside. If it holds student results, open it on Add up results.', {
+          href: 'packets-results.html',
+          name: 'Add up results',
+          hash: handoff && handoff.RESULTS_HASH ? handoff.RESULTS_HASH : '#import-results',
+          file: { name: String(file.name || 'results.zip').slice(0, 160), bytes: bytes },
+        });
+        return null;
+      }
       if (!parts.ok) { problem('This is not a practice file or a check. Choose the .html file your teacher sent.'); return null; }
       var html = new TextDecoder('utf-8').decode(bytes);
       if (html.charCodeAt(0) === 0xFEFF) html = html.slice(1);
-      return scriptIntact(html, bytes).then(function (intact) { return intact && parts.lesson ? html : null; }).then(function (whole) {
+      return scriptIntact(html, bytes).then(function (intact) { return intact && parts.lesson && !parts.manifestError ? html : null; }).then(function (whole) {
+        if (run !== chooseRun || session) return null;
         if (whole === null) { problem('This file is damaged, so it cannot run. Ask your teacher to send it again.'); return null; }
-        return found(file, bytes, parts, html);
+        return found(file, bytes, parts, html, run);
       });
-    }).catch(function () { problem('This browser could not read the file.'); });
+    }).catch(function () { if (run === chooseRun && !session) problem('This browser could not read the file.'); });
   }
 
-  function found(file, bytes, parts, html) {
+  function found(file, bytes, parts, html, run) {
     var about = describe(parts);
-    current = { name: String(file.name || 'file.html').slice(0, 160), bytes: bytes, html: html, title: about.title || 'Practice file', kind: about.kind, base: about.base,
+    var next = { name: String(file.name || 'file.html').slice(0, 160), bytes: bytes, html: html, title: about.title || 'Practice file', kind: about.kind, base: about.base,
       bridged: html.indexOf("getElementById('packet-store-snapshot')") >= 0, fingerprint: '', about: about };
-    return fingerprintOf(bytes).then(function (sum) { current.fingerprint = sum; drawFound(); });
+    return fingerprintOf(bytes).then(function (sum) {
+      if (run !== chooseRun || session) return;
+      next.fingerprint = sum;
+      current = next;
+      drawFound();
+    });
   }
 
   function drawFound() {
@@ -214,6 +256,8 @@
     show('found-line', line.length > 0);
     drawPlace();
     show('older-note', !current.bridged);
+    var maker = MAKERS[current.kind];
+    show('found-teacher', !!(maker && maker.reopens));
     show('change-note', false);
     show('drop', false);
     show('found', true);
@@ -238,6 +282,22 @@
     return at >= 0 ? html.slice(0, at) + block + html.slice(at) : block + html;
   }
 
+  function setBackgroundInert(on) {
+    var runEl = $('run');
+    Array.prototype.forEach.call(doc.body.children, function (node) {
+      if (!node || node === runEl || node.tagName === 'SCRIPT' || node.tagName === 'STYLE') return;
+      if (on) {
+        try { node.inert = true; } catch (_) {}
+        node.setAttribute('inert', '');
+        node.setAttribute('aria-hidden', 'true');
+      } else {
+        try { node.inert = false; } catch (_) {}
+        node.removeAttribute('inert');
+        node.removeAttribute('aria-hidden');
+      }
+    });
+  }
+
   function start() {
     if (!current || session) return;
     var frame = doc.createElement('iframe');
@@ -250,7 +310,9 @@
     setText('run-title', current.title);
     setText('run-said', '');
     show('run-again', false);
+    show('run-share', false);
     $('run-host').appendChild(frame);
+    setBackgroundInert(true);
     show('run', true);
     doc.body.classList.add('is-running');
     try { window.history.pushState({ packetOpen: true }, ''); pushed = true; } catch (_) { pushed = false; }
@@ -262,6 +324,7 @@
     session.frame.remove();
     session = null;
     show('run', false);
+    setBackgroundInert(false);
     doc.body.classList.remove('is-running');
     if (pushed && !fromHistory) { pushed = false; try { window.history.back(); } catch (_) {} }
     pushed = false;
@@ -305,6 +368,22 @@
     a.remove();
     window.setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
   }
+  function shareableFile(file) {
+    if (!file || typeof window.File !== 'function' || !navigator || typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return null;
+    try {
+      var sf = new window.File([file.text], file.name, { type: file.type });
+      return navigator.canShare({ files: [sf] }) ? sf : null;
+    } catch (_) { return null; }
+  }
+  function shareSaved() {
+    if (!session || !session.file) return;
+    var sf = shareableFile(session.file);
+    if (!sf) return;
+    try {
+      var p = navigator.share({ files: [sf], title: session.file.name });
+      if (p && typeof p.catch === 'function') p.catch(function () {});
+    } catch (_) {}
+  }
   // A results file, from the file: a plain name that ends .csv or .json, the type that goes with it, text only.
   function saveFor(data) {
     var name = data.name, ext = typeof name === 'string' ? (/\.(csv|json)$/.exec(name) || [])[1] : '';
@@ -319,6 +398,7 @@
     if (pressed) download(session.file);
     note(pressed ? saving(name) : 'Press Save it again to save ' + name + '.');
     show('run-again', true);
+    show('run-share', !!shareableFile(session.file));
   }
 
   window.addEventListener('message', function (event) {
@@ -366,6 +446,13 @@
     $('change').addEventListener('click', change);
     $('run-close').addEventListener('click', function () { stop(false); });
     $('run-again').addEventListener('click', function () { if (session && session.file) { download(session.file); note(saving(session.file.name)); } });
+    if ($('run-share')) $('run-share').addEventListener('click', shareSaved);
+    $('problem-link').addEventListener('click', function (event) {
+      if (!pendingProblemFile || !handoff || typeof handoff.redirect !== 'function') return;
+      event.preventDefault();
+      var target = pendingProblemFile;
+      handoff.redirect(target.file, target.href, target.hash).catch(function () { window.location.href = target.href; });
+    });
     doc.addEventListener('keydown', function (event) { if (session && event.key === 'Escape' && doc.activeElement !== session.frame) stop(false); });
     window.addEventListener('popstate', function () { if (session) stop(true); });
     $('forget').addEventListener('click', function () {
@@ -379,6 +466,7 @@
     main.addEventListener('dragover', function (event) {
       if (!isFiles(event)) return;
       event.preventDefault();
+      if (session) return;
       try { event.dataTransfer.dropEffect = 'copy'; } catch (_) {}
       show('drop-over', true);
     });
@@ -387,6 +475,7 @@
       show('drop-over', false);
       if (!isFiles(event)) return;
       event.preventDefault();
+      if (session) return;
       choose(event.dataTransfer.files && event.dataTransfer.files[0]);
     });
   }

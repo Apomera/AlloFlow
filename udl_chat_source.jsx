@@ -310,7 +310,7 @@ const _udlChatAiUsable = (kind, fn) => {
   if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
     return Boolean(window.__alloAiUsable(kind, fn));
   }
-  return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true);
+  return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true));
 };
 const _udlChatSanitizeUntrusted = value => String(value == null ? '' : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]+>/gi, '[redacted-tag]');
 const _udlChatFenceUntrusted = (tag, value) => '<' + tag + '>\n' + _udlChatSanitizeUntrusted(value) + '\n</' + tag + '>';
@@ -2367,8 +2367,8 @@ Find the BEST matching feature for the user's question. Return JSON:
 Return ONLY JSON.`;
                         const ragResult = await callGemini(ragPrompt, true);
                         const parsed = JSON.parse(cleanJson(ragResult));
-                        if (parsed.helpKey) {
-                            const targetEl = document.querySelector(`[data-help-key="${parsed.helpKey}"]`);
+                        if (parsed.helpKey && typeof parsed.helpKey === 'string') {
+                            const targetEl = Array.from(document.querySelectorAll('[data-help-key]')).find((el) => el.getAttribute('data-help-key') === parsed.helpKey);
                             if (targetEl && performHighlight) {
                                 performHighlight(parsed.helpKey);
                             }

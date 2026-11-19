@@ -135,9 +135,9 @@ export function LessonBoardSolo({ board, user, appId, onBack, preview = false, s
 
 export function LessonBoardSetup({ inputText, generatedContent, language: requestedLanguage = 'English', callGemini, callImagen, history = [], user, appId, activeSessionCode, sessionData, allowLive = true, onClose, onLaunched, t }) {
   // Learner AI off (null or blocked fn): hide Generate/Refine; the ready-made sample still works.
-  const textAi = (() => { try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text', callGemini); } catch (_) {} return typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true); })();
+  const textAi = (() => { try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text', callGemini); } catch (_) {} return typeof callGemini === 'function' && !callGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)); })();
   // Scenery art: the host decides image AI (blocked fns are truthy; local text backends have no images).
-  const sceneryImagen = (() => { try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('images', callImagen); } catch (_) {} return typeof callImagen === 'function' && !callImagen._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true); })() ? callImagen : null;
+  const sceneryImagen = (() => { try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('images', callImagen); } catch (_) {} return typeof callImagen === 'function' && !callImagen._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)); })() ? callImagen : null;
   const [useClassRoles, setUseClassRoles] = useState(false);
   const [playStyle,setPlayStyle] = useState('tabletop');
   const [importContext, setImportContext] = useState(null), nativeSource = engine.sourceText(inputText, generatedContent), nativeScope = requestedLanguage + ':' + nativeSource, nativeScopeRef = useRef(nativeScope);

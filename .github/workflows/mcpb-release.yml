@@ -112,7 +112,7 @@ jobs:
           node-version: '24'
           cache: npm
       - name: Install pinned test dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify fail-closed packaged audit handling and source parity
         run: node --test tests/mcp_bundle_audit_security.test.cjs tests/mcp_artifact_source_bytes.test.cjs
       - name: Verify MCP security boundaries and shared policies

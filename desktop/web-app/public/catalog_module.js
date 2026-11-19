@@ -39,10 +39,18 @@
 
   // Student AI-off: host-blocked fns are truthy, so ask the host (old-host fallback).
   function _aiUsable(kind, fn) {
+    if (typeof window !== 'undefined' && window.__alloAiSecretsLocked === true) return false;
     try {
       if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
     } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+  }
+  function _catalogFetch(url, opts, timeoutMs) {
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, timeoutMs || 15000) : null;
+    var nextOpts = Object.assign({}, opts || {});
+    if (ctrl && !nextOpts.signal) nextOpts.signal = ctrl.signal;
+    return fetch(url, nextOpts).finally(function () { if (timer) clearTimeout(timer); });
   }
 
   // Translator. Mirrors reading_library_module.js: reads the host's window.__alloT,
@@ -1150,6 +1158,10 @@
     function handleFileUpload(ev) {
       var f = ev.target.files && ev.target.files[0];
       if (!f) return;
+      if (typeof f.size === 'number' && f.size > 2 * 1024 * 1024) {
+        setStatus({ stage: 'error', message: 'Submission JSON file exceeds the 2 MB limit.' });
+        return;
+      }
       var reader = new FileReader();
       reader.onload = function () { setJsonText(String(reader.result || '')); setScan({ ran: false, findings: [] }); };
       reader.readAsText(f);
@@ -1176,12 +1188,12 @@
         },
         affirmations: aff,
       };
-      fetch(WORKER_URL, {
+      _catalogFetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; }); })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; }, function () { return { ok: r.ok, status: r.status, body: null }; }); })
         .then(function (res) {
           if (res.ok && res.body && res.body.ok && res.body.storage === 'private') {
             setStatus({ stage: 'success', message: 'Submitted for private review. Reference: ' + (res.body.id || '?') });
@@ -1817,7 +1829,7 @@
   }
   function downloadPdFacilitationGuide(entry, addToast) {
     ensurePdCore().then(function (Core) {
-      return fetch(PD_ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
+      return _catalogFetch(PD_ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (parsed) {
           var v = Core.validatePdModule(parsed);
@@ -1874,7 +1886,8 @@
       var blob = new Blob([html], { type: 'text/html' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a'); a.href = url; a.download = filename + '.html';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
       addToast && addToast(tr('catalog_pop_up_blocked_downloaded_the_certificate_as', 'Pop-up blocked — downloaded the certificate as an HTML file you can open and print.'), 'info');
     } catch (_e3) { addToast && addToast(tr('catalog_could_not_open_the_certificate', 'Could not open the certificate.'), 'error'); }
   }
@@ -1934,8 +1947,8 @@
   // explicitly enables the non-institutional lane. Reviewed institutional issuance
   // is server-to-server and never uses this learner-browser request.
   function requestPdCredential(record) {
-    return fetch(PD_ISSUE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record: record }) })
-      .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+    return _catalogFetch(PD_ISSUE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record: record }) })
+      .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }, function () { return { status: r.status, body: null }; }); })
       .then(function (res) {
         if (res.body && res.body.ok && res.body.credential) return { ok: true, credential: res.body.credential };
         return { ok: false, disabled: res.status === 501, error: (res.body && res.body.error) || ('HTTP ' + res.status) };
@@ -1952,8 +1965,8 @@
     if (profile !== 'reviewed-evidence' && profile !== 'self-paced-non-institutional') return Promise.resolve({ valid: false, assurance: noAssurance, error: tr('catalog_unsupported_credential_profile', 'Unsupported credential profile.') });
     var expectedAssurance = profile === 'reviewed-evidence'
       ? { reviewed: true, institutional: true } : noAssurance;
-    return fetch(PD_VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: credential }) })
-      .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+    return _catalogFetch(PD_VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: credential }) })
+      .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }, function () { return { status: r.status, body: null }; }); })
       .then(function (res) {
         if (res.status >= 500 || !res.body || typeof res.body.valid !== 'boolean') {
           return { valid: false, assurance: noAssurance, error: (res.body && res.body.error) || ('verification unavailable (HTTP ' + res.status + ')') };
@@ -3059,6 +3072,10 @@
     function handleFileUpload(ev) {
       var f = ev.target.files && ev.target.files[0];
       if (!f) return;
+      if (typeof f.size === 'number' && f.size > 2 * 1024 * 1024) {
+        setStatus({ stage: 'error', message: 'Submission JSON file exceeds the 2 MB limit.' });
+        return;
+      }
       var reader = new FileReader();
       reader.onload = function () { setJsonText(String(reader.result || '')); setScan({ ran: false, findings: [] }); setPiiAck(false); };
       reader.readAsText(f);
@@ -3068,12 +3085,12 @@
       if (!canSubmit) return;
       setStatus({ stage: 'submitting', message: '' });
       var payload = { pd_module: validation.module, credit: credit.trim() || null, affirmations: aff };
-      fetch(PD_WORKER_URL, {
+      _catalogFetch(PD_WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; }); })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; }, function () { return { ok: r.ok, status: r.status, body: null }; }); })
         .then(function (res) {
           if (res.body && res.body.ok) {
             setStatus({ stage: 'success', message: 'Submitted privately for review. Reference: ' + (res.body.slug || res.body.id || '?') });
@@ -3809,7 +3826,7 @@
     useEffect(function () {
       var cancelled = false;
       ensurePdCore().catch(function () {}); // warm the engine; browse doesn't need it
-      fetch(PD_MANIFEST_URL + '?t=' + Date.now())
+      _catalogFetch(PD_MANIFEST_URL + '?t=' + Date.now())
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (data) {
           if (cancelled) return;
@@ -3824,7 +3841,7 @@
 
     function startModule(entry) {
       ensurePdCore().then(function (Core) {
-        return fetch(PD_ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
+        return _catalogFetch(PD_ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
           .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
           .then(function (parsed) {
             var v = Core.validatePdModule(parsed);
@@ -3843,7 +3860,7 @@
     // and open the builder on it.
     function remixEntry(entry) {
       ensurePdCore().then(function (Core) {
-        return fetch(PD_ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
+        return _catalogFetch(PD_ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
           .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
           .then(function (parsed) {
             var v = Core.validatePdModule(parsed);

@@ -30,6 +30,7 @@ const sha256 = createHash('sha256').update(script).digest('hex');
 const RELEASED = {
   29: '772445ad4b5e130e544e266a4046643d62eb50532b94f3c64d98aad80a1e0d7c', // 2026-11-07
   30: '49094945b27b859190932a198ac8aa8a319c57e4d6093bd679837ee4695b65b8', // 2026-11-16: v29 plus the two unversioned changes of 2026-11-14
+  31: '7f4a8f89b36da157e61fb8e3f1518c56cf6fa7610ef0738996e7dc9d63612b83', // 2026-11-19: Phase 18 prototype-safe maps/lookups & UrlFetchApp catch
 };
 
 describe('Class Mailbox script version', () => {

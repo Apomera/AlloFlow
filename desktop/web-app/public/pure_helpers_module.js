@@ -212,37 +212,68 @@ const diffWords = (oldText, newText, deps) => {
   // No closure deps — fully pure helper.
   try { if (window._DEBUG_PURE_HELPERS) console.log("[PureHelpers] diffWords fired"); } catch(_) {}
       if (!oldText || !newText) return [];
-      const oldWords = oldText.trim().split(/\s+/);
-      const newWords = newText.trim().split(/\s+/);
-      const m = oldWords.length;
-      const n = newWords.length;
-      const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
-      for (let i = 1; i <= m; i++) {
+      const oldWords = oldText.trim().split(/\s+/).filter(Boolean);
+      const newWords = newText.trim().split(/\s+/).filter(Boolean);
+      // Trim matching prefix/suffix first to shrink DP work on typical edits.
+      let prefixLen = 0;
+      const minLen = Math.min(oldWords.length, newWords.length);
+      while (prefixLen < minLen && oldWords[prefixLen] === newWords[prefixLen]) prefixLen++;
+      let suffixLen = 0;
+      while (
+        suffixLen < (minLen - prefixLen) &&
+        oldWords[oldWords.length - 1 - suffixLen] === newWords[newWords.length - 1 - suffixLen]
+      ) {
+        suffixLen++;
+      }
+      const midOld = oldWords.slice(prefixLen, oldWords.length - suffixLen);
+      const midNew = newWords.slice(prefixLen, newWords.length - suffixLen);
+      const m = midOld.length;
+      const n = midNew.length;
+      const prefixDiff = oldWords.slice(0, prefixLen).map(value => ({ type: 'same', value }));
+      const suffixDiff = suffixLen > 0 ? oldWords.slice(oldWords.length - suffixLen).map(value => ({ type: 'same', value })) : [];
+      if (m === 0 && n === 0) return prefixDiff.concat(suffixDiff);
+      // Guard against O(m*n) memory blow-up on huge documents (>2M DP cells).
+      const MAX_DP_CELLS = 2000000;
+      let midDiff;
+      if ((m + 1) * (n + 1) > MAX_DP_CELLS) {
+        midDiff = midOld.map(value => ({ type: 'del', value }))
+          .concat(midNew.map(value => ({ type: 'add', value })));
+      } else {
+        const cols = n + 1;
+        const dp = new Uint32Array((m + 1) * cols);
+        for (let i = 1; i <= m; i++) {
+          const row = i * cols;
+          const prevRow = (i - 1) * cols;
+          const ow = midOld[i - 1];
           for (let j = 1; j <= n; j++) {
-              if (oldWords[i-1] === newWords[j-1]) {
-                  dp[i][j] = dp[i-1][j-1] + 1;
-              } else {
-                  dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
-              }
+            if (ow === midNew[j - 1]) {
+              dp[row + j] = dp[prevRow + (j - 1)] + 1;
+            } else {
+              const up = dp[prevRow + j];
+              const left = dp[row + (j - 1)];
+              dp[row + j] = up >= left ? up : left;
+            }
           }
-      }
-      let i = m, j = n;
-      const diff = [];
-      while (i > 0 && j > 0) {
-          if (oldWords[i-1] === newWords[j-1]) {
-              diff.push({ type: 'same', value: oldWords[i-1] });
-              i--; j--;
-          } else if (dp[i-1][j] >= dp[i][j-1]) {
-              diff.push({ type: 'del', value: oldWords[i-1] });
-              i--;
+        }
+        let i = m, j = n;
+        const rev = [];
+        while (i > 0 && j > 0) {
+          if (midOld[i - 1] === midNew[j - 1]) {
+            rev.push({ type: 'same', value: midOld[i - 1] });
+            i--; j--;
+          } else if (dp[(i - 1) * cols + j] >= dp[i * cols + (j - 1)]) {
+            rev.push({ type: 'del', value: midOld[i - 1] });
+            i--;
           } else {
-              diff.push({ type: 'add', value: newWords[j-1] });
-              j--;
+            rev.push({ type: 'add', value: midNew[j - 1] });
+            j--;
           }
+        }
+        while (i > 0) { rev.push({ type: 'del', value: midOld[i - 1] }); i--; }
+        while (j > 0) { rev.push({ type: 'add', value: midNew[j - 1] }); j--; }
+        midDiff = rev.reverse();
       }
-      while (i > 0) { diff.push({ type: 'del', value: oldWords[i-1] }); i--; }
-      while (j > 0) { diff.push({ type: 'add', value: newWords[j-1] }); j--; }
-      return diff.reverse();
+      return prefixDiff.concat(midDiff, suffixDiff);
 };
 
 const generateBingoCards = (glossaryData, count, size, deps) => {

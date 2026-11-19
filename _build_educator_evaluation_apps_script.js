@@ -42,13 +42,16 @@ const indexHtml = `<!doctype html>
     .ae-portal-boot{box-sizing:border-box;min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center;font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#24324a}
     .ae-portal-boot strong{display:block;margin-bottom:6px;font-size:22px;color:#173e70}
     .ae-portal-noscript{max-width:680px;margin:40px auto;padding:20px;border:1px solid #d8deea;border-radius:14px;background:#fff;font:16px/1.5 system-ui;color:#24324a}
+    .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+    .skip-link:focus{position:fixed;left:12px;top:12px;width:auto;height:auto;padding:10px 14px;background:#10233f;color:#fff;border-radius:8px;z-index:9999;font:700 14px/1.2 system-ui,sans-serif;text-decoration:none;outline:3px solid #60a5fa;outline-offset:2px}
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div id="educator-evaluation-root">
-    <div class="ae-portal-boot" role="status" aria-live="polite">
-      <div><strong>Educator Growth &amp; Evaluation</strong>Verifying your district account and loading your assigned records&hellip;</div>
-    </div>
+    <main id="main-content" class="ae-portal-boot" tabindex="-1">
+      <div role="status" aria-live="polite"><strong>Educator Growth &amp; Evaluation</strong>Verifying your district account and loading your assigned records&hellip;</div>
+    </main>
   </div>
   <noscript><div class="ae-portal-noscript">JavaScript is required to use the evaluation portal.</div></noscript>
   <?!= include('Portal'); ?>

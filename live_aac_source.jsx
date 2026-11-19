@@ -1211,6 +1211,7 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
         return;
       }
       if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof onDismissRef.current === 'function') onDismissRef.current();

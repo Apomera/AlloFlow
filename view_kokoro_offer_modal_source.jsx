@@ -102,9 +102,9 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
   }, [setShowKokoroOfferModal]);
   return (
     <div className="fixed inset-0 z-[9998] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" role="presentation" onClick={() => setShowKokoroOfferModal(false)}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="kokoro-offer-title" aria-describedby="kokoro-offer-reason kokoro-offer-description kokoro-offer-note" tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto animate-in zoom-in-95 duration-200 motion-reduce:animate-none" onClick={(e) => e.stopPropagation()}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="kokoro-offer-title" aria-describedby="kokoro-offer-reason kokoro-offer-description kokoro-offer-note" tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto animate-in zoom-in-95 duration-200 motion-reduce:animate-none" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="bg-amber-100 p-3 rounded-full"><span role="img" aria-label="Microphone" className="text-2xl">{'\uD83C\uDFA4'}</span></div>
+          <div className="bg-amber-100 p-3 rounded-full" aria-hidden="true"><span className="text-2xl">{'\uD83C\uDFA4'}</span></div>
           <div>
             <h2 id="kokoro-offer-title" className="text-lg font-bold text-slate-800">Cloud Voice Unavailable</h2>
             <p id="kokoro-offer-reason" className="text-xs text-slate-600">Cloud speech did not complete. Check the audio status or technical details for the reported cause.</p>

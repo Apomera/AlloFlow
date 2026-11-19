@@ -72,9 +72,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       '.bikelab-root button,.bikelab-root [role=button],.bikelab-root select{min-height:44px}',
       '.bikelab-root table button{min-height:24px}',
       '.bikelab-root button.w-10,.bikelab-root button[aria-label*="ullscreen"]{min-width:44px}',
+      '.bikelab-root button:focus-visible,.bikelab-root [role=button]:focus-visible,.bikelab-root summary:focus-visible{outline:3px solid #0ea5e9;outline-offset:2px}',
       '.bikelab-root [data-bikelab-view-title]:focus-visible{outline:3px solid #0ea5e9;outline-offset:4px;border-radius:6px}',
       '.bikelab-control-card{border-radius:14px!important;border-color:rgba(100,116,139,.45)!important;box-shadow:0 10px 24px rgba(15,23,42,.10)!important}',
-      '@media(max-width:920px){.bikelab-sandbox-grid,.bikelab-ride-focus-grid{grid-template-columns:1fr!important}.bikelab-metric-grid{grid-template-columns:1fr!important}.bikelab-canvas-shell{padding:6px!important}.bikelab-canvas-toolbar{justify-content:flex-start!important}}'
+      '.bikelab-hero-deck{position:relative;overflow:hidden;border-radius:20px;padding:22px 24px;background:linear-gradient(135deg,#0f172a 0%,#0c4a6e 56%,#134e4a 100%);border:1px solid rgba(56,189,248,.42);box-shadow:0 16px 36px rgba(15,23,42,.24);color:#f8fafc}',
+      '.bikelab-telemetry-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,23,42,.58);border:1px solid rgba(148,163,184,.36);color:#e2e8f0;white-space:nowrap}',
+      '.bikelab-preset-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;background:#f1f5f9;border:1px solid #94a3b8;color:#0f172a;cursor:pointer;transition:background-color .15s,border-color .15s,transform .12s;min-height:36px!important}',
+      '.bikelab-preset-chip:hover{background:#e0f2fe;border-color:#0284c7;color:#0c4a6e}',
+      '.bikelab-fleet-strip{border-radius:16px;padding:16px 18px;background:#ffffff;border:1px solid #cbd5e1;box-shadow:0 6px 18px rgba(15,23,42,.06)}',
+      '.theme-contrast .bikelab-hero-deck{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .bikelab-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .bikelab-preset-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .bikelab-fleet-strip{background:#000000!important;border:2px solid #ffffff!important;color:#ffffff!important}',
+      '.theme-contrast .bikelab-root button:focus-visible,.theme-contrast .bikelab-root summary:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}',
+      '@media(max-width:920px){.bikelab-sandbox-grid,.bikelab-ride-focus-grid{grid-template-columns:1fr!important}.bikelab-metric-grid{grid-template-columns:1fr!important}.bikelab-canvas-shell{padding:6px!important}.bikelab-canvas-toolbar{justify-content:flex-start!important}.bikelab-hero-deck{padding:16px!important}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -710,7 +721,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       var useRef = React.useRef;
       var useCallback = React.useCallback;
 
-      var d = (ctx.toolData && ctx.toolData['bikeLab']) || {};
+      var rawD = ctx.toolData && ctx.toolData['bikeLab'];
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
       var upd = function(key, val) { ctx.update && ctx.update('bikeLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[BikeLab]', msg); };
       // Voice narration helper — reads a string aloud via the host's TTS. Silently
@@ -726,8 +738,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         catch (_) {}
       };
 
-      // Top-level view selector. 'menu' | 'sandbox' | 'gearing' | 'repair'
-      var viewState = useState(d.view || 'menu');
+      // Top-level view selector. 'menu' | 'sandbox' | 'gearing' | 'repair' | ...
+      var VALID_VIEWS = ['menu','sandbox','gearing','repair','fit','braking','safety','ride','parts','helmetFit','winterBike','signalDrill'];
+      var initView = (typeof d.view === 'string' && VALID_VIEWS.indexOf(d.view) !== -1) ? d.view : 'menu';
+      var viewState = useState(initView);
       var view = viewState[0], setView = viewState[1];
       var lastViewRef = useRef(view);
       useEffect(function() {
@@ -852,7 +866,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             id: 'helmetFit', title: t('stem.bikelab.helmet_fit_checker', 'Helmet Fit Checker'), icon: '⛑️',
             subtitle: t('stem.bikelab.helmet_card_subtitle_v2', 'Fit it, then spot the problem'),
             desc: t('stem.bikelab.helmet_fit_card_desc_v2', 'Fit a helmet on a rider: position, side straps, chin strap and size. Then check six riders and say what is wrong with each helmet.'),
-            color: 'from-pink-700 to-rose-700',
+            color: 'bg-rose-700 from-pink-700 to-rose-700',
+            bg: 'linear-gradient(135deg, #be185d, #be123c)',
             ring: 'ring-pink-500/40'
           },
           {
@@ -871,11 +886,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           }
         ];
 
-        var badges = d.bikeBadges || {};
+        var badges = (d.bikeBadges && typeof d.bikeBadges === 'object' && !Array.isArray(d.bikeBadges)) ? d.bikeBadges : {};
         var visitedCount = BADGE_IDS.filter(function(id) { return badges[id]; }).length;
         var totalCount = BADGE_IDS.length;
         var allDone = visitedCount === totalCount;
-        var solvedIn = function(o) { return (o && typeof o === 'object') ? Object.keys(o).filter(function(k) { return o[k]; }).length : 0; };
+        var solvedIn = function(o) { return (o && typeof o === 'object' && !Array.isArray(o)) ? Object.keys(o).filter(function(k) { return o[k]; }).length : 0; };
         var mastered = {
           repair: solvedIn(d.repairCompleted) >= 1,
           braking: solvedIn(d.brakingChallenges) >= BRAKE_CHALLENGES.length,
@@ -930,7 +945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               'aria-hidden': true,
               className: 'absolute top-2 right-2 z-10 bg-emerald-700 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md'
             }, '✓'),
-            h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
+            h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white', style: (!isContrast && c.bg) ? { background: c.bg } : undefined },
               h('div', { className: 'flex items-start justify-between mb-2' },
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
                 h('span', { className: 'bg-black/25 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, isBig ? 'Core' : 'Mini')
@@ -953,12 +968,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           );
         };
 
+        var heroEmblem = h('svg', {
+          viewBox: '0 0 68 68', width: 64, height: 64, 'aria-hidden': 'true', focusable: 'false',
+          style: { flexShrink: 0 }
+        },
+          h('rect', { x: 2, y: 2, width: 64, height: 64, rx: 16, fill: 'rgba(15,23,42,0.55)', stroke: 'rgba(56,189,248,0.55)', strokeWidth: 1.5 }),
+          // Tensioned chain tangents between rear cassette (20,38) and front chainring (46,38)
+          h('line', { x1: 20, y1: 29, x2: 46, y2: 24, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '3 2' }),
+          h('line', { x1: 20, y1: 47, x2: 46, y2: 52, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '3 2' }),
+          // Rear cassette cog
+          h('circle', { cx: 20, cy: 38, r: 9, fill: 'rgba(56,189,248,0.18)', stroke: '#38bdf8', strokeWidth: 2.2, strokeDasharray: '3 2' }),
+          h('circle', { cx: 20, cy: 38, r: 3.5, fill: '#38bdf8' }),
+          // Front chainring
+          h('circle', { cx: 46, cy: 38, r: 14, fill: 'rgba(16,185,129,0.16)', stroke: '#34d399', strokeWidth: 2.5, strokeDasharray: '4 2.2' }),
+          h('circle', { cx: 46, cy: 38, r: 8.5, fill: 'none', stroke: 'rgba(226,232,240,0.45)', strokeWidth: 1.2 }),
+          // Crank arm + pedal
+          h('line', { x1: 46, y1: 38, x2: 55, y2: 22, stroke: '#f8fafc', strokeWidth: 3.2, strokeLinecap: 'round' }),
+          h('rect', { x: 51, y: 17, width: 10, height: 4, rx: 2, fill: '#fbbf24' }),
+          h('circle', { cx: 46, cy: 38, r: 3.2, fill: '#f8fafc' })
+        );
+
+        var fleetChartSvg = (function() {
+          var maxCda = 0.85, maxCrr = 0.015;
+          var W = 640, H = 122, padL = 78, padR = 26, padT = 18, padB = 26;
+          var plotW = W - padL - padR, plotH = H - padT - padB;
+          var xOf = function(cda) { return +(padL + (cda / maxCda) * plotW).toFixed(1); };
+          var yOf = function(crr) { return +(padT + plotH - (crr / maxCrr) * plotH).toFixed(1); };
+          var dotColors = ['#38bdf8', '#10b981', '#f43f5e', '#f59e0b', '#a855f7', '#06b6d4', '#ec4899'];
+          return h('svg', {
+            viewBox: '0 0 640 122', className: 'w-full h-auto block', 'aria-hidden': 'true', focusable: 'false'
+          },
+            h('rect', { x: padL, y: padT, width: plotW, height: plotH, rx: 8, fill: isContrast ? '#000000' : '#0f172a', stroke: isContrast ? '#ffffff' : '#334155', strokeWidth: 1 }),
+            [0.25, 0.5, 0.75].map(function(f, idx) {
+              var gx = +(padL + f * plotW).toFixed(1), gy = +(padT + f * plotH).toFixed(1);
+              return h('g', { key: idx },
+                h('line', { x1: gx, y1: padT, x2: gx, y2: padT + plotH, stroke: 'rgba(148,163,184,0.18)', strokeWidth: 1, strokeDasharray: '3 3' }),
+                h('line', { x1: padL, y1: gy, x2: padL + plotW, y2: gy, stroke: 'rgba(148,163,184,0.18)', strokeWidth: 1, strokeDasharray: '3 3' })
+              );
+            }),
+            h('text', { x: padL + 8, y: padT + 14, fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }, 'High tire rolling drag (Crr)'),
+            h('text', { x: padL + plotW - 8, y: padT + plotH - 6, fill: '#94a3b8', fontSize: 10, fontWeight: 'bold', textAnchor: 'end' }, 'Fastest aero ← Cd·A → Upright'),
+            h('text', { x: 6, y: padT + 14, fill: isContrast ? '#ffffff' : '#475569', fontSize: 10, fontWeight: 'bold' }, 'Crr 0.015'),
+            h('text', { x: 6, y: padT + plotH, fill: isContrast ? '#ffffff' : '#475569', fontSize: 10, fontWeight: 'bold' }, 'Crr 0.000'),
+            h('text', { x: padL, y: H - 6, fill: isContrast ? '#ffffff' : '#475569', fontSize: 10, fontWeight: 'bold' }, '0.00 m²'),
+            h('text', { x: padL + plotW / 2, y: H - 6, fill: isContrast ? '#ffffff' : '#475569', fontSize: 10, fontWeight: 'bold', textAnchor: 'middle' }, 'Aero Drag Area (Cd·A)'),
+            h('text', { x: padL + plotW, y: H - 6, fill: isContrast ? '#ffffff' : '#475569', fontSize: 10, fontWeight: 'bold', textAnchor: 'end' }, '0.85 m²'),
+            BIKES.map(function(b, idx) {
+              var cx = xOf(Math.min(maxCda - 0.04, b.cdA));
+              var cy = yOf(Math.min(maxCrr - 0.001, b.crr));
+              var col = isContrast ? '#00ff00' : dotColors[idx % dotColors.length];
+              var lblAnchor = cx > padL + plotW - 95 ? 'end' : 'start';
+              var lblX = lblAnchor === 'end' ? cx - 9 : cx + 9;
+              var lblY = cy < padT + 18 ? cy + 12 : cy + 4;
+              return h('g', { key: b.id },
+                h('circle', { cx: cx, cy: cy, r: 5.5, fill: col, stroke: '#ffffff', strokeWidth: 1.5 }),
+                h('text', { x: lblX, y: lblY, fill: '#f8fafc', fontSize: 10, fontWeight: 'bold', textAnchor: lblAnchor }, b.name.split(' ')[0])
+              );
+            })
+          );
+        })();
+
         return h('div', { className: 'p-6 max-w-6xl mx-auto' },
-          h('div', { className: 'text-center mb-6' },
-            h('div', { className: 'text-6xl mb-3' }, '🚲'),
-            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' + onHostInk }, 'BikeLab'),
-            h('p', { className: 'text-lg text-slate-600 max-w-2xl mx-auto' + onHostInk },
-              t('stem.bikelab.physics_mechanics_and_maintenance_lear', 'Physics, mechanics, and maintenance — learn the science of cycling and the real-world skills to keep a bike rolling.'))
+          h('div', { className: 'bikelab-hero-deck mb-6', 'data-bikelab-hero': 'true' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-4' },
+              h('div', { className: 'flex items-center gap-4 min-w-0 flex-1' },
+                heroEmblem,
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider mb-1.5', style: { background: isContrast ? '#000' : 'rgba(56,189,248,0.18)', border: isContrast ? '1px solid #00ff00' : '1px solid rgba(56,189,248,0.45)', color: isContrast ? '#00ff00' : '#bae6fd' } },
+                    t('stem.bikelab.studio_badge', 'Engineering · Physics · Cycling Mechanics Lab')
+                  ),
+                  h('h1', { className: 'text-3xl md:text-4xl font-black text-white leading-tight' }, 'BikeLab'),
+                  h('p', { className: 'text-sm md:text-base mt-1 max-w-2xl leading-relaxed', style: { color: isContrast ? '#ffffff' : '#e0f2fe' } },
+                    t('stem.bikelab.physics_mechanics_and_maintenance_lear', 'Physics, mechanics, and maintenance — learn the science of cycling and the real-world skills to keep a bike rolling.'))
+                )
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('span', { className: 'bikelab-telemetry-pill' }, '🧭 ' + visitedCount + '/' + totalCount + ' ' + t('stem.bikelab.explored_short', 'explored')),
+                h('span', { className: 'bikelab-telemetry-pill' }, '★ ' + masteredCount + '/' + masteryTotal + ' ' + t('stem.bikelab.mastered_short', 'mastered')),
+                h('span', { className: 'bikelab-telemetry-pill' }, '🚲 ' + BIKES.length + ' ' + t('stem.bikelab.bikes_short', 'bikes')),
+                h('span', { className: 'bikelab-telemetry-pill' }, '🔧 ' + REPAIR_JOBS.length + ' ' + t('stem.bikelab.repairs_short', 'repairs'))
+              )
+            )
           ),
           // Progress banner — encourages exploration of all 8 modules.
           h('div', {
@@ -980,6 +1070,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('div', {
                 className: 'h-full ' + (allDone ? 'bg-emerald-500' : 'bg-cyan-500') + ' transition-all',
                 style: { width: Math.round((visitedCount / totalCount) * 100) + '%' }
+              })
+            )
+          ),
+          h('section', { 'data-bikelab-fleet-strip': 'true', 'aria-labelledby': 'bikelab-fleet-strip-title', className: 'bikelab-fleet-strip mb-6' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('h2', { id: 'bikelab-fleet-strip-title', className: 'text-sm font-black uppercase tracking-wider text-slate-800' },
+                t('stem.bikelab.fleet_physics_comparison', '🚲 Fleet Physics Map — Aero Drag vs. Tire Rolling')),
+              h('span', { className: 'text-xs text-slate-600' },
+                t('stem.bikelab.click_bike_to_ride', 'Click a bike to launch it in the Physics Sandbox'))
+            ),
+            fleetChartSvg,
+            h('div', { className: 'flex flex-wrap gap-2 mt-3' },
+              BIKES.map(function(b) {
+                return h('button', {
+                  key: b.id, type: 'button',
+                  onClick: function() { upd('sandboxBikeId', b.id); goto('sandbox'); },
+                  className: 'bikelab-preset-chip'
+                }, h('span', { 'aria-hidden': 'true' }, b.icon), h('span', null, b.name));
               })
             )
           ),
@@ -1903,6 +2011,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   )
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed max-w-3xl' }, cue),
+                h('div', { className: 'flex flex-wrap items-center gap-1.5', 'data-bikelab-sandbox-presets': 'true' },
+                  h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mr-1' }, t('stem.bikelab.quick_setups', 'Quick setups:')),
+                  [
+                    { id: 'sprint', label: t('stem.bikelab.preset_aero_sprint', '🏁 Aero Sprint'), bike: 'road', terrain: 'flat', power: 260, gear: 0.95, wind: 0 },
+                    { id: 'climb', label: t('stem.bikelab.preset_steep_climb', '⛰️ Steep Climb'), bike: 'mtb', terrain: 'steephill', power: 180, gear: 0.25, wind: 0 },
+                    { id: 'headwind', label: t('stem.bikelab.preset_headwind', '💨 Headwind Test'), bike: 'hybrid', terrain: 'flat', power: 160, gear: 0.65, wind: 7 },
+                    { id: 'ebike', label: t('stem.bikelab.preset_ebike_commute', '⚡ E-Bike Hills'), bike: 'ebike', terrain: 'rollinghills', power: 140, gear: 0.6, wind: 0 }
+                  ].map(function(pr) {
+                    return h('button', {
+                      key: pr.id, type: 'button',
+                      onClick: function() {
+                        setBikeId(pr.bike); upd('sandboxBikeId', pr.bike);
+                        setTerrainId(pr.terrain); upd('sandboxTerrainId', pr.terrain);
+                        setPower(pr.power); setGear(pr.gear); setWind(pr.wind); setCoasting(false);
+                      },
+                      className: 'bikelab-preset-chip'
+                    }, pr.label);
+                  })
+                ),
                 h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden', 'aria-hidden': true },
                   h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-emerald-500', style: { width: progressWidth + '%' } })
                 )
@@ -3119,6 +3246,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-4' },
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 overflow-hidden' },
               h('canvas', { ref: cvsRef, width: 1000, height: 250, className: 'bikelab-fit-canvas w-full block', role: 'img', 'aria-label': t('stem.bikelab.braking_distance_visualization_bicycle', 'Braking distance visualization: bicycle stops over the calculated reaction-plus-braking distance for the selected speed and surface.') })
+            ),
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3 flex flex-wrap items-center justify-between gap-3', 'data-bikelab-braking-presets': 'true' },
+              h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mr-1' }, t('stem.bikelab.test_scenarios', 'Test scenarios:')),
+                [
+                  { id: 'dry15', label: t('stem.bikelab.brake_preset_dry', '☀️ Dry 15 mph'), mph: 15, surf: 'dry', split: 'both', react: 1.0 },
+                  { id: 'wet20', label: t('stem.bikelab.brake_preset_wet', '🌧️ Wet 20 mph'), mph: 20, surf: 'wet', split: 'both', react: 1.0 },
+                  { id: 'ice12', label: t('stem.bikelab.brake_preset_ice', '🧊 Ice 12 mph'), mph: 12, surf: 'ice', split: 'rear', react: 1.0 },
+                  { id: 'endo25', label: t('stem.bikelab.brake_preset_front', '⚠️ Front-Only 25 mph'), mph: 25, surf: 'dry', split: 'front', react: 0.8 }
+                ].map(function(bp) {
+                  return h('button', {
+                    key: bp.id, type: 'button',
+                    onClick: function() {
+                      setSpeedMph(bp.mph); upd('brakingMph', bp.mph);
+                      setSurf(bp.surf); upd('brakingSurface', bp.surf);
+                      setBrakeSplit(bp.split); upd('brakingSplit', bp.split);
+                      setReaction(bp.react); upd('brakingReactionSec', bp.react);
+                    },
+                    className: 'bikelab-preset-chip'
+                  }, bp.label);
+                })
+              ),
+              (function() {
+                var reactPct = totalDist > 0 ? Math.max(4, Math.min(96, (reactionDist / totalDist) * 100)) : 50;
+                var reactW = +(3.4 * reactPct).toFixed(1);
+                return h('svg', { viewBox: '0 0 360 36', width: 280, height: 28, 'aria-hidden': 'true', focusable: 'false', className: 'shrink-0 max-w-full' },
+                  h('rect', { x: 10, y: 4, width: 340, height: 14, rx: 7, fill: '#e2e8f0' }),
+                  h('rect', { x: 10, y: 4, width: reactW, height: 14, rx: 7, fill: '#f59e0b' }),
+                  h('rect', { x: 10 + reactW, y: 4, width: Math.max(0, 340 - reactW), height: 14, rx: 7, fill: '#dc2626' }),
+                  h('text', { x: 12, y: 31, fill: isContrast ? '#ffffff' : '#92400e', fontSize: 10, fontWeight: 'bold' }, 'React ' + Math.round(reactPct) + '%'),
+                  h('text', { x: 348, y: 31, fill: isContrast ? '#ffffff' : '#991b1b', fontSize: 10, fontWeight: 'bold', textAnchor: 'end' }, 'Brake ' + Math.round(100 - reactPct) + '%')
+                );
+              })()
             ),
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-4 gap-3' },
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
@@ -4412,7 +4572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           !plain && h('g', { 'aria-hidden': 'true' },
             h('rect', { x: 180, y: 103.5, width: 18, height: 6, rx: 3, fill: '#fef3c7', stroke: '#b45309', strokeWidth: 1, strokeDasharray: '2 2' }),
             h('rect', { x: 180, y: 110.5, width: 18, height: 6, rx: 3, fill: '#fef3c7', stroke: '#b45309', strokeWidth: 1, strokeDasharray: '2 2' }),
-            h('text', { x: 201, y: 114, fill: '#92400e', fontSize: 9, fontWeight: 'bold' }, '2 fingers'),
+            h('text', { x: 196, y: 114, fill: '#92400e', fontSize: 10, fontWeight: 'bold' }, '2 fingers'),
             h('line', { x1: 160, y1: 117, x2: 200, y2: 117, stroke: '#b45309', strokeWidth: 0.75, strokeDasharray: '2 2' })),
           // side straps, then the chin strap with its buckle
           h('line', { x1: F[0], y1: F[1], x2: J[0], y2: J[1], stroke: sideColor, strokeWidth: 2.5, strokeLinecap: 'round' }),

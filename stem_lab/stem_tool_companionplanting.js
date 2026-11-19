@@ -17,6 +17,33 @@
   st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
   if (document.head) document.head.appendChild(st);
 })();
+// Bespoke Agroecology Workbench CSS + High-Contrast parity
+(function() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-companionplanting-studio-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-companionplanting-studio-css';
+  st.textContent = [
+    '.cp-hero-deck { background: linear-gradient(122deg, #064e3b 0%, #065f46 52%, #0f4c5c 100%); border: 1px solid rgba(52,211,153,0.38); border-radius: 16px; padding: 14px 16px; box-shadow: 0 12px 28px -18px rgba(6,78,59,0.75); color: #f8fafc; }',
+    '.cp-emblem-box { width: 48px; height: 48px; border-radius: 13px; background: linear-gradient(135deg, rgba(16,185,129,0.28), rgba(6,78,59,0.9)); border: 1.5px solid rgba(110,231,183,0.55); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 14px rgba(6,78,59,0.45); }',
+    '.cp-subject-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; background: rgba(163,230,53,0.18); border: 1px solid rgba(190,242,100,0.48); color: #ecfccb; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }',
+    '.cp-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(110,231,183,0.20); }',
+    '.cp-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(2,44,34,0.58); border: 1px solid rgba(110,231,183,0.34); color: #ecfdf5; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+    '.cp-synergy-strip { margin-top: 10px; padding: 8px 10px; border-radius: 11px; background: rgba(2,44,34,0.52); border: 1px solid rgba(110,231,183,0.24); }',
+    '.cp-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(110,231,183,0.20); }',
+    '.cp-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #d1fae5; }',
+    '.cp-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 12px; border-radius: 10px; background: rgba(2,44,34,0.68); border: 1px solid rgba(110,231,183,0.38); color: #ecfdf5; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+    '.cp-starter-chip:hover:not(:disabled) { background: rgba(16,185,129,0.34); border-color: #bef264; color: #ffffff; }',
+    '.cp-starter-chip[aria-pressed="true"] { background: rgba(163,230,53,0.24); border-color: #bef264; color: #ffffff; }',
+    '.cp-starter-chip:focus-visible, .cp-hero-deck button:focus-visible { outline: 2px solid #bef264; outline-offset: 2px; }',
+    '.theme-contrast [data-stem-tool-shell="companionPlanting"] .cp-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+    '.theme-contrast [data-stem-tool-shell="companionPlanting"] .cp-emblem-box { background: #000000 !important; border-color: #ffff00 !important; }',
+    '.theme-contrast [data-stem-tool-shell="companionPlanting"] .cp-subject-badge, .theme-contrast [data-stem-tool-shell="companionPlanting"] .cp-telemetry-pill, .theme-contrast [data-stem-tool-shell="companionPlanting"] .cp-synergy-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+    '.theme-contrast [data-stem-tool-shell="companionPlanting"] .cp-starter-label { color: #ffff00 !important; }',
+    '.theme-contrast [data-stem-tool-shell="companionPlanting"] .cp-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+    '[data-community-skip-links] a.sr-only:not(:focus) { padding: 0 !important; min-height: 0 !important; width: 1px !important; height: 1px !important; }'
+  ].join('\n');
+  document.head.appendChild(st);
+})();
 
 // ═══════════════════════════════════════════
 // stem_tool_companionplanting.js — Companion Planting Lab (standalone CDN module)
@@ -1942,7 +1969,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
 
       // ── Tool body (companionPlanting) ──
       return (function() {
-var d = (labToolData.companionPlanting) || {};
+var rawCp = (labToolData && typeof labToolData === 'object') ? labToolData.companionPlanting : null;
+var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : {};
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -1953,7 +1981,8 @@ var d = (labToolData.companionPlanting) || {};
             }, { debounce: 800 });
           }
 
-          var upd = function (key, val) { var _k = {}; _k[key] = val; setLabToolData(function (prev) { return Object.assign({}, prev, { companionPlanting: Object.assign({}, prev.companionPlanting || {}, _k) }); }); };
+          var upd = function (key, val) { if (typeof setLabToolData !== 'function') return; var _k = {}; _k[key] = val; setLabToolData(function (prev) { var prevObj = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {}; var prevCp = (prevObj.companionPlanting && typeof prevObj.companionPlanting === 'object' && !Array.isArray(prevObj.companionPlanting)) ? prevObj.companionPlanting : {}; return Object.assign({}, prevObj, { companionPlanting: Object.assign({}, prevCp, _k) }); }); };
+          var updMany = function (patch) { if (typeof setLabToolData !== 'function') return; setLabToolData(function (prev) { var prevObj = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {}; var prevCp = (prevObj.companionPlanting && typeof prevObj.companionPlanting === 'object' && !Array.isArray(prevObj.companionPlanting)) ? prevObj.companionPlanting : {}; return Object.assign({}, prevObj, { companionPlanting: Object.assign({}, prevCp, patch) }); }); };
 
 
 
@@ -1994,23 +2023,23 @@ var d = (labToolData.companionPlanting) || {};
 
           // ── Sims-style needs/meters ──
 
-          var day = d.day || 0;
+          var day = (typeof d.day === 'number' && isFinite(d.day) && d.day >= 0) ? Math.floor(d.day) : 0;
 
-          var moisture = typeof d.moisture === 'number' ? d.moisture : 60;
+          var moisture = (typeof d.moisture === 'number' && isFinite(d.moisture)) ? Math.max(0, Math.min(100, d.moisture)) : 60;
 
-          var nitrogenLevel = typeof d.nitrogenLevel === 'number' ? d.nitrogenLevel : 35;
+          var nitrogenLevel = (typeof d.nitrogenLevel === 'number' && isFinite(d.nitrogenLevel)) ? Math.max(0, Math.min(100, d.nitrogenLevel)) : 35;
 
-          var pestPressure = typeof d.pestPressure === 'number' ? d.pestPressure : 10;
+          var pestPressure = (typeof d.pestPressure === 'number' && isFinite(d.pestPressure)) ? Math.max(0, Math.min(100, d.pestPressure)) : 10;
 
-          var weedCover = typeof d.weedCover === 'number' ? d.weedCover : 15;
+          var weedCover = (typeof d.weedCover === 'number' && isFinite(d.weedCover)) ? Math.max(0, Math.min(100, d.weedCover)) : 15;
 
-          var soilTemp = typeof d.soilTemp === 'number' ? d.soilTemp : 20;
+          var soilTemp = (typeof d.soilTemp === 'number' && isFinite(d.soilTemp)) ? d.soilTemp : 20;
 
-          var plantHealth = typeof d.plantHealth === 'number' ? d.plantHealth : 100;
+          var plantHealth = (typeof d.plantHealth === 'number' && isFinite(d.plantHealth)) ? Math.max(0, Math.min(100, d.plantHealth)) : 100;
 
-          var actionCooldowns = d.actionCooldowns || {};    // { water: 0, compost: 0, weed: 0, inspect: 0, mulch: 0 }
+          var actionCooldowns = (d.actionCooldowns && typeof d.actionCooldowns === 'object' && !Array.isArray(d.actionCooldowns)) ? d.actionCooldowns : {};    // { water: 0, compost: 0, weed: 0, inspect: 0, mulch: 0 }
 
-          var eventLog = d.eventLog || [];
+          var eventLog = Array.isArray(d.eventLog) ? d.eventLog : [];
 
           var eventPopup = d.eventPopup || null;
 
@@ -11703,19 +11732,49 @@ var d = (labToolData.companionPlanting) || {};
           }
 
 
+          // ── Bespoke Agroecology SVG Emblem ──
+          var renderAgroEmblem = function () {
+            return React.createElement('div', { className: 'cp-emblem-box', 'aria-hidden': 'true' },
+              React.createElement('svg', { width: 34, height: 34, viewBox: '0 0 44 44', 'aria-hidden': 'true' },
+                React.createElement('circle', { cx: 22, cy: 22, r: 20, fill: 'rgba(2,44,34,0.72)', stroke: '#6ee7b7', strokeWidth: 1.3, strokeDasharray: '4 3' }),
+                // Corn stalk + golden ear
+                React.createElement('line', { x1: 22, y1: 36, x2: 22, y2: 11, stroke: '#bef264', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                React.createElement('ellipse', { cx: 25, cy: 17, rx: 3, ry: 5.5, fill: '#facc15', stroke: '#064e3b', strokeWidth: 1 }),
+                // Climbing bean vine spiral
+                React.createElement('path', { d: 'M16,34 C14,27 28,25 18,18 C15,15 19,12 22,12', fill: 'none', stroke: '#34d399', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                // Broad squash ground-cover leaves
+                React.createElement('ellipse', { cx: 14, cy: 33, rx: 7, ry: 3.5, fill: '#fb923c', opacity: 0.9 }),
+                React.createElement('ellipse', { cx: 30, cy: 33, rx: 7, ry: 3.5, fill: '#22c55e', opacity: 0.9 })
+              )
+            );
+          };
+          var cpLocked = !!(quizActive || (ctx && (ctx.quizLock || ctx.teacherLock)));
+
           // ── Mode toggle + conditional render ──
           if (gardenMode === 'community') {
+            var cgPlantedCount = Array.isArray(cgGrid) ? cgGrid.filter(function(cell) { return cell && cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; }).length : 0;
             return React.createElement('div', { className: 'space-y-4 animate-in fade-in duration-200' },
               renderTutorial('companionPlanting', _tutCompanionPlanting),
-              React.createElement('div', { className: 'flex flex-col gap-3 rounded-xl bg-emerald-800 p-3 sm:flex-row sm:items-center sm:justify-between' },
-                React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
-                  React.createElement('button', { onClick: function () { setStemLabTool(null); }, className: 'p-1.5 rounded-lg text-emerald-100 hover:bg-white/10 transition-colors focus:ring-2 focus:ring-emerald-300 focus:outline-none', 'aria-label': __alloT('stem.companionplanting.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: 'text-emerald-100' })),
-                  React.createElement('div', null,
-                    React.createElement('h3', { className: 'text-lg font-bold text-white' }, __alloT('stem.companionplanting.community_garden_simulator', '🏡 Community Garden Simulator')),
-                    React.createElement('p', { className: 'text-xs text-emerald-100' }, __alloT('stem.companionplanting.plan_plant_and_manage_a_diverse_garden', 'Plan, plant, and manage a diverse garden ecosystem')))),
-                React.createElement('div', { className: 'grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto' },
-                  React.createElement('button', { onClick: function() { upd('gardenMode', 'sisters'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-emerald-50' }, __alloT('stem.companionplanting.three_sisters_2', '🌽 Three Sisters')),
-                  React.createElement('button', { className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white' }, __alloT('stem.companionplanting.community_garden', '🏡 Community Garden')))),
+              React.createElement('div', { className: 'cp-hero-deck' },
+                React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
+                  React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
+                    React.createElement('button', { onClick: function () { setStemLabTool(null); }, className: 'min-h-[44px] min-w-[44px] inline-flex items-center justify-center p-1.5 rounded-lg text-emerald-100 hover:bg-white/10 transition-colors focus:ring-2 focus:ring-emerald-300 focus:outline-none', 'aria-label': __alloT('stem.companionplanting.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: 'text-emerald-100' })),
+                    renderAgroEmblem(),
+                    React.createElement('div', { className: 'min-w-0' },
+                      React.createElement('div', { className: 'flex flex-wrap items-center gap-2' },
+                        React.createElement('h3', { className: 'text-lg font-bold text-white' }, __alloT('stem.companionplanting.community_garden_simulator', '🏡 Community Garden Simulator')),
+                        React.createElement('span', { className: 'cp-subject-badge' }, __alloT('stem.companionplanting.community_badge', 'Agroecology · 4×4 Plot Lab'))
+                      ),
+                      React.createElement('p', { className: 'text-xs text-emerald-100' }, __alloT('stem.companionplanting.plan_plant_and_manage_a_diverse_garden', 'Plan, plant, and manage a diverse garden ecosystem')))),
+                  React.createElement('div', { className: 'grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto' },
+                    React.createElement('button', { onClick: function() { upd('gardenMode', 'sisters'); }, className: 'min-h-[44px] transition-colors px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-800 hover:bg-emerald-50' }, __alloT('stem.companionplanting.three_sisters_2', '🌽 Three Sisters')),
+                    React.createElement('button', { className: 'min-h-[44px] px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white border border-emerald-300/40' }, __alloT('stem.companionplanting.community_garden', '🏡 Community Garden')))),
+                React.createElement('div', { className: 'cp-telemetry-strip' },
+                  React.createElement('span', { className: 'cp-telemetry-pill' }, '\uD83C\uDF31 ' + __alloT('stem.companionplanting.telemetry_plots', 'Planted Plots: ') + cgPlantedCount + ' / 16'),
+                  React.createElement('span', { className: 'cp-telemetry-pill' }, '\uD83C\uDF24\uFE0F ' + __alloT('stem.companionplanting.telemetry_season', 'Season: ') + (cg.season || 'Spring')),
+                  React.createElement('span', { className: 'cp-telemetry-pill' }, '\uD83D\uDDD3\uFE0F ' + __alloT('stem.companionplanting.telemetry_day', 'Day ') + (cg.day || 1))
+                )
+              ),
               renderCommunityGarden());
           }
 
@@ -11727,74 +11786,137 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            // ── Header ──
+            // ── Hero Workbench Header ──
 
-            React.createElement("div", { className: "flex flex-col gap-3 rounded-xl bg-emerald-800 p-3 sm:flex-row sm:items-center sm:justify-between" },
+            React.createElement("div", { className: "cp-hero-deck" },
+              React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" },
 
-              React.createElement("div", { className: "flex items-center gap-3 min-w-0" },
+                React.createElement("div", { className: "flex items-center gap-3 min-w-0" },
 
-                React.createElement("button", {
+                  React.createElement("button", {
 
-                  onClick: function () { setStemLabTool(null); },
+                    onClick: function () { setStemLabTool(null); },
 
-                  className: "p-1.5 rounded-lg text-emerald-100 hover:bg-white/10 transition-colors focus:ring-2 focus:ring-emerald-300 focus:outline-none", "aria-label": __alloT('stem.companionplanting.back_to_tools_2', "Back to tools")
+                    className: "min-h-[44px] min-w-[44px] inline-flex items-center justify-center p-1.5 rounded-lg text-emerald-100 hover:bg-white/10 transition-colors focus:ring-2 focus:ring-emerald-300 focus:outline-none", "aria-label": __alloT('stem.companionplanting.back_to_tools_2', "Back to tools")
 
-                }, React.createElement(ArrowLeft, { size: 18, className: "text-emerald-100" })),
+                  }, React.createElement(ArrowLeft, { size: 18, className: "text-emerald-100" })),
 
-                React.createElement("div", null,
+                  renderAgroEmblem(),
 
-                  React.createElement("h3", { className: "text-lg font-bold text-white" }, __alloT('stem.companionplanting.companion_planting_lab', "🌱 Companion Planting Lab")),
+                  React.createElement("div", { className: "min-w-0" },
 
-                  React.createElement("p", { className: "text-xs text-emerald-100" }, __alloT('stem.companionplanting.the_milpa_three_sisters_7_000_years_of', "The milpa / Three Sisters — an ancient Indigenous agricultural science"))
+                    React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                      React.createElement("h3", { className: "text-lg font-bold text-white" }, __alloT('stem.companionplanting.companion_planting_lab', "🌱 Companion Planting Lab")),
+                      React.createElement("span", { className: "cp-subject-badge" }, __alloT('stem.companionplanting.subject_badge', "Agroecology · Symbiotic Polyculture"))
+                    ),
+
+                    React.createElement("p", { className: "text-xs text-emerald-100" }, __alloT('stem.companionplanting.the_milpa_three_sisters_7_000_years_of', "The milpa / Three Sisters — an ancient Indigenous agricultural science"))
+
+                  )
+
+                ),
+
+                React.createElement("div", { className: "grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:w-auto sm:items-center" },
+
+                  React.createElement("button", {
+                    onClick: function () { upd('gardenMode', 'community'); },
+                    className: "min-h-[44px] px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-900 hover:bg-emerald-200 border border-emerald-600"
+                  }, __alloT('stem.companionplanting.community_garden_2', "🏡 Community Garden")),
+
+                  React.createElement("button", {
+                    onClick: function () {
+                      upd('gardenMode', 'community');
+                      cgUpd({ playView: 'workshop' });
+                      if (cg.experimentBench) cgUpd({ showExperimentBench: true });
+                      else cgBenchCapture(!cgGrid.some(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; }));
+                    },
+                    className: "min-h-[44px] px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-emerald-900 border border-emerald-200",
+                    "data-experiment-entry": true
+                  }, __alloT('stem.companionplanting.experiment_entry', 'Experiment bench')),
+
+                  React.createElement("button", {
+
+                    onClick: function () { upd('gardenWorkspace', 'reference'); upd('showCulture', !showCulture); },
+
+                    className: "min-h-[44px] px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-900 border border-amber-600' : 'bg-slate-100 text-slate-800 hover:bg-amber-50'),
+
+                    "aria-label": __alloT('stem.companionplanting.cultural_context', "Cultural context")
+
+                  }, __alloT('stem.companionplanting.origins', "📜 Origins")),
+
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.compare', "Compare"),
+
+                    onClick: function () { upd('gardenWorkspace', 'operate'); upd('compareMode', !compareMode); },
+
+                    className: "min-h-[44px] px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-900 border border-blue-600' : 'bg-slate-100 text-slate-800 hover:bg-blue-50')
+
+                  }, __alloT('stem.companionplanting.compare_2', "🔬 Compare")),
+
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.soil_science', "Soil Science"),
+
+                    onClick: function () { upd('gardenWorkspace', 'operate'); upd('showSoilDetail', !showSoilDetail); },
+
+                    className: "min-h-[44px] px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-900 border border-emerald-600' : 'bg-slate-100 text-slate-800 hover:bg-emerald-50')
+
+                  }, __alloT('stem.companionplanting.soil_science_2', "🧪 Soil Science"))
 
                 )
 
               ),
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center" },
+              // Live non-spoiler agroecology telemetry strip
+              React.createElement("div", { className: "cp-telemetry-strip" },
+                React.createElement("span", { className: "cp-telemetry-pill" }, "\uD83C\uDF3D " + __alloT('stem.companionplanting.telemetry_trio', "Milpa Trio: ") + plantedCount + "/3"),
+                React.createElement("span", { className: "cp-telemetry-pill" }, "\uD83E\uDDEA " + __alloT('stem.companionplanting.telemetry_soil_n', "Soil N: ") + Math.round(nitrogenLevel) + "%"),
+                React.createElement("span", { className: "cp-telemetry-pill" }, "\uD83D\uDCA7 " + __alloT('stem.companionplanting.telemetry_moisture', "Moisture: ") + Math.round(moisture) + "%"),
+                React.createElement("span", { className: "cp-telemetry-pill" }, "\uD83C\uDF3F " + __alloT('stem.companionplanting.telemetry_eco', "Eco Score: ") + ecosystemScore + "%"),
+                React.createElement("span", { className: "cp-telemetry-pill" }, "\uD83D\uDCC5 " + seasonName + " · Day " + dayInSeason)
+              ),
 
+              // Live Three Sisters Symbiotic Ecology Diagram (inline SVG, >=10.5px labels, non-spoiler)
+              React.createElement("div", { className: "cp-synergy-strip" },
+                React.createElement("svg", { viewBox: "0 0 560 66", role: "img", "aria-label": __alloT('stem.companionplanting.a11y_three_sisters_symbiosis_diagram', 'Three Sisters symbiotic ecology loop showing Corn trellis, Beans nitrogen fixation, and Squash living mulch'), style: { width: '100%', maxHeight: 70, height: 'auto', display: 'block' } },
+                  // Connecting ecological arrows
+                  React.createElement("line", { x1: 162, y1: 30, x2: 204, y2: 30, stroke: (cornPlanted && beansPlanted) ? '#bef264' : 'rgba(148,163,184,0.45)', strokeWidth: 2, strokeDasharray: (cornPlanted && beansPlanted) ? '' : '4 3' }),
+                  React.createElement("line", { x1: 356, y1: 30, x2: 398, y2: 30, stroke: (beansPlanted && squashPlanted) ? '#bef264' : 'rgba(148,163,184,0.45)', strokeWidth: 2, strokeDasharray: (beansPlanted && squashPlanted) ? '' : '4 3' }),
+                  // Corn Node
+                  React.createElement("rect", { x: 8, y: 8, width: 152, height: 44, rx: 10, fill: cornPlanted ? 'rgba(250,204,21,0.20)' : 'rgba(15,23,42,0.55)', stroke: cornPlanted ? '#facc15' : 'rgba(148,163,184,0.40)', strokeWidth: 1.5 }),
+                  React.createElement("text", { x: 84, y: 26, textAnchor: "middle", fill: cornPlanted ? '#fef08a' : '#e2e8f0', fontSize: 11.5, fontWeight: 800 }, "Corn · Living Trellis"),
+                  React.createElement("text", { x: 84, y: 42, textAnchor: "middle", fill: '#cbd5e1', fontSize: 10.5 }, cornPlanted ? "Active canopy support" : "Unplanted"),
+                  // Beans Node
+                  React.createElement("rect", { x: 204, y: 8, width: 152, height: 44, rx: 10, fill: beansPlanted ? 'rgba(52,211,153,0.22)' : 'rgba(15,23,42,0.55)', stroke: beansPlanted ? '#34d399' : 'rgba(148,163,184,0.40)', strokeWidth: 1.5 }),
+                  React.createElement("text", { x: 280, y: 26, textAnchor: "middle", fill: beansPlanted ? '#a7f3d0' : '#e2e8f0', fontSize: 11.5, fontWeight: 800 }, "Beans · N\u2082 Fixation"),
+                  React.createElement("text", { x: 280, y: 42, textAnchor: "middle", fill: '#cbd5e1', fontSize: 10.5 }, beansPlanted ? "Rhizobia soil enrichment" : "Unplanted"),
+                  // Squash Node
+                  React.createElement("rect", { x: 400, y: 8, width: 152, height: 44, rx: 10, fill: squashPlanted ? 'rgba(251,146,60,0.22)' : 'rgba(15,23,42,0.55)', stroke: squashPlanted ? '#fb923c' : 'rgba(148,163,184,0.40)', strokeWidth: 1.5 }),
+                  React.createElement("text", { x: 476, y: 26, textAnchor: "middle", fill: squashPlanted ? '#fed7aa' : '#e2e8f0', fontSize: 11.5, fontWeight: 800 }, "Squash · Living Mulch"),
+                  React.createElement("text", { x: 476, y: 42, textAnchor: "middle", fill: '#cbd5e1', fontSize: 10.5 }, squashPlanted ? "Shade + moisture lock" : "Unplanted")
+                )
+              ),
+
+              // One-click Agroecology Starter Presets (hidden/disabled when quiz or teacher lock active)
+              !cpLocked && React.createElement("div", { className: "cp-starter-bar", role: "group", "aria-label": __alloT('stem.companionplanting.quick_presets_label', 'Quick agroecology starter presets') },
+                React.createElement("span", { className: "cp-starter-label" }, __alloT('stem.companionplanting.quick_start', 'Quick launch:')),
                 React.createElement("button", {
-                  onClick: function () { upd('gardenMode', 'community'); },
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-600"
-                }, __alloT('stem.companionplanting.community_garden_2', "🏡 Community Garden")),
-
+                  type: "button", className: "cp-starter-chip",
+                  "aria-pressed": (cornPlanted && beansPlanted && squashPlanted) ? "true" : "false",
+                  onClick: function () { updMany({ phase: 'plant', cornPlanted: true, beansPlanted: true, squashPlanted: true, gardenWorkspace: 'operate' }); }
+                }, "\uD83C\uDF3D " + __alloT('stem.companionplanting.preset_full_trio', "Plant Full Milpa Trio")),
                 React.createElement("button", {
-                  onClick: function () {
-                    upd('gardenMode', 'community');
-                    cgUpd({ playView: 'workshop' });
-                    if (cg.experimentBench) cgUpd({ showExperimentBench: true });
-                    else cgBenchCapture(!cgGrid.some(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; }));
-                  },
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-emerald-900 border border-emerald-200",
-                  "data-experiment-entry": true
-                }, __alloT('stem.companionplanting.experiment_entry', 'Experiment bench')),
-
+                  type: "button", className: "cp-starter-chip",
+                  "aria-pressed": compareMode ? "true" : "false",
+                  onClick: function () { updMany({ gardenWorkspace: 'operate', compareMode: true }); }
+                }, "\uD83D\uDD2C " + __alloT('stem.companionplanting.preset_poly_vs_mono', "Polyculture vs Mono")),
                 React.createElement("button", {
-
-                  onClick: function () { upd('gardenWorkspace', 'reference'); upd('showCulture', !showCulture); },
-
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
-
-                  "aria-label": __alloT('stem.companionplanting.cultural_context', "Cultural context")
-
-                }, __alloT('stem.companionplanting.origins', "📜 Origins")),
-
-                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.compare', "Compare"),
-
-                  onClick: function () { upd('gardenWorkspace', 'operate'); upd('compareMode', !compareMode); },
-
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-600' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
-
-                }, __alloT('stem.companionplanting.compare_2', "🔬 Compare")),
-
-                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.soil_science', "Soil Science"),
-
-                  onClick: function () { upd('gardenWorkspace', 'operate'); upd('showSoilDetail', !showSoilDetail); },
-
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
-
-                }, __alloT('stem.companionplanting.soil_science_2', "🧪 Soil Science"))
-
+                  type: "button", className: "cp-starter-chip",
+                  "aria-pressed": showSoilDetail ? "true" : "false",
+                  onClick: function () { updMany({ gardenWorkspace: 'operate', showSoilDetail: true }); }
+                }, "\uD83E\uDDEA " + __alloT('stem.companionplanting.preset_soil_lab', "Soil Nitrogen Lab")),
+                React.createElement("button", {
+                  type: "button", className: "cp-starter-chip",
+                  "aria-pressed": "false",
+                  onClick: function () { upd('gardenMode', 'community'); }
+                }, "\uD83C\uDFE1 " + __alloT('stem.companionplanting.preset_community_4x4', "4\u00D74 Community Plot"))
               )
 
             ),

@@ -191,10 +191,13 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
   }
+  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
+  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
 </style>
 </head>
 <body>
-<main class="laundry-app" id="laundryApp">
+<a class="skip-link" href="#laundryApp">Skip to Laundry Lab</a>
+<main class="laundry-app" id="laundryApp" tabindex="-1">
   <header class="laundry-header">
     <div>
       <h1>Laundry &amp; Clothing Care Lab</h1>
@@ -303,7 +306,7 @@
           </select>
         </div>
       </div>
-      <div class="progress-line" aria-label="Laundry walkthrough progress">
+      <div class="progress-line" role="status" aria-label="Laundry walkthrough progress">
         <strong id="progressValue">0 / 6</strong>
         <span id="progressMode">Guided · start with the first target</span>
       </div>
@@ -701,8 +704,6 @@
         || host === 'alloflow.org' || host.endsWith('.alloflow.org')
         || host === 'alloflow.app' || host.endsWith('.alloflow.app')
         || host === 'alloflow.com' || host.endsWith('.alloflow.com')
-        || host === 'alloflow.example' || host.endsWith('.alloflow.example')
-        || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(host)
         || host.endsWith('.usercontent.goog')
         || host.endsWith('.googleusercontent.com')
         || host.endsWith('.idx.google.com')
@@ -721,7 +722,7 @@
         }
       } catch (_) { return ''; }
     }
-    return '*';
+    return '';
   }
   function postToOpener(payload) {
     try {
@@ -824,7 +825,6 @@
       button.className = 'task-button' + (done ? ' done' : '') + (current ? ' current' : '');
       button.setAttribute('aria-pressed', String(done));
       if (current) button.setAttribute('aria-current', 'step');
-      button.setAttribute('aria-label', task.room + ': ' + task.label + (done ? ' — complete' : ''));
       button.innerHTML = '<span class="task-icon" aria-hidden="true">' + task.icon + '</span><span class="task-copy"><strong></strong><small></small></span><span class="task-room">' + (done ? 'DONE' : task.room) + '</span>';
       button.querySelector('strong').textContent = task.label;
       button.querySelector('small').textContent = state.mode === 'challenge' && !done ? 'Use the scene or choose this item.' : task.short;

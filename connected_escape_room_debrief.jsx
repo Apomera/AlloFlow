@@ -8,7 +8,12 @@ const tr = (t, key, fallback, params = {}) => {
 // AI text uses the Assess view's light markdown when it is loaded; plain text otherwise.
 const cerMd = () => (window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown) || { inline: v => v == null ? '' : String(v), block: v => v == null ? '' : String(v), plain: v => v == null ? '' : String(v) };
 function PersonalReflection({room,scope,t}) {
-  const storage = () => { try { return window.localStorage; } catch (_) { return null; } };
+  const storage = () => {
+    try {
+      const isUnauthStudent = typeof window !== 'undefined' && (window.__alloStudentView === true || window.__alloLearnerRoleActive === true) && (!scope || scope === 'local' || /:local$/.test(String(scope)));
+      return isUnauthStudent ? window.sessionStorage : window.localStorage;
+    } catch (_) { return null; }
+  };
   const storageKey=reflectionKey(room,scope);
   const [entry] = React.useState(() => readReflection(storage(),room,scope));
   const [text,setText] = React.useState(entry.text);

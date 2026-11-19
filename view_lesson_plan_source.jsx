@@ -974,7 +974,7 @@ function LessonPlanView(props) {
                             </div>
                         )}
 
-                        <div className="flex justify-center pb-8">
+                        <div className="no-print flex justify-center pb-8">
                              <button type="button" onClick={handleExportPDF} data-lesson-plan-print-bottom className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg">
                                 <Printer size={18}/> {t('lesson_plan.print')}
                              </button>

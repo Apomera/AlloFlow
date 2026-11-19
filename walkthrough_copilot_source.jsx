@@ -70,11 +70,20 @@ function wcopScriptSource() {
 // Apps Script answers exactly one request shape. A JSON content type triggers a
 // CORS preflight it cannot respond to, so the body goes as text/plain.
 function wcopPost(url, body) {
-  return window.fetch(url, {
+  const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), 30000) : null;
+  const opts = {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(body)
-  }).then((response) => response.json());
+  };
+  if (ctrl) opts.signal = ctrl.signal;
+  return window.fetch(url, opts).then((response) => {
+    if (!response || !response.ok) throw new Error('HTTP ' + (response ? response.status : 'error'));
+    return response.json();
+  }).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
 }
 
 function wcopLoadConnection() {
@@ -451,7 +460,7 @@ function WcopSetup(props) {
       }),
       React.createElement('label', { className: 'block text-xs font-semibold mt-2 mb-1', htmlFor: 'wcop-owner-token' }, 'Owner token'),
       React.createElement('input', {
-        id: 'wcop-owner-token', type: 'password', autoComplete: 'off', spellCheck: false,
+        id: 'wcop-owner-token', type: 'password', autoComplete: 'current-password', spellCheck: false,
         className: 'w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
         value: props.token || '', onChange: (e) => props.onToken(e.target.value)
       }),

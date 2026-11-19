@@ -82,8 +82,11 @@ function useFocusTrap(dialogRef, isOpen, onEscape) {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = element.closest('details:not([open])');
       if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
-      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-      return !style || style.display !== 'none' && style.visibility !== 'hidden';
+      for (let node = element; node && node !== dialog; node = node.parentElement) {
+        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+        if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+      }
+      return true;
     });
     const focusTimer = setTimeout(() => {
       try {
@@ -238,7 +241,7 @@ function AssignmentCenterModal({
     }, 0);
   };
   return /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[151] flex items-center justify-center bg-slate-950/80 p-4 no-print",
+    className: "fixed inset-0 z-[260] flex items-center justify-center bg-slate-950/80 p-4 no-print",
     role: "presentation",
     onPointerDown: event => {
       backdropPressRef.current = event.target === event.currentTarget;
@@ -256,15 +259,16 @@ function AssignmentCenterModal({
     "aria-modal": "true",
     "aria-labelledby": "assignment-control-center-title",
     "aria-describedby": "assignment-control-center-description",
-    className: "relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl",
+    className: "allo-docsuite relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl",
     onClick: event => event.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onClose,
-    className: "absolute right-3 top-3 rounded-full p-2 text-slate-600 hover:bg-slate-100",
+    className: "absolute right-3 top-3 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100",
     "aria-label": tx('share_collect.close_aria', 'Close Share & Collect')
   }, /*#__PURE__*/React.createElement(XIcon, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("div", {
     className: "pr-12"
   }, /*#__PURE__*/React.createElement("h2", {

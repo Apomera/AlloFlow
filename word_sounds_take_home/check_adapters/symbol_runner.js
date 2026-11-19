@@ -122,6 +122,13 @@ module.exports = {
           if (phase !== 'study' || ctx.isDone()) return;
           phase = 'play';
           redraw();
+          try {
+            if (isLockOn && laneButtons[aimLane]) { laneButtons[aimLane].focus(); }
+            else {
+              var nextFocus = ctx.root.querySelector('[data-lane]:not([disabled]), [data-sr-choice]:not([disabled]), input:not([disabled]):not([hidden]), button:not([disabled]):not([hidden])');
+              if (nextFocus && typeof nextFocus.focus === 'function') nextFocus.focus();
+            }
+          } catch (_) {}
         },
       },
     }, [L.symbol_runner_cover]);
@@ -173,7 +180,7 @@ module.exports = {
       'data-locked': String(!lockedOn),
       role: 'group',
       'aria-label': L.symbol_runner_lane_group,
-      style: 'display:grid;grid-template-columns:repeat(3,minmax(88px,1fr));gap:10px;max-width:460px;margin:0 auto 14px;padding:12px;border-radius:16px;background:var(--line);border:2px solid var(--muted)',
+      style: 'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:460px;width:100%;box-sizing:border-box;margin:0 auto 14px;padding:8px;border-radius:16px;background:var(--soft);border:2px solid var(--muted)',
     });
 
     var laneButtons = [];
@@ -203,7 +210,7 @@ module.exports = {
             });
             qWrap.appendChild(ctx.el('span', {
               'aria-hidden': 'true',
-              style: 'position:absolute;font-size:2.6rem;font-weight:900;opacity:0.32;color:#d97706;pointer-events:none',
+              style: 'position:absolute;font-size:2.6rem;font-weight:900;opacity:0.42;color:var(--warn);pointer-events:none',
               text: item.word,
             }));
             qWrap.appendChild(buildDotGrid(item.dots));
@@ -267,7 +274,7 @@ module.exports = {
           'aria-label': isTarget && !(item.dots > 0 || item.stroopInk || item.sizePair)
             ? ctx.fmt(L.symbol_runner_target_lane, { n: laneIndex + 1, word: item.word })
             : ctx.fmt(L.symbol_runner_lane, { n: laneIndex + 1 }),
-          style: 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:112px;padding:10px;border-radius:12px;border:3px solid var(--muted);background:var(--bg)',
+          style: 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:112px;min-width:0;width:100%;box-sizing:border-box;padding:8px 4px;border-radius:12px;border:3px solid var(--muted);background:var(--bg)',
           on: {
             mouseenter: function () { if (isTarget) lockToLane(laneIndex); else { aimLane = laneIndex; redraw(); } },
             pointerenter: function () { if (isTarget) lockToLane(laneIndex); },
@@ -306,10 +313,21 @@ module.exports = {
     }, [L.symbol_runner_done]);
 
     textInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.isComposing) {
+      if (e.key === 'Enter' && !e.repeat && !e.isComposing && e.keyCode !== 229) {
         e.preventDefault();
         submitAnswer(textInput.value);
       }
+    });
+    // Practice mode: auto-submit an exact typed match when no longer choice shares it as a prefix.
+    textInput.addEventListener('input', function () {
+      if (ctx.check || phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return;
+      var raw = String(textInput.value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      if (!raw || raw !== item.answer) return;
+      var longer = item.choices.some(function (c) {
+        var cl = String(c == null ? '' : c).trim().toLowerCase();
+        return cl.length > raw.length && cl.indexOf(raw) === 0;
+      });
+      if (!longer) submitAnswer(raw);
     });
 
     var typedRow = ctx.el('div', {
@@ -324,10 +342,11 @@ module.exports = {
     });
 
     var shapeMap = { red: '●', blue: '▲', green: '■', gold: '★' };
+    var numericChoices = item.choices.length > 0 && item.choices.every(function (c) { return /^[0-9]+$/.test(String(c).trim()); });
     var choiceButtons = item.choices.map(function (c, cIdx) {
       var shapeCue = item.stroopInk ? (shapeMap[String(c).toLowerCase()] || '') : '';
       var labelChildren = [];
-      if (ctx.check) {
+      if (ctx.check && !numericChoices) {
         labelChildren.push(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:0.85rem;opacity:0.75;margin-inline-end:6px', text: String(cIdx + 1) }));
       }
       labelChildren.push(ctx.el('span', { text: shapeCue ? (shapeCue + ' ' + c) : c }));
@@ -371,6 +390,9 @@ module.exports = {
         tried[clean] = true;
         textInput.value = '';
         redraw();
+        if (!ctx.check && item.audio && !item.stroopInk && typeof ctx.play === 'function') {
+          ctx.play(item.audio);
+        }
       }
     }
 
@@ -426,11 +448,52 @@ module.exports = {
 
     if (typeof ctx.keys === 'function') {
       ctx.keys(function (key) {
-        var n = Number(key);
-        if (!(n >= 1 && n <= item.choices.length)) return false;
+        var k = String(key == null ? '' : key);
+        if (isLockOn && phase === 'play' && !ctx.isDone() && !sealedPick && (k === 'ArrowLeft' || k === 'ArrowRight')) {
+          var nextLane = k === 'ArrowLeft' ? Math.max(0, aimLane - 1) : Math.min(2, aimLane + 1);
+          aimLane = nextLane;
+          if (laneButtons[nextLane]) { try { laneButtons[nextLane].focus(); } catch (_) {} }
+          lockToLane(nextLane);
+          return true;
+        }
         if (phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return false;
-        submitAnswer(item.choices[n - 1]);
-        return true;
+        var lc = k.toLowerCase();
+        if (numericChoices) {
+          if (!/^[0-9]$/.test(k)) return false;
+          var matched = item.choices.filter(function (c) { return String(c).trim() === k; })[0];
+          var longerNum = item.choices.some(function (c) { var s = String(c).trim(); return s.length > 1 && s.indexOf(k) === 0; });
+          if (!matched || longerNum) return false;
+          if (!tried[matched.toLowerCase()]) submitAnswer(matched);
+          return true;
+        }
+        if (item.stroopInk && k.length === 1) {
+          var wantColor = { r: 'red', b: 'blue', g: 'green', y: 'gold' }[lc] || '';
+          if (wantColor) {
+            var colorHit = item.choices.filter(function (c) {
+              var cl = String(c).trim().toLowerCase();
+              return cl === wantColor || (lc === 'y' && cl === 'yellow');
+            })[0];
+            if (colorHit && !tried[colorHit.toLowerCase()]) { submitAnswer(colorHit); return true; }
+          }
+        }
+        if (/^[1-9]$/.test(k)) {
+          var n = Number(k);
+          if (n >= 1 && n <= item.choices.length) {
+            var pickChoice = item.choices[n - 1];
+            if (!tried[pickChoice.toLowerCase()]) submitAnswer(pickChoice);
+            return true;
+          }
+          return false;
+        }
+        if (k.length === 1 && /^[a-z0-9]$/i.test(k)) {
+          var exact = item.choices.filter(function (c) { return String(c).trim().toLowerCase() === lc; })[0];
+          var longerChoice = item.choices.some(function (c) { var cl = String(c).trim().toLowerCase(); return cl.length > 1 && cl.indexOf(lc) === 0; });
+          if (exact && !longerChoice) {
+            if (!tried[exact.toLowerCase()]) submitAnswer(exact);
+            return true;
+          }
+        }
+        return false;
       });
     }
 
@@ -440,8 +503,12 @@ module.exports = {
     ctx.root.appendChild(coverButton);
     ctx.root.appendChild(padWrap);
     redraw();
+    if (isLockOn && phase === 'play' && !ctx.isDone() && laneButtons[aimLane]) {
+      try { laneButtons[aimLane].focus(); } catch (_) {}
+    }
 
     return {
+      replay: item.audio ? function () { if (typeof ctx.play === 'function') ctx.play(item.audio); } : null,
       reveal: function (correct) {
         phase = 'done';
         if (typeof correct === 'string') {

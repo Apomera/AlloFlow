@@ -14,6 +14,13 @@ node_modules/
 desktop/web-app/
 desktop/
 
+# Local credentials, dotfiles, and private developer tokens must never be uploaded to CDN.
+.*
+!.well-known/
+.git-token*
+.env*
+Claude Token/
+
 # Development, test, and alternate-deployment trees remain in Git/Codeberg but
 # are not runtime assets for alloflow-cdn. Keeping them out of the Workers/Pages
 # upload leaves ample room under Cloudflare's per-version static-file limit.

@@ -106,7 +106,7 @@ function CanvasRecoveryDialogView(props) {
     while (cursor && cursor.parentElement) {
       const parent = cursor.parentElement;
       Array.from(parent.children).forEach(sibling => {
-        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region], [data-allo-consent-frame]')) return;
         seenSiblings.add(sibling);
         isolated.push({
           sibling,
@@ -151,6 +151,10 @@ function CanvasRecoveryDialogView(props) {
         if (ancestor.matches && ancestor.matches('details:not([open])')) {
           const directSummary = ancestor.querySelector(':scope > summary');
           if (el !== directSummary) return false;
+        }
+        if (typeof window.getComputedStyle === 'function') {
+          const aStyle = window.getComputedStyle(ancestor);
+          if (aStyle && (aStyle.display === 'none' || aStyle.visibility === 'hidden')) return false;
         }
         ancestor = ancestor.parentElement;
       }
@@ -272,7 +276,7 @@ function CanvasRecoveryDialogView(props) {
     "aria-modal": "true",
     "aria-labelledby": "canvas-recovery-title",
     "aria-describedby": "canvas-recovery-description",
-    className: "w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-indigo-200 bg-white p-6 text-slate-800 shadow-2xl"
+    className: "allo-docsuite w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-indigo-200 bg-white p-6 text-slate-800 shadow-2xl"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-5 flex items-start justify-between gap-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {

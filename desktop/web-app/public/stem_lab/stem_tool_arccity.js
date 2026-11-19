@@ -1533,6 +1533,13 @@
       '#allo-arccity-root [role="slider"]{transition:background .12s ease;}' +
       '#allo-arccity-root [role="slider"]:hover{background:rgba(148,163,184,.4)!important;}' +
       '#allo-arccity-root .arc-card{border-radius:10px;padding:10px 12px;border:1px solid;}' +
+      '#allo-arccity-root .arc-hero-shell{border-radius:16px;padding:14px 16px;margin-bottom:12px;border:1px solid var(--allo-stem-border,#94a3b8);}' +
+      '#allo-arccity-root .arc-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;}' +
+      '#allo-arccity-root .arc-mission-strip{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 11px;border-radius:10px;margin-bottom:8px;border:1px solid var(--allo-stem-border,#94a3b8);}' +
+      '#allo-arccity-root .arc-district-group{padding:7px 9px;border-radius:10px;border:1px solid rgba(148,163,184,0.28);}' +
+      '.theme-contrast #allo-arccity-root .arc-hero-shell,.theme-contrast #allo-arccity-root .arc-mission-strip,.theme-contrast #allo-arccity-root .arc-district-group{background:#000000!important;border:2px solid #ffff00!important;box-shadow:none!important;}' +
+      '.theme-contrast #allo-arccity-root .arc-telemetry-pill{background:#000000!important;color:#ffff00!important;border:1px solid #ffff00!important;}' +
+      '.theme-contrast #allo-arccity-root [role="tab"][aria-selected="true"]{background:#ffff00!important;color:#000000!important;border-color:#ffff00!important;}' +
       // Calm board: the idle, always-running animations stop. Everything that only
       // runs in response to an action (the beam draw, the celebration, the co-highlight
       // pop) is left alone — calm reduces ambient noise, it does not mute feedback.
@@ -1953,13 +1960,14 @@
   // time; the shared promise means the Play view and the arena never double-load.
   function arcLoadPostFX() {
     if (arcPostFXReady()) return Promise.resolve(true);
+    if (window._isDesktopBundledApp === true) return Promise.resolve(false);
     if (_arcPostFXPromise) return _arcPostFXPromise;
     _arcPostFXPromise = new Promise(function (resolve) {
       var i = 0;
       (function next() {
         if (i >= ARC_POSTFX_URLS.length) { resolve(arcPostFXReady()); return; }
         try {
-          var s = document.createElement('script'); s.src = ARC_POSTFX_URLS[i]; s.async = false;
+          var s = document.createElement('script'); var _sri = ["sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj","sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R","sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg","sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs","sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3","sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa"]; s.src = ARC_POSTFX_URLS[i]; s.integrity = _sri[i]; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer'; s.async = false;
           s.onload = function () { i++; next(); }; s.onerror = function () { i++; next(); };
           document.head.appendChild(s);
         } catch (e) { resolve(false); }
@@ -3273,8 +3281,11 @@
           if (!exportEnabled) { announceArc(ctx, t('arccity.export_disabled', 'Enable export first.')); return; }
           try {
             var txt = teacherSummaryText(teacherSummary(byLevel, badges));
-            if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(txt);
-            announceArc(ctx, t('arccity.copied', 'Summary copied to clipboard.'));
+            Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText ? window.navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(txt)).then(function () {
+              announceArc(ctx, t('arccity.copied', 'Summary copied to clipboard.'));
+            }, function () {
+              announceArc(ctx, t('arccity.copy_fail', 'Copy failed — select and copy the summary text manually.'));
+            });
           } catch (e) { announceArc(ctx, t('arccity.copy_fail', 'Copy failed — select and copy the summary text manually.')); }
         }
 
@@ -4117,8 +4128,18 @@
 
         var controls = (gauntlet && gauntlet.empty) ? null : h('div', { key: 'controls', style: { marginTop: 14 } },
           h('div', { key: 'eqlabel', style: { fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: INK, opacity: 0.75, marginBottom: 4 } }, t('arccity.your_function', 'Your function')),
-          h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 16, color: INK, marginBottom: 8, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
-            equationEls),
+          h('div', {
+            key: 'eq', 'aria-label': describeEquation(level, P),
+            style: {
+              fontSize: 16, color: INK, marginBottom: 8, padding: '11px 14px', borderRadius: 12,
+              border: '1px solid ' + (litNow ? NODE_ON : BEAM),
+              borderLeft: '4px solid ' + (litNow ? NODE_ON : BEAM),
+              background: THEME === 'dark' ? 'rgba(15,23,42,0.82)' : (THEME === 'contrast' ? '#000000' : 'rgba(14,116,144,0.06)'),
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+              fontVariantNumeric: 'tabular-nums',
+              boxShadow: THEME === 'contrast' ? 'none' : (litNow ? '0 0 0 2px rgba(52,211,153,0.18)' : '0 2px 8px rgba(15,23,42,0.06)')
+            }
+          }, equationEls),
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.65, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', className: 'arc-play-actions', style: { display: 'flex', gap: 10, marginTop: 8 } },
@@ -4164,18 +4185,57 @@
             (ls.solved ? '✅ ' + t('arccity.solved', 'Node lit!') + (indepSolved ? ' ' + t('arccity.indep_tag', '(solved independently)') : '') + '  ' : '') + t('arccity.shots', 'Shots fired:') + ' ' + (ls.shots || 0)),
           h('ul', { key: 'coords', style: { listStyle: 'none', padding: 0, margin: '8px 0 0', fontSize: 12, color: INK, opacity: 0.8 } }, coordItems));
 
-        var header = h('div', { key: 'hdr', style: { marginBottom: 10 } },
-          h('h2', { key: 'h2', style: { margin: 0, fontSize: 20, fontWeight: 800, color: INK } }, '🌆 ' + t('arccity.title', 'Arc City')),
-          h('p', { key: 'sub', style: { margin: '4px 0 0', fontSize: 13, color: INK, opacity: 0.8 } },
-            t('arccity.subtitle', 'Author a function whose beam threads the gates, clears the walls, and lights the node.')));
-
-        // ── City-restored bar. §9.4 language: a countable, COLLECTIVE tally of what the
-        // city has back, never a percentage of a person. Counts only playable function
-        // levels (the Gauntlet is orchestration over them, so counting it would
-        // double-count the same work).
+        // ── City-restored tally & header telemetry (§9.4 countable collective tally) ──
         var progressLevels = LEVELS.filter(function (lv) { return lv.family !== 'gauntlet'; });
         var progressDone = progressLevels.filter(function (lv) { return !!(byLevel[lv.id] && byLevel[lv.id].solved); }).length;
         var progressPct = progressLevels.length ? Math.round(progressDone / progressLevels.length * 100) : 0;
+        var headerStars = progressLevels.reduce(function (sum, lv) { return sum + levelStars(byLevel[lv.id]); }, 0);
+        var headerStarsMax = progressLevels.length * 3;
+        var heroBg = THEME === 'contrast' ? '#000000' : (THEME === 'dark'
+          ? 'linear-gradient(135deg, rgba(14,22,48,0.96) 0%, rgba(15,23,42,0.98) 60%, rgba(8,47,73,0.75) 100%)'
+          : 'linear-gradient(135deg, #ffffff 0%, #f0f9ff 62%, #ecfeff 100%)');
+        var pillBg = THEME === 'contrast' ? '#000000' : (THEME === 'dark' ? 'rgba(15,23,42,0.75)' : '#ffffff');
+
+        var header = h('div', {
+          key: 'hdr', className: 'arc-hero-shell',
+          style: {
+            background: heroBg, borderColor: THEME === 'contrast' ? '#ffff00' : (THEME === 'dark' ? 'rgba(34,211,238,0.38)' : '#bae6fd'),
+            boxShadow: THEME === 'contrast' ? 'none' : (THEME === 'dark' ? '0 10px 28px rgba(2,6,23,0.45)' : '0 4px 16px rgba(14,116,144,0.08)')
+          }
+        },
+          h('div', { key: 'hdr-top', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 10 } },
+            h('span', {
+              key: 'subj', className: 'arc-telemetry-pill',
+              style: { background: THEME === 'contrast' ? '#000000' : (THEME === 'dark' ? 'rgba(34,211,238,0.14)' : '#e0f2fe'), color: BEAM_INK, border: '1px solid ' + BEAM }
+            }, t('arccity.subject_badge', 'Engineering & Math · Lightwright Function Studio')),
+            h('div', { key: 'pills', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+              h('span', { key: 'p-lit', className: 'arc-telemetry-pill', style: { background: pillBg, color: INK, border: '1px solid ' + GRID } },
+                '⚡ ' + progressDone + '/' + progressLevels.length + ' ' + t('arccity.pill_lit', 'Lit')),
+              h('span', { key: 'p-stars', className: 'arc-telemetry-pill', style: { background: pillBg, color: INK, border: '1px solid ' + GRID } },
+                '★ ' + headerStars + '/' + headerStarsMax),
+              h('span', { key: 'p-badges', className: 'arc-telemetry-pill', style: { background: pillBg, color: INK, border: '1px solid ' + GRID } },
+                '🏅 ' + badges.length + '/' + BADGES.length)
+            )
+          ),
+          h('div', { key: 'hdr-main', style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
+            // Bespoke Neon Skyline & Parabolic Light-Beam SVG Emblem (decorative; title carries accessible name)
+            h('svg', { key: 'emblem', width: 46, height: 46, viewBox: '0 0 46 46', 'aria-hidden': 'true', style: { flexShrink: 0, display: 'block' } },
+              h('rect', { x: 1.5, y: 1.5, width: 43, height: 43, rx: 11, fill: THEME === 'contrast' ? '#000000' : (THEME === 'dark' ? '#070b18' : '#0f172a'), stroke: BEAM, strokeWidth: 1.5 }),
+              h('rect', { x: 6, y: 26, width: 7, height: 14, rx: 1, fill: '#1e293b' }),
+              h('rect', { x: 15, y: 20, width: 8, height: 20, rx: 1, fill: '#1e293b' }),
+              h('rect', { x: 26, y: 24, width: 7, height: 16, rx: 1, fill: '#1e293b' }),
+              h('rect', { x: 35, y: 18, width: 5, height: 22, rx: 1, fill: '#1e293b' }),
+              h('line', { x1: 23, y1: 11, x2: 23, y2: 18, stroke: GATE, strokeWidth: 2.2, strokeLinecap: 'round' }),
+              h('line', { x1: 23, y1: 25, x2: 23, y2: 37, stroke: GATE, strokeWidth: 2.2, strokeLinecap: 'round' }),
+              h('path', { d: 'M6 34 Q22 7 37 22', fill: 'none', stroke: BEAM, strokeWidth: 2.4, strokeLinecap: 'round' }),
+              h('circle', { cx: 37, cy: 22, r: 4, fill: NODE_ON, stroke: '#ffffff', strokeWidth: 1.2 })
+            ),
+            h('div', { key: 'hdr-copy', style: { flex: '1 1 220px', minWidth: 0 } },
+              h('h2', { key: 'h2', style: { margin: 0, fontSize: 21, fontWeight: 900, color: INK, letterSpacing: '-0.01em' } }, '🌆 ' + t('arccity.title', 'Arc City')),
+              h('p', { key: 'sub', style: { margin: '3px 0 0', fontSize: 13, color: INK, opacity: 0.85, lineHeight: 1.45 } },
+                t('arccity.subtitle', 'Author a function whose beam threads the gates, clears the walls, and lights the node.')))
+          ));
+
         var progressBar = h('div', { key: 'cityprogress', style: { marginBottom: 12 } },
           h('div', { key: 'plab', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: INK, marginBottom: 4 } },
             h('span', { key: 'pl' }, '🌃 ' + t('arccity.city_restored', 'City restored')),
@@ -4184,7 +4244,24 @@
             key: 'ptrack', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': progressLevels.length, 'aria-valuenow': progressDone,
             'aria-label': t('arccity.city_restored', 'City restored') + ': ' + progressDone + ' / ' + progressLevels.length,
             style: { height: 8, borderRadius: 6, background: 'rgba(148,163,184,0.25)', overflow: 'hidden' }
-          }, h('div', { key: 'pfill', style: { height: 8, width: progressPct + '%', background: NODE_ON, borderRadius: 6 } })));
+          }, h('div', { key: 'pfill', style: { height: 8, width: progressPct + '%', background: NODE_ON, borderRadius: 6 } })),
+          // 12-Block Segmented Skyline Power Grid (decorative mirror of the progressbar)
+          h('div', { key: 'skyblocks', 'aria-hidden': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 4, marginTop: 6 } },
+            progressLevels.map(function (lv, bi) {
+              var solvedBlock = !!(byLevel[lv.id] && byLevel[lv.id].solved);
+              var curBlock = lv.id === (S.levelId || 'L1');
+              return h('div', {
+                key: 'sb-' + lv.id,
+                title: lv.title,
+                style: {
+                  height: 7, borderRadius: 3,
+                  background: solvedBlock ? NODE_ON : (curBlock ? BEAM : 'rgba(148,163,184,0.22)'),
+                  border: '1px solid ' + (curBlock ? INK : (solvedBlock ? NODE_ON : GRID)),
+                  opacity: solvedBlock || curBlock ? 1 : 0.6
+                }
+              });
+            })
+          ));
 
         // ── The premise (§1 / §8.4). The fiction that makes a dark dot worth lighting
         // was in the design doc and nowhere in the tool. Shown once, ≤40 words, and
@@ -4300,16 +4377,21 @@
                   (got ? '🏅 ' : '🔒 ') + bd.label);
               }))));
 
-        // ── View toggle (Play ↔ Teacher) ──
+        // ── View toggle (Play ↔ Circuit Clash ↔ Teacher) as WAI-ARIA tablist ──
         function viewBtn(v, label) {
           var active = view === v;
           return h('button', {
-            key: 'view-' + v, type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function () { setView(v); },
-            style: { padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: active ? 800 : 600, border: '1px solid ' + (active ? BEAM : GRID), background: active ? 'rgba(34,211,238,0.15)' : 'transparent', color: INK, cursor: 'pointer' }
+            key: 'view-' + v, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function () { setView(v); },
+            style: {
+              padding: '7px 13px', borderRadius: 10, fontSize: 12.5, fontWeight: active ? 800 : 600,
+              border: '1px solid ' + (active ? BEAM : GRID),
+              background: active ? (THEME === 'contrast' ? '#ffff00' : 'rgba(34,211,238,0.16)') : 'transparent',
+              color: active && THEME === 'contrast' ? '#000000' : INK, cursor: 'pointer'
+            }
           }, label);
         }
-        var viewToggle = h('div', { key: 'viewtoggle', role: 'group', 'aria-label': t('arccity.view', 'View'), style: { display: 'flex', gap: 6, marginBottom: 12 } },
-          viewBtn('battle', 'Circuit Clash'),
+        var viewToggle = h('div', { key: 'viewtoggle', role: 'tablist', 'aria-label': t('arccity.view', 'View'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
+          viewBtn('battle', '⚔️ Circuit Clash'),
           viewBtn('play', '🎮 ' + t('arccity.play', 'Play')), viewBtn('teacher', '📋 ' + t('arccity.teacher', 'Teacher view')));
 
         // ── Teacher panel: honest, anonymous, deterministic; FERPA export OFF by default (§9.5) ──
@@ -4645,9 +4727,22 @@
 
         var battleSetupSummary = (battle.mode === 'cpu' ? 'Solo vs CPU' : 'Two-player hot-seat') + ' / ' + battleArenaConfig.title + ' / ' + (battle.assist === 'challenge' ? 'Predict then fire' : 'Guided preview') + ' / ' + (battle.mode === 'cpu' ? (battle.cpuLevel === 'practice' ? 'Practice probe' : 'Standard solver') : (battle.trailRule === 'walls' ? 'Trail walls' : 'Visual trails')) + (S.battle3d ? ' / 3D on' : ' / tactical view');
         var battlePanel = h('div', { key: 'battle-panel', className: 'arc-battle-panel' },
-          h('div', { key: 'battle-intro', style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.08)', color: INK, marginBottom: 12 } },
-            h('div', { key: 'title', style: { fontSize: 17, fontWeight: 900 } }, 'Circuit Clash'),
-            h('div', { key: 'copy', style: { fontSize: 12, lineHeight: 1.45, opacity: 0.82, marginTop: 3 } }, 'Turn-based neon function battle. Capture all three opposing relays. Every shot leaves a light trail; there is no timer.')),
+          h('div', {
+            key: 'battle-intro',
+            style: {
+              padding: '12px 14px', borderRadius: 12, border: '1px solid ' + BEAM,
+              background: THEME === 'contrast' ? '#000000' : (THEME === 'dark' ? 'linear-gradient(135deg, rgba(14,22,48,0.92), rgba(34,211,238,0.12))' : 'rgba(14,116,144,0.06)'),
+              color: INK, marginBottom: 12
+            }
+          },
+            h('div', { key: 'bt-top', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              h('div', { key: 'title', style: { fontSize: 17, fontWeight: 900 } }, '⚔️ Circuit Clash'),
+              h('div', { key: 'bt-pills', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                h('span', { key: 'bp-arena', className: 'arc-telemetry-pill', style: { background: pillBg, color: INK, border: '1px solid ' + GRID } }, battleArenaConfig.title),
+                h('span', { key: 'bp-round', className: 'arc-telemetry-pill', style: { background: pillBg, color: BEAM_INK, border: '1px solid ' + BEAM } }, 'Round ' + battle.round)
+              )
+            ),
+            h('div', { key: 'copy', style: { fontSize: 12, lineHeight: 1.45, opacity: 0.85, marginTop: 4 } }, 'Turn-based neon function battle. Capture all three opposing relays. Every shot leaves a light trail; there is no timer.')),
           h('details', { key: 'battle-help', style: { marginBottom: 10, padding: '7px 10px', border: '1px solid ' + GRID, borderRadius: 8, color: INK, fontSize: 12 } },
             // Padding, not display:flex — see the badge legend and Match options: a flex
             // <summary> loses its disclosure triangle.
@@ -4718,6 +4813,25 @@
           h('h3', { key: 'log-title', style: { color: INK, fontSize: 14, margin: '14px 0 5px' } }, 'Battle log'),
           h('ol', { key: 'battle-log', 'aria-label': __alloT('stem.arccity.circuit_clash_battle_log_newest_first','Circuit Clash battle log, newest first'), style: { margin: 0, paddingLeft: 22, color: INK, fontSize: 12, lineHeight: 1.5 } }, battle.log.map(function (entry, logIndex) { return h('li', { key: 'blog-' + battle.shots + '-' + logIndex }, entry); })));
 
+        // Compact Active Level Mission Brief above the live tactical SVG board
+        var activeMissionStrip = (gauntlet && gauntlet.empty) ? null : h('div', {
+          key: 'missionstrip', className: 'arc-mission-strip',
+          style: { background: THEME === 'contrast' ? '#000000' : (THEME === 'dark' ? 'rgba(15,23,42,0.72)' : '#f8fafc') }
+        },
+          h('div', { key: 'ms-left', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+            h('span', { key: 'ms-title', style: { fontSize: 13, fontWeight: 900, color: INK } }, level.title),
+            h('span', { key: 'ms-fam', className: 'arc-telemetry-pill', style: { background: THEME === 'contrast' ? '#000000' : 'rgba(34,211,238,0.12)', color: BEAM_INK, border: '1px solid ' + BEAM } },
+              familyTagOf(level.family, level.goal) || level.family)
+          ),
+          h('div', { key: 'ms-right', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 11, fontWeight: 700, color: INK, opacity: 0.85 } },
+            isMatch
+              ? h('span', { key: 'ms-match' }, '🎯 ' + t('arccity.goal_match_chip', 'Match target curve'))
+              : h('span', { key: 'ms-target' }, '🎯 (' + level.node.x + ', ' + level.node.y + ')'),
+            (level.gates && level.gates.length) ? h('span', { key: 'ms-gates' }, '· ' + level.gates.length + ' ' + (level.gates.length === 1 ? t('arccity.gate_one', 'gate') : t('arccity.gate_many', 'gates'))) : null,
+            (level.walls && level.walls.length) ? h('span', { key: 'ms-walls' }, '· ' + level.walls.length + ' ' + (level.walls.length === 1 ? t('arccity.wall_one', 'wall') : t('arccity.wall_many', 'walls'))) : null
+          )
+        );
+
         var body = view === 'teacher'
           ? teacherPanel
           : (view === 'battle'
@@ -4729,7 +4843,7 @@
               // also the DOM/tab order — so nothing about keyboard or SR play changes).
               : h('div', { key: 'game' }, introCard, levelBar, progressBar, gauntletBanner,
                 h('div', { key: 'playgrid', className: 'arc-play-grid' },
-                  h('div', { key: 'boardcol', className: 'arc-board-col' }, (gauntlet ? gauntletTierLock : tierBar), svg, city3dEl, boardLegend),
+                  h('div', { key: 'boardcol', className: 'arc-board-col' }, (gauntlet ? gauntletTierLock : tierBar), activeMissionStrip, svg, city3dEl, boardLegend),
                   h('div', { key: 'ctlcol', className: 'arc-ctl-col' }, controls, gauntletNav, badgeStrip)))));
 
         // ── Tool-scoped shortcuts (§8.1). Bound to the root element rather than to

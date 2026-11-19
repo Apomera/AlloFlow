@@ -6296,8 +6296,8 @@
   // Theme CSS is code, not copy: it must never pass through the translation layer.
   // Dark theme needs nothing here: the STEM shell renders tools on a light card and the host's
   // dark rules are scoped away from that card, so the authored light palette applies as-is.
-  var SOURCEBOOK_THEME_CSS = ".sourcebook-tool{--sb-ink:#18352d;--sb-paper:#f7f3e9}.sourcebook-tool input[type=range]{min-height:28px}.sourcebook-tool .sb-detail{scrollbar-gutter:stable;overscroll-behavior:contain}@media(max-width:700px){.sourcebook-tool .sb-board{grid-template-columns:1fr!important}}@media print{.sourcebook-tool .sb-no-print{display:none!important}}"
-    + ".theme-contrast .sourcebook-tool :is(a,strong,b,em,i,legend,footer,dt,dd,summary,small,td,th,figcaption,cite,time,abbr){color:#ffff00!important}.theme-contrast .sourcebook-tool a{text-decoration:underline!important}.theme-contrast .sourcebook-tool [class*=\"bg-gradient\"]{background-image:none!important}.theme-contrast .sourcebook-tool [class*=\"border-[#\"]{border-color:#ffff00!important}.theme-contrast .sourcebook-tool [aria-pressed=\"true\"]:not([data-sourcebook-inspect]){box-shadow:inset 0 0 0 3px #ffff00!important;text-decoration:underline!important}";
+  var SOURCEBOOK_THEME_CSS = ".sourcebook-tool{--sb-ink:#18352d;--sb-paper:#f7f3e9}.sourcebook-tool input[type=range]{min-height:28px}.sourcebook-tool .sb-detail{scrollbar-gutter:stable;overscroll-behavior:contain}.sourcebook-tool .sb-subject-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:9999px;border:1px solid #2e6656;background:#183b32;color:#f7f2e7;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}.sourcebook-tool .sb-telemetry-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;border:1px solid #a7c0b5;background:rgba(255,255,255,0.88);color:#2d4f44;font-size:11px;font-weight:700}.sourcebook-tool .sb-telemetry-pill strong{color:#183b32;font-weight:800}.sourcebook-tool .sb-workflow-btn{transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}.sourcebook-tool .sb-workflow-btn:not(:disabled):hover{transform:translateY(-1px);border-color:#2e6656;box-shadow:0 4px 12px rgba(24,59,50,0.1)}@media(max-width:700px){.sourcebook-tool .sb-board{grid-template-columns:1fr!important}}@media print{.sourcebook-tool .sb-no-print{display:none!important}}"
+    + ".theme-contrast .sourcebook-tool :is(a,strong,b,em,i,legend,footer,dt,dd,summary,small,td,th,figcaption,cite,time,abbr){color:#ffff00!important}.theme-contrast .sourcebook-tool a{text-decoration:underline!important}.theme-contrast .sourcebook-tool [class*=\"bg-gradient\"]{background-image:none!important}.theme-contrast .sourcebook-tool [class*=\"border-[#\"]{border-color:#ffff00!important}.theme-contrast .sourcebook-tool [aria-pressed=\"true\"]:not([data-sourcebook-inspect]){box-shadow:inset 0 0 0 3px #ffff00!important;text-decoration:underline!important}.theme-contrast .sourcebook-tool .sb-subject-badge,.theme-contrast .sourcebook-tool .sb-telemetry-pill{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}";
 
   function sourcebookDocument() {
     if (typeof window !== 'undefined' && window.document && typeof window.document.createElement === 'function') return window.document;
@@ -7063,7 +7063,7 @@
       if (candidate.callGemini && candidate.callGemini._alloQrBlocked) return false;
       if (candidate.isTeacherMode) return true;
       try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-      return !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      return !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
     };
     var textAi = aiUsable('text', typeof candidate.callGemini === 'function' ? candidate.callGemini : candidate.generateText);
     var visionAi = aiUsable('vision', candidate.callGeminiVision);
@@ -7319,7 +7319,7 @@
       var React = ctx.React;
       var h = React.createElement;
       var capability = sourcebookCapabilityMode(ctx);
-      var rootState = (ctx.toolData && ctx.toolData.sourcebook) || {};
+      var rootState = (ctx.toolData && ctx.toolData.sourcebook && typeof ctx.toolData.sourcebook === 'object' && !Array.isArray(ctx.toolData.sourcebook)) ? ctx.toolData.sourcebook : {};
       // Validating a serialized session re-parses every result's URLs and
       // identity; it only changes with the persisted value, not per keystroke.
       var storedLiveSessionState = React.useMemo(function () {
@@ -7330,10 +7330,10 @@
       var storedSmkLiveSession = !storedLiveSession && storedLiveSessionCandidate && serializedAssetsContainSmk(storedLiveSessionCandidate.results)
         ? storedLiveSessionCandidate : null;
       var storedSessionContext = storedLiveSession || storedSmkLiveSession;
-      var storedQuery = storedSessionContext ? storedSessionContext.query : (rootState.query || '');
+      var storedQuery = storedSessionContext ? storedSessionContext.query : (typeof rootState.query === 'string' ? rootState.query : '');
       var collection = Array.isArray(rootState.collection) ? rootState.collection.slice(0, PALETTE_MAX_ASSETS) : [];
-      var rawSavedAssets = rootState.savedAssets && typeof rootState.savedAssets === 'object' ? rootState.savedAssets : {};
-      var preparation = rootState.preparation || {};
+      var rawSavedAssets = rootState.savedAssets && typeof rootState.savedAssets === 'object' && !Array.isArray(rootState.savedAssets) ? rootState.savedAssets : {};
+      var preparation = (rootState.preparation && typeof rootState.preparation === 'object' && !Array.isArray(rootState.preparation)) ? rootState.preparation : {};
       var paletteUndo = normalizePaletteManifestCandidate(rootState.paletteUndo);
       var historyState = React.useMemo(function () {
         try { return { entries: normalizePaletteHistory(rootState.paletteHistory), error: false }; }
@@ -7354,10 +7354,10 @@
           if (operation && operation.controller) operation.controller.abort();
         };
       }, []);
-      var storedKind = storedSessionContext ? storedSessionContext.kind : (rootState.kind || 'All');
-      var storedProvider = storedSessionContext ? storedSessionContext.provider : (rootState.provider || 'All');
+      var storedKind = storedSessionContext ? storedSessionContext.kind : (typeof rootState.kind === 'string' && rootState.kind ? rootState.kind : 'All');
+      var storedProvider = storedSessionContext ? storedSessionContext.provider : (typeof rootState.provider === 'string' && rootState.provider ? rootState.provider : 'All');
       var storedRightsScope = storedSessionContext ? storedSessionContext.rightsScope : (RIGHTS_SCOPES[rootState.rightsScope] ? rootState.rightsScope : 'pd');
-      var storedTitle = rootState.paletteTitle || __alloT('stem.sourcebook.default_palette_title', 'My source palette');
+      var storedTitle = (typeof rootState.paletteTitle === 'string' && rootState.paletteTitle) ? rootState.paletteTitle : __alloT('stem.sourcebook.default_palette_title', 'My source palette');
       var storedAutoCurate = rootState.autoCurate !== false;
       var storedVisualReview = rootState.visualReview !== false;
       var storedPaletteTarget = storedSessionContext ? storedSessionContext.paletteTarget : normalizePaletteTarget(rootState.paletteTarget);
@@ -9543,7 +9543,7 @@
           if (paletteVerificationRef.current !== operation) return;
           var parsed;
           try {
-            parsed = JSON.parse(String(reader.result || ''));
+            parsed = JSON.parse(String(reader.result || ''), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
           } catch (error) {
             finishPaletteVerification(operation);
             toast(__alloT('stem.sourcebook.msg_the_palette_manifest_is_not_valid_json', 'The palette manifest is not valid JSON.'), 'error');
@@ -10520,37 +10520,93 @@
 
       return h('div', { ref: sourcebookRootRef, className: 'sourcebook-tool min-h-full text-[#1c342c] bg-[#f7f4ed]', 'data-sourcebook': 'true' },  // ★The root declared an ink but no GROUND, so only the cream detail panel had paper under it and the main column fell onto the theme canvas: fine on white in light, but #18352d on #0f172a in dark -- 1.34:1 on the 'Browse the starting shelf' heading. This tool's whole design is a paper/cream book, unconditional in both themes, so the ground belongs on the root next to the ink that assumes it.
         h('style', null, SOURCEBOOK_THEME_CSS),
-        h('header', { className: 'relative overflow-hidden rounded-3xl border border-[#a9c2b8] bg-[#e8efe9] p-5 md:p-7 mb-5' },
+        h('header', { className: 'relative overflow-hidden rounded-3xl border border-[#a9c2b8] bg-[#e8efe9] p-5 md:p-7 mb-5 shadow-sm' },
           h('div', { 'aria-hidden': 'true', className: 'absolute -right-12 -top-16 w-64 h-64 rounded-full border-[36px] border-[#c8ddd4] opacity-70' }),
-          h('div', { 'aria-hidden': 'true', className: 'absolute right-12 bottom-0 text-[6.875rem] leading-none font-serif text-[#d1e1da] select-none' }, 'S'),
-          h('div', { className: 'relative max-w-3xl' },
-            h('p', { className: 'text-[0.625rem] uppercase tracking-[.28em] font-black text-[#507064]' }, __alloT('stem.sourcebook.ai_optional_rights_first', 'AI optional · rights-first')),
-            h('div', { className: 'flex items-center gap-3 mt-1' },
-              h('span', { 'aria-hidden': 'true', className: 'shrink-0 w-11 h-11 rounded-2xl bg-[#183b32] text-[#f7f2e7] inline-flex items-center justify-center text-2xl font-serif shadow-lg' }, 'S'),
-              h('div', null,
-                h('h1', { className: 'font-serif text-3xl md:text-4xl font-black tracking-tight text-[#17372e]' }, __alloT('stem.sourcebook.sourcebook', 'Sourcebook')),
-                h('p', { className: 'mt-1 text-sm text-[#426157]' }, __alloT('stem.sourcebook.describe_what_you_need_sourcebook_sear', 'Describe what you need. Sourcebook searches large public collections, checks item-level rights, and selects a strong starter palette for educational materials or artwork.')),
-                h('details', { className: 'mt-2 text-[#557168]' },
-                  h('summary', { className: 'min-h-[32px] cursor-pointer text-xs font-bold' }, __alloT('stem.sourcebook.collections_searched', 'Collections searched')),
-                h('p', { className: 'mt-1 text-[0.6875rem] font-bold text-[#557168]' }, __alloT('stem.sourcebook.federated_search_covers_commons_nation', 'Federated search covers Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse’s broad open-media index. The small built-in shelf is only an offline fallback.'))
+          h('svg', { 'aria-hidden': 'true', focusable: 'false', viewBox: '0 0 120 120', width: 120, height: 120, className: 'pointer-events-none absolute right-6 bottom-0 opacity-25 text-[#2e6656]' },
+            h('circle', { cx: 60, cy: 60, r: 46, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeDasharray: '4 4' }),
+            h('circle', { cx: 60, cy: 60, r: 30, fill: 'none', stroke: 'currentColor', strokeWidth: 1.2 }),
+            h('path', { d: 'M60 12V108M12 60H108M28 28L92 92M92 28L28 92', stroke: 'currentColor', strokeWidth: 1 })
+          ),
+          h('div', { className: 'relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_248px] items-start' },
+            h('div', { className: 'min-w-0' },
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('span', { className: 'sb-subject-badge' }, __alloT('stem.sourcebook.subject_badge', 'Arts & Humanities · Archival Studio')),
+                h('p', { className: 'text-[0.625rem] uppercase tracking-[.22em] font-black text-[#3f5e53]' }, __alloT('stem.sourcebook.ai_optional_rights_first', 'AI optional · rights-first'))
+              ),
+              h('div', { className: 'flex items-start gap-3.5 mt-2' },
+                // Bespoke inline SVG Archival Folio & Brass Loupe Emblem
+                h('span', { 'aria-hidden': 'true', className: 'shrink-0 w-12 h-12 rounded-2xl bg-[#183b32] text-[#f7f2e7] inline-flex items-center justify-center shadow-lg border border-[#2f6b59]' },
+                  h('svg', { viewBox: '0 0 44 44', width: 38, height: 38, 'aria-hidden': 'true', focusable: 'false' },
+                    h('path', { d: 'M8 11C13 9.5 18 10 21.5 12.5V33C18 30.8 13 30.2 8 31.8Z', fill: '#f7f2e7', stroke: '#c7ddd3', strokeWidth: 1.2, strokeLinejoin: 'round' }),
+                    h('path', { d: 'M36 11C31 9.5 26 10 22.5 12.5V33C26 30.8 31 30.2 36 31.8Z', fill: '#e8efe9', stroke: '#c7ddd3', strokeWidth: 1.2, strokeLinejoin: 'round' }),
+                    h('line', { x1: 11, y1: 16, x2: 18, y2: 16.5, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
+                    h('line', { x1: 11, y1: 20.5, x2: 18, y2: 21, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
+                    h('line', { x1: 11, y1: 25, x2: 16.5, y2: 25.4, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
+                    h('circle', { cx: 29, cy: 22, r: 5.5, fill: 'rgba(217,119,6,0.18)', stroke: '#f59e0b', strokeWidth: 2 }),
+                    h('line', { x1: 33, y1: 26, x2: 37.5, y2: 30.5, stroke: '#f59e0b', strokeWidth: 2.4, strokeLinecap: 'round' })
+                  )
+                ),
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('h1', { className: 'font-serif text-3xl md:text-4xl font-black tracking-tight text-[#17372e]' }, __alloT('stem.sourcebook.sourcebook', 'Sourcebook')),
+                  h('p', { className: 'mt-1 text-sm text-[#35544a]' }, __alloT('stem.sourcebook.describe_what_you_need_sourcebook_sear', 'Describe what you need. Sourcebook searches large public collections, checks item-level rights, and selects a strong starter palette for educational materials or artwork.')),
+                  h('div', { className: 'mt-2.5 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.sourcebook.a11y_studio_telemetry', 'Archival studio summary') },
+                    h('span', { className: 'sb-telemetry-pill' }, __alloT('stem.sourcebook.pill_collections', 'Collections'), ': ', h('strong', null, String(LIVE_PROVIDER_NAMES.length))),
+                    h('span', { className: 'sb-telemetry-pill' }, __alloT('stem.sourcebook.pill_rights', 'Rights'), ': ', h('strong', null, rightsScope === 'pd' ? 'PD' : (rightsScope === 'pd-cc0' ? 'PD + CC0' : 'PD + CC0 + CC BY'))),
+                    h('span', { className: 'sb-telemetry-pill' }, __alloT('stem.sourcebook.pill_palette', 'Palette'), ': ', h('strong', null, selectedItems.length + '/' + paletteTarget)),
+                    h('span', { className: 'sb-telemetry-pill' }, __alloT('stem.sourcebook.pill_view', 'View'), ': ', h('strong', null, boardView === 'research' ? __alloT('stem.sourcebook.view_research', 'Research') : __alloT('stem.sourcebook.view_gallery', 'Gallery')))
+                  ),
+                  h('details', { className: 'mt-2 text-[#425e55]' },
+                    h('summary', { className: 'min-h-[32px] cursor-pointer text-xs font-bold' }, __alloT('stem.sourcebook.collections_searched', 'Collections searched')),
+                    h('p', { className: 'mt-1 text-[0.6875rem] font-bold text-[#425e55]' }, __alloT('stem.sourcebook.federated_search_covers_commons_nation', 'Federated search covers Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse’s broad open-media index. The small built-in shelf is only an offline fallback.'))
+                  )
                 )
+              ),
+              h('div', { className: 'mt-4 rounded-2xl border border-[#a7c0b5] bg-white/85 px-3.5 py-3 shadow-sm', role: 'status', 'data-sourcebook-ai-mode': capability.mode },
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('span', { className: 'rounded-full bg-[#183b32] px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[.12em] text-white' }, __alloT('stem.sourcebook.ai_is_optional', 'AI is optional')),
+                  h('strong', { className: 'text-xs text-[#244a3f]' }, capability.label)
+                ),
+                h('p', { className: 'mt-1.5 text-[0.6875rem] font-bold leading-relaxed text-[#3d5b52]' }, capability.description),
+                h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-[#466158]' }, __alloT('stem.sourcebook.search_rights_verification_saving_prep', 'Search, rights verification, saving, preparation, and printing work without AI. Rights gates never depend on an AI judgment.'))
               )
             ),
-            h('div', { className: 'mt-4 rounded-2xl border border-[#a7c0b5] bg-white/75 px-3.5 py-3 shadow-sm', role: 'status', 'data-sourcebook-ai-mode': capability.mode },
-              h('div', { className: 'flex flex-wrap items-center gap-2' },
-                h('span', { className: 'rounded-full bg-[#183b32] px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[.12em] text-white' }, __alloT('stem.sourcebook.ai_is_optional', 'AI is optional')),
-                h('strong', { className: 'text-xs text-[#244a3f]' }, capability.label)
-              ),
-              h('p', { className: 'mt-1.5 text-[0.6875rem] font-bold leading-relaxed text-[#45635a]' }, capability.description),
-              h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-[#536d64]' }, __alloT('stem.sourcebook.search_rights_verification_saving_prep', 'Search, rights verification, saving, preparation, and printing work without AI. Rights gates never depend on an AI judgment.'))
-            )
+            // Live Archival Rights Provenance & Palette Gauge SVG
+            (function () {
+              var pdCount = combinedResults.filter(function (it) { return it.rightsType === 'pd'; }).length;
+              var cc0Count = combinedResults.filter(function (it) { return it.rightsType === 'cc0'; }).length;
+              var ccbyCount = combinedResults.filter(function (it) { return it.rightsType === 'ccby'; }).length;
+              var totalLoaded = Math.max(1, combinedResults.length);
+              var barW = 196;
+              var pdW = Math.round((pdCount / totalLoaded) * barW);
+              var cc0W = Math.round((cc0Count / totalLoaded) * barW);
+              var ccbyW = Math.max(0, barW - pdW - cc0W);
+              var palRatio = Math.min(1, selectedItems.length / Math.max(1, paletteTarget));
+              return h('div', { className: 'sb-no-print rounded-2xl border border-[#a7c0b5] bg-white/90 p-3 shadow-sm', 'aria-hidden': 'true' },
+                h('svg', { viewBox: '0 0 220 92', width: 220, height: 92, className: 'sb-curation-svg block w-full h-auto', 'aria-hidden': 'true', focusable: 'false' },
+                  h('text', { x: 12, y: 15, fill: '#183b32', fontSize: 10, fontWeight: 800, letterSpacing: '0.06em' }, __alloT('stem.sourcebook.svg_rights_ledger', 'RIGHTS LEDGER')),
+                  h('text', { x: 208, y: 15, textAnchor: 'end', fill: '#45635a', fontSize: 10, fontWeight: 700 }, combinedResults.length + ' ' + __alloT('stem.sourcebook.svg_verified', 'VERIFIED')),
+                  h('rect', { x: 12, y: 22, width: barW, height: 10, rx: 5, fill: '#e2ece7' }),
+                  pdW > 0 && h('rect', { x: 12, y: 22, width: pdW, height: 10, rx: 4, fill: '#183b32' }),
+                  cc0W > 0 && h('rect', { x: 12 + pdW, y: 22, width: cc0W, height: 10, fill: '#2e7d63' }),
+                  ccbyW > 0 && ccbyCount > 0 && h('rect', { x: 12 + pdW + cc0W, y: 22, width: ccbyW, height: 10, rx: 4, fill: '#b45309' }),
+                  h('text', { x: 12, y: 45, fill: '#183b32', fontSize: 10, fontWeight: 700 }, 'PD ' + pdCount),
+                  h('text', { x: 110, y: 45, textAnchor: 'middle', fill: '#1f5e4a', fontSize: 10, fontWeight: 700 }, 'CC0 ' + cc0Count),
+                  h('text', { x: 208, y: 45, textAnchor: 'end', fill: '#8a3f12', fontSize: 10, fontWeight: 700 }, 'CC BY ' + ccbyCount),
+                  h('line', { x1: 12, y1: 55, x2: 208, y2: 55, stroke: '#d6e3dc', strokeWidth: 1 }),
+                  h('text', { x: 12, y: 69, fill: '#183b32', fontSize: 10, fontWeight: 800 }, __alloT('stem.sourcebook.svg_palette_fill', 'PALETTE TARGET')),
+                  h('text', { x: 208, y: 69, textAnchor: 'end', fill: '#183b32', fontSize: 10, fontWeight: 800 }, selectedItems.length + ' / ' + paletteTarget),
+                  h('rect', { x: 12, y: 76, width: barW, height: 8, rx: 4, fill: '#e2ece7' }),
+                  h('rect', { x: 12, y: 76, width: Math.round(barW * palRatio), height: 8, rx: 4, fill: '#d97706' })
+                )
+              );
+            })()
           )
         ),
         h('nav', { className: 'sb-no-print mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4', 'aria-label': __alloT('stem.sourcebook.workflow', 'Sourcebook workflow'), 'data-sourcebook-workflow': 'true' },
           [['find', __alloT('stem.sourcebook.step_find', '1. Find')], ['compare', __alloT('stem.sourcebook.step_compare', '2. Compare')], ['prepare', __alloT('stem.sourcebook.step_prepare', '3. Prepare')], ['export', __alloT('stem.sourcebook.step_export', '4. Export')]].map(function (step) {
             return h('button', { key: step[0], type: 'button', onClick: function () { workflowStep(step[0]); },
               disabled: (step[0] === 'prepare' || step[0] === 'export') && !selectedItems.length,
-              'data-sourcebook-workflow-step': step[0], className: 'min-h-[44px] rounded-xl border border-[#a9bbb4] bg-white px-3 text-sm font-bold text-[#183b32] disabled:opacity-40' }, step[1]);
+              'data-sourcebook-workflow-step': step[0], className: 'sb-workflow-btn min-h-[44px] rounded-xl border border-[#a9bbb4] bg-white px-3 text-sm font-bold text-[#183b32] disabled:opacity-40' }, step[1]);
           })
         ),
         (handoffId || packageId) && !mobileDetailOpen && h('div', { className: 'sb-no-print mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3', role: 'status' },

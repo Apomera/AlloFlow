@@ -913,6 +913,7 @@ function HistoryPanel(props) {
     const current = items.indexOf(document.activeElement);
     let next;
     if (event.key === "Escape") {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       event.stopPropagation();
       closeMoveMenu(true);
@@ -954,11 +955,11 @@ function HistoryPanel(props) {
     };
     document.addEventListener("pointerdown", dismiss);
     window.addEventListener("resize", position);
-    document.addEventListener("scroll", position, true);
+    document.addEventListener("scroll", position, { capture: true, passive: true });
     return () => {
       document.removeEventListener("pointerdown", dismiss);
       window.removeEventListener("resize", position);
-      document.removeEventListener("scroll", position, true);
+      document.removeEventListener("scroll", position, { capture: true });
     };
   }, [movingItemId]);
   React.useEffect(() => () => {
@@ -992,6 +993,7 @@ function HistoryPanel(props) {
     else if (e.key === "Home") nextIndex = 0;
     else if (e.key === "End") nextIndex = menuItems.length - 1;
     else if (e.key === "Escape") {
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
       e.preventDefault();
       closeMoreActions(true);
       return;
@@ -1061,7 +1063,7 @@ function HistoryPanel(props) {
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           openMoreActions(e.key === "ArrowUp" ? "last" : "first");
-        } else if (e.key === "Escape" && isMoreActionsOpen) {
+        } else if (e.key === "Escape" && isMoreActionsOpen && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) {
           e.preventDefault();
           closeMoreActions(true);
         }
@@ -1606,7 +1608,7 @@ function HistoryPanel(props) {
             className: "mt-2 flex flex-wrap items-center gap-1 border-t border-slate-200 pt-2",
             onClick: (e) => e.stopPropagation(),
             onKeyDown: (event) => {
-              if (event.key === "Escape" && !movingItemId) {
+              if (event.key === "Escape" && !movingItemId && !(event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229)) {
                 event.preventDefault();
                 event.stopPropagation();
                 setResourceActionsId(null);
@@ -1759,7 +1761,12 @@ function HistoryPanel(props) {
                   a.click();
                 } finally {
                   document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
+                  setTimeout(() => {
+                    try {
+                      URL.revokeObjectURL(url);
+                    } catch (_) {
+                    }
+                  }, 1e3);
                 }
                 addToast && addToast(_hpCopy(t, "history.rti_csv_downloaded", "CSV downloaded for RTI progress monitoring"), "success");
               },

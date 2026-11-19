@@ -221,9 +221,8 @@ describe('(d) the maker page opens a file it made', () => {
     one.choose('version', 'B');
     one.$('next-2').click();
     one.set('f-title', 'Short vowels, version B');
-    one.set('f-code-name', 'BlueHeron7');
-    await new Promise((resolve) => setTimeout(resolve, 800));
     await one.ready();
+    one.set('f-batch-names', 'BlueHeron7');
     const first = one.built();
     expect(one.downloads).toEqual([]);
     one.$('save').click();
@@ -248,8 +247,8 @@ describe('(d) the maker page opens a file it made', () => {
     expect(two.d.querySelector('input[name="version"]:checked').value).toBe('B');
     two.$('next-2').click();
     expect(two.$('f-title').value).toBe('Short vowels, version B');
-    expect(two.$('f-code-name').value).toBe('BlueHeron7');
-    expect(two.$('code-box').open).toBe(true);
+    expect(two.$('f-batch-names').value).toBe('BlueHeron7');
+    expect(two.$('batch').open).toBe(true);
     await two.ready();
     expect(two.built()).toBe(first);
     // A title that ends with the version follows it.
@@ -323,10 +322,98 @@ describe('(d) the maker page opens a file it made', () => {
 
   it('new words on the page say "student", never "learner", and are American English', () => {
     const doc = new JSDOM(read('packets-make.html')).window.document;
-    const mine = ['reopen', 'code-box', 'batch'].map((id) => doc.getElementById(id).textContent).join(' ');
-    expect(mine).not.toMatch(/\blearners?\b/i);
+    const mine = ['reopen', 'batch'].map((id) => doc.getElementById(id).textContent).join(' ');
+    expect(mine.replace(/#learner=\w*/g, '')).not.toMatch(/\blearners?\b/i);
     expect(read('packets_reopen.js') + read('packets_zip.js') + read('packets-make.css')).not.toMatch(/practis|licence|colour|\bmarked\b|\btick(?:ed|s)?\b|favour|behaviour|\bcentre\b|\bAI\b/);
-    // Folded by default: the code name, each-student files, and their more choices.
-    for (const id of ['code-box', 'batch', 'batch-more']) expect(doc.getElementById(id).hasAttribute('open'), id).toBe(false);
+    // Folded by default: unified step-3 student code names / batch fold.
+    expect(doc.getElementById('batch').hasAttribute('open')).toBe(false);
+    expect(doc.getElementById('code-box')).toBeNull();
+    expect(doc.getElementById('batch-more')).toBeNull();
+  });
+
+  it('Wave 2B: hands off a wrong file in 1 click via AlloPacketHandoff.redirect', async () => {
+    const parts = {};
+    parts.window = parts;
+    new Function('window', read('word_sounds_take_home_loader.js')).call(parts, parts);
+    const checks = {};
+    new Function('window', read('packet_check_builder.js'))(checks);
+    const PC = checks.AlloPacketChecks;
+    const html = PC.buildCheckPacket({ lesson: PC.lessonFromMathProblems({ title: 'Facts', problems: PC.parseProblems('2+2,3+3'), timeLimitS: 60 }), loader: parts.AlloWordSoundsTakeHome }).html;
+    const handed = [];
+    const page = await openMaker();
+    page.w.AlloPacketHandoff = { HASH: '#open-file', RESULTS_HASH: '#import-results', redirect: async (file, href, hash) => { handed.push({ name: file.name, href, hash }); } };
+    const bytes = Buffer.from(html);
+    const file = { name: 'check.html', arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.length) };
+    const drop = new page.w.Event('drop', { bubbles: true, cancelable: true });
+    drop.dataTransfer = { types: ['Files'], files: [file] };
+    page.$('step-1').dispatchEvent(drop);
+    await page.until(() => page.seen('reopen-page'), 'wrong file note');
+    page.$('reopen-page').dispatchEvent(new page.w.MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(handed).toEqual([{ name: 'check.html', href: 'packets-check.html', hash: '#open-file' }]);
+  });
+
+  it('keeps #my-words import reachable when empty, syncs #more-1-now on choices/trace change, shows #rehearse= notice in step 2, and awaits fast MP3 kit', async () => {
+    let mp3Calls = 0;
+    const page = await openMaker({
+      hash: '#rehearse=ship,chat',
+      before: (w) => {
+        w.AlloPacketAudioKit = {
+          getMp3: () => new Promise((resolve) => setTimeout(() => resolve(true), 25)),
+          wavUriToMp3Uri: () => { mp3Calls += 1; return 'data:audio/mpeg;base64,SUQzAw=='; },
+        };
+      },
+    });
+    // #rehearse= jumps to step 2 with #reopen-note confirmation and pre-filled own words.
+    expect(page.seen('step-2')).toBe(true);
+    expect(page.seen('reopen-note')).toBe(true);
+    expect(page.$('reopen-line').textContent).toBe('Loaded 2 missed words: ship, chat.');
+    expect(page.$('f-own').value).toBe('ship, chat');
+
+    // #my-words disclosure stays visible (and closed) when empty so Open a My words file is reachable.
+    expect(page.$('my-words').hidden).toBe(false);
+    expect(page.$('my-words').open).toBe(false);
+    expect(page.$('my-words-import').hidden).toBe(false);
+    expect(page.$('my-words-export').hidden).toBe(true);
+    expect(page.$('my-words-clear').hidden).toBe(true);
+
+    // Step 1: changing f-choices and f-trace-cases updates #more-1-now immediately.
+    page.$('back-2').click();
+    const traceBox = page.d.querySelector('#strands input[value="letter_tracing"]');
+    if (!traceBox.checked) traceBox.click();
+    const beforeNow = page.$('more-1-now').textContent;
+    page.set('f-choices', 'all');
+    expect(page.$('more-1-now').textContent).toContain('Choices: All');
+    expect(page.$('more-1-now').textContent).not.toBe(beforeNow);
+    const afterChoices = page.$('more-1-now').textContent;
+    page.set('f-trace-cases', 'lowercase');
+    expect(page.$('more-1-now').textContent).toContain('Letter Trace: lowercase only');
+    expect(page.$('more-1-now').textContent).not.toBe(afterChoices);
+
+    // Fast build awaits audioKit() and encodes MP3.
+    page.$('next-1').click();
+    page.$('next-2').click();
+    await page.ready();
+    expect(mp3Calls).toBeGreaterThan(0);
+    expect(page.built()).toContain('data:audio/mpeg;base64,SUQzAw==');
+  });
+
+  it('Wave 4B: packets_reopen recognizes .zip folders and results-all bundles across read() and partsFor() entry points', () => {
+    const zipBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x3c, 0x61, 0x3e]);
+    const bundleJson = JSON.stringify({ kind: 'alloflow-packet-results-bundle', version: 1, sessions: [] });
+    const env = { verify, activities: ['isolation'], wordSounds: ['isolation'], labels: ['k', 'a', 't'] };
+    const rZip = reopen.read(zipBytes, env);
+    expect(rZip.ok).toBe(false);
+    expect(rZip.kind).toBe('zip');
+    expect(rZip.why).toContain('.zip folder');
+    expect(rZip.page).toEqual(reopen.PAGES.results);
+    const rBundle = reopen.read(bundleJson, env);
+    expect(rBundle.kind).toBe('results');
+    expect(rBundle.page).toEqual(reopen.PAGES.results);
+    const cZip = reopen.readCheck(zipBytes, { verify });
+    expect(cZip.kind).toBe('zip');
+    expect(cZip.page).toEqual(reopen.PAGES.results);
+    const idBundle = reopen.identify(bundleJson, { verify });
+    expect(idBundle.kind).toBe('results');
+    expect(idBundle.page).toEqual(reopen.PAGES.results);
   });
 });

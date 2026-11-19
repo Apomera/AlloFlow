@@ -54,16 +54,15 @@ function LiveSessionDockView(props) {
       'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
-      let ancestor = element.parentElement;
-      while (ancestor && ancestor !== dialog) {
-        if (ancestor.matches && ancestor.matches('details:not([open])')) {
-          const directSummary = ancestor.querySelector(':scope > summary');
+      for (let cur = element; cur && cur !== dialog; cur = cur.parentElement) {
+        if (cur !== element && cur.matches && cur.matches('details:not([open])')) {
+          const directSummary = cur.querySelector(':scope > summary');
           if (element !== directSummary) return false;
         }
-        ancestor = ancestor.parentElement;
+        const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(cur) : null;
+        if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
       }
-      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      return true;
     });
     if (!dialog.contains(document.activeElement) && typeof dialog.focus === 'function') {
       dialog.focus();
@@ -566,7 +565,7 @@ function LiveSessionDockView(props) {
                                   }}
                                   aria-expanded={checklistOpen}
                                   aria-label={'Open per-student checklist for goal ' + goal.label}
-                                  style={{border:'1px solid #0369a1',borderRadius:7,background:checklistOpen?'#e0f2fe':'#0284c7',color:checklistOpen?'#0369a1':'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}
+                                  style={{border:'1px solid #0369a1',borderRadius:7,background:checklistOpen?'#e0f2fe':'#0369a1',color:checklistOpen?'#0369a1':'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}
                                 >☑ Checklist</button>
                               ) : (
                                 <button
@@ -575,7 +574,7 @@ function LiveSessionDockView(props) {
                                   onClick={() => handleAwardClassGoal(goal.id)}
                                   title={havenRecognitionConfig.enabled ? 'Criterion met — privately award +' + goal.tokens + ' AlloHaven token' + (goal.tokens === 1 ? '' : 's') + ' to each student on this team.' : 'Enable recognition above first.'}
                                   aria-label={'Goal met: ' + goal.label + ' — award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to each of ' + teamUids.length + ' students'}
-                                  style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:awardDisabled?'not-allowed':'pointer',opacity:awardDisabled?0.55:1}}
+                                  style={{border:'1px solid #0369a1',borderRadius:7,background:'#0369a1',color:'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:awardDisabled?'not-allowed':'pointer',opacity:awardDisabled?0.55:1}}
                                 >
                                   🎯 Met · +{goal.tokens}
                                 </button>
@@ -615,7 +614,7 @@ function LiveSessionDockView(props) {
                                   disabled={goalBtnDisabled || markedUids.length === 0}
                                   onClick={() => { handleAwardIndependentGoal(goal.id, markedUids); setOpenChecklistGoalId(null); }}
                                   aria-label={'Award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to each of ' + markedUids.length + ' marked students'}
-                                  style={{alignSelf:'flex-end',border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:(goalBtnDisabled || markedUids.length === 0)?'not-allowed':'pointer',opacity:(goalBtnDisabled || markedUids.length === 0)?0.55:1}}
+                                  style={{alignSelf:'flex-end',border:'1px solid #0369a1',borderRadius:7,background:'#0369a1',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:(goalBtnDisabled || markedUids.length === 0)?'not-allowed':'pointer',opacity:(goalBtnDisabled || markedUids.length === 0)?0.55:1}}
                                 >🎯 Award {markedUids.length} · +{goal.tokens} each</button>
                               </div>
                             ) : null}

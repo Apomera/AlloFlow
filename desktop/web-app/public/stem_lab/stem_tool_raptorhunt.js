@@ -17096,6 +17096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (!qualityProfile.bloom || window.AlloPostFXEnabled === false) return;
           var ensure = function (cb) {
             if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            if (window._isDesktopBundledApp === true) { cb(); return; }
             var urls = [
               'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
               'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
@@ -17104,6 +17105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
               'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
             ];
+            var _sri = ['sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj','sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R','sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg','sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs','sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3','sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa'];
             var i = 0;
             (function nextScript() {
               if (i >= urls.length) { cb(); return; }
@@ -17111,6 +17113,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               try {
                 if (typeof window.__alloConfigureTrustedScript !== 'function') throw new Error('Trusted script delivery is unavailable.');
                 window.__alloConfigureTrustedScript(s, urls[i]);
+                s.integrity = _sri[i];
+                s.crossOrigin = 'anonymous';
+                s.referrerPolicy = 'no-referrer';
               } catch (_) { cb(); return; }
               s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
               document.head.appendChild(s);
@@ -45474,20 +45479,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       '@book{frederick1240,\n  author = {Frederick II of Hohenstaufen},\n  title = {De Arte Venandi cum Avibus},\n  note = {Translated by Wood, C.A. \\& Fyfe, F.M. (1943) Stanford University Press},\n  year = {1240}\n}',
                       '@misc{unesco2010falconry,\n  author = {{UNESCO}},\n  title = {Falconry, a living human heritage. Intangible Cultural Heritage list.},\n  year = {2010},\n  url = {https://ich.unesco.org/en/RL/falconry-a-living-human-heritage-01708}\n}'
                     ].join('\n\n');
-                    try {
-                      (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(bibtex).then(function() {
-                        rhAnnounce(__alloT('stem.raptorhunt.sr_bibtex_bibliography_copied_to_clipboard', 'BibTeX bibliography copied to clipboard'));
-                        if (ctx.awardXP) ctx.awardXP(2, 'Bibliography export');
-                      });
-                    } catch (e) {
-                      // Fallback: download as file
+                    var downloadBib = function() {
                       var blob = new Blob([bibtex], { type: 'text/plain' });
                       var url = URL.createObjectURL(blob);
                       var a = document.createElement('a');
                       a.href = url; a.download = 'raptor_hunt_bibliography.bib';
                       document.body.appendChild(a); a.click();
-                      document.body.removeChild(a); URL.revokeObjectURL(url);
+                      document.body.removeChild(a); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                       rhAnnounce(__alloT('stem.raptorhunt.sr_bibtex_bibliography_downloaded_as_bib_file', 'BibTeX bibliography downloaded as .bib file'));
+                    };
+                    try {
+                      Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(bibtex)).then(function() {
+                        rhAnnounce(__alloT('stem.raptorhunt.sr_bibtex_bibliography_copied_to_clipboard', 'BibTeX bibliography copied to clipboard'));
+                        if (ctx.awardXP) ctx.awardXP(2, 'Bibliography export');
+                      }, downloadBib);
+                    } catch (e) {
+                      downloadBib();
                     }
                   },
                   className: 'flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:from-amber-700 hover:to-orange-700',

@@ -29,6 +29,13 @@ function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallba
         var closedDetails = el.closest("details:not([open])");
         if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
       }
+      if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+        for (var cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          var cs = window.getComputedStyle(cur);
+          if (cs && (cs.display === "none" || cs.visibility === "hidden")) return false;
+          if (cur === dialog) break;
+        }
+      }
       return true;
     };
     var getFocusable = function() {
@@ -37,11 +44,13 @@ function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallba
     var initial = initialFocusRef && initialFocusRef.current;
     (initial || getFocusable()[0] || dialog).focus();
     var onKeyDown = function(event) {
+      if (event.defaultPrevented || !dialog.isConnected) return;
       if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
       var topTrap = stack[stack.length - 1];
       if (topTrap && (topTrap.root || topTrap) !== dialog) return;
       if (event.key === "Escape") {
         event.preventDefault();
+        event.stopPropagation();
         closeRef.current();
         return;
       }
@@ -54,7 +63,10 @@ function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallba
       }
       var first = focusable[0];
       var last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -62,9 +74,9 @@ function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallba
         first.focus();
       }
     };
-    dialog.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
     return function() {
-      dialog.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keydown", onKeyDown);
       var idx = stack.lastIndexOf(trap);
       var wasTop = stack.length > 0 && idx === stack.length - 1;
       if (idx !== -1) stack.splice(idx, 1);
@@ -384,7 +396,7 @@ function OnboardingCoach(props) {
           learning_tools: "Learning Tools",
           educator: "Educator Tools"
         };
-        label = fallback[chip.key] || chip.key;
+        label = Object.prototype.hasOwnProperty.call(fallback, chip.key) ? fallback[chip.key] : chip.key;
       }
       return label;
     }
@@ -1002,7 +1014,7 @@ function OnboardingCoach(props) {
               setInputText(e.target.value);
             },
             onKeyDown: function(e) {
-              if (e.key === "Enter" && !e.shiftKey && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
+              if (e.key === "Enter" && !e.shiftKey && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
                 e.preventDefault();
                 handleSendClick();
               }

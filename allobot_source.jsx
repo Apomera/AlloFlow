@@ -1829,8 +1829,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   // each other, and never scaled down — scale-75 would drag a 36px target back
   // under the 24px WCAG 2.2 minimum.
   const satelliteBase = coarsePointer
-      ? 'inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus:outline-none allobot-satellite-control'
-      : 'inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none allobot-satellite-control';
+      ? 'inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 allobot-satellite-control'
+      : 'inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity motion-reduce:transition-none z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 allobot-satellite-control';
   const satellitePos = {
       tl: coarsePointer ? 'absolute -top-2.5 -left-2.5 allobot-satellite--tl' : 'absolute -top-2 -left-2 allobot-satellite--tl',
       tr: coarsePointer ? 'absolute -top-2.5 -right-2.5 allobot-satellite--tr' : 'absolute -top-2 -right-2 allobot-satellite--tr',
@@ -2026,36 +2026,65 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       settle();
       const ambientScale = isHovered ? 1 : ALLOBOT_AMBIENT_GAZE_SCALE;
       const sensitivity = isHovered ? 140 : 320;
-      const handleMouseMove = (e) => {
+      let cachedCenterX = 0;
+      let cachedCenterY = 0;
+      let rectDirty = true;
+      let rafId = null;
+      let latestClientX = 0;
+      let latestClientY = 0;
+      let lastVisorX = 0, lastVisorY = 0, lastEyeX = 0, lastEyeY = 0;
+      const markRectDirty = () => { rectDirty = true; };
+      const flushGaze = () => {
+          rafId = null;
           if (!containerRef.current) return;
-          settle();
-          const rect = containerRef.current.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-          const dx = e.clientX - centerX;
-          const dy = e.clientY - centerY;
+          if (rectDirty) {
+              const rect = containerRef.current.getBoundingClientRect();
+              cachedCenterX = rect.left + rect.width / 2;
+              cachedCenterY = rect.top + rect.height / 2;
+              rectDirty = false;
+          }
+          const dx = latestClientX - cachedCenterX;
+          const dy = latestClientY - cachedCenterY;
           const angle = Math.atan2(dy, dx);
           const distance = Math.hypot(dx, dy);
           const intensity = Math.min(1, distance / sensitivity) * ambientScale;
           const maxVisorRadius = 0.35;
           const visorOffset = intensity * maxVisorRadius;
-          setVisorPosition({
-              x: Math.cos(angle) * visorOffset,
-              y: Math.sin(angle) * visorOffset
-          });
+          const nextVisorX = Math.cos(angle) * visorOffset;
+          const nextVisorY = Math.sin(angle) * visorOffset;
           const maxFeatureRadius = 2.2;
           const featureOffset = intensity * maxFeatureRadius;
-          setEyePosition({
-              x: Math.cos(angle) * featureOffset,
-              y: Math.sin(angle) * featureOffset
-          });
+          const nextEyeX = Math.cos(angle) * featureOffset;
+          const nextEyeY = Math.sin(angle) * featureOffset;
+          if (Math.abs(nextVisorX - lastVisorX) > 0.03 || Math.abs(nextVisorY - lastVisorY) > 0.03) {
+              lastVisorX = nextVisorX;
+              lastVisorY = nextVisorY;
+              setVisorPosition({ x: nextVisorX, y: nextVisorY });
+          }
+          if (Math.abs(nextEyeX - lastEyeX) > 0.08 || Math.abs(nextEyeY - lastEyeY) > 0.08) {
+              lastEyeX = nextEyeX;
+              lastEyeY = nextEyeY;
+              setEyePosition({ x: nextEyeX, y: nextEyeY });
+          }
       };
-      window.addEventListener('mousemove', handleMouseMove);
+      const handleMouseMove = (e) => {
+          if (!containerRef.current) return;
+          latestClientX = e.clientX;
+          latestClientY = e.clientY;
+          settle();
+          if (rafId == null) rafId = window.requestAnimationFrame(flushGaze);
+      };
+      window.addEventListener('mousemove', handleMouseMove, { passive: true });
+      window.addEventListener('resize', markRectDirty, { passive: true });
+      window.addEventListener('scroll', markRectDirty, { passive: true, capture: true });
       return () => {
           window.removeEventListener('mousemove', handleMouseMove);
+          window.removeEventListener('resize', markRectDirty);
+          window.removeEventListener('scroll', markRectDirty, { capture: true });
+          if (rafId != null) window.cancelAnimationFrame(rafId);
           if (settleTimer) clearTimeout(settleTimer);
       };
-  }, [motionDisabled, isHovered, coarsePointer, generationMotionPaused, quietPresence]);
+  }, [motionDisabled, isHovered, coarsePointer, generationMotionPaused, quietPresence, position]);
   const [customMessage, setCustomMessage] = useState(null);
   const [isTruncated, setIsTruncated] = useState(false);
   const [isTalking, setIsTalking] = useState(false);
@@ -3381,6 +3410,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           pendingSpeechTimerRef.current = setTimeout(() => {
               pendingSpeechTimerRef.current = null;
               spokenEventIds.add(latest.id);
+              if (spokenEventIds.size > 500) spokenEventIds.delete(spokenEventIds.values().next().value);
               if (isTalkingRef.current || isSystemAudioActive || (introFiredGlobal && Date.now() - (window.__introFiredAt || 0) < 8000)) {
                   debugLog("AlloBot: Skipping event tip, intro cooldown or already talking.");
                   return;
@@ -3526,6 +3556,14 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           };
       }
   }, [history, speak, t, isTalking, isStudentMode, isEducatorMode, isSystemAudioActive, topic]);
+  const inactivityEnvRef = useRef(null);
+  inactivityEnvRef.current = {
+    speak, generationMotionPaused, isDragging, isTalking, isSystemAudioActive,
+    customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode,
+    isStudentMode, isEducatorMode, topic, t, motionDisabled, isListening,
+    isFlightActive, effectiveMood,
+    generatedContent: typeof generatedContent !== 'undefined' ? generatedContent : undefined,
+  };
   useEffect(() => {
     let ambientTimer;
     let ambientAnimationTimer;
@@ -3534,13 +3572,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     let hasSpokenFallback = false;
     const spokenTips = new Set();
     const getRandomTip = () => {
-        const has = (type) => history && Array.isArray(history) && history.some(h => h && h.type === type);
+        const env = inactivityEnvRef.current;
+        const { history: envHistory, topic: envTopic, isStudentMode: envStudent, isEducatorMode: envEducator, isParentMode: envParent, activeView: envView, t: envT, generatedContent: envGenerated } = env;
+        const has = (type) => envHistory && Array.isArray(envHistory) && envHistory.some(h => h && h.type === type);
         const tips = [];
-        const latestText = history && Array.isArray(history) && history.find(h => h && h.type === 'simplified');
-        const tipTopic = alloBotTipText(topic || (latestText && latestText.topic) || (typeof generatedContent !== 'undefined' && generatedContent && generatedContent.topic) || '');
-        const glossaryEntry = history && Array.isArray(history) && history.find(h => h && h.type === 'glossary');
+        const latestText = envHistory && Array.isArray(envHistory) && envHistory.find(h => h && h.type === 'simplified');
+        const tipTopic = alloBotTipText(envTopic || (latestText && latestText.topic) || (envGenerated && envGenerated.topic) || '');
+        const glossaryEntry = envHistory && Array.isArray(envHistory) && envHistory.find(h => h && h.type === 'glossary');
         const glossaryTerms = alloBotTipList(glossaryEntry?.data?.terms);
-        const resourceCount = (history && Array.isArray(history)) ? history.length : 0;
+        const resourceCount = (envHistory && Array.isArray(envHistory)) ? envHistory.length : 0;
         const allTypes = ['quiz', 'glossary', 'adventure', 'lesson-plan', 'image', 'timeline', 'brainstorm'];
         const missingTypes = allTypes.filter(tp => !has(tp));
         const suggestion = missingTypes.length > 0 ? missingTypes[Math.floor(Math.random() * missingTypes.length)].replace('-', ' ') : 'review game';
@@ -3550,60 +3590,60 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         const randomWord = alloBotTipText(randomTerm?.term || randomTerm?.word || randomTerm);
         const term1 = alloBotTipText(glossaryTerms[0]?.term || glossaryTerms[0]?.word || glossaryTerms[0]);
         const term2 = alloBotTipText(glossaryTerms[1]?.term || glossaryTerms[1]?.word || glossaryTerms[1]);
-        if (isStudentMode) {
-            tips.push(...buildStudentIdleTips({ activeView, history, topic: tipTopic, t }));
-        } else if (isEducatorMode) {
-            tips.push(...buildEducatorIdleTips({ activeView, history, topic: tipTopic, t }));
-        } else if (activeView === 'simplified') {
+        if (envStudent) {
+            tips.push(...buildStudentIdleTips({ activeView: envView, history: envHistory, topic: tipTopic, t: envT }));
+        } else if (envEducator) {
+            tips.push(...buildEducatorIdleTips({ activeView: envView, history: envHistory, topic: tipTopic, t: envT }));
+        } else if (envView === 'simplified') {
             if (randomWord) {
-                tips.push(t('tips.simplified_def', { word: randomWord }));
+                tips.push(envT('tips.simplified_def', { word: randomWord }));
             } else {
-                tips.push(t('tips.simplified_def_fallback') || t('tips.simplified_def'));
+                tips.push(envT('tips.simplified_def_fallback') || envT('tips.simplified_def'));
             }
-            if (!has('quiz')) tips.push(t('tips.simplified_quiz'));
+            if (!has('quiz')) tips.push(envT('tips.simplified_quiz'));
             if (!has('glossary')) {
                 if (term1 && term2) {
-                    tips.push(t('tips.simplified_glossary', { term1, term2 }));
+                    tips.push(envT('tips.simplified_glossary', { term1, term2 }));
                 } else {
-                    tips.push(t('tips.simplified_glossary_fallback') || t('tips.simplified_glossary'));
+                    tips.push(envT('tips.simplified_glossary_fallback') || envT('tips.simplified_glossary'));
                 }
             }
-        } else if (activeView === 'glossary') {
-            tips.push(t('tips.glossary_bingo'));
-            if (!has('image')) tips.push(t('tips.glossary_visuals'));
-        } else if (activeView === 'quiz') {
-            tips.push(t('tips.quiz_autograder'));
-        } else if (activeView === 'adventure') {
+        } else if (envView === 'glossary') {
+            tips.push(envT('tips.glossary_bingo'));
+            if (!has('image')) tips.push(envT('tips.glossary_visuals'));
+        } else if (envView === 'quiz') {
+            tips.push(envT('tips.quiz_autograder'));
+        } else if (envView === 'adventure') {
             if (tipTopic) {
-                tips.push(t('tips.adventure_context', { topic: tipTopic, suggestion }));
+                tips.push(envT('tips.adventure_context', { topic: tipTopic, suggestion }));
             } else {
-                tips.push(t('tips.adventure_context_fallback') || t('tips.adventure_context'));
+                tips.push(envT('tips.adventure_context_fallback') || envT('tips.adventure_context'));
             }
-        } else if (activeView === 'input') {
+        } else if (envView === 'input') {
             if (resourceCount === 0) {
                 // input_ready tip removed (inaccurate + repeats excessively)
             } else {
                 if (tipTopic) {
-                    tips.push(t('tips.input_next', { count: resourceCount, topic: tipTopic, suggestion }));
+                    tips.push(envT('tips.input_next', { count: resourceCount, topic: tipTopic, suggestion }));
                 } else {
-                    tips.push(t('tips.input_next_fallback') || t('tips.input_next'));
+                    tips.push(envT('tips.input_next_fallback') || envT('tips.input_next'));
                 }
             }
         }
-        if (!isStudentMode && isParentMode) {
-            tips.push(t('tips.parent_bedtime'));
-            tips.push(t('tips.parent_adventure'));
-            tips.push(t('tips.parent_read_along'));
+        if (!envStudent && envParent) {
+            tips.push(envT('tips.parent_bedtime'));
+            tips.push(envT('tips.parent_adventure'));
+            tips.push(envT('tips.parent_read_along'));
         }
-        if (!isStudentMode && resourceCount >= 3 && !has('lesson-plan')) {
-            tips.push(t('tips.fallback_lesson_plan'));
+        if (!envStudent && resourceCount >= 3 && !has('lesson-plan')) {
+            tips.push(envT('tips.fallback_lesson_plan'));
         }
         if (tips.length === 0) {
-            tips.push(t('tips.fallback_brainstorm'));
+            tips.push(envT('tips.fallback_brainstorm'));
             if (tipTopic && resourceCount > 0) {
-                tips.push(t('tips.fallback_export', { count: resourceCount, topic: tipTopic }));
+                tips.push(envT('tips.fallback_export', { count: resourceCount, topic: tipTopic }));
             } else {
-                tips.push(t('tips.fallback_export_fallback') || t('tips.fallback_export'));
+                tips.push(envT('tips.fallback_export_fallback') || envT('tips.fallback_export'));
             }
         }
         const recentTips = new Set(recentTipHistoryRef.current);
@@ -3618,7 +3658,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     };
     // Both idle timers must defer to the same busy states. A long generation
     // or microphone session must not be interrupted by the fallback tip.
-    const ambientBlocked = () => generationMotionPaused || isDragging || isTalkingRef.current || isListening || isSystemAudioActive || isFlightActive || effectiveMood === 'thinking' || customMessage || isIdleDisabled || isSleeping;
+    const ambientBlocked = () => {
+        const env = inactivityEnvRef.current;
+        return env.generationMotionPaused || env.isDragging || isTalkingRef.current || env.isListening || env.isSystemAudioActive || env.isFlightActive || env.effectiveMood === 'thinking' || env.customMessage || env.isIdleDisabled || env.isSleeping;
+    };
     const scheduleAmbientAction = () => {
         const delay = 60000 + Math.random() * 60000;
         ambientTimer = setTimeout(() => {
@@ -3626,7 +3669,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                 scheduleAmbientAction();
                 return;
             }
-             if (!motionDisabled) {
+             if (!inactivityEnvRef.current.motionDisabled) {
                  // Unprompted personality should be a brief glance. Large
                  // gestures remain available to explicit interactions.
                  setIdleAnimation('look-around');
@@ -3638,7 +3681,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
             }
             if (Math.random() < 0.3) {
                  const tip = getRandomTip();
-                 speak(tip, true);
+                 inactivityEnvRef.current.speak(tip, true);
             }
             scheduleAmbientAction();
         }, delay);
@@ -3648,7 +3691,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         if (now - lastActivityTime > 300000 && !hasSpokenFallback) {
              if (!ambientBlocked()) {
                  const tip = getRandomTip();
-                 speak(tip, false);
+                 inactivityEnvRef.current.speak(tip, false);
                  hasSpokenFallback = true;
              }
              lastActivityTime = Date.now();
@@ -3664,10 +3707,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         lastActivityTime = Date.now();
         hasSpokenFallback = false;
     };
-    window.addEventListener('mousemove', resetInactivity);
+    window.addEventListener('mousemove', resetInactivity, { passive: true });
     window.addEventListener('keydown', resetInactivity);
     window.addEventListener('click', resetInactivity);
-    window.addEventListener('scroll', resetInactivity, true);
+    window.addEventListener('scroll', resetInactivity, { capture: true, passive: true });
     window.addEventListener('input', resetInactivity);
     window.addEventListener('wheel', resetInactivity, { passive: true });
     scheduleAmbientAction();
@@ -3681,11 +3724,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         window.removeEventListener('mousemove', resetInactivity);
         window.removeEventListener('keydown', resetInactivity);
         window.removeEventListener('click', resetInactivity);
-        window.removeEventListener('scroll', resetInactivity, true);
+        window.removeEventListener('scroll', resetInactivity, { capture: true });
         window.removeEventListener('input', resetInactivity);
         window.removeEventListener('wheel', resetInactivity);
     };
-  }, [speak, generationMotionPaused, isDragging, isTalking, isSystemAudioActive, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, isStudentMode, isEducatorMode, topic, t, motionDisabled, isListening, isFlightActive, effectiveMood]);
+  }, []);
   const resetDragInteraction = useCallback(() => {
     setIsDragging(false);
     setIsSquashed(false);
@@ -4668,6 +4711,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
             box-shadow: var(--allobot-satellite-hover-shadow, 0 7px 15px rgba(49, 46, 129, 0.24));
             transform: scale(1);
         }
+        .allobot-avatar-action:focus-visible,
+        .allobot-satellite-control:focus-visible {
+            outline: 3px solid var(--allobot-focus-ring, #4F46E5);
+            outline-offset: 2px;
+        }
         .allobot-satellite-control[data-allobot-satellite-kind="hide"] {
             background: var(--allobot-satellite-hide-bg, #E2E8F0);
             color: var(--allobot-satellite-hide-fg, #475569);
@@ -5228,7 +5276,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                   <button
                     type="button"
                     data-allobot-avatar-action="open"
-                    className="allobot-avatar-action absolute inset-0 z-10 rounded-full bg-transparent focus:outline-none"
+                    className="allobot-avatar-action absolute inset-0 z-10 rounded-full bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     aria-label={t('bot.chat_aria') || t('bot.aria_active')}
                     onClick={(e) => {
                       e.stopPropagation();

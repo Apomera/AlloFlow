@@ -18,8 +18,32 @@
  */
 
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { fileURLToPath, pathToFileURL } = require('node:url');
+
+function normalizeForContainment(p) {
+  const resolved = path.resolve(p);
+  return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
+}
+
+function isWithinRoot(candidatePath, rootRealPath) {
+  const normRoot = normalizeForContainment(rootRealPath);
+  const normCand = normalizeForContainment(candidatePath);
+  const prefix = normRoot.endsWith(path.sep) ? normRoot : normRoot + path.sep;
+  return normCand === normRoot || normCand.startsWith(prefix);
+}
+
+function isAllowedFileUrl(requestUrl, rootRealPath) {
+  try {
+    const filePath = fileURLToPath(requestUrl);
+    const realTarget = fs.realpathSync(filePath);
+    return isWithinRoot(realTarget, rootRealPath);
+  } catch (_) {
+    return false;
+  }
+}
 
 function arg(name) {
   const index = process.argv.indexOf(name);
@@ -85,6 +109,12 @@ async function main() {
   }
   const resolved = path.resolve(htmlPath);
   if (!fs.existsSync(resolved)) output({ ok: false, error: 'Page file does not exist: ' + path.basename(resolved) }, 2);
+  const resolvedReal = fs.realpathSync(resolved);
+  const rootArg = arg('--root');
+  const rootReal = fs.realpathSync(rootArg ? path.resolve(rootArg) : path.dirname(resolvedReal));
+  if (!isWithinRoot(resolvedReal, rootReal)) {
+    output({ ok: false, error: 'Page file escapes the audited root directory.' }, 2);
+  }
   const axePath = resolveAxe();
 
   const loaded = loadPlaywright();
@@ -94,17 +124,27 @@ async function main() {
   let blockedNetworkRequests = 0;
   try {
     browser = await loaded.api.chromium.launch(browserLaunchOptions());
-    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, serviceWorkers: 'block' });
     await context.route('**/*', (route) => {
-      const url = route.request().url();
-      if (url.startsWith('file:') || url.startsWith('data:') || url.startsWith('blob:') || url === 'about:blank') {
+      const req = route.request();
+      const url = req.url();
+      if (req.resourceType() === 'script') {
+        blockedNetworkRequests += 1;
+        return route.abort('blockedbyclient');
+      }
+      if (url.startsWith('data:') || url.startsWith('blob:') || url === 'about:blank') {
         return route.continue();
+      }
+      if (url.startsWith('file:')) {
+        if (isAllowedFileUrl(url, rootReal)) return route.continue();
+        blockedNetworkRequests += 1;
+        return route.abort('blockedbyclient');
       }
       blockedNetworkRequests += 1;
       return route.abort('blockedbyclient');
     });
     const page = await context.newPage();
-    await page.goto('file://' + resolved.replace(/\\/g, '/'), { waitUntil: 'load', timeout: 60000 });
+    await page.goto(pathToFileURL(resolvedReal).href, { waitUntil: 'load', timeout: 60000 });
 
     let axeReport = { available: false, violations: [], incomplete: 0 };
     if (axePath) {
@@ -136,9 +176,22 @@ async function main() {
         return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none';
       };
       const controlHasName = (el) => {
-        if (el.labels && el.labels.length) return true;
-        if (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title')) return true;
-        if (el.tagName === 'INPUT' && ['submit', 'button', 'reset'].includes(el.type)) return true;
+        if (el.labels && Array.from(el.labels).some((lbl) => (lbl.textContent || '').trim().length > 0)) return true;
+        if ((el.getAttribute('aria-label') || '').trim().length > 0) return true;
+        const labelledBy = (el.getAttribute('aria-labelledby') || '').trim();
+        if (labelledBy) {
+          const ids = labelledBy.split(/\s+/);
+          if (ids.some((id) => {
+            const ref = document.getElementById(id);
+            return ref && (ref.textContent || '').trim().length > 0;
+          })) return true;
+        }
+        if ((el.getAttribute('title') || '').trim().length > 0) return true;
+        if (el.tagName === 'INPUT') {
+          if (el.type === 'submit' || el.type === 'reset') return true;
+          if (el.type === 'button') return (el.getAttribute('value') || '').trim().length > 0;
+          if (el.type === 'image') return (el.getAttribute('alt') || '').trim().length > 0;
+        }
         return false;
       };
       return {
@@ -203,52 +256,121 @@ async function main() {
         // selector of "proper" interactive elements never sees it — the exact
         // reason it is invisible to keyboard users. Counting click affordances
         // as interactive is what lets the walk report them as unreachable.
+        // Exclude disabled native controls and programmatic focus targets
+        // (e.g. <main id="main-content" tabindex="-1">) that are not Tab stops
+        // by HTML spec.
+        const isDisabledControl = (el) => Boolean(
+          el.disabled
+          || (typeof el.matches === 'function' && el.matches(':disabled'))
+        );
+        const isProgrammaticFocusTarget = (el) => {
+          if (!el.hasAttribute('tabindex')) return false;
+          const raw = Number(el.getAttribute('tabindex'));
+          if (!Number.isFinite(raw) || raw >= 0) return false;
+          if (['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) return false;
+          if (el.hasAttribute('onclick')) return false;
+          return !['button', 'link', 'checkbox', 'tab'].includes((el.getAttribute('role') || '').toLowerCase());
+        };
         const els = Array.from(document.querySelectorAll(
           'a[href],button,input:not([type=hidden]),select,textarea,[tabindex],[role=button],[role=link],[role=checkbox],[role=tab],[onclick]'
-        )).filter(visible);
+        )).filter((el) => visible(el) && !isDisabledControl(el) && !isProgrammaticFocusTarget(el));
         els.forEach((el, i) => el.setAttribute('data-allo-kb', String(i)));
         return els.map((el) => ({
           index: el.getAttribute('data-allo-kb'),
           brief: (el.tagName + ' ' + (el.textContent || el.getAttribute('aria-label') || el.getAttribute('name') || '').trim()).slice(0, 60),
         }));
       });
+      // Radio-group awareness (E-SRC-4, BAD survey run): Tab reaches ONE
+      // member of a same-name radio group by design; the others are arrow-key
+      // targets. Compute named radio groups BEFORE the Tab loop so wrapping
+      // pages with named radio groups never false-positive as keyboard traps.
+      // Unnamed radios (name="") are NOT grouped by browsers and remain
+      // individually tabbable.
+      const radios = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('input[type=radio][data-allo-kb]'))
+          .map((el) => ({ mark: el.getAttribute('data-allo-kb'), name: (el.getAttribute('name') || '').trim() })));
+      const radioGroupCounts = new Map();
+      for (const r of radios) {
+        if (r.name) radioGroupCounts.set(r.name, (radioGroupCounts.get(r.name) || 0) + 1);
+      }
+      let extraGroupedRadios = 0;
+      for (const count of radioGroupCounts.values()) {
+        if (count > 1) extraGroupedRadios += (count - 1);
+      }
+      const expectedTabStops = interactive.length > 0
+        ? Math.max(1, interactive.length - extraGroupedRadios)
+        : 0;
+
       await page.evaluate(() => { document.body.focus(); });
       const reached = new Set();
       const sequence = [];
+      let steps = 0;
+      let stepsSinceNewReach = 0;
+      let sameMarkStreak = 0;
+      let lastMark = null;
+      let cycleTrapDetected = false;
       const cap = Math.max(50, interactive.length * 3 + 10);
-      for (let step = 0; step < cap; step += 1) {
-        await page.keyboard.press('Tab');
-        const mark = await page.evaluate(() => {
-          const el = document.activeElement;
-          return el && el.getAttribute ? el.getAttribute('data-allo-kb') : null;
-        });
-        if (mark === null) {
-          // Focus left the tracked set (browser chrome wrap-around) — one full cycle done.
-          if (sequence.length) break;
-          continue;
+      if (interactive.length > 0) {
+        for (let step = 0; step < cap; step += 1) {
+          steps = step + 1;
+          await page.keyboard.press('Tab');
+          const mark = await page.evaluate(() => {
+            const el = document.activeElement;
+            return el && el.getAttribute ? el.getAttribute('data-allo-kb') : null;
+          });
+          if (mark === null) {
+            // Focus left the tracked set (browser chrome wrap-around) — one full cycle done.
+            if (sequence.length) break;
+            continue;
+          }
+          if (mark === lastMark) {
+            sameMarkStreak += 1;
+          } else {
+            sameMarkStreak = 0;
+            lastMark = mark;
+          }
+          if (!reached.has(mark)) {
+            sequence.push(mark);
+            reached.add(mark);
+            stepsSinceNewReach = 0;
+          } else {
+            stepsSinceNewReach += 1;
+            // If we already reached every expected Tab stop, we completed a normal cycle
+            // unless Tab is literally pinned on the exact same control across multiple presses
+            // (e.g. a single-control page with preventDefault on Tab).
+            if (reached.size >= expectedTabStops) {
+              if (sameMarkStreak >= 3) {
+                cycleTrapDetected = true;
+                break;
+              }
+              if (sameMarkStreak === 0) break;
+            } else {
+              // Still missing interactive controls while cycling endlessly inside a reached subset:
+              // a real keyboard trap (e.g. a modal or widget that captures Tab).
+              const cycleBudget = Math.max(6, reached.size * 2 + 2);
+              if (sameMarkStreak >= 3 || stepsSinceNewReach >= cycleBudget) {
+                cycleTrapDetected = true;
+                break;
+              }
+            }
+          }
         }
-        if (reached.has(mark) && sequence.length >= interactive.length) break;
-        if (!reached.has(mark)) sequence.push(mark);
-        reached.add(mark);
       }
-      // Radio-group awareness (E-SRC-4, BAD survey run): Tab reaches ONE
-      // member of a same-name radio group by design; the others are arrow-key
-      // targets. Counting them unreachable is a false positive, so a group
-      // counts as reached when any member is.
-      const radios = await page.evaluate(() =>
-        Array.from(document.querySelectorAll('input[type=radio][data-allo-kb]'))
-          .map((el) => ({ mark: el.getAttribute('data-allo-kb'), name: el.getAttribute('name') || '' })));
-      const reachedRadioNames = new Set(radios.filter((r) => reached.has(r.mark)).map((r) => r.name));
-      radios.forEach((r) => { if (reachedRadioNames.has(r.name)) reached.add(r.mark); });
+      const reachedRadioNames = new Set(radios.filter((r) => r.name && reached.has(r.mark)).map((r) => r.name));
+      radios.forEach((r) => { if (r.name && reachedRadioNames.has(r.name)) reached.add(r.mark); });
       const unreachable = interactive.filter((el) => !reached.has(el.index)).map((el) => el.brief);
+      const suspectedTrap = interactive.length > 0 && (
+        cycleTrapDetected
+        || (reached.size < interactive.length && steps >= cap)
+      );
       return {
         interactiveElements: interactive.length,
         reached: reached.size,
         unreachable,
         radioGroupAware: true,
-        // A trap = the walk burned its whole budget without covering the set
-        // or cycling out; distinct from simply-unreachable elements.
-        suspectedTrap: reached.size < interactive.length && sequence.length >= cap - 1,
+        // A trap = focus cycled inside a subset without escaping or remained
+        // pinned on a control despite repeated Tab presses.
+        suspectedTrap,
       };
     })();
 
@@ -269,7 +391,25 @@ async function main() {
       note: 'axe automates only part of WCAG; keyboard reachability is evidence, not usability judgement. A person must still operate the page.',
       createdAt: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
     };
-    fs.writeFileSync(path.resolve(outPath), JSON.stringify(report, null, 2));
+    const resolvedOut = path.resolve(outPath);
+    const outDirReal = fs.realpathSync(path.dirname(resolvedOut));
+    const tmpReal = fs.realpathSync(os.tmpdir());
+    if (!isWithinRoot(outDirReal, rootReal) && !isWithinRoot(outDirReal, fs.realpathSync(process.cwd())) && !isWithinRoot(outDirReal, tmpReal)) {
+      output({ ok: false, error: 'Audit output path escapes the audited root, working directory, and temp directory.' }, 2);
+    }
+    const finalOutPath = path.join(outDirReal, path.basename(resolvedOut));
+    for (const candidateOut of [resolvedOut, finalOutPath]) {
+      try {
+        if (fs.lstatSync(candidateOut).isSymbolicLink()) {
+          output({ ok: false, error: 'Refusing to write audit output through a symbolic link.' }, 2);
+        }
+      } catch (err) {
+        if (!err || err.code !== 'ENOENT') {
+          output({ ok: false, error: 'Cannot inspect audit output path: ' + ((err && err.message) || err) }, 2);
+        }
+      }
+    }
+    fs.writeFileSync(finalOutPath, JSON.stringify(report, null, 2));
     output(report);
   } catch (error) {
     output({ ok: false, error: String((error && error.message) || error).slice(0, 500), networkPolicy: 'deny' }, 2);

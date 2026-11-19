@@ -24,6 +24,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
     document.head.appendChild(st);
   })();
+  // Scoped Accessibility Lab workbench polish + high-contrast safety
+  (function() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || document.getElementById('allo-a11yauditor-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-a11yauditor-css';
+    st.textContent = [
+      '#allo-a11y-lab .al-panel { box-shadow: 0 8px 20px -14px rgba(15,118,110,0.22); }',
+      '#allo-a11y-lab .al-card { transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease; }',
+      '#allo-a11y-lab .al-card:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -12px rgba(15,118,110,0.28); }',
+      '.theme-contrast #allo-a11y-lab .al-hero, .theme-contrast #allo-a11y-lab .al-panel { background: #000000 !important; color: #ffffff !important; border-color: #fbbf24 !important; box-shadow: none !important; }',
+      '@media (prefers-reduced-motion: reduce) { #allo-a11y-lab .al-card { transition: none !important; transform: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
 
   // ── Audio (auto-injected) ──
@@ -106,8 +120,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
     if (raw.score_breakdown && typeof raw.score_breakdown === 'object' && !Array.isArray(raw.score_breakdown)) {
       var bd = {};
       Object.keys(raw.score_breakdown).slice(0, 20).forEach(function (k) {
+        var sk = _str(k, 30);
+        if (!sk || sk === '__proto__' || sk === 'constructor' || sk === 'prototype') return;
         var v = raw.score_breakdown[k]; v = typeof v === 'number' ? v : parseFloat(v);
-        if (isFinite(v)) bd[_str(k, 30)] = Math.max(0, Math.min(10, Math.round(v)));
+        if (isFinite(v)) bd[sk] = Math.max(0, Math.min(10, Math.round(v)));
       });
       out.score_breakdown = bd;
     }
@@ -645,6 +661,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         var file = e.target.files && e.target.files[0];
         try { e.target.value = ''; } catch (_) {} // choosing the same file again still fires
         if (!file) return;
+        if (Number(file.size) > 20 * 1024 * 1024) {
+          if (typeof addToast === 'function') addToast('Audit upload exceeds 20 MB limit.', 'error');
+          return;
+        }
         var reader = new FileReader();
         reader.onloadend = function() {
           var base64 = reader.result.split(',')[1];
@@ -935,11 +955,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var renderMeasuredPanel = function() {
         if (!deterministicAudit) return null;
         var da = deterministicAudit;
-        return h('section', { className: 'bg-indigo-50 rounded-2xl border-2 border-indigo-300 p-4 space-y-3', 'aria-labelledby': 'a11yaud-measured-h' },
+        var nFail = da.findings.length, nWarn = da.warnings.length, nBp = da.bestPractice.length, nPass = da.passed.length;
+        var nTot = Math.max(1, nFail + nWarn + nBp + nPass);
+        var wFail = (nFail / nTot) * 320, wWarn = (nWarn / nTot) * 320, wBp = (nBp / nTot) * 320, wPass = (nPass / nTot) * 320;
+        return h('section', { className: 'al-panel bg-indigo-50 rounded-2xl border-2 border-indigo-300 p-4 space-y-3', 'aria-labelledby': 'a11yaud-measured-h' },
           h('div', { className: 'flex items-center gap-2 flex-wrap' },
             h('span', { 'aria-hidden': 'true' }, '\uD83D\uDD2C'),
             h('h4', { id: 'a11yaud-measured-h', className: 'text-xs font-bold text-indigo-800 uppercase tracking-widest' }, t('stem.a11yauditor.measured_checks', 'Measured checks')),
-            h('span', { className: 'ml-auto text-[0.625rem] font-bold uppercase tracking-wide text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full' }, t('stem.a11yauditor.deterministic_badge', 'Deterministic \u00B7 not AI'))
+            h('span', { className: 'ml-auto text-[0.625rem] font-bold uppercase tracking-wide text-indigo-800 bg-indigo-100 px-2.5 py-0.5 rounded-full border border-indigo-300' }, t('stem.a11yauditor.deterministic_badge', 'Deterministic \u00B7 not AI'))
+          ),
+          // Measured summary tiles + proportional SVG bar
+          h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+            [
+              { n: nFail, lbl: t('stem.a11yauditor.sum_failures', 'Failures'), cls: 'bg-red-50 border-red-300 text-red-800' },
+              { n: nWarn, lbl: t('stem.a11yauditor.sum_warnings', 'Check by hand'), cls: 'bg-amber-50 border-amber-300 text-amber-900' },
+              { n: nBp, lbl: t('stem.a11yauditor.sum_bp', 'Best practice'), cls: 'bg-slate-100 border-slate-300 text-slate-800' },
+              { n: nPass, lbl: t('stem.a11yauditor.sum_passed', 'Passed checks'), cls: 'bg-emerald-50 border-emerald-300 text-emerald-800' }
+            ].map(function (tile) {
+              return h('div', { key: tile.lbl, className: 'rounded-xl border px-2.5 py-2 text-center ' + tile.cls },
+                h('div', { className: 'text-lg font-black leading-none' }, tile.n),
+                h('div', { className: 'text-[0.6875rem] font-bold mt-1' }, tile.lbl)
+              );
+            })
+          ),
+          h('svg', { viewBox: '0 0 320 12', className: 'w-full h-3 block rounded-full overflow-hidden', role: 'img', 'aria-label': nFail + ' failures, ' + nWarn + ' warnings, ' + nBp + ' best practice, ' + nPass + ' passed checks' },
+            h('rect', { x: 0, y: 0, width: 320, height: 12, fill: '#e2e8f0' }),
+            wFail > 0 && h('rect', { x: 0, y: 0, width: wFail, height: 12, fill: '#dc2626' }),
+            wWarn > 0 && h('rect', { x: wFail, y: 0, width: wWarn, height: 12, fill: '#d97706' }),
+            wBp > 0 && h('rect', { x: wFail + wWarn, y: 0, width: wBp, height: 12, fill: '#64748b' }),
+            wPass > 0 && h('rect', { x: wFail + wWarn + wBp, y: 0, width: wPass, height: 12, fill: '#059669' })
           ),
           h('p', { className: 'text-[0.6875rem] text-slate-700' }, t('stem.a11yauditor.measured_hint_v2', 'Counted directly from your HTML by code (DOMParser and the WCAG contrast formula), not by AI. Code can prove some failures; it cannot judge everything.')),
           h('div', null,
@@ -956,6 +1000,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('h5', { className: 'text-xs font-bold text-slate-800 mb-1' }, t('stem.a11yauditor.measured_bp_heading', 'Good habits (best practice, not WCAG failures)')),
             renderMeasuredList(da.bestPractice, function () { return 'bg-slate-200 text-slate-800'; }, 'b')
           ),
+          da.passed && da.passed.length > 0 && h('div', null,
+            h('h5', { className: 'text-xs font-bold text-emerald-800 mb-1' }, t('stem.a11yauditor.measured_passed_heading', 'Passed automated checks')),
+            h('ul', { className: 'space-y-1 text-xs text-emerald-900' }, da.passed.map(function (ps, i) {
+              return h('li', { key: 'p' + i, className: 'flex items-start gap-1.5' }, h('span', { 'aria-hidden': 'true' }, '✓'), h('span', null, ps));
+            }))
+          ),
           da.notChecked.length > 0 && h('div', null,
             h('h5', { className: 'text-xs font-bold text-slate-800 mb-1' }, t('stem.a11yauditor.measured_not_checked_heading', 'Not checked automatically')),
             h('ul', { className: 'list-disc pl-5 space-y-1 text-[0.75rem] text-slate-700' }, da.notChecked.map(function (nc, i) {
@@ -969,22 +1019,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       };
 
       // ═══ RENDER ═══
-      return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
+      return h('div', { id: 'allo-a11y-lab', className: 'space-y-4 animate-in fade-in duration-200' },
 
-        // Header
-        h('div', { className: 'flex items-center gap-3' },
-          h('button', Object.assign({
-            className: 'p-2 rounded-full hover:bg-teal-100 text-teal-700 transition-colors',
-            'aria-label': t('stem.a11yauditor.back_to_stem_tools', 'Back to STEM tools'),
-            title: t('stem.a11yauditor.back', 'Back')
-          }, a11yClick(function() { ctx.setStemLabTool(null); })),
-            h(ArrowLeft, { size: 20 })
-          ),
-          h('div', { className: 'flex-1' },
-            h('h2', { className: 'text-xl font-black text-slate-800' + onHostInk }, t('stem.a11yauditor.digital_accessibility_lab', '\u267F Digital Accessibility Lab')),
-            h('p', { className: 'text-xs text-slate-600' + onHostInk }, t('stem.a11yauditor.be_an_accessibility_change_agent_audit', 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate'))
-          ),
-          auditsCompleted > 0 && h('span', { className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
+        // Civic Tech Workbench Hero Header
+        h('div', { className: 'al-hero al-panel rounded-2xl border-2 p-3.5 md:p-4 ' + (isContrast ? 'bg-black border-yellow-300' : 'bg-gradient-to-r from-teal-50 via-white to-cyan-50 border-teal-200') },
+          h('div', { className: 'flex flex-wrap items-center gap-3' },
+            h('button', Object.assign({
+              className: 'p-2 rounded-full hover:bg-teal-100 text-teal-800 border border-teal-300 bg-white transition-colors shrink-0',
+              'aria-label': t('stem.a11yauditor.back_to_stem_tools', 'Back to STEM tools'),
+              title: t('stem.a11yauditor.back', 'Back')
+            }, a11yClick(function() { ctx.setStemLabTool(null); })),
+              h(ArrowLeft, { size: 18 })
+            ),
+            // Bespoke SVG Accessibility Inspection Shield Emblem
+            h('div', { className: 'w-11 h-11 rounded-xl bg-teal-700 flex items-center justify-center shadow-sm shrink-0', 'aria-hidden': 'true' },
+              h('svg', { viewBox: '0 0 32 32', width: 26, height: 26, focusable: 'false' },
+                h('path', { d: 'M16 3 L27 7 V15 C27 21.8 22.3 26.8 16 29 C9.7 26.8 5 21.8 5 15 V7 Z', fill: '#f0fdfa', stroke: '#99f6e4', strokeWidth: 1.4 }),
+                h('circle', { cx: 16, cy: 11, r: 2.2, fill: '#0f766e' }),
+                h('path', { d: 'M10.5 15.2 H21.5 M16 15.2 V20.5 M16 20.5 L12.8 24.8 M16 20.5 L19.2 24.8', stroke: '#0f766e', strokeWidth: 2, strokeLinecap: 'round' })
+              )
+            ),
+            h('div', { className: 'flex-1 min-w-[200px]' },
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('h2', { className: 'text-lg md:text-xl font-black text-slate-900 m-0' + onHostInk }, t('stem.a11yauditor.digital_accessibility_lab', '\u267F Digital Accessibility Lab')),
+                h('span', { className: 'text-[0.6875rem] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-900 border border-teal-300' }, t('stem.a11yauditor.wcag_badge', 'WCAG 2.2 AA · Tech'))
+              ),
+              h('p', { className: 'text-xs text-slate-700 mt-0.5 mb-0' + onHostInk }, t('stem.a11yauditor.be_an_accessibility_change_agent_audit', 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate'))
+            ),
+            // Live lab telemetry pills
+            h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+              h('span', { className: 'bg-white text-teal-900 border border-teal-300 px-2.5 py-1 rounded-full text-xs font-bold' }, '🔍 ' + auditsCompleted + ' ' + t('stem.a11yauditor.metric_audits', 'audits')),
+              h('span', { className: 'bg-white text-indigo-900 border border-indigo-300 px-2.5 py-1 rounded-full text-xs font-bold' }, '📖 ' + Math.min(10, criteriaExplored) + '/10 ' + t('stem.a11yauditor.metric_wcag', 'WCAG')),
+              h('span', { className: 'bg-white text-amber-900 border border-amber-300 px-2.5 py-1 rounded-full text-xs font-bold' }, '🏅 ' + badges.length + '/' + AUDIT_BADGES.length)
+            )
+          )
         ),
 
         // Student-friendly intro (collapsible)
@@ -1143,7 +1211,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
             // HTML input mode
             auditInputMode === 'html' && h('div', null,
-              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, t('stem.a11yauditor.paste_html_code', 'Paste HTML Code')),
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1.5' },
+                h('label', { className: 'text-xs font-bold text-slate-700' }, t('stem.a11yauditor.paste_html_code', 'Paste HTML Code')),
+                h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                  h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, t('stem.a11yauditor.sample_snippets', 'Try sample:')),
+                  [
+                    { label: '⚠️ Missing Alt & Link', code: '<html lang="en"><head><title>Club</title></head><body><h1>Robotics Club</h1><img src="bot.jpg"><p style="color:#94a3b8;background:#ffffff">Meetings on Tuesday</p><a href="/join">Click here</a></body></html>' },
+                    { label: '📝 Unlabeled Form', code: '<html lang="en"><head><title>Sign Up</title></head><body><h1>Sign Up</h1><input type="text" placeholder="Your name"><div onclick="submit()">Send</div></body></html>' },
+                    { label: '✅ Accessible Card', code: '<html lang="en"><head><title>Library Hours</title></head><body><main><h1>Public Library</h1><img src="books.jpg" alt="Sunlit reading room with oak tables"><p style="color:#0f172a;background:#ffffff">Open 9 AM to 6 PM daily.</p><a href="/hours">View full library schedule</a></main></body></html>' }
+                  ].map(function(smp) {
+                    return h('button', { key: smp.label, type: 'button', onClick: function() { setAuditHtml(smp.code); },
+                      className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-indigo-50 text-indigo-800 border border-indigo-300 hover:bg-indigo-100 transition-colors cursor-pointer'
+                    }, smp.label);
+                  })
+                )
+              ),
               h('textarea', {
                 value: auditHtml,
                 onChange: function(e) { setAuditHtml(e.target.value); },
@@ -1225,7 +1307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             socialRewrite && h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2' },
               h('h4', { className: 'text-xs font-bold text-emerald-700' }, t('stem.a11yauditor.accessible_version', '\u2728 Accessible Version')),
               h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, socialRewrite),
-              h('button', { 'aria-label': t('stem.a11yauditor.copy_rewrite', 'Copy rewrite'), onClick: function() { (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(socialRewrite); if (addToast) addToast('Copied!', 'success'); },
+              h('button', { 'aria-label': t('stem.a11yauditor.copy_rewrite', 'Copy rewrite'), onClick: function() { Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(socialRewrite)).then(function() { if (addToast) addToast('Copied!', 'success'); }, function() { if (addToast) addToast('Copy failed', 'error'); }); },
                 className: 'px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-[0.6875rem] font-bold hover:bg-emerald-200'
               }, t('stem.a11yauditor.copy_to_clipboard', '\uD83D\uDCCB Copy to Clipboard'))
             ),
@@ -1289,11 +1371,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
             // Score header. White text needs the 700-level colours: white on green-500 / amber-500 measured about 2.2:1.
             h('div', { className: 'bg-gradient-to-r ' + (auditResult.score >= 80 ? 'from-green-700 to-emerald-800' : auditResult.score >= 60 ? 'from-amber-700 to-orange-800' : auditResult.score >= 40 ? 'from-orange-700 to-red-700' : 'from-red-700 to-rose-800') + ' text-white rounded-2xl p-6 text-center' },
-              h('div', { className: 'text-6xl font-black' }, auditResult.score, h('span', { className: 'text-2xl opacity-80' }, '/100')),
-              h('div', { className: 'text-3xl font-black mt-1' }, 'Grade: ', auditResult.grade),
-              h('div', { className: 'text-[0.8125rem] font-semibold mt-2', style: { maxWidth: '44ch' } },
-                t('stem.a11yauditor.this_score_is_generated_by_an_ai_model', 'This score is generated by an AI model reasoning over what it can see — not an automated WCAG test. Verify real contrast ratios, keyboard order, and focus with tools like axe, WAVE, or Lighthouse.')),
-              h('p', { className: 'text-sm opacity-90 mt-2 max-w-md mx-auto' }, auditResult.summary)
+              h('div', { className: 'flex flex-col items-center justify-center' },
+                h('svg', { viewBox: '0 0 120 120', width: 108, height: 108, className: 'mb-2', 'aria-hidden': 'true', focusable: 'false' },
+                  h('circle', { cx: 60, cy: 60, r: 50, fill: 'rgba(0,0,0,0.18)', stroke: 'rgba(255,255,255,0.25)', strokeWidth: 9 }),
+                  h('circle', { cx: 60, cy: 60, r: 50, fill: 'none', stroke: '#ffffff', strokeWidth: 9, strokeLinecap: 'round',
+                    strokeDasharray: (Math.max(0, Math.min(100, auditResult.score)) * 3.1416).toFixed(1) + ' 314.2',
+                    transform: 'rotate(-90 60 60)' }),
+                  h('text', { x: 60, y: 64, textAnchor: 'middle', fill: '#ffffff', fontSize: 28, fontWeight: 900 }, auditResult.score),
+                  h('text', { x: 60, y: 80, textAnchor: 'middle', fill: 'rgba(255,255,255,0.88)', fontSize: 10, fontWeight: 700 }, '/ 100')
+                ),
+                h('div', { className: 'text-3xl font-black mt-1' }, 'Grade: ', auditResult.grade),
+                h('div', { className: 'text-[0.8125rem] font-semibold mt-2 mx-auto', style: { maxWidth: '44ch' } },
+                  t('stem.a11yauditor.this_score_is_generated_by_an_ai_model', 'This score is generated by an AI model reasoning over what it can see — not an automated WCAG test. Verify real contrast ratios, keyboard order, and focus with tools like axe, WAVE, or Lighthouse.')),
+                h('p', { className: 'text-sm opacity-90 mt-2 max-w-md mx-auto' }, auditResult.summary)
+              )
             ),
 
             // Score breakdown (the measured panel now renders once, above the AI results)
@@ -1389,6 +1480,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         tab === 'learn' && h('div', { className: 'space-y-3' },
           h('p', { className: 'text-sm text-slate-600 text-center mb-2' + onHostInk }, t('stem.a11yauditor.learn_intro_v2', 'WCAG 2.2 (the current W3C standard, October 2023) has 55 success criteria at Levels A and AA. Below are 10 of the most common, plus the six that are new in 2.2. Select any criterion to learn more.')),
 
+          // ── POUR 4-Pillar Visual Diagram SVG ──
+          h('div', { className: 'al-panel rounded-2xl border-2 border-indigo-200 bg-white p-4' },
+            h('div', { className: 'text-xs font-black text-indigo-900 uppercase tracking-wider mb-2 text-center' }, t('stem.a11yauditor.pour_diagram_title', 'The 4 WCAG POUR Principles')),
+            h('svg', { viewBox: '0 0 440 78', className: 'w-full h-auto block max-w-2xl mx-auto', role: 'img', 'aria-label': t('stem.a11yauditor.pour_diagram_aria', 'The four WCAG principles: Perceivable, Operable, Understandable, Robust') },
+              [
+                { x: 6, c: '#0f766e', bg: '#f0fdfa', ltr: 'P', name: 'Perceivable', sub: 'Alt text · Contrast' },
+                { x: 116, c: '#1d4ed8', bg: '#eff6ff', ltr: 'O', name: 'Operable', sub: 'Keyboard · Focus' },
+                { x: 226, c: '#7c3aed', bg: '#f5f3ff', ltr: 'U', name: 'Understandable', sub: 'Labels · Language' },
+                { x: 336, c: '#b45309', bg: '#fffbeb', ltr: 'R', name: 'Robust', sub: 'Name · Role · Value' }
+              ].map(function(pl) {
+                return h('g', { key: pl.ltr },
+                  h('rect', { x: pl.x, y: 4, width: 98, height: 70, rx: 10, fill: pl.bg, stroke: pl.c, strokeWidth: 1.5 }),
+                  h('circle', { cx: pl.x + 49, cy: 22, r: 11, fill: pl.c }),
+                  h('text', { x: pl.x + 49, y: 26, textAnchor: 'middle', fill: '#ffffff', fontSize: 12, fontWeight: 900 }, pl.ltr),
+                  h('text', { x: pl.x + 49, y: 48, textAnchor: 'middle', fill: '#0f172a', fontSize: 10, fontWeight: 800 }, pl.name),
+                  h('text', { x: pl.x + 49, y: 63, textAnchor: 'middle', fill: '#334155', fontSize: 8.5, fontWeight: 600 }, pl.sub)
+                );
+              })
+            )
+          ),
+
           // ── Live contrast checker (real WCAG math, client-side) ──
           // The tool's #1 taught concept (1.4.3) was prose-only, and the AI
           // "score" can't truly measure contrast. This computes a REAL ratio
@@ -1407,22 +1519,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             }
             var l1 = _lum(_hexToRgb(ccFg)), l2 = _lum(_hexToRgb(ccBg));
             var ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+            // Log-scaled x position across 1:1..21:1 so 3:1, 4.5:1, and 7:1 are evenly legible
+            var xOf = function(r) { return 18 + (Math.log(Math.max(1, Math.min(21, r))) / Math.log(21)) * 324; };
+            var curX = xOf(ratio);
             function chip(label, pass) {
-              return h('div', { className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold ' + (pass ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') }, (pass ? '✅ ' : '❌ ') + label);
+              return h('div', { className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold border ' + (pass ? 'bg-green-100 text-green-800 border-green-300' : 'bg-red-100 text-red-800 border-red-300') }, (pass ? '✅ ' : '❌ ') + label);
             }
-            return h('div', { className: 'rounded-2xl border-2 border-teal-300 bg-white p-4 mb-3' },
-              h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.a11yauditor.live_contrast_checker', '🎨 Live contrast checker')),
-              h('p', { className: 'text-[0.6875rem] text-slate-600 mb-3' }, t('stem.a11yauditor.a_real_wcag_ratio_computed_in_your_bro', 'A REAL WCAG ratio computed in your browser from relative luminance — not an AI guess. Pick a text and a background color.')),
+            return h('div', { className: 'al-panel rounded-2xl border-2 border-teal-300 bg-white p-4 mb-3 space-y-3' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', null,
+                  h('h4', { className: 'text-sm font-black text-slate-800 mb-0.5' }, t('stem.a11yauditor.live_contrast_checker', '🎨 Live contrast checker')),
+                  h('p', { className: 'text-[0.6875rem] text-slate-600 m-0' }, t('stem.a11yauditor.a_real_wcag_ratio_computed_in_your_bro', 'A REAL WCAG ratio computed in your browser from relative luminance — not an AI guess. Pick a text and a background color.'))
+                ),
+                h('div', { className: 'flex flex-wrap gap-1.5' },
+                  [
+                    { l: 'AAA 15.8:1', fg: '#0f172a', bg: '#f8fafc' },
+                    { l: 'AA 4.6:1', fg: '#0f766e', bg: '#f0fdfa' },
+                    { l: 'Fail 2.3:1', fg: '#94a3b8', bg: '#ffffff' }
+                  ].map(function(pr) {
+                    return h('button', { key: pr.l, type: 'button', onClick: function() { updMulti({ ccFg: pr.fg, ccBg: pr.bg }); },
+                      className: 'px-2 py-1 rounded-full text-[0.6875rem] font-bold bg-slate-100 text-slate-800 border border-slate-300 hover:bg-teal-50 cursor-pointer'
+                    }, pr.l);
+                  })
+                )
+              ),
               h('div', { className: 'flex flex-wrap items-center gap-4' },
                 h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, t('stem.a11yauditor.text', 'Text'),
                   h('input', { type: 'color', value: ccFg, 'aria-label': t('stem.a11yauditor.text_color', 'Text color'), onChange: function(e) { upd('ccFg', e.target.value); }, className: 'w-9 h-9 rounded cursor-pointer border border-slate-300' })),
                 h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, t('stem.a11yauditor.background', 'Background'),
                   h('input', { type: 'color', value: ccBg, 'aria-label': t('stem.a11yauditor.background_color', 'Background color'), onChange: function(e) { upd('ccBg', e.target.value); }, className: 'w-9 h-9 rounded cursor-pointer border border-slate-300' })),
-                h('div', { className: 'flex-1 min-w-[140px] rounded-lg border border-slate-300 px-3 py-2 text-center', style: { background: ccBg, color: ccFg } },
+                h('div', { className: 'flex-1 min-w-[140px] rounded-xl border-2 border-slate-300 px-3 py-2 text-center', style: { background: ccBg, color: ccFg } },
                   h('div', { className: 'text-sm' }, t('stem.a11yauditor.sample_text', 'Sample text')),
                   h('div', { className: 'text-2xl font-bold' }, t('stem.a11yauditor.large_heading', 'Large heading')))
               ),
-              h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
+              // Real-time WCAG Contrast Ratio Scale Meter SVG (1:1 to 21:1)
+              h('svg', { viewBox: '0 0 360 46', className: 'w-full h-auto block', role: 'img', 'aria-label': 'Contrast ratio gauge showing ' + ratio.toFixed(2) + ' to 1 on a 1 to 21 scale' },
+                h('rect', { x: 18, y: 12, width: xOf(3) - 18, height: 10, rx: 3, fill: '#fca5a5' }),
+                h('rect', { x: xOf(3), y: 12, width: xOf(4.5) - xOf(3), height: 10, fill: '#fcd34d' }),
+                h('rect', { x: xOf(4.5), y: 12, width: xOf(7) - xOf(4.5), height: 10, fill: '#86efac' }),
+                h('rect', { x: xOf(7), y: 12, width: 342 - xOf(7), height: 10, rx: 3, fill: '#34d399' }),
+                // Threshold ticks
+                [
+                  { r: 1, lbl: '1:1' }, { r: 3, lbl: '3:1' }, { r: 4.5, lbl: '4.5 AA' }, { r: 7, lbl: '7:1 AAA' }, { r: 21, lbl: '21:1' }
+                ].map(function(tk) {
+                  var tx = xOf(tk.r);
+                  return h('g', { key: tk.lbl },
+                    h('line', { x1: tx, y1: 10, x2: tx, y2: 26, stroke: '#334155', strokeWidth: 1 }),
+                    h('text', { x: tx, y: 39, textAnchor: tk.r === 1 ? 'start' : tk.r === 21 ? 'end' : 'middle', fontSize: 9, fontWeight: 700, fill: '#334155' }, tk.lbl)
+                  );
+                }),
+                // Live pointer triangle
+                h('polygon', { points: curX.toFixed(1) + ',11 ' + (curX - 6).toFixed(1) + ',2 ' + (curX + 6).toFixed(1) + ',2', fill: '#0f172a' })
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
                 h('div', { className: 'text-xl font-black text-slate-800' }, ratio.toFixed(2) + ':1'),
                 h('span', { className: 'text-[0.6875rem] text-slate-600 mr-1' }, t('stem.a11yauditor.contrast_ratio', 'contrast ratio')),
                 chip('AA normal (4.5)', ratio >= 4.5),
@@ -1430,7 +1579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 chip('AA large (3)', ratio >= 3),
                 chip('AAA large (4.5)', ratio >= 4.5)
               ),
-              h('p', { className: 'text-[0.625rem] text-slate-600 mt-2' }, t('stem.a11yauditor.large_18pt_or_14pt_bold_this_is_the_ex', 'Large = 18pt+ (or 14pt+ bold). This is the exact math axe / WAVE / Lighthouse use.'))
+              h('p', { className: 'text-[0.625rem] text-slate-600 m-0' }, t('stem.a11yauditor.large_18pt_or_14pt_bold_this_is_the_ex', 'Large = 18pt+ (or 14pt+ bold). This is the exact math axe / WAVE / Lighthouse use.'))
             );
           })(),
 
@@ -1680,7 +1829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, complaintResult)
               ),
               h('div', { className: 'flex gap-2' },
-                h('button', { onClick: function() { (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, t('stem.a11yauditor.copy_to_clipboard_2', '\uD83D\uDCCB Copy to Clipboard')),
+                h('button', { onClick: function() { Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(complaintResult)).then(function() { if (addToast) addToast('Copied to clipboard!', 'success'); }, function() { if (addToast) addToast('Copy failed', 'error'); }); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, t('stem.a11yauditor.copy_to_clipboard_2', '\uD83D\uDCCB Copy to Clipboard')),
                 h('button', { 'aria-label': t('stem.a11yauditor.reset_complaint', 'Reset complaint'), onClick: function() { setComplaintResult(null); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200' }, t('stem.a11yauditor.new_letter', '\uD83D\uDD04 New Letter'))
               )
             )
@@ -1728,14 +1877,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
         // ═══ BADGES TAB ═══
         tab === 'badges' && h('div', { className: 'space-y-3' },
-          h('h3', { className: 'text-sm font-bold text-slate-700 text-center' + onHostInk }, t('stem.a11yauditor.badges_2', 'Badges ('), badges.length, '/', AUDIT_BADGES.length, ')'),
+          h('div', { className: 'al-panel rounded-2xl border-2 border-amber-200 bg-white p-4' },
+            h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
+              h('h3', { className: 'text-sm font-black text-slate-800 m-0' }, t('stem.a11yauditor.badges_2', 'Badges ('), badges.length, '/', AUDIT_BADGES.length, ')'),
+              h('span', { className: 'text-xs font-extrabold text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full' }, Math.round((badges.length / AUDIT_BADGES.length) * 100) + '%')
+            ),
+            h('div', { className: 'h-2.5 rounded-full bg-amber-100 overflow-hidden' },
+              h('div', { className: 'h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-600 transition-all', style: { width: Math.round((badges.length / AUDIT_BADGES.length) * 100) + '%' } })
+            )
+          ),
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
             AUDIT_BADGES.map(function(badge) {
               var earned = badges.indexOf(badge.id) >= 0;
-              return h('div', { key: badge.id, className: 'text-center p-3 rounded-xl border-2 transition-all ' + (earned ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-50 border-dashed border-slate-400') },
+              return h('div', { key: badge.id, className: 'al-card text-center p-3.5 rounded-xl border-2 transition-all ' + (earned ? 'bg-amber-50 border-amber-400 shadow-sm' : 'bg-slate-50 border-dashed border-slate-400') },
                 h('div', { className: 'text-2xl' + (earned ? '' : ' grayscale') }, badge.icon),
-                h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mt-1' }, badge.name),
-                h('p', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' }, __alloT(badge.descKey || ('stem.a11yauditor.' + (badge.id) + '_desc'), badge.desc))
+                h('div', { className: 'text-xs font-bold text-slate-800 mt-1' }, badge.name),
+                h('p', { className: 'text-[0.6875rem] text-slate-700 mt-0.5' }, __alloT(badge.descKey || ('stem.a11yauditor.' + (badge.id) + '_desc'), badge.desc))
               );
             })
           )

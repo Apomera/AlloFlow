@@ -46,8 +46,15 @@ export function assessReview(room, node, raw) {
   const matches = value !== null && value === solutionValue(room, node);
   return { nodeId: node.id, status: matches && raw.confidence === 'clear' ? 'matched' : 'needs-review', matches, confidence: raw.confidence, reason: raw.reason.trim(), suggestion: raw.suggestion.trim() };
 }
+const _cerReviewAiUnavailable = (fn) => {
+  if (typeof fn !== 'function' || fn._alloQrBlocked) return true;
+  const win = typeof globalThis !== 'undefined' ? globalThis.window : undefined;
+  if (win && (win.__alloAiSecretsLocked === true || win.__alloStudentAiDisabled === true)) return true;
+  try { if (win && typeof win.__alloAiUsable === 'function' && !win.__alloAiUsable('text', fn)) return true; } catch (_) { return true; }
+  return false;
+};
 export async function reviewRoom(callAI, rawRoom, options = {}, onProgress = () => {}) {
-  if (typeof callAI !== 'function') throw Error('The AI provider is not available.');
+  if (_cerReviewAiUnavailable(callAI)) throw Error('The AI provider is not available.');
   const room = prepareRoom(rawRoom), nodes = reviewNodes(room), checks = [];
   const active = () => !options.shouldContinue || options.shouldContinue();
   for (const [index, node] of nodes.entries()) {

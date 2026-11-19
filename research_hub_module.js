@@ -781,9 +781,12 @@ var require_tmp_research_hub_entry = __commonJS({
       function isPlainRecord(value) {
         return !!value && typeof value === "object" && !Array.isArray(value);
       }
+      function safeJsonReviver(key, val) {
+        return key === "__proto__" || key === "constructor" || key === "prototype" ? void 0 : val;
+      }
       function safeJsonClone(value) {
         try {
-          return JSON.parse(JSON.stringify(value));
+          return JSON.parse(JSON.stringify(value), safeJsonReviver);
         } catch (_) {
           return null;
         }
@@ -1994,7 +1997,7 @@ var require_tmp_research_hub_entry = __commonJS({
       function parsePortfolioImport(input) {
         var payload = input;
         try {
-          if (typeof payload === "string") payload = JSON.parse(payload);
+          if (typeof payload === "string") payload = JSON.parse(payload, safeJsonReviver);
         } catch (_) {
           return { ok: false, errors: ["The selected file is not valid JSON."], journal: null };
         }
@@ -2009,7 +2012,7 @@ var require_tmp_research_hub_entry = __commonJS({
         else if (payload.original) record = payload.original;
         else if (payload.raw && typeof payload.raw === "string") {
           try {
-            record = JSON.parse(payload.raw);
+            record = JSON.parse(payload.raw, safeJsonReviver);
           } catch (_) {
             return { ok: false, errors: ["Recovery data contains invalid JSON."], journal: null, format: "recovery" };
           }
@@ -2927,6 +2930,7 @@ var require_tmp_research_hub_entry = __commonJS({
             },
             rows: 2,
             maxLength: 400,
+            "aria-label": t("research_hub.exemplar_pair_reasoning_label") || "Explain which example is stronger and why",
             placeholder: t("research_hub.exemplar_pair_reasoning_placeholder") || "In 1\u20132 sentences: which is stronger, and what makes it stronger?",
             style: {
               width: "100%",
@@ -3391,8 +3395,8 @@ var require_tmp_research_hub_entry = __commonJS({
             if (typeof window !== "undefined" && window.__alloStudentAiDisabled === true) return false;
             return true;
           };
-          var rawAiText = ai && typeof ai.generateText === "function" ? ai.generateText.bind(ai) : null;
-          var aiText = _isUsableAiFn("text", rawAiText) ? rawAiText : null;
+          var rawAiTextFn = ai && typeof ai.generateText === "function" ? ai.generateText : null;
+          var aiText = _isUsableAiFn("text", rawAiTextFn) ? rawAiTextFn.bind(ai) : null;
           var usableLegacy = !aiText && _isUsableAiFn("text", onCallGemini);
           if (!aiText && !usableLegacy) {
             return { ok: false, blocked: true, blockedReason: "no_compatible_backend", traceId, latencyMs: 0 };
@@ -4419,9 +4423,9 @@ var require_tmp_research_hub_entry = __commonJS({
               gap: "12px",
               flexWrap: "wrap",
               borderRadius: "20px 20px 0 0"
-            } }, /* @__PURE__ */ React.createElement("style", null, '.theme-contrast [data-help-key="research_hub"] [role="dialog"], .theme-contrast [data-help-key="research_hub"] [role="note"], .theme-contrast [data-help-key="research_hub"] [data-research-method-pack], .theme-contrast [data-help-key="research_hub"] [data-research-lane-match], .theme-contrast [data-help-key="research_hub"] details { background: #000000 !important; background-image: none !important; color: #ffff00 !important; border-color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] [role="dialog"] > div:first-of-type { background: #000000 !important; background-image: none !important; border-bottom: 2px solid #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] :is(span, p, div, h2, h3, strong):not(button):not(button *) { color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) { background: #000000 !important; background-image: none !important; color: #00ff00 !important; border-color: #00ff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) * { color: #00ff00 !important; }'), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-hub-dialog-title", style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Research & Inquiry Hub"), /* @__PURE__ */ React.createElement("p", { id: "research-hub-dialog-description", style: { margin: "2px 0 0", fontSize: "11px", color: "#f1f5f9", opacity: 1 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry Portfolio for ") + studentCodename : t("research_hub.modal_subtitle") || "Investigate, interpret, design, source, and revise in one connected Inquiry Portfolio."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), isTeacherMode && typeof props.onOpenAlloSheet === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
+            } }, /* @__PURE__ */ React.createElement("style", null, '.theme-contrast [data-help-key="research_hub"] [role="dialog"], .theme-contrast [data-help-key="research_hub"] [role="note"], .theme-contrast [data-help-key="research_hub"] [data-research-method-pack], .theme-contrast [data-help-key="research_hub"] [data-research-lane-match], .theme-contrast [data-help-key="research_hub"] [data-research-question-coach], .theme-contrast [data-help-key="research_hub"] [data-research-question-coach] div, .theme-contrast [data-help-key="research_hub"] :is(input, textarea, select, label), .theme-contrast [data-help-key="research_hub"] details { background: #000000 !important; background-image: none !important; color: #ffff00 !important; border-color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] [data-research-method-pack] * { background: transparent !important; background-image: none !important; } .theme-contrast [data-help-key="research_hub"] [role="dialog"] > div:first-of-type { background: #000000 !important; background-image: none !important; border-bottom: 2px solid #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] :is(span, p, div, h2, h3, strong):not(button):not(button *) { color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) { background: #000000 !important; background-image: none !important; color: #00ff00 !important; border-color: #00ff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) * { color: #00ff00 !important; }'), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-hub-dialog-title", style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Research & Inquiry Hub"), /* @__PURE__ */ React.createElement("p", { id: "research-hub-dialog-description", style: { margin: "2px 0 0", fontSize: "11px", color: "#f1f5f9", opacity: 1 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry Portfolio for ") + studentCodename : t("research_hub.modal_subtitle") || "Investigate, interpret, design, source, and revise in one connected Inquiry Portfolio."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), isTeacherMode && typeof props.onOpenAlloSheet === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
               setResearchAlloOpen(true);
-            }, "aria-label": "Review Research Hub summaries in AlloSheet", style: { minHeight: "44px", background: "rgba(15,23,42,0.5)", color: "#fff", border: "1px solid rgba(255,255,255,0.45)", borderRadius: "999px", padding: "6px 12px", cursor: "pointer", fontSize: "11px", fontWeight: 800 } }, "Review in AlloSheet"), educatorView && isTeacherMode && /* @__PURE__ */ React.createElement(
+            }, "aria-label": "Review in AlloSheet \u2014 Research Hub summaries", style: { minHeight: "44px", background: "rgba(15,23,42,0.5)", color: "#fff", border: "1px solid rgba(255,255,255,0.45)", borderRadius: "999px", padding: "6px 12px", cursor: "pointer", fontSize: "11px", fontWeight: 800 } }, "Review in AlloSheet"), educatorView && isTeacherMode && /* @__PURE__ */ React.createElement(
               "button",
               {
                 type: "button",
@@ -4477,7 +4481,7 @@ var require_tmp_research_hub_entry = __commonJS({
               flex: 1
             } }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 } }, educatorViewOn ? t("research_hub.educator_view_on") || "Educator view" : activeLane ? activeLane.label : t("research_hub.method_selector_title") || "Choose an inquiry approach"), showExitHint && /* @__PURE__ */ React.createElement("div", { "data-research-exit-hint": "true", role: "status", "aria-live": "polite", style: { display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "12px", border: "1px solid #bfdbfe", background: "#eff6ff", color: "#1e3a8a" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F4BE}"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, fontSize: "11px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("strong", null, "Your Research Hub stayed open."), " Clicking outside no longer closes it, so downloads, resource packs, and saved files are less likely to interrupt your work. Use Close or press Escape when you are finished."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
               setShowExitHint(false);
-            }, "aria-label": "Dismiss saved-work reminder", style: { border: "1px solid #bfdbfe", borderRadius: "8px", background: "#fff", color: "#1e40af", padding: "5px 8px", fontSize: "10px", fontWeight: 800, cursor: "pointer" } }, "Got it")), journal.loadWarning && /* @__PURE__ */ React.createElement("div", { role: "alert", "data-research-recovery-warning": "true", style: { padding: "12px 14px", borderRadius: "12px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#78350f" } }, /* @__PURE__ */ React.createElement("strong", null, "Read-only recovery mode"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 8px", fontSize: "11px", lineHeight: 1.5 } }, journal.loadWarning), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: downloadRecoveryCopy, style: { minHeight: "44px", padding: "7px 11px", borderRadius: "9px", border: "1px solid #d97706", background: "#fff", color: "#92400e", fontWeight: 800, cursor: "pointer" } }, "Download untouched recovery copy")), researchAlloOpen && /* @__PURE__ */ React.createElement(
+            }, "aria-label": "Got it \u2014 dismiss saved-work reminder", style: { border: "1px solid #bfdbfe", borderRadius: "8px", background: "#fff", color: "#1e40af", padding: "5px 8px", fontSize: "10px", fontWeight: 800, cursor: "pointer" } }, "Got it")), journal.loadWarning && /* @__PURE__ */ React.createElement("div", { role: "alert", "data-research-recovery-warning": "true", style: { padding: "12px 14px", borderRadius: "12px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#78350f" } }, /* @__PURE__ */ React.createElement("strong", null, "Read-only recovery mode"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 8px", fontSize: "11px", lineHeight: 1.5 } }, journal.loadWarning), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: downloadRecoveryCopy, style: { minHeight: "44px", padding: "7px 11px", borderRadius: "9px", border: "1px solid #d97706", background: "#fff", color: "#92400e", fontWeight: 800, cursor: "pointer" } }, "Download untouched recovery copy")), researchAlloOpen && /* @__PURE__ */ React.createElement(
               ResearchAlloSheetReviewDialog,
               {
                 isOpen: researchAlloOpen,
@@ -4636,7 +4640,6 @@ var require_tmp_research_hub_entry = __commonJS({
                     onClick: function() {
                       selectMethodPack(pack.id);
                     },
-                    "aria-label": "Open " + pack.label + " inquiry approach",
                     style: {
                       padding: "16px",
                       borderRadius: "14px",
@@ -4658,10 +4661,10 @@ var require_tmp_research_hub_entry = __commonJS({
                       e.currentTarget.style.boxShadow = "none";
                     }
                   },
-                  /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "30px" } }, pack.icon), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, pack.label), researchMethodMatch && researchMethodMatch.packId === pack.id && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#4f46e5", color: "#fff", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Approach match"), selectedBefore && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#dcfce7", color: "#166534", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Current approach")), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "10px", fontWeight: 800, color: pack.color } }, pack.family))),
-                  /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, pack.blurb),
-                  /* @__PURE__ */ React.createElement("div", { style: { padding: "8px 9px", borderRadius: "9px", background: "rgba(255,255,255,0.78)", border: "1px solid " + pack.border } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.45px", color: pack.color } }, "What rigor looks like"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2px", fontSize: "10px", lineHeight: 1.45, color: "#475569" } }, pack.rigor)),
-                  /* @__PURE__ */ React.createElement("div", { style: { marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 800, color: "#64748b" } }, pack.bestFor), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 900, color: pack.color } }, "Open approach ", "\u2192")),
+                  /* @__PURE__ */ React.createElement("span", { style: { display: "flex", alignItems: "center", gap: "10px", width: "100%" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "30px" } }, pack.icon), /* @__PURE__ */ React.createElement("span", { style: { display: "block" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { margin: 0, fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, pack.label), researchMethodMatch && researchMethodMatch.packId === pack.id && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#4f46e5", color: "#fff", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Approach match"), selectedBefore && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#dcfce7", color: "#166534", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Current approach")), /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: "2px 0 0", fontSize: "10px", fontWeight: 800, color: pack.color } }, pack.family))),
+                  /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, pack.blurb),
+                  /* @__PURE__ */ React.createElement("span", { style: { display: "block", width: "100%", padding: "8px 9px", borderRadius: "9px", background: "rgba(255,255,255,0.78)", border: "1px solid " + pack.border } }, /* @__PURE__ */ React.createElement("span", { style: { display: "block", fontSize: "9px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.45px", color: pack.color } }, "What rigor looks like"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", marginTop: "2px", fontSize: "10px", lineHeight: 1.45, color: "#475569" } }, pack.rigor)),
+                  /* @__PURE__ */ React.createElement("span", { style: { marginTop: "auto", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 800, color: "#475569" } }, pack.bestFor), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 900, color: pack.color } }, "Open approach ", "\u2192")),
                   lane && lane._placeholder && /* @__PURE__ */ React.createElement("span", { style: {
                     alignSelf: "flex-start",
                     padding: "3px 8px",

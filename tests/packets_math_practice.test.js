@@ -351,7 +351,11 @@ describe('the file', () => {
       // Re-pinned 2026-11-17 (later that day) from 153000: the practice end screen for a young student and the recall timing (about +1.7 KB; about 150.7 KB).
       // Re-pinned 2026-11-18 from 157000: every file's player can show the questions in the file's own order (the Word
       // Sounds maker's "Mix the activities"; tests/packets_question_order_2026_11_18.test.js; +1.0 KB, about 157.0 KB now).
-      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(158000);
+      // Re-pinned 2026-11-19 from 158000: Wave 1 player shell fixes (ctx.keys in practice, Read-Along toolPref/goPrev/advance; +0.4 KB).
+      // Re-pinned 2026-11-19 (Wave 2A) from 160000: unified Voice speed + noVoice notice in Reading tools + shared takeHomeKeypad (~160.1 KB).
+      // Re-pinned 2026-11-19 (Wave 5A) from 161500: HC .progress track, forced-colors badges/star, dark --hover, picture matte, touch-action:manipulation (~161.7 KB).
+      // Re-pinned 2026-11-19 (Wave 8A) from 162500: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier touch edge clamp (~163.4-164.1 KB).
+      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(164500);
       expect(lessonOf(html)).toMatchObject({ mode: 'practice', audio: {}, images: {}, submit: null });
       // Its answers are the arithmetic of its facts.
       for (const it of lessonOf(html).blocks[0].items) {
@@ -400,7 +404,8 @@ describe('playing a cover, copy, compare file', () => {
     t.press('5');
     expect(t.q('[data-pad-input]').value).toBe('');
     t.cover();
-    expect([t.phase(), t.slot(), t.say(), t.q('[data-fact]').getAttribute('aria-hidden')]).toEqual(['pad', '?', CCC.labels.math_ccc_type, 'true']);
+    // 2026-11-19: active visible prompt stays accessible to screen readers (no aria-hidden="true" during type phase).
+    expect([t.phase(), t.slot(), t.say(), t.q('[data-fact]').getAttribute('aria-hidden')]).toEqual(['pad', '?', CCC.labels.math_ccc_type, null]);
     expect(t.d.activeElement).toBe(t.q('[data-pad-input]'));
     expect(t.q('[data-pad-input]').getAttribute('aria-label')).toBe('7 ' + X + ' 8. Type the answer.');
     expect(t.q('[data-key="next"]').getAttribute('aria-disabled')).toBe('true');
@@ -676,7 +681,8 @@ describe('the page as files', () => {
     expect(doc.querySelector('meta[name="referrer"]').getAttribute('content')).toBe('no-referrer');
     expect([...doc.querySelectorAll('script')].map((s) => [s.getAttribute('src'), s.hasAttribute('defer'), s.textContent.trim()])).toEqual(SCRIPTS.map((src) => [src, true, '']));
     // 2026-11-14 (T1/makers2): packets-make.css added alongside packets.css for reopen, code-name and batch .zip controls.
-    expect([...doc.querySelectorAll('link')].map((l) => [l.getAttribute('rel'), l.getAttribute('href')])).toEqual([['icon', 'packets-mark.svg'], ['stylesheet', 'packets.css'], ['stylesheet', 'packets-make.css']]);
+    // 2026-11-19 (Wave 2A): packets-math-practice-print.css added for Step 3 in-page "Print on paper" Cover-Copy-Compare sheet.
+    expect([...doc.querySelectorAll('link')].map((l) => [l.getAttribute('rel'), l.getAttribute('href')])).toEqual([['icon', 'packets-mark.svg'], ['stylesheet', 'packets.css'], ['stylesheet', 'packets-make.css'], ['stylesheet', 'packets-math-practice-print.css']]);
     expect(doc.querySelectorAll('style, form, iframe, object, embed, img, audio, video, base')).toHaveLength(0);
     for (const node of doc.querySelectorAll('*')) for (const attribute of node.attributes) expect(/^on|^style$/i.test(attribute.name), node.tagName + ' ' + attribute.name).toBe(false);
     // 2026-11-14 (T1/makers2): #after-save prints the plain site text apomera.github.io/AlloFlow/packets-open.html (no scheme/fetch).
@@ -690,10 +696,10 @@ describe('the page as files', () => {
   it('"See the details" lists exactly what the page loads, and says it in plain American words', () => {
     const doc = parse(PAGE);
     const loads = 1 + doc.querySelectorAll('link').length + doc.querySelectorAll('script[src]').length;
-    // 2026-11-14 (T1/makers2): 12 files (page + icon + 2 stylesheets + 8 scripts), and #order-line names subtraction and division too.
-    expect(loads).toBe(12);
+    // 2026-11-14 (T1/makers2): 12 files; 2026-11-19 (Wave 2A): 13 files (page + icon + 3 stylesheets + 8 scripts).
+    expect(loads).toBe(13);
     const items = [...doc.querySelectorAll('details.proof .proof-body > ul:first-child > li')].map((li) => squash(li.textContent));
-    expect(items[3]).toBe('This page loads twelve files, all from this site: the page itself, two stylesheets, eight scripts and the icon in the browser tab. They are the same files whatever you choose, and each is named near the top of the page\'s source. It loads no fonts, no trackers and nothing from another site. Try it opens this site\'s preview page in a new tab.');
+    expect(items[3]).toBe('This page loads thirteen files, all from this site: the page itself, three stylesheets, eight scripts and the icon in the browser tab. They are the same files whatever you choose, and each is named near the top of the page\'s source. It loads no fonts, no trackers and nothing from another site. Try it opens this site\'s preview page in a new tab.');
     expect(squash(doc.querySelector('.proof-line').textContent)).toBe('This page runs without AI. No account. Nothing you choose leaves your device.');
     expect(squash(doc.querySelector('.foot').textContent)).toBe(squash(parse('packets-check.html').querySelector('.foot').textContent));
     expect(squash(doc.getElementById('when-line').textContent)).toBe('Accuracy first: use cover, copy, compare until the facts are right. Practice for speed comes later.');
@@ -882,6 +888,141 @@ describe('the page, run in jsdom with the scripts it names', () => {
 
     // Division set also builds cleanly.
     expect(build({ mode: 'ccc', factSet: divSet.id }).lesson.blocks[0].items.length).toBe(divSet.facts.length);
+  });
+
+  it('Step 3 offers a secondary "Print on paper" button that renders a Cover-Copy-Compare sheet + separate answer key using token-only print CSS', async () => {
+    const css = read('packets-math-practice-print.css');
+    expect(css).toContain('@media print');
+    expect(css).toContain('var(--');
+    expect(css).not.toMatch(/:root|@keyframes|@import|url\(|#[0-9a-f]{3}/i);
+
+    const page = openPage();
+    let printed = 0;
+    page.w.print = () => { printed++; };
+    page.choose('kind', 'mul');
+    page.choose('set', 'mul-7');
+    page.$('next-1').click();
+    page.choose('method', 'ccc');
+    page.$('next-2').click();
+    await page.made();
+
+    // Max 1 .btn-primary per step; #print is a secondary button.
+    for (const s of page.d.querySelectorAll('section.sheet')) {
+      expect(s.querySelectorAll('.btn-primary').length, s.id).toBeLessThanOrEqual(1);
+    }
+    expect(page.seen('print')).toBe(true);
+    expect(page.seen('print-note')).toBe(true);
+    expect(page.$('print').className).not.toContain('btn-primary');
+    expect(page.d.body.classList.contains('paper-on')).toBe(true);
+    const paper = page.$('paper');
+    expect(paper.hidden).toBe(true);
+    expect(paper.querySelectorAll('.paper-ccc tbody tr')).toHaveLength(10);
+    expect(paper.querySelectorAll('.paper-key li')).toHaveLength(10);
+    expect(paper.querySelector('.paper-teacher h2').textContent).toContain('Answer key');
+    page.wordsAreRight();
+
+    page.$('print').click();
+    expect(printed).toBe(1);
+
+    // Leaving step 3 clears paper-on and hides the print button.
+    page.$('back-3').click();
+    expect(page.d.body.classList.contains('paper-on')).toBe(false);
+    expect(page.seen('print')).toBe(false);
+  });
+
+  it('Wave 3A: unified Step 3 code-name/batch fold, 1-click .zip, zero-storage .txt roster, #rehearse= Step 2 banner, and 60 MB reopen cap', async () => {
+    const doc = parse(PAGE);
+    expect(doc.getElementById('learner-tip')).toBeNull();
+    expect(doc.getElementById('code-name-box')).toBeNull();
+    expect(doc.getElementById('batch-save')).toBeNull();
+    expect(squash(doc.getElementById('batch').querySelector('summary').textContent)).toBe('Put student code names in the file');
+    expect(read(SCRIPT)).toContain('60 * 1024 * 1024');
+
+    // #rehearse= jumps to Step 2 with 1-line confirmation banner and clears hash.
+    const dom = new JSDOM(read(PAGE), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/' + PAGE + '#rehearse=7x8,6x7' });
+    const w = dom.window, d = w.document;
+    opened.push(w);
+    w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder;
+    w.Blob = class { constructor(parts, opts) { this.body = parts.join(''); this.type = opts && opts.type; this.size = Buffer.byteLength(this.body); } };
+    w.URL.createObjectURL = () => 'blob:mp-rehearse';
+    w.URL.revokeObjectURL = () => {};
+    const dl = [];
+    w.HTMLAnchorElement.prototype.click = function () { dl.push(this.getAttribute('download')); };
+    for (const s of d.querySelectorAll('script[src]')) w.eval(read(s.getAttribute('src')));
+    expect(w.location.hash).toBe('');
+    expect(d.getElementById('step-2').hidden).toBe(false);
+    expect(d.getElementById('rehearse-note').hidden).toBe(false);
+    expect(d.getElementById('rehearse-note').textContent).toContain('Loaded 2 missed facts');
+
+    // Step 3: 1 line updates single file name; 2 lines shows 1-click Save .zip via .txt roster without localStorage persistence.
+    d.getElementById('next-2').click();
+    await new Promise((r) => setTimeout(r, 60));
+    d.getElementById('f-batch-names').value = 'BlueHeron7';
+    d.getElementById('f-batch-names').dispatchEvent(new w.Event('input', { bubbles: true }));
+    expect(d.getElementById('batch-make').hidden).toBe(true);
+    expect(d.getElementById('summary-rows').textContent).toContain('BlueHeron7');
+
+    const roster = new w.File(['BlueHeron7\nRedFox3\n'], 'roster.txt', { type: 'text/plain' });
+    Object.defineProperty(d.getElementById('batch-file'), 'files', { configurable: true, value: [roster] });
+    d.getElementById('batch-file').dispatchEvent(new w.Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 30));
+    expect(d.getElementById('batch-make').hidden).toBe(false);
+    expect(d.getElementById('batch-make').textContent).toBe('Save .zip for 2 students');
+    expect(JSON.stringify({ ...w.localStorage })).not.toContain('BlueHeron7');
+    d.getElementById('batch-make').click();
+    expect(dl.some((name) => /__2-students\.zip$/.test(name))).toBe(true);
+
+    // Wave 3B: 1-click wrong-file auto-handoff via AlloPacketHandoff.redirect
+    const handed = [];
+    w.AlloPacketHandoff = { HASH: '#open-file', RESULTS_HASH: '#import-results', redirect: async (file, href, hash) => { handed.push({ name: file.name, href, hash }); } };
+    const csv = '\uFEFF"format","session_id"\r\n"alloflow-packet-result/1","S-1"\r\n';
+    Object.defineProperty(d.getElementById('reopen-file'), 'files', { configurable: true, value: [new w.File([csv], 'mp-res.csv', { type: 'text/csv' })] });
+    d.getElementById('reopen-file').dispatchEvent(new w.Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 30));
+    expect(d.getElementById('reopen-page').hidden).toBe(false);
+    expect(d.getElementById('reopen-page').getAttribute('href')).toBe('packets-results.html');
+    d.getElementById('reopen-page').dispatchEvent(new w.MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(handed).toEqual([{ name: 'mp-res.csv', href: 'packets-results.html', hash: '#import-results' }]);
+  });
+
+  it('Wave 4A: routes hardware 0-9, Backspace, Enter in practice mode outside <input> and minus key on negative check keypad grid', () => {
+    const made = build({ mode: 'ccc', facts: [{ a: 7, b: 8, op: 'mul' }] });
+    const dom = new JSDOM(made.html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://packet.test/ccc-keys.html' });
+    const w = dom.window, d = w.document;
+    try {
+      d.getElementById('learner-name').value = 'Ana';
+      d.querySelector('#app button.primary').click();
+      d.querySelector('[data-cover]').click();
+      // Move focus away from <input> (e.g. to the screen heading after closing Reading tools).
+      const h2 = d.querySelector('#app h2');
+      h2.focus();
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '5', bubbles: true, cancelable: true }));
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '9', bubbles: true, cancelable: true }));
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }));
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '6', bubbles: true, cancelable: true }));
+      expect(d.querySelector('[data-pad-input]').value).toBe('56');
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      expect(d.querySelector('[data-feedback]').textContent).toContain('Yes!');
+    } finally { w.close(); }
+
+    // Negative check keypad grid handles '-' key when focus is on a keypad button.
+    const PC = require('../packet_check_builder.js');
+    const negCheck = PC.buildCheckPacket({
+      lesson: PC.lessonFromMathProblems({ title: 'Negatives', problems: [{ display: '3 - 5', answer: -2 }] }),
+      loader: TH,
+    });
+    const cdom = new JSDOM(negCheck.html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://packet.test/neg.html' });
+    const cw = cdom.window, cd = cw.document;
+    try {
+      cd.getElementById('learner-name').value = 'Ana';
+      cd.querySelector('#app button.primary').click();
+      cd.querySelector('[data-check-begin]').click();
+      const btn2 = cd.querySelector('[data-key="2"]');
+      btn2.focus();
+      btn2.dispatchEvent(new cw.KeyboardEvent('keydown', { key: '-', bubbles: true, cancelable: true }));
+      btn2.dispatchEvent(new cw.KeyboardEvent('keydown', { key: '2', bubbles: true, cancelable: true }));
+      expect(cd.querySelector('[data-pad-input]').value).toBe('-2');
+    } finally { cw.close(); }
   });
 });
 

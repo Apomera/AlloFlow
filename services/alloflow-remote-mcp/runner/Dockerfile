@@ -17,14 +17,16 @@ COPY runner/package.json runner/package-lock.json ./
 RUN apt-get update \
     && apt-get install --no-install-recommends -y openjdk-17-jre-headless \
     && rm -rf /var/lib/apt/lists/* \
-    && npm ci --omit=dev --no-audit --no-fund \
+    && npm ci --ignore-scripts --omit=dev --no-audit --no-fund \
     && npx playwright install --with-deps chromium \
     && chmod -R a+rX /ms-playwright
 
 COPY runner/server.cjs ./server.cjs
 COPY .runner-context/ ./alloflow/
 
-RUN chown -R node:node /app
+RUN chmod -R a+rX /app \
+    && mkdir -p /tmp/alloflow-runner \
+    && chown node:node /tmp/alloflow-runner
 USER node
 
 EXPOSE 8080

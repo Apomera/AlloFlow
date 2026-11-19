@@ -971,9 +971,9 @@ describe('the page as files', () => {
       else expect(existsSync(address === './' ? 'index.html' : address.replace(/#.*$/, '')), address).toBe(true);
       if (node.tagName !== 'A') loaded.push(address);
     }
-    expect(loaded).toEqual(['packets-mark.svg', 'packets.css', 'packets-results.css', 'packets-page.js', 'packets_results_reader.js', 'packets-results.js']);
+    expect(loaded).toEqual(['packets-mark.svg', 'packets.css', 'packets-results.css', 'packets-page.js', 'packets_handoff.js', 'packets_results_reader.js', 'packets-results.js']);
     const said = [...doc.querySelectorAll('details.proof li')].find((item) => item.textContent.startsWith('This page loads'));
-    expect(said.textContent).toContain('This page loads seven files, all from this site');
+    expect(said.textContent).toContain('This page loads eight files, all from this site');
     expect([...said.querySelectorAll('code')].map((node) => node.textContent)).toEqual(loaded.filter((file) => /\.(?:css|js)$/.test(file)));
     for (const file of SCRIPTS) for (const quoted of read(file).match(/'[\w./-]+\.(?:json|html|js|css|svg)'/g) || []) expect(existsSync(quoted.slice(1, -1)), file + ' -> ' + quoted).toBe(true);
   });
@@ -1087,7 +1087,7 @@ describe('the page as files', () => {
     expect(doc.getElementById('state-empty').hidden).toBe(false);
     expect(doc.getElementById('state-check').hidden && doc.getElementById('state-results').hidden).toBe(true);
     expect([...doc.querySelectorAll('#state-empty button')].map((node) => node.textContent)).toEqual(['Choose files', 'Try with sample results']);
-    expect(doc.getElementById('files').getAttribute('accept')).toBe('.csv,.json,text/csv,application/json');
+    expect(doc.getElementById('files').getAttribute('accept')).toBe('.csv,.json,.zip,text/csv,application/json,application/zip');
     const css = read('packets-results.css');
     // A table scrolls inside its own box. The box is the frame for the hidden screen-reader text in its cells:
     // without position: relative that text escaped the box and made a phone-width page scroll sideways (seen in a real browser).
@@ -1302,10 +1302,10 @@ describe('the page: from files to results', () => {
     expect(page.table(tables[0])).toEqual([['bed', 'b', '2'], ['bed', 'e', '1'], ['dog', 'd', '1']]);
     expect(page.table(tables[1])).toEqual([
       // The first file carries its title; the second was saved before files did, and shows its packet id.
-      ['Nov 3, 2026', 'Practice: Short vowels', '60% on the first try', '5 of 5', '5 min', ''],
-      ['Nov 10, 2026', 'Practice: ws-short-vowels', '80% on the first try', '5 of 5', '4 min', ''],
+      ['Nov 3, 2026', 'Practice: Short vowels', '60% on the first try', '5 of 5', '5 min', '', 'Remove'],
+      ['Nov 10, 2026', 'Practice: ws-short-vowels', '80% on the first try', '5 of 5', '4 min', '', 'Remove'],
       // 2026-11-13 (results review): a check's time is its own clock (96 s used), not the time the file was open (108 s).
-      ['Nov 17, 2026', 'Math Fluency, version A, try 1', '8 digits correct per minute', '8 of 8', '1 min 36 s', 'Finished before the time was up, so the score is for the time used']]);
+      ['Nov 17, 2026', 'Math Fluency, version A, try 1', '8 digits correct per minute', '8 of 8', '1 min 36 s', 'Finished before the time was up, so the score is for the time used', 'Remove']]);
     // The other learner: the check has two dates, and the changed file carries its notes and a ring on its dot.
     page.learner('RedFox3');
     const fox = page.measure('Math Fluency (grade 2)');
@@ -1493,8 +1493,8 @@ describe('the page: math fact practice', () => {
     expect(lines(measureRows[1].children[2])).toEqual(['9 of 12 on the first try.', 'New facts: 2 of 4 on the first try.', 'New facts missed on the first try: 7 ' + X + ' 8.', 'Known facts: 7 of 8 on the first try.']);
     const every = [...page.$('learner-body').querySelectorAll(':scope > .table-scroll table')].pop();
     expect(page.table(every).map((row) => row.slice(0, 2).concat(row.slice(3)))).toEqual([
-      ['Nov 10, 2026', 'Practice: ' + X + ' 7 facts: cover, copy, compare', '10 of 10', '2 min', ''],
-      ['Nov 12, 2026', 'Practice: ' + X + ' 7 facts: new and known facts', '12 of 12', '2 min', '']]);
+      ['Nov 10, 2026', 'Practice: ' + X + ' 7 facts: cover, copy, compare', '10 of 10', '2 min', '', 'Remove'],
+      ['Nov 12, 2026', 'Practice: ' + X + ' 7 facts: new and known facts', '12 of 12', '2 min', '', 'Remove']]);
     const results = [...every.querySelectorAll('tbody tr')].map((row) => lines(row.children[2]));
     expect(results).toEqual([['90% on the first try'],
       ['75% on the first try', 'New facts: 2 of 4 on the first try.', 'New facts missed on the first try: 7 ' + X + ' 8.', 'Known facts: 7 of 8 on the first try.']]);
@@ -1689,7 +1689,7 @@ describe('the page: files that are not what they seem', () => {
     // 2026-11-17: the page's own "Practice missed ..." links (a.nav-new-tab, made by the page to open a maker in a new tab) are the only links.
     expect(page.d.querySelectorAll('main img, main script, main b, main iframe, main a:not(.nav-new-tab)').length).toBe(0);
     for (const link of page.d.querySelectorAll('main a.nav-new-tab')) expect(link.getAttribute('href')).toMatch(/^packets-[a-z-]+\.html#[a-z]+=/);
-    expect(page.d.querySelectorAll('script').length).toBe(3);
+    expect(page.d.querySelectorAll('script').length).toBe(4);
     expect(page.reached).toEqual([]);
     expect(({}).polluted).toBeUndefined();
     page.dom.window.close();
@@ -1783,5 +1783,217 @@ describe('reading tools used on a check (T7 D2)', () => {
     expect([groups[0].rows[0].tools, AC.notes(null, groups[0].rows[0])]).toEqual([[], []]);
     expect([groups[0].rows[1].tools, groups[0].rows[1].flags, AC.notes(null, groups[0].rows[1])])
       .toEqual([['textLarger', 'readingFocus'], [], ['Reading tools used: larger text, reading focus line.']]);
+  });
+
+  it('Wave 5B: skips Windows desktop.ini/thumbs.db inside LMS .zip folders and reports .html-only packet zips clearly', async () => {
+    const zipKit = require('../packets_zip.js');
+    const concat = (parts) => Buffer.concat(parts.map((u) => Buffer.from(u)));
+
+    // Mixed LMS .zip with valid CSV + Windows desktop.ini + lowercase thumbs.db goes straight to Results with 0 skipped noise.
+    const goodZip = zipKit.create();
+    const s1 = practice({ sid: 'w5-z1', learner: 'BlueHeron7', day: '2026-11-18' });
+    goodZip.add('Period1/BlueHeron7/results.csv', csvOf(s1));
+    goodZip.add('Period1/desktop.ini', '[.ShellClassInfo]');
+    goodZip.add('Period1/thumbs.db', 'junk');
+    goodZip.add('__MACOSX/._results.csv', 'mac');
+    const goodBytes = concat(goodZip.finish());
+    const unpackedGood = await reader.unpackZip(goodBytes);
+    expect(unpackedGood.ok).toBe(true);
+    expect(unpackedGood.entries).toHaveLength(1);
+    expect(unpackedGood.skipped).toEqual([]);
+
+    // Dropping a student packet batch .zip (only .html files) labels each as a web page (.html) and never announces "0 files read".
+    const htmlZip = zipKit.create();
+    htmlZip.add('Word-Sounds__Ana.html', '<!doctype html><html></html>');
+    htmlZip.add('Word-Sounds__Ben.html', '<!doctype html><html></html>');
+    const htmlBytes = concat(htmlZip.finish());
+    const unpackedHtml = await reader.unpackZip(htmlBytes);
+    expect(unpackedHtml.ok).toBe(true);
+    expect(unpackedHtml.entries).toEqual([]);
+    expect(unpackedHtml.skipped).toEqual([
+      { name: 'Word-Sounds__Ana.html', why: 'This is a web page (.html), not a results file.' },
+      { name: 'Word-Sounds__Ben.html', why: 'This is a web page (.html), not a results file.' },
+    ]);
+
+    const page = openPage();
+    const status = await page.drop([page.file(htmlBytes, 'Word-Sounds__2-students.zip')]);
+    expect(status).toBe('1 file read, 2 need a look.');
+    expect(page.state()).toBe('state-check');
+    expect(page.$('check-body').textContent).toContain('This is a web page (.html), not a results file.');
+    page.dom.window.close();
+  });
+
+  it('Wave 7B: preserves IEP goals, goal dates, and paper scores across student merges (reversible), excludes unnamed from manual-merge, and names Symbol Runner mode links distinctly', async () => {
+    const page = openPage();
+    const sSamR = check({ sid: 'w7-samr-1', learner: 'SamR', day: '2026-11-10', done: 10 });
+    const sSam = check({ sid: 'w7-sam-1', learner: 'Sam', day: '2026-11-12', done: 11 });
+    const sAnon = check({ sid: 'w7-anon-1', learner: '', day: '2026-11-13', done: 9 });
+    await page.drop([
+      page.file(csvOf(sSamR), 'check-samr.csv'),
+      page.file(csvOf(sSam), 'check-sam.csv'),
+      page.file(csvOf(sAnon), 'check-anon.csv'),
+    ]);
+    if (page.state() !== 'state-results') page.$('show-results').click();
+
+    // Enter an IEP goal, goal date, and paper score on SamR.
+    const pickOn = (pg, key) => {
+      pg.view('learner');
+      pg.$('pick-learner').value = key;
+      pg.$('pick-learner').dispatchEvent(new pg.w.Event('change', { bubbles: true }));
+    };
+    pickOn(page, 'samr');
+    const goalInput = page.d.querySelector('.goal-input:not(.goal-date)');
+    const dateInput = page.d.querySelector('.goal-date');
+    goalInput.value = '22';
+    goalInput.dispatchEvent(new page.w.Event('input', { bubbles: true }));
+    dateInput.value = '2026-12-15';
+    dateInput.dispatchEvent(new page.w.Event('change', { bubbles: true }));
+    page.$('paper-date').value = '2026-11-11';
+    page.$('paper-score').value = '18';
+    page.$('paper-note').value = 'Printed probe';
+    page.$('paper-go').click();
+    expect(page.$('learner-body').textContent).toContain('Latest paper score: 18');
+
+    // Open Check what was read -> manual-merge excludes "No name typed" (empty key).
+    page.$('open-check').click();
+    const fromVals = [...page.$('merge-from').options].map((o) => o.value);
+    expect(fromVals).toEqual(expect.arrayContaining(['sam', 'samr']));
+    expect(fromVals).not.toContain('');
+
+    // Merge SamR -> Sam.
+    page.$('merge-from').value = 'samr';
+    page.$('merge-into').value = 'sam';
+    page.$('merge-go').click();
+    page.$('show-results').click();
+    pickOn(page, 'sam');
+    expect(page.d.querySelector('.goal-input:not(.goal-date)').value).toBe('22');
+    expect(page.d.querySelector('.goal-date').value).toBe('2026-12-15');
+    expect(page.$('learner-body').textContent).toContain('Latest paper score: 18');
+    expect(page.$('learner-body').textContent).toContain('Printed probe');
+
+    // Undo the merge -> Sam loses inherited items, SamR keeps them cleanly.
+    page.$('open-check').click();
+    const undoBtn = [...page.$('check-body').querySelectorAll('button')].find((b) => b.textContent === 'Count them apart again');
+    expect(undoBtn).toBeTruthy();
+    undoBtn.click();
+    page.$('show-results').click();
+    pickOn(page, 'sam');
+    expect(page.d.querySelector('.goal-input:not(.goal-date)').value).toBe('');
+    expect(page.$('learner-body').textContent).not.toContain('Printed probe');
+    pickOn(page, 'samr');
+    expect(page.d.querySelector('.goal-input:not(.goal-date)').value).toBe('22');
+    expect(page.d.querySelector('.goal-date').value).toBe('2026-12-15');
+    expect(page.$('learner-body').textContent).toContain('Printed probe');
+    page.dom.window.close();
+
+    // Distinct WCAG 2.4.4 link names for 2 missed special Symbol Runner sets (both group and learner views).
+    const srPage = openPage();
+    const makeSr = (sid, learner, mode, word, target, wrong) => JSON.stringify({
+      kind: 'alloflow-take-home-result',
+      schemaVersion: 3,
+      player: 'alloflow-word-sounds-take-home/2',
+      sessionId: sid,
+      packet: { id: 'symbol-runner-' + mode + '-r1', version: 'r1', engine: 'alloflow-packet/1', form: '', mode: 'practice' },
+      lessonId: 'symbol-runner-' + mode + '-r1',
+      revision: 'r1',
+      lessonTitle: 'Symbol Runner ' + mode,
+      activityTitles: { symbol_runner: 'Symbol runner' },
+      learner,
+      learnerName: learner,
+      startedAt: '2026-11-18T14:00:00Z',
+      finishedAt: '2026-11-18T14:02:00Z',
+      startedLocal: '2026-11-18T09:00:00-05:00',
+      finishedLocal: '2026-11-18T09:02:00-05:00',
+      durationMs: 120000,
+      items: [{ n: 1, itemId: 'sr-1', activity: 'symbol_runner', word, target, responses: [wrong], attempts: 1, firstTry: false, correct: false, done: true, ms: 900 }],
+    });
+    await srPage.drop([
+      srPage.file(makeSr('sr-a1', 'Ana', 'color_word_stroop', 'RED', 'blue', 'red'), 'sr-a1.json'),
+      srPage.file(makeSr('sr-a2', 'Ana', 'number_size_stroop', '2 | 8', '8', '2'), 'sr-a2.json'),
+      srPage.file(makeSr('sr-b1', 'Ben', 'color_word_stroop', 'RED', 'blue', 'red'), 'sr-b1.json'),
+      srPage.file(makeSr('sr-b2', 'Ben', 'number_size_stroop', '2 | 8', '8', '2'), 'sr-b2.json'),
+    ]);
+    if (srPage.state() !== 'state-results') srPage.$('show-results').click();
+    const groupLinks = [...srPage.$('group-missed').querySelectorAll('a.nav-new-tab')].map((a) => a.textContent);
+    expect(groupLinks).toContain('Practice group ink color in Symbol Runner (opens in a new tab)');
+    expect(groupLinks).toContain('Practice group number size in Symbol Runner (opens in a new tab)');
+    pickOn(srPage, 'ana');
+    const learnerLinks = [...srPage.$('learner-body').querySelectorAll('a.nav-new-tab')].map((a) => a.textContent);
+    expect(learnerLinks).toContain('Practice ink color in Symbol Runner (opens in a new tab)');
+    expect(learnerLinks).toContain('Practice number size in Symbol Runner (opens in a new tab)');
+    srPage.dom.window.close();
+  });
+
+  it('Wave 8B: preserves unnamed-learner paper scores across bundle/storage round-trips, blocks merge cycles on bundle import, and cleans print CSS', async () => {
+    // 1. Unnamed learner paper score persists through makeBundle/readBundle and localStorage Keep reload.
+    const page = openPage();
+    const sAnon = check({ sid: 'w8-anon-1', learner: '', day: '2026-11-10', done: 10 });
+    await page.drop([page.file(csvOf(sAnon), 'check-anon.csv')]);
+    if (page.state() !== 'state-results') page.$('show-results').click();
+    page.view('learner');
+    page.$('pick-learner').value = '';
+    page.$('pick-learner').dispatchEvent(new page.w.Event('change', { bubbles: true }));
+    page.$('paper-date').value = '2026-11-12';
+    page.$('paper-score').value = '14';
+    page.$('paper-note').value = 'Unnamed paper probe';
+    page.$('paper-go').click();
+    expect(page.$('learner-body').textContent).toContain('Latest paper score: 14');
+    // Turn on Keep on this device -> saves via bundleNow() -> cleanPaper().
+    page.$('keep').click();
+    const storedRaw = page.w.localStorage.getItem('alloflow-packets-results/1');
+    expect(storedRaw).toBeTruthy();
+    const parsedBundle = reader.readBundle(JSON.parse(storedRaw));
+    expect(parsedBundle.ok).toBe(true);
+    expect(parsedBundle.paper).toHaveLength(1);
+    expect(parsedBundle.paper[0]).toMatchObject({ learner: '', date: '2026-11-12', value: 14, note: 'Unnamed paper probe' });
+    // Re-open fresh page with that saved bundle file -> paper score is still present.
+    const page2 = openPage();
+    await page2.drop([page2.file(storedRaw, 'results-all__2026-11-19.json')]);
+    if (page2.state() !== 'state-results') page2.$('show-results').click();
+    page2.view('learner');
+    expect(page2.$('learner-body').textContent).toContain('Latest paper score: 14');
+    expect(page2.$('learner-body').textContent).toContain('Unnamed paper probe');
+    page.dom.window.close();
+    page2.dom.window.close();
+
+    // 2. Opposing merge in an imported bundle (B -> A when A -> B is active) cannot create a 2-cycle.
+    const cycPage = openPage();
+    const sA = check({ sid: 'w8-a-1', learner: 'AlexA', day: '2026-11-10', done: 9 });
+    const sB = check({ sid: 'w8-b-1', learner: 'AlexB', day: '2026-11-11', done: 11 });
+    await cycPage.drop([
+      cycPage.file(csvOf(sA), 'check-a.csv'),
+      cycPage.file(csvOf(sB), 'check-b.csv'),
+    ]);
+    if (cycPage.state() !== 'state-results') cycPage.$('show-results').click();
+    cycPage.$('open-check').click();
+    cycPage.$('merge-from').value = 'alexa';
+    cycPage.$('merge-into').value = 'alexb';
+    cycPage.$('merge-go').click();
+    cycPage.$('show-results').click();
+    expect(cycPage.$('pick-learner').options).toHaveLength(1);
+    // Drop an older bundle carrying the reverse merge alexb -> alexa.
+    const conflictingBundle = JSON.stringify(reader.makeBundle({
+      sessions: [],
+      merges: [{ from: 'alexb', into: 'alexa' }],
+      apart: [],
+      goals: [],
+      goalDates: [],
+      paper: [],
+      savedLocal: '2026-11-11T09:00:00-05:00',
+    }));
+    await cycPage.drop([cycPage.file(conflictingBundle, 'older-bundle.json')]);
+    if (cycPage.state() !== 'state-results') cycPage.$('show-results').click();
+    // Still merged into one learner (cycle rejected), never split back into two.
+    expect(cycPage.$('pick-learner').options).toHaveLength(1);
+    cycPage.dom.window.close();
+
+    // 3. Print CSS hides .scroll-cue and clears wide-table scroll shadow in both light and dark OS themes.
+    const resultsCss = readFileSync('packets-results.css', 'utf8');
+    const sharedCss = readFileSync('packets.css', 'utf8');
+    const resultsPrint = resultsCss.slice(resultsCss.indexOf('@media print'));
+    expect(resultsPrint).toMatch(/\.scroll-cue\b[^}]*display:\s*none\s*!important/);
+    expect(resultsPrint).toMatch(/\.table-scroll\.is-wide\s*\{\s*background:\s*#ffffff\s*!important/);
+    const sharedPrint = sharedCss.slice(sharedCss.indexOf('@media print'));
+    expect(sharedPrint).toMatch(/--scroll-shadow:\s*transparent/);
   });
 });

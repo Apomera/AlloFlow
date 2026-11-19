@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; frame-src https://codap.concord.org; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AlloFlow Data Lab</title>
 <!--
@@ -63,7 +65,7 @@
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   window.addEventListener('message', function (event) {
@@ -103,7 +105,11 @@
   :root[data-theme="contrast"] select,
   :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
   :root[data-theme="contrast"] button:not(:disabled) { background: #000000; color: #ffff00; border: 2px solid #ffff00; }
-  :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
+  :focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px; }
+  :root[data-theme="light"] :focus-visible { outline-color: #1d4ed8 !important; }
+  button, a, input, select, textarea, summary { scroll-margin-top: 72px; }
+  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: #1e293b; color: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 2px solid #facc15; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { left: 8px; }
   @media (forced-colors: active) {
     button, input, select, textarea, a { forced-color-adjust: auto; }
   }
@@ -180,6 +186,7 @@
 </style>
 </head>
 <body>
+<a class="skip-link" href="#codapRegion">Skip to Data Lab workspace</a>
 <header>
   <h1>📊 Data Lab</h1>
   <span class="sub" data-i18n="header_sub">CODAP workspace (Concord Consortium, MIT) + AlloFlow Socratic tutor</span>
@@ -298,7 +305,7 @@
     <div style="padding: 0 12px 10px;"><button type="button" class="quiet" id="nudgeBtn" data-i18n="nudge_btn">🤔 Give me something to think about</button></div>
     <div class="privacy" id="privacyNote">Privacy: the tutor can see your <b>column names, summary statistics, and up to 20 rows from each table</b>, so it can ask about what your data actually shows. In a small table, that can be every row. AlloFlow does not save this conversation. AI answers only flow when your teacher has AI hints on.</div>
   </aside>
-  <main class="codap" id="codapRegion" aria-label="CODAP data workspace" data-i18n-aria-label="codap_region" aria-busy="true">
+  <main class="codap" id="codapRegion" tabindex="-1" aria-label="CODAP data workspace" data-i18n-aria-label="codap_region" aria-busy="true">
     <div class="workspace-status" id="workspaceStatus" role="status" aria-live="polite" aria-atomic="true">
       <p id="workspaceStatusText">Loading the CODAP workspace…</p>
       <button type="button" id="retryWorkspace" data-i18n="ws_retry" hidden>Retry CODAP</button>
@@ -670,7 +677,11 @@
     });
     return { rows: good, skipped: skipped };
   }
-  function csvCell(v) { var s = String(v == null ? '' : v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  function csvCell(v) {
+    var s = String(v == null ? '' : v);
+    if (typeof v !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s)) s = "'" + s;
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
   function rowsToCsv(attributes, rows) {
     return [attributes.map(function (a) { return csvCell(a.name); }).join(',')].concat(rows.map(function (r) { return r.map(csvCell).join(','); })).join('\n');
   }
@@ -1100,7 +1111,7 @@
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   function toOpener(payload) {
@@ -1177,7 +1188,9 @@
   }
   function toPlugin(payload) {
     if (!pluginAlive || !pluginWin) return false;
-    try { pluginWin.postMessage(payload, pluginOrigin && pluginOrigin !== 'null' ? pluginOrigin : '*'); return true; } catch (_) { return false; }
+    var target = (pluginOrigin && pluginOrigin !== 'null') ? pluginOrigin : ((window.location && /^https?:$/i.test(window.location.protocol)) ? '' : '*');
+    if (!target) return false;
+    try { pluginWin.postMessage(payload, target); return true; } catch (_) { return false; }
   }
   function sendPluginStrings() {
     toPlugin({ type: 'allodatalab-plugin-strings', lang: pageLang, dir: document.documentElement.dir, strings: { plugin_title: S('plugin_title'), plugin_connected: S('plugin_connected'), plugin_failed: S('plugin_failed') } });
@@ -1185,9 +1198,11 @@
 
   function getSnapshot() {
     if (!pluginAlive || !pluginWin) return Promise.resolve(null);
+    var target = (pluginOrigin && pluginOrigin !== 'null') ? pluginOrigin : ((window.location && /^https?:$/i.test(window.location.protocol)) ? '' : '*');
+    if (!target) return Promise.resolve(null);
     var id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     return requestWithTimeout(function () {
-      try { pluginWin.postMessage({ type: 'allodatalab-snapshot-request', id: id }, pluginOrigin && pluginOrigin !== 'null' ? pluginOrigin : '*'); return true; } catch (_) { return false; }
+      try { pluginWin.postMessage({ type: 'allodatalab-snapshot-request', id: id }, target); return true; } catch (_) { return false; }
     }, id, 3500).then(function (res) { return (res && res.ok && res.snapshot) ? res.snapshot : null; });
   }
 

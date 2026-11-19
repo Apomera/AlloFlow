@@ -78,9 +78,12 @@ module.exports = {
       introAudio: [prompt], answerAudio: [] } };
   },
   render: function (item, ctx) {
+    var win = ctx.root.ownerDocument.defaultView;
     // A slot holds a tile's place in the tray (not its word): a sentence that names a picture twice can be
     // finished with either tile of that word (2026-11-13).
     var slots = item.sequence.map(function () { return null; });
+    var retryMarks = null;
+    var retryTimer = null;
     var imageOf = {};
     item.tiles.forEach(function (t) { imageOf[t.text] = ctx.image(t.image); });
     var tileCards = [];
@@ -89,19 +92,28 @@ module.exports = {
     var slotRow = ctx.el('ul', { class: 'slots', dir: 'ltr' });
     var after = ctx.el('div', { class: 'row' });
     var wordIn = function (i) { return slots[i] == null ? null : item.tiles[slots[i]].text; };
+    var stopRetryHold = function (clearSlots) {
+      if (retryTimer != null) { try { win.clearTimeout(retryTimer); } catch (_) {} retryTimer = null; }
+      if (!retryMarks) return;
+      retryMarks = null;
+      if (clearSlots) slots = item.sequence.map(function () { return null; });
+    };
     var drawSlots = function (right) {
       slotButtons.forEach(function (b, i) {
         var word = wordIn(i);
+        var mark = retryMarks ? retryMarks[i] : '';
         b.textContent = '';
         b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-inline-end:6px', text: String(i + 1) }));
-        b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:72px;height:72px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
+        b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:72px;height:72px;object-fit:contain;background:#fff;border-radius:8px;padding:4px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
         b.setAttribute('aria-label', word ? ctx.fmt(ctx.L.sentence_match_slot_filled, { n: i + 1, word: word }) : ctx.fmt(ctx.L.sentence_match_slot_empty, { n: i + 1 }));
         if (!word || ctx.isDone()) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
-        b.style.borderColor = right ? 'var(--ok)' : '';
-        b.style.background = right ? 'var(--ok-bg)' : '';
+        if (mark) b.setAttribute('data-retry-mark', mark); else b.removeAttribute('data-retry-mark');
+        b.style.borderColor = right || mark === 'ok' ? 'var(--ok)' : mark === 'warn' ? 'var(--warn)' : '';
+        b.style.background = right || mark === 'ok' ? 'var(--ok-bg)' : mark === 'warn' ? 'var(--warn-bg)' : '';
       });
       tileCards.forEach(function (c, ti) {
-        var used = slots.indexOf(ti) >= 0;
+        // While retryMarks is showing, non-tried tiles stay enabled so a learner can tap right away to start retrying.
+        var used = retryMarks ? false : slots.indexOf(ti) >= 0;
         if (used || c.tried || ctx.isDone()) c.pick.setAttribute('aria-disabled', 'true'); else c.pick.removeAttribute('aria-disabled');
         c.pick.style.opacity = used && !right ? '0.3' : '';
       });
@@ -112,11 +124,19 @@ module.exports = {
       var response = slots.map(function (ti) { return item.tiles[ti].text; }).join(' ');
       var outcome = ctx.answer(response, ok, { correctText: ctx.L.sentence_match_correct, missedText: ctx.L.sentence_match_missed });
       if (outcome === 'retry') {
-        // One-picture boards: that picture is out. The app clears the tray
-        // for the retry (word_sounds_module.js:21053-21060).
+        // One-picture boards: that picture is out. Show per-slot right/wrong feedback briefly (or until the next tap) before clearing.
         if (item.sequence.length === 1) { var out = tileCards[slots[0]]; out.tried = true; out.box.classList.add('tried'); }
-        slots = item.sequence.map(function () { return null; });
+        retryMarks = slots.map(function (ti, i) { return ti != null && item.tiles[ti].text === item.sequence[i] ? 'ok' : 'warn'; });
         drawSlots(false);
+        if (win && typeof win.setTimeout === 'function') {
+          retryTimer = win.setTimeout(function () {
+            retryTimer = null;
+            if (!retryMarks || !ctx.root.isConnected || ctx.isDone()) return;
+            retryMarks = null;
+            slots = item.sequence.map(function () { return null; });
+            drawSlots(false);
+          }, 1250);
+        }
       }
     };
     item.tiles.forEach(function (tile, ti) {
@@ -125,7 +145,9 @@ module.exports = {
       var pick = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.sentence_match_picture_of, { word: tile.text }),
         style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
         on: { click: function () {
-          if (ctx.isDone() || pick.getAttribute('aria-disabled') === 'true' || slots.indexOf(ti) >= 0) return;
+          if (ctx.isDone() || pick.getAttribute('aria-disabled') === 'true') return;
+          if (retryMarks) stopRetryHold(true);
+          if (slots.indexOf(ti) >= 0) return;
           var at = slots.indexOf(null);
           if (at < 0) return;
           slots[at] = ti;
@@ -139,7 +161,9 @@ module.exports = {
     item.sequence.forEach(function (_, i) {
       var b = ctx.el('button', { type: 'button', class: 'slot', style: 'border-style:dashed;min-width:96px;min-height:96px',
         on: { click: function () {
-          if (ctx.isDone() || slots[i] == null) return;
+          if (ctx.isDone()) return;
+          if (retryMarks) { stopRetryHold(true); drawSlots(false); return; }
+          if (slots[i] == null) return;
           slots[i] = null;
           drawSlots(false);
         } } });
@@ -161,6 +185,7 @@ module.exports = {
       // After a right answer, once the praise is over, the sentence is read back by itself (the app's payoff).
       payoff: function () { if (item.sentenceAudio) ctx.play(item.sentenceAudio); },
       reveal: function () {
+        stopRetryHold(false);
         // Each slot shows a tile of its word (the first one not used yet).
         var used = [];
         slots = item.sequence.map(function (word) {

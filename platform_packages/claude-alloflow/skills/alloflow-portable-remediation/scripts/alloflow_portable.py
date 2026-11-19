@@ -85,6 +85,8 @@ def emit_json(value: Any) -> None:
 
 
 def write_json_new(path: Path, value: Any) -> None:
+    if path.is_symlink():
+        raise PortableError("Refusing to write output through a symlink.")
     with path.open("x", encoding="utf-8", newline="\n") as handle:
         json.dump(value, handle, ensure_ascii=False, indent=2, sort_keys=True)
         handle.write("\n")
@@ -152,18 +154,103 @@ def read_plan(path: Path) -> Dict[str, Any]:
 
 RUN_STYLES = {"normal", "emphasis", "strong"}
 MAX_RUNS = 200
+MAX_LIST_DEPTH = 6
+BCP47_RE = re.compile(r"[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*")
+MATHML_NS = "http://www.w3.org/1998/Math/MathML"
+ALLOWED_MATHML_TAGS = frozenset({
+    "math", "mrow", "mi", "mn", "mo", "msup", "msub", "msubsup",
+    "mfrac", "msqrt", "mroot", "mtext", "mspace", "mtable", "mtr", "mtd",
+    "mover", "munder", "munderover", "mfenced", "mpadded", "mphantom",
+    "mstyle", "menclose", "semantics",
+})
+ALLOWED_MATHML_ATTRS = frozenset({
+    "display", "mathvariant", "stretchy", "fence", "separator",
+    "lspace", "rspace", "linethickness", "columnalign", "rowalign",
+    "columnspan", "rowspan", "open", "close", "separators", "notation",
+    "dir", "lang",
+})
+
+
+def _strip_mathml_tag(raw_tag: str) -> Optional[str]:
+    if raw_tag.startswith("{"):
+        ns, _, local = raw_tag[1:].partition("}")
+        if ns != MATHML_NS:
+            return None
+        return local
+    return raw_tag
+
+
+def sanitize_mathml(mathml_source: str, alt_text: str) -> Tuple[Optional[str], Optional[str]]:
+    """Parse Presentation MathML strictly and re-serialize using an explicit allowlist."""
+    if not isinstance(mathml_source, str) or not mathml_source.strip():
+        return None, "mathml must be a non-empty string."
+    if len(mathml_source) > 50_000:
+        return None, "mathml exceeds the 50,000-character limit."
+    try:
+        root = safe_xml_fromstring(mathml_source.encode("utf-8"))
+    except Exception as exc:
+        return None, "mathml is not valid XML: " + compact_error(exc)
+    if _strip_mathml_tag(root.tag) != "math":
+        return None, "mathml root element must be <math>."
+
+    def _serialize(node, depth: int = 0) -> Tuple[Optional[str], Optional[str]]:
+        if depth > 40:
+            return None, "mathml nesting depth exceeds 40."
+        local = _strip_mathml_tag(node.tag)
+        if not local or local not in ALLOWED_MATHML_TAGS:
+            return None, f"mathml contains disallowed element <{node.tag}>."
+        attrs_out: List[str] = []
+        seen_attrs: set = set()
+        if depth == 0:
+            attrs_out.append(f'xmlns="{MATHML_NS}"')
+            attrs_out.append(f'aria-label="{esc(alt_text)}"')
+            attrs_out.append(f'alttext="{esc(alt_text)}"')
+            seen_attrs.update({"xmlns", "aria-label", "alttext"})
+        for attr_name, attr_val in node.attrib.items():
+            # Allow xml:lang ({http://www.w3.org/XML/1998/namespace}lang)
+            if attr_name == "{http://www.w3.org/XML/1998/namespace}lang":
+                clean_name = "lang"
+            elif attr_name.startswith("{"):
+                return None, f"mathml contains disallowed namespaced attribute '{attr_name}'."
+            else:
+                clean_name = attr_name
+            if clean_name in {"aria-label", "alttext"} and depth == 0:
+                continue
+            if clean_name not in ALLOWED_MATHML_ATTRS:
+                return None, f"mathml contains disallowed attribute '{clean_name}'."
+            if clean_name == "lang" and not BCP47_RE.fullmatch(str(attr_val or "").strip()):
+                return None, f"mathml lang attribute '{attr_val}' is not a valid BCP 47 tag."
+            if clean_name in seen_attrs:
+                continue
+            seen_attrs.add(clean_name)
+            attrs_out.append(f'{clean_name}="{esc(attr_val)}"')
+        inner: List[str] = []
+        if node.text:
+            inner.append(esc(node.text))
+        for child in node:
+            rendered_child, err = _serialize(child, depth + 1)
+            if err:
+                return None, err
+            inner.append(rendered_child or "")
+            if child.tail:
+                inner.append(esc(child.tail))
+        attr_str = (" " + " ".join(attrs_out)) if attrs_out else ""
+        return f"<{local}{attr_str}>{''.join(inner)}</{local}>", None
+
+    return _serialize(root, 0)
 
 
 def validate_runs(
     value: Any, text: str, where: str, errors: List[str]
 ) -> Optional[List[Dict[str, str]]]:
-    """Validate an inline-styling overlay for one text block.
+    """Validate an inline-styling/language/links overlay for one text block.
 
     `runs` is STRICTLY ADDITIVE: `text` remains the authoritative content, and
     the concatenation of the runs must reproduce it exactly. That invariant is
-    the point - styling can never add, drop, or alter a character, so recall
-    and verification keep measuring the same text whether or not styling is
-    present. Rejects rather than silently ignoring a mismatch.
+    the point - styling, inline language tags, and links can never add, drop,
+    or alter a character, so recall and verification keep measuring the same
+    text whether or not runs are present. Rejects rather than silently ignoring
+    a mismatch.
     """
     if not isinstance(value, list) or not value:
         errors.append(where + " must be a non-empty array of runs.")
@@ -177,7 +264,7 @@ def validate_runs(
         if not isinstance(entry, dict):
             errors.append(at + " must be an object.")
             return None
-        expect_keys(entry, {"text", "style", "href"}, at, errors)
+        expect_keys(entry, {"text", "style", "href", "lang"}, at, errors)
         run_text = entry.get("text")
         if not isinstance(run_text, str) or not run_text:
             errors.append(at + ".text must be a non-empty string.")
@@ -194,6 +281,12 @@ def validate_runs(
                 errors.append(at + ".href must use a safe scheme (#, http(s):, mailto:, tel:).")
                 return None
             run["href"] = href
+        if "lang" in entry:
+            run_lang = entry.get("lang")
+            if not isinstance(run_lang, str) or not BCP47_RE.fullmatch(run_lang.strip()):
+                errors.append(at + ".lang must be a BCP 47-style language tag.")
+                return None
+            run["lang"] = run_lang.strip()
         runs.append(run)
     if "".join(run["text"] for run in runs) != text:
         errors.append(
@@ -272,35 +365,85 @@ def image_data_uri(relative_path: str, plan_dir: Path) -> Tuple[Optional[str], O
     return f"data:{mime};base64,{encoded}", None
 
 
+def _list_item_text(item: Any) -> str:
+    if isinstance(item, dict):
+        pieces = [str(item.get("text") or "")]
+        children = item.get("children")
+        if isinstance(children, dict):
+            for child in children.get("items") or []:
+                pieces.append(_list_item_text(child))
+        return " ".join(p for p in pieces if p)
+    return str(item or "")
+
+
+def _list_items_recall_text(items: Any, ordered: bool) -> str:
+    pieces: List[str] = []
+    for position, item in enumerate(items or [], start=1):
+        if isinstance(item, dict):
+            own = str(item.get("text") or "")
+            pieces.append(f"{position}. {own}" if ordered else own)
+            children = item.get("children")
+            if isinstance(children, dict):
+                pieces.append(_list_items_recall_text(children.get("items"), bool(children.get("ordered"))))
+        else:
+            own = str(item or "")
+            pieces.append(f"{position}. {own}" if ordered else own)
+    return " ".join(p for p in pieces if p)
+
+
+def _cell_text(cell: Any) -> str:
+    if isinstance(cell, dict):
+        return str(cell.get("text") or "")
+    return str(cell or "")
+
+
 def block_text(block: Dict[str, Any]) -> str:
     kind = block.get("type")
     if kind in {"heading", "paragraph", "blockquote", "link"}:
         return str(block.get("text") or "")
     if kind == "list":
-        return " ".join(str(item) for item in block.get("items") or [])
+        return " ".join(_list_item_text(item) for item in block.get("items") or [])
     if kind == "table":
         cells: List[str] = [str(block.get("caption") or "")]
-        cells.extend(str(item) for item in block.get("columns") or [])
+        cells.extend(_cell_text(item) for item in block.get("columns") or [])
         for row in block.get("rows") or []:
             if isinstance(row, list):
-                cells.extend(str(item) for item in row)
+                cells.extend(_cell_text(item) for item in row)
         return " ".join(cells)
     if kind == "image":
         return " ".join(str(block.get(key) or "") for key in ("alt", "caption"))
+    if kind == "code":
+        return " ".join(str(block.get(key) or "") for key in ("text", "caption") if block.get(key))
+    if kind == "formula":
+        return " ".join(
+            str(block.get(key) or "")
+            for key in ("alt_text", "expression", "caption")
+            if block.get(key)
+        )
     return ""
 
 
 def plan_internal_token_recall(source_pages: Any, blocks: List[Dict[str, Any]]) -> Optional[float]:
     if not isinstance(source_pages, list) or not source_pages:
         return None
+    from collections import Counter
+
     source = " ".join(str(page.get("text") or "") for page in source_pages if isinstance(page, dict))
-    output = " ".join(block_text(block) for block in blocks)
+    output_parts: List[str] = []
+    for block in blocks:
+        if block.get("type") == "list":
+            output_parts.append(_list_items_recall_text(block.get("items"), bool(block.get("ordered"))))
+        else:
+            output_parts.append(block_text(block))
+    output = " ".join(output_parts)
     pattern = re.compile(r"[^\W_]+", re.UNICODE)
-    source_tokens = set(token.lower() for token in pattern.findall(source) if len(token) > 1)
-    output_tokens = set(token.lower() for token in pattern.findall(output) if len(token) > 1)
-    if not source_tokens:
+    source_counts = Counter(token.lower() for token in pattern.findall(source) if len(token) > 1)
+    output_counts = Counter(token.lower() for token in pattern.findall(output) if len(token) > 1)
+    total = sum(source_counts.values())
+    if not total:
         return None
-    return round(len(source_tokens & output_tokens) / len(source_tokens), 4)
+    matched = sum(min(count, output_counts.get(token, 0)) for token, count in source_counts.items())
+    return round(matched / total, 4)
 
 
 def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
@@ -387,7 +530,46 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
         "image": {"type", "alt", "decorative", "path", "caption", "source_page", "id"},
         "link": {"type", "text", "url", "source_page", "id"},
         "page_break": {"type", "page", "label"},
+        "code": {"type", "text", "language", "caption", "source_page", "id"},
+        "formula": {"type", "alt_text", "expression", "mathml", "caption", "source_page", "id"},
     }
+    def _validate_list_items(raw_items: Any, at: str, depth: int = 1) -> List[Any]:
+        if not isinstance(raw_items, list) or not raw_items:
+            errors.append(at + " must be a non-empty array.")
+            return []
+        if len(raw_items) > 1000:
+            errors.append(at + " exceeds 1000 entries.")
+        out_items: List[Any] = []
+        for idx, item in enumerate(raw_items):
+            item_at = f"{at}[{idx}]"
+            if isinstance(item, str):
+                out_items.append(expect_text(item, item_at, errors, maximum=20_000))
+            elif isinstance(item, dict):
+                expect_keys(item, {"text", "runs", "children"}, item_at, errors)
+                item_text = expect_text(item.get("text"), item_at + ".text", errors, maximum=20_000)
+                norm_item: Dict[str, Any] = {"text": item_text}
+                if "runs" in item:
+                    norm_item["runs"] = validate_runs(item.get("runs"), item_text, item_at + ".runs", errors)
+                if "children" in item:
+                    if depth >= MAX_LIST_DEPTH:
+                        errors.append(item_at + f".children exceeds maximum list nesting depth ({MAX_LIST_DEPTH}).")
+                    else:
+                        child_list = item.get("children")
+                        if not isinstance(child_list, dict):
+                            errors.append(item_at + ".children must be an object.")
+                        else:
+                            expect_keys(child_list, {"ordered", "items"}, item_at + ".children", errors)
+                            if not isinstance(child_list.get("ordered"), bool):
+                                errors.append(item_at + ".children.ordered must be boolean.")
+                            norm_item["children"] = {
+                                "ordered": bool(child_list.get("ordered")),
+                                "items": _validate_list_items(child_list.get("items"), item_at + ".children.items", depth + 1),
+                            }
+                out_items.append(norm_item)
+            else:
+                errors.append(item_at + " must be a string or an object with 'text'.")
+                out_items.append("")
+        return out_items
     # Optional stable anchors (2026-08-10, ed-parent-guide run): a block may
     # declare an `id` so runs can carry working in-document `#id` links —
     # source PDFs routinely link footnote markers to their footnotes via GoTo
@@ -440,16 +622,7 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
         elif kind == "list":
             if not isinstance(raw.get("ordered"), bool):
                 errors.append(where + ".ordered must be boolean.")
-            items = raw.get("items")
-            if not isinstance(items, list) or not items:
-                errors.append(where + ".items must be a non-empty array.")
-                items = []
-            if len(items) > 1000:
-                errors.append(where + ".items exceeds 1000 entries.")
-            block["items"] = [
-                expect_text(item, f"{where}.items[{item_index}]", errors, maximum=20_000)
-                for item_index, item in enumerate(items)
-            ]
+            block["items"] = _validate_list_items(raw.get("items"), where + ".items", depth=1)
             if "item_runs" in raw:
                 item_runs = raw.get("item_runs")
                 if not isinstance(item_runs, list) or len(item_runs) != len(block["items"]):
@@ -457,12 +630,22 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
                         where + ".item_runs must have exactly one entry per item."
                     )
                 else:
-                    block["item_runs"] = [
-                        validate_runs(
-                            entry, block["items"][run_index], f"{where}.item_runs[{run_index}]", errors
-                        )
-                        for run_index, entry in enumerate(item_runs)
-                    ]
+                    validated_item_runs: List[Any] = []
+                    for run_index, entry in enumerate(item_runs):
+                        target_item = block["items"][run_index]
+                        if entry is None:
+                            validated_item_runs.append(None)
+                        elif isinstance(target_item, dict) and target_item.get("runs") is not None:
+                            errors.append(
+                                f"{where}.item_runs[{run_index}] conflicts with inline runs on items[{run_index}]."
+                            )
+                            validated_item_runs.append(None)
+                        else:
+                            item_text = target_item["text"] if isinstance(target_item, dict) else target_item
+                            validated_item_runs.append(
+                                validate_runs(entry, item_text, f"{where}.item_runs[{run_index}]", errors)
+                            )
+                    block["item_runs"] = validated_item_runs
         elif kind == "table":
             block["caption"] = expect_text(raw.get("caption"), where + ".caption", errors, maximum=2000)
             columns = raw.get("columns")
@@ -472,29 +655,110 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
                 columns = []
             if len(columns) > 100:
                 errors.append(where + ".columns exceeds 100 entries.")
-            block["columns"] = [
-                expect_text(value, f"{where}.columns[{column_index}]", errors, maximum=2000)
-                for column_index, value in enumerate(columns)
-            ]
+            normalized_columns: List[Any] = []
+            total_cols = 0
+            has_complex_table = False
+            for column_index, value in enumerate(columns):
+                col_at = f"{where}.columns[{column_index}]"
+                if isinstance(value, str):
+                    normalized_columns.append(expect_text(value, col_at, errors, maximum=2000))
+                    total_cols += 1
+                elif isinstance(value, dict):
+                    expect_keys(value, {"text", "colspan"}, col_at, errors)
+                    col_text = expect_text(value.get("text"), col_at + ".text", errors, maximum=2000)
+                    col_span = expect_int(value.get("colspan", 1), col_at + ".colspan", errors, 1, 100) or 1
+                    if col_span > 1:
+                        has_complex_table = True
+                    normalized_columns.append({"text": col_text, "colspan": col_span})
+                    total_cols += col_span
+                else:
+                    errors.append(col_at + " must be a string or an object with 'text'.")
+                    normalized_columns.append("")
+                    total_cols += 1
+            if total_cols > 100:
+                errors.append(where + ".columns total span exceeds 100 columns.")
+            block["columns"] = normalized_columns
             if not isinstance(rows, list) or not rows:
                 errors.append(where + ".rows must be a non-empty array.")
                 rows = []
             if len(rows) > 5000:
                 errors.append(where + ".rows exceeds 5000 entries.")
-            normalized_rows = []
+            normalized_rows: List[List[Any]] = []
+            occupied: Dict[Tuple[int, int], bool] = {}
+            num_rows = len(rows)
             for row_index, row in enumerate(rows):
                 if not isinstance(row, list):
                     errors.append(f"{where}.rows[{row_index}] must be an array.")
                     continue
-                if len(row) != len(columns):
-                    errors.append(
-                        f"{where}.rows[{row_index}] has {len(row)} cells; expected {len(columns)}."
-                    )
-                normalized_rows.append([
-                    expect_text(cell, f"{where}.rows[{row_index}][{cell_index}]", errors, minimum=0, maximum=20_000)
-                    for cell_index, cell in enumerate(row)
-                ])
+                norm_row: List[Any] = []
+                col_cursor = 0
+                row_valid = True
+                for cell_index, cell in enumerate(row):
+                    cell_at = f"{where}.rows[{row_index}][{cell_index}]"
+                    while col_cursor < total_cols and occupied.get((row_index, col_cursor)):
+                        col_cursor += 1
+                    if isinstance(cell, str):
+                        cell_text = expect_text(cell, cell_at, errors, minimum=0, maximum=20_000)
+                        cs, rs = 1, 1
+                        norm_row.append(cell_text)
+                    elif isinstance(cell, dict):
+                        expect_keys(cell, {"text", "colspan", "rowspan", "header", "runs"}, cell_at, errors)
+                        cell_text = expect_text(cell.get("text"), cell_at + ".text", errors, minimum=0, maximum=20_000)
+                        cs = expect_int(cell.get("colspan", 1), cell_at + ".colspan", errors, 1, 100) or 1
+                        rs = expect_int(cell.get("rowspan", 1), cell_at + ".rowspan", errors, 1, 100) or 1
+                        hdr = cell.get("header")
+                        if hdr is not None and not isinstance(hdr, bool):
+                            errors.append(cell_at + ".header must be boolean.")
+                            hdr = False
+                        if cs > 1 or rs > 1 or hdr:
+                            has_complex_table = True
+                        norm_cell: Dict[str, Any] = {"text": cell_text}
+                        if cs > 1:
+                            norm_cell["colspan"] = cs
+                        if rs > 1:
+                            norm_cell["rowspan"] = rs
+                        if hdr:
+                            norm_cell["header"] = True
+                        if "runs" in cell:
+                            norm_cell["runs"] = validate_runs(cell.get("runs"), cell_text, cell_at + ".runs", errors)
+                        norm_row.append(norm_cell)
+                    else:
+                        errors.append(cell_at + " must be a string or an object with 'text'.")
+                        cs, rs = 1, 1
+                        norm_row.append("")
+                    if total_cols > 0:
+                        if col_cursor + cs > total_cols:
+                            errors.append(
+                                f"{where}.rows[{row_index}] exceeds expected {total_cols} column(s) at cell {cell_index}."
+                            )
+                            row_valid = False
+                        elif row_index + rs > num_rows:
+                            errors.append(
+                                f"{cell_at}.rowspan ({rs}) extends past the last row of the table."
+                            )
+                            row_valid = False
+                        else:
+                            for dr in range(rs):
+                                for dc in range(cs):
+                                    pos = (row_index + dr, col_cursor + dc)
+                                    if occupied.get(pos):
+                                        errors.append(
+                                            f"{cell_at} overlaps an earlier spanning cell at row {pos[0]}, col {pos[1]}."
+                                        )
+                                        row_valid = False
+                                    else:
+                                        occupied[pos] = True
+                    col_cursor += cs
+                if row_valid and total_cols > 0:
+                    missing_cols = [c for c in range(total_cols) if not occupied.get((row_index, c))]
+                    if missing_cols:
+                        errors.append(
+                            f"{where}.rows[{row_index}] fills {total_cols - len(missing_cols)} column(s); expected {total_cols}."
+                        )
+                normalized_rows.append(norm_row)
             block["rows"] = normalized_rows
+            block["_complex_table"] = has_complex_table
+            block["_total_cols"] = total_cols
             if "row_headers" in raw and not isinstance(raw.get("row_headers"), bool):
                 errors.append(where + ".row_headers must be boolean.")
             if "cell_runs" in raw:
@@ -519,12 +783,19 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
                             if cell_entry is None:
                                 validated_row.append(None)
                             else:
-                                validated_row.append(validate_runs(
-                                    cell_entry,
-                                    row_cells[cell_index],
-                                    f"{where}.cell_runs[{row_index}][{cell_index}]",
-                                    errors,
-                                ))
+                                target_cell = row_cells[cell_index]
+                                if isinstance(target_cell, dict) and target_cell.get("runs") is not None:
+                                    errors.append(
+                                        f"{where}.cell_runs[{row_index}][{cell_index}] conflicts with inline runs on rows[{row_index}][{cell_index}]."
+                                    )
+                                    validated_row.append(None)
+                                else:
+                                    validated_row.append(validate_runs(
+                                        cell_entry,
+                                        _cell_text(target_cell),
+                                        f"{where}.cell_runs[{row_index}][{cell_index}]",
+                                        errors,
+                                    ))
                         validated_cell_runs.append(validated_row)
                     block["cell_runs"] = validated_cell_runs
         elif kind == "image":
@@ -565,6 +836,34 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
             block["page"] = page
             if "label" in raw:
                 block["label"] = expect_text(raw.get("label"), where + ".label", errors, minimum=0, maximum=200)
+        elif kind == "code":
+            # Preserve leading/trailing indentation inside code blocks while rejecting blank-only code.
+            raw_code = raw.get("text")
+            if not isinstance(raw_code, str) or not raw_code.strip():
+                errors.append(where + ".text must be a non-empty string.")
+                block["text"] = ""
+            elif len(raw_code) > 200_000:
+                errors.append(where + ".text exceeds its length limit.")
+                block["text"] = raw_code[:200_000]
+            else:
+                block["text"] = raw_code
+            if "language" in raw:
+                block["language"] = expect_text(raw.get("language"), where + ".language", errors, minimum=0, maximum=64)
+            if "caption" in raw:
+                block["caption"] = expect_text(raw.get("caption"), where + ".caption", errors, minimum=0, maximum=2000)
+        elif kind == "formula":
+            alt_text = expect_text(raw.get("alt_text"), where + ".alt_text", errors, maximum=4000)
+            block["alt_text"] = alt_text
+            if "expression" in raw:
+                block["expression"] = expect_text(raw.get("expression"), where + ".expression", errors, minimum=0, maximum=10_000)
+            if "caption" in raw:
+                block["caption"] = expect_text(raw.get("caption"), where + ".caption", errors, minimum=0, maximum=2000)
+            if "mathml" in raw:
+                clean_mathml, mathml_err = sanitize_mathml(raw.get("mathml"), alt_text)
+                if mathml_err:
+                    errors.append(where + ".mathml: " + mathml_err)
+                elif clean_mathml:
+                    block["_mathml_html"] = clean_mathml
 
         total_chars += len(block_text(block))
         normalized_blocks.append(block)
@@ -591,11 +890,26 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
                 if isinstance(href, str) and href.startswith("#"):
                     internal_href_sites.append((at, href[1:]))
 
+    def _collect_list_internal_hrefs(items_value: Any, at: str) -> None:
+        for idx, item in enumerate(items_value or []):
+            if isinstance(item, dict):
+                _collect_internal_hrefs(item.get("runs"), f"{at}[{idx}].runs")
+                children = item.get("children")
+                if isinstance(children, dict):
+                    _collect_list_internal_hrefs(children.get("items"), f"{at}[{idx}].children.items")
+
     for index, block in enumerate(normalized_blocks):
         at = f"blocks[{index}]"
         _collect_internal_hrefs(block.get("runs"), at + ".runs")
+        if block.get("type") == "list":
+            _collect_list_internal_hrefs(block.get("items"), at + ".items")
         for run_index, entry in enumerate(block.get("item_runs") or []):
             _collect_internal_hrefs(entry, f"{at}.item_runs[{run_index}]")
+        if block.get("type") == "table":
+            for row_index, row_cells in enumerate(block.get("rows") or []):
+                for cell_index, cell in enumerate(row_cells or []):
+                    if isinstance(cell, dict):
+                        _collect_internal_hrefs(cell.get("runs"), f"{at}.rows[{row_index}][{cell_index}].runs")
         for row_index, row_entry in enumerate(block.get("cell_runs") or []):
             for cell_index, cell_entry in enumerate(row_entry or []):
                 _collect_internal_hrefs(cell_entry, f"{at}.cell_runs[{row_index}][{cell_index}]")
@@ -668,10 +982,10 @@ _RUN_TAGS = {"emphasis": "em", "strong": "strong"}
 
 
 def render_inline(text: str, runs: Optional[List[Dict[str, str]]]) -> str:
-    """Render a text block, applying inline styling when the plan supplies it.
+    """Render a text block, applying inline styling/language/links when supplied.
 
     Falls back to the plain escaped text when there are no runs, so a plan
-    without styling renders exactly as before.
+    without runs renders byte-identically to before.
     """
     if not runs:
         return esc_lines(text)
@@ -681,6 +995,10 @@ def render_inline(text: str, runs: Optional[List[Dict[str, str]]]) -> str:
         body = esc_lines(run["text"])
         if tag:
             body = f"<{tag}>{body}</{tag}>"
+        run_lang = run.get("lang")
+        if run_lang:
+            rtl = ' dir="rtl"' if is_rtl_language(run_lang) else ""
+            body = f'<span lang="{esc(run_lang)}"{rtl}>{body}</span>'
         href = run.get("href")
         if href:
             body = f'<a href="{esc(href)}">{body}</a>'
@@ -688,10 +1006,41 @@ def render_inline(text: str, runs: Optional[List[Dict[str, str]]]) -> str:
     return "".join(pieces)
 
 
+def _render_list_items(items: List[Any], item_runs: Optional[List[Any]] = None) -> str:
+    rendered: List[str] = []
+    for idx, item in enumerate(items or []):
+        if isinstance(item, dict):
+            runs = item.get("runs")
+            if runs is None and item_runs and idx < len(item_runs):
+                runs = item_runs[idx]
+            inner = render_inline(item["text"], runs)
+            children = item.get("children")
+            if isinstance(children, dict) and children.get("items"):
+                sub_tag = "ol" if children.get("ordered") else "ul"
+                inner += f"<{sub_tag}>{_render_list_items(children['items'])}</{sub_tag}>"
+            rendered.append(f"<li>{inner}</li>")
+        else:
+            runs = item_runs[idx] if item_runs and idx < len(item_runs) else None
+            rendered.append(f"<li>{render_inline(item, runs)}</li>")
+    return "".join(rendered)
+
+
+RTL_LANG_CODES = frozenset({
+    "ar", "arc", "he", "iw", "fa", "prs", "ur", "ps",
+    "ku", "ckb", "sd", "ug", "yi", "dv", "syr", "nqo",
+})
+
+
+def is_rtl_language(lang: Any) -> bool:
+    primary = re.split(r"[-_]", str(lang or "").strip().lower(), maxsplit=1)[0]
+    return primary in RTL_LANG_CODES
+
+
 def render_html(validated: Dict[str, Any]) -> str:
     document = validated["document"]
     parts: List[str] = []
     image_caption_counter = [1]  # unique ids for aria-describedby targets
+    table_counter = [0]
     for block in validated["blocks"]:
         kind = block["type"]
         page = block.get("source_page")
@@ -713,59 +1062,151 @@ def render_html(validated: Dict[str, Any]) -> str:
             )
         elif kind == "list":
             tag = "ol" if block.get("ordered") else "ul"
-            item_runs = block.get("item_runs") or []
-            items = "".join(
-                "<li>"
-                + render_inline(item, item_runs[item_index] if item_index < len(item_runs) else None)
-                + "</li>"
-                for item_index, item in enumerate(block.get("items") or [])
-            )
+            items = _render_list_items(block.get("items") or [], block.get("item_runs"))
             parts.append(f"<{tag}{source_attr}>{items}</{tag}>")
         elif kind == "table":
-            headers = "".join(f'<th scope="col">{esc(value)}</th>' for value in block["columns"])
+            is_complex = bool(block.get("_complex_table"))
             cell_runs = block.get("cell_runs") or []
-            rows = []
-            for row_index, row in enumerate(block["rows"]):
-                row_runs = cell_runs[row_index] if row_index < len(cell_runs) else None
-                cells = []
-                for index, value in enumerate(row):
-                    runs = row_runs[index] if row_runs and index < len(row_runs) else None
-                    body = render_inline(value, runs)
-                    # An EMPTY cell needs something to draw, or it does not
-                    # survive into the tagged PDF at all. Chromium's export
-                    # builds structure elements from MARKED CONTENT, and a cell
-                    # with nothing in it paints nothing, so no /TD is emitted
-                    # and the row reaches veraPDF one column short:
-                    # "Table rows shall have the same number of columns"
-                    # (PDF/UA-1 clause 7.2). It cost 22 failed checks on the
-                    # i1040 rebuild, one for every worksheet whose Amount
-                    # column is blank because that is where a filer writes.
-                    #
-                    # A NO-BREAK SPACE fixes it: it has a nonzero advance
-                    # width, so Chromium always emits a text run (and thus a
-                    # /TD) for the cell, while a screen reader still reports
-                    # the cell as blank and text extraction sees only
-                    # whitespace. A ZERO-WIDTH space was tried first on the
-                    # theory that painting no ink at all was purer - and it
-                    # cut the i1040 failures from 22 to 1, but the last one
-                    # (IRA Deduction Worksheet part 2, 2026-08-09 run) showed
-                    # Chromium CULLS a zero-advance-only cell under some
-                    # fragmentation conditions, dropping exactly one of two
-                    # adjacent ZWSP cells per row while the identically shaped
-                    # part 1 on the previous page kept all of its cells. A
-                    # blank that survives layout beats an invisible one that
-                    # does not.
-                    if not body:
-                        body = "&#160;"
-                    if index == 0 and block.get("row_headers"):
-                        cells.append(f'<th scope="row">{body}</th>')
+            if not is_complex:
+                headers = "".join(f'<th scope="col">{esc(_cell_text(value))}</th>' for value in block["columns"])
+                rows = []
+                for row_index, row in enumerate(block["rows"]):
+                    row_runs = cell_runs[row_index] if row_index < len(cell_runs) else None
+                    cells = []
+                    for index, value in enumerate(row):
+                        runs = value.get("runs") if isinstance(value, dict) and value.get("runs") is not None else (
+                            row_runs[index] if row_runs and index < len(row_runs) else None
+                        )
+                        body = render_inline(_cell_text(value), runs)
+                        if not body:
+                            body = "&#160;"
+                        if index == 0 and block.get("row_headers"):
+                            cells.append(f'<th scope="row">{body}</th>')
+                        else:
+                            cells.append(f"<td>{body}</td>")
+                    rows.append("<tr>" + "".join(cells) + "</tr>")
+                parts.append(
+                    f"<table{source_attr}><caption>{esc(block['caption'])}</caption>"
+                    f"<thead><tr>{headers}</tr></thead><tbody>{''.join(rows)}</tbody></table>"
+                )
+            else:
+                table_counter[0] += 1
+                tid = f"alloflow-tbl-{table_counter[0]}"
+                total_cols = int(block.get("_total_cols") or 0) or sum(
+                    (c.get("colspan", 1) if isinstance(c, dict) else 1) for c in block["columns"]
+                )
+                col_header_by_col: Dict[int, str] = {}
+                header_parts: List[str] = []
+                col_pos = 0
+                for col_idx, col in enumerate(block["columns"]):
+                    cs = int(col.get("colspan", 1)) if isinstance(col, dict) else 1
+                    col_id = f"{tid}-c{col_idx}"
+                    scope = "colgroup" if cs > 1 else "col"
+                    span_attr = f' colspan="{cs}"' if cs > 1 else ""
+                    header_parts.append(f'<th id="{col_id}" scope="{scope}"{span_attr}>{esc(_cell_text(col))}</th>')
+                    for dc in range(cs):
+                        col_header_by_col[col_pos + dc] = col_id
+                    col_pos += cs
+
+                # Compute exact (r, c, cs, rs, is_th, th_id) placement for H43 headers wiring.
+                occupied: Dict[Tuple[int, int], bool] = {}
+                occupied_td: Dict[Tuple[int, int], bool] = {}
+                occupied_th: Dict[Tuple[int, int], str] = {}
+                placed_rows: List[List[Dict[str, Any]]] = []
+                row_headers_by_row: Dict[int, List[Tuple[int, str]]] = {}
+                subheader_rows: set = set()
+                for row_index, row in enumerate(block["rows"]):
+                    row_runs = cell_runs[row_index] if row_index < len(cell_runs) else None
+                    placed_row: List[Dict[str, Any]] = []
+                    col_cursor = 0
+                    for cell_index, cell in enumerate(row):
+                        while col_cursor < total_cols and occupied.get((row_index, col_cursor)):
+                            col_cursor += 1
+                        cs = int(cell.get("colspan", 1)) if isinstance(cell, dict) else 1
+                        rs = int(cell.get("rowspan", 1)) if isinstance(cell, dict) else 1
+                        explicit_hdr = bool(cell.get("header")) if isinstance(cell, dict) else False
+                        is_th = explicit_hdr or (col_cursor == 0 and bool(block.get("row_headers")))
+                        th_id = f"{tid}-r{row_index}-c{col_cursor}" if is_th else None
+                        for dr in range(rs):
+                            for dc in range(cs):
+                                occupied[(row_index + dr, col_cursor + dc)] = True
+                                if is_th and th_id:
+                                    occupied_th[(row_index + dr, col_cursor + dc)] = th_id
+                                else:
+                                    occupied_td[(row_index + dr, col_cursor + dc)] = True
+                        runs = cell.get("runs") if isinstance(cell, dict) and cell.get("runs") is not None else (
+                            row_runs[cell_index] if row_runs and cell_index < len(row_runs) else None
+                        )
+                        placed_row.append({
+                            "col": col_cursor, "cs": cs, "rs": rs, "is_th": is_th,
+                            "th_id": th_id, "text": _cell_text(cell), "runs": runs,
+                        })
+                        col_cursor += cs
+                    is_all_header_row = (
+                        bool(placed_row)
+                        and all(item["is_th"] for item in placed_row)
+                        and not any(occupied_td.get((row_index, c)) for c in range(total_cols))
+                    )
+                    if is_all_header_row:
+                        subheader_rows.add(row_index)
                     else:
-                        cells.append(f"<td>{body}</td>")
-                rows.append("<tr>" + "".join(cells) + "</tr>")
-            parts.append(
-                f"<table{source_attr}><caption>{esc(block['caption'])}</caption>"
-                f"<thead><tr>{headers}</tr></thead><tbody>{''.join(rows)}</tbody></table>"
-            )
+                        for item in placed_row:
+                            if item["is_th"] and item["th_id"]:
+                                for dr in range(item["rs"]):
+                                    row_headers_by_row.setdefault(row_index + dr, []).append(
+                                        (item["col"], item["th_id"])
+                                    )
+                    placed_rows.append(placed_row)
+
+                rows = []
+                active_subheaders: Dict[int, List[str]] = {}
+                for row_index, placed_row in enumerate(placed_rows):
+                    is_subheader_row = row_index in subheader_rows
+                    if is_subheader_row:
+                        new_subheaders: Dict[int, List[str]] = {}
+                        for c in range(total_cols):
+                            prior_th = occupied_th.get((row_index, c))
+                            if prior_th:
+                                new_subheaders.setdefault(c, []).append(prior_th)
+                        for item in placed_row:
+                            if item["th_id"]:
+                                for dc in range(item["cs"]):
+                                    col_list = new_subheaders.setdefault(item["col"] + dc, [])
+                                    if item["th_id"] not in col_list:
+                                        col_list.append(item["th_id"])
+                        active_subheaders = new_subheaders
+                    cells = []
+                    for item in placed_row:
+                        body = render_inline(item["text"], item["runs"]) or "&#160;"
+                        cs, rs = item["cs"], item["rs"]
+                        span_attrs = (f' colspan="{cs}"' if cs > 1 else "") + (f' rowspan="{rs}"' if rs > 1 else "")
+                        if item["is_th"]:
+                            if is_subheader_row:
+                                scope = "colgroup" if cs > 1 else "col"
+                            else:
+                                scope = "colgroup" if cs == total_cols and total_cols > 1 else ("rowgroup" if rs > 1 else "row")
+                            cells.append(f'<th id="{item["th_id"]}" scope="{scope}"{span_attrs}>{body}</th>')
+                        else:
+                            hdr_ids: List[str] = []
+                            for dc in range(cs):
+                                cid = col_header_by_col.get(item["col"] + dc)
+                                if cid and cid not in hdr_ids:
+                                    hdr_ids.append(cid)
+                            for dc in range(cs):
+                                for sid in active_subheaders.get(item["col"] + dc, []):
+                                    if sid and sid not in hdr_ids:
+                                        hdr_ids.append(sid)
+                            for dr in range(rs):
+                                for th_col, rid in row_headers_by_row.get(row_index + dr, []):
+                                    if th_col < item["col"] and rid not in hdr_ids:
+                                        hdr_ids.append(rid)
+                            headers_attr = f' headers="{" ".join(hdr_ids)}"' if hdr_ids else ""
+                            cells.append(f"<td{headers_attr}{span_attrs}>{body}</td>")
+                    rows.append("<tr>" + "".join(cells) + "</tr>")
+                parts.append(
+                    f"<table{source_attr}><caption>{esc(block['caption'])}</caption>"
+                    f"<thead><tr>{''.join(header_parts)}</tr></thead><tbody>{''.join(rows)}</tbody></table>"
+                )
         elif kind == "image":
             # NOT <figure>/<figcaption>: Chromium's tagged-PDF export maps a
             # <figure> element to its own /Figure structure element, which
@@ -812,6 +1253,41 @@ def render_html(validated: Dict[str, Any]) -> str:
                 f'<span class="alloflow-page-break" role="doc-pagebreak" '
                 f'aria-label="{esc(label)}" data-page="{int(block["page"])}"></span>'
             )
+        elif kind == "code":
+            lang_attr = f' data-language="{esc(block["language"])}"' if block.get("language") else ""
+            has_caption = bool(block.get("caption"))
+            if has_caption:
+                cap_id = f"alloflow-codecap-{image_caption_counter[0]}"
+                image_caption_counter[0] += 1
+                parts.append(
+                    f'<div{source_attr} class="alloflow-code-block">'
+                    f'<p class="alloflow-code-caption" id="{cap_id}">{esc(block["caption"])}</p>'
+                    f'<pre aria-describedby="{cap_id}"{lang_attr}><code>{esc(block["text"])}</code></pre>'
+                    f"</div>"
+                )
+            else:
+                parts.append(f'<pre{source_attr}{lang_attr}><code>{esc(block["text"])}</code></pre>')
+        elif kind == "formula":
+            has_caption = bool(block.get("caption"))
+            describedby = ""
+            caption_html = ""
+            if has_caption:
+                cap_id = f"alloflow-formulacap-{image_caption_counter[0]}"
+                image_caption_counter[0] += 1
+                describedby = f' aria-describedby="{cap_id}"'
+                caption_html = f'<p class="alloflow-formula-caption" id="{cap_id}">{esc(block["caption"])}</p>'
+            mathml_html = block.get("_mathml_html")
+            if mathml_html:
+                inner = mathml_html
+            else:
+                display_text = block.get("expression") or block["alt_text"]
+                inner = f'<span class="alloflow-formula-text">{esc(display_text)}</span>'
+            parts.append(
+                f'<div{source_attr} class="alloflow-formula-block">'
+                f'<div class="alloflow-formula" role="math" '
+                f'aria-label="{esc(block["alt_text"])}"{describedby}>{inner}</div>'
+                f'{caption_html}</div>'
+            )
 
     subject_meta = (
         f'<meta name="description" content="{esc(document["subject"])}">' if document.get("subject") else ""
@@ -837,8 +1313,9 @@ def render_html(validated: Dict[str, Any]) -> str:
     else:
         notes_section = ""
     body = "\n".join(parts) + notes_section
+    rtl_attr = ' dir="rtl"' if is_rtl_language(document["language"]) else ""
     return f"""<!doctype html>
-<html lang="{esc(document['language'])}">
+<html lang="{esc(document['language'])}"{rtl_attr}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -858,9 +1335,9 @@ h2 {{ font-size: 1.55rem; margin-top: 1.6rem; }}
 h3 {{ font-size: 1.3rem; }}
 p, li {{ orphans: 3; widows: 3; }}
 a {{ color: #0645ad; text-decoration: underline; text-underline-offset: .12em; }}
-blockquote {{ border-left: .3rem solid #475569; margin-left: 0; padding-left: 1rem; }}
+blockquote {{ border-inline-start: .3rem solid #475569; margin-inline-start: 0; padding-inline-start: 1rem; }}
 table {{ border-collapse: collapse; width: 100%; margin: 1rem 0; break-inside: avoid; }}
-caption {{ font-weight: 700; text-align: left; margin-bottom: .35rem; }}
+caption {{ font-weight: 700; text-align: start; margin-bottom: .35rem; }}
 /* A ROW must not straddle a page break: `break-inside: avoid` on the table
    cannot help a table taller than a page (the i1040 tax tables run to 180
    rows), so without this a tall row can split and its two halves carry
@@ -870,19 +1347,23 @@ caption {{ font-weight: 700; text-align: left; margin-bottom: .35rem; }}
    - that count was 1 both before and after. Kept because it is correct, not
    because it was shown to fix that case. */
 tr, th, td {{ break-inside: avoid; }}
-th, td {{ border: 1px solid #4b5563; padding: .45rem; text-align: left; vertical-align: top; }}
+th, td {{ border: 1px solid #4b5563; padding: .45rem; text-align: start; vertical-align: top; }}
 th {{ background: #e5e7eb; color: #111827; }}
 img {{ display: block; height: auto; max-width: 100%; }}
 figcaption, .alloflow-figure-caption {{ margin-top: .35rem; color: #374151; }}
 .alloflow-figure-fallback {{ border: 2px solid #6b7280; padding: .75rem; }}
+pre {{ background: #f3f4f6; border: 1px solid #d1d5db; padding: .75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font: 10pt/1.45 Consolas, "Courier New", monospace; }}
+code {{ font-family: Consolas, "Courier New", monospace; }}
+.alloflow-code-caption, .alloflow-formula-caption {{ margin: .35rem 0; color: #374151; font-weight: 600; }}
+.alloflow-formula {{ margin: .75rem 0; padding: .5rem .75rem; background: #f8fafc; border-inline-start: .25rem solid #475569; }}
 .alloflow-page-break {{ display: block; break-before: page; height: 0; }}
 .alloflow-review-notes {{ break-before: page; margin-top: 2.5rem; border-top: .18rem solid #4b5563; padding-top: 1rem; font-size: .95rem; }}
 .alloflow-review-notes h2 {{ font-size: 1.3rem; }}
 @media print {{
   body {{ max-width: none; padding: 0; }}
   .skip-link {{ display: none; }}
-  h1, blockquote, th, td, .alloflow-figure-fallback {{ border: 0; }}
-  th {{ background: #ffffff; }}
+  h1, blockquote, th, td, pre, .alloflow-figure-fallback, .alloflow-formula {{ border: 0; }}
+  th, pre, .alloflow-formula {{ background: #ffffff; }}
 }}
 </style>
 </head>
@@ -912,6 +1393,11 @@ class StructuralAudit(HTMLParser):
         self.lang = ""
         self._in_title = False
         self.title_text = ""
+        self.seen_ids: set = set()
+        self.duplicate_ids: set = set()
+        self.idref_targets: List[Tuple[str, str]] = []
+        self._heading_depth = 0
+        self._heading_text = ""
 
     def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
         values = {key.lower(): (value or "") for key, value in attrs}
@@ -920,6 +1406,22 @@ class StructuralAudit(HTMLParser):
             self.errors.append("Active content or event handlers are not allowed.")
         if tag == "meta" and values.get("http-equiv", "").strip().lower() == "refresh":
             self.errors.append("Meta refresh navigation is not allowed.")
+        elem_id = values.get("id", "").strip()
+        if elem_id:
+            if elem_id in self.seen_ids:
+                self.duplicate_ids.add(elem_id)
+            else:
+                self.seen_ids.add(elem_id)
+        for ref_attr in ("aria-describedby", "aria-labelledby"):
+            raw_refs = values.get(ref_attr, "").strip()
+            if raw_refs:
+                for token in raw_refs.split():
+                    self.idref_targets.append((ref_attr, token))
+        if tag in {"td", "th"}:
+            raw_headers = values.get("headers", "").strip()
+            if raw_headers:
+                for token in raw_headers.split():
+                    self.idref_targets.append((f"{tag}[headers]", token))
         if tag == "html":
             self.lang = values.get("lang", "")
         elif tag == "title":
@@ -928,14 +1430,23 @@ class StructuralAudit(HTMLParser):
             self.main_count += 1
         elif re.fullmatch(r"h[1-6]", tag):
             self.headings.append(int(tag[1]))
+            self._heading_depth += 1
+            self._heading_text = values.get("aria-label", "")
         elif tag == "img":
             self.images += 1
             if "alt" not in values:
                 self.errors.append("An image is missing the alt attribute.")
+            elif self._heading_depth > 0:
+                self._heading_text += " " + values.get("alt", "")
         elif tag == "a":
             self.links += 1
-            if not safe_link(values.get("href", "")):
+            href = values.get("href", "")
+            if not safe_link(href):
                 self.errors.append("A link has an unsafe URL.")
+            elif href.strip().startswith("#"):
+                target = href.strip()[1:].strip()
+                if target:
+                    self.idref_targets.append(("a[href]", target))
         elif tag == "table":
             table = {"captions": 0, "headers": 0, "scoped_headers": 0}
             self._table_stack.append(table)
@@ -950,6 +1461,10 @@ class StructuralAudit(HTMLParser):
         tag = tag.lower()
         if tag == "title":
             self._in_title = False
+        elif re.fullmatch(r"h[1-6]", tag) and self._heading_depth > 0:
+            self._heading_depth -= 1
+            if self._heading_depth == 0 and not self._heading_text.strip():
+                self.errors.append("A heading element is empty.")
         elif tag == "table" and self._table_stack:
             table = self._table_stack.pop()
             self.tables.append(table)
@@ -961,6 +1476,8 @@ class StructuralAudit(HTMLParser):
     def handle_data(self, data: str) -> None:
         if self._in_title:
             self.title_text += data
+        if self._heading_depth > 0:
+            self._heading_text += data
 
 
 def audit_html(content: str) -> Dict[str, Any]:
@@ -970,17 +1487,27 @@ def audit_html(content: str) -> Dict[str, Any]:
         parser.close()
     except Exception as exc:
         parser.errors.append("HTML parser failed: " + compact_error(exc))
-    if not parser.lang:
+    lang = parser.lang.strip()
+    if not lang:
         parser.errors.append("The html element is missing a language.")
+    elif not BCP47_RE.fullmatch(lang):
+        parser.errors.append("The html element lang attribute is not a valid BCP 47 tag.")
     if not parser.title_text.strip():
         parser.errors.append("The document is missing a title.")
     if parser.main_count != 1:
         parser.errors.append("The document must contain exactly one main landmark.")
     if parser.headings.count(1) != 1:
         parser.errors.append("The document must contain exactly one h1.")
+    if parser.headings and parser.headings[0] != 1:
+        parser.errors.append("The first heading must be h1.")
     for previous, current in zip(parser.headings, parser.headings[1:]):
         if current > previous + 1:
             parser.errors.append(f"Heading hierarchy skips from h{previous} to h{current}.")
+    if parser.duplicate_ids:
+        parser.errors.append("The document contains duplicate id attributes.")
+    broken_refs = sorted({target for _, target in parser.idref_targets if target not in parser.seen_ids})
+    if broken_refs:
+        parser.errors.append("Broken internal ID references: " + ", ".join(broken_refs[:10]) + ".")
     return {
         "ok": not parser.errors,
         "errors": sorted(set(parser.errors)),
@@ -1092,6 +1619,11 @@ def capabilities() -> Dict[str, Any]:
         "independentVerification": True,
         "inlineStyling": sorted(RUN_STYLES),
         "inlineLinks": True,
+        "inlineLanguage": True,
+        "spannedTables": True,
+        "nestedLists": True,
+        "codeBlocks": True,
+        "formulaBlocks": True,
         "officeTextExtraction": True,
         "officeInput": True,
         "batchRemediation": True,
@@ -1149,21 +1681,35 @@ def render_pdf(html_path: Path, pdf_path: Path, pdfua_id: str = "none") -> Dict[
         return {"status": "failed", "reason": compact_error(exc)}
 
 
-def normalize_verapdf(parsed: Dict[str, Any]) -> Dict[str, Any]:
+def normalize_verapdf(parsed: Dict[str, Any], exit_code: Optional[int] = None) -> Dict[str, Any]:
     root = parsed.get("report") if isinstance(parsed.get("report"), dict) else parsed
     jobs = root.get("jobs") if isinstance(root, dict) else None
-    if not isinstance(jobs, list) or not jobs:
-        raise PortableError("veraPDF returned no validation job.", 5)
+    if not isinstance(jobs, list) or len(jobs) != 1:
+        raise PortableError("veraPDF must return exactly one validation job.", 5)
     job = jobs[0]
     validation = job.get("validationResult") if isinstance(job, dict) else None
     if isinstance(validation, list):
-        validation = validation[0] if validation else None
+        if len(validation) != 1:
+            raise PortableError("veraPDF must return exactly one validation result.", 5)
+        validation = validation[0]
     if not isinstance(validation, dict):
         raise PortableError("veraPDF returned no validation result.", 5)
-    details = validation.get("details") if isinstance(validation.get("details"), dict) else {}
-    summaries = details.get("ruleSummaries") if isinstance(details.get("ruleSummaries"), list) else []
+    job_end_status = validation.get("jobEndStatus")
+    if job_end_status is not None and job_end_status != "normal":
+        raise PortableError(
+            f"veraPDF stopped before finishing (jobEndStatus: {compact_error(job_end_status)}).", 5
+        )
+    profile_name = validation.get("profileName")
+    if profile_name is not None and profile_name != "PDF/UA-1 validation profile":
+        raise PortableError("veraPDF used a validation profile other than PDF/UA-1.", 5)
+    details = validation.get("details")
+    if not isinstance(details, dict):
+        raise PortableError("veraPDF returned no validation details.", 5)
+    summaries = details.get("ruleSummaries")
+    if summaries is not None and not isinstance(summaries, list):
+        raise PortableError("veraPDF ruleSummaries is malformed.", 5)
     failed_rules = []
-    for rule in summaries:
+    for rule in (summaries or []):
         if not isinstance(rule, dict):
             continue
         status = str(rule.get("ruleStatus") or rule.get("status") or "").upper()
@@ -1184,18 +1730,51 @@ def normalize_verapdf(parsed: Dict[str, Any]) -> Dict[str, Any]:
         compliant = compliant_value.strip().lower() == "true"
     else:
         raise PortableError("veraPDF omitted an explicit compliance result.", 5)
+    if exit_code is not None and exit_code != 0 and not (exit_code == 1 and not compliant):
+        raise PortableError(
+            f"veraPDF exited with code {exit_code}, which contradicts its compliance report.", 5
+        )
     if compliant and failed_rules:
         raise PortableError("veraPDF returned inconsistent compliance and failed-rule results.", 5)
-    reported_failed = details.get("failedRules")
-    if isinstance(reported_failed, bool) or not isinstance(reported_failed, int):
-        reported_failed = len(failed_rules)
+
+    def _require_count(key: str) -> int:
+        val = details.get(key)
+        if isinstance(val, bool) or not isinstance(val, int) or val < 0:
+            raise PortableError(f"veraPDF omitted or returned an invalid {key} count.", 5)
+        return val
+
+    passed_rules = _require_count("passedRules")
+    failed_rule_count = _require_count("failedRules")
+    passed_checks = _require_count("passedChecks")
+    failed_checks = _require_count("failedChecks")
+    if (passed_rules + failed_rule_count) <= 0 or (passed_checks + failed_checks) <= 0:
+        raise PortableError("veraPDF reported zero evaluated rules or checks.", 5)
+    if (failed_rule_count == 0) != (failed_checks == 0):
+        raise PortableError("veraPDF failedRules and failedChecks counts contradict each other.", 5)
+    if compliant != (failed_rule_count == 0 and failed_checks == 0):
+        raise PortableError("veraPDF compliance flag contradicts its rule/check counts.", 5)
     return {
         "status": "completed",
         "validator": "veraPDF",
         "standard": "PDF/UA-1",
+        "profile": "ua1",
         "compliant": compliant,
-        "failedRuleCount": reported_failed,
+        "passedRules": passed_rules,
+        "failedRuleCount": failed_rule_count,
+        "passedChecks": passed_checks,
+        "failedChecks": failed_checks,
+        "jobEndStatus": job_end_status or "normal",
         "failedRules": failed_rules,
+    }
+
+
+def _sanitized_java_env() -> Dict[str, str]:
+    blocked_names = {"NODE_OPTIONS", "JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "JDK_JAVA_OPTIONS"}
+    secret_pattern = re.compile(r"(?:API_KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE_KEY)", re.I)
+    return {
+        k: v
+        for k, v in os.environ.items()
+        if k not in blocked_names and not secret_pattern.search(k)
     }
 
 
@@ -1204,6 +1783,12 @@ def validate_pdf_ua(pdf_path: Path) -> Dict[str, Any]:
     jar = find_verapdf_jar()
     if not java or not jar:
         return {"status": "not_run", "reason": compact_error(java_reason) if java_reason else "Local Java and veraPDF are both required."}
+    try:
+        pdf_bytes = pdf_path.read_bytes()
+    except OSError as exc:
+        return {"status": "failed", "reason": compact_error(exc)}
+    input_sha256 = hashlib.sha256(pdf_bytes).hexdigest()
+    input_bytes = len(pdf_bytes)
     command = [
         java,
         "-Djava.awt.headless=true",
@@ -1225,6 +1810,7 @@ def validate_pdf_ua(pdf_path: Path) -> Dict[str, Any]:
             errors="replace",
             timeout=180,
             check=False,
+            env=_sanitized_java_env(),
         )
     except subprocess.TimeoutExpired:
         return {"status": "failed", "reason": "veraPDF exceeded the 180 second timeout."}
@@ -1234,10 +1820,15 @@ def validate_pdf_ua(pdf_path: Path) -> Dict[str, Any]:
         return {"status": "failed", "reason": compact_error(result.stderr or "veraPDF returned no JSON.")}
     try:
         parsed = json.loads(result.stdout)
-        normalized = normalize_verapdf(parsed)
+        normalized = normalize_verapdf(parsed, exit_code=result.returncode)
+        # Re-verify the validated file was not modified during validation.
+        if hashlib.sha256(pdf_path.read_bytes()).hexdigest() != input_sha256:
+            raise PortableError("PDF bytes changed during veraPDF validation.", 5)
         normalized["processExitCode"] = result.returncode
+        normalized["inputSha256"] = input_sha256
+        normalized["inputBytes"] = input_bytes
         return normalized
-    except (json.JSONDecodeError, PortableError) as exc:
+    except (json.JSONDecodeError, PortableError, OSError) as exc:
         return {"status": "failed", "reason": compact_error(exc), "processExitCode": result.returncode}
 
 
@@ -2535,13 +3126,16 @@ def _glyph_to_unicode(name: str) -> Optional[str]:
     m = re.fullmatch(r"uni((?:[0-9A-Fa-f]{4})+)", name)
     if m:
         hexes = m.group(1)
-        return "".join(chr(int(hexes[i:i + 4], 16)) for i in range(0, len(hexes), 4))
+        cps = [int(hexes[i:i + 4], 16) for i in range(0, len(hexes), 4)]
+        if any(0xD800 <= cp <= 0xDFFF for cp in cps):
+            return None
+        return "".join(chr(cp) for cp in cps)
     m = re.fullmatch(r"u([0-9A-Fa-f]{4,6})", name)
     if m:
-        try:
-            return chr(int(m.group(1), 16))
-        except ValueError:
+        cp = int(m.group(1), 16)
+        if cp > 0x10FFFF or (0xD800 <= cp <= 0xDFFF):
             return None
+        return chr(cp)
     if "_" in name:  # AGL ligature convention: 'f_i' joins its components
         parts = [_glyph_to_unicode(part) for part in name.split("_")]
         if parts and all(parts):
@@ -2597,11 +3191,30 @@ def _decode_font_bytes(raw: bytes, font: Optional[Dict[str, Any]]) -> str:
     return _expand_ligatures("".join(out))
 
 
+def _hex_to_utf16be(hex_bytes: bytes) -> str:
+    digits = re.sub(rb"\s+", b"", hex_bytes).decode("ascii", "ignore")
+    if not digits:
+        return ""
+    if len(digits) % 2:
+        digits += "0"
+    try:
+        raw = bytes.fromhex(digits)
+    except ValueError:
+        return ""
+    if len(raw) == 1:
+        return chr(raw[0])
+    text = raw.decode("utf-16-be", "ignore")
+    return "".join(ch for ch in text if not (0xD800 <= ord(ch) <= 0xDFFF))
+
+
 def _bfrange_target(dst_hex: bytes, offset: int) -> str:
-    text = bytes.fromhex(dst_hex.decode("ascii")).decode("utf-16-be", "ignore")
+    text = _hex_to_utf16be(dst_hex)
     if not text:
         return ""
-    return text[:-1] + chr(ord(text[-1]) + offset)
+    codepoint = ord(text[-1]) + offset
+    if codepoint > 0x10FFFF or (0xD800 <= codepoint <= 0xDFFF):
+        return ""
+    return text[:-1] + chr(codepoint)
 
 
 def _parse_tounicode(cmap_bytes: bytes) -> Dict[str, Any]:
@@ -2612,40 +3225,83 @@ def _parse_tounicode(cmap_bytes: bytes) -> Dict[str, Any]:
         code_len = max(1, len(space.group(1)) // 2)
     for section in re.findall(rb"beginbfchar(.*?)endbfchar", cmap_bytes, re.S):
         for src, dst in re.findall(rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>", section):
-            mapping[int(src, 16)] = bytes.fromhex(dst.decode("ascii")).decode("utf-16-be", "ignore")
+            val = _hex_to_utf16be(dst)
+            if val:
+                mapping[int(src, 16)] = val
     for section in re.findall(rb"beginbfrange(.*?)endbfrange", cmap_bytes, re.S):
-        for low, high, arr in re.findall(
-            rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*\[(.*?)\]", section, re.S
-        ):
-            targets = re.findall(rb"<([0-9A-Fa-f]+)>", arr)
-            for offset, dst in enumerate(targets):
-                mapping[int(low, 16) + offset] = bytes.fromhex(dst.decode("ascii")).decode(
-                    "utf-16-be", "ignore"
-                )
+        def _consume_array_bfrange(match: re.Match) -> bytes:
+            low_i = int(match.group(1), 16)
+            for offset, dst in enumerate(re.findall(rb"<([0-9A-Fa-f]+)>", match.group(3))):
+                val = _hex_to_utf16be(dst)
+                if val:
+                    mapping[low_i + offset] = val
+            return b" "
+
+        # Strip matched array entries before scalar matching so triples of hex
+        # tokens inside `[<...> <...> <...>]` are never misread as scalar ranges.
+        remainder = re.sub(
+            rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*\[(.*?)\]",
+            _consume_array_bfrange,
+            section,
+            flags=re.S,
+        )
         for low, high, dst in re.findall(
-            rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>", section
+            rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>", remainder
         ):
             low_i, high_i = int(low, 16), int(high, 16)
+            if high_i < low_i:
+                continue
             for offset in range(min(high_i - low_i, 0xFFFF) + 1):
-                mapping[low_i + offset] = _bfrange_target(dst, offset)
+                val = _bfrange_target(dst, offset)
+                if val:
+                    mapping[low_i + offset] = val
     return {"map": mapping, "codeLen": code_len}
 
 
 def _balanced_dict(data: bytes, start: int) -> Optional[bytes]:
     depth = 0
     i = start
-    while i < len(data) - 1:
-        pair = data[i:i + 2]
-        if pair == b"<<":
-            depth += 1
-            i += 2
-        elif pair == b">>":
+    length = len(data)
+    while i < length:
+        b = data[i]
+        if b == 0x28:  # '(' literal string: skip balanced parens & backslash escapes
+            paren_depth = 1
+            i += 1
+            while i < length and paren_depth > 0:
+                ch = data[i]
+                if ch == 0x5C:  # '\'
+                    i += 2
+                    continue
+                if ch == 0x28:
+                    paren_depth += 1
+                elif ch == 0x29:
+                    paren_depth -= 1
+                i += 1
+            continue
+        if b == 0x25:  # '%' PDF comment until EOL
+            i += 1
+            while i < length and data[i] not in (0x0A, 0x0D):
+                i += 1
+            continue
+        if b == 0x3C:  # '<'
+            if i + 1 < length and data[i + 1] == 0x3C:
+                depth += 1
+                i += 2
+            else:
+                # Single-angle hex string <...>: advance past its closing '>'
+                i += 1
+                while i < length and data[i] != 0x3E:
+                    i += 1
+                if i < length:
+                    i += 1
+            continue
+        if b == 0x3E and i + 1 < length and data[i + 1] == 0x3E:  # '>>'
             depth -= 1
             i += 2
             if depth == 0:
                 return data[start:i]
-        else:
-            i += 1
+            continue
+        i += 1
     return None
 
 
@@ -3588,9 +4244,8 @@ def _plan_text(validated: Dict[str, Any], include_alt: bool = True) -> str:
     # numbers were the entire 1.8% "missing" share).
     pieces: List[str] = []
     for block in validated["blocks"]:
-        if block.get("type") == "list" and block.get("ordered"):
-            for position, item in enumerate(block["items"], start=1):
-                pieces.append(f"{position}. {item}")
+        if block.get("type") == "list":
+            pieces.append(_list_items_recall_text(block.get("items"), bool(block.get("ordered"))))
         elif block.get("type") == "image" and not include_alt:
             pieces.append(str(block.get("caption") or ""))
         else:
@@ -4189,14 +4844,35 @@ def _worksheet_items(validated: Dict[str, Any]) -> List[Dict[str, Any]]:
             "rebuild (or covered by a disclosed omission in the review notes).",
             source_page=page,
         )
-    counters = {"heading": 0, "table": 0, "list": 0, "image": 0, "emphasis": 0, "link": 0}
+    counters = {"heading": 0, "table": 0, "list": 0, "image": 0, "formula": 0, "emphasis": 0, "link": 0}
+
+    def _collect_list_runs(items_value: Any) -> List[Any]:
+        groups: List[Any] = []
+        for item in items_value or []:
+            if isinstance(item, dict):
+                if item.get("runs"):
+                    groups.append(item["runs"])
+                children = item.get("children")
+                if isinstance(children, dict):
+                    groups.extend(_collect_list_runs(children.get("items")))
+        return groups
+
     for block in validated["blocks"]:
         kind = block.get("type")
-        run_groups = (
-            [cell for row in block["cell_runs"] for cell in (row or [])]
-            if block.get("cell_runs")
-            else (block["item_runs"] if block.get("item_runs") else [block.get("runs")])
-        )
+        run_groups: List[Any] = []
+        if block.get("runs"):
+            run_groups.append(block["runs"])
+        if block.get("item_runs"):
+            run_groups.extend(block["item_runs"])
+        if kind == "list":
+            run_groups.extend(_collect_list_runs(block.get("items")))
+        if block.get("cell_runs"):
+            run_groups.extend(cell for row in block["cell_runs"] for cell in (row or []))
+        if kind == "table":
+            for row in block.get("rows") or []:
+                for cell in row or []:
+                    if isinstance(cell, dict) and cell.get("runs"):
+                        run_groups.append(cell["runs"])
         all_runs = [run for group in run_groups for run in (group or [])]
         linked = [run for run in all_runs if run.get("href")]
         if linked:
@@ -4210,7 +4886,9 @@ def _worksheet_items(validated: Dict[str, Any]) -> List[Dict[str, Any]]:
                 links=[{"text": run["text"][:80], "href": run["href"][:200]} for run in linked[:10]],
                 source_page=block.get("source_page"),
             )
-        styled = block.get("runs") or block.get("item_runs") or block.get("cell_runs")
+        styled = any(run.get("style") in {"emphasis", "strong"} for run in all_runs) or bool(
+            block.get("runs") or block.get("item_runs") or block.get("cell_runs")
+        )
         if styled:
             counters["emphasis"] += 1
             emphasised = [
@@ -4243,7 +4921,7 @@ def _worksheet_items(validated: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "Compare EVERY cell of this table against the source, including header "
                 "assignment and row/column order.",
                 caption=block["caption"],
-                columns=len(block["columns"]),
+                columns=int(block.get("_total_cols") or len(block["columns"])),
                 rows=len(block["rows"]),
                 source_page=block["source_page"],
             )
@@ -4266,6 +4944,17 @@ def _worksheet_items(validated: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "Look at the source image and judge whether this alt text is accurate and "
                 "sufficient (not merely plausible).",
                 alt=block.get("alt", ""),
+                source_page=block["source_page"],
+            )
+        elif kind == "formula":
+            counters["formula"] += 1
+            add(
+                f"formula-{counters['formula']:03d}",
+                "formula",
+                "Compare this mathematical formula and its spoken alt_text against the source "
+                "equation for mathematical accuracy and completeness.",
+                alt_text=block.get("alt_text", ""),
+                has_mathml=bool(block.get("_mathml_html")),
                 source_page=block["source_page"],
             )
     add(
@@ -4662,7 +5351,8 @@ def main() -> int:
         emit_json({"ok": False, "error": str(exc), "code": exc.code})
         return exc.code
     except Exception as exc:  # Fail closed without printing document content.
-        emit_json({"ok": False, "error": "Unexpected local failure: " + compact_error(exc), "code": 1})
+        detail = compact_error(exc) or "no message"
+        emit_json({"ok": False, "error": f"Unexpected local failure ({type(exc).__name__}): {detail}", "code": 1})
         return 1
 
 

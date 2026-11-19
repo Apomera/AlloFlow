@@ -94,8 +94,12 @@
   var SYMBOL_ACTIVITIES = {
     symbol_runner: ['Symbol runner', 'symbol_naming'],
   };
+  var READ_ALONG_STRANDS = [['read_along', 'Read along']];
+  var READ_ALONG_ACTIVITIES = {
+    read_along: ['Read along', 'read_along'],
+  };
   // Every group a practice result is counted in, in the order they are shown.
-  var GROUPS = STRANDS.concat(MATH_STRANDS, VOCAB_STRANDS, SYMBOL_STRANDS, [OTHER_STRAND]);
+  var GROUPS = STRANDS.concat(MATH_STRANDS, VOCAB_STRANDS, SYMBOL_STRANDS, READ_ALONG_STRANDS, [OTHER_STRAND]);
   // The check measures and their units, named as the check files name them (packet_check_builder.js
   // MEASURES, and check_unit_* in the take-home loader). The test compares these too.
   var MEASURES = { quantity_discrimination: 'Quantity Discrimination', missing_number: 'Missing Number', math_dcpm: 'Math Fluency' };
@@ -286,11 +290,12 @@
     if (own(MATH_ACTIVITIES, id)) return MATH_ACTIVITIES[id][0];
     if (own(VOCAB_ACTIVITIES, id)) return VOCAB_ACTIVITIES[id][0];
     if (own(SYMBOL_ACTIVITIES, id)) return SYMBOL_ACTIVITIES[id][0];
+    if (own(READ_ALONG_ACTIVITIES, id)) return READ_ALONG_ACTIVITIES[id][0];
     if (!id || id === 'unknown') return 'Activity not recorded';
     var plain = String(id).replace(/_/g, ' ').trim();
     return plain.charAt(0).toUpperCase() + plain.slice(1);
   }
-  function strandOf(id) { return own(ACTIVITIES, id) ? ACTIVITIES[id][1] : own(MATH_ACTIVITIES, id) ? MATH_ACTIVITIES[id][1] : own(VOCAB_ACTIVITIES, id) ? VOCAB_ACTIVITIES[id][1] : own(SYMBOL_ACTIVITIES, id) ? SYMBOL_ACTIVITIES[id][1] : OTHER_STRAND[0]; }
+  function strandOf(id) { return own(ACTIVITIES, id) ? ACTIVITIES[id][1] : own(MATH_ACTIVITIES, id) ? MATH_ACTIVITIES[id][1] : own(VOCAB_ACTIVITIES, id) ? VOCAB_ACTIVITIES[id][1] : own(SYMBOL_ACTIVITIES, id) ? SYMBOL_ACTIVITIES[id][1] : own(READ_ALONG_ACTIVITIES, id) ? READ_ALONG_ACTIVITIES[id][1] : OTHER_STRAND[0]; }
   // A file that folds a few new facts in among known ones (math_rehearsal; any file whose item ids end
   // in -new or -known) is counted again for the new ones: most of its items are known facts, so the
   // overall first-try count says little about how the new ones are going.
@@ -813,7 +818,7 @@
       var value = number(row.value);
       return { learner: learner, measure: scalar(row.measure).slice(0, 200), name: text(row.name, 80), date: dayText(row.date),
         value: value === null || value < 0 || value > 1000000 ? null : value, note: text(row.note, 200) };
-    }).filter(function (row) { return row && row.learner && row.measure && row.name && row.date && row.value !== null; });
+    }).filter(function (row) { return row && typeof row.learner === 'string' && row.measure && row.name && row.date && row.value !== null; });
   }
   // Every value is read again as untrusted text, and every count is made again from the answers.
   function readBundle(data) {
@@ -1038,6 +1043,147 @@
     return String.fromCharCode(0xFEFF) + lines.map(function (cells) { return cells.map(csvCell).join(','); }).join('\r\n') + '\r\n';
   }
 
+  // ---------------------------------------------------------------------------
+  // Direct .zip reader (STORE + native DecompressionStream deflate-raw, zero external libs, DOM-free)
+  // Enforces strict zip-bomb caps: <= MAX_FILES entries, <= MAX_BYTES per entry (checked declared AND streamed),
+  // <= MAX_ZIP_TOTAL_OUT total bytes, rejecting nested .zip and non-CSV/JSON files.
+  // ---------------------------------------------------------------------------
+  var MAX_ZIP_BYTES = 50 * 1024 * 1024;
+  var MAX_ZIP_TOTAL_OUT = MAX_BYTES * 40;
+  function u16le(b, off) { return b[off] | (b[off + 1] << 8); }
+  function u32le(b, off) { return (b[off] | (b[off + 1] << 8) | (b[off + 2] << 16) | (b[off + 3] << 24)) >>> 0; }
+  function zipCleanName(raw) {
+    var clean = String(raw || '').replace(/\\/g, '/').replace(/[\u0000-\u001f\u007f]/g, '').replace(/^\/+/, '');
+    return clean.slice(0, 160);
+  }
+  function zipSkipMeta(name) {
+    if (!name || /\/$/.test(name)) return true;
+    var parts = name.split('/');
+    var base = parts[parts.length - 1];
+    var low = base.toLowerCase();
+    if (!base || low === '.ds_store' || low === 'thumbs.db' || low === 'desktop.ini' || base.indexOf('._') === 0) return true;
+    for (var i = 0; i < parts.length; i++) if (parts[i] === '__MACOSX') return true;
+    return false;
+  }
+  function inflateRawBounded(slice, maxBytes) {
+    var DS = typeof DecompressionStream === 'function' ? DecompressionStream : (root && typeof root.DecompressionStream === 'function' ? root.DecompressionStream : null);
+    if (!DS) return Promise.reject(new Error('no_deflate'));
+    return new Promise(function (resolve, reject) {
+      var ds;
+      try { ds = new DS('deflate-raw'); } catch (err) { reject(err); return; }
+      var writer = ds.writable.getWriter();
+      var readerStream = ds.readable.getReader();
+      var chunks = [], total = 0, settled = false;
+      var fail = function (err) {
+        if (settled) return;
+        settled = true;
+        try { Promise.resolve(readerStream.cancel()).catch(function () {}); } catch (_) {}
+        try { Promise.resolve(writer.abort()).catch(function () {}); } catch (_) {}
+        reject(err);
+      };
+      writer.write(slice).then(function () { return writer.close(); }).catch(function (err) { fail(err); });
+      function pump() {
+        readerStream.read().then(function (step) {
+          if (settled) return;
+          if (step.done) {
+            settled = true;
+            var out = new Uint8Array(total), pos = 0;
+            for (var i = 0; i < chunks.length; i++) { out.set(chunks[i], pos); pos += chunks[i].length; }
+            resolve(out);
+            return;
+          }
+          var val = step.value instanceof Uint8Array ? step.value : new Uint8Array(step.value);
+          total += val.byteLength;
+          if (total > maxBytes) { fail(new Error('too_big')); return; }
+          chunks.push(val);
+          pump();
+        }, fail);
+      }
+      pump();
+    });
+  }
+  async function unpackZip(input, options) {
+    var opts = options || {};
+    var maxFiles = Math.max(1, Math.min(MAX_FILES, Number(opts.maxFiles) || MAX_FILES));
+    var maxBytes = Math.max(1, Math.min(MAX_BYTES, Number(opts.maxBytes) || MAX_BYTES));
+    var bytes = input instanceof Uint8Array ? input : (input && typeof input.byteLength === 'number' ? new Uint8Array(input) : null);
+    if (!bytes || !bytes.byteLength) return { ok: false, why: REASONS.empty, entries: [], skipped: [], leftOut: 0 };
+    if (bytes.byteLength > MAX_ZIP_BYTES) return { ok: false, why: 'This .zip file is larger than 50 MB. Unzip it on your device and drop the results files in smaller groups.', entries: [], skipped: [], leftOut: 0 };
+    if (bytes.byteLength < 22) return { ok: false, why: 'This .zip file could not be read.', entries: [], skipped: [], leftOut: 0 };
+    var eocd = -1, minOff = Math.max(0, bytes.byteLength - 65557);
+    for (var pos = bytes.byteLength - 22; pos >= minOff; pos--) {
+      if (bytes[pos] === 0x50 && bytes[pos + 1] === 0x4b && bytes[pos + 2] === 0x05 && bytes[pos + 3] === 0x06) { eocd = pos; break; }
+    }
+    if (eocd < 0) return { ok: false, why: 'This file is not a valid .zip folder.', entries: [], skipped: [], leftOut: 0 };
+    var totalEntries = u16le(bytes, eocd + 10);
+    var cdSize = u32le(bytes, eocd + 12);
+    var cdOffset = u32le(bytes, eocd + 16);
+    if (totalEntries === 0xFFFF || cdSize === 0xFFFFFFFF || cdOffset === 0xFFFFFFFF) {
+      return { ok: false, why: 'This .zip format (ZIP64) is not supported here. Unzip it on your device and drop the results files.', entries: [], skipped: [], leftOut: 0 };
+    }
+    if (cdOffset + cdSize > bytes.byteLength) return { ok: false, why: 'This .zip file is damaged and could not be read.', entries: [], skipped: [], leftOut: 0 };
+    var TD = typeof TextDecoder === 'function' ? TextDecoder : (root && typeof root.TextDecoder === 'function' ? root.TextDecoder : null);
+    var decodeUtf8 = function (arr) {
+      if (TD) return new TD('utf-8').decode(arr);
+      var s = '';
+      for (var k = 0; k < arr.length; k++) s += String.fromCharCode(arr[k]);
+      return s;
+    };
+    var entries = [], skipped = [], leftOut = 0, totalOut = 0, cursor = cdOffset, cdEnd = cdOffset + cdSize;
+    for (var i = 0; i < totalEntries && cursor + 46 <= cdEnd; i++) {
+      if (u32le(bytes, cursor) !== 0x02014b50) break;
+      var flags = u16le(bytes, cursor + 8);
+      var method = u16le(bytes, cursor + 10);
+      var compSize = u32le(bytes, cursor + 20);
+      var uncompSize = u32le(bytes, cursor + 24);
+      var nameLen = u16le(bytes, cursor + 28);
+      var extraLen = u16le(bytes, cursor + 30);
+      var commentLen = u16le(bytes, cursor + 32);
+      var localOff = u32le(bytes, cursor + 42);
+      var nextCursor = cursor + 46 + nameLen + extraLen + commentLen;
+      if (nextCursor > cdEnd) break;
+      var rawName = decodeUtf8(bytes.subarray(cursor + 46, cursor + 46 + nameLen));
+      cursor = nextCursor;
+      var clean = zipCleanName(rawName);
+      if (zipSkipMeta(clean)) continue;
+      if (/\.zip$/i.test(clean)) { skipped.push({ name: clean, why: 'Nested .zip folders are not opened. Unzip it on your device first.' }); continue; }
+      if (/\.html?$/i.test(clean)) { skipped.push({ name: clean, why: 'This is a web page (.html), not a results file.' }); continue; }
+      if (!/\.(csv|json)$/i.test(clean)) { skipped.push({ name: clean, why: 'Not a CSV or JSON results file.' }); continue; }
+      if (entries.length >= maxFiles) { leftOut++; continue; }
+      if (flags & 1) { skipped.push({ name: clean, why: 'Password-protected files inside a .zip cannot be read.' }); continue; }
+      if (uncompSize > maxBytes || totalOut + uncompSize > MAX_ZIP_TOTAL_OUT) { skipped.push({ name: clean, why: REASONS.too_big }); continue; }
+      if (localOff + 30 > bytes.byteLength || u32le(bytes, localOff) !== 0x04034b50) { skipped.push({ name: clean, why: REASONS.unreadable }); continue; }
+      var lNameLen = u16le(bytes, localOff + 26);
+      var lExtraLen = u16le(bytes, localOff + 28);
+      var dataStart = localOff + 30 + lNameLen + lExtraLen;
+      var dataEnd = dataStart + compSize;
+      if (dataEnd > bytes.byteLength) { skipped.push({ name: clean, why: REASONS.unreadable }); continue; }
+      var payload = bytes.subarray(dataStart, dataEnd);
+      var outBytes = null;
+      if (method === 0) {
+        if (payload.byteLength > maxBytes) { skipped.push({ name: clean, why: REASONS.too_big }); continue; }
+        outBytes = payload;
+      } else if (method === 8) {
+        try { outBytes = await inflateRawBounded(payload, maxBytes); }
+        catch (err) {
+          var code = err && err.message;
+          if (code === 'too_big') skipped.push({ name: clean, why: REASONS.too_big });
+          else if (code === 'no_deflate') skipped.push({ name: clean, why: 'This browser cannot open compressed .zip files. Unzip the folder first, then drop the files here.' });
+          else skipped.push({ name: clean, why: REASONS.unreadable });
+          continue;
+        }
+      } else {
+        skipped.push({ name: clean, why: 'This file uses an unsupported .zip compression method.' });
+        continue;
+      }
+      totalOut += outBytes.byteLength;
+      if (totalOut > MAX_ZIP_TOTAL_OUT) { skipped.push({ name: clean, why: REASONS.too_big }); break; }
+      entries.push({ name: clean, text: decodeUtf8(outBytes), bytes: outBytes.byteLength });
+    }
+    if (!entries.length && !skipped.length) return { ok: false, why: 'This .zip folder has no CSV or JSON results files in it.', entries: [], skipped: [], leftOut: leftOut };
+    return { ok: true, why: '', entries: entries, skipped: skipped, leftOut: leftOut };
+  }
+
   var api = {
     VERSION: VERSION, FORMAT: FORMAT, BUNDLE_KIND: BUNDLE_KIND, BUNDLE_VERSION: BUNDLE_VERSION, MAX_BYTES: MAX_BYTES, MAX_FILES: MAX_FILES, MAX_ITEMS: MAX_ITEMS,
     MAX_SESSIONS: MAX_SESSIONS, MIN_GROUP: MIN_GROUP, MIN_GROUP_HALF: MIN_GROUP_HALF, NO_NAME: NO_NAME, COLUMNS: COLUMNS.slice(), PROBE_COLUMNS: PROBE_COLUMNS.slice(), SUMMARY_COLUMNS: SUMMARY_COLUMNS.slice(),
@@ -1048,7 +1194,7 @@
     MEASURE_UNITS: MEASURE_UNITS, REASONS: REASONS,
     read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, sheetStamp: sheetStamp, csvCell: csvCell,
     labelKey: labelKey, looksAlike: looksAlike, pairKey: pairKey, middle: middle, addUp: addUp, learnerSeries: learnerSeries, wrongAnswers: wrongAnswers,
-    summaryCsv: summaryCsv, makeBundle: makeBundle, readBundle: readBundle, cleanSession: cleanSession,
+    summaryCsv: summaryCsv, makeBundle: makeBundle, readBundle: readBundle, cleanSession: cleanSession, unpackZip: unpackZip,
     dayText: dayText, cleanGoalDates: cleanGoalDates, cleanPaper: cleanPaper,
   };
   if (root) root.AlloPacketResults = api;

@@ -1449,8 +1449,8 @@ function PersonaChatView(props) {
                                      {t('persona.panel_header')}
                                  </span>
                                  <div className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-50 to-amber-50 px-2 py-1 rounded-lg border border-yellow-200 hidden md:flex">
-                                     <Star size={14} className="text-yellow-500" />
-                                     <span className="text-xs font-black text-yellow-600">
+                                     <Star size={14} className="text-amber-700" aria-hidden="true" />
+                                     <span className="text-xs font-black text-amber-800">
                                         {panelTotalXp}
                                      </span>
                                      <span className="text-[11px] text-slate-600">{t('common.xp')}</span>
@@ -2025,15 +2025,15 @@ function PersonaChatView(props) {
                                         <div className="flex-1 overflow-y-auto space-y-4">
                                             {reflectionFeedbackScore !== null && (
                                             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
-                                                <div className="text-5xl font-black text-indigo-600 mb-2">{reflectionFeedbackScore}<span className="text-2xl text-indigo-400">/100</span></div>
-                                                <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.ai_quality_score') || 'AI Reflection Estimate'}</div>
+                                                <div className="text-5xl font-black text-indigo-700 mb-2">{reflectionFeedbackScore}<span className="text-2xl text-indigo-700">/100</span></div>
+                                                <div className="text-xs font-bold text-indigo-700 uppercase tracking-wider">{t('persona.ai_quality_score') || 'AI Reflection Estimate'}</div>
                                             </div>
                                             )}
                                             <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
                                                 <div className="w-12 h-12 bg-yellow-700 rounded-full flex items-center justify-center text-white shadow-md"><Star size={24} className="fill-current" /></div>
                                                 <div>
-                                                    <div className="text-2xl font-black text-yellow-600">+{reflectionFeedbackXp} XP</div>
-                                                    <div className="text-xs text-yellow-700 font-medium">{t('persona.xp_earned') || 'Experience Earned'}</div>
+                                                    <div className="text-2xl font-black text-yellow-800">+{reflectionFeedbackXp} XP</div>
+                                                    <div className="text-xs text-yellow-800 font-medium">{t('persona.xp_earned') || 'Experience Earned'}</div>
                                                 </div>
                                             </div>
                                             <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
@@ -2112,11 +2112,11 @@ function PersonaChatView(props) {
                                      onClick={() => handleRetryPortraitGeneration(personaState.selectedCharacter)}
                                      className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 px-4 py-2 rounded-full text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2 transition-all motion-reduce:transition-none shadow-md hover:shadow-lg"
                                  >
-                                     <RefreshCw size={16} />
+                                     <RefreshCw size={16} aria-hidden="true" />
                                      {t('persona.generate_portrait')}
                                  </button>}
                                  {personaState.avatarGenerationFailed && typeof handleRetryPortraitGeneration === 'function' && (
-                                     <span className="text-xs text-yellow-600/70 italic text-center">
+                                     <span className="text-xs text-amber-800 italic text-center">
                                          {t('persona.portrait_retry_hint')}
                                      </span>
                                  )}
@@ -2128,7 +2128,7 @@ function PersonaChatView(props) {
                         {personaState.selectedCharacter.role} ({personaState.selectedCharacter.year})
                      </div>
                      <div className="w-full bg-white p-4 rounded-xl border border-slate-400 text-sm text-slate-600 leading-relaxed font-serif italic shadow-sm relative">
-                         <Quote size={16} className="absolute top-2 left-2 text-slate-600 fill-current" />
+                         <Quote size={16} className="absolute top-2 left-2 text-slate-600 fill-current" aria-hidden="true" />
                          "{personaState.selectedCharacter.context}"
                      </div>
                      <div className="w-full mt-6">
@@ -2166,16 +2166,16 @@ function PersonaChatView(props) {
                                      return (
                                      <div key={qIdx} className={`p-3 rounded-lg border text-xs transition-all motion-reduce:transition-none ${quest.isCompleted ? 'bg-green-50 border-green-200 text-green-800' : 'bg-white border-slate-100 text-slate-600'}`}>
                                          <div className="flex items-start gap-2">
-                                             <div className={`mt-0.5 ${quest.isCompleted ? 'text-green-500' : 'text-slate-600'}`}>
+                                             <div className={`mt-0.5 ${quest.isCompleted ? 'text-green-700' : 'text-slate-600'}`}>
                                                  {quest.isCompleted ? <CheckCircle2 size={14} aria-hidden="true"/> : <div aria-hidden="true" className="w-3.5 h-3.5 rounded-full border-2 border-current"></div>}
                                              </div>
                                              <div>
-                                                 <span className={`font-bold block mb-0.5 ${quest.isCompleted ? 'line-through opacity-70' : ''}`}>
+                                                 <span className={`font-bold block mb-0.5 ${quest.isCompleted ? 'line-through opacity-80' : ''}`}>
                                                      {quest.isCompleted ? <span className="sr-only">{completedLabel}: </span> : isQuestLocked ? <span className="sr-only">{lockedLabel}: </span> : null}
                                                      {quest.text}
                                                  </span>
                                                  {!quest.isCompleted && (
-                                                     <span className="text-[11px] uppercase tracking-wider font-bold opacity-60">
+                                                     <span className="text-[11px] uppercase tracking-wider font-bold text-slate-600">
                                                          {inquiryLabel('bonus', 'Optional story bonus at rapport')} {quest.difficulty}
                                                      </span>
                                                  )}
@@ -2192,18 +2192,18 @@ function PersonaChatView(props) {
                     <button type="button"
                         data-persona-initial-focus
                                 onClick={_handleCloseAndClearSnapshot}
-                        className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors motion-reduce:transition-none z-50"
+                        className="absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 z-50"
                         aria-label={t('common.close')}
                     >
-                        <X size={24} />
+                        <X size={24} aria-hidden="true" />
                     </button>
                     <div data-persona-chat-header className="bg-white border-b border-slate-100 p-3 xl:pr-14 flex flex-wrap items-center justify-between gap-2 shrink-0 z-20 shadow-sm">
                         <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-amber-50 px-3 py-1.5 rounded-lg border border-yellow-200">
-                            <Star size={16} className="text-yellow-500" />
+                            <Star size={16} className="text-amber-700" aria-hidden="true" />
                             <div className="flex flex-col">
                                 <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('common.xp')}</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-black text-yellow-600">
+                                    <span className="text-sm font-black text-amber-800">
                                          {singleXp}
                                     </span>
                                     <span className="text-[11px] text-slate-600">/ 300</span>
@@ -2676,8 +2676,8 @@ function PersonaChatView(props) {
                                     <div className="flex-1 overflow-y-auto space-y-4">
                                         {reflectionFeedbackScore !== null && (
                                         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
-                                            <div className="text-5xl font-black text-indigo-600 mb-2">{reflectionFeedbackScore}<span className="text-2xl text-indigo-400">/100</span></div>
-                                            <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.ai_quality_score') || 'AI Reflection Estimate'}</div>
+                                            <div className="text-5xl font-black text-indigo-700 mb-2">{reflectionFeedbackScore}<span className="text-2xl text-indigo-700">/100</span></div>
+                                            <div className="text-xs font-bold text-indigo-700 uppercase tracking-wider">{t('persona.ai_quality_score') || 'AI Reflection Estimate'}</div>
                                         </div>
                                         )}
                                         <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
@@ -2685,8 +2685,8 @@ function PersonaChatView(props) {
                                                 <Star size={24} className="fill-current" />
                                             </div>
                                             <div>
-                                                <div className="text-2xl font-black text-yellow-600">+{reflectionFeedbackXp} XP</div>
-                                                <div className="text-xs text-yellow-700 font-medium">{t('persona.xp_earned') || 'Experience Earned'}</div>
+                                                <div className="text-2xl font-black text-yellow-800">+{reflectionFeedbackXp} XP</div>
+                                                <div className="text-xs text-yellow-800 font-medium">{t('persona.xp_earned') || 'Experience Earned'}</div>
                                             </div>
                                         </div>
                                         <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
@@ -2738,10 +2738,10 @@ function PersonaChatView(props) {
                                                 value={personaReflectionText} data-help-key="persona_reflection_input"
                                                 onChange={(e) => setPersonaReflectionInput(e.target.value)}
                                                 placeholder={t('persona.reflection_placeholder')}
-                                                className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600"
+                                                className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600"
                                                 disabled={reflectionBusy || isGeneratingReflectionPrompt}
                                             />
-                                            <p id="persona-reflection-count" className="mt-1 text-right text-[11px] font-medium text-slate-500">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 })}</p>
+                                            <p id="persona-reflection-count" className="mt-1 text-right text-[11px] font-medium text-slate-600">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 })}</p>
                                         </div>
                                     </div>
                                     <div className="mt-6 flex gap-3">
@@ -3006,18 +3006,18 @@ function PersonaChatView(props) {
                                             ))}
                                         </div>
                                         {summaryVerificationNote && (
-                                            <aside className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                            <aside aria-label={t('persona.summary.verification_note')} className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                                                 <h3 className="mb-1 text-xs font-black uppercase tracking-wider">{t('persona.summary.verification_note')}</h3>
                                                 <p>{summaryVerificationNote}</p>
                                             </aside>
                                         )}
                                         {summaryGeneratedAtLabel && (
-                                            <p className="text-right text-[11px] text-slate-500">{t('persona.summary.generated_at', { date: summaryGeneratedAtLabel })}</p>
+                                            <p className="text-right text-[11px] text-slate-600">{t('persona.summary.generated_at', { date: summaryGeneratedAtLabel })}</p>
                                         )}
                                     </div>
                                 ) : (
                                     <div className="flex min-h-[16rem] flex-col items-center justify-center gap-4 text-center text-slate-600">
-                                        <Sparkles size={36} className="text-violet-400" />
+                                        <Sparkles size={36} aria-hidden="true" className="text-violet-400" />
                                         <p>{t('persona.summary.empty')}</p>
                                         <button type="button" onClick={_retryPersonaSummary} disabled={!canGeneratePersonaSummary || summaryBusy} className="rounded-lg bg-violet-700 px-4 py-2 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">{t('persona.summary.generate_btn')}</button>
                                     </div>

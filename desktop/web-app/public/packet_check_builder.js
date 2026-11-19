@@ -30,7 +30,9 @@
       slug: 'math-computation', timeLimitS: 120, allowSkip: true, practice: [{ a: 1, b: 1, op: 'add' }] },
   };
   var OPS = { add: 'add', '+': 'add', sub: 'sub', '-': 'sub', mul: 'mul', x: 'mul', X: 'mul', '*': 'mul', div: 'div', '/': 'div', ':': 'div' };
-  OPS[String.fromCharCode(0x2212)] = 'sub'; OPS[String.fromCharCode(0xD7)] = 'mul'; OPS[String.fromCharCode(0xF7)] = 'div';
+  OPS[String.fromCharCode(0x2212)] = 'sub'; OPS[String.fromCharCode(0x2013)] = 'sub'; OPS[String.fromCharCode(0x2014)] = 'sub';
+  OPS[String.fromCharCode(0xD7)] = 'mul'; OPS[String.fromCharCode(0xB7)] = 'mul'; OPS[String.fromCharCode(0x22C5)] = 'mul';
+  OPS[String.fromCharCode(0xF7)] = 'div';
   var SIGNS = { add: '+', sub: '-', mul: 'x', div: String.fromCharCode(0xF7) };
 
   function text(value) { return value == null ? '' : String(value); }
@@ -216,13 +218,19 @@
   }
 
   // "7+8, 12-5, 6x4, 20/4" -> [{ a, b, op }]; "3 + 4 + 5 = 12" -> { display, answer }. For the command line and a plain text box.
+  // Also tolerates pasted worksheets: BOM, leading numbering/bullets, trailing blank = / = ? / = ___, typographic operators, and Unicode minus on negative answers.
   function parseProblems(value) {
-    return text(value).split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).map(function (part, i) {
-      var simple = new RegExp('^(\\d+)\\s*([-+xX*/:' + String.fromCharCode(0x2212, 0xD7, 0xF7) + '])\\s*(\\d+)$').exec(part);
+    var simpleRe = new RegExp('^(\\d+)\\s*([-+xX*/:' + String.fromCharCode(0x2212, 0x2013, 0x2014, 0xD7, 0xB7, 0x22C5, 0xF7) + '])\\s*(\\d+)$');
+    var statedRe = new RegExp('^(.*[^=\\s])\\s*=\\s*([-' + String.fromCharCode(0x2212, 0x2013) + ']?\\d+)$');
+    return text(value).replace(/^\uFEFF/, '').split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).map(function (part, i) {
+      var clean = part.replace(/^\uFEFF/, '').trim()
+        .replace(/^(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '')
+        .replace(/\s*=\s*(?:\?|_+|[\u25A1\u2B1C])?$/, '').trim();
+      var simple = simpleRe.exec(clean);
       if (simple) return { a: Number(simple[1]), b: Number(simple[3]), op: OPS[simple[2]] };
-      var stated = /^(.*[^=\s])\s*=\s*(-?\d+)$/.exec(part);
-      if (stated) return { display: stated[1].trim(), answer: Number(stated[2]) };
-      throw new Error('Problem ' + (i + 1) + ': "' + part + '" is not a problem. Write it like 7+8, or like 3 + 4 + 5 = 12.');
+      var stated = statedRe.exec(clean);
+      if (stated) return { display: stated[1].trim(), answer: Number(stated[2].replace(/[\u2212\u2013]/, '-')) };
+      throw new Error('Problem ' + (i + 1) + ': "' + (clean || part) + '" is not a problem. Write it like 7+8, or like 3 + 4 + 5 = 12.');
     });
   }
 
@@ -235,16 +243,35 @@
     return text(L.check_ready_timed).replace('{time}', time);
   }
   // The recordings of a check's own Get ready lines, from bank (packets_check_directions.js: { clips: { line: data URI } }).
-  // null unless the check is one of the two and EVERY line it shows has a recording of exactly those words: a file never
-  // reads half of its screen aloud, and a file with other words (a translation, another time limit) has no button.
+  // Standard preset durations (1 min, 2 min, untimed) require all three recorded lines; translated labels or malformed/missing
+  // clips return null. For a non-preset custom positive timer (e.g. 90 s, 3 min) whose exact time line is not recorded in
+  // bank.clips, falls back to the duration-agnostic 2-clip set (task directions + one-try rule) when labels are untranslated
+  // and both clips are valid, rather than speaking the wrong time or silently dropping spoken directions for K-1 students.
   var SPOKEN = { quantity_discrimination: true, missing_number: true };
+  var TIME_LABELS = ['check_ready_timed', 'check_ready_untimed', 'check_one_minute', 'check_minutes', 'check_seconds'];
   function directionsFor(lesson, loader, bank, labels) {
     var block = lesson && lesson.blocks && lesson.blocks[0], activity = block ? text(block.activity) : '';
     if (!bank || typeof bank !== 'object' || !bank.clips || typeof bank.clips !== 'object' || !own(SPOKEN, activity) || !loader.CHECK_LABELS) return null;
-    var L = Object.assign({}, loader.CHECK_LABELS, loader.CHECK_ADAPTERS[activity].labels, labels || {});
-    var lines = [text(L[activity + '_directions']), readyTimeLine(L, lesson.timeLimitS), text(L.check_ready_one_try)];
-    var clips = lines.map(function (line) { return line && own(bank.clips, line) ? text(bank.clips[line]) : ''; });
-    if (clips.some(function (uri) { return !/^data:audio\/(?:mpeg|wav);base64,[A-Za-z0-9+/]+=*$/.test(uri); })) return null;
+    var baseL = loader.CHECK_LABELS;
+    var L = Object.assign({}, baseL, loader.CHECK_ADAPTERS[activity].labels, labels || {});
+    var howLine = text(L[activity + '_directions']);
+    var timeLine = readyTimeLine(L, lesson.timeLimitS);
+    var tryLine = text(L.check_ready_one_try);
+    var isAudioUri = function (uri) { return /^data:audio\/(?:mpeg|wav);base64,[A-Za-z0-9+/]+=*$/.test(uri); };
+    var clipFor = function (line) { return line && own(bank.clips, line) ? text(bank.clips[line]) : ''; };
+    var lines = [howLine, timeLine, tryLine];
+    var clips = lines.map(clipFor);
+    if (clips.some(function (uri) { return !isAudioUri(uri); })) {
+      var n = Math.round(Number(lesson.timeLimitS));
+      var customTime = n > 0 && n !== 60 && n !== 120;
+      var timeLabelsDefault = TIME_LABELS.every(function (k) { return text(L[k]) === text(baseL[k]); });
+      if (customTime && timeLabelsDefault && !own(bank.clips, timeLine) && isAudioUri(clips[0]) && isAudioUri(clips[2])) {
+        lines = [howLine, tryLine];
+        clips = [clips[0], clips[2]];
+      } else {
+        return null;
+      }
+    }
     return { lines: lines, clips: clips, voice: text(bank.voice).slice(0, 120) || 'a machine voice' };
   }
   // The manifest (the data block of the file) with more keys. Only the data block changes: the script and its hash do not.

@@ -61,15 +61,25 @@
       var status = document.getElementById('pack-copy-status');
       status.textContent = 'Preparing the JSON download…';
       async function readPack(url) {
-        var response = await fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer' });
-        if (!response.ok) throw new Error('Download unavailable');
-        var lenHdr = Number(response.headers && response.headers.get && response.headers.get('content-length'));
-        if (Number.isFinite(lenHdr) && lenHdr > 25 * 1024 * 1024) throw new Error('Pack exceeds maximum size');
-        var bytes = await response.arrayBuffer();
-        if (bytes.byteLength > 25 * 1024 * 1024) throw new Error('Pack exceeds maximum size');
-        var pack = JSON.parse(new TextDecoder().decode(bytes).replace(/^\uFEFF/, ''));
-        if (!pack.allopack || !Array.isArray(pack.history)) throw new Error('The response is not an AlloPack');
-        return bytes;
+        var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null;
+        try {
+          var init = { credentials: 'omit', referrerPolicy: 'no-referrer' };
+          if (ctrl) init.signal = ctrl.signal;
+          var response = await fetch(url, init);
+          if (!response.ok) throw new Error('Download unavailable');
+          var lenHdr = Number(response.headers && response.headers.get && response.headers.get('content-length'));
+          if (Number.isFinite(lenHdr) && lenHdr > 25 * 1024 * 1024) throw new Error('Pack exceeds maximum size');
+          var bytes = await response.arrayBuffer();
+          if (bytes.byteLength > 25 * 1024 * 1024) throw new Error('Pack exceeds maximum size');
+          var pack = JSON.parse(new TextDecoder().decode(bytes).replace(/^\uFEFF/, ''), function (k, v) {
+            return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+          });
+          if (!pack || typeof pack !== 'object' || Array.isArray(pack) || !pack.allopack || !Array.isArray(pack.history)) throw new Error('The response is not an AlloPack');
+          return bytes;
+        } finally {
+          if (timer !== null) clearTimeout(timer);
+        }
       }
       try {
         var bytes;
@@ -82,9 +92,13 @@
         var safeDownload = String(link.download || 'allopack.json').replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '') || 'allopack.json';
         var blobUrl = URL.createObjectURL(new Blob([bytes], {type:'application/json'}));
         var anchor = document.createElement('a');
-        anchor.href = blobUrl; anchor.download = safeDownload;
-        document.body.appendChild(anchor); anchor.click(); anchor.remove();
-        setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
+        try {
+          anchor.href = blobUrl; anchor.download = safeDownload;
+          document.body.appendChild(anchor); anchor.click();
+        } finally {
+          if (anchor.parentNode) anchor.remove();
+          setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
+        }
         status.textContent = 'JSON download started. Use Load Project in AlloFlow to open it.';
       } catch (_) { status.textContent = 'The download could not be prepared. Please try again.'; }
       finally { link.removeAttribute('aria-busy'); }

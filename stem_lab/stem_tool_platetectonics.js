@@ -8,6 +8,35 @@
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"plateTectonics\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"plateTectonics\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"plateTectonics\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
+
+  // Plate Tectonics Earth Lab hero workbench, opaque starter chips & High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-platetectonics-workbench-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-platetectonics-workbench-css';
+    st.textContent = [
+      '.pt-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:14px 16px;margin-bottom:12px;border:1px solid #dc2626;background:linear-gradient(135deg,#1c0a0a 0%,#450a0a 54%,#7f1d1d 100%);box-shadow:0 14px 30px rgba(28,10,10,.30);color:#ffffff;text-align:left}',
+      '.pt-hero-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}',
+      '.pt-hero-id{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 260px}',
+      '.pt-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:#450a0a;border:1px solid #f87171;color:#fee2e2}',
+      '.pt-hero-pills{display:flex;flex-wrap:wrap;align-items:center;gap:6px}',
+      '.pt-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;background:#0f172a;border:1px solid #94a3b8;color:#f1f5f9}',
+      '.pt-telemetry-pill strong{color:#fde68a;font-weight:900}',
+      '.pt-boundary-ribbon{margin-top:10px;padding:6px 10px;border-radius:10px;background:#0f172a;border:1px solid #475569}',
+      '.pt-starter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;padding:8px 10px;border-radius:12px;background:#0f172a;border:1px solid #64748b;color:#f8fafc}',
+      '.pt-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#fca5a5;margin-right:2px}',
+      '.pt-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#1e293b;border:1px solid #94a3b8;color:#ffffff;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
+      '.pt-starter-chip:hover{background:#7f1d1d;border-color:#fca5a5;color:#ffffff}',
+      '.pt-starter-chip[aria-pressed="true"]{background:#b91c1c;border-color:#fecaca;color:#ffffff}',
+      '.pt-sim-shell .pt-starter-chip:focus-visible{outline:3px solid #facc15;outline-offset:2px}',
+      '.theme-contrast .pt-hero-deck,.theme-contrast .pt-boundary-ribbon,.theme-contrast .pt-starter-bar{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
+      '.theme-contrast .pt-hero-badge,.theme-contrast .pt-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .pt-telemetry-pill strong,.theme-contrast .pt-starter-label{color:#00ff00!important}',
+      '.theme-contrast .pt-starter-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
+      '.theme-contrast .pt-starter-chip[aria-pressed="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -9265,12 +9294,12 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       function measure() {
         var el = svgRef.current;
         var w = el && el.getBoundingClientRect ? el.getBoundingClientRect().width : 0;
-        if (w && Math.abs(w - svgW) > 4) wSt[1](w);
+        if (w) wSt[1](function (prev) { return Math.abs(w - prev) > 4 ? w : prev; });
       }
       measure();
       window.addEventListener('resize', measure);
       return function () { window.removeEventListener('resize', measure); };
-    });
+    }, []);
     var fontKm = svgW ? Math.max(300, 13 * VB.w / svgW) : 300;
     var land = isDark ? '#a16207' : '#d6b370', saLand = isDark ? '#15803d' : '#86c98f', coastInk = isDark ? '#f8fafc' : '#1e293b';
     var ink = isDark ? '#f1f5f9' : '#0f172a';
@@ -10236,7 +10265,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
 
       // ── Tool body (plateTectonics) ──
       return (function() {
-var d = labToolData.plateTectonics || {};
+var _rawPt = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData.plateTectonics : null;
+var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawPt : {};
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -16801,7 +16831,7 @@ var d = labToolData.plateTectonics || {};
 
           return React.createElement("div", {
               className: "pt-sim-shell max-w-6xl mx-auto",
-              style: isContrast ? { background: palette.bg, color: palette.text } : undefined,
+              style: isContrast ? { background: palette.bg, color: palette.text } : (isDark ? { background: '#0f172a', color: '#f1f5f9', borderRadius: 16, padding: 12 } : undefined),
               'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'),
               role: "region",
               "aria-label": __alloT('stem.platetectonics.plate_tectonics_keyboard_shortcuts_1_t', "Plate Tectonics. Keyboard shortcuts: 1 through 4 switch tabs, L toggles labels, C toggles convection currents. On the simulation canvas, up and down arrows pick a plate and left and right arrows move it."),
@@ -16809,25 +16839,85 @@ var d = labToolData.plateTectonics || {};
               onKeyDown: onPtKey
             },
 
-            // Header
+            // Header — Bespoke Plate Tectonics Earth Lab Hero Deck
 
             React.createElement("div", { className: "mb-6 text-center" },
 
-              React.createElement("div", { className: "inline-flex max-w-full flex-wrap items-center justify-center gap-3 px-6 py-3 rounded-2xl mb-3", style: { background: _gRed, boxShadow: '0 8px 32px rgba(220,38,38,0.3)' } },
-
-                React.createElement("span", { style: { fontSize: '32px' } }, "\uD83C\uDF0B"),
-
-                React.createElement("h2", { className: "text-2xl font-black text-white tracking-tight" }, __alloT('stem.platetectonics.plate_tectonics', "Plate Tectonics")),
-
-                // White, not red-200: measured 2.22:1 on the red header band.
-                // White on the red-500 band measured 3.21:1. The subtitle carries the
-                // one-line description of the whole tool, so it gets a darker chip of
-                // its own rather than being left to whatever the banner is painted.
-                React.createElement("span", {
-                  className: "text-white text-sm font-bold ml-2 px-2 py-0.5 rounded-lg",
-                  style: { background: 'rgba(127,29,29,0.55)' }
-                }, __alloT('stem.platetectonics.interactive_earth', "Interactive Earth"))
-
+              React.createElement("div", { className: "pt-hero-deck", 'data-pt-hero': 'true' },
+                React.createElement("div", { className: "pt-hero-top" },
+                  React.createElement("div", { className: "pt-hero-id" },
+                    React.createElement("svg", { width: 46, height: 46, viewBox: "0 0 64 64", className: "shrink-0", 'aria-hidden': 'true', focusable: 'false' },
+                      React.createElement("rect", { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? "#000000" : "#0f172a", stroke: isContrast ? "#00ff00" : "#f87171", strokeWidth: 1.8 }),
+                      React.createElement("path", { d: "M8 30 L28 30 L38 50 L28 50 L22 38 L8 38 Z", fill: isContrast ? "#000000" : "#0284c7", stroke: isContrast ? "#00ff00" : "#7dd3fc", strokeWidth: 1.5 }),
+                      React.createElement("path", { d: "M30 28 L42 16 L54 28 L54 38 L30 38 Z", fill: isContrast ? "#000000" : "#b45309", stroke: isContrast ? "#ffff00" : "#fde68a", strokeWidth: 1.5 }),
+                      React.createElement("path", { d: "M42 16 L40 10 M42 16 L45 11", stroke: isContrast ? "#ffff00" : "#f97316", strokeWidth: 2, strokeLinecap: "round" }),
+                      React.createElement("circle", { cx: 42, cy: 46, r: 4, fill: isContrast ? "#ffff00" : "#ef4444" })
+                    ),
+                    React.createElement("div", { className: "min-w-0" },
+                      React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" },
+                        React.createElement("span", { className: "pt-hero-badge" }, __alloT('stem.platetectonics.interactive_sim', 'Interactive Sim')),
+                        React.createElement("span", { className: "text-white text-xs font-bold px-2 py-0.5 rounded-lg", style: { background: isContrast ? '#000000' : '#450a0a', border: isContrast ? '1px solid #ffff00' : '1px solid #b91c1c' } }, __alloT('stem.platetectonics.interactive_earth', "Interactive Earth"))
+                      ),
+                      React.createElement("h2", { className: "mt-0.5 text-2xl font-black text-white tracking-tight" }, "\uD83C\uDF0B ", __alloT('stem.platetectonics.plate_tectonics', "Plate Tectonics"))
+                    )
+                  ),
+                  React.createElement("div", { className: "pt-hero-pills", 'aria-label': __alloT('stem.platetectonics.plate_boundary_diagram', 'Plate Boundary Diagram') },
+                    React.createElement("span", { className: "pt-telemetry-pill" }, __alloT('stem.platetectonics.explorer', 'Explorer'), " ", React.createElement("strong", null, String(Object.keys(d.tabsViewed || {}).length))),
+                    React.createElement("span", { className: "pt-telemetry-pill" }, __alloT('stem.platetectonics.speed', '⏱ Speed:'), " ", React.createElement("strong", null, speed.toFixed(1) + "×")),
+                    d.selectedPlate && React.createElement("span", { className: "pt-telemetry-pill" }, __alloT('stem.platetectonics.rpt_plate', 'Plate'), " ", React.createElement("strong", null, String(d.selectedPlate)))
+                  )
+                ),
+                (simTab !== 'quiz' && simTab !== 'review') && React.createElement("div", { className: "pt-boundary-ribbon" },
+                  React.createElement("svg", { viewBox: "0 0 460 36", width: "100%", height: "auto", role: "img", 'aria-label': __alloT('stem.platetectonics.plate_boundary_diagram', 'Plate Boundary Diagram'), style: { display: 'block', maxHeight: 40 } },
+                    React.createElement("g", null,
+                      React.createElement("line", { x1: 18, y1: 18, x2: 40, y2: 18, stroke: isContrast ? "#00ff00" : "#f87171", strokeWidth: 2.2 }),
+                      React.createElement("path", { d: "M35 14 L41 18 L35 22", fill: "none", stroke: isContrast ? "#00ff00" : "#f87171", strokeWidth: 2 }),
+                      React.createElement("line", { x1: 68, y1: 18, x2: 46, y2: 18, stroke: isContrast ? "#00ff00" : "#f87171", strokeWidth: 2.2 }),
+                      React.createElement("path", { d: "M51 14 L45 18 L51 22", fill: "none", stroke: isContrast ? "#00ff00" : "#f87171", strokeWidth: 2 }),
+                      React.createElement("text", { x: 74, y: 22, fill: isContrast ? "#ffffff" : "#fecaca", fontSize: 10, fontWeight: 800 }, __alloT('stem.platetectonics.b_convergent', 'Convergent'))
+                    ),
+                    React.createElement("g", null,
+                      React.createElement("line", { x1: 196, y1: 18, x2: 174, y2: 18, stroke: isContrast ? "#ffff00" : "#38bdf8", strokeWidth: 2.2 }),
+                      React.createElement("path", { d: "M179 14 L173 18 L179 22", fill: "none", stroke: isContrast ? "#ffff00" : "#38bdf8", strokeWidth: 2 }),
+                      React.createElement("line", { x1: 204, y1: 18, x2: 226, y2: 18, stroke: isContrast ? "#ffff00" : "#38bdf8", strokeWidth: 2.2 }),
+                      React.createElement("path", { d: "M221 14 L227 18 L221 22", fill: "none", stroke: isContrast ? "#ffff00" : "#38bdf8", strokeWidth: 2 }),
+                      React.createElement("text", { x: 232, y: 22, fill: isContrast ? "#ffffff" : "#bae6fd", fontSize: 10, fontWeight: 800 }, __alloT('stem.platetectonics.b_divergent', 'Divergent'))
+                    ),
+                    React.createElement("g", null,
+                      React.createElement("line", { x1: 326, y1: 13, x2: 356, y2: 13, stroke: isContrast ? "#00ff00" : "#fbbf24", strokeWidth: 2 }),
+                      React.createElement("path", { d: "M351 9 L357 13 L351 17", fill: "none", stroke: isContrast ? "#00ff00" : "#fbbf24", strokeWidth: 1.8 }),
+                      React.createElement("line", { x1: 356, y1: 23, x2: 326, y2: 23, stroke: isContrast ? "#00ff00" : "#fbbf24", strokeWidth: 2 }),
+                      React.createElement("path", { d: "M331 19 L325 23 L331 27", fill: "none", stroke: isContrast ? "#00ff00" : "#fbbf24", strokeWidth: 1.8 }),
+                      React.createElement("text", { x: 364, y: 22, fill: isContrast ? "#ffffff" : "#fde68a", fontSize: 10, fontWeight: 800 }, __alloT('stem.platetectonics.b_transform', 'Transform'))
+                    )
+                  )
+                ),
+                (simTab !== 'quiz' && simTab !== 'review') && React.createElement("div", {
+                  className: "pt-starter-bar",
+                  role: "group",
+                  'aria-label': __alloT('stem.platetectonics.interactive_sim', 'Interactive Sim')
+                },
+                  React.createElement("span", { className: "pt-starter-label" }, __alloT('stem.platetectonics.interactive_sim', 'Interactive Sim') + ":"),
+                  [
+                    { tab: 'sim', cat: 'sim_quiz', label: __alloT('stem.platetectonics.tabname_sim', '🌍 Simulation') },
+                    { tab: 'forces', cat: 'sim_quiz', label: __alloT('stem.platetectonics.tabname_forces', '⚖️ What Moves Plates') },
+                    { tab: 'earthquake', cat: 'sim_quiz', label: __alloT('stem.platetectonics.tabname_earthquake', '📈 Earthquake Lab') },
+                    { tab: 'fit', cat: 'sim_quiz', label: __alloT('stem.platetectonics.tabname_fit', '🧩 Continent Puzzle') },
+                    { tab: 'hotspots', cat: 'world', label: __alloT('stem.platetectonics.tabname_hotspots', '🔥 Hotspots') }
+                  ].map(function (st) {
+                    var activeSt = !ptIsHub && simTab === st.tab;
+                    return React.createElement("button", {
+                      key: 'pt-st-' + st.tab,
+                      type: 'button',
+                      className: 'pt-starter-chip',
+                      'aria-pressed': activeSt ? 'true' : 'false',
+                      onClick: function () {
+                        if (typeof ptNavigateTopic === 'function') ptNavigateTopic(st.tab, true);
+                        else upd({ _ptCategory: st.cat, _ptPicked: true, simTab: st.tab, _ptSearch: '' });
+                      }
+                    }, st.label);
+                  })
+                )
               ),
 
               (function() {

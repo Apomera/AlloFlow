@@ -1104,10 +1104,15 @@ function UdlWalkthroughPanel(props) {
   };
 
   const importJson = (file) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      addToast(tt('udlwalk.import_too_large', 'Import file exceeds the 10 MB safety limit.'), 'error');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const data = JSON.parse(String(reader.result));
+        const data = JSON.parse(String(reader.result), (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
         if (!data || data.kind !== 'alloflow-udl-walkthrough') { addToast(tt('udlwalk.import_bad', 'That file is not a UDL Walkthrough export.'), 'error'); return; }
         // Merge, don't replace: existing ids win so an old export can't clobber newer local work.
         setRoster((r) => {

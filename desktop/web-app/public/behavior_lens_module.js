@@ -94,7 +94,10 @@
     function blOpenReadableWindow(...args) {
         try { blExportGuard('print-preview'); }
         catch (error) { if (error && error.name === 'AbortError') return null; throw error; }
-        return window.open(...args);
+        const w = window.open(...args);
+        if (w) { try { w.opener = null; } catch (_) {} }
+        try { if (w && window.AlloModules?.SensitiveWorkspace?.registerDetachedWindow) window.AlloModules.SensitiveWorkspace.registerDetachedWindow(w); } catch (_) {}
+        return w;
     }
     function blCreateExportImage() {
         const session = blRequireProtectedSession();
@@ -120,9 +123,19 @@
         blActiveReaders.forEach(reader => { try { reader.abort(); } catch (_) {} });
         blActiveReaders.clear();
     }
+    function blAiUsable(kind, provider) {
+        if (typeof provider !== 'function') return false;
+        if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+            try { return !!window.__alloAiUsable(kind, provider); } catch (_) { return false; }
+        }
+        if (provider._alloQrBlocked) return false;
+        if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+        return true;
+    }
     function useProtectedBehaviorLensTransport(provider, session, boundEpoch, kind = 'text') {
         const epoch = boundEpoch === undefined ? session.captureEpoch() : boundEpoch;
-        return React.useMemo(() => typeof provider !== 'function' ? provider : async (...args) => {
+        return React.useMemo(() => !blAiUsable(kind, provider) ? null : async (...args) => {
+            if (!blAiUsable(kind, provider)) throw new Error('AI is not available in this session.');
             session.assertCurrent(epoch);
             session.assertCanTransmit('ai');
             const index = kind === 'vision' ? 3 : 8;
@@ -8568,13 +8581,17 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             { id: 'mistakes', label: '⚠️ Common Mistakes', icon: '⚠️' },
         ];
 
+        const guideTabRafRef = useRef(null);
+        useEffect(() => () => { if (guideTabRafRef.current != null) window.cancelAnimationFrame(guideTabRafRef.current); }, []);
         const focusGuideTab = (index) => {
             const normalizedIndex = (index + tabs.length) % tabs.length;
             const nextTab = tabs[normalizedIndex];
             setActiveTab(nextTab.id);
-            window.requestAnimationFrame(() => {
+            if (guideTabRafRef.current != null) window.cancelAnimationFrame(guideTabRafRef.current);
+            guideTabRafRef.current = window.requestAnimationFrame(() => {
+                guideTabRafRef.current = null;
                 const tabButton = document.getElementById(`bl-guide-tab-${nextTab.id}`);
-                if (tabButton && typeof tabButton.focus === 'function') tabButton.focus();
+                if (tabButton && tabButton.isConnected && typeof tabButton.focus === 'function') tabButton.focus();
             });
         };
         const handleGuideTabKeyDown = (event, index) => {
@@ -9223,7 +9240,7 @@ Create a concise pocket BIP. Return ONLY valid JSON:
                 const persona = getPersona();
                 const profPrompt = 'Based on this student persona for a counseling simulation, generate a brief student profile card.\nPersona: ' + persona + '\nStudent name: "' + (studentName || 'Student') + '"\n\nReturn ONLY valid JSON with these fields:\n{"age": "estimated age range", "appearance": "brief 1-sentence physical description", "expression": "current facial expression", "body_language": "current posture/body language", "thinking": "what the student is thinking but not saying"}';
                 callGemini(profPrompt, false)
-                    .then(function(r) { try { var p = JSON.parse(r.replace(/```json?\n?/g,'').replace(/```/g,'').trim()); setStudentAvatar(p); } catch(e) { warnLog('Profile parse failed', e); } })
+                    .then(function(r) { if (typeof r !== 'string' || !r.trim()) return; try { var p = JSON.parse(r.replace(/```json?\n?/g,'').replace(/```/g,'').trim()); if (p && typeof p === 'object' && !Array.isArray(p)) setStudentAvatar(p); } catch(e) { warnLog('Profile parse failed', e); } })
                     .catch(function(e) { warnLog('Profile generation failed', e); });
             }
             if (addToast) addToast(tt('behavior_lens.toast.simulation_started_you_are_now_the_counselor', 'Simulation started — you are now the counselor 🎭'), 'success');
@@ -9313,9 +9330,10 @@ Respond only with the student's words:`;
                 var fbPrompt = 'You are an expert clinical supervisor evaluating a counseling simulation transcript.\n\nSCENARIO: ' + (scenario ? scenario.label : 'Unknown') + '\nSTUDENT PERSONA: ' + getPersona() + '\nMOOD JOURNEY: ' + moodJourney + '\n\nTRANSCRIPT:\n' + transcript + '\n\nEvaluate the counselor performance. Return ONLY valid JSON:\n{"overall_score": 7, "overall_grade": "B+", "empathy_score": 7, "empathy_note": "feedback", "active_listening_score": 7, "active_listening_note": "feedback", "deescalation_score": 7, "deescalation_note": "feedback", "choice_giving_score": 7, "choice_giving_note": "feedback", "rapport_score": 7, "rapport_note": "feedback", "strengths": ["strength 1", "strength 2"], "growth_areas": ["area 1", "area 2"], "suggested_phrases": ["phrase 1", "phrase 2"], "clinical_note": "overall observation"}';
                 callGemini(fbPrompt, false)
                     .then(function(r) {
+                        if (typeof r !== 'string' || !r.trim()) return;
                         try {
                             var fb = JSON.parse(r.replace(/```json?\n?/g,'').replace(/```/g,'').trim());
-                            setAiFeedback(fb);
+                            if (fb && typeof fb === 'object' && !Array.isArray(fb)) setAiFeedback(fb);
                         } catch(e) { warnLog('Feedback parse failed', e); }
                     })
                     .catch(function(e) { warnLog('Feedback generation failed', e); })
@@ -10013,10 +10031,15 @@ Keep language warm and age-appropriate.`;
         };
 
         const parseFile = (file) => {
+            if (!file) return;
+            if (typeof file.size === 'number' && file.size > 10 * 1024 * 1024) {
+                addToast && addToast('Snapshot file exceeds the 10 MB safety limit.', 'error');
+                return;
+            }
             const reader = blCreateProtectedReader();
             reader.onload = (e) => {
                 try {
-                    let data = JSON.parse(e.target.result);
+                    let data = JSON.parse(e.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
                     // The home log's own Export wrote this shape, which was refused here.
                     if (data && data.type === 'behaviorLens_homeLog_snapshot' && Array.isArray(data.homeLogEntries)) {
                         data = { alloflowSnapshot: true, version: SNAPSHOT_VERSION, exportedAt: data.exportedAt, exportedBy: 'family', studentCodename: data.studentName, behaviorLens: { homeLogEntries: data.homeLogEntries } };
@@ -10280,7 +10303,7 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
     // "Reset to Default" wiped all edits without asking. Now the rights section is never
     // sent for rewriting, the previous text is kept for Undo, the form says it was
     // AI-rewritten until someone accepts it, and imports must be well formed.
-    const CONSENT_LOCKED_SECTIONS = { rights: true };
+    const CONSENT_LOCKED_SECTIONS = Object.assign(Object.create(null), { rights: true });
     function applyConsentRewrite(sections, rewritten) {
         const list = Array.isArray(rewritten) ? rewritten : [];
         return (sections || []).map(s => {
@@ -10421,10 +10444,15 @@ Rewrite each section to be warmer, more accessible, and family-friendly. Keep ev
         const handleImportTemplate = (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
+            if (typeof file.size === 'number' && file.size > 2 * 1024 * 1024) {
+                addToast && addToast('Consent template file exceeds the 2 MB safety limit.', 'error');
+                e.target.value = '';
+                return;
+            }
             const reader = blCreateProtectedReader();
             reader.onload = async (ev) => {
                 try {
-                    const data = JSON.parse(ev.target.result);
+                    const data = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
                     if (!data.alloflowConsentTemplate || !validConsentSections(data.sections)) {
                         addToast && addToast(tt('behavior_lens.toast.not_a_valid_consent_template_file', 'Not a valid consent template file'), 'error');
                         return;
@@ -11281,8 +11309,8 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                         setPhaseGenerating(true);
                         try {
                             // Find the latest timestamp in existing data
-                            const timestamps = abcEntries.map(e => new Date(e.timestamp || e.date || 0).getTime()).filter(t => !isNaN(t));
-                            const latestTs = timestamps.length > 0 ? Math.max(...timestamps) : Date.now();
+                            const timestamps = abcEntries.map(e => new Date(e.timestamp || e.date || 0).getTime()).filter(Number.isFinite);
+                            const latestTs = timestamps.length > 0 ? timestamps.reduce((m, v) => v > m ? v : m, -Infinity) : Date.now();
                             const startDate = new Date(latestTs + 86400000); // day after last entry
 
                             // Get last 5 entries for context
@@ -11535,9 +11563,9 @@ Rules:
         // 1. Volume (20%)
         const volScore = Math.min(1, entries.length / 10);
         // 2. Recency (20%)
-        const dates = entries.map(e => new Date(e.date || e.timestamp || 0));
-        const mostRecent = Math.max(...dates);
-        const daysSince = (now - mostRecent) / (1000 * 60 * 60 * 24);
+        const dates = entries.map(e => new Date(e.date || e.timestamp || 0).getTime()).filter(Number.isFinite);
+        const mostRecent = dates.length ? dates.reduce((m, v) => v > m ? v : m, -Infinity) : 0;
+        const daysSince = dates.length ? (now.getTime() - mostRecent) / (1000 * 60 * 60 * 24) : Infinity;
         const recScore = daysSince <= 7 ? 1 : daysSince <= 14 ? 0.5 : 0;
         // 3. Setting Diversity (20%)
         const uniqueAnt = new Set(entries.map(e => (e.antecedent || '').trim().toLowerCase()).filter(Boolean));
@@ -18598,8 +18626,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             if (boundary <= signalledRef.current) return;
             signalledRef.current = boundary;
             if (focusMode && running) {
+                let ctx = null;
                 try {
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    ctx = new (window.AudioContext || window.webkitAudioContext)();
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.connect(gain);
@@ -18608,9 +18637,12 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     osc.frequency.setValueAtTime(880, ctx.currentTime);
                     gain.gain.setValueAtTime(0.1, ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+                    osc.onended = () => { try { Promise.resolve(ctx.close?.()).catch(() => {}); } catch (_) {} };
                     osc.start(ctx.currentTime);
                     osc.stop(ctx.currentTime + 1.5);
-                } catch(e) {}
+                } catch(e) {
+                    if (ctx) { try { Promise.resolve(ctx.close?.()).catch(() => {}); } catch (_) {} }
+                }
             }
         }, [elapsed, focusMode, running, intervalLength]);
 
@@ -19336,6 +19368,10 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             if (!svg) return;
             const svgData = new XMLSerializer().serializeToString(svg);
             const printWin = blOpenReadableWindow('', '_blank');
+            if (!printWin || !printWin.document) {
+                if (typeof addToast === 'function') addToast('Pop-up blocked. Allow pop-ups for this site to print the graph.', 'warning');
+                return;
+            }
             printWin.document.write(`<html><head><title>${esc(graphTitle) || 'ABA Graph'}</title><style>body{margin:20px;font-family:Arial,sans-serif}svg{width:100%;max-width:800px}@media print{body{margin:0}}</style></head><body>${svgData}<br/><p style="font-size:10px;color:#666">Generated by BehaviorLens — ${esc(new Date().toLocaleDateString())}</p></body></html>`);
             printWin.document.close();
             printWin.print();
@@ -23074,7 +23110,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         let included = 0, outside = 0, older = 0, untimed = 0;
         const filter = String(behaviorFilter || '').trim().toLowerCase();
         const times = (entries || []).map(e => abcEntryTime(e)).filter(Number.isFinite);
-        const since = weeks > 0 && times.length ? Math.max(...times) - weeks * 7 * 86400000 : -Infinity;
+        const since = weeks > 0 && times.length ? times.reduce((m, v) => v > m ? v : m, -Infinity) - weeks * 7 * 86400000 : -Infinity;
         (entries || []).forEach(e => {
             if (filter && !String(e.behavior || '').toLowerCase().includes(filter)) return;
             if (abcEntryTime(e) < since) { older += 1; return; }
@@ -25092,7 +25128,7 @@ Keep the language professional but accessible.`;
     function caseloadRow(name, found, now) {
         const entries = found.entries;
         const times = entries.map(e => Date.parse(e && (e.occurredAt || e.timestamp))).filter(Number.isFinite);
-        const last = times.length ? Math.max(...times) : null;
+        const last = times.length ? times.reduce((m, v) => v > m ? v : m, -Infinity) : null;
         const daysSinceEntry = last == null ? null : Math.floor(((now == null ? Date.now() : now) - last) / 86400000);
         const intensity = getBehaviorLensWorkspaceRuntime().summarizeIntensity(entries);
         let status = 'on_track';
@@ -26147,6 +26183,13 @@ Keep the language professional but accessible.`;
         const handleFile = (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
+            if (typeof file.size === 'number' && file.size > 10 * 1024 * 1024) {
+                setErrors(['CSV file exceeds the 10 MB safety limit.']);
+                setParsedRows([]);
+                setImported(false);
+                e.target.value = '';
+                return;
+            }
             const read = (encoding) => {
                 const reader = blCreateProtectedReader();
                 reader.onload = (ev) => {
@@ -26702,7 +26745,7 @@ Keep the language professional but accessible.`;
             const reader = blCreateProtectedReader();
             reader.onload = (ev) => {
                 try {
-                    const data = JSON.parse(ev.target.result);
+                    const data = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
                     const validation = workspaceRuntime.validateSharedWorkspaceImport(data, { sourceBytes: file.size });
                     if (!validation.ok) throw new Error(validation.error);
                     setImportedData(data);
@@ -26976,9 +27019,8 @@ Format as a numbered list. Be concise but specific.`;
 
             let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(audienceLabel)} — ${esc(student)}</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; line-height: 1.6; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #1e293b; line-height: 1.6; padding: 0; }
 .page { max-width: 780px; margin: 0 auto; padding: 40px 48px; }
 h1 { font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
 h2 { font-size: 16px; font-weight: 700; color: #334155; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
@@ -29750,7 +29792,8 @@ IMPORTANT rules for expert keys:
                 : [...studentRoster, { ...rosterEntry, isPracticeMode: simulated }];
             const workspaceKey = 'behaviorLens_workspace_' + rosterEntry.id;
             const previousRaw = localStorage.getItem(workspaceKey);
-            const previous = previousRaw ? JSON.parse(previousRaw) : null;
+            let previous = null;
+            if (previousRaw) { try { const p = JSON.parse(previousRaw); previous = p && typeof p === 'object' ? p : null; } catch (_) { previous = null; } }
             const workspace = {
                 ...incoming, student: rosterEntry.name, studentId: rosterEntry.id,
                 isPracticeMode: simulated,
@@ -29792,7 +29835,8 @@ IMPORTANT rules for expert keys:
                 if (!student) { student = { id: blReusableWorkspaceId(row.name, roster) || uid(), name: row.name, lastAccessed: new Date().toISOString() }; roster.push(student); }
                 const key = 'behaviorLens_workspace_' + student.id;
                 const raw = localStorage.getItem(key);
-                const previous = raw ? JSON.parse(raw) : {};
+                let previous = {};
+                if (raw) { try { const p = JSON.parse(raw); previous = p && typeof p === 'object' && !Array.isArray(p) ? p : {}; } catch (_) { previous = {}; } }
                 const workspace = {
                     ...previous, version: runtime.WORKSPACE_VERSION, student: student.name, studentId: student.id,
                     isPracticeMode: false, savedAt: new Date().toISOString(),
@@ -29918,7 +29962,7 @@ IMPORTANT rules for expert keys:
             reader.onload = async (ev) => {
                 try {
                     assertImportCurrent();
-                    const data = JSON.parse(ev.target.result);
+                    const data = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
                     // A snapshot keeps its records under "behaviorLens", so it read as "no recognized data".
                     if (data && data.alloflowSnapshot === true) throw new Error('this is a snapshot file. Open Snapshot Exchange to merge its records.');
                     const validation = workspaceRuntime.validateWorkspaceImport(data, { sourceBytes: file.size });
@@ -30024,10 +30068,15 @@ IMPORTANT rules for expert keys:
                 }
             };
             files.forEach(file => {
+                if (!file || (typeof file.size === 'number' && file.size > workspaceRuntime.MAX_WORKSPACE_IMPORT_BYTES)) {
+                    rejected += 1;
+                    finishFile();
+                    return;
+                }
                 const reader = blCreateProtectedReader();
                 reader.onload = (ev) => {
                     try {
-                        const data = JSON.parse(ev.target.result);
+                        const data = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
                         const validation = workspaceRuntime.validateWorkspaceImport(data, { sourceBytes: file.size });
                         if (!validation.ok) throw new Error(validation.error);
                         // Counted the way a live row is (canonical behaviors, every count, observation
@@ -30047,13 +30096,20 @@ IMPORTANT rules for expert keys:
             e.target.value = '';
         };
 
+        const panelFocusRafRef = useRef(null);
+        useEffect(() => () => { if (panelFocusRafRef.current != null) cancelAnimationFrame(panelFocusRafRef.current); }, []);
         // Track visited panels for recommendations
         const openPanel = (panelId) => {
             const prerequisite = behaviorLensToolPrerequisite(panelId, selectedStudent, abcEntries.length);
             if (prerequisite) {
                 setActivePanel('hub');
                 if (addToast) addToast(prerequisite, 'info');
-                requestAnimationFrame(() => behaviorLensDialogRef.current?.querySelector('[aria-label="Choose a student"], [aria-label="Pick codename adjective"]')?.focus());
+                if (panelFocusRafRef.current != null) cancelAnimationFrame(panelFocusRafRef.current);
+                panelFocusRafRef.current = requestAnimationFrame(() => {
+                    panelFocusRafRef.current = null;
+                    const target = behaviorLensDialogRef.current?.querySelector('[aria-label="Choose a student"], [aria-label="Pick codename adjective"]');
+                    if (target && target.isConnected) target.focus();
+                });
                 return;
             }
             // The hub cards were filtered in Family view, but the Overview's edit and report
@@ -30084,10 +30140,14 @@ IMPORTANT rules for expert keys:
             const cardTitle = document.getElementById('bl-tool-' + panelId + '-title');
             const textOf = node => node.nodeType === 3 ? node.textContent.trim() : Array.from(node.childNodes).map(textOf).filter(Boolean).join(' ');
             const toolName = cardTitle ? textOf(cardTitle) : '';
-            requestAnimationFrame(() => {
+            if (panelFocusRafRef.current != null) cancelAnimationFrame(panelFocusRafRef.current);
+            panelFocusRafRef.current = requestAnimationFrame(() => {
+                panelFocusRafRef.current = null;
                 const heading = behaviorLensDialogRef.current?.querySelector('[data-bl-panel-content] [data-bl-abc-modal-initial]') || behaviorLensDialogRef.current?.querySelector('[data-bl-panel-content] h2, [data-bl-panel-content] h3') || behaviorLensDialogRef.current?.querySelector('[data-bl-panel-content]');
-                blAnnounceToSR('Opened ' + (toolName || (heading && /^H[23]$/.test(heading.tagName) ? heading.textContent.trim() : 'tool')));
-                if (heading) { if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1'); heading.focus(); }
+                if (!heading || !heading.isConnected) return;
+                blAnnounceToSR('Opened ' + (toolName || (/^H[23]$/.test(heading.tagName) ? heading.textContent.trim() : 'tool')));
+                if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+                heading.focus();
             });
         };
 
@@ -32171,7 +32231,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                 
                 // Save abc data (key on demoId — survives codename rename)
                 const _demoAbcKey = `behaviorLens_abc_${demoId}`;
-                const existingAbc = JSON.parse(localStorage.getItem(_demoAbcKey) || '[]');
+                let existingAbc = [];
+                try { const pAbc = JSON.parse(localStorage.getItem(_demoAbcKey) || '[]'); existingAbc = Array.isArray(pAbc) ? pAbc : []; } catch (_) { existingAbc = []; }
                 if (existingAbc.length === 0) {
                     localStorage.setItem(_demoAbcKey, JSON.stringify(mockAbc));
                     if (typeof setAbcEntries === 'function') {
@@ -32183,7 +32244,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                 localStorage.setItem(`prefassess_${demoId}`, '1. iPad (Highly Preferred)\n2. Goldfish Crackers (Preferred)\n3. Coloring (Preferred)\n4. Blocks (Neutral)');
 
                 // Save mock profile
-                const existingProfiles = JSON.parse(localStorage.getItem('students_data') || '[]');
+                let existingProfiles = [];
+                try { const pProf = JSON.parse(localStorage.getItem('students_data') || '[]'); existingProfiles = Array.isArray(pProf) ? pProf : []; } catch (_) { existingProfiles = []; }
                 if (!existingProfiles.some(p => p.name === demoName)) {
                     existingProfiles.push({ name: demoName, preferences: 'iPad, Snacks, Coloring', strengths: 'Visual learner, enjoys music' });
                     localStorage.setItem('students_data', JSON.stringify(existingProfiles));

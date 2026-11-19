@@ -955,7 +955,7 @@
     try {
       if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
     } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   }
   function munAiOk(ctx) { return !!ctx && !ctx.__munNoAi && _aiUsable('text', ctx.callGemini); }
 
@@ -1598,7 +1598,7 @@
       h('p', { style: { fontSize: 12, color: '#94a3b8' } }, 'Caucus, voting, and debrief phases ship in the next update. For now, opening speeches are the end of v0.2.'),
       (isHost || isSolo) && h('button', {
         onClick: function() { updateMUN({ phase: PHASES.OPENING_SPEECHES }); },
-        style: { marginTop: 12, padding: '8px 16px', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700 }
+        style: { marginTop: 12, padding: '8px 16px', background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700 }
       }, '← Back to Opening Speeches')
     );
   }
@@ -1696,7 +1696,7 @@
             key: m.id, onClick: function() { pickAssignmentMode(m.id); },
             style: {
               padding: '6px 12px', fontSize: 12, fontWeight: 600,
-              background: picked ? '#0ea5e9' : 'rgba(255,255,255,0.04)',
+              background: picked ? '#0369a1' : 'rgba(255,255,255,0.04)',
               color: picked ? '#fff' : '#cbd5e1',
               border: '1px solid ' + (picked ? '#0ea5e9' : '#334155'),
               borderRadius: 8, cursor: 'pointer'
@@ -1724,7 +1724,7 @@
         disabled: !modelUn.committeeId || !modelUn.agendaId,
         style: {
           padding: '10px 18px', fontSize: 14, fontWeight: 700,
-          background: (modelUn.committeeId && modelUn.agendaId) ? '#0ea5e9' : '#475569',
+          background: (modelUn.committeeId && modelUn.agendaId) ? '#0369a1' : '#475569',
           color: '#fff', border: 'none', borderRadius: 10,
           cursor: (modelUn.committeeId && modelUn.agendaId) ? 'pointer' : 'not-allowed'
         }
@@ -1941,7 +1941,7 @@
         }, '← Back to Setup'),
         h('button', {
           onClick: lockRosterAndAdvance,
-          style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+          style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Lock roster → Briefing →')
       )
     );
@@ -2065,7 +2065,7 @@
         }, '← Back to Assignment'),
         h('button', {
           onClick: function() { updateMUN({ phase: PHASES.POSITION_PAPER }); },
-          style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+          style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Open Position Papers →')
       ),
       !isHost && h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', marginTop: 12 } },
@@ -2313,7 +2313,7 @@
           onClick: aiCritique,
           disabled: status.critiquing || !form.stance,
           'aria-busy': status.critiquing,
-          style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: status.critiquing ? '#475569' : '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: status.critiquing ? 'wait' : 'pointer' }
+          style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: status.critiquing ? '#475569' : '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: status.critiquing ? 'wait' : 'pointer' }
         }, status.critiquing ? '⏳ Reviewing…' : '🔎 AI feedback'),
         h('button', {
           onClick: exportPrint,
@@ -2415,7 +2415,7 @@
         }, '← Back to Briefing'),
         isHost && h('button', {
           onClick: function() { updateMUN({ phase: PHASES.OPENING_SPEECHES, currentSpeakerUid: null, speechCount: 0 }); },
-          style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+          style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Begin Opening Speeches →'),
         !isHost && h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', flex: 1, marginTop: 8 } },
           (papers[myUid] && papers[myUid].savedAt ? 'Paper saved. ' : '') + 'Chair will start opening speeches when ready.'
@@ -4153,7 +4153,7 @@
                 disabled: review.loading || text.trim().length < 15,
                 style: {
                   padding: '6px 12px', fontSize: 11, fontWeight: 600,
-                  background: review.loading ? '#475569' : (text.trim().length >= 15 ? '#0ea5e9' : '#1e293b'),
+                  background: review.loading ? '#475569' : (text.trim().length >= 15 ? '#0369a1' : '#1e293b'),
                   color: '#fff', border: 'none', borderRadius: 6,
                   cursor: review.loading ? 'wait' : (text.trim().length >= 15 ? 'pointer' : 'not-allowed')
                 }
@@ -4549,7 +4549,7 @@
               onClick: function() { setDuration(m); },
               style: {
                 flex: 1, padding: '8px 6px', fontSize: 12, fontWeight: 700,
-                background: duration === m ? '#0ea5e9' : 'rgba(255,255,255,0.04)',
+                background: duration === m ? '#0369a1' : 'rgba(255,255,255,0.04)',
                 color: duration === m ? '#fff' : '#cbd5e1',
                 border: '1px solid ' + (duration === m ? '#0ea5e9' : '#475569'),
                 borderRadius: 6, cursor: 'pointer'
@@ -5263,7 +5263,7 @@
         if (munNoAi(ctx)) bodyHtml += '<div class="meta">Practice without AI: other delegates\' speeches and votes are simulated from short stored notes, not what any real government would say or do.</div>';
 
         // Roster
-        bodyHtml += '<h2>Roll Call</h2><table class="roster"><tr><th>Country</th><th>Delegate</th><th>Final Vote</th></tr>';
+        bodyHtml += '<h2>Roll Call</h2><table class="roster"><tr><th scope="col">Country</th><th scope="col">Delegate</th><th scope="col">Final Vote</th></tr>';
         Object.keys(assigned).forEach(function(uid) {
           var iso = assigned[uid];
           var c = countryById(iso);
@@ -5406,7 +5406,7 @@
         // AI coach feedback (lazy-load via button)
         munAiOk(ctx) && !feedback && !fbLoading && h('button', {
           onClick: generateFeedback,
-          style: { width: '100%', padding: '10px 14px', fontSize: 13, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+          style: { width: '100%', padding: '10px 14px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🧠 Get AI coach feedback'),
 
         fbLoading && h('div', { style: { padding: 14, textAlign: 'center', fontSize: 12, color: '#7dd3fc', fontStyle: 'italic' } },
@@ -5562,7 +5562,7 @@
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           myCountry && h('button', {
             onClick: function() { exportTranscript('personal'); },
-            style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
+            style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
           }, '📄 My Personal Transcript'),
           (isHost || isSolo) && h('button', {
             onClick: function() { exportTranscript('class'); },
@@ -5575,7 +5575,7 @@
       h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8 } },
         h('button', {
           onClick: exitToLauncher,
-          style: { padding: '10px 18px', fontSize: 13, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+          style: { padding: '10px 18px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, isSolo ? '🌐 Run another simulation' : '🌐 Close session')
       )
     );
@@ -5887,13 +5887,18 @@
     var ttsState = ttsStateTuple[0];
     var setTtsState = ttsStateTuple[1];
     var audioRef = useRef(null);
+    var mountedRef = useRef(true);
     var noAiVoice = munNoAi(ctx);
     var canListen = noAiVoice
       ? (typeof window !== 'undefined' && !!window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined')
       : typeof ctx.callTTS === 'function';
     React.useEffect(function() {
+      mountedRef.current = true;
       return function() {
+        mountedRef.current = false;
         if (audioRef.current === 'device-voice') { try { window.speechSynthesis.cancel(); } catch (e) {} }
+        else if (audioRef.current) { try { audioRef.current.pause(); audioRef.current.currentTime = 0; } catch (e) {} }
+        audioRef.current = null;
       };
     }, []);
 
@@ -5908,7 +5913,7 @@
         }
         var started = modelUnStudentDeviceVoice(String(sp.text || '').slice(0, 1500), function() {
           if (audioRef.current === 'device-voice') audioRef.current = null;
-          setTtsState({ loading: false, playing: false });
+          if (mountedRef.current) setTtsState({ loading: false, playing: false });
         }, true);
         if (started) { audioRef.current = 'device-voice'; setTtsState({ loading: false, playing: true }); }
         else if (typeof ctx.addToast === 'function') ctx.addToast('Read-aloud is off or not available on this device.');
@@ -5926,10 +5931,11 @@
       setTtsState({ loading: true, playing: false });
       var text = sp.text || '';
       Promise.resolve(ctx.callTTS(text.slice(0, 1500), 'Kore', 1.0)).then(function(audioUrl) {
+        if (!mountedRef.current) return;
         if (!audioUrl) {
           var spoken = modelUnStudentDeviceVoice(text.slice(0, 1500), function() {
             if (audioRef.current === 'device-voice') audioRef.current = null;
-            setTtsState({ loading: false, playing: false });
+            if (mountedRef.current) setTtsState({ loading: false, playing: false });
           });
           if (spoken) { audioRef.current = 'device-voice'; setTtsState({ loading: false, playing: true }); return; }
           setTtsState({ loading: false, playing: false });
@@ -5938,14 +5944,14 @@
         }
         var audio = new Audio(audioUrl);
         audioRef.current = audio;
-        audio.onended = function() { setTtsState({ loading: false, playing: false }); };
-        audio.onerror = function() { setTtsState({ loading: false, playing: false }); };
+        audio.onended = function() { if (mountedRef.current) setTtsState({ loading: false, playing: false }); };
+        audio.onerror = function() { if (mountedRef.current) setTtsState({ loading: false, playing: false }); };
         setTtsState({ loading: false, playing: true });
         audio.play().catch(function() {
-          setTtsState({ loading: false, playing: false });
+          if (mountedRef.current) setTtsState({ loading: false, playing: false });
         });
       }).catch(function() {
-        setTtsState({ loading: false, playing: false });
+        if (mountedRef.current) setTtsState({ loading: false, playing: false });
       });
     }
 
@@ -6149,6 +6155,8 @@
 
     var news = modelUn.news;
     var crisis = modelUn.crisisResponse || null; // { newsAt, deadline, responses: { uid: { country, text, at } } }
+    var modelUnRef = React.useRef(modelUn);
+    modelUnRef.current = modelUn;
     var loadingTuple = useState(false);
     var loading = loadingTuple[0];
     var setLoading = loadingTuple[1];
@@ -6172,12 +6180,13 @@
           if (typeof ctx.addToast === 'function') ctx.addToast('📰 Breaking news broadcast to all delegates');
           // If Imagen is available, fire-and-forget a wire-photo-style image
           // to attach to the banner. Doesn't block the news drop.
-          if (typeof ctx.callImagen === 'function') {
+          if (munAiOk(ctx) && _aiUsable('images', ctx.callImagen)) {
             var imagePrompt = 'A photojournalistic wire-service news photo for this UN news report. Subject: ' + r.headline + '. ' + r.body + '. Photorealistic, news photography style, no text overlays, no captions, neutral lighting, documentary tone. 16:9 aspect.';
             Promise.resolve(ctx.callImagen(imagePrompt)).then(function(imageUrl) {
               if (imageUrl && typeof imageUrl === 'string' && imageUrl.length > 0) {
                 // Re-read current news to avoid clobbering if it was dismissed
-                if (modelUn.news && modelUn.news.at === r.at) {
+                var curMun = modelUnRef.current || {};
+                if (curMun.news && curMun.news.at === r.at) {
                   updateMUN({ news: Object.assign({}, r, { imageUrl: imageUrl }) });
                 }
               }
@@ -6217,11 +6226,11 @@
         setTimeout(function() {
           aiGenerateCrisisResponse(ctx, country, agenda, news).then(function(r) {
             if (!r || !r.text) return;
-            // Re-read current modelUn — note: stale closure is OK because
-            // updateMUN re-merges with the latest session doc.
-            var nextResp = Object.assign({}, (modelUn.crisisResponse && modelUn.crisisResponse.responses) || {});
+            var curMun = modelUnRef.current || {};
+            if (!curMun.crisisResponse) return;
+            var nextResp = Object.assign({}, curMun.crisisResponse.responses || {});
             nextResp[uid] = { country: country.iso, text: r.text.slice(0, 400), at: Date.now(), isAi: true };
-            updateMUN({ crisisResponse: Object.assign({}, modelUn.crisisResponse, { responses: nextResp }) });
+            updateMUN({ crisisResponse: Object.assign({}, curMun.crisisResponse, { responses: nextResp }) });
           }).catch(function() {});
         }, delay);
       });
@@ -6933,7 +6942,7 @@
           ),
           h('button', {
             onClick: predict,
-            style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
+            style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
           }, '🔍 Predict tally')
         )
       );
@@ -7131,9 +7140,19 @@
     var loadingTuple = useState({}); // { uid: true }
     var loading = loadingTuple[0];
     var setLoading = loadingTuple[1];
+    var gradeTimersRef = React.useRef([]);
+    var mountedRef = React.useRef(true);
+    React.useEffect(function() {
+      mountedRef.current = true;
+      return function() {
+        mountedRef.current = false;
+        gradeTimersRef.current.forEach(function(id) { clearTimeout(id); });
+        gradeTimersRef.current = [];
+      };
+    }, []);
 
     function gradeOne(uid) {
-      if (loading[uid] || !agenda) return;
+      if (!agenda) return;
       var iso = assigned[uid];
       var country = countryById(iso);
       if (!country) return;
@@ -7141,12 +7160,14 @@
         // No AI: seed an empty rubric so the teacher scores with the 1-4 chips.
         var blank = {};
         RUBRIC_DOMAINS.forEach(function(d) { blank[d.key] = { score: 0, rationale: '' }; });
-        var seeded = Object.assign({}, grades); seeded[uid] = blank;
-        setGrades(seeded);
+        setGrades(function(prev) { var seeded = Object.assign({}, prev); seeded[uid] = blank; return seeded; });
         return;
       }
-      var nextLoad = Object.assign({}, loading); nextLoad[uid] = true;
-      setLoading(nextLoad);
+      setLoading(function(prev) {
+        if (prev[uid]) return prev;
+        var nextLoad = Object.assign({}, prev); nextLoad[uid] = true;
+        return nextLoad;
+      });
       var ownSpeeches = Object.keys(speeches).map(function(id) { return speeches[id]; }).filter(function(s) { return s.uid === uid; });
       var ownClauses = Object.keys(clauses).map(function(id) { return clauses[id]; }).filter(function(c) { return c.proposer === iso || c.proposer === country.name; });
       var voteRec = finalVotes[iso];
@@ -7160,36 +7181,44 @@
         vote: voteRec ? voteRec.vote : null,
         passed: passed
       }).then(function(r) {
-        var done = Object.assign({}, loading); delete done[uid];
-        setLoading(done);
+        if (!mountedRef.current) return;
+        setLoading(function(prev) { var done = Object.assign({}, prev); delete done[uid]; return done; });
         if (r) {
-          var nextGrades = Object.assign({}, grades);
-          nextGrades[uid] = r;
-          setGrades(nextGrades);
+          setGrades(function(prev) {
+            var nextGrades = Object.assign({}, prev);
+            nextGrades[uid] = r;
+            return nextGrades;
+          });
         } else if (typeof ctx.addToast === 'function') {
           ctx.addToast('AI grader unavailable for that delegate.');
         }
       }).catch(function() {
-        var done = Object.assign({}, loading); delete done[uid];
-        setLoading(done);
+        if (!mountedRef.current) return;
+        setLoading(function(prev) { var done = Object.assign({}, prev); delete done[uid]; return done; });
       });
     }
 
     function gradeAll() {
       humanUids.forEach(function(uid, i) {
-        if (grades[uid]) return; // skip already graded
-        setTimeout(function() { gradeOne(uid); }, i * 250);
+        if (grades[uid] || loading[uid]) return; // skip already graded or in-flight
+        var tid = setTimeout(function() {
+          gradeTimersRef.current = gradeTimersRef.current.filter(function(x) { return x !== tid; });
+          if (mountedRef.current) gradeOne(uid);
+        }, i * 250);
+        gradeTimersRef.current.push(tid);
       });
     }
 
     function overrideScore(uid, domainKey, newScore) {
-      var rubric = grades[uid];
-      if (!rubric) return;
-      var nextRubric = Object.assign({}, rubric);
-      nextRubric[domainKey] = Object.assign({}, rubric[domainKey], { score: newScore, overridden: true });
-      var nextGrades = Object.assign({}, grades);
-      nextGrades[uid] = nextRubric;
-      setGrades(nextGrades);
+      setGrades(function(prev) {
+        var rubric = prev[uid];
+        if (!rubric) return prev;
+        var nextRubric = Object.assign({}, rubric);
+        nextRubric[domainKey] = Object.assign({}, rubric[domainKey], { score: newScore, overridden: true });
+        var nextGrades = Object.assign({}, prev);
+        nextGrades[uid] = nextRubric;
+        return nextGrades;
+      });
     }
 
     function exportCsv() {
@@ -7358,6 +7387,8 @@
 
     var assigned = modelUn.assignedCountries || {};
     var backchannel = modelUn.backchannel || {};
+    var modelUnRef = React.useRef(modelUn);
+    modelUnRef.current = modelUn;
     var myUid = isSolo ? 'me' : (ctx.userId || null);
     var myIso = myUid ? assigned[myUid] : null;
     var myCountry = myIso ? countryById(myIso) : null;
@@ -7431,7 +7462,8 @@
           aiGenerateBackchannelReply(ctx, rec.country, agenda, t, myCountry).then(function(reply) {
             if (!reply || !reply.text) return;
             var replyId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-            var nextBc2 = Object.assign({}, modelUn.backchannel || {});
+            var curMun = modelUnRef.current || {};
+            var nextBc2 = Object.assign({}, curMun.backchannel || {});
             var keys2 = Object.keys(nextBc2);
             if (keys2.length >= 30) {
               keys2.sort(function(a, b) { return (nextBc2[a].at || 0) - (nextBc2[b].at || 0); });

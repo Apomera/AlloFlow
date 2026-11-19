@@ -216,13 +216,14 @@ function normalizeClaimCode_(value) {
   return /^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8}$/.test(code) ? code : '';
 }
 function claimMissKey_(actor) { return 'claim_miss_' + hash_(actor.email).slice(0, 24); }
-function claimMissesExceeded_(actor) {
+function claimMissesExceeded_(actor, kind) {
   if (typeof CacheService === 'undefined') return false;
-  return number_(CacheService.getScriptCache().get(claimMissKey_(actor))) >= SR_CLAIM_MISS_LIMIT;
+  var key = claimMissKey_(actor) + (kind ? ':' + kind : '');
+  return number_(CacheService.getScriptCache().get(key)) >= SR_CLAIM_MISS_LIMIT;
 }
-function recordClaimMiss_(actor) {
+function recordClaimMiss_(actor, kind) {
   if (typeof CacheService === 'undefined') return;
-  var cache = CacheService.getScriptCache(), key = claimMissKey_(actor);
+  var cache = CacheService.getScriptCache(), key = claimMissKey_(actor) + (kind ? ':' + kind : '');
   cache.put(key, String(number_(cache.get(key)) + 1), SR_CLAIM_MISS_WINDOW_SECONDS);
 }
 function claimDenialNote_(e) {
@@ -326,13 +327,15 @@ function claimSchoolRewardsToken(request) {
     var match = claimTokens_(lookupBook).filter(function(candidate) { return candidate.shortCode === code; })[0];
     if (!match) { recordClaimMiss_(actor); return { ok: false, state: 'not_found' }; }
     tokenId = id_(match.id, 'claim token');
+  } else if (claimMissesExceeded_(actor, 'token')) {
+    return { ok: false, state: 'too_many_attempts' };
   }
   var key = claimIdemKey_(tokenId);
   var operation = printIdemOperation_('claim', actor, { tokenId: tokenId });
   return locked_(function() {
     var book = book_(); requireClaimTokensReady_(book);
     var token = claimTokenById_(book, tokenId);
-    if (!token) return { ok: false, state: 'not_found' };
+    if (!token) { recordClaimMiss_(actor, typed ? '' : 'token'); return { ok: false, state: 'not_found' }; }
     var state;
     try { state = loadCoreOperation_(book, key, operation, 'claim'); }
     catch (err) { if (err && err.code === 'idempotency_conflict') return { ok: false, state: 'already_redeemed' }; throw err; }
@@ -1579,7 +1582,7 @@ function awardSchoolRewardsPointsBatch(request) {
   var amount = integer_(request.amount, 1, SR_MAX_POINTS, 'Points'), reason = text_(request.reason, 180, ''), categoryId = id_(request.categoryId, 'category'), key = idemKey_(request.idempotencyKey);
   if (!reason) throw srError_('bad_award', 'Describe what the students did to earn these points.');
   // Validate active categories inside each new award, keeping saved awards recoverable.
-  var seen = {}, results = [], recorded = 0, failed = 0;
+  var seen = Object.create(null), results = [], recorded = 0, failed = 0;
   studentIds.forEach(function(rawId) {
     var studentId;
     try { studentId = id_(rawId, 'student'); } catch (err) { results.push({ studentId: String(rawId || ''), ok: false, code: 'bad_id', error: err.message }); failed++; return; }
@@ -1655,7 +1658,7 @@ function checkoutSchoolRewardsOrder(request) {
       lines.forEach(function(line) { integer_(line.quantity, 1, 100, 'Quantity'); });
       requireStudent_(book, studentId);
       requireOpenWindowNow_(windowById_(book, windowId), 'Checkout');
-      var items = catalog_(book), byId = {}; items.forEach(function(item) { byId[item.id] = item; });
+      var items = catalog_(book), byId = Object.create(null); items.forEach(function(item) { byId[item.id] = item; });
       var total = 0, orderLines = [];
       lines.forEach(function(line) {
         var item = byId[line.catalogId];
@@ -1919,19 +1922,21 @@ function reportWeekStart_(day) { return reportAddDays_(day, -((reportUtc_(day).g
 
 function configureSchoolRewardsEmailSchedule(request) {
   var actor = requireRole_(['admin']); request = object_(request);
-  requireMailSchemaV6_(book_());
   var enabled = request.enabled === true, weekday = text_(request.weekday, 12, 'FRIDAY').toUpperCase();
   var hour = integer_(request.hour == null ? 16 : request.hour, 0, 23, 'Hour');
-  if (!{ MONDAY: 1, TUESDAY: 1, WEDNESDAY: 1, THURSDAY: 1, FRIDAY: 1 }[weekday]) throw srError_('bad_schedule', 'Choose a weekday for the schedule.');
-  ScriptApp.getProjectTriggers().forEach(function(trigger) { if (trigger.getHandlerFunction() === 'runScheduledSchoolRewardsStatements') ScriptApp.deleteTrigger(trigger); });
-  PropertiesService.getScriptProperties().setProperty('SR_EMAIL_TRIGGER_REGISTRATION', '');
-  if (enabled) {
-    var weeklyTrigger = ScriptApp.newTrigger('runScheduledSchoolRewardsStatements').timeBased().onWeekDay(ScriptApp.WeekDay[weekday]).atHour(hour).everyWeeks(1).create();
-    saveMailTriggerRegistration_('SR_EMAIL_TRIGGER_REGISTRATION', weeklyTrigger, 'runScheduledSchoolRewardsStatements', 'weekly|' + weekday + '|' + hour);
-  }
-  PropertiesService.getScriptProperties().setProperties({ SR_EMAIL_ENABLED: String(enabled), SR_EMAIL_WEEKDAY: weekday, SR_EMAIL_HOUR: String(hour) }, false);
-  appendAudit_({ event: 'EMAIL_SCHEDULE_UPDATED', type: 'schedule', id: 'balance-statements', summary: enabled ? 'Weekly balance emails enabled' : 'Weekly balance emails disabled' }, actor);
-  return { ok: true, schedule: emailSchedule_() };
+  if (!Object.prototype.hasOwnProperty.call({ MONDAY: 1, TUESDAY: 1, WEDNESDAY: 1, THURSDAY: 1, FRIDAY: 1 }, weekday)) throw srError_('bad_schedule', 'Choose a weekday for the schedule.');
+  return locked_(function() {
+    requireMailSchemaV6_(book_());
+    ScriptApp.getProjectTriggers().forEach(function(trigger) { if (trigger.getHandlerFunction() === 'runScheduledSchoolRewardsStatements') ScriptApp.deleteTrigger(trigger); });
+    PropertiesService.getScriptProperties().setProperty('SR_EMAIL_TRIGGER_REGISTRATION', '');
+    if (enabled) {
+      var weeklyTrigger = ScriptApp.newTrigger('runScheduledSchoolRewardsStatements').timeBased().onWeekDay(ScriptApp.WeekDay[weekday]).atHour(hour).everyWeeks(1).create();
+      saveMailTriggerRegistration_('SR_EMAIL_TRIGGER_REGISTRATION', weeklyTrigger, 'runScheduledSchoolRewardsStatements', 'weekly|' + weekday + '|' + hour);
+    }
+    PropertiesService.getScriptProperties().setProperties({ SR_EMAIL_ENABLED: String(enabled), SR_EMAIL_WEEKDAY: weekday, SR_EMAIL_HOUR: String(hour) }, false);
+    appendAudit_({ event: 'EMAIL_SCHEDULE_UPDATED', type: 'schedule', id: 'balance-statements', summary: enabled ? 'Weekly balance emails enabled' : 'Weekly balance emails disabled' }, actor);
+    return { ok: true, schedule: emailSchedule_() };
+  });
 }
 
 function runScheduledSchoolRewardsStatements(e) {
@@ -2269,9 +2274,9 @@ function languageMap_(book) {
 }
 function studentLanguage_(book, studentId) { return languageMap_(book)[studentId] || 'en'; }
 function setStudentLanguage_(book, studentId, language) {
-  var sheet = prefsSheet_(book), list = rows_(sheet, 3), at = now_();
-  for (var i = 0; i < list.length; i++) if (String(list[i][0]) === studentId) { sheet.getRange(i + 2, 1, 1, 3).setValues([[studentId, language, at]]); return; }
-  sheet.appendRow([studentId, language, at]);
+  var sheet = prefsSheet_(book), list = rows_(sheet, 3), at = now_(), safe = safeRow_([studentId, language, at]);
+  for (var i = 0; i < list.length; i++) if (String(list[i][0]) === studentId) { var r = sheet.getRange(i + 2, 1, 1, 3); if (typeof r.setNumberFormat === 'function') r.setNumberFormat('@'); r.setValues([safe]); return; }
+  sheet.appendRow(safe);
 }
 function setSchoolRewardsLanguage(request) {
   var actor = currentActor_(); request = object_(request);
@@ -2360,7 +2365,17 @@ function scheduledAdminActor_(event, expectedHandler, registrationProperty) {
 function requireRole_(roles) { var actor = currentActor_(); if (roles.indexOf(actor.role) < 0) throw srError_('denied', 'Your role cannot perform this action.'); return actor; }
 function configured_() { return PropertiesService.getScriptProperties().getProperty('SR_SETUP_STATE') === 'ready'; }
 function allowedDomain_() { return normalizeDomain_(PropertiesService.getScriptProperties().getProperty('SR_ALLOWED_DOMAIN')); }
-function book_() { var id = PropertiesService.getScriptProperties().getProperty('SR_SPREADSHEET_ID'); if (!id) throw srError_('not_configured', 'Repository is unavailable.'); return SpreadsheetApp.openById(id); }
+var _srVerifiedBookId_ = '';
+function book_() {
+  var id = PropertiesService.getScriptProperties().getProperty('SR_SPREADSHEET_ID');
+  if (!id) throw srError_('not_configured', 'Repository is unavailable.');
+  if (_srVerifiedBookId_ !== id) {
+    var file = null;
+    try { file = DriveApp.getFileById(id); } catch (_) { file = null; }
+    if (file) { assertPrivateStorage_(file); _srVerifiedBookId_ = id; }
+  }
+  return SpreadsheetApp.openById(id);
+}
 function sheet_(book, name) { var sheet = book.getSheetByName(name); if (!sheet) throw srError_('repository', name + ' sheet is missing.'); return sheet; }
 
 function initializeSheets_(book) {
@@ -2573,7 +2588,11 @@ function printColor_(value) { var color = text_(value, 20, '#64748b'); if (!/^#[
 function printModelReadyForQuote_(model) { return !!model.printableFileId || (model.sourceFormat === 'RECIPE' && !!model.originalFileId); }
 function printFolder_() { var props = PropertiesService.getScriptProperties(), id = props.getProperty('SR_PRINT_FOLDER_ID'); if (id) return assertPrivateStorage_(DriveApp.getFolderById(id)); var parent = assertPrivateStorage_(DriveApp.getFolderById(props.getProperty('SR_FOLDER_ID'))), folder = parent.createFolder('Print Models'); setPrivate_(folder); props.setProperty('SR_PRINT_FOLDER_ID', folder.getId()); return folder; }
 function storePrintRecipe_(modelId, recipeJson) { var file = printFolder_().createFile(modelId + '.json', recipeJson, 'application/json'); setPrivate_(file); return file.getId(); }
-function loadPrintRecipe_(model) { if (!model.originalFileId) throw srError_('asset_missing', 'The private recipe asset is unavailable.'); try { return JSON.parse(DriveApp.getFileById(model.originalFileId).getBlob().getDataAsString('UTF-8')); } catch (_) { throw srError_('asset_invalid', 'The private recipe asset could not be read.'); } }
+function loadPrintRecipe_(model) {
+  if (!model.originalFileId) throw srError_('asset_missing', 'The private recipe asset is unavailable.');
+  var file = assertPrivateStorage_(DriveApp.getFileById(model.originalFileId));
+  try { return JSON.parse(file.getBlob().getDataAsString('UTF-8')); } catch (_) { throw srError_('asset_invalid', 'The private recipe asset could not be read.'); }
+}
 
 function printAssetFolder_() { var props = PropertiesService.getScriptProperties(), id = props.getProperty('SR_PRINT_ASSET_FOLDER_ID'); if (id) return assertPrivateStorage_(DriveApp.getFolderById(id)); var folder = printFolder_().createFolder('Imported Assets - Private Review'); setPrivate_(folder); props.setProperty('SR_PRINT_ASSET_FOLDER_ID', folder.getId()); return folder; }
 function printAssets_(book) { return rows_(sheet_(book, 'PrintAssets'), 15).map(function(row) { return { id: String(row[0] || ''), modelId: String(row[1] || ''), ownerStudentId: String(row[2] || ''), fileName: String(row[3] || ''), sourceFormat: String(row[4] || ''), mimeType: String(row[5] || ''), contentHash: String(row[6] || ''), byteSize: number_(row[7]), driveFileId: String(row[8] || ''), status: String(row[9] || ''), reviewReason: String(row[10] || ''), uploadedAt: cell_(row[11]), reviewedAt: cell_(row[12]), reviewedByHash: String(row[13] || ''), updatedAt: cell_(row[14]) }; }); }
@@ -2856,7 +2875,7 @@ function buildStoreInventoryMovements_(book, lines, direction, kind, key, refere
   });
   return out;
 }
-function assertInventoryRestorable_(book, lines) { var byId = {}, quantities = {}; catalog_(book).forEach(function(item) { byId[item.id] = item; }); lines.forEach(function(line) { var quantity = Number(line.quantity); if (!isFinite(quantity) || Math.floor(quantity) !== quantity || quantity < 1) throw srError_('reconciliation', 'Refund order quantities are invalid.'); quantities[line.catalogId] = (quantities[line.catalogId] || 0) + quantity; }); return Object.keys(quantities).map(function(itemId) { var item = byId[itemId]; if (!item) throw srError_('catalog_changed', 'The item on this order has been removed from the catalog, so its stock cannot be restored automatically.'); if (item.inventoryLimit >= 0 && (item.remaining < 0 || item.remaining > item.inventoryLimit || item.remaining + quantities[itemId] > item.inventoryLimit)) throw srError_('reconciliation', 'Refund would make inventory exceed its configured limit for ' + item.name + '.'); return { catalogId: itemId, quantity: quantities[itemId] }; }); }
+function assertInventoryRestorable_(book, lines) { var byId = Object.create(null), quantities = Object.create(null); catalog_(book).forEach(function(item) { byId[item.id] = item; }); lines.forEach(function(line) { var quantity = Number(line.quantity); if (!isFinite(quantity) || Math.floor(quantity) !== quantity || quantity < 1) throw srError_('reconciliation', 'Refund order quantities are invalid.'); quantities[line.catalogId] = (quantities[line.catalogId] || 0) + quantity; }); return Object.keys(quantities).map(function(itemId) { var item = byId[itemId]; if (!item) throw srError_('catalog_changed', 'The item on this order has been removed from the catalog, so its stock cannot be restored automatically.'); if (item.inventoryLimit >= 0 && (item.remaining < 0 || item.remaining > item.inventoryLimit || item.remaining + quantities[itemId] > item.inventoryLimit)) throw srError_('reconciliation', 'Refund would make inventory exceed its configured limit for ' + item.name + '.'); return { catalogId: itemId, quantity: quantities[itemId] }; }); }
 
 function windows_(book) { return rows_(sheet_(book, 'StoreWindows'), 7).map(function(row) { return { id: String(row[0] || ''), name: String(row[1] || ''), startsAt: cell_(row[2]), endsAt: cell_(row[3]), status: String(row[4] || ''), createdAt: cell_(row[5]), updatedAt: cell_(row[6]) }; }); }
 function normalizeWindow_(value) { value = object_(value); var status = text_(value.status, 20, 'DRAFT').toUpperCase(); if (SR_WINDOW_STATES.indexOf(status) < 0) throw srError_('bad_window', 'Choose a store status: draft, preview, open, closed, or archived.'); var startsAt = iso_(value.startsAt), endsAt = iso_(value.endsAt); if (startsAt && endsAt && startsAt >= endsAt) throw srError_('bad_window', 'The store closing date must be after its opening date.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 120, 'Trimester store'), startsAt: startsAt, endsAt: endsAt, status: status }; }
@@ -2972,7 +2991,7 @@ function reconcileInventoryMovements_(book, movements, faultPrefix) {
   });
 }
 function spendForOrder_(book, orderId) { var list = ledger_(book); for (var i = 0; i < list.length; i++) if (list[i].kind === 'SPEND' && list[i].referenceType === 'order' && list[i].referenceId === orderId) return list[i]; return null; }
-function cart_(value) { if (!Array.isArray(value) || !value.length || value.length > 50) throw srError_('bad_cart', 'Add between 1 and 50 items to the cart.'); var map = {}; value.forEach(function(line) { var itemId = id_(line && line.catalogId, 'catalog item'), quantity = integer_(line && line.quantity, 1, 100, 'Quantity'); map[itemId] = (map[itemId] || 0) + quantity; }); return Object.keys(map).sort().map(function(itemId) { return { catalogId: itemId, quantity: map[itemId] }; }); }
+function cart_(value) { if (!Array.isArray(value) || !value.length || value.length > 50) throw srError_('bad_cart', 'Add between 1 and 50 items to the cart.'); var map = Object.create(null); value.forEach(function(line) { var itemId = id_(line && line.catalogId, 'catalog item'), quantity = integer_(line && line.quantity, 1, 100, 'Quantity'); map[itemId] = (map[itemId] || 0) + quantity; }); var out = Object.keys(map).sort().map(function(itemId) { return { catalogId: itemId, quantity: map[itemId] }; }); if (!out.length) throw srError_('bad_cart', 'Add between 1 and 50 items to the cart.'); return out; }
 function academicYearStart_(book) { var value = configMap_(book).academicYearStartedAt; return value ? String(value) : ''; }
 function statementKeys_(book) {
   var map = {}, since = academicYearStart_(book);
@@ -3912,7 +3931,7 @@ function validatePendingCoreJournal_(book, key, operation, journal) {
 function journalLineProjectionForValidation_(lines) { return (lines || []).map(function(line) { return { catalogId: line.catalogId, itemName: line.itemName, quantity: line.quantity, unitCost: line.unitCost, lineTotal: line.lineTotal }; }); }
 function validateJournalLines_(book, value, expectedTotal) {
   if (!Array.isArray(value) || !value.length || value.length > 50) throw srError_('journal_intent_invalid', 'The pending store operation has an invalid line count.');
-  var seen = {}, total = 0, previous = '', out = [], catalogById = {}; catalog_(book).forEach(function(item) { catalogById[item.id] = item; });
+  var seen = Object.create(null), total = 0, previous = '', out = [], catalogById = Object.create(null); catalog_(book).forEach(function(item) { catalogById[item.id] = item; });
   value.forEach(function(line) {
     line = object_(line); var catalogId = journalExactId_(line.catalogId, 'catalog item'), itemName = journalExactText_(line.itemName, 120, 'item name'), quantity = journalExactInteger_(line.quantity, 1, 5000, 'item quantity'), unitCost = journalExactInteger_(line.unitCost, 1, 100000, 'unit cost'), lineTotal = journalExactInteger_(line.lineTotal, 1, 500000000, 'line total'), item = catalogById[catalogId];
     if (seen[catalogId] || (previous && catalogId < previous) || !item || item.name !== itemName || item.cost !== unitCost || lineTotal !== quantity * unitCost) throw srError_('journal_intent_invalid', 'The pending store line does not match the canonical catalog transaction.');
@@ -3924,7 +3943,7 @@ function validateJournalLines_(book, value, expectedTotal) {
 }
 function validateJournalInventoryPlan_(book, value, lines, direction) {
   if (!Array.isArray(value)) throw srError_('journal_intent_invalid', 'The pending inventory plan is invalid.');
-  var lineById = {}, planById = {}, out = [], catalogById = {}; lines.forEach(function(line) { lineById[line.catalogId] = line; }); catalog_(book).forEach(function(item) { catalogById[item.id] = item; });
+  var lineById = Object.create(null), planById = Object.create(null), out = [], catalogById = Object.create(null); lines.forEach(function(line) { lineById[line.catalogId] = line; }); catalog_(book).forEach(function(item) { catalogById[item.id] = item; });
   value.forEach(function(target) {
     target = object_(target); var catalogId = journalExactId_(target.catalogId, 'catalog item'), line = lineById[catalogId], item = catalogById[catalogId], limit = journalExactInteger_(target.inventoryLimit, 0, 100000, 'inventory limit'), before = journalExactInteger_(target.beforeRemaining, 0, limit, 'inventory before'), after = journalExactInteger_(target.afterRemaining, 0, limit, 'inventory after');
     if (planById[catalogId] || !line || !item || item.inventoryLimit !== limit || after !== before + direction * line.quantity || (item.remaining !== before && item.remaining !== after)) throw srError_('journal_intent_invalid', 'Inventory changed; the pending inventory plan delta no longer matches its catalog line.');
@@ -3935,7 +3954,7 @@ function validateJournalInventoryPlan_(book, value, lines, direction) {
 }
 function validateJournalInventoryMovements_(book, value, lines, direction, kind, key, referenceType, referenceId, actor, at, reason) {
   if (!Array.isArray(value) || value.length !== lines.length) throw srError_('journal_intent_invalid', 'The pending inventory movement list does not exactly cover its order lines.');
-  var lineById = {}, seen = {}, out = [];
+  var lineById = Object.create(null), seen = Object.create(null), out = [];
   lines.forEach(function(line) { lineById[line.catalogId] = line; });
   value.forEach(function(raw) {
     var movement = validateInventoryMovementEnvelope_(book, raw);
@@ -4662,7 +4681,7 @@ function activeEmail_() { var email = normalizeEmail_(Session.getActiveUser().ge
 function now_() { return new Date().toISOString(); }
 function uuid_() { return Utilities.getUuid(); }
 function iso_(value) { if (!value) return ''; var date = new Date(String(value)); if (isNaN(date.getTime())) throw srError_('bad_date', 'Enter a date and time.'); return date.toISOString(); }
-function httpsUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\//i.test(out) || out.length > 600) throw srError_('bad_url', 'Use an HTTPS URL.'); return out; }
+function httpsUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\/[A-Za-z0-9.-]+(?::\d{1,5})?(?:\/[^\s"'<>\\]*)?$/i.test(out) || /[\u0000-\u001f\u007f]/.test(out) || out.length > 600) throw srError_('bad_url', 'Use an HTTPS URL.'); return out; }
 function webAppUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(out)) throw srError_('bad_url', 'Use the Apps Script /exec URL.'); return out; }
 function safeRow_(values) { return values.map(function(value) { return typeof value === 'string' && /^[\t\r\n ]*[=+\-@]/.test(value) ? "'" + value : value; }); }
 function assertPrivateStorage_(item) {
@@ -4680,7 +4699,14 @@ function cell_(value) { if (value == null) return ''; if (Object.prototype.toStr
 function hash_(value) { var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(value), Utilities.Charset.UTF_8); return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/, ''); }
 function html_(value) { return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 function srError_(code, message) { var error = new Error(message); error.code = code; return error; }
-function publicError_(err) { return { ok: false, code: err && err.code ? String(err.code) : 'server_error', error: err && err.message ? String(err.message) : 'School Rewards request failed.' }; }
+function publicError_(err) {
+  var hasCode = !!(err && err.code);
+  return {
+    ok: false,
+    code: hasCode ? String(err.code) : 'server_error',
+    error: hasCode && err.message ? String(err.message) : 'School Rewards request failed.'
+  };
+}
 function jsonOutput_(value) { return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON); }
 // Optional reviewed AlloFlow class links. Schema 6 stays valid when these tables are absent.
 // Snapshots contain pseudonymous identity associations; historical associations are retained.
@@ -4709,7 +4735,7 @@ function classLinkShape_(value, keys, required) {
   if (!value || Object.prototype.toString.call(value) !== '[object Object]' || Object.keys(value).some(function(k) { return keys.indexOf(k) < 0; }) || required.some(function(k) { return !Object.prototype.hasOwnProperty.call(value, k); })) classLinkFail_('invalid', 'The class-link request has invalid or unexpected fields.');
 }
 function classLinkId_(value) {
-  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{1,160}$/.test(value) || /^(?:__proto__|prototype|constructor)$/i.test(value)) classLinkFail_('invalid', 'The class-link request contains an invalid identity.');
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_][A-Za-z0-9_-]{0,159}$/.test(value) || /^(?:__proto__|prototype|constructor)$/i.test(value)) classLinkFail_('invalid', 'The class-link request contains an invalid identity.');
   return value;
 }
 function classLinkCodename_(name) {
@@ -4938,7 +4964,7 @@ function resumeClassLinkCoreOperation_(book, key, operation, journal, actor) {
     var sheet = classLinkSheet_(book, 'AlloFlowClassHeads', false), rows = rows_(sheet, 2), index = -1;
     rows.forEach(function(row, n) { if (String(row[0]) === i.classId) index = n; });
     var head = JSON.stringify({ versionId: i.newRevision });
-    if (index < 0) sheet.appendRow([i.classId, head]); else sheet.getRange(index + 2, 2, 1, 1).setValues([[head]]);
+    if (index < 0) sheet.appendRow(safeRow_([i.classId, head])); else { var hr = sheet.getRange(index + 2, 2, 1, 1); if (typeof hr.setNumberFormat === 'function') hr.setNumberFormat('@'); hr.setValues([safeRow_([head])]); }
     SpreadsheetApp.flush(); coreFault_('class_links:after_head');
   }
   var verifiedHead = classLinkHeads_(book).filter(function(h) { return h.classId === i.classId; })[0];

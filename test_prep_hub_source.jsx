@@ -36,7 +36,7 @@ function testPrepAiUsable(kind, fn) {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
 }
 
 function testPrepHandsFreeSynthesisTimeoutMs(text) {
@@ -2712,7 +2712,9 @@ function testPrepExportProgress(progress, reviewItems, now, extras) {
 
 function testPrepImportProgress(value) {
   let input = value;
-  if (typeof input === 'string') input = JSON.parse(input);
+  if (typeof input === 'string') {
+    input = JSON.parse(input, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
+  }
   if (!input || typeof input !== 'object' || Array.isArray(input) || ![1, 2, 3, 4].includes(input.schemaVersion) || input.kind !== 'alloflow-test-prep-progress') {
     throw new Error('Unsupported AlloFlow test-prep progress file.');
   }
@@ -4334,17 +4336,21 @@ function TestPrepHub(props) {
     });
   }, [handsFreeStatus, handsFreeEngine.privacy]);
 
+  const testPrepVoiceControlRef = React.useRef(null);
+  testPrepVoiceControlRef.current = (event) => {
+    const request = event && event.detail && typeof event.detail === 'object' ? event.detail : {};
+    const action = String(request.action || 'status').trim().toLowerCase();
+    const status = handleTestPrepVoiceBoundaryAction(action, request);
+    publishTestPrepVoiceStatus(status, request, action);
+  };
   React.useEffect(() => {
     if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
     const handleVoiceControl = (event) => {
-      const request = event && event.detail && typeof event.detail === 'object' ? event.detail : {};
-      const action = String(request.action || 'status').trim().toLowerCase();
-      const status = handleTestPrepVoiceBoundaryAction(action, request);
-      publishTestPrepVoiceStatus(status, request, action);
+      if (typeof testPrepVoiceControlRef.current === 'function') testPrepVoiceControlRef.current(event);
     };
     window.addEventListener(TEST_PREP_VOICE_CONTROL_EVENT, handleVoiceControl);
     return () => window.removeEventListener(TEST_PREP_VOICE_CONTROL_EVENT, handleVoiceControl);
-  });
+  }, []);
 
   React.useEffect(() => {
     if (!isOpen || handsFreeEnabledRef.current || typeof window === 'undefined') return undefined;
@@ -5260,6 +5266,11 @@ function TestPrepHub(props) {
   function importPracticeProgressFile(event) {
     const file = event && event.target && event.target.files && event.target.files[0];
     if (!file || typeof FileReader === 'undefined') return;
+    if (typeof file.size === 'number' && file.size > 10 * 1024 * 1024) {
+      announce('Progress import file exceeds the 10 MB limit.', 'warning');
+      if (event.target) event.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -6606,7 +6617,7 @@ function TestPrepHub(props) {
                         </p>
                       )}
                       <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-700">{card.description}</p>
-                      {card.blueprintLabel && <p className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-2 text-xs leading-relaxed text-sky-950"><strong>Blueprint:</strong> {card.blueprintLabel}{card.officialBlueprintUrl && <> | <a href={card.officialBlueprintUrl} target="_blank" rel="noreferrer" className="font-black underline">Official specification</a></>}</p>}
+                      {card.blueprintLabel && <p className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-2 text-xs leading-relaxed text-sky-950"><strong>Blueprint:</strong> {card.blueprintLabel}{card.officialBlueprintUrl && <> | <a href={card.officialBlueprintUrl} target="_blank" rel="noopener noreferrer" className="font-black underline">Official specification</a></>}</p>}
                       <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
                         <div className="rounded-lg bg-slate-100 p-2"><dt className="font-bold text-slate-700">Domains</dt><dd className="text-slate-900">{card.domainCount}</dd></div>
                         <div className="rounded-lg bg-slate-100 p-2"><dt className="font-bold text-slate-700">Practice items</dt><dd className="text-slate-900">{card.itemCount}</dd></div>
@@ -6672,7 +6683,7 @@ function TestPrepHub(props) {
                 <section className="mb-4 rounded-lg border border-violet-300 bg-violet-50 px-3 py-3 text-violet-950" aria-labelledby="content-review-title">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p id="content-review-title" className="text-sm font-bold">Evidence status: {selectedPack.contentReview}</p>
-                    <span className="flex flex-wrap gap-3">{selectedPack.assistantAuditUrl && <a href={selectedPack.assistantAuditUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open assistant audit</a>}{selectedPack.nativeQaUrl && <a href={selectedPack.nativeQaUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open source-review report</a>}</span>
+                    <span className="flex flex-wrap gap-3">{selectedPack.assistantAuditUrl && <a href={selectedPack.assistantAuditUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noopener noreferrer" className="text-xs font-black text-indigo-800 underline">Open assistant audit</a>}{selectedPack.nativeQaUrl && <a href={selectedPack.nativeQaUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noopener noreferrer" className="text-xs font-black text-indigo-800 underline">Open source-review report</a>}</span>
                   </div>
                   {selectedPack.bankDisclosure && <p className="mt-2 text-sm leading-relaxed"><strong>Bank disclosure:</strong> {selectedPack.bankDisclosure}</p>}
                   <div className="mt-3 grid gap-2 border-t border-violet-200 pt-3 text-xs leading-relaxed sm:grid-cols-2">
@@ -6687,7 +6698,7 @@ function TestPrepHub(props) {
                 <section className="mb-4 rounded-lg border border-sky-300 bg-sky-50 px-3 py-3 text-sm leading-relaxed text-sky-950" aria-labelledby="blueprint-transition-title">
                   <p id="blueprint-transition-title" className="font-black">Blueprint version and scheduled transition</p>
                   <p className="mt-1">{selectedPack.blueprintEffective || selectedPack.blueprintLabel}</p>
-                  <p className="mt-2">{selectedPack.transitionNotice} {selectedPack.transitionUrl && <a href={selectedPack.transitionUrl} target="_blank" rel="noreferrer" className="font-black underline">Read the official future blueprint.</a>}</p>
+                  <p className="mt-2">{selectedPack.transitionNotice} {selectedPack.transitionUrl && <a href={selectedPack.transitionUrl} target="_blank" rel="noopener noreferrer" className="font-black underline">Read the official future blueprint.</a>}</p>
                 </section>
               )}
 
@@ -6954,7 +6965,7 @@ function TestPrepHub(props) {
                           <ul className="mt-2 space-y-3">
                             {currentItem.references.map((reference) => {
                               const source = (currentItem.sourceDetails || []).find((detail) => detail.url === reference) || testPrepDescribeReference(reference);
-                              return <li key={reference} className="rounded-lg border border-slate-200 bg-white p-3"><a href={reference} target="_blank" rel="noreferrer" className="font-black text-indigo-800 underline">{source.title}</a>{source.organization && <p className="mt-1 font-bold text-slate-800">{source.organization}</p>}<p className="mt-1 leading-relaxed"><strong>Brief source summary:</strong> {source.summary || 'This source provides context for the related answer explanation; open it to review the complete scope and limitations.'}</p><p className="mt-1 leading-relaxed"><strong>Why this source is credible:</strong> {source.credibility}</p></li>;
+                              return <li key={reference} className="rounded-lg border border-slate-200 bg-white p-3"><a href={reference} target="_blank" rel="noopener noreferrer" className="font-black text-indigo-800 underline">{source.title}</a>{source.organization && <p className="mt-1 font-bold text-slate-800">{source.organization}</p>}<p className="mt-1 leading-relaxed"><strong>Brief source summary:</strong> {source.summary || 'This source provides context for the related answer explanation; open it to review the complete scope and limitations.'}</p><p className="mt-1 leading-relaxed"><strong>Why this source is credible:</strong> {source.credibility}</p></li>;
                             })}
                           </ul>
                         </div>
@@ -7136,7 +7147,7 @@ function TestPrepHub(props) {
                         {routeWorkshopRecords.length > 0 && <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3"><p className="text-xs font-black uppercase tracking-wide text-sky-800">Linked response workshop{routeWorkshopRecords.length === 1 ? '' : 's'}</p><div className="mt-2 flex flex-wrap gap-2">{routeWorkshopRecords.map((workshop) => <button key={workshop.id} data-test-prep-foundational-route-workshop-id={workshop.id} type="button" onClick={() => { setLibraryMode('constructed-response'); setLibrarySearch(workshop.title || ''); setLibraryChapterId(''); }} className="rounded-lg border border-sky-500 bg-white px-3 py-2 text-left text-xs font-black text-sky-950 hover:bg-sky-100 focus:ring-2 focus:ring-sky-600">Open linked workshop: {workshop.title}</button>)}</div></div>}
                         <div data-test-prep-foundational-route-progress={routeProgress.status} className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3"><div className="flex items-center justify-between gap-3 text-xs"><span className="font-black uppercase tracking-wide text-emerald-900">Route progress</span><strong className="text-emerald-950">{routeProgressLabel}</strong></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-emerald-100" role="progressbar" aria-label={route.title + ' route progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={routeProgress.attemptedPercent}><div className="h-full rounded-full bg-emerald-700" style={{ width: routeProgress.attemptedPercent + '%' }} /></div><p className="mt-2 text-xs font-bold text-emerald-950">{routeProgress.attemptedItemCount} of {routeProgress.totalItemCount} linked questions practiced{routeProgressScore}</p></div>
                         <p className="mt-4 flex-1 rounded-lg bg-slate-50 p-3 text-xs leading-relaxed text-slate-700">{route.accessNote}</p>
-                        <div className="mt-4 flex flex-wrap items-center gap-3"><div className="flex flex-wrap gap-2"><button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title })} className="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start document route</button>{routeSlices.map((slice) => <button key={slice.id} type="button" onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title + ' · ' + slice.label + ' set', itemIds: slice.itemIds })} className="rounded-xl border border-emerald-700 bg-white px-3 py-2 text-xs font-black text-emerald-900 hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start {slice.label.toLowerCase()} set <span className="font-bold">({slice.itemIds.length})</span></button>)}</div><ul className="flex flex-wrap gap-3 text-xs">{(route.references || []).map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul></div>
+                        <div className="mt-4 flex flex-wrap items-center gap-3"><div className="flex flex-wrap gap-2"><button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title })} className="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start document route</button>{routeSlices.map((slice) => <button key={slice.id} type="button" onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title + ' · ' + slice.label + ' set', itemIds: slice.itemIds })} className="rounded-xl border border-emerald-700 bg-white px-3 py-2 text-xs font-black text-emerald-900 hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start {slice.label.toLowerCase()} set <span className="font-bold">({slice.itemIds.length})</span></button>)}</div><ul className="flex flex-wrap gap-3 text-xs">{(route.references || []).map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul></div>
                       </article>;
                     })}
                   </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No foundational-document routes match that search.</p>}
@@ -7407,7 +7418,7 @@ function TestPrepHub(props) {
                     <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => setLibraryDomain(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{Array.from(new Set(releasedMemoryAids.map((item) => item.domain))).sort().map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
                   </div>
                   <p className="text-sm font-bold text-slate-700" role="status">Showing {aids.length} of {releasedMemoryAids.length} source-reviewed memory aids</p>
-                  <div className="grid gap-3 md:grid-cols-2">{aids.map((aid) => { const open = memoryAidOpen === aid.id; return <article key={aid.id} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{aid.domain} · {aid.type}</p><h5 className="mt-1 font-black text-slate-900">{aid.title}</h5></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'Editorial pass · source pending' : 'Review required'}</span></div><button type="button" aria-expanded={open} onClick={() => setMemoryAidOpen(open ? '' : aid.id)} className="mt-3 min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{open ? 'Hide aid' : 'Show aid'}</button>{open && <><p className="mt-4 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">{aid.content}</p>{Array.isArray(aid.sourceDetails) && aid.sourceDetails.length > 0 && <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3"><h6 className="text-xs font-black uppercase tracking-wide text-slate-800">Sources</h6><ul className="mt-2 space-y-3">{aid.sourceDetails.map((source) => <li key={source.url} className="text-xs leading-relaxed text-slate-700"><a href={source.url} target="_blank" rel="noreferrer" className="font-black text-indigo-800 underline">{source.title}</a>{source.organization && <span className="font-bold"> - {source.organization}</span>}<p className="mt-1">Why this source is reputable: {source.whyReputable}</p></li>)}</ul></div>}<div className="mt-3 flex flex-wrap gap-1">{aid.tags.slice(0, 10).map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{tag}</span>)}</div></>}</article>; })}</div>
+                  <div className="grid gap-3 md:grid-cols-2">{aids.map((aid) => { const open = memoryAidOpen === aid.id; return <article key={aid.id} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{aid.domain} · {aid.type}</p><h5 className="mt-1 font-black text-slate-900">{aid.title}</h5></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'Editorial pass · source pending' : 'Review required'}</span></div><button type="button" aria-expanded={open} onClick={() => setMemoryAidOpen(open ? '' : aid.id)} className="mt-3 min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{open ? 'Hide aid' : 'Show aid'}</button>{open && <><p className="mt-4 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">{aid.content}</p>{Array.isArray(aid.sourceDetails) && aid.sourceDetails.length > 0 && <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3"><h6 className="text-xs font-black uppercase tracking-wide text-slate-800">Sources</h6><ul className="mt-2 space-y-3">{aid.sourceDetails.map((source) => <li key={source.url} className="text-xs leading-relaxed text-slate-700"><a href={source.url} target="_blank" rel="noopener noreferrer" className="font-black text-indigo-800 underline">{source.title}</a>{source.organization && <span className="font-bold"> - {source.organization}</span>}<p className="mt-1">Why this source is reputable: {source.whyReputable}</p></li>)}</ul></div>}<div className="mt-3 flex flex-wrap gap-1">{aid.tags.slice(0, 10).map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{tag}</span>)}</div></>}</article>; })}</div>
                   {!aids.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No memory aids match those filters.</p>}
                 </section>;
               })()}
@@ -7456,7 +7467,7 @@ function TestPrepHub(props) {
                       </details>}
                       <footer className="mt-4 border-t border-slate-200 pt-4">
                         {workshop.reviewNote && <p className="text-xs leading-relaxed text-slate-700">{workshop.reviewNote}</p>}
-                        <ul className="mt-2 flex flex-wrap gap-3 text-xs">{(workshop.references || []).map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul>
+                        <ul className="mt-2 flex flex-wrap gap-3 text-xs">{(workshop.references || []).map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul>
                       </footer>
                     </article>)}
                   </div>
@@ -7623,7 +7634,7 @@ function TestPrepHub(props) {
                   <label htmlFor="test-prep-progress-import" className="inline-flex min-h-11 cursor-pointer items-center rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus-within:ring-2 focus-within:ring-indigo-600">Import progress<input id="test-prep-progress-import" type="file" accept="application/json,.json" onChange={importPracticeProgressFile} className="sr-only" /></label>
                 </div>
               </div>
-              {progressAnalytics.retainedAttemptCount > 0 && <aside className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="status"><p className="font-black">Earlier content-revision results retained</p><p className="mt-1 leading-relaxed">{progressAnalytics.retainedAttemptCount} practice result{progressAnalytics.retainedAttemptCount === 1 ? '' : 's'} from an earlier or unidentified content revision remain stored and included in backups. They are excluded from current-revision analytics, smart review, study goals, and recent practice.</p></aside>}
+              {progressAnalytics.retainedAttemptCount > 0 && <aside aria-label="Earlier content-revision results retained" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="status"><p className="font-black">Earlier content-revision results retained</p><p className="mt-1 leading-relaxed">{progressAnalytics.retainedAttemptCount} practice result{progressAnalytics.retainedAttemptCount === 1 ? '' : 's'} from an earlier or unidentified content revision remain stored and included in backups. They are excluded from current-revision analytics, smart review, study goals, and recent practice.</p></aside>}
               {studyPlanStatus && <section className="rounded-2xl border border-teal-300 bg-white p-5 shadow-sm" aria-labelledby="weekly-study-plan-title">
                 <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-teal-800">Activity goals only</p><h4 id="weekly-study-plan-title" className="mt-1 text-lg font-black text-slate-900">Weekly study plan</h4><p className="mt-1 max-w-3xl text-sm text-slate-700">Set retrieval-practice targets for the current Monday–Sunday week. Goals and streaks describe activity; they do not estimate ability, readiness, an official score, or passing.</p></div><div className="rounded-lg bg-teal-50 px-3 py-2 text-center"><p className="text-2xl font-black text-teal-950">{studyPlanStatus.activityStreakDays}</p><p className="text-xs font-bold text-teal-800">day activity streak</p></div></div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">

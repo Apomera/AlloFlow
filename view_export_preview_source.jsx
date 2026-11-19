@@ -55,9 +55,30 @@ function _ensureHarper() {
   if (_harperPromise) return _harperPromise;
   _harperPromise = (async () => {
     const _imp = new Function('u', 'return import(u)');
-    const assetRoot = 'https://alloflow-cdn.pages.dev/vendor/harper/2.4.0';
-    const mod = await _imp(assetRoot + '/index.js');
-    const binary = await mod.createBinaryModuleFromUrl(assetRoot + '/harper_wasm_full_bg.wasm', 'full');
+    const isDesktop = typeof window !== 'undefined' && window._isDesktopBundledApp === true;
+    const localBase = (typeof window !== 'undefined' && window.location && /^https?:$/i.test(window.location.protocol))
+      ? new URL('vendor/harper/2.4.0', window.location.href).href.replace(/\/$/, '')
+      : '';
+    const roots = isDesktop
+      ? (localBase ? [localBase] : [])
+      : (localBase && !localBase.startsWith('https://alloflow-cdn.pages.dev/')
+          ? [localBase, 'https://alloflow-cdn.pages.dev/vendor/harper/2.4.0']
+          : ['https://alloflow-cdn.pages.dev/vendor/harper/2.4.0']);
+    if (!roots.length) throw new Error('Harper offline bundle unavailable in desktop mode.');
+    let mod = null;
+    let activeRoot = '';
+    let lastErr = null;
+    for (const candidate of roots) {
+      try {
+        mod = await _imp(candidate + '/index.js');
+        activeRoot = candidate;
+        break;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    if (!mod) throw lastErr || new Error('Harper runtime failed to load.');
+    const binary = await mod.createBinaryModuleFromUrl(activeRoot + '/harper_wasm_full_bg.wasm', 'full');
     const linter = new mod.LocalLinter({ binary });
     if (linter.setup) await linter.setup();
     if (linter.getLintConfig && linter.setLintConfig) {
@@ -3245,13 +3266,15 @@ function _builderSanitizeTemplateHtml(doc, html) {
   if (!doc?.createElement) return '';
   const template = doc.createElement('template');
   template.innerHTML = String(html || '').slice(0, 250000);
-  template.content.querySelectorAll('script,style,iframe,object,embed,link,meta,base,form').forEach((node) => node.remove());
+  template.content.querySelectorAll('script,style,iframe,object,embed,link,meta,base,form,frame,frameset,noscript,template,svg,math,xmp,noembed,noframes,plaintext').forEach((node) => node.remove());
   template.content.querySelectorAll('*').forEach((node) => {
     Array.from(node.attributes || []).forEach((attribute) => {
       const name = attribute.name.toLowerCase();
-      const value = attribute.value || '';
+      const value = String(attribute.value || '').replace(/[\u0000-\u0020]+/g, '').toLowerCase();
+      const isUrlAttr = /^(?:href|src|xlink:href|action|formaction|poster|data)$/.test(name);
+      const isSafeDataImg = (name === 'src' || name === 'poster') && /^data:image\/(?:png|jpeg|jpg|gif|webp);base64,/i.test(value);
       if (/^on/.test(name) || name === 'srcdoc' || /^data-allo-(change|comment)-/.test(name)) node.removeAttribute(attribute.name);
-      else if ((name === 'href' || name === 'src') && /^\s*(javascript|vbscript):/i.test(value)) node.removeAttribute(attribute.name);
+      else if (isUrlAttr && (/^(?:javascript|vbscript):/.test(value) || (/^data:/.test(value) && !isSafeDataImg))) node.removeAttribute(attribute.name);
     });
     node.removeAttribute('contenteditable');
   });
@@ -4802,6 +4825,24 @@ function _builderMarkdownFromRoot(root, options = {}) {
   };
   return { markdown: render(root).trim(), warnings: [...warnings] };
 }
+function _handleBuilderToolbarKeyDown(e) {
+  if (!e || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'Home' && e.key !== 'End')) return;
+  const target = e.target;
+  if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) return;
+  const bar = e.currentTarget;
+  if (!bar) return;
+  const items = Array.from(bar.querySelectorAll('button:not([disabled]),[role="button"]:not([aria-disabled="true"]),select:not([disabled]),input:not([disabled]),a[href]')).filter((el) => el.offsetParent !== null);
+  if (items.length < 2) return;
+  const cur = items.indexOf(target);
+  if (cur === -1) return;
+  e.preventDefault();
+  let next = cur;
+  if (e.key === 'ArrowRight') next = (cur + 1) % items.length;
+  else if (e.key === 'ArrowLeft') next = (cur - 1 + items.length) % items.length;
+  else if (e.key === 'Home') next = 0;
+  else if (e.key === 'End') next = items.length - 1;
+  if (items[next] && typeof items[next].focus === 'function') items[next].focus();
+}
 async function _builderFetchExportImage(url, options = {}) {
   const maxBytes = options.maxBytes || 8 * 1024 * 1024;
   const timeoutMs = options.timeoutMs || 10000;
@@ -6141,9 +6182,18 @@ function ExportPreviewView(props) {
     const dialog = imageDialogRef.current;
     if (!dialog) return undefined;
     const timer = window.setTimeout(() => imageAltInputRef.current?.focus(), 0);
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let cur = el; cur && cur !== dialog; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+        }
+      }
+      return true;
+    });
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeImageDialog(); return; }
+      if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); event.stopPropagation(); closeImageDialog(); return; }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
@@ -6163,6 +6213,10 @@ function ExportPreviewView(props) {
     if (!decorative && !alt) {
       setImageAltError('Describe the image, or mark it as decorative.');
       imageAltInputRef.current?.focus();
+      return;
+    }
+    if (Number(file.size) > 20 * 1024 * 1024) {
+      addToast && addToast('That image is larger than 20 MB. Choose a smaller image.', 'error');
       return;
     }
     const runId = ++imageInsertRunRef.current;
@@ -8246,6 +8300,10 @@ function ExportPreviewView(props) {
       setCitationImportFeedback({ tone: 'error', message: 'Enter a DOI before looking it up.' });
       return;
     }
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      setCitationImportFeedback({ tone: 'error', message: 'DOI lookup is disabled in offline Desktop mode. You can still enter the source manually.' });
+      return;
+    }
     if (typeof window.fetch !== 'function') {
       setCitationImportFeedback({ tone: 'error', message: 'DOI lookup is unavailable in this environment. You can still enter the source manually.' });
       return;
@@ -8259,6 +8317,8 @@ function ExportPreviewView(props) {
       const response = await window.fetch('https://api.crossref.org/works/' + encodeURIComponent(doi), {
         method: 'GET',
         headers: { Accept: 'application/json' },
+        credentials: 'omit',
+        referrerPolicy: 'no-referrer',
         signal: controller?.signal,
       });
       if (!response.ok) throw new Error(response.status === 404 ? 'No Crossref record was found for that DOI.' : 'Crossref returned HTTP ' + response.status + '.');
@@ -10199,21 +10259,8 @@ function ExportPreviewView(props) {
                         title="Open this content in Page Designer as an editable slide deck — reorder, restyle, and export PowerPoint from there.">
                         🎨 {t('export_preview.edit_in_page_designer') || 'Edit in Page Designer'}</button>
                     )}
-                    {/* Alternative format exports */}
-                    <style>{`.allo-builder-export-formats { position:absolute;right:0;top:100%;width:18rem;max-width:calc(100vw - 2rem);max-height:60vh;overflow-y:auto;overscroll-behavior:contain; }
-                      @media (max-width:639px) { .allo-builder-export-formats { position:fixed;left:1rem;right:1rem;top:auto;bottom:1rem;width:auto; } }`}</style>
-                    <details className="relative" onKeyDownCapture={(event) => {
-                      if (event.key === 'Escape' && event.currentTarget.open) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        event.currentTarget.open = false;
-                        event.currentTarget.querySelector('summary')?.focus();
-                      }
-                    }}>
-                      <summary className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none">
-                        ♿ More export formats <span className="text-[11px] text-slate-600">▾</span>
-                      </summary>
-                      <fieldset disabled={exportActionBusy || !!altExportBusy} aria-label={t("export_preview.accessibility.additional_export_formats") || "Additional export formats"} aria-busy={!!altExportBusy} className="allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1">
+                    {/* Alternative format exports — flattened directly inside the Export popover so there is no nested flyout or double Escape */}
+                      <fieldset disabled={exportActionBusy || !!altExportBusy} aria-label={t("export_preview.accessibility.additional_export_formats") || "Additional export formats"} aria-busy={!!altExportBusy} className="allo-builder-export-formats border-t border-slate-200 pt-2 space-y-1">
                         <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Editable documents</div>
                         <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('docx')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50">{altExportBusy === 'docx' ? 'Building Word...' : 'Accessible Word (.docx)'}</button>
                         <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('odt')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50">{altExportBusy === 'odt' ? 'Building ODT...' : 'OpenDocument (.odt)'}</button>
@@ -11753,7 +11800,10 @@ function ExportPreviewView(props) {
                           const _contentProps = [];
                           try { if (_clone.querySelector('svg')) _contentProps.push('svg'); if (_clone.querySelector('math')) _contentProps.push('mathml'); if (_hasRemoteResources) _contentProps.push('remote-resources'); } catch (_) {}
                           const _contentPropAttr = _contentProps.length ? ' properties="' + _contentProps.join(' ') + '"' : '';
-                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"${_isRtl ? ' dir="rtl"' : ''}><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${_imageManifest.join('')}</manifest><spine${_isRtl ? ' page-progression-direction="rtl"' : ''}><itemref idref="content"/></spine></package>`);
+                          const _a11yFeatures = ['structuralNavigation', 'readingOrder', 'tableOfContents', 'displayTransformability'];
+                          try { if (_images.length) _a11yFeatures.push('alternativeText'); if (_clone.querySelector('math')) _a11yFeatures.push('MathML'); } catch (_) {}
+                          const _a11yMeta = `<meta property="schema:accessMode">textual</meta>${_images.length ? '<meta property="schema:accessMode">visual</meta>' : ''}<meta property="schema:accessModeSufficient">textual</meta>${_a11yFeatures.map((f) => `<meta property="schema:accessibilityFeature">${f}</meta>`).join('')}<meta property="schema:accessibilityHazard">none</meta><meta property="schema:accessibilitySummary">Structured XHTML with navigable headings, reading order, and reflowable text exported from AlloFlow.</meta>`;
+                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"${_isRtl ? ' dir="rtl"' : ''}><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta>${_a11yMeta}</metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${_imageManifest.join('')}</manifest><spine${_isRtl ? ' page-progression-direction="rtl"' : ''}><itemref idref="content"/></spine></package>`);
                           // #7 (export-format review R2): serialize via XMLSerializer so content.xhtml
                           // is well-formed XML — every void element (<meta>, <input>, <col>, <br>, <img>)
                           // self-closed and entities encoded. The old outerHTML+regex only patched
@@ -11772,7 +11822,7 @@ function ExportPreviewView(props) {
                           if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
                           xhtml = xhtml.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '');
                           zip.file('OEBPS/content.xhtml', xhtml);
-                          zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"${_isRtl ? ' dir="rtl"' : ''}><head><title>${xmlTitle} — Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
+                          zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"${_isRtl ? ' dir="rtl"' : ''}><head><title>${xmlTitle} — Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav><nav epub:type="landmarks" hidden=""><h2>Landmarks</h2><ol><li><a epub:type="toc" href="nav.xhtml">Table of Contents</a></li><li><a epub:type="bodymatter" href="content.xhtml">${xmlTitle}</a></li></ol></nav></body></html>`);
                           const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
                           downloadBuilderBlob(blob, { extension: 'epub' });
                           if (_unavailableRemoteImages) {
@@ -12032,7 +12082,6 @@ const _downloadBRF = (brf) => {
                           finally { finishAlternativeExport(); }
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'brf' ? 'Building Braille...' : '⠿ Electronic Braille (.brf)'}</button>
                       </fieldset>
-                    </details>
                     </div>
                   </details>
                     <button onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }} className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm" aria-label={t('a11y.toggle_theme') || 'Toggle color theme'} title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}><span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span></button>
@@ -12381,7 +12430,7 @@ const _downloadBRF = (brf) => {
                                   <p className="mt-0.5 text-[10px] leading-relaxed text-slate-700">{proposal.reason || 'This structure may help readers scan the document.'}</p>
                                 </div>
                                 <button type="button" onClick={() => setBlockSuggestions((current) => current ? current.filter((item) => item !== proposal) : current)}
-                                  className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100" aria-label={t("export_preview.accessibility.dismiss_this_block_suggestion") || "Dismiss this block suggestion"}>
+                                  className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold text-slate-600 hover:bg-slate-100" aria-label={t("export_preview.accessibility.dismiss_this_block_suggestion") || "Dismiss this block suggestion"}>
                                   Dismiss
                                 </button>
                               </div>
@@ -12589,6 +12638,7 @@ const _downloadBRF = (brf) => {
                       high-legibility web faces to that picker for teachers who
                       know their students will be online. Off by default, because
                       turning it on makes the handout fetch fonts when it opens. */}
+                  {exportPreviewMode === 'html' && (
                   <label className="flex items-start gap-2 text-[11px] text-slate-700 mb-2 cursor-pointer">
                     <input type="checkbox" className="mt-0.5 accent-indigo-600"
                       checked={!!exportConfig.readerWebFonts}
@@ -12601,6 +12651,7 @@ const _downloadBRF = (brf) => {
                       </span>
                     </span>
                   </label>
+                  )}
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Size:</span>
                     <input type="range" min={12} max={24} value={exportConfig.fontSize} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, fontSize: parseInt(e.target.value) }))}
@@ -12658,27 +12709,8 @@ const _downloadBRF = (brf) => {
                   )}
                 </div>
 
-                {/* Word count + goal */}
-                <div className="bg-slate-50 rounded-lg border border-slate-400 p-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-slate-600 uppercase">Word Count</span>
-                    <span className="text-[11px] font-mono text-slate-600" aria-live="polite">
-                      {wordCount.toLocaleString()} words
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <label className="text-[11px] text-slate-600 shrink-0" htmlFor="word-goal-input">Goal:</label>
-                    <input type="number" id="word-goal-input" min="0" step="50" placeholder={t("export_preview.accessibility.e_g_500") || "e.g. 500"} value={wordGoal || ''}
-                      className="flex-1 text-[11px] border border-slate-400 rounded px-2 py-1 bg-white"
-                      aria-label={t("a11y.target_word_count")}
-                      onChange={(e) => setWordGoal(Math.max(0, parseInt(e.target.value, 10) || 0))} />
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label={t("a11y.word_count_progress")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={wordGoalProgress.percent} aria-valuetext={wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words (${wordGoalProgress.percent}%)` : 'No word-count goal set'}>
-                    <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: wordGoalProgress.percent + '%', background: wordGoalProgress.percent >= 100 ? '#16a34a' : wordGoalProgress.percent >= 75 ? '#2563eb' : '#d97706' }}></div>
-                  </div>
-                  <div id="word-goal-label" className="text-[11px] text-slate-600 mt-0.5">{wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} / ${wordGoalProgress.goal} (${wordGoalProgress.percent}%)` : ''}</div>
-                  <div className="text-[11px] text-slate-600 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
-                </div>
+                  {/* Word count, goal, and progress live in the status bar's Word Count popover (Ctrl+Shift+G) to avoid duplicate controls. */}
+                  <div className="text-[11px] text-slate-600 mt-2">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list · Ctrl+Shift+G = word count</div>
 
                   </div>
                 </details>
@@ -13372,7 +13404,7 @@ const _downloadBRF = (brf) => {
                         <div>
                           <div className="text-[11px] font-bold text-green-700 uppercase mb-1">Passes ({exportAuditResult.passes.length})</div>
                           {exportAuditResult.passes.slice(0, 3).map((pass, i) => (
-                            <div key={i} className="text-[11px] text-green-700 mb-0.5 flex items-start gap-1"><span className="text-green-500">✓</span> {pass}</div>
+                            <div key={i} className="text-[11px] text-green-700 mb-0.5 flex items-start gap-1"><span className="text-green-700" aria-hidden="true">✓</span> {pass}</div>
                           ))}
                         </div>
                       )}
@@ -13411,7 +13443,7 @@ const _downloadBRF = (brf) => {
                 )}
                 <div className="builder-controls" hidden={isFocusMode}>
                   <div className="builder-command-bar bg-white border-b border-slate-200">
-                    <div id="builder-quick-access-toolbar" role="toolbar" aria-label={t("export_preview.accessibility.quick_access") || "Quick Access"} className="flex min-h-8 items-center gap-0.5 rounded-lg border border-slate-300 bg-slate-50 p-0.5 shadow-sm">
+                    <div id="builder-quick-access-toolbar" role="toolbar" onKeyDown={_handleBuilderToolbarKeyDown} aria-label={t("export_preview.accessibility.quick_access") || "Quick Access"} className="flex min-h-8 items-center gap-0.5 rounded-lg border border-slate-300 bg-slate-50 p-0.5 shadow-sm">
                       {quickAccessItems.map((itemId) => {
                         const option = _BUILDER_QUICK_ACCESS_OPTIONS.find((item) => item.id === itemId);
                         const command = quickAccessActions[itemId];
@@ -13492,7 +13524,7 @@ const _downloadBRF = (brf) => {
                   </div>
                   {toolSearchOpen && (
                   <section id="builder-tool-search-panel" data-builder-tool-search role="dialog" aria-modal="false" aria-labelledby="builder-tool-search-title" className="builder-tool-search-panel" onKeyDown={event => {
-                    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeBuilderToolSearch(); return; }
+                    if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); event.stopPropagation(); closeBuilderToolSearch(); return; }
                     const targets = _builderKeyboardTargets(event.currentTarget);
                     if (event.key === 'Tab' && targets.length) {
                       if (event.shiftKey && event.target === targets[0]) { event.preventDefault(); targets[targets.length - 1].focus(); }
@@ -13688,7 +13720,7 @@ const _downloadBRF = (brf) => {
                   <div id="builder-ribbon-panel-home" role="tabpanel" aria-labelledby="builder-ribbon-tab-home" className="shrink-0">
                 <div role="group" className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1" aria-label={t("export_preview.accessibility.styles_and_format_painter") || "Styles and Format Painter"}>
                   <span className="mr-1 text-[10px] font-black uppercase tracking-wider text-slate-500">Styles</span>
-                  <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto py-0.5" role="toolbar" aria-label={t("export_preview.accessibility.document_styles") || "Document styles"}>
+                  <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto py-0.5" role="toolbar" onKeyDown={_handleBuilderToolbarKeyDown} aria-label={t("export_preview.accessibility.document_styles") || "Document styles"}>
                     {builderStyleGallery.map((styleOption) => {
                       const selected = formatState.namedStyle === styleOption.id;
                       const previewClass = styleOption.id === 'title' ? 'text-sm font-black' : styleOption.id.startsWith('heading') ? 'font-black' : styleOption.id === 'subtitle' ? 'text-slate-500' : styleOption.id === 'quote' ? 'italic' : styleOption.id === 'caption' ? 'text-[9px] italic' : styleOption.id === 'callout' ? 'text-indigo-800' : '';
@@ -13725,7 +13757,7 @@ const _downloadBRF = (brf) => {
                     </div>
                   </details>
                 </div>                {/* Formatting toolbar */}
-                <div className="px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0" role="toolbar" aria-label={t("a11y.text_formatting")}>
+                <div className="px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0" role="toolbar" onKeyDown={_handleBuilderToolbarKeyDown} aria-label={t("a11y.text_formatting")}>
                   {[
                     { cmd: 'bold', icon: 'B', label: 'Bold', style: 'font-bold' },
                     { cmd: 'italic', icon: 'I', label: 'Italic', style: 'italic' },
@@ -13959,7 +13991,7 @@ const _downloadBRF = (brf) => {
                         <button type="button" onClick={insertAccessibleTable} className="h-7 rounded bg-indigo-700 px-2.5 text-[11px] font-bold text-white hover:bg-indigo-800">Insert table</button>
                         <span id="builder-table-help" className="sr-only">Creates semantic table headers and an optional accessible caption.</span>
                       </fieldset>
-                      <div className="flex flex-wrap items-center gap-1 rounded border border-slate-200 px-2 py-1" role="toolbar" aria-label={t("export_preview.accessibility.insert_document_elements") || "Insert document elements"}>
+                      <div className="flex flex-wrap items-center gap-1 rounded border border-slate-200 px-2 py-1" role="toolbar" onKeyDown={_handleBuilderToolbarKeyDown} aria-label={t("export_preview.accessibility.insert_document_elements") || "Insert document elements"}>
                         <button type="button" onClick={openImagePicker} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label={t("export_preview.accessibility.insert_image_with_alternative_text") || "Insert image with alternative text"}><ImageIcon size={13} aria-hidden="true" /> <span className="ml-1">Image</span></button>
                         <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => runEditorCommand('insertHorizontalRule')} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" title={t("export_preview.accessibility.insert_horizontal_rule") || "Insert horizontal rule"}>Rule</button>
                         <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { restoreEditorSelection(); insertPageBreak(); }} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label={t("export_preview.accessibility.insert_page_break") || "Insert page break"} aria-keyshortcuts="Control+Enter" title={t("export_preview.accessibility.insert_page_break") || "Insert page break"}>Page break</button>
@@ -13970,7 +14002,7 @@ const _downloadBRF = (brf) => {
                         </label>
                       </div>
                       {tableContext.active ? (
-                        <div id="builder-table-context-tools" className="flex flex-wrap items-center gap-1 rounded border border-emerald-300 bg-emerald-50 px-2 py-1" role="toolbar" aria-label={t("export_preview.accessibility.selected_table_tools") || "Selected table tools"}>
+                        <div id="builder-table-context-tools" className="flex flex-wrap items-center gap-1 rounded border border-emerald-300 bg-emerald-50 px-2 py-1" role="toolbar" onKeyDown={_handleBuilderToolbarKeyDown} aria-label={t("export_preview.accessibility.selected_table_tools") || "Selected table tools"}>
                           <span id="builder-table-context-heading" className="mr-1 text-[10px] font-black uppercase tracking-wide text-emerald-800">Selected table · {tableContext.rows} rows × {tableContext.columns} columns</span>
                           <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editSelectedTable('add-row')} className="h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100">Add row</button>
                           <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editSelectedTable('add-column')} className="h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100">Add column</button>
@@ -14052,7 +14084,7 @@ const _downloadBRF = (brf) => {
                         <button type="button" onClick={() => { setNavigationPaneTab('sections'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'sections'} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className="h-7 rounded px-2 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50">Open sections</button>
                         <span id="builder-section-help" className="w-full text-[10px] text-slate-500">{activeDocumentSection.name} starts {activeDocumentSection.startType === 'document' ? 'the document' : activeDocumentSection.startType === 'continuous' ? 'on the same page' : `on page ${activeDocumentSection.page + 1}`}.</span>
                       </fieldset>
-                      <div className="flex flex-wrap items-center gap-1 rounded border border-slate-200 px-2 py-1" role="toolbar" aria-label={t("export_preview.accessibility.pagination_tools") || "Pagination tools"}>
+                      <div className="flex flex-wrap items-center gap-1 rounded border border-slate-200 px-2 py-1" role="toolbar" onKeyDown={_handleBuilderToolbarKeyDown} aria-label={t("export_preview.accessibility.pagination_tools") || "Pagination tools"}>
                         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { restoreEditorSelection(); insertPageBreak(); }} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label={t("export_preview.accessibility.insert_page_break") || "Insert page break"} aria-keyshortcuts="Control+Enter" title={t("export_preview.accessibility.insert_a_page_break_at_the_caret") || "Insert a page break at the caret"}>Page break</button>
                         <button type="button" onClick={() => { setNavigationPaneTab('pages'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'pages'} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined}>Open pages</button>
                       </div>
@@ -14231,7 +14263,7 @@ const _downloadBRF = (brf) => {
                       placeholder={isAgentRunning ? 'Agent working...' : 'Type command: audit, auto, or natural language...'}
                       disabled={isAgentRunning}
                       aria-label={t("export_preview.accessibility.expert_remediation_command") || "Expert remediation command"}
-                      className="flex-1 px-2 py-1 bg-slate-700 text-white text-[11px] rounded border border-slate-600 placeholder-slate-500 focus:ring-1 focus:ring-purple-400 focus:outline-none disabled:opacity-50"
+                      className="flex-1 px-2 py-1 bg-slate-700 text-white text-[11px] rounded border border-slate-600 placeholder-slate-300 focus:ring-1 focus:ring-purple-400 focus:outline-none disabled:opacity-50"
                     />
                     <button type="submit" disabled={isAgentRunning || !expertCommandInput.trim()}
                       className="px-2 py-1 bg-purple-600 text-white text-[11px] font-bold rounded hover:bg-purple-700 disabled:opacity-30 transition-colors"
@@ -14298,7 +14330,7 @@ const _downloadBRF = (brf) => {
                           <div className="text-[11px] font-black uppercase tracking-wider text-slate-700">Navigation</div>
                           <div className="text-[10px] text-slate-500">{navigationPaneTab === 'headings' ? headingOutline.length + ' heading' + (headingOutline.length === 1 ? '' : 's') : navigationPaneTab === 'sections' ? pageMetrics.documentSections.length + ' section' + (pageMetrics.documentSections.length === 1 ? '' : 's') : navigationPaneTab === 'references' ? (documentReferences.sources?.length || 0) + ' source' + (documentReferences.sources?.length === 1 ? '' : 's') + ' · ' + (documentReferences.citations?.length || 0) + ' citation' + (documentReferences.citations?.length === 1 ? '' : 's') + (documentReferences.brokenCount ? ' · ' + documentReferences.brokenCount + ' broken' : '') : navigationPaneTab === 'comments' ? unresolvedReviewCommentCount + ' open / ' + reviewComments.length + ' total' : navigationPaneTab === 'changes' ? pendingTrackedChangeCount + ' pending change' + (pendingTrackedChangeCount === 1 ? '' : 's') : pageMetrics.count + ' page' + (pageMetrics.count === 1 ? '' : 's')}</div>
                         </div>
-                        <button type="button" onClick={() => setShowNavigationPane(false)} aria-label={t("export_preview.accessibility.close_document_navigation") || "Close document navigation"} className="rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-800">×</button>
+                        <button type="button" onClick={() => setShowNavigationPane(false)} aria-label={t("export_preview.accessibility.close_document_navigation") || "Close document navigation"} className="min-w-6 min-h-6 rounded px-1.5 py-0.5 text-lg leading-none text-slate-600 hover:bg-slate-100 hover:text-slate-800">×</button>
                       </div>
                       <div className="grid grid-cols-3 gap-1 border-b border-slate-200 bg-slate-50 p-1" role="tablist" aria-label={t("export_preview.accessibility.navigation_view") || "Navigation view"}>
                         <button id="builder-navigation-tab-headings" type="button" role="tab" aria-selected={navigationPaneTab === 'headings'} aria-controls="builder-navigation-panel-headings" tabIndex={navigationPaneTab === 'headings' ? 0 : -1} onClick={() => setNavigationPaneTab('headings')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'headings')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'headings' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Headings</button>
@@ -14393,7 +14425,7 @@ const _downloadBRF = (brf) => {
                               <section id="builder-source-manager" className="space-y-2 rounded border border-cyan-300 bg-white p-2" aria-label={t("export_preview.accessibility.source_manager") || "Source Manager"}>
                                 <div className="flex items-start justify-between gap-2">
                                   <div><h3 className="text-[10px] font-black text-cyan-950">Source Manager</h3><p className="text-[8px] leading-snug text-slate-500">{editingCitationSourceId ? 'Edit this reusable source.' : 'Add one source manually or import a group.'}</p></div>
-                                  <button type="button" onClick={() => { setShowSourceManager(false); resetCitationSourceDraft(); }} className="rounded px-1.5 py-0.5 text-sm leading-none text-slate-500 hover:bg-slate-100" aria-label={t("export_preview.accessibility.close_source_manager") || "Close Source Manager"}>×</button>
+                                  <button type="button" onClick={() => { setShowSourceManager(false); resetCitationSourceDraft(); }} className="min-w-6 min-h-6 rounded px-1.5 py-0.5 text-sm leading-none text-slate-600 hover:bg-slate-100" aria-label={t("export_preview.accessibility.close_source_manager") || "Close Source Manager"}>×</button>
                                 </div>
                                 {!editingCitationSourceId && (
                                   <div className="grid grid-cols-2 gap-1" role="tablist" aria-label={t("export_preview.accessibility.source_manager_mode") || "Source Manager mode"}>
@@ -14450,29 +14482,29 @@ const _downloadBRF = (brf) => {
                                   return (
                                     <article key={source.id} className={'rounded border p-1.5 ' + (activeDocumentReferenceKey === 'source:' + source.id ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : 'border-slate-200 bg-white')}>
                                       <div className="flex items-start gap-1">
-                                        <button type="button" onClick={() => { setCitationSourceTarget(source.id); setActiveDocumentReferenceKey('source:' + source.id); }} aria-current={activeDocumentReferenceKey === 'source:' + source.id ? 'true' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-cyan-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className="block truncate text-[10px] font-black text-cyan-900">{source.title || 'Untitled source'}</span><span className="mt-0.5 block truncate text-[9px] text-slate-600">{_builderCitationAuthorKey(source, citationStyle)}{source.year ? ' · ' + source.year : ''}</span><span className="mt-0.5 block text-[8px] font-semibold text-slate-400">{source.type} · {usageCount} citation{usageCount === 1 ? '' : 's'}</span></button>
+                                        <button type="button" onClick={() => { setCitationSourceTarget(source.id); setActiveDocumentReferenceKey('source:' + source.id); }} aria-current={activeDocumentReferenceKey === 'source:' + source.id ? 'true' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-cyan-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className="block truncate text-[10px] font-black text-cyan-900">{source.title || 'Untitled source'}</span><span className="mt-0.5 block truncate text-[9px] text-slate-600">{_builderCitationAuthorKey(source, citationStyle)}{source.year ? ' · ' + source.year : ''}</span><span className="mt-0.5 block text-[8px] font-semibold text-slate-600">{source.type} · {usageCount} citation{usageCount === 1 ? '' : 's'}</span></button>
                                         <button type="button" onClick={() => openCitationSourceManager(source)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-cyan-800 hover:bg-cyan-100" aria-label={'Edit source ' + source.title}>Edit</button>
                                         <button type="button" onClick={() => removeCitationSource(source)} disabled={usageCount > 0} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-35" aria-label={'Delete source ' + source.title} title={usageCount ? 'Remove its citation fields before deleting this source' : 'Delete source'}>Delete</button>
                                       </div>
                                     </article>
                                   );
-                                }) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-500">Add a reusable source, then insert live citations at the cursor.</p>}
+                                }) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-600">Add a reusable source, then insert live citations at the cursor.</p>}
                               </div>
                             </section>
                             <section aria-labelledby="builder-citations-list-title">
-                              <h3 id="builder-citations-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>Citations</span><span>{documentReferences.citations?.length || 0}</span></h3>
+                              <h3 id="builder-citations-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-600"><span>Citations</span><span>{documentReferences.citations?.length || 0}</span></h3>
                               <div className="space-y-1">
                                 {documentReferences.citations?.length ? documentReferences.citations.map((entry) => (
                                   <article key={entry.key} className={'flex items-start gap-1 rounded border p-1.5 ' + (activeDocumentReferenceKey === entry.key ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : entry.broken ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white')}>
-                                    <button type="button" onClick={() => jumpToDocumentReference(entry)} aria-current={activeDocumentReferenceKey === entry.key ? 'location' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className={'block truncate text-[10px] font-black ' + (entry.broken ? 'text-red-800' : 'text-cyan-900')}>{entry.label}</span><span className="mt-0.5 block truncate text-[9px] text-slate-500">{entry.items?.length > 1 ? entry.items.length + ' sources' : entry.source?.title || 'Missing source'}</span>{entry.broken && <span className="mt-0.5 block text-[8px] font-bold uppercase text-red-700">Source missing</span>}</button>
+                                    <button type="button" onClick={() => jumpToDocumentReference(entry)} aria-current={activeDocumentReferenceKey === entry.key ? 'location' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className={'block truncate text-[10px] font-black ' + (entry.broken ? 'text-red-800' : 'text-cyan-900')}>{entry.label}</span><span className="mt-0.5 block truncate text-[9px] text-slate-600">{entry.items?.length > 1 ? entry.items.length + ' sources' : entry.source?.title || 'Missing source'}</span>{entry.broken && <span className="mt-0.5 block text-[8px] font-bold uppercase text-red-700">Source missing</span>}</button>
                                     <button type="button" onClick={(event) => openCitationEditor(entry, event.currentTarget)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-cyan-800 hover:bg-cyan-100" aria-label={'Edit citation ' + entry.label}>Edit</button>
                                     <button type="button" onClick={() => removeDocumentCitation(entry)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-red-700 hover:bg-red-100" aria-label={'Remove citation ' + entry.label}>Remove</button>
                                   </article>
-                                )) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-500">No live citations yet.</p>}
+                                )) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-600">No live citations yet.</p>}
                               </div>
                             </section>
                             <section aria-labelledby="builder-bibliography-status-title">
-                              <h3 id="builder-bibliography-status-title" className="mb-1 text-[9px] font-black uppercase tracking-wider text-slate-500">Bibliography</h3>
+                              <h3 id="builder-bibliography-status-title" className="mb-1 text-[9px] font-black uppercase tracking-wider text-slate-600">Bibliography</h3>
                               <div className={'rounded border p-2 text-[10px] ' + (documentReferences.bibliography ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-slate-200 bg-slate-50 text-slate-600')}>
                                 <p className="font-bold">{documentReferences.bibliography ? 'Live bibliography is in the document.' : 'No bibliography inserted.'}</p>
                                 <p className="mt-0.5 text-[9px]">{documentReferences.bibliography ? ((documentReferences.bibliography.getAttribute('data-allo-bibliography-scope') === 'all' ? 'All sources' : 'Cited sources') + ' · ' + (_BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle)) : 'Insert one to keep source entries synchronized with citation fields.'}</p>
@@ -14480,32 +14512,32 @@ const _downloadBRF = (brf) => {
                               </div>
                             </section>
                             <section aria-labelledby="builder-footnotes-list-title">
-                              <h3 id="builder-footnotes-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>Footnotes</span><span>{documentReferences.footnotes.length}</span></h3>
+                              <h3 id="builder-footnotes-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-600"><span>Footnotes</span><span>{documentReferences.footnotes.length}</span></h3>
                               <div className="space-y-1">
                                 {documentReferences.footnotes.length ? documentReferences.footnotes.map((entry) => (
                                   <article key={entry.key} className={'flex items-start gap-1 rounded border p-1.5 ' + (activeDocumentReferenceKey === entry.key ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : entry.broken ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white')}>
                                     <button type="button" onClick={() => jumpToDocumentReference(entry)} aria-current={activeDocumentReferenceKey === entry.key ? 'location' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className={'mr-1 inline-flex min-w-5 justify-center rounded px-1 py-0.5 text-[9px] font-black ' + (entry.broken ? 'bg-red-200 text-red-900' : 'bg-cyan-100 text-cyan-900')}>{entry.number || '!'}</span><span className="line-clamp-2 break-words text-[10px] leading-snug text-slate-700">{entry.text}</span>{entry.broken && <span className="mt-0.5 block text-[8px] font-bold uppercase text-red-700">Broken link pair</span>}</button>
                                     <button type="button" onClick={() => removeDocumentFootnote(entry)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-red-700 hover:bg-red-100" aria-label={'Remove footnote ' + (entry.number || entry.id)}>Remove</button>
                                   </article>
-                                )) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-500">No footnotes yet.</p>}
+                                )) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-600">No footnotes yet.</p>}
                               </div>
                             </section>
                             <section aria-labelledby="builder-bookmarks-list-title">
-                              <h3 id="builder-bookmarks-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>Bookmarks</span><span>{documentReferences.bookmarks.length}</span></h3>
+                              <h3 id="builder-bookmarks-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-600"><span>Bookmarks</span><span>{documentReferences.bookmarks.length}</span></h3>
                               <div className="space-y-1">
                                 {documentReferences.bookmarks.length ? documentReferences.bookmarks.map((entry) => {
                                   const linkCount = documentReferences.crossReferences.filter((reference) => reference.targetId === entry.id).length;
                                   return (
                                     <article key={entry.key} className={'flex items-start gap-1 rounded border p-1.5 ' + (activeDocumentReferenceKey === entry.key ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : 'border-slate-200 bg-white')}>
-                                      <button type="button" onClick={() => jumpToDocumentReference(entry)} aria-current={activeDocumentReferenceKey === entry.key ? 'location' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-cyan-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className="block truncate text-[10px] font-black text-cyan-900">{entry.name}</span><span className="mt-0.5 block line-clamp-2 break-words text-[9px] leading-snug text-slate-600">{entry.text}</span><span className="mt-0.5 block text-[8px] font-semibold text-slate-400">{linkCount} cross-reference{linkCount === 1 ? '' : 's'}</span></button>
+                                      <button type="button" onClick={() => jumpToDocumentReference(entry)} aria-current={activeDocumentReferenceKey === entry.key ? 'location' : undefined} className="min-w-0 flex-1 rounded px-1 text-left hover:bg-cyan-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700"><span className="block truncate text-[10px] font-black text-cyan-900">{entry.name}</span><span className="mt-0.5 block line-clamp-2 break-words text-[9px] leading-snug text-slate-600">{entry.text}</span><span className="mt-0.5 block text-[8px] font-semibold text-slate-600">{linkCount} cross-reference{linkCount === 1 ? '' : 's'}</span></button>
                                       <button type="button" onClick={() => removeDocumentBookmark(entry)} className="shrink-0 rounded px-1.5 py-1 text-[9px] font-bold text-red-700 hover:bg-red-100" aria-label={'Remove bookmark ' + entry.name}>Remove</button>
                                     </article>
                                   );
-                                }) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-500">Select text or place the cursor, then add a bookmark.</p>}
+                                }) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-2 py-3 text-center text-[10px] text-slate-600">Select text or place the cursor, then add a bookmark.</p>}
                               </div>
                             </section>
                             <section aria-labelledby="builder-cross-references-list-title">
-                              <h3 id="builder-cross-references-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>Cross-references</span><span>{documentReferences.crossReferences.length}</span></h3>
+                              <h3 id="builder-cross-references-list-title" className="mb-1 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-600"><span>Cross-references</span><span>{documentReferences.crossReferences.length}</span></h3>
                               <div className="space-y-1">
                                 {documentReferences.crossReferences.length ? documentReferences.crossReferences.map((entry) => (
                                   <article key={entry.key} className={'flex items-start gap-1 rounded border p-1.5 ' + (activeDocumentReferenceKey === entry.key ? 'border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200' : entry.broken ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white')}>
@@ -14603,11 +14635,11 @@ const _downloadBRF = (brf) => {
                                     <input type="checkbox" checked={selected} onChange={(event) => setSelectedTrackedChangeIds((ids) => event.target.checked ? Array.from(new Set([...ids, change.id])) : ids.filter((id) => id !== change.id))} className="mt-2 accent-violet-700" aria-label={'Select ' + change.label} />
                                     <button type="button" onClick={() => jumpToTrackedChange(change.id)} aria-current={active ? 'location' : undefined} aria-label={'Go to ' + category.toLowerCase() + ': ' + change.text} className="min-w-0 flex-1 rounded px-1 py-1 text-left hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600">
                                       <span className="flex items-center justify-between gap-2">
-                                        <h3 id={'builder-change-title-' + change.id} className={'text-[9px] font-black uppercase tracking-wider ' + headingClass}>{category} {change.index + 1}</h3>
-                                        <time className="text-[9px] font-medium text-slate-500" dateTime={change.at || undefined}>{change.at && !Number.isNaN(Date.parse(change.at)) ? new Date(change.at).toLocaleString() : 'Recently'}</time>
+                                        <span id={'builder-change-title-' + change.id} className={'text-[9px] font-black uppercase tracking-wider ' + headingClass}>{category} {change.index + 1}</span>
+                                        <time className="text-[9px] font-medium text-slate-600" dateTime={change.at || undefined}>{change.at && !Number.isNaN(Date.parse(change.at)) ? new Date(change.at).toLocaleString() : 'Recently'}</time>
                                       </span>
-                                      <p className="mt-1 text-[10px] font-bold text-slate-700">{change.label}</p>
-                                      <blockquote className={'mt-1 line-clamp-4 break-words rounded px-2 py-1.5 text-[11px] leading-relaxed ' + quoteClass}>"{change.text}"</blockquote>
+                                      <span className="block mt-1 text-[10px] font-bold text-slate-700">{change.label}</span>
+                                      <span className={'block mt-1 line-clamp-4 break-words rounded px-2 py-1.5 text-[11px] leading-relaxed ' + quoteClass}>"{change.text}"</span>
                                       <span className="mt-1 flex items-center gap-1 text-[9px] font-semibold" style={{ color: reviewerIdentity.ink }}><span className="flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-black" style={{ backgroundColor: reviewerIdentity.soft, border: '1px solid ' + reviewerIdentity.accent }} aria-hidden="true">{reviewerIdentity.initials}</span>By {reviewerIdentity.name}</span>
                                     </button>
                                   </div>
@@ -14667,8 +14699,8 @@ const _downloadBRF = (brf) => {
                                     <div className="flex items-start gap-2">
                                       <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[9px] font-black" style={{ backgroundColor: topicIdentity.soft, color: topicIdentity.ink, border: '1px solid ' + topicIdentity.accent }} aria-hidden="true">{topicIdentity.initials}</span>
                                       <button type="button" onClick={() => jumpToReviewComment(comment.id)} aria-current={active ? 'location' : undefined} aria-label={t("export_preview.accessibility.go_to_commented_text_value1", { value1: (comment.quote) }) || `Go to commented text: ${comment.quote}`} className="min-w-0 flex-1 rounded px-1 py-1 text-left hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600">
-                                        <h3 id={`builder-comment-title-${comment.id}`} className="text-[9px] font-black uppercase tracking-wider text-amber-800">{comment.resolved ? 'Resolved comment' : `Comment ${comment.index + 1}`} · {comment.thread.length} message{comment.thread.length === 1 ? '' : 's'}</h3>
-                                        <blockquote className="mt-0.5 line-clamp-3 break-words text-[11px] font-semibold text-slate-700">"{comment.quote}"</blockquote>
+                                        <span id={`builder-comment-title-${comment.id}`} className="block text-[9px] font-black uppercase tracking-wider text-amber-800">{comment.resolved ? 'Resolved comment' : `Comment ${comment.index + 1}`} · {comment.thread.length} message{comment.thread.length === 1 ? '' : 's'}</span>
+                                        <span className="block mt-0.5 line-clamp-3 break-words text-[11px] font-semibold text-slate-700">"{comment.quote}"</span>
                                       </button>
                                       <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${comment.resolved ? 'bg-slate-200 text-slate-600' : 'bg-amber-100 text-amber-800'}`}>{comment.resolved ? 'Resolved' : 'Open'}</span>
                                     </div>
@@ -14692,7 +14724,7 @@ const _downloadBRF = (brf) => {
                                       <form className="mt-2 rounded border border-amber-300 bg-amber-50 p-2" onSubmit={(event) => { event.preventDefault(); submitReviewCommentReply(comment.id); }}>
                                         <label className="text-[9px] font-black uppercase tracking-wide text-amber-900" htmlFor={`builder-comment-reply-${comment.id}`}>Reply as {_builderNormalizeReviewerName(reviewerName, 'You')}</label>
                                         <textarea id={`builder-comment-reply-${comment.id}`} value={commentReplyDraft} maxLength={1200} rows={3} onChange={(event) => setCommentReplyDraft(event.target.value.slice(0, 1200))} className="mt-1 w-full resize-y rounded border border-amber-300 bg-white p-2 text-[11px] leading-relaxed text-slate-800" placeholder="Write a reply…" />
-                                        <div className="mt-1 flex items-center gap-1"><span className="text-[8px] text-slate-500">{commentReplyDraft.length}/1200</span><button type="button" onClick={() => { setReplyingCommentId(''); setCommentReplyDraft(''); }} className="ml-auto rounded px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-200">Cancel</button><button type="submit" disabled={!_builderNormalizeCommentMessage(commentReplyDraft)} className="rounded bg-amber-700 px-2 py-1 text-[10px] font-bold text-white hover:bg-amber-800 disabled:opacity-40">Post reply</button></div>
+                                        <div className="mt-1 flex items-center gap-1"><span className="text-[8px] text-slate-600">{commentReplyDraft.length}/1200</span><button type="button" onClick={() => { setReplyingCommentId(''); setCommentReplyDraft(''); }} className="ml-auto rounded px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-200">Cancel</button><button type="submit" disabled={!_builderNormalizeCommentMessage(commentReplyDraft)} className="rounded bg-amber-700 px-2 py-1 text-[10px] font-bold text-white hover:bg-amber-800 disabled:opacity-40">Post reply</button></div>
                                       </form>
                                     )}
                                     <div className="mt-2 flex flex-wrap gap-1">
@@ -15060,17 +15092,17 @@ const _downloadBRF = (brf) => {
                         {advancedReviewTab === 'history' && (
                           <section id="advanced-review-panel-history" role="tabpanel" aria-labelledby="advanced-review-tab-history" className="p-2.5">
                             <h4 className="text-[10px] font-black uppercase tracking-wide text-slate-700">Review ledger</h4>
-                            <p className="mt-1 text-[9px] leading-snug text-slate-500">Only actual content mutations appear here. Opening or inspecting the structure does not invalidate evidence.</p>
+                            <p className="mt-1 text-[9px] leading-snug text-slate-600">Only actual content mutations appear here. Opening or inspecting the structure does not invalidate evidence.</p>
                             <ol className="mt-3 space-y-2">
-                              {advancedReviewHistory.slice().reverse().map((entry) => <li key={entry.id} className="rounded-lg border border-slate-200 bg-white p-2"><div className="flex items-start justify-between gap-2"><strong className="text-[10px] text-slate-800">{entry.summary}</strong><time className="shrink-0 text-[8px] text-slate-400">{new Date(entry.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></div><div className="mt-1 text-[8px] uppercase tracking-wide text-slate-500">{entry.type}{entry.targetId ? ` - ${entry.targetId}` : ''}</div></li>)}
-                              {!advancedReviewHistory.length && <li className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-center text-[10px] text-slate-500">No specialist mutations in this session.</li>}
+                              {advancedReviewHistory.slice().reverse().map((entry) => <li key={entry.id} className="rounded-lg border border-slate-200 bg-white p-2"><div className="flex items-start justify-between gap-2"><strong className="text-[10px] text-slate-800">{entry.summary}</strong><time className="shrink-0 text-[8px] text-slate-600">{new Date(entry.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></div><div className="mt-1 text-[8px] uppercase tracking-wide text-slate-600">{entry.type}{entry.targetId ? ` - ${entry.targetId}` : ''}</div></li>)}
+                              {!advancedReviewHistory.length && <li className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-center text-[10px] text-slate-600">No specialist mutations in this session.</li>}
                             </ol>
                           </section>
                         )}
                         {advancedReviewTab === 'compare' && (
                           <section id="advanced-review-panel-compare" role="tabpanel" aria-labelledby="advanced-review-tab-compare" className="p-2.5">
                             <h4 className="text-[10px] font-black uppercase tracking-wide text-slate-700">Session comparison</h4>
-                            <p className="mt-1 text-[9px] leading-snug text-slate-500">Compare the remediation HTML as it entered this session with the current edited HTML. This is not a visual reconstruction of the original PDF.</p>
+                            <p className="mt-1 text-[9px] leading-snug text-slate-600">Compare the remediation HTML as it entered this session with the current edited HTML. This is not a visual reconstruction of the original PDF.</p>
                             <div className="mt-3 space-y-3">
                               <figure><figcaption className="mb-1 text-[9px] font-black text-slate-700">Session baseline</figcaption><iframe title={t("export_preview.accessibility.advanced_review_session_baseline") || "Advanced Review session baseline"} sandbox="" srcDoc={advancedReviewBaselineRef.current} className="h-52 w-full rounded border border-slate-300 bg-white" /></figure>
                               <figure><figcaption className="mb-1 text-[9px] font-black text-slate-700">Current edited HTML</figcaption><iframe title={t("export_preview.accessibility.advanced_review_current_document") || "Advanced Review current document"} sandbox="" srcDoc={advancedReviewCurrentHtml || advancedReviewBaselineRef.current} className="h-52 w-full rounded border border-slate-300 bg-white" /></figure>
@@ -15089,7 +15121,7 @@ const _downloadBRF = (brf) => {
                       {_builderSaveStatusLabel(draftCaptureState, draftCaptureAt)}
                     </span>
                     {['captured', 'error'].includes(draftCaptureState) && <button type="button" onClick={downloadBuilderBackup} className="rounded border border-amber-700 bg-amber-50 px-2 py-1 font-bold text-amber-900 hover:bg-amber-100" title={t("export_preview.accessibility.download_the_current_document_as_html_before_closing_saving_on_this_device") || "Download the current document as HTML before closing. Saving on this device is unavailable."}>Download backup</button>}
-                    <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className={`rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? 'bg-violet-100 text-violet-800 hover:bg-violet-200' : pendingTrackedChangeCount ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'text-slate-500 hover:bg-slate-200'}`} title={t("export_preview.accessibility.open_tracked_changes_review") || "Open tracked changes review"}>Track: {trackChangesEnabled ? 'On' : 'Off'} &middot; {pendingTrackedChangeCount} change{pendingTrackedChangeCount === 1 ? '' : 's'}</button>
+                    <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className={`rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? 'bg-violet-100 text-violet-800 hover:bg-violet-200' : pendingTrackedChangeCount ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'text-slate-600 hover:bg-slate-200'}`} title={t("export_preview.accessibility.open_tracked_changes_review") || "Open tracked changes review"}>Track: {trackChangesEnabled ? 'On' : 'Off'} &middot; {pendingTrackedChangeCount} change{pendingTrackedChangeCount === 1 ? '' : 's'}</button>
                     <div className="relative">
                       <button ref={wordCountButtonRef} type="button" onClick={(event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event)} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800" title={t("export_preview.accessibility.open_detailed_word_count_ctrl_shift_g") || "Open detailed Word Count (Ctrl+Shift+G)"}>{selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`}</button>
                       {showWordCountDetails && (
@@ -15162,7 +15194,7 @@ const _downloadBRF = (brf) => {
                       <button type="button" onClick={() => setCustomEditorZoom((value) => value - 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label={t("export_preview.accessibility.zoom_out") || "Zoom out"} title={t("export_preview.accessibility.zoom_out") || "Zoom out"}>−</button>
                       <input type="range" min="50" max="200" step="5" value={editorZoom} onChange={(event) => setCustomEditorZoom(Number(event.target.value))} className="w-24 accent-indigo-600" aria-label={t("export_preview.accessibility.editor_zoom") || "Editor zoom"} aria-valuetext={`${editorZoomMode === 'custom' ? '' : editorZoomMode === 'fit-width' ? 'Fit width, ' : 'Fit page, '}${editorZoom} percent`} />
                       <button type="button" onClick={() => setCustomEditorZoom((value) => value + 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label={t("export_preview.accessibility.zoom_in") || "Zoom in"} title={t("export_preview.accessibility.zoom_in") || "Zoom in"}>+</button>
-                      <button type="button" onClick={() => setCustomEditorZoom(100)} className="min-w-12 rounded px-1.5 py-1 font-semibold text-indigo-700 hover:bg-indigo-100" aria-label={t("export_preview.accessibility.reset_editor_zoom_to_100_percent") || "Reset editor zoom to 100 percent"} title={t("export_preview.accessibility.reset_editor_zoom") || "Reset editor zoom"}>{editorZoom}%</button>
+                      <button type="button" onClick={() => setCustomEditorZoom(100)} className="min-w-12 rounded px-1.5 py-1 font-semibold text-indigo-700 hover:bg-indigo-100" aria-label={`${editorZoom}% — ${t("export_preview.accessibility.reset_editor_zoom_to_100_percent") || "Reset editor zoom to 100 percent"}`} title={t("export_preview.accessibility.reset_editor_zoom") || "Reset editor zoom"}>{editorZoom}%</button>
 
                     </div>
                   </div>
@@ -15458,6 +15490,7 @@ async function updateExportPreview(deps) {
           return;
         }
         if (e.key === 'Escape') {
+          if (e.isComposing || e.keyCode === 229) return;
           // Focus mode owns Escape first: leave the distraction-free surface,
           // then keep the existing escape hatch for the normal builder dialog.
           try {
@@ -15800,7 +15833,8 @@ async function updateExportPreview(deps) {
         };
         overlay.__alloClose = _close;
         overlay.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); _close(); return; }
+          if (e.key === 'Escape') {
+          if (e.isComposing || e.keyCode === 229) return; e.preventDefault(); e.stopPropagation(); _close(); return; }
           if (e.key === 'Tab') {
             const candidates = Array.from(overlay.querySelectorAll('button:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute('aria-hidden') !== 'true' && (!el.style || (el.style.display !== 'none' && el.style.visibility !== 'hidden')));
             const rectControls = candidates.filter((el) => el.getClientRects().length > 0);

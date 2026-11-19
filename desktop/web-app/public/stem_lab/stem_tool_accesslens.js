@@ -45,9 +45,12 @@
     var _st = document.createElement('style');
     _st.id = 'accesslens-css';
     _st.textContent = [
-      '.accesslens-tab:focus-visible, .accesslens-btn:focus-visible { outline: 3px solid #0ea5e9; outline-offset: 2px; }',
+      '.accesslens-tab, .accesslens-btn, .accesslens-chip { transition: transform 120ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }',
+      '.accesslens-tab:focus-visible, .accesslens-btn:focus-visible, .accesslens-chip:focus-visible { outline: 3px solid #0ea5e9; outline-offset: 2px; }',
+      '.accesslens-btn:not([disabled]):not([aria-disabled="true"]):hover, .accesslens-chip:hover { transform: translateY(-1px); }',
       '@keyframes accesslens-pulse { 0% { opacity: 0.55; } 50% { opacity: 1; } 100% { opacity: 0.55; } }',
       '.accesslens-busy { animation: accesslens-pulse 1.2s ease-in-out infinite; }',
+      '@media (prefers-reduced-motion: reduce) { .accesslens-tab, .accesslens-btn, .accesslens-chip { transition: none !important; } .accesslens-busy { animation: none !important; } }',
       '@media (max-width: 720px) { [data-accesslens-columns] { grid-template-columns: 1fr !important; } }'
     ].join('\n');
     if (document.head) document.head.appendChild(_st);
@@ -415,25 +418,34 @@
     // ── theme ──
     var dark = !!ctx.isDark, contrast = !!ctx.isContrast;
     var C = {
-      bg: dark ? '#0b1220' : '#f8fafc',
-      panel: dark ? '#0f172a' : '#ffffff',
-      border: dark ? '#1e293b' : '#e2e8f0',
-      soft: dark ? '#111827' : '#f1f5f9',
-      text: dark ? '#e2e8f0' : '#1e293b',
-      sub: dark ? '#94a3b8' : '#64748b',
-      accent: contrast ? (dark ? '#7dd3fc' : '#075985') : (dark ? '#38bdf8' : '#0369a1'),
+      bg: contrast ? '#000000' : (dark ? '#0b1220' : '#f4f7fb'),
+      panel: contrast ? '#000000' : (dark ? '#0f172a' : '#ffffff'),
+      border: contrast ? '#ffff00' : (dark ? '#1e293b' : '#cbd5e1'),
+      soft: contrast ? '#000000' : (dark ? '#111827' : '#f1f5f9'),
+      text: contrast ? '#ffffff' : (dark ? '#e2e8f0' : '#0f172a'),
+      sub: contrast ? '#ffff00' : (dark ? '#94a3b8' : '#475569'),
+      accent: contrast ? '#ffff00' : (dark ? '#38bdf8' : '#0369a1'),
       // Filled (primary/pressed) buttons use a fixed sky-700 so white text
       // clears 4.5:1 in BOTH themes (the lighter dark-mode accent is 2.1:1).
-      btnBg: contrast ? (dark ? '#075985' : '#0c4a6e') : '#0369a1',
-      accentBg: dark ? '#082f49' : '#e0f2fe',
-      warnBg: dark ? '#422006' : '#fef3c7',
-      warnBorder: dark ? '#a16207' : '#f59e0b',
-      okBg: dark ? '#052e16' : '#dcfce7'
+      btnBg: contrast ? '#000000' : '#0369a1',
+      btnText: contrast ? '#ffff00' : '#ffffff',
+      btnBorder: contrast ? '#00ff00' : '#0369a1',
+      accentBg: contrast ? '#000000' : (dark ? '#082f49' : '#e0f2fe'),
+      warnBg: contrast ? '#000000' : (dark ? '#422006' : '#fef3c7'),
+      warnBorder: contrast ? '#ffff00' : (dark ? '#d97706' : '#d97706'),
+      okBg: contrast ? '#000000' : (dark ? '#052e16' : '#dcfce7'),
+      okBorder: contrast ? '#00ff00' : (dark ? '#16a34a' : '#16a34a'),
+      shadow: contrast ? 'none' : (dark ? '0 4px 16px rgba(2,6,23,0.45)' : '0 2px 10px rgba(15,23,42,0.06)')
     };
+
+    // Hostile-toolData guard for quest/telemetry readout
+    var lensMeta = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && ctx.toolData._accessLens && typeof ctx.toolData._accessLens === 'object')
+      ? ctx.toolData._accessLens : {};
+    var lensesExploredCount = (lensMeta.described ? 1 : 0) + (lensMeta.readText ? 1 : 0) + (lensMeta.translated ? 1 : 0) + (lensMeta.inquired ? 1 : 0);
 
     // ── state (photo is in-memory ONLY; never persisted) ──
     var sMode = useState('describe'); var mode = sMode[0], setMode = sMode[1];
-    var sPhoto = useState(null); var photo = sPhoto[0], setPhoto = sPhoto[1]; // {dataUrl}
+    var sPhoto = useState(null); var photo = sPhoto[0], setPhoto = sPhoto[1]; // {dataUrl, width, height, source}
     var sBusy = useState(''); var busy = sBusy[0], setBusy = sBusy[1];        // '' | mode id
     var sErr = useState(''); var err = sErr[0], setErr = sErr[1];
     var sResults = useState({}); var results = sResults[0], setResults = sResults[1];
@@ -441,6 +453,7 @@
     var sCamWhy = useState(''); var camReason = sCamWhy[0], setCamReason = sCamWhy[1]; // '' | denied | none | inuse | unsupported | other
     var sLang = useState('Spanish'); var targetLang = sLang[0], setTargetLang = sLang[1];
     var sReaderPx = useState(24); var readerPx = sReaderPx[0], setReaderPx = sReaderPx[1];
+    var sReaderSurface = useState('default'); var readerSurface = sReaderSurface[0], setReaderSurface = sReaderSurface[1]; // default | warm | high
     var sAnswers = useState({}); var answers = sAnswers[0], setAnswers = sAnswers[1];
     var sSpeaking = useState(false); var speaking = sSpeaking[0], setSpeaking = sSpeaking[1];
     var sLive = useState(''); var liveMsg = sLive[0], setLiveMsg = sLive[1];
@@ -610,7 +623,7 @@
           cv.width = cw; cv.height = chg;
           cv.getContext('2d').drawImage(img, 0, 0, cw, chg);
           var out = cv.toDataURL('image/jpeg', 0.85);
-          setPhoto({ dataUrl: out });
+          setPhoto({ dataUrl: out, width: cw, height: chg, source: sourceLabel || '' });
           setResults({}); setAnswers({}); setErr(''); setBusy(''); setGuessShown(false);
           stopSpeech();
           markQuest('captured');
@@ -631,8 +644,12 @@
       var f = e.target && e.target.files && e.target.files[0];
       if (e.target) e.target.value = '';
       if (!f) return;
-      if (f.type && f.type.indexOf('image/') !== 0) {
+      if (f.type && (f.type.indexOf('image/') !== 0 || /svg/i.test(f.type))) {
         setErr(_t('stem.accessLens.err_not_image', 'Please choose a photo (image file).'));
+        return;
+      }
+      if (Number(f.size) > 20 * 1024 * 1024) {
+        setErr(_t('stem.accessLens.err_photo', 'That photo exceeds the 20 MB limit. Please choose a smaller photo.'));
         return;
       }
       var heic = isHeicFile(f);
@@ -843,6 +860,7 @@
       // ariaDisabled keeps the button focusable (a disabled button drops focus
       // and is skipped by Tab, so its reason was unreachable); clicks are ignored.
       var off = !!opts.disabled || !!opts.ariaDisabled;
+      var activeFill = !!opts.pressed || !!opts.primary;
       return h('button', {
         key: opts.key, type: 'button', className: 'accesslens-btn', ref: opts.ref,
         onClick: opts.ariaDisabled ? function (e) { if (e && e.preventDefault) e.preventDefault(); } : onClick,
@@ -853,14 +871,15 @@
         'aria-controls': opts.controls || undefined,
         'aria-pressed': opts.pressed === undefined ? undefined : !!opts.pressed,
         title: opts.title || undefined,
-        style: {
+        style: Object.assign({
           padding: '8px 14px', borderRadius: '10px', cursor: off ? 'not-allowed' : 'pointer',
           fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap',
-          border: '1px solid ' + (opts.primary ? C.btnBg : C.border),
-          background: opts.pressed ? C.btnBg : (opts.primary ? C.btnBg : C.panel),
-          color: (opts.pressed || opts.primary) ? '#ffffff' : C.text,
-          opacity: off ? 0.55 : 1
-        }
+          border: (contrast ? '2px solid ' : '1px solid ') + (activeFill ? C.btnBorder : C.border),
+          background: activeFill ? C.btnBg : C.panel,
+          color: activeFill ? C.btnText : C.text,
+          opacity: off ? 0.55 : 1,
+          boxShadow: activeFill && !contrast ? '0 2px 6px rgba(3,105,161,0.22)' : 'none'
+        }, opts.style || {})
       }, splitButtonLabel(label));
     }
 
@@ -884,7 +903,200 @@
     }
 
     function card(children, style) {
-      return h('div', { style: Object.assign({ background: C.panel, border: '1px solid ' + C.border, borderRadius: '12px', padding: '12px 14px' }, style || {}) }, children);
+      return h('div', {
+        style: Object.assign({
+          background: C.panel,
+          border: (contrast ? '2px solid ' : '1px solid ') + C.border,
+          borderRadius: '14px',
+          padding: '14px 16px',
+          boxShadow: C.shadow,
+          minWidth: 0
+        }, style || {})
+      }, children);
+    }
+
+    // Offline synthetic practice photo generator (100% local in-memory canvas, FERPA safe)
+    function loadPracticeScene(kind) {
+      if (typeof document === 'undefined') return;
+      try {
+        var cv = document.createElement('canvas');
+        cv.setAttribute('aria-hidden', 'true');
+        cv.width = 720; cv.height = 460;
+        var g = cv.getContext('2d');
+        if (!g) return;
+        if (kind === 'handout') {
+          g.fillStyle = '#f8fafc'; g.fillRect(0, 0, 720, 460);
+          g.fillStyle = '#0369a1'; g.fillRect(36, 32, 648, 72);
+          g.fillStyle = '#ffffff'; g.font = 'bold 30px sans-serif';
+          g.fillText('SCIENCE LAB STATION 4', 60, 78);
+          g.fillStyle = '#0f172a'; g.font = 'bold 24px sans-serif';
+          g.fillText('Today\'s Investigation Steps:', 56, 152);
+          g.font = '22px sans-serif';
+          g.fillText('1. Measure 50 mL of warm water in the beaker.', 56, 204);
+          g.fillText('2. Place one sugar cube in the dish.', 56, 250);
+          g.fillText('3. Record the time until it dissolves.', 56, 296);
+          g.fillStyle = '#e0f2fe'; g.fillRect(56, 340, 608, 74);
+          g.strokeStyle = '#0284c7'; g.lineWidth = 3; g.strokeRect(56, 340, 608, 74);
+          g.fillStyle = '#0c4a6e'; g.font = 'bold 20px sans-serif';
+          g.fillText('Remember: Rinse glassware and return goggles to Tray B.', 74, 384);
+        } else if (kind === 'leaf') {
+          g.fillStyle = '#ecfdf5'; g.fillRect(0, 0, 720, 460);
+          g.fillStyle = '#d1fae5'; g.fillRect(40, 40, 640, 380);
+          g.strokeStyle = '#059669'; g.lineWidth = 4; g.strokeRect(40, 40, 640, 380);
+          // Stylized botanical leaf specimen
+          g.fillStyle = '#15803d';
+          g.beginPath();
+          g.moveTo(180, 320);
+          g.quadraticCurveTo(210, 110, 460, 120);
+          g.quadraticCurveTo(430, 310, 180, 320);
+          g.fill();
+          g.strokeStyle = '#bbf7d0'; g.lineWidth = 4;
+          g.beginPath(); g.moveTo(160, 336); g.lineTo(445, 130); g.stroke();
+          g.lineWidth = 2.5;
+          g.beginPath(); g.moveTo(250, 270); g.lineTo(240, 195); g.moveTo(310, 228); g.lineTo(300, 160); g.moveTo(368, 188); g.lineTo(360, 138); g.stroke();
+          g.beginPath(); g.moveTo(265, 258); g.lineTo(335, 265); g.moveTo(325, 215); g.lineTo(395, 220); g.stroke();
+          g.fillStyle = '#064e3b'; g.font = 'bold 24px sans-serif';
+          g.fillText('Specimen Card #12', 455, 290);
+          g.font = '19px sans-serif';
+          g.fillText('Serrated margin, net veins', 455, 326);
+          g.fillText('Collected: Courtyard Oak', 455, 358);
+        } else {
+          g.fillStyle = '#fffbeb'; g.fillRect(0, 0, 720, 460);
+          g.fillStyle = '#1d4ed8'; g.fillRect(48, 44, 624, 92);
+          g.fillStyle = '#ffffff'; g.font = 'bold 34px sans-serif';
+          g.fillText('COMMUNITY LIBRARY HOURS', 100, 102);
+          g.fillStyle = '#1e293b'; g.font = 'bold 24px sans-serif';
+          g.fillText('Monday - Thursday: 8:00 AM to 5:30 PM', 84, 200);
+          g.fillText('Friday: 8:00 AM to 3:30 PM', 84, 252);
+          g.fillStyle = '#fef3c7'; g.fillRect(84, 298, 552, 92);
+          g.strokeStyle = '#d97706'; g.lineWidth = 3; g.strokeRect(84, 298, 552, 92);
+          g.fillStyle = '#92400e'; g.font = 'bold 22px sans-serif';
+          g.fillText('Quiet study tables are on the second floor.', 110, 340);
+          g.fillText('Ask at the front desk for Braille or audio books.', 110, 374);
+        }
+        acceptPhoto(cv.toDataURL('image/jpeg', 0.88), 'practice scene');
+      } catch (_) {}
+    }
+
+    // ════════════════════ Interactive Optical Viewfinder & Pipeline SVG ════════════════════
+    function renderOpticalStage() {
+      var strokePrimary = contrast ? '#ffff00' : (dark ? '#38bdf8' : '#0284c7');
+      var strokeSecondary = contrast ? '#00ff00' : (dark ? '#34d399' : '#059669');
+      var strokeMuted = contrast ? '#ffffff' : (dark ? '#334155' : '#94a3b8');
+      var bgStage = contrast ? '#000000' : (dark ? '#07101f' : '#0f172a');
+      var cardStage = contrast ? '#000000' : (dark ? '#0f172a' : '#1e293b');
+      var txtMain = contrast ? '#ffff00' : '#f8fafc';
+      var txtSub = contrast ? '#ffffff' : '#cbd5e1';
+
+      var hasPhoto = !!photo;
+      var hasResult = !!results[mode];
+      var step1Done = hasPhoto;
+      var step2Done = hasResult;
+      var step3Done = speaking || lensesExploredCount > 0 || hasResult;
+
+      var modeTitle = mode === 'describe' ? _t('stem.accessLens.stage_describe', 'Spatial Scene + Audio')
+        : mode === 'read' ? _t('stem.accessLens.stage_read', 'Large-Print OCR Reader')
+        : mode === 'translate' ? _t('stem.accessLens.stage_translate', 'Bilingual Text Bridge')
+        : _t('stem.accessLens.stage_inquire', 'Socratic Inquiry Lens');
+
+      var modeDetail = mode === 'describe' ? _t('stem.accessLens.stage_describe_sub', 'Left / Center / Right layout')
+        : mode === 'read' ? _t('stem.accessLens.stage_read_sub', 'Magnify 16px to 96px')
+        : mode === 'translate' ? _t('stem.accessLens.stage_translate_sub', 'Target: ') + String(targetLang || 'Spanish').slice(0, 18)
+        : _t('stem.accessLens.stage_inquire_sub', 'Observe first, guess later');
+
+      // Mode-specific viewfinder center artwork
+      var lensGraphic = mode === 'describe'
+        ? h('g', null,
+            h('line', { x1: 118, y1: 42, x2: 118, y2: 142, stroke: strokeMuted, strokeWidth: 1, strokeDasharray: '4 4' }),
+            h('line', { x1: 212, y1: 42, x2: 212, y2: 142, stroke: strokeMuted, strokeWidth: 1, strokeDasharray: '4 4' }),
+            h('text', { x: 74, y: 58, fill: txtSub, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'LEFT'),
+            h('text', { x: 165, y: 58, fill: strokePrimary, fontSize: 10, fontWeight: 800, textAnchor: 'middle' }, 'CENTER'),
+            h('text', { x: 256, y: 58, fill: txtSub, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'RIGHT'),
+            h('circle', { cx: 165, cy: 96, r: 24, fill: 'none', stroke: strokePrimary, strokeWidth: 2 }),
+            h('circle', { cx: 165, cy: 96, r: 9, fill: strokePrimary, opacity: 0.85 }),
+            h('path', { d: 'M200 84 Q212 96 200 108', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.2, strokeLinecap: 'round' }),
+            h('path', { d: 'M209 76 Q225 96 209 116', fill: 'none', stroke: strokeSecondary, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.75 })
+          )
+        : mode === 'read'
+        ? h('g', null,
+            h('rect', { x: 64, y: 54, width: 202, height: 76, rx: 8, fill: cardStage, stroke: strokePrimary, strokeWidth: 1.5 }),
+            h('text', { x: 82, y: 88, fill: strokePrimary, fontSize: 22, fontWeight: 800 }, 'Aa'),
+            h('rect', { x: 122, y: 70, width: 126, height: 8, rx: 4, fill: txtMain, opacity: 0.9 }),
+            h('rect', { x: 122, y: 86, width: 104, height: 8, rx: 4, fill: txtSub, opacity: 0.75 }),
+            h('rect', { x: 82, y: 106, width: 162, height: 8, rx: 4, fill: strokeSecondary, opacity: 0.85 }),
+            h('line', { x1: 56, y1: 92, x2: 274, y2: 92, stroke: strokeSecondary, strokeWidth: 1.5, strokeDasharray: '6 4' })
+          )
+        : mode === 'translate'
+        ? h('g', null,
+            h('rect', { x: 56, y: 58, width: 88, height: 64, rx: 8, fill: cardStage, stroke: strokeMuted, strokeWidth: 1.5 }),
+            h('text', { x: 100, y: 85, fill: txtMain, fontSize: 14, fontWeight: 800, textAnchor: 'middle' }, 'TEXT'),
+            h('text', { x: 100, y: 106, fill: txtSub, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'SOURCE'),
+            h('path', { d: 'M152 90 L178 90 M172 83 L180 90 L172 97', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('rect', { x: 186, y: 58, width: 92, height: 64, rx: 8, fill: cardStage, stroke: strokePrimary, strokeWidth: 2 }),
+            h('text', { x: 232, y: 85, fill: strokePrimary, fontSize: 13, fontWeight: 800, textAnchor: 'middle' }, String(LANG_CODES[targetLang] || 'LANG').toUpperCase()),
+            h('text', { x: 232, y: 106, fill: txtSub, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, String(targetLang || 'Target').slice(0, 10))
+          )
+        : h('g', null,
+            h('polygon', { points: '165,50 122,126 208,126', fill: cardStage, stroke: strokePrimary, strokeWidth: 2 }),
+            h('text', { x: 165, y: 106, fill: strokeSecondary, fontSize: 24, fontWeight: 800, textAnchor: 'middle' }, '?'),
+            h('line', { x1: 72, y1: 88, x2: 134, y2: 88, stroke: txtMain, strokeWidth: 2, strokeDasharray: '5 3' }),
+            h('line', { x1: 196, y1: 76, x2: 258, y2: 64, stroke: strokePrimary, strokeWidth: 2 }),
+            h('line', { x1: 196, y1: 94, x2: 258, y2: 94, stroke: strokeSecondary, strokeWidth: 2 }),
+            h('line', { x1: 196, y1: 112, x2: 258, y2: 124, stroke: txtSub, strokeWidth: 2 })
+          );
+
+      var stepFill = function (done, active) {
+        if (done) return strokeSecondary;
+        if (active) return strokePrimary;
+        return strokeMuted;
+      };
+
+      return h('div', {
+        style: {
+          borderRadius: '12px',
+          overflow: 'hidden',
+          border: (contrast ? '2px solid ' : '1px solid ') + (contrast ? '#ffff00' : (dark ? '#1e3a5f' : '#1e293b')),
+          background: bgStage
+        }
+      },
+        h('svg', {
+          viewBox: '0 0 640 176',
+          width: '100%',
+          style: { display: 'block', maxHeight: '196px' },
+          role: 'img',
+          'aria-label': _t('stem.accessLens.stage_aria', 'Optical viewfinder and 3-step accessibility workflow diagram for ') + modeTitle
+        },
+          // Background optical grid
+          h('rect', { x: 0, y: 0, width: 640, height: 176, fill: bgStage }),
+          // Left viewfinder box
+          h('rect', { x: 24, y: 16, width: 282, height: 144, rx: 10, fill: cardStage, stroke: strokeMuted, strokeWidth: 1.2 }),
+          // Reticle corner brackets
+          h('path', { d: 'M36 42 L36 26 L52 26 M278 26 L294 26 L294 42 M36 134 L36 150 L52 150 M278 150 L294 150 L294 134', fill: 'none', stroke: hasPhoto ? strokeSecondary : strokePrimary, strokeWidth: 2.5, strokeLinecap: 'round' }),
+          lensGraphic,
+          h('text', { x: 165, y: 150, fill: hasPhoto ? strokeSecondary : txtSub, fontSize: 10.5, fontWeight: 700, textAnchor: 'middle' },
+            hasPhoto ? _t('stem.accessLens.stage_locked', 'IMAGE READY IN MEMORY') : _t('stem.accessLens.stage_standby', 'VIEWFINDER STANDBY')),
+          // Right pipeline panel
+          h('text', { x: 332, y: 34, fill: strokePrimary, fontSize: 11, fontWeight: 800 }, modeTitle.toUpperCase()),
+          h('text', { x: 332, y: 50, fill: txtSub, fontSize: 11 }, modeDetail),
+          // Connector track
+          h('line', { x1: 364, y1: 92, x2: 590, y2: 92, stroke: strokeMuted, strokeWidth: 2, strokeDasharray: '4 4' }),
+          // Step 1
+          h('circle', { cx: 364, cy: 92, r: 16, fill: cardStage, stroke: stepFill(step1Done, !step1Done), strokeWidth: 2.5 }),
+          h('text', { x: 364, y: 96, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step1Done ? 'OK' : '1'),
+          h('text', { x: 364, y: 126, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_capture', 'Capture')),
+          h('text', { x: 364, y: 141, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, hasPhoto ? _t('stem.accessLens.step_done', 'Loaded') : _t('stem.accessLens.step_local', 'Local only')),
+          // Step 2
+          h('circle', { cx: 477, cy: 92, r: 16, fill: cardStage, stroke: stepFill(step2Done, step1Done && !step2Done), strokeWidth: 2.5 }),
+          h('text', { x: 477, y: 96, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step2Done ? 'OK' : '2'),
+          h('text', { x: 477, y: 126, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_lens', 'Analyze')),
+          h('text', { x: 477, y: 141, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, busy ? _t('stem.accessLens.step_working', 'Working') : (step2Done ? _t('stem.accessLens.step_ready', 'Ready') : _t('stem.accessLens.step_user', 'On click'))),
+          // Step 3
+          h('circle', { cx: 590, cy: 92, r: 16, fill: cardStage, stroke: stepFill(step3Done, step2Done), strokeWidth: 2.5 }),
+          h('text', { x: 590, y: 96, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step3Done ? 'OK' : '3'),
+          h('text', { x: 590, y: 126, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_access', 'Access')),
+          h('text', { x: 590, y: 141, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, speaking ? _t('stem.accessLens.step_speaking', 'Speaking') : _t('stem.accessLens.step_audio', 'Audio / Print'))
+        )
+      );
     }
 
     // The old wording was 11px in the faintest palette colour and told the
@@ -904,7 +1116,7 @@
     }
     // Focus target for a result that just arrived.
     function resultHeading(text) {
-      return h('h3', { key: 'rh', ref: resultRef, tabIndex: -1, style: { margin: '0 0 8px', fontSize: '13px', fontWeight: 800, color: C.text, outline: 'none' } }, text);
+      return h('h3', { key: 'rh', ref: resultRef, tabIndex: -1, style: { margin: '0 0 8px', fontSize: '14px', fontWeight: 800, color: C.text, outline: 'none' } }, text);
     }
 
     // Shared by the photo preview and the Describe panel.
@@ -913,24 +1125,25 @@
     // ════════════════════ capture panel ════════════════════
     function renderCapture() {
       var kids = [];
-      kids.push(h('div', { key: 'privacy', style: { display: 'flex', gap: '8px', alignItems: 'flex-start', background: C.accentBg, border: '1px solid ' + C.accent, borderRadius: '10px', padding: '8px 10px' } },
-        h('span', { 'aria-hidden': 'true', style: { fontSize: '15px' } }, '🔒'),
-        h('div', { style: { fontSize: '11.5px', color: C.text, lineHeight: 1.5 } },
-          h('strong', null, _t('stem.accessLens.privacy_title', 'Your photo stays yours.')), ' ',
-          _t('stem.accessLens.privacy_body', 'Photos are never saved by AlloFlow and are only sent to the AI when you press an Analyze button. Please point your camera at things, not at people.'))));
+      kids.push(h('div', { key: 'notices', 'data-accesslens-columns': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' } },
+        h('div', { key: 'privacy', style: { display: 'flex', gap: '8px', alignItems: 'flex-start', background: C.accentBg, border: '1px solid ' + C.accent, borderRadius: '10px', padding: '9px 11px', minWidth: 0 } },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '15px', flexShrink: 0 } }, '🔒'),
+          h('div', { style: { fontSize: '12px', color: C.text, lineHeight: 1.5, minWidth: 0 } },
+            h('strong', null, _t('stem.accessLens.privacy_title', 'Your photo stays yours.')), ' ',
+            _t('stem.accessLens.privacy_body', 'Photos are never saved by AlloFlow and are only sent to the AI when you press an Analyze button. Please point your camera at things, not at people.'))),
+        // Scene-description models miss things that are present and invent things
+        // that are not. Every mainstream tool in this category ships this warning,
+        // because a student who learns here that 'it describes what is in front of
+        // me' will use it outside the classroom. It sits in the capture panel, next
+        // to the privacy notice, so it is read BEFORE the first photo rather than
+        // under a result. role=note keeps it out of the way of repeat users.
+        h('div', { key: 'safety', role: 'note', style: { display: 'flex', gap: '8px', alignItems: 'flex-start', background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '10px', padding: '9px 11px', minWidth: 0 } },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '15px', flexShrink: 0 } }, '⚠️'),
+          h('div', { style: { fontSize: '12.5px', color: C.text, lineHeight: 1.5, minWidth: 0 } },
+            h('strong', null, _t('stem.accessLens.safety_title', 'This is for learning, not for staying safe.')), ' ',
+            _t('stem.accessLens.safety_body', 'Do not use Access Lens to cross a road, to check whether a path is clear, to identify medicine, to tell if food is safe to eat, or to read a warning label. It can miss a hazard completely. For anything where being wrong would hurt, ask a person.')))));
 
-
-      // Scene-description models miss things that are present and invent things
-      // that are not. Every mainstream tool in this category ships this warning,
-      // because a student who learns here that 'it describes what is in front of
-      // me' will use it outside the classroom. It sits in the capture panel, next
-      // to the privacy notice, so it is read BEFORE the first photo rather than
-      // under a result. role=note keeps it out of the way of repeat users.
-      kids.push(h('div', { key: 'safety', role: 'note', style: { display: 'flex', gap: '8px', alignItems: 'flex-start', background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '10px', padding: '8px 10px', marginBottom: '8px' } },
-        h('span', { 'aria-hidden': 'true', style: { fontSize: '15px' } }, '⚠️'),
-        h('div', { style: { fontSize: '13px', color: C.text, lineHeight: 1.5 } },
-          h('strong', null, _t('stem.accessLens.safety_title', 'This is for learning, not for staying safe.')), ' ',
-          _t('stem.accessLens.safety_body', 'Do not use Access Lens to cross a road, to check whether a path is clear, to identify medicine, to tell if food is safe to eat, or to read a warning label. It can miss a hazard completely. For anything where being wrong would hurt, ask a person.'))));
+      kids.push(h('div', { key: 'stage' }, renderOpticalStage()));
 
       if (camState === 'live' || camState === 'starting') {
         kids.push(h('div', { key: 'live', style: { display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' } },
@@ -947,7 +1160,7 @@
           h('button', {
             key: 'file', type: 'button', className: 'accesslens-btn', ref: takeBtnRef,
             onClick: function () { if (fileRef.current) fileRef.current.click(); },
-            style: { padding: '10px 16px', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: 800, border: '1px solid ' + C.btnBg, background: C.btnBg, color: '#ffffff' }
+            style: { padding: '10px 16px', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: 800, border: (contrast ? '2px solid ' : '1px solid ') + C.btnBorder, background: C.btnBg, color: C.btnText, boxShadow: contrast ? 'none' : '0 2px 8px rgba(3,105,161,0.28)' }
           }, splitButtonLabel('📷 ' + _t('stem.accessLens.take_photo', 'Take or choose a photo'))),
           btn('🎥 ' + _t('stem.accessLens.live_camera', 'Live camera'), startLiveCamera, { key: 'livecam', ref: liveBtnRef, title: _t('stem.accessLens.live_camera_title', 'Show a live preview and snap from it') })
         ];
@@ -955,6 +1168,24 @@
           row.push(btn('🪟 ' + _t('stem.accessLens.popout', 'Open camera window'), openLensWindow, { key: 'popout', title: _t('stem.accessLens.popout_title', 'Opens a separate window where the camera is allowed') }));
         }
         kids.push(h('div', { key: 'row', style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } }, row));
+        // Practice sample chips so desktop/no-camera learners can test immediately
+        kids.push(h('div', { key: 'samples', style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '2px' } },
+          h('span', { style: { fontSize: '11.5px', fontWeight: 700, color: C.sub } }, _t('stem.accessLens.try_sample', 'No camera handy? Try a practice image:')),
+          [
+            { id: 'handout', label: _t('stem.accessLens.sample_handout', 'Lab Station Card') },
+            { id: 'leaf', label: _t('stem.accessLens.sample_leaf', 'Leaf Specimen') },
+            { id: 'sign', label: _t('stem.accessLens.sample_sign', 'Library Hours Sign') }
+          ].map(function (sp) {
+            return h('button', {
+              key: sp.id, type: 'button', className: 'accesslens-chip',
+              onClick: function () { loadPracticeScene(sp.id); },
+              style: {
+                padding: '5px 10px', borderRadius: '999px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 700,
+                border: '1px solid ' + C.border, background: C.soft, color: C.text
+              }
+            }, sp.label);
+          })
+        ));
         if (camState === 'denied') {
           kids.push(h('div', { key: 'denied', role: 'status', style: { fontSize: '13px', color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px', lineHeight: 1.5 } },
             camReason === 'none' ? _t('stem.accessLens.denied_none', 'This device does not have a camera this app can use. The photo button above still works: you can choose a picture that is already on the device.')
@@ -972,7 +1203,7 @@
       }));
 
       if (photo) {
-        kids.push(h('div', { key: 'preview', style: { display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
+        kids.push(h('div', { key: 'preview', style: { display: 'flex', gap: '12px', alignItems: 'flex-start', flexWrap: 'wrap', padding: '10px 12px', borderRadius: '12px', background: C.soft, border: '1px solid ' + C.border } },
           h('img', {
             src: photo.dataUrl,
             // The description is the visible result right below this image, so
@@ -984,14 +1215,22 @@
                   ? _t('stem.accessLens.photo_alt_ok', 'Your photo. The description is below.')
                   : _t('stem.accessLens.photo_alt_problem', 'Your photo. It may not have come out: ') + (describeOut.problem || _t('stem.accessLens.photo_alt_unclear', 'the picture is unclear.')))
               : _t('stem.accessLens.photo_alt', 'The photo you captured. It is not saved anywhere.'),
-            style: { width: '160px', height: 'auto', borderRadius: '10px', border: '1px solid ' + C.border }
+            style: { width: '172px', height: 'auto', borderRadius: '10px', border: '2px solid ' + (describeOut && !describeOut.usable ? C.warnBorder : C.accent) }
           }),
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-            h('div', { style: { fontSize: '12px', color: C.sub } }, _t('stem.accessLens.photo_ready', 'Photo ready. Pick a mode below, then press Analyze.')),
-            btn('🗑 ' + _t('stem.accessLens.clear_photo', 'Clear photo'), clearPhoto))));
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', flex: '1 1 200px', minWidth: 0 } },
+            h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
+              h('span', { style: { fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', background: C.okBg, border: '1px solid ' + C.okBorder, color: C.text } },
+                _t('stem.accessLens.badge_in_memory', 'In-Memory Only')),
+              (photo.width && photo.height) ? h('span', { style: { fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: C.panel, border: '1px solid ' + C.border, color: C.sub } }, photo.width + ' × ' + photo.height + ' px') : null,
+              describeOut ? h('span', { style: { fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', background: describeOut.usable ? C.okBg : C.warnBg, border: '1px solid ' + (describeOut.usable ? C.okBorder : C.warnBorder), color: C.text } },
+                describeOut.usable ? _t('stem.accessLens.shot_clear', 'Shot Clear') : _t('stem.accessLens.shot_retake', 'Retake Suggested')) : null
+            ),
+            h('div', { style: { fontSize: '12.5px', color: C.text, lineHeight: 1.45 } }, _t('stem.accessLens.photo_ready', 'Photo ready. Pick a mode below, then press Analyze.')),
+            h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+              btn('🗑 ' + _t('stem.accessLens.clear_photo', 'Clear photo'), clearPhoto)))));
       }
 
-      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } }, kids);
+      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } }, kids);
     }
 
     // ════════════════════ mode panels ════════════════════
@@ -1036,14 +1275,16 @@
             style: { marginBottom: '10px', fontSize: '13px', lineHeight: 1.5, color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px' }
           }, h('strong', null, _t('stem.accessLens.photo_problem_title', 'This photo may not have come out. ')),
              out.problem || _t('stem.accessLens.photo_problem_generic', 'The picture is unclear. Try taking it again.')) : null,
-          h('div', { key: 'txt', dir: 'auto', style: { fontSize: '15px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.description),
+          h('div', { key: 'txt', dir: 'auto', style: { fontSize: '15px', lineHeight: 1.75, color: C.text, whiteSpace: 'pre-wrap', padding: '10px 12px', borderRadius: '10px', background: C.soft, border: '1px solid ' + C.border } }, out.description),
           // Hedges belong in their own list, not buried mid-sentence where a
           // listener loses them.
-          out.unsure && out.unsure.length ? h('div', { key: 'unsure', style: { marginTop: '10px', fontSize: '13px', lineHeight: 1.6, color: C.text } },
+          out.unsure && out.unsure.length ? h('div', { key: 'unsure', style: { marginTop: '10px', fontSize: '13px', lineHeight: 1.6, color: C.text, padding: '8px 10px', borderRadius: '8px', background: C.warnBg, border: '1px solid ' + C.warnBorder } },
             h('strong', null, _t('stem.accessLens.unsure_title', 'The AI was not sure about:')),
             h('ul', { style: { margin: '4px 0 0', paddingLeft: '20px' } },
               out.unsure.map(function (u, i) { return h('li', { key: i }, u); }))) : null,
-          h('div', { key: 'act', style: { marginTop: '10px', display: 'flex', gap: '8px' } }, speakBtn(describeSpeech(out, _t))),
+          h('div', { key: 'act', style: { marginTop: '10px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+            speakBtn(describeSpeech(out, _t)),
+            speaking ? h('span', { style: { fontSize: '11.5px', fontWeight: 700, color: C.accent } }, _t('stem.accessLens.audio_active', 'Audio playback active')) : null),
           h('div', { key: 'disc' }, aiDisclaimer())
         ]) : null);
     }
@@ -1051,6 +1292,8 @@
     function renderRead() {
       var out = results.read;
       var noText = isNoTextReply(out);
+      var surfaceBg = contrast ? '#000000' : (readerSurface === 'warm' ? '#fef9e7' : (readerSurface === 'high' ? '#0f172a' : C.soft));
+      var surfaceFg = contrast ? '#ffff00' : (readerSurface === 'warm' ? '#1c1917' : (readerSurface === 'high' ? '#fef08a' : C.text));
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
         h('p', { style: { margin: 0, fontSize: '12.5px', color: C.sub, lineHeight: 1.5 } },
           _t('stem.accessLens.read_intro', 'Point at a worksheet, a whiteboard, a sign, or a label. The text is re-typed here in large print you can resize and listen to.')),
@@ -1069,8 +1312,43 @@
                   'aria-label': _t('stem.accessLens.text_size', 'Text size'),
                   'aria-valuetext': _t('stem.accessLens.text_size_value', '{n} pixels').replace('{n}', String(readerPx)),
                   onChange: function (e) { setReaderPx(parseInt(e.target.value, 10) || 24); },
-                  style: { width: '160px' }
+                  style: { width: '150px' }
+                }),
+                h('span', { style: { fontSize: '11.5px', fontWeight: 800, color: C.accent, minWidth: '42px' } }, readerPx + 'px')),
+              h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                [18, 28, 44, 72].map(function (sz) {
+                  var isSel = readerPx === sz;
+                  return h('button', {
+                    key: sz, type: 'button', className: 'accesslens-chip',
+                    'aria-pressed': isSel ? 'true' : 'false',
+                    onClick: function () { setReaderPx(sz); },
+                    style: {
+                      padding: '4px 8px', borderRadius: '8px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 700,
+                      border: '1px solid ' + (isSel ? C.btnBorder : C.border),
+                      background: isSel ? C.btnBg : C.panel,
+                      color: isSel ? C.btnText : C.text
+                    }
+                  }, sz + 'px');
                 })),
+              !contrast ? h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                [
+                  { id: 'default', label: _t('stem.accessLens.surface_default', 'Standard') },
+                  { id: 'warm', label: _t('stem.accessLens.surface_warm', 'Warm Paper') },
+                  { id: 'high', label: _t('stem.accessLens.surface_high', 'Yellow on Dark') }
+                ].map(function (sf) {
+                  var isSel = readerSurface === sf.id;
+                  return h('button', {
+                    key: sf.id, type: 'button', className: 'accesslens-chip',
+                    'aria-pressed': isSel ? 'true' : 'false',
+                    onClick: function () { setReaderSurface(sf.id); },
+                    style: {
+                      padding: '4px 8px', borderRadius: '8px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 700,
+                      border: '1px solid ' + (isSel ? C.btnBorder : C.border),
+                      background: isSel ? C.btnBg : C.panel,
+                      color: isSel ? C.btnText : C.text
+                    }
+                  }, sf.label);
+                })) : null,
               speakBtn(speechWithGaps(out, _t))),
             // Announced before the text: a gap count is the difference between
             // "this is what the label says" and "this is most of what it says".
@@ -1085,15 +1363,15 @@
               key: 'reader', dir: 'auto',
               style: {
                 fontSize: readerPx + 'px', lineHeight: 1.8, letterSpacing: '0.02em', wordSpacing: '0.12em',
-                color: C.text, background: C.soft, borderRadius: '10px', padding: '14px 16px',
-                whiteSpace: 'pre-wrap', maxWidth: '46ch'
+                color: surfaceFg, background: surfaceBg, border: '1px solid ' + C.border, borderRadius: '10px', padding: '14px 16px',
+                whiteSpace: 'pre-wrap', maxWidth: '46ch', overflowWrap: 'break-word'
               }
             }, splitUnclear(out).map(function (part, i) {
               // A gap is marked, not styled like the words that were read.
               return part.unclear
                 ? h('span', {
                     key: i,
-                    style: { background: C.warnBg, border: '1px dashed ' + C.warnBorder, borderRadius: '4px', padding: '0 4px', fontStyle: 'italic', fontWeight: 700 }
+                    style: { background: C.warnBg, border: '1px dashed ' + C.warnBorder, borderRadius: '4px', padding: '0 4px', fontStyle: 'italic', fontWeight: 700, color: C.text }
                   }, _t('stem.accessLens.unclear_inline', '[could not read]'))
                 : h('span', { key: i }, part.text);
             })),
@@ -1103,9 +1381,26 @@
 
     function renderTranslate() {
       var out = results.translate;
+      var quickLangs = ['Spanish', 'French', 'Arabic', 'Chinese (Simplified)', 'Vietnamese'];
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
         h('p', { style: { margin: 0, fontSize: '12.5px', color: C.sub, lineHeight: 1.5 } },
           _t('stem.accessLens.translate_intro', 'Photograph text in one language and read it in yours. Great for signs, notes home, and classroom handouts.')),
+        h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
+          h('span', { style: { fontSize: '11.5px', fontWeight: 700, color: C.sub } }, _t('stem.accessLens.quick_langs', 'Quick pick:')),
+          quickLangs.map(function (ql) {
+            var activeL = !customLang && targetLang === ql;
+            return h('button', {
+              key: ql, type: 'button', className: 'accesslens-chip',
+              'aria-pressed': activeL ? 'true' : 'false',
+              onClick: function () { setCustomLang(false); setTargetLang(ql); },
+              style: {
+                padding: '4px 10px', borderRadius: '999px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 700,
+                border: '1px solid ' + (activeL ? C.btnBorder : C.border),
+                background: activeL ? C.btnBg : C.panel,
+                color: activeL ? C.btnText : C.text
+              }
+            }, _t('stem.accessLens.lang_' + langSlug(ql), ql));
+          })),
         h('label', { style: { fontSize: '12.5px', color: C.text, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
           _t('stem.accessLens.translate_into', 'Translate into'),
           h('select', {
@@ -1136,17 +1431,18 @@
               h('div', { key: 'nt', style: { fontSize: '13px', color: C.sub } }, _t('stem.accessLens.no_text', 'No readable text was found in this photo. Try getting closer or adding more light.'))])
           : card([
             resultHeading(_t('stem.accessLens.result_translate', 'Translation of your photo')),
-            out.original ? h('div', { key: 'orig', style: { marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 800, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, _t('stem.accessLens.original', 'Original')),
-              h('div', { dir: 'auto', style: { fontSize: '13.5px', lineHeight: 1.6, color: C.sub, whiteSpace: 'pre-wrap' } }, splitUnclear(out.original).map(function (part, i) {
-                return part.unclear
-                  ? h('span', { key: i, style: { background: C.warnBg, border: '1px dashed ' + C.warnBorder, borderRadius: '4px', padding: '0 3px', fontStyle: 'italic', fontWeight: 700 } }, _t('stem.accessLens.unclear_inline', '[could not read]'))
-                  : h('span', { key: i }, part.text);
-              }))) : null,
-            h('div', { key: 'trans' },
-              h('div', { style: { fontSize: '10px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, _t('stem.accessLens.translation', 'Translation')),
-              // lang picks the right font and voice; dir=auto lays out Arabic, Farsi and Pashto right to left.
-              h('div', { dir: 'auto', lang: (out.lang && LANG_CODES[out.lang]) || undefined, style: { fontSize: '16px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.translated)),
+            h('div', { key: 'cols', 'data-accesslens-columns': 'true', style: { display: 'grid', gridTemplateColumns: out.original ? 'repeat(2, minmax(0, 1fr))' : '1fr', gap: '10px' } },
+              out.original ? h('div', { key: 'orig', style: { padding: '10px 12px', borderRadius: '10px', background: C.soft, border: '1px solid ' + C.border, minWidth: 0 } },
+                h('div', { style: { fontSize: '10.5px', fontWeight: 800, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, _t('stem.accessLens.original', 'Original')),
+                h('div', { dir: 'auto', style: { fontSize: '13.5px', lineHeight: 1.6, color: C.text, whiteSpace: 'pre-wrap' } }, splitUnclear(out.original).map(function (part, i) {
+                  return part.unclear
+                    ? h('span', { key: i, style: { background: C.warnBg, border: '1px dashed ' + C.warnBorder, borderRadius: '4px', padding: '0 3px', fontStyle: 'italic', fontWeight: 700 } }, _t('stem.accessLens.unclear_inline', '[could not read]'))
+                    : h('span', { key: i }, part.text);
+                }))) : null,
+              h('div', { key: 'trans', style: { padding: '10px 12px', borderRadius: '10px', background: C.accentBg, border: '1px solid ' + C.accent, minWidth: 0 } },
+                h('div', { style: { fontSize: '10.5px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, _t('stem.accessLens.translation', 'Translation') + (out.lang ? ' (' + out.lang + ')' : '')),
+                // lang picks the right font and voice; dir=auto lays out Arabic, Farsi and Pashto right to left.
+                h('div', { dir: 'auto', lang: (out.lang && LANG_CODES[out.lang]) || undefined, style: { fontSize: '16px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.translated))),
             countUnclear(out.original) ? h('div', { key: 'gaps', role: 'status', style: { marginTop: '10px', fontSize: '12.5px', lineHeight: 1.5, color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px' } },
               _t('stem.accessLens.translate_gap', 'Some words in the original could not be read, so the translation is missing part of the text. Take the photo again with more light if this matters.')) : null,
             h('div', { key: 'mt', role: 'note', style: { marginTop: '10px', fontSize: '13px', lineHeight: 1.5, color: C.text } },
@@ -1166,15 +1462,22 @@
           h('div', { key: 'disc' }, aiDisclaimer())
         ]);
       } else if (out) {
+        var answeredCnt = out.questions.filter(function (_, idx) { return answers[idx] && String(answers[idx]).trim().length > 2; }).length;
+        var confLevel = out.guess && out.guess.confidence === 'high' ? 3 : (out.guess && out.guess.confidence === 'medium' ? 2 : 1);
         body = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
           card([
             resultHeading(_t('stem.accessLens.result_inquire', 'Your investigation')),
-            h('div', { key: 'hd', style: { fontSize: '11px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '👀 ' + _t('stem.accessLens.observations', 'What the AI can see')),
+            h('div', { key: 'hd', style: { fontSize: '11px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } },
+              h('span', { 'aria-hidden': 'true' }, '👀 '), _t('stem.accessLens.observations', 'What the AI can see')),
             h('ul', { key: 'ls', style: { margin: 0, paddingLeft: '18px', fontSize: '13.5px', lineHeight: 1.7, color: C.text } },
               out.observations.map(function (o, i) { return h('li', { key: i }, o); }))
           ]),
           card([
-            h('div', { key: 'hd', style: { fontSize: '11px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '🤔 ' + _t('stem.accessLens.questions', 'Your investigation questions')),
+            h('div', { key: 'hd', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                h('span', { 'aria-hidden': 'true' }, '🤔 '), _t('stem.accessLens.questions', 'Your investigation questions')),
+              h('span', { style: { fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', background: C.accentBg, border: '1px solid ' + C.accent, color: C.accent } },
+                answeredCnt + ' / ' + out.questions.length + ' ' + _t('stem.accessLens.answered_count', 'answered'))),
             h('div', { key: 'qs', style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
               out.questions.map(function (q, i) {
                 return h('div', { key: i },
@@ -1194,7 +1497,8 @@
           // The guess sat beside the questions, so it was read before the
           // student had thought about any of them. It now waits behind a button.
           card([
-            h('div', { key: 'hd', style: { fontSize: '11px', fontWeight: 800, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '🧪 ' + _t('stem.accessLens.guess_title', 'The AI\'s guess (not a fact)')),
+            h('div', { key: 'hd', style: { fontSize: '11px', fontWeight: 800, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } },
+              h('span', { 'aria-hidden': 'true' }, '🧪 '), _t('stem.accessLens.guess_title', 'The AI\'s guess (not a fact)')),
             h('div', { key: 'tog', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
               btn(guessShown ? _t('stem.accessLens.hide_guess', 'Hide the AI\'s guess') : _t('stem.accessLens.show_guess', 'Show the AI\'s guess'),
                 function () {
@@ -1206,11 +1510,16 @@
               guessShown ? null : h('span', { style: { fontSize: '12px', color: C.sub } }, _t('stem.accessLens.guess_wait', 'Try answering the questions first, then compare with the AI.'))),
             h('div', { key: 'guess', id: 'accesslens-guess', hidden: !guessShown },
               guessShown ? [
-                h('div', { key: 'what', dir: 'auto', style: { marginTop: '8px', fontSize: '14px', fontWeight: 800, color: C.text } }, out.guess.what),
-                h('div', { key: 'conf', style: { display: 'inline-block', marginTop: '4px', fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px', background: C.warnBg, border: '1px solid ' + C.warnBorder, color: C.text } },
-                  confidenceLabel(out.guess.confidence, _t)),
-                out.guess.why ? h('div', { key: 'why', dir: 'auto', style: { marginTop: '6px', fontSize: '12.5px', lineHeight: 1.6, color: C.sub } }, out.guess.why) : null,
-                out.tryThis ? h('div', { key: 'try', dir: 'auto', style: { marginTop: '8px', fontSize: '13px', lineHeight: 1.6, color: C.text, background: C.okBg, borderRadius: '8px', padding: '8px 10px' } },
+                h('div', { key: 'what', dir: 'auto', style: { marginTop: '10px', fontSize: '15px', fontWeight: 800, color: C.text } }, out.guess.what),
+                h('div', { key: 'confrow', style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '6px' } },
+                  h('div', { key: 'conf', style: { display: 'inline-block', fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px', background: C.warnBg, border: '1px solid ' + C.warnBorder, color: C.text } },
+                    confidenceLabel(out.guess.confidence, _t)),
+                  h('div', { key: 'meter', 'aria-hidden': 'true', style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+                    [1, 2, 3].map(function (seg) {
+                      return h('span', { key: seg, style: { display: 'inline-block', width: '22px', height: '8px', borderRadius: '4px', background: seg <= confLevel ? C.warnBorder : C.soft, border: '1px solid ' + C.border } });
+                    }))),
+                out.guess.why ? h('div', { key: 'why', dir: 'auto', style: { marginTop: '8px', fontSize: '12.5px', lineHeight: 1.6, color: C.sub } }, out.guess.why) : null,
+                out.tryThis ? h('div', { key: 'try', dir: 'auto', style: { marginTop: '8px', fontSize: '13px', lineHeight: 1.6, color: C.text, background: C.okBg, border: '1px solid ' + C.okBorder, borderRadius: '8px', padding: '8px 10px' } },
                   h('strong', null, _t('stem.accessLens.try_this', 'Test it: ')), out.tryThis) : null
               ] : null),
             h('div', { key: 'disc' }, aiDisclaimer())
@@ -1252,21 +1561,55 @@
       }
     };
 
-    return h('div', { 'data-accesslens-tool': 'true', style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit', background: C.bg, borderRadius: 12, padding: 12 } },
-      h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
-        (ctx.setStemLabTool ? h('button', {
-          type: 'button', onClick: function () { ctx.setStemLabTool(''); },
-          'aria-label': _t('stem.accessLens.back', 'Back to STEAM Lab'),
-          style: { padding: '6px 10px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', fontSize: '12px', fontWeight: 700 }
-        }, '← ' + _t('stem.accessLens.back_short', 'Back')) : null),
-        h('div', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '📷'),
-        h('div', null,
-          h('h2', { style: { margin: 0, fontSize: '17px', fontWeight: 800 } }, _t('stem.accessLens.title', 'Access Lens')),
-          h('div', { style: { fontSize: '11px', color: C.sub } }, _t('stem.accessLens.subtitle', 'Point, snap, and understand: describe, read, translate, investigate')))),
-      card(renderCapture(), { background: C.bg }),
-      h('div', { role: 'tablist', 'aria-label': _t('stem.accessLens.tabs_label', 'Access Lens modes'), style: { display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '1px solid ' + C.border, paddingBottom: '8px' } },
+    var activeModeObj = MODES.filter(function (m) { return m.id === mode; })[0] || MODES[0];
+    var heroStyle = contrast
+      ? { padding: '14px 16px', borderRadius: '14px', background: '#000000', border: '2px solid #ffff00', color: '#ffff00' }
+      : { padding: '14px 16px', borderRadius: '14px', background: dark ? 'linear-gradient(135deg, #082f49 0%, #0c4a6e 55%, #0b1220 100%)' : 'linear-gradient(135deg, #0c4a6e 0%, #0369a1 55%, #0f172a 100%)', border: '1px solid rgba(125,211,252,0.32)', color: '#ffffff', boxShadow: '0 8px 24px rgba(3,105,161,0.22)' };
+    var pillStyle = contrast
+      ? { fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px', background: '#000000', border: '1px solid #ffff00', color: '#ffff00' }
+      : { fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '999px', background: 'rgba(15,23,42,0.48)', border: '1px solid rgba(186,230,253,0.35)', color: '#f0f9ff' };
+
+    return h('div', { 'data-accesslens-tool': 'true', 'data-accesslens-theme': contrast ? 'contrast' : (dark ? 'dark' : 'light'), style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit', background: C.bg, borderRadius: '16px', padding: '14px', border: (contrast ? '2px solid ' : '1px solid ') + C.border, minWidth: 0 } },
+      // Bespoke Optical / Sensory Lens Hero Workbench Header
+      h('div', { style: heroStyle },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: '1 1 240px' } },
+            // Bespoke Optical Aperture + Soundwave SVG Emblem
+            h('div', { 'aria-hidden': 'true', style: { width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: contrast ? '#000000' : 'rgba(255,255,255,0.12)', border: contrast ? '2px solid #ffff00' : '1px solid rgba(186,230,253,0.35)' } },
+              h('svg', { viewBox: '0 0 40 40', width: 32, height: 32, 'aria-hidden': 'true' },
+                h('circle', { cx: 18, cy: 20, r: 12, fill: 'none', stroke: contrast ? '#ffff00' : '#7dd3fc', strokeWidth: 2.2 }),
+                h('circle', { cx: 18, cy: 20, r: 6.5, fill: 'none', stroke: contrast ? '#00ff00' : '#ffffff', strokeWidth: 2 }),
+                h('circle', { cx: 18, cy: 20, r: 2.5, fill: contrast ? '#ffff00' : '#38bdf8' }),
+                h('path', { d: 'M31 14 Q36 20 31 26', fill: 'none', stroke: contrast ? '#00ff00' : '#34d399', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                h('path', { d: 'M34.5 10.5 Q40 20 34.5 29.5', fill: 'none', stroke: contrast ? '#ffff00' : '#bae6fd', strokeWidth: 1.8, strokeLinecap: 'round' })
+              )
+            ),
+            h('div', { style: { minWidth: 0 } },
+              h('div', { style: { fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: contrast ? '#00ff00' : '#bae6fd', marginBottom: '2px' } },
+                _t('stem.accessLens.badge_subject', 'Technology • Assistive Sensory Lens')),
+              h('h2', { style: { margin: 0, fontSize: '18px', fontWeight: 800, color: contrast ? '#ffff00' : '#ffffff', lineHeight: 1.2 } }, _t('stem.accessLens.title', 'Access Lens')),
+              h('div', { style: { fontSize: '12px', color: contrast ? '#ffffff' : '#e0f2fe', marginTop: '2px', lineHeight: 1.4 } }, _t('stem.accessLens.subtitle', 'Point, snap, and understand: describe, read, translate, investigate')))),
+          (ctx.setStemLabTool ? h('button', {
+            type: 'button', className: 'accesslens-btn', onClick: function () { ctx.setStemLabTool(''); },
+            'aria-label': _t('stem.accessLens.back', 'Back to STEAM Lab'),
+            style: { padding: '6px 12px', borderRadius: '9px', border: contrast ? '2px solid #ffff00' : '1px solid rgba(186,230,253,0.45)', background: contrast ? '#000000' : 'rgba(15,23,42,0.55)', color: contrast ? '#ffff00' : '#ffffff', cursor: 'pointer', fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap' }
+          }, splitButtonLabel('← ' + _t('stem.accessLens.back_short', 'Back'))) : null)),
+        // Live Telemetry Pills
+        h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '10px' } },
+          h('span', { style: pillStyle },
+            _t('stem.accessLens.pill_status', 'Capture: ') + (camState === 'live' ? _t('stem.accessLens.pill_live', 'Live Camera') : photo ? _t('stem.accessLens.pill_loaded', 'Photo Loaded') : _t('stem.accessLens.pill_ready', 'Ready'))),
+          h('span', { style: pillStyle },
+            _t('stem.accessLens.pill_mode', 'Lens: ') + activeModeObj.label),
+          h('span', { style: pillStyle },
+            _t('stem.accessLens.pill_explored', 'Lenses Used: ') + lensesExploredCount + '/4'),
+          h('span', { style: pillStyle },
+            _t('stem.accessLens.pill_privacy', 'Privacy: Local-Only')))),
+      card(renderCapture(), { background: C.panel }),
+      h('div', { role: 'tablist', 'aria-label': _t('stem.accessLens.tabs_label', 'Access Lens modes'), style: { display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: (contrast ? '2px solid ' : '1px solid ') + C.border, paddingBottom: '8px' } },
         MODES.map(function (m, tabIndex) {
           var active = mode === m.id;
+          var hasDone = !!results[m.id];
+          var tabBorder = active ? (contrast ? '#00ff00' : C.accent) : C.border;
           return h('button', {
             key: m.id, type: 'button', className: 'accesslens-tab', role: 'tab',
             id: 'accesslens-tab-' + m.id, 'aria-controls': 'accesslens-panel', 'aria-selected': active ? 'true' : 'false',
@@ -1274,11 +1617,16 @@
             onKeyDown: function (e) { accessLensTabKeyDown(e, tabIndex); },
             onClick: function () { setMode(m.id); stopSpeech(); announce(m.label); },
             style: {
-              padding: '7px 13px', borderRadius: '9px 9px 0 0', cursor: 'pointer', fontSize: '13px', fontWeight: 800,
-              border: '1px solid ' + (active ? C.accent : 'transparent'), borderBottom: 'none',
-              background: active ? C.accentBg : 'transparent', color: active ? C.accent : C.sub
+              padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: 800,
+              borderTop: (contrast ? '2px solid ' : '1px solid ') + tabBorder,
+              borderLeft: (contrast ? '2px solid ' : '1px solid ') + tabBorder,
+              borderRight: (contrast ? '2px solid ' : '1px solid ') + tabBorder,
+              borderBottom: (contrast ? '2px solid ' : '1px solid ') + tabBorder,
+              background: active ? (contrast ? '#000000' : C.btnBg) : C.panel,
+              color: active ? (contrast ? '#00ff00' : '#ffffff') : C.text
             }
-          }, h('span', { 'aria-hidden': 'true' }, m.icon + ' '), m.label);
+          }, h('span', { 'aria-hidden': 'true' }, m.icon + ' '), m.label,
+             hasDone ? h('span', { 'aria-hidden': 'true', style: { marginLeft: '5px', fontSize: '11px', opacity: 0.9 } }, '•') : null);
         })),
       h('div', { id: 'accesslens-panel', role: 'tabpanel', tabIndex: 0, 'aria-labelledby': 'accesslens-tab-' + mode, 'aria-busy': busy ? 'true' : 'false', className: busy ? 'accesslens-busy' : undefined }, panel),
       err ? h('div', { role: 'alert', style: { fontSize: '12.5px', color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '10px', padding: '9px 12px', lineHeight: 1.5 } }, err) : null,

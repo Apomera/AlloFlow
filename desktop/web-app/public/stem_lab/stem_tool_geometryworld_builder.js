@@ -137,7 +137,7 @@
     var byteLength = Math.max(0, Math.round(Number(declaredBytes) || editableWorldByteLength(text)));
     if (byteLength > MAX_EDITABLE_WORLD_BYTES || text.length > MAX_EDITABLE_WORLD_BYTES) return { ok: false, error: 'Editable Geometry World files are limited to 512 KiB.' };
     var parsed;
-    try { parsed = JSON.parse(text); }
+    try { parsed = JSON.parse(text, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); }
     catch (_) { return { ok: false, error: 'The selected file is not valid JSON.' }; }
     if (parsed && ['alloflow-print-package/1','alloflow-geometry-world-build/1'].indexOf(parsed.schema) >= 0) return {ok:false,error:'Choose the original Print Lab ZIP or its editable-world.json file to reopen these blocks.'};
     var normalized = normalizeEditableWorld(parsed);
