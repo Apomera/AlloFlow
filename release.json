@@ -1,6 +1,6 @@
 {
-  "version": "1.18",
-  "canvas_url": "https://share.gemini.google/i3xUEhzR1csy",
-  "released": "2026-11-16T05:14:23.945Z",
-  "notes": "Canvas build with the 11-15 deploy: platform-wide WCAG 2.2 AA accessibility improvements across hubs, modals, STEM and SEL tools, and companion pages; Packet Symbol Runner and Present/export updates; offline vocabulary and word-audio shard enhancements; and shared-device privacy and security refinements."
+  "version": "1.19",
+  "canvas_url": "https://share.gemini.google/Jdve7XySpYhT",
+  "released": "2026-11-19T23:02:44.598Z",
+  "notes": "Canvas build with the 11-19 deploy: cybersecurity, FERPA, privacy, and shell-boundary hardening (Passes 8-22); Packets read-along and voice CDN fallback fix; remediation and MCP improvements; and platform enhancements."
 }
