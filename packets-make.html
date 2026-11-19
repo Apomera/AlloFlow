@@ -172,7 +172,8 @@
         </div>
       </fieldset>
 
-      <!-- Step 2, top to bottom: the grade level (the page picks), or the typed words; then one "More options" box; then the picked words. -->
+      <!-- Step 2, top to bottom: the grade level (the page picks), or the typed words; then the picked words; then one "More options" box
+           with the rarely used choices (a sound, a pattern, the version, groups of words, choosing the words yourself). 2026-11-17. -->
       <div id="pick-top">
         <div class="fields">
           <div class="field">
@@ -198,6 +199,42 @@
         <div class="result">
           <p id="own-line" class="result-line" role="status"></p>
           <ul id="own-list" class="checked" aria-label="Your words, checked"></ul>
+        </div>
+      </div>
+
+
+      <div id="panel-pick">
+        <div class="result" id="pick-result">
+          <p id="pick-line" class="result-line" role="status"></p>
+          <p id="pick-sub" class="result-sub"></p>
+          <div id="pick-loosen" class="loosen"></div>
+          <div class="pick-bar" id="pick-bar">
+            <div class="count-home" id="count-home-2">
+              <div class="field count-field" id="count-field">
+                <label for="f-count">How many words</label>
+                <div class="stepper">
+                  <button type="button" class="btn btn-small stepper-btn" id="count-less" aria-label="One word fewer">&minus;</button>
+                  <input type="number" id="f-count" min="1" max="40" step="1" inputmode="numeric" aria-describedby="count-hint count-said">
+                  <button type="button" class="btn btn-small stepper-btn" id="count-more" aria-label="One more word">+</button>
+                </div>
+                <span class="hint" id="count-hint">1 to 40: one question for each word in each activity.</span>
+                <span class="hint count-said" id="count-said" role="status"></span>
+              </div>
+            </div>
+            <div class="pick-again" id="pick-again">
+              <p class="row">
+                <button type="button" class="btn btn-small" id="pick-shuffle" aria-describedby="pick-shuffle-hint">Pick different words</button>
+                <button type="button" class="btn btn-text btn-small" id="pick-common" hidden>Back to the most common words</button>
+              </p>
+              <span class="hint" id="pick-shuffle-hint">Other words that fit your choices, each time you press it.</span>
+              <p id="pick-said" class="sr-only" role="status"></p>
+            </div>
+          </div>
+          <ul id="pick-chips" class="chips" aria-label="Words in the file"></ul>
+          <div id="pick-edit" class="word-edit" hidden></div>
+          <p id="pick-removed" class="result-sub" hidden><span id="pick-removed-text"></span> <button type="button" class="btn btn-text btn-small" id="pick-restore">Put them back</button></p>
+          <p id="pick-labels" class="result-sub pick-labels" hidden></p>
+          <div id="mix-notes" class="mix-notes" hidden></div>
         </div>
       </div>
 
@@ -240,83 +277,50 @@
               <label class="radio"><input type="radio" name="version" value="C" aria-describedby="version-hint"> C</label>
             </div>
           </fieldset>
+          <div id="more-2-words" class="more-2-words">
+            <div id="groups-box" class="groups-box">
+              <div id="groups" class="groups"></div>
+              <p class="row groups-row">
+                <button type="button" class="btn btn-small" id="group-add" aria-describedby="group-add-hint">Add another group of words</button>
+                <span class="hint" id="group-add-hint">For example new words and review words in one file. Each group has its own choices and a label that only you see.</span>
+              </p>
+            </div>
+            <details class="pick-list" id="pick-list">
+              <summary id="pick-list-line">Choose the words yourself</summary>
+              <div class="pick-list-body">
+                <p class="hint" id="pick-list-hint">The list has every word that fits the choices above, and the words you add. The words of the file are at the top, checked. Check the ones you want. The file uses them in the order you check them.</p>
+                <div class="pick-list-tools">
+                  <div class="field">
+                    <label for="f-find">Find a word</label>
+                    <input type="search" id="f-find" autocomplete="off" spellcheck="false" autocapitalize="none" maxlength="20">
+                  </div>
+                  <label class="radio"><input type="checkbox" id="f-only-pictures"> <span>Only words with a picture</span></label>
+                </div>
+                <div class="field">
+                  <label for="f-add">Add your own words</label>
+                  <span class="hint" id="add-hint">Leave a space or a comma between words. Each one is checked the way typed words are.</span>
+                  <div class="add-row">
+                    <input type="text" id="f-add" autocomplete="off" spellcheck="false" autocapitalize="none" maxlength="200" aria-describedby="add-hint">
+                    <button type="button" class="btn btn-small" id="add-words">Add</button>
+                  </div>
+                </div>
+                <p class="row pick-list-row">
+                  <button type="button" class="btn btn-small" id="list-all">Choose all in the list</button>
+                  <button type="button" class="btn btn-small" id="list-clear">Clear</button>
+                  <button type="button" class="btn btn-small" id="list-again">Pick for me again</button>
+                </p>
+                <p id="list-said" class="result-sub list-said" role="status"></p>
+                <ul id="word-list" class="word-list" aria-label="Words to choose from"></ul>
+                <p id="list-more-row" class="list-more" hidden><button type="button" class="btn btn-small" id="list-more">Show more words</button> <span id="list-more-said"></span></p>
+              </div>
+            </details>
+            <details class="why" id="pick-out-box" hidden>
+              <summary>Why not more words?</summary>
+              <p id="pick-out" class="result-sub"></p>
+            </details>
+          </div>
         </div>
       </details>
-
-      <div id="panel-pick">
-        <div class="result" id="pick-result">
-          <p id="pick-line" class="result-line" role="status"></p>
-          <p id="pick-sub" class="result-sub"></p>
-          <div id="pick-loosen" class="loosen"></div>
-          <div class="pick-bar" id="pick-bar">
-            <div class="count-home" id="count-home-2">
-              <div class="field count-field" id="count-field">
-                <label for="f-count">How many words</label>
-                <div class="stepper">
-                  <button type="button" class="btn btn-small stepper-btn" id="count-less" aria-label="One word fewer">&minus;</button>
-                  <input type="number" id="f-count" min="1" max="40" step="1" inputmode="numeric" aria-describedby="count-hint count-said">
-                  <button type="button" class="btn btn-small stepper-btn" id="count-more" aria-label="One more word">+</button>
-                </div>
-                <span class="hint" id="count-hint">From 1 to 40. A file has at most 40 questions in each activity, one for each word.</span>
-                <span class="hint count-said" id="count-said" role="status"></span>
-              </div>
-            </div>
-            <div class="pick-again" id="pick-again">
-              <p class="row">
-                <button type="button" class="btn btn-small" id="pick-shuffle" aria-describedby="pick-shuffle-hint">Pick different words</button>
-                <button type="button" class="btn btn-text btn-small" id="pick-common" hidden>Back to the most common words</button>
-              </p>
-              <span class="hint" id="pick-shuffle-hint">Random words that fit your choices. Press again for another set. For beginning readers, choose a grade level first.</span>
-              <p id="pick-said" class="sr-only" role="status"></p>
-            </div>
-          </div>
-          <ul id="pick-chips" class="chips" aria-label="Words in the file"></ul>
-          <div id="pick-edit" class="word-edit" hidden></div>
-          <p id="pick-removed" class="result-sub" hidden><span id="pick-removed-text"></span> <button type="button" class="btn btn-text btn-small" id="pick-restore">Put them back</button></p>
-          <p id="pick-labels" class="result-sub pick-labels" hidden></p>
-          <div id="mix-notes" class="mix-notes" hidden></div>
-          <div id="groups-box" class="groups-box">
-            <div id="groups" class="groups"></div>
-            <p class="row groups-row">
-              <button type="button" class="btn btn-small" id="group-add" aria-describedby="group-add-hint">Add another group of words</button>
-              <span class="hint" id="group-add-hint">For example new words and review words in one file. Each group has its own choices and a label that only you see.</span>
-            </p>
-          </div>
-          <details class="pick-list" id="pick-list">
-            <summary id="pick-list-line">Choose the words yourself</summary>
-            <div class="pick-list-body">
-              <p class="hint" id="pick-list-hint">The list has every word that fits the choices above, and the words you add. The words of the file are at the top, checked. Check the ones you want. The file uses them in the order you check them.</p>
-              <div class="pick-list-tools">
-                <div class="field">
-                  <label for="f-find">Find a word</label>
-                  <input type="search" id="f-find" autocomplete="off" spellcheck="false" autocapitalize="none" maxlength="20">
-                </div>
-                <label class="radio"><input type="checkbox" id="f-only-pictures"> <span>Only words with a picture</span></label>
-              </div>
-              <div class="field">
-                <label for="f-add">Add your own words</label>
-                <span class="hint" id="add-hint">Leave a space or a comma between words. Each one is checked the way typed words are.</span>
-                <div class="add-row">
-                  <input type="text" id="f-add" autocomplete="off" spellcheck="false" autocapitalize="none" maxlength="200" aria-describedby="add-hint">
-                  <button type="button" class="btn btn-small" id="add-words">Add</button>
-                </div>
-              </div>
-              <p class="row pick-list-row">
-                <button type="button" class="btn btn-small" id="list-all">Choose all in the list</button>
-                <button type="button" class="btn btn-small" id="list-clear">Clear</button>
-                <button type="button" class="btn btn-small" id="list-again">Pick for me again</button>
-              </p>
-              <p id="list-said" class="result-sub list-said" role="status"></p>
-              <ul id="word-list" class="word-list" aria-label="Words to choose from"></ul>
-              <p id="list-more-row" class="list-more" hidden><button type="button" class="btn btn-small" id="list-more">Show more words</button> <span id="list-more-said"></span></p>
-            </div>
-          </details>
-          <details class="why" id="pick-out-box" hidden>
-            <summary>Why not more words?</summary>
-            <p id="pick-out" class="result-sub"></p>
-          </details>
-        </div>
-      </div>
 
       <details id="my-words" class="my-words" hidden>
         <summary id="my-words-line">My words on this device</summary>

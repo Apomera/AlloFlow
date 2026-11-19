@@ -9858,8 +9858,7 @@
         done(ok);
       }
       try {
-        if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) window.navigator.clipboard.writeText(cer).then(function () { done(true); }, fallback);
-        else fallback();
+        Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(cer)).then(function () { done(true); }, fallback);
       } catch (e) { fallback(); }
     }
     var heatLabels = { cooler: __alloT('stem.coralreef.rc_heat_cooler', 'Fewer, weaker heatwaves'), recent: __alloT('stem.coralreef.rc_heat_recent', 'Today\'s pattern of heatwaves'), warmer: __alloT('stem.coralreef.rc_heat_warmer', 'Heat keeps rising') };

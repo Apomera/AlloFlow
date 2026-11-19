@@ -1204,6 +1204,7 @@ var prefersReducedMotion = (function() { try { return window.matchMedia('(prefer
     try { v = (__alloBrainCtx && typeof __alloBrainCtx.t === "function") ? __alloBrainCtx.t(k, fb) : null; } catch (e) { v = null; }
     return (v == null || v === k) ? (fb != null ? fb : k) : v;
   };
+  var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
   if (!window.StemLab || !window.StemLab.registerTool) return;
 
   // BEGIN BRAIN ATLAS STRUCTURE PROFILES
@@ -13713,6 +13714,18 @@ var d = labToolData.brainAtlas || {};
             var canvas = window.__alloBrainAtlas3DCanvas;
             var overlay = canvas && canvas.parentNode && canvas.parentNode.querySelector('.brainatlas-3d-loading');
             if (!canvas || !canvas.isConnected || !overlay || overlay.getAttribute('data-state') !== 'error') return;
+            // A lost WebGL context never returns on the same canvas: bump the canvas
+            // key so React mounts a fresh one, then focus it once it exists.
+            if (canvas._brainAtlasGlLost) {
+              upd('brain3DCanvasGeneration', (d.brain3DCanvasGeneration || 0) + 1);
+              var tries = 0;
+              (function focusFresh() {
+                var next = window.__alloBrainAtlas3DCanvas;
+                if (next && next !== canvas && next.isConnected) { next.focus(); return; }
+                if (++tries < 20) window.setTimeout(focusFresh, 50);
+              })();
+              return;
+            }
             // Recreate only the renderer. Selection, study work, cutaway, and camera
             // preset remain in tool data and are restored by the normal canvas ref.
             if (canvas._brain3DState) canvas._brain3DState.cleanup();
@@ -13738,6 +13751,8 @@ var d = labToolData.brainAtlas || {};
               canvas._brain3DState.updateFromRender(viewKey, brain3DLayer, brain3DFocus, selected3DStructure, d.selectedRegion || '', handleBrainAtlas3DModelPick, brain3DSliceAxis, brain3DSlicePosition, brain3DSliceFlip, brain3DCompareActive, brain3DCompareStructures, brain3DPathway, brain3DPathwayStep, !brain3DChallengeActive && !brain3DSavedQuizActive);
               return;
             }
+            // Its context was lost: wait for Retry, which mounts a fresh canvas.
+            if (canvas._brainAtlasGlLost) return;
 
             var state = {
               alive: true,
@@ -14683,6 +14698,7 @@ var d = labToolData.brainAtlas || {};
               canvas.removeEventListener('pointerleave', state.onPointerLeave);
               canvas.removeEventListener('pointercancel', state.onPointerLeave);
               canvas.removeEventListener('keydown', state.onKeyDown);
+              if (state.onContextLost) canvas.removeEventListener('webglcontextlost', state.onContextLost);
               if (state.controls) {
                 state.controls.removeEventListener('start', state.cancelReveal);
                 state.controls.removeEventListener('change', state.onControlsChange);
@@ -14817,6 +14833,26 @@ var d = labToolData.brainAtlas || {};
               state.scene = new THREE.Scene();
               state.camera = new THREE.PerspectiveCamera(38, 1, 0.01, 50);
               state.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+              // A context lost after init (GPU reset, low-memory device) used to leave a
+              // black canvas. Tear down through cleanup and raise the error overlay; its
+              // Retry mounts a fresh canvas. releaseGl force-loses only removed canvases.
+              state.onContextLost = function (event) {
+                if (!canvas.isConnected) return;
+                event.preventDefault();
+                if (!state.alive) return;
+                canvas._brainAtlasGlLost = true;
+                state.cleanup();
+                window.__alloBrainAtlas3DCanvas = canvas;
+                window.setTimeout(function () {
+                  if (!canvas.isConnected) return;
+                  brainAtlas3DSetOverlay(canvas, 'error', t('stem.brainatlas.webgl_lost_title', '3D view paused'), t('stem.brainatlas.webgl_lost_detail', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved. Select Retry 3D model to restart it, or use the 2D Diagram button above.'));
+                  var stage = canvas.parentNode;
+                  var retry = stage && stage.querySelector('[data-brainatlas-3d-retry]');
+                  var active = document.activeElement;
+                  if (retry && (!active || active === document.body || (stage && stage.contains(active)))) retry.focus();
+                }, 0);
+              };
+              canvas.addEventListener('webglcontextlost', state.onContextLost);
               state.renderer.setClearColor(0x0f172a, 0);
               state.renderer.localClippingEnabled = true;
               if (THREE.sRGBEncoding) state.renderer.outputEncoding = THREE.sRGBEncoding;
@@ -18228,7 +18264,7 @@ var d = labToolData.brainAtlas || {};
                   [0, 1].map(function (slotIndex) {
                     var slotItem = psychCompareItems[slotIndex];
                     return slotItem
-                      ? React.createElement("button", { key: slotItem.id, type: "button", className: "brainatlas-psych-builder-slot", "data-brainatlas-psych-builder-slot": slotItem.id, "aria-label": 'Remove ' + slotItem.label + ' from comparison', onClick: function () { togglePsychopharmCompare(slotItem); } }, React.createElement("span", null, slotItem.label), React.createElement("span", { className: "brainatlas-psych-builder-slot-mark", "aria-hidden": "true" }, '\u00D7'))
+                      ? React.createElement("button", { key: slotItem.id, type: "button", className: "brainatlas-psych-builder-slot", "data-brainatlas-psych-builder-slot": slotItem.id, "aria-label": __alloAriaFill(__alloT('stem.brainatlas.a11y_remove_from_comparison', 'Remove {label} from comparison'), { label: slotItem.label }), onClick: function () { togglePsychopharmCompare(slotItem); } }, React.createElement("span", null, slotItem.label), React.createElement("span", { className: "brainatlas-psych-builder-slot-mark", "aria-hidden": "true" }, '\u00D7'))
                       : React.createElement("div", { key: 'empty-' + slotIndex, className: "brainatlas-psych-builder-slot", "data-brainatlas-psych-builder-slot": "empty", "aria-hidden": "true" }, 'Slot ' + (slotIndex + 1) + ': choose a class');
                   })
                 ),
@@ -18263,7 +18299,7 @@ var d = labToolData.brainAtlas || {};
                     ),
                     React.createElement("div", { className: "brainatlas-psych-caution" }, React.createElement("strong", null, 'Key safety context: '), item.caution),
                     React.createElement("div", { className: "brainatlas-psych-card-actions" },
-                      React.createElement("button", { type: "button", className: "brainatlas-psych-compare-toggle", "data-brainatlas-psych-compare-toggle": item.id, "aria-pressed": isCompared ? "true" : "false", "aria-disabled": compareAtLimit ? "true" : "false", "aria-label": (isCompared ? 'Remove ' : 'Add ') + item.label + (isCompared ? ' from comparison' : ' to comparison'), title: compareAtLimit ? 'Comparison is full. Remove one class first.' : '', onClick: function () { togglePsychopharmCompare(item); } }, isCompared ? 'Remove compare' : (compareAtLimit ? 'Compare full' : 'Compare')),
+                      React.createElement("button", { type: "button", className: "brainatlas-psych-compare-toggle", "data-brainatlas-psych-compare-toggle": item.id, "aria-pressed": isCompared ? "true" : "false", "aria-disabled": compareAtLimit ? "true" : "false", "aria-label": (isCompared ? __alloAriaFill(__alloT('stem.brainatlas.a11y_remove_from_comparison', 'Remove {label} from comparison'), { label: item.label }) : __alloAriaFill(__alloT('stem.brainatlas.a11y_add_to_comparison', 'Add {label} to comparison'), { label: item.label })), title: compareAtLimit ? __alloT('stem.brainatlas.a11y_comparison_is_full_remove_one_class_first', 'Comparison is full. Remove one class first.') : '', onClick: function () { togglePsychopharmCompare(item); } }, isCompared ? 'Remove compare' : (compareAtLimit ? 'Compare full' : 'Compare')),
                       React.createElement("button", { type: "button", className: "brainatlas-psych-connect", onClick: function () { openPsychopharmAtlas(item); } }, item.atlasLabel, React.createElement("span", { "aria-hidden": "true" }, '\u2192'))
                     )
                   );
@@ -18302,7 +18338,7 @@ var d = labToolData.brainAtlas || {};
                                     React.createElement("h5", { className: "brainatlas-psych-compare-column-title" }, item.label),
                                     React.createElement("span", { className: "brainatlas-psych-compare-column-tag" }, item.tag)
                                   ),
-                                  React.createElement("button", { type: "button", className: "brainatlas-psych-compare-remove", "aria-label": 'Remove ' + item.label + ' from comparison', onClick: function () { togglePsychopharmCompare(item); } }, '\u00D7')
+                                  React.createElement("button", { type: "button", className: "brainatlas-psych-compare-remove", "aria-label": __alloAriaFill(__alloT('stem.brainatlas.a11y_remove_from_comparison', 'Remove {label} from comparison'), { label: item.label }), onClick: function () { togglePsychopharmCompare(item); } }, '\u00D7')
                                 )
                               )
                             : React.createElement("th", { key: 'empty-' + columnIndex, scope: "col", className: "brainatlas-psych-compare-column brainatlas-psych-compare-empty", "data-brainatlas-psych-compare-empty": "true" }, 'Select one more class');
@@ -18410,7 +18446,7 @@ var d = labToolData.brainAtlas || {};
                     },
                       React.createElement("span", { className: "brainatlas-stim-filter-symbol", "aria-hidden": "true" }, option.symbol),
                       React.createElement("span", { className: "brainatlas-stim-filter-label" }, option.label, familySelected && React.createElement("span", { className: "brainatlas-stim-filter-check", "aria-hidden": "true" }, ' \u2713')),
-                      React.createElement("span", { className: "brainatlas-stim-filter-count", "aria-label": familyCount + ' modalities' }, familyCount)
+                      React.createElement("span", { className: "brainatlas-stim-filter-count", "aria-label": __alloAriaFill(__alloT('stem.brainatlas.a11y_modalities', '{familyCount} modalities'), { familyCount: familyCount }) }, familyCount)
                     );
                   })
                 )
@@ -18448,7 +18484,7 @@ var d = labToolData.brainAtlas || {};
                   [0, 1].map(function (slotIndex) {
                     var slotItem = stimCompareItems[slotIndex];
                     return slotItem
-                      ? React.createElement("button", { key: slotItem.id, type: "button", className: "brainatlas-psych-builder-slot", "data-brainatlas-stim-builder-slot": slotItem.id, "aria-label": 'Remove ' + slotItem.label + ' from treatment comparison', onClick: function () { toggleStimTreatmentCompare(slotItem); } }, React.createElement("span", null, slotItem.label), React.createElement("span", { className: "brainatlas-psych-builder-slot-mark", "aria-hidden": "true" }, '\u00D7'))
+                      ? React.createElement("button", { key: slotItem.id, type: "button", className: "brainatlas-psych-builder-slot", "data-brainatlas-stim-builder-slot": slotItem.id, "aria-label": __alloAriaFill(__alloT('stem.brainatlas.a11y_remove_from_treatment_comparison', 'Remove {label} from treatment comparison'), { label: slotItem.label }), onClick: function () { toggleStimTreatmentCompare(slotItem); } }, React.createElement("span", null, slotItem.label), React.createElement("span", { className: "brainatlas-psych-builder-slot-mark", "aria-hidden": "true" }, '\u00D7'))
                       : React.createElement("div", { key: 'empty-' + slotIndex, className: "brainatlas-psych-builder-slot", "data-brainatlas-stim-builder-slot": "empty", "aria-hidden": "true" }, 'Slot ' + (slotIndex + 1) + ': choose a modality');
                   })
                 ),
@@ -18470,7 +18506,7 @@ var d = labToolData.brainAtlas || {};
                       className: "brainatlas-stim-preset",
                       "data-brainatlas-stim-compare-preset": preset.id,
                       "aria-pressed": presetSelected ? "true" : "false",
-                      "aria-label": 'Compare ' + firstItem.label + ' and ' + secondItem.label + ': ' + preset.label,
+                      "aria-label": __alloAriaFill(__alloT('stem.brainatlas.a11y_compare_first_and_second_preset', 'Compare {first} and {second}: {preset}'), { first: firstItem.label, second: secondItem.label, preset: preset.label }),
                       onClick: function () { selectStimComparePreset(preset); }
                     },
                       React.createElement("span", { className: "brainatlas-stim-preset-icons", "aria-hidden": "true" },
@@ -18504,7 +18540,7 @@ var d = labToolData.brainAtlas || {};
                       ),
                       React.createElement("span", { className: "brainatlas-psych-card-tag" }, item.tag)
                     ),
-                    React.createElement("dl", { className: "brainatlas-stim-glance", "data-brainatlas-stim-glance": item.id, "aria-label": item.label + ' at a glance' },
+                    React.createElement("dl", { className: "brainatlas-stim-glance", "data-brainatlas-stim-glance": item.id, "aria-label": __alloAriaFill(__alloT('stem.brainatlas.a11y_at_a_glance', '{label} at a glance'), { label: item.label }) },
                       React.createElement("div", { className: "brainatlas-stim-glance-item" }, React.createElement("dt", null, 'Energy'), React.createElement("dd", null, item.energy)),
                       React.createElement("div", { className: "brainatlas-stim-glance-item" }, React.createElement("dt", null, 'Access'), React.createElement("dd", null, item.access)),
                       React.createElement("div", { className: "brainatlas-stim-glance-item", "data-stage-tone": item.stageTone }, React.createElement("dt", null, 'Evidence stage'), React.createElement("dd", null, item.stage))
@@ -18527,7 +18563,7 @@ var d = labToolData.brainAtlas || {};
                     ),
                     React.createElement("div", { className: "brainatlas-psych-caution" }, React.createElement("strong", null, 'Key safety context: '), item.caution),
                     React.createElement("div", { className: "brainatlas-psych-card-actions" },
-                      React.createElement("button", { type: "button", className: "brainatlas-psych-compare-toggle", "data-brainatlas-stim-compare-toggle": item.id, "aria-pressed": isStimCompared ? "true" : "false", "aria-disabled": stimCompareAtLimit ? "true" : "false", "aria-label": (isStimCompared ? 'Remove ' : 'Add ') + item.label + (isStimCompared ? ' from treatment comparison' : ' to treatment comparison'), title: stimCompareAtLimit ? 'Comparison is full. Remove one modality first.' : '', onClick: function () { toggleStimTreatmentCompare(item); } }, isStimCompared ? 'Remove compare' : (stimCompareAtLimit ? 'Compare full' : 'Compare')),
+                      React.createElement("button", { type: "button", className: "brainatlas-psych-compare-toggle", "data-brainatlas-stim-compare-toggle": item.id, "aria-pressed": isStimCompared ? "true" : "false", "aria-disabled": stimCompareAtLimit ? "true" : "false", "aria-label": (isStimCompared ? __alloAriaFill(__alloT('stem.brainatlas.a11y_remove_from_treatment_comparison', 'Remove {label} from treatment comparison'), { label: item.label }) : __alloAriaFill(__alloT('stem.brainatlas.a11y_add_to_treatment_comparison', 'Add {label} to treatment comparison'), { label: item.label })), title: stimCompareAtLimit ? __alloT('stem.brainatlas.a11y_comparison_is_full_remove_one_modality_first', 'Comparison is full. Remove one modality first.') : '', onClick: function () { toggleStimTreatmentCompare(item); } }, isStimCompared ? 'Remove compare' : (stimCompareAtLimit ? 'Compare full' : 'Compare')),
                       React.createElement("button", { type: "button", className: "brainatlas-psych-connect", "data-brainatlas-stim-connect": item.id, onClick: function () { openStimTreatmentAtlas(item); } }, item.atlasLabel, React.createElement("span", { "aria-hidden": "true" }, '\u2192'))
                     )
                   );
@@ -18566,7 +18602,7 @@ var d = labToolData.brainAtlas || {};
                               React.createElement("span", { className: "brainatlas-stim-compare-symbol", "aria-hidden": "true", style: { backgroundColor: item.badgeColor || item.color } }, item.symbol),
                               React.createElement("strong", { id: "brainatlas-stim-pathway-title-" + item.id }, item.label)
                             ),
-                            React.createElement("ol", { className: "brainatlas-stim-pathway-track", "aria-label": item.label + ' route from setup to network' },
+                            React.createElement("ol", { className: "brainatlas-stim-pathway-track", "aria-label": __alloAriaFill(__alloT('stem.brainatlas.a11y_route_from_setup_to_network', '{label} route from setup to network'), { label: item.label }) },
                               STIM_PATHWAY_STAGES.map(function (stage, stageIndex) {
                                 return React.createElement("li", { key: stage.id, className: "brainatlas-stim-pathway-step", "data-brainatlas-stim-pathway-step": stage.id },
                                   React.createElement("span", { className: "brainatlas-stim-pathway-stage" }, stage.label),
@@ -18600,7 +18636,7 @@ var d = labToolData.brainAtlas || {};
                                       )
                                     )
                                   ),
-                                  React.createElement("button", { type: "button", className: "brainatlas-psych-compare-remove", "data-brainatlas-stim-compare-remove": item.id, "aria-label": 'Remove ' + item.label + ' from treatment comparison', onClick: function () { toggleStimTreatmentCompare(item); } }, '\u00D7')
+                                  React.createElement("button", { type: "button", className: "brainatlas-psych-compare-remove", "data-brainatlas-stim-compare-remove": item.id, "aria-label": __alloAriaFill(__alloT('stem.brainatlas.a11y_remove_from_treatment_comparison', 'Remove {label} from treatment comparison'), { label: item.label }), onClick: function () { toggleStimTreatmentCompare(item); } }, '\u00D7')
                                 )
                               )
                             : React.createElement("th", { key: 'empty-' + columnIndex, scope: "col", className: "brainatlas-psych-compare-column brainatlas-psych-compare-empty", "data-brainatlas-stim-compare-empty": "true" }, 'Select one more modality');
@@ -18920,8 +18956,8 @@ var d = labToolData.brainAtlas || {};
                   ),
                   React.createElement("div", { className: "brainatlas-canvas-actions" },
                     brain3DAvailable && React.createElement("div", { className: "brainatlas-display-mode-switch", role: "group", "aria-label": t('stem.brainatlas.d3_brain_atlas_display_mode', "Brain atlas display mode") },
-                      React.createElement("button", { type: "button", "aria-label": useBrain3D ? '2D Diagram' : undefined, "aria-pressed": useBrain3D ? "false" : "true", onClick: function () { setBrainAtlas3DMode('diagram'); } }, React.createElement("span", { "aria-hidden": "true", className: useBrain3D ? 'brainatlas-3d-mode-icon' : undefined }, '▧'), useBrain3D ? React.createElement(React.Fragment, null, React.createElement("span", { className: "brainatlas-3d-mode-label" }, '2D Diagram'), React.createElement("span", { className: "brainatlas-3d-mode-short", "aria-hidden": "true" }, '2D')) : '2D Diagram'),
-                      React.createElement("button", { type: "button", "aria-label": useBrain3D ? '3D Model' : undefined, "aria-pressed": useBrain3D ? "true" : "false", onClick: function () { setBrainAtlas3DMode('3d'); } }, React.createElement("span", { "aria-hidden": "true", className: useBrain3D ? 'brainatlas-3d-mode-icon' : undefined }, '⬡'), useBrain3D ? React.createElement(React.Fragment, null, React.createElement("span", { className: "brainatlas-3d-mode-label" }, '3D Model'), React.createElement("span", { className: "brainatlas-3d-mode-short", "aria-hidden": "true" }, '3D')) : '3D Model')
+                      React.createElement("button", { type: "button", "aria-label": useBrain3D ? __alloT('stem.brainatlas.a11y_2d_diagram', '2D Diagram') : undefined, "aria-pressed": useBrain3D ? "false" : "true", onClick: function () { setBrainAtlas3DMode('diagram'); } }, React.createElement("span", { "aria-hidden": "true", className: useBrain3D ? 'brainatlas-3d-mode-icon' : undefined }, '▧'), useBrain3D ? React.createElement(React.Fragment, null, React.createElement("span", { className: "brainatlas-3d-mode-label" }, '2D Diagram'), React.createElement("span", { className: "brainatlas-3d-mode-short", "aria-hidden": "true" }, '2D')) : '2D Diagram'),
+                      React.createElement("button", { type: "button", "aria-label": useBrain3D ? __alloT('stem.brainatlas.a11y_3d_model', '3D Model') : undefined, "aria-pressed": useBrain3D ? "true" : "false", onClick: function () { setBrainAtlas3DMode('3d'); } }, React.createElement("span", { "aria-hidden": "true", className: useBrain3D ? 'brainatlas-3d-mode-icon' : undefined }, '⬡'), useBrain3D ? React.createElement(React.Fragment, null, React.createElement("span", { className: "brainatlas-3d-mode-label" }, '3D Model'), React.createElement("span", { className: "brainatlas-3d-mode-short", "aria-hidden": "true" }, '3D')) : '3D Model')
                     ),
                     React.createElement("span", {
                       className: "brainatlas-canvas-chip brainatlas-canvas-chip--accent",
@@ -19031,7 +19067,7 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("span", { id: "brainatlas-label-size-title" }, t('stem.brainatlas.label_size', 'Text size') || 'Text size'),
                     React.createElement("div", { className: "brainatlas-label-segment brainatlas-label-size-segment", role: "group", "aria-labelledby": "brainatlas-label-size-title" },
                       LABEL_SIZE_OPTIONS.map(function (option) {
-                        return React.createElement("button", { key: option.id, type: "button", "data-brainatlas-label-size-option": option.id, "aria-label": option.label + ' diagram label text', "aria-pressed": diagramLabelSize === option.id ? "true" : "false", onClick: function () { setBrainAtlasLabelSize(option.id); } }, option.visual);
+                        return React.createElement("button", { key: option.id, type: "button", "data-brainatlas-label-size-option": option.id, "aria-label": __alloAriaFill(__alloT('stem.brainatlas.a11y_diagram_label_text', '{label} diagram label text'), { label: option.label }), "aria-pressed": diagramLabelSize === option.id ? "true" : "false", onClick: function () { setBrainAtlasLabelSize(option.id); } }, option.visual);
                       })
                     )
                   )
@@ -19062,7 +19098,7 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("button", {type:"button", className:"brainatlas-spike-play", "data-brainatlas-spike-play":"true", onClick:function(event){controlBrainAtlasNeuron(event, 'toggle');}}, prefersReducedMotion ? 'Play cycle' : 'Pause cycle')
                   ),
                   React.createElement("div", {className:"brainatlas-spike-phases", role:"group", "aria-label":__alloT('stem.brainatlas.a11y_choose_and_pause_at_a_phase', 'Choose and pause at a phase')}, BA_SPIKE_PHASES.map(function(info,index){
-                    return React.createElement("button", {key:info.label, type:"button", "data-brainatlas-spike-phase":String(index), "aria-label":info.short + ': inspect ' + info.label.toLowerCase() + ' phase', "aria-pressed":index===0?'true':'false', onClick:function(event){controlBrainAtlasNeuron(event,'phase',index);}}, React.createElement("span", {"aria-hidden":"true"},String(index+1).padStart(2,'0')), info.short);
+                    return React.createElement("button", {key:info.label, type:"button", "data-brainatlas-spike-phase":String(index), "aria-label":__alloAriaFill(__alloT('stem.brainatlas.a11y_inspect_phase', '{short}: inspect {label} phase'), { short: info.short, label: info.label.toLowerCase() }), "aria-pressed":index===0?'true':'false', onClick:function(event){controlBrainAtlasNeuron(event,'phase',index);}}, React.createElement("span", {"aria-hidden":"true"},String(index+1).padStart(2,'0')), info.short);
                   })),
                   React.createElement("p", {className:"brainatlas-spike-readout", "data-brainatlas-spike-readout":"true", "aria-live":"off", "aria-atomic":"true"}, 'Resting. The membrane starts near \u221270 mV.')
                 ),
@@ -19632,8 +19668,9 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("a", { href: "https://3d.nih.gov/entries/3DPX-020960", target: "_blank", rel: "noreferrer", title: t('stem.brainatlas.d3_open_model_source_and_attribution', "Open model source and attribution") }, 'NIH 3D / Allen Human Reference Atlas · CC BY 4.0')
                   )
                 ),
-                useBrain3D ? React.createElement("div", { id: "brainatlas-diagram-focus", className: "brainatlas-3d-stage brainatlas-diagram-focus", tabIndex: -1, "data-brainatlas-3d-stage": "true" },
+                useBrain3D ? React.createElement("div", { id: "brainatlas-diagram-focus", className: "brainatlas-3d-stage brainatlas-diagram-focus", tabIndex: -1, role: "region", "aria-label": t('stem.brainatlas.d3_model_area', '3D brain model'), "data-brainatlas-3d-stage": "true" },
                   React.createElement("canvas", {
+                    key: 'brain3d-canvas-' + (d.brain3DCanvasGeneration || 0),
                     id: "brainatlas-interactive-model",
                     ref: brainAtlas3DCanvasRef,
                     tabIndex: 0,
@@ -19738,8 +19775,9 @@ var d = labToolData.brainAtlas || {};
                   "data-brainatlas-diagram-kind": specialAtlasView ? "specialty" : "anatomy",
                   "data-brainatlas-fit": d.diagramFitToScreen ? "overview" : "readable",
                   tabIndex: specialAtlasView ? 0 : -1,
-                  role: specialAtlasView ? "region" : undefined,
-                  "aria-label": specialAtlasView ? t('stem.brainatlas.diagram_viewport', 'Diagram viewport. Use arrow keys to scroll.') : undefined,
+                  // The Diagram shortcut moves focus here, so it needs a name in both modes.
+                  role: "region",
+                  "aria-label": specialAtlasView ? t('stem.brainatlas.diagram_viewport', 'Diagram viewport. Use arrow keys to scroll.') : t('stem.brainatlas.diagram_area', 'Brain atlas diagram'),
                   onKeyDown: function (event) { if (/^Arrow/.test(event.key)) event.stopPropagation(); }
                 },
 

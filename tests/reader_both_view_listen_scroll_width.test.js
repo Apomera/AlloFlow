@@ -126,11 +126,22 @@ describe('reading width slider', () => {
   it('widens the column up to 100 characters and remembers it', () => {
     mount({ isCompareMode: false, generatedContent: pair().adapted });
     const slider = find('input[data-reading-width]');
-    expect([slider.min, slider.max, slider.step, slider.value]).toEqual(['40', '100', '4', '72']);
+    expect([slider.min, slider.max, slider.step, slider.value]).toEqual(['40', '104', '4', '72']);
     setWidth(slider, '96');
     expect(find('[data-simplified-reading-body]').style.maxWidth).toBe('min(96ch, 100%)');
     expect(slider.getAttribute('aria-valuetext')).toBe('Extra wide, about 96 characters per line');
     expect(localStorage.getItem('alloflow_reading_width')).toBe('96');
+  });
+  it('its last stop is full width: no character cap, and remembered', () => {
+    mount({ isCompareMode: false, generatedContent: pair().adapted });
+    const slider = find('input[data-reading-width]');
+    setWidth(slider, '104');
+    expect(find('[data-simplified-reading-body]').style.maxWidth).toBe('100%');
+    expect(slider.getAttribute('aria-valuetext')).toBe('Full width');
+    expect(localStorage.getItem('alloflow_reading_width')).toBe('104');
+    act(() => root.unmount()); host.remove(); root = null;
+    mount({ isCompareMode: false, generatedContent: pair().original });
+    expect(find('[data-simplified-reading-body]').style.maxWidth).toBe('100%');
   });
   it('keeps older saved widths and rejects out-of-range ones', () => {
     localStorage.setItem('alloflow_reading_width', '56');
@@ -147,5 +158,19 @@ describe('reading width slider', () => {
     expect(original.className).toContain('text-lg font-medium font-sans');
     expect(original.style.maxWidth).toBe('min(72ch, 100%)');
     expect(original.querySelector('[data-reading-versions]')).not.toBeNull();
+  });
+});
+
+describe('original reading: paragraph gaps', () => {
+  it('a run of blank lines draws one paragraph-sized gap, not empty lines, and keeps the text', () => {
+    const text = 'First paragraph here.\n\n\n  \nSecond paragraph here.\n\n## A heading\n\nThird paragraph.';
+    const original = api.createSupportedReading(text, { id: 'gaps', sourceFamilyId: 'gaps', config: { language: 'English' } });
+    mount({ isCompareMode: false, generatedContent: original, history: [original] });
+    const gaps = [...host.querySelectorAll('[data-reading-gap]')];
+    const shown = gaps.filter(g => g.style.display === 'block');
+    expect(shown.length, 'one gap per blank-line run').toBe(3);
+    shown.forEach(g => { expect(g.style.height).toBe('0.7em'); expect(g.getAttribute('aria-hidden')).toBe('true'); });
+    expect(gaps.filter(g => g.style.display === 'none').length, 'extra blank lines in a run').toBe(2);
+    expect(find('[data-simplified-reading-body]').textContent).toContain('First paragraph here.\n\n\n  \nSecond paragraph here.');
   });
 });

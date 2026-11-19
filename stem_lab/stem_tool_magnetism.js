@@ -4860,7 +4860,7 @@
               var statusText = station.complete ? 'complete' : station.doneCount ? 'in progress' : 'not started';
               return h('button', { key: t.id, id: 'mag-tab-' + t.id, type: 'button', role: 'tab', className: 'mag-station-tab', tabIndex: on ? 0 : -1,
                   'aria-selected': on ? 'true' : 'false', 'aria-controls': 'mag-panel-' + t.id,
-                  'aria-label': t.name + ' station, ' + station.doneCount + ' of ' + station.total + ' evidence milestones complete, ' + statusText + (on ? ', selected' : ''),
+                  'aria-label': __alloFill(__alloT('stem.magnetism.a11y_station_of_evidence_milestones_complete', '{name} station, {doneCount} of {total} evidence milestones complete, {statusText}{value1}'), { name: t.name, doneCount: station.doneCount, total: station.total, statusText: statusText, value1: on ? __alloT('stem.magnetism.a11y_selected', ', selected') : '' }),
                   'data-selected': on ? 'true' : 'false', 'data-evidence-status': station.evidenceStatus, 'data-chapter': station.chapterId,
                   onKeyDown: function (event) { onTabKeyDown(event, index); },
                   onClick: function () { activateTab(t, false); }, style: { '--mag-passport-tone': station.chapter.accent } },
@@ -4884,7 +4884,7 @@
           h('span', { className: 'mag-guide-route' }, challenge ? 'Design \u2192 test \u2192 defend' : 'Predict \u2192 test \u2192 explain'));
         var body;
         if (challenge) {
-          body = h('section', { className: 'mag-station', 'aria-label': g.phase + ' challenge investigation' },
+          body = h('section', { className: 'mag-station', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_challenge_investigation', '{phase} challenge investigation'), { phase: g.phase }) },
             h('div', { className: 'mag-station-main' },
               h('div', { className: 'mag-kicker' }, 'Challenge investigation'),
               h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800, lineHeight: 1.3 } }, g.icon + ' ' + g.phase),
@@ -4894,7 +4894,7 @@
               h('span', null, 'Write a prediction, change one variable, record evidence, and defend a claim in the notebook. Guidance and answer-highlighting are reduced.'))
           );
         } else {
-          body = h('section', { className: 'mag-station', 'aria-label': g.phase + ' learning cycle' },
+          body = h('section', { className: 'mag-station', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_learning_cycle', '{phase} learning cycle'), { phase: g.phase }) },
             h('div', { className: 'mag-station-main' },
               h('div', { className: 'mag-kicker' }, 'Current investigation'),
               h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800, lineHeight: 1.3 } }, g.icon + ' ' + g.phase),
@@ -6068,7 +6068,7 @@
               commitProbe(((viewX - mapLeft) / mapW * 2 - 1) * mapRadiusX, ((viewY - mapTop) / mapH * 2 - 1) * mapRadiusY);
             } }, visual)),
           h('div', { className: 'mag-instrument' }, h('div', { className: 'mag-instrument-head' }, h('span', null, '02 · Evidence plot'), h('b', null, samples.length + ' current / ' + reference.samples.length + ' reference')),
-          h('svg', { viewBox: '0 0 400 304', width: '100%', role: 'img', 'aria-label': 'Field versus distance. ' + samples.length + ' current readings and ' + reference.samples.length + ' reference readings. ' + (logScale ? 'Both axes use logarithmic spacing.' : 'Both axes use linear spacing.') + ' Use the measurement selector below to inspect every point.', style: { minWidth: 0, display: 'block' } }, graph))),
+          h('svg', { viewBox: '0 0 400 304', width: '100%', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_field_versus_distance_current_readings_and_reference', 'Field versus distance. {value1} current readings and {value2} reference readings. {value3} Use the measurement selector below to inspect every point.'), { value1: samples.length, value2: reference.samples.length, value3: logScale ? __alloT('stem.magnetism.a11y_both_axes_use_logarithmic_spacing', 'Both axes use logarithmic spacing.') : __alloT('stem.magnetism.a11y_both_axes_use_linear_spacing', 'Both axes use linear spacing.') }), style: { minWidth: 0, display: 'block' } }, graph))),
           h('div', { className: 'mag-legend', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_field_map_key', 'Field map key') },
             h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#38bdf8' } }), 'deeper tint and longer arrows mean stronger field'),
             h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#fbbf24' } }), 'gold crosshair is the probe'),
@@ -6347,9 +6347,9 @@
             h('span', { className: 'mag-model-badge' }, 'Relative field units'),
             h('span', { className: 'mag-model-badge' }, d.learningMode === 'challenge' ? 'Independent estimate first' : 'Model-assisted investigation'),
             h('span', { className: 'mag-model-badge' }, 'Round ' + (roundIndex + 1) + '/' + FIELD_HUNT_ROUNDS.length),
-            h('span', { className: 'mag-model-badge', 'aria-label': (Number(d.fieldHuntWins) || 0) + ' hidden sources found' }, (Number(d.fieldHuntWins) || 0) + ' source' + ((Number(d.fieldHuntWins) || 0) === 1 ? '' : 's') + ' found')),
+            h('span', { className: 'mag-model-badge', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_hidden_sources_found', '{value1} hidden sources found'), { value1: Number(d.fieldHuntWins) || 0 }) }, (Number(d.fieldHuntWins) || 0) + ' source' + ((Number(d.fieldHuntWins) || 0) === 1 ? '' : 's') + ' found')),
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'A magnetometer reveals vectors, not the hidden magnet. Spread readings across the map, place a source estimate, then check the model. Round: ', h('b', { style: { color: TEXT } }, roundName), '.'),
-          h('ol', { className: 'mag-hunt-steps', 'aria-label': d.fieldHuntSolved ? 'Hunt workflow complete: four of four steps' : 'Hunt workflow: step ' + (huntProgress.currentIndex + 1) + ' of four' },
+          h('ol', { className: 'mag-hunt-steps', 'aria-label': d.fieldHuntSolved ? __alloT('stem.magnetism.a11y_hunt_workflow_complete_four_of_four_steps', 'Hunt workflow complete: four of four steps') : __alloFill(__alloT('stem.magnetism.a11y_hunt_workflow_step_of_four', 'Hunt workflow: step {value1} of four'), { value1: huntProgress.currentIndex + 1 }) },
             huntProgress.steps.map(function (step, index) {
               var status = step.done ? 'done' : step.current ? 'current' : 'upcoming';
               return h('li', { key: step.key, className: 'mag-hunt-step', 'data-status': status, 'aria-current': step.current ? 'step' : undefined },
@@ -6597,7 +6597,7 @@
             h('div', { className: 'mag-force-head' },
               h('span', null, h('b', { id: 'mag-force-challenge-title' }, 'Distance Detective · 60 → 120'), h('small', null, 'Make an ungraded estimate. Then reveal the controlled evidence.')),
               h('span', { className: 'mag-force-count' }, evidence.completedCount + '/3 captured')),
-            h('progress', { className: 'mag-force-progress', max: 3, value: evidence.completedCount, 'aria-label': evidence.completedCount + ' of 3 Distance Detective steps completed' }),
+            h('progress', { className: 'mag-force-progress', max: 3, value: evidence.completedCount, 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_of_3_distance_detective_steps_completed', '{completedCount} of 3 Distance Detective steps completed'), { completedCount: evidence.completedCount }) }),
             h('ol', { className: 'mag-force-steps' }, evidence.steps.map(function (step, index) {
               return h('li', { key: step.key, className: 'mag-force-step', 'data-state': step.state, 'aria-current': step.state === 'current' ? 'step' : null },
                 h('span', { className: 'mag-force-step-index', 'aria-hidden': 'true' }, step.done ? '✓' : String(index + 1)),
@@ -6620,7 +6620,7 @@
                 'The 2× larger gap produced a ' + evidence.observedWeakerFactor.toFixed(0) + '× weaker force. Bar-magnet force in this far-field model drops with the fourth power of distance, so doubling the gap gives 2⁴ = 16× weaker force. You estimated ' + evidence.prediction + '× weaker. Completion counts the controlled comparison, not whether the estimate matched.')) : null,
             h('div', { className: 'mag-force-comparison', 'aria-label': __alloT('stem.magnetism.a11y_controlled_distance_comparison', 'Controlled distance comparison') },
               h('article', { className: 'mag-force-reading', 'data-reading': 'baseline' }, h('small', null, 'A · 60-unit baseline'), h('b', null, evidence.baseline ? evidence.baseline.distance + ' units' : '60 units'), h('strong', null, evidence.baseline ? forceLabel(evidence.baseline.force) + ' force' : 'not captured'), h('span', null, evidence.baseline ? 'same strengths locked' : 'capture to lock strengths')),
-              h('div', { className: 'mag-force-bridge', 'data-revealed': evidence.resultCaptured ? 'true' : 'false', 'aria-label': evidence.resultCaptured ? 'Gap times 2 produces force divided by 16' : 'Gap will be doubled; force change is hidden until the test' }, h('small', null, 'change one variable'), h('b', null, 'gap ×2'), h('span', null, evidence.resultCaptured ? 'force ÷16' : 'force ÷ ?')),
+              h('div', { className: 'mag-force-bridge', 'data-revealed': evidence.resultCaptured ? 'true' : 'false', 'aria-label': evidence.resultCaptured ? __alloT('stem.magnetism.a11y_gap_times_2_produces_force_divided_by_16', 'Gap times 2 produces force divided by 16') : __alloT('stem.magnetism.a11y_gap_will_be_doubled_force_change_is_hidden_until_the_test', 'Gap will be doubled; force change is hidden until the test') }, h('small', null, 'change one variable'), h('b', null, 'gap ×2'), h('span', null, evidence.resultCaptured ? 'force ÷16' : 'force ÷ ?')),
               h('article', { className: 'mag-force-reading', 'data-reading': 'test' }, h('small', null, 'B · doubled gap'), h('b', null, evidence.baseline ? evidence.baseline.targetDistance + ' units' : '120 units'), h('strong', null, evidence.resultCaptured ? forceLabel(evidence.baseline.targetForce) + ' force' : 'result hidden'), h('span', null, evidence.resultCaptured ? 'strengths stayed fixed' : 'run after estimating')))),
           h('div', { className: 'mag-force-hud', 'aria-label': __alloT('stem.magnetism.a11y_live_force_bench_readings', 'Live Force Bench readings') },
             h('div', { className: 'mag-force-metric', style: { '--mag-force-tone': '#fbbf24' } }, h('small', null, 'Live gap'), h('b', null, distance), h('span', null, 'distance units')),
@@ -6629,7 +6629,7 @@
             evidence.resultCaptured ? h('div', { className: 'mag-force-metric', 'data-metric': 'comparison', style: { '--mag-force-tone': '#34d399' } }, h('small', null, 'Versus baseline'), h('b', null, evidence.ratioToBaseline < 1 ? (1 / Math.max(1e-12, evidence.ratioToBaseline)).toFixed(evidence.ratioToBaseline < 0.1 ? 1 : 2) + '× weaker' : evidence.ratioToBaseline.toFixed(2) + '×'), h('span', null, evidence.currentComparison)) : null),
           h('figure', { className: 'mag-force-figure' },
             h('svg', { viewBox: '0 0 320 220', width: '100%', role: 'img',
-              'aria-label': 'Two magnets ' + distance + ' units apart, set to ' + evidence.direction + ', with relative force ' + forceLabel(force) + '. Arrow length and thickness show force magnitude. ' + (evidence.resultCaptured ? 'The revealed force-versus-distance curve falls steeply.' : 'The distance-response curve is hidden until the doubled-gap result is captured.') },
+              'aria-label': __alloFill(__alloT('stem.magnetism.a11y_two_magnets_units_apart_set_to_with_relative_force_arrow', 'Two magnets {distance} units apart, set to {direction}, with relative force {value1}. Arrow length and thickness show force magnitude. {value2}'), { distance: distance, direction: evidence.direction, value1: forceLabel(force), value2: evidence.resultCaptured ? __alloT('stem.magnetism.a11y_the_revealed_force_versus_distance_curve_falls_steeply', 'The revealed force-versus-distance curve falls steeply.') : __alloT('stem.magnetism.a11y_the_distance_response_curve_is_hidden_until_the_doubled_gap', 'The distance-response curve is hidden until the doubled-gap result is captured.') }) },
               h('rect', { x: 0, y: 0, width: 320, height: 220, fill: INSTRUMENT, rx: 10 }),
               h('text', { x: 160, y: 14, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, evidence.attract ? 'opposite facing poles · attraction' : 'like facing poles · repulsion'),
               leftArrow, rightArrow,
@@ -6678,7 +6678,7 @@
       }
 
       function pad(sym, dx, dy) {
-        return h('button', { 'aria-label': 'Move compass ' + (dx < 0 ? 'left' : dx > 0 ? 'right' : dy < 0 ? 'up' : 'down'),
+        return h('button', { 'aria-label': (dx < 0 ? __alloT('stem.magnetism.a11y_move_compass_left', 'Move compass left') : dx > 0 ? __alloT('stem.magnetism.a11y_move_compass_right', 'Move compass right') : dy < 0 ? __alloT('stem.magnetism.a11y_move_compass_up', 'Move compass up') : __alloT('stem.magnetism.a11y_move_compass_down', 'Move compass down')),
           onClick: function () { moveCompass(dx, dy); },
           style: { width: 44, height: 44, borderRadius: 9, border: '1px solid ' + BORDER, background: PANEL, color: TEXT, fontSize: 18, cursor: 'pointer' } }, sym);
       }
@@ -7268,7 +7268,7 @@
         kids.push(h('text', { key: 'battery-label', x: 280, y: 271, textAnchor: 'middle', fill: SOFT, fontSize: 14 }, active ? 'DC source · circuit on' : 'circuit off · no magnetic field'));
         return h('div', { className: 'mag-instrument', 'data-electro-instrument': 'true' },
           h('div', { className: 'mag-instrument-head' }, h('span', null, 'Solenoid · 10 cm coil'), h('b', null, active ? 'Field points ' + (poleDir > 0 ? '→ right' : '← left') : 'No current · field off')),
-          h('svg', { viewBox: '0 0 560 280', width: '100%', role: 'img', 'aria-label': 'A wire coil with ' + d.turns + ' turns and ' + d.current + ' amps, ' + (d.core ? 'with an iron core' : 'with an air core') + '; ' + (active ? 'field points ' + (poleDir > 0 ? 'right' : 'left') : 'no magnetic field') + '. ' + loopText + '. The loops and field paths are schematic.' }, kids),
+          h('svg', { viewBox: '0 0 560 280', width: '100%', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_a_wire_coil_with_turns_and_amps_the_loops_and_field_paths', 'A wire coil with {turns} turns and {current} amps, {core}; {field}. {loopText}. The loops and field paths are schematic.'), { turns: d.turns, current: d.current, core: d.core ? __alloT('stem.magnetism.a11y_with_an_iron_core', 'with an iron core') : __alloT('stem.magnetism.a11y_with_an_air_core', 'with an air core'), field: active ? (poleDir > 0 ? __alloT('stem.magnetism.a11y_field_points_right', 'field points right') : __alloT('stem.magnetism.a11y_field_points_left', 'field points left')) : __alloT('stem.magnetism.a11y_no_magnetic_field', 'no magnetic field'), loopText: loopText }) }, kids),
           h('p', { className: 'mag-electro-caption' }, h('b', { style: { display: 'block', color: TEXT, marginBottom: 4 } }, (d.core ? 'Soft-iron core · ' : 'Air core · ') + loopText), active ? 'right-hand rule: reverse current OR winding → swap poles. Blue paths return outside the coil; rose arrows show the interior field.' : 'circuit off · no magnetic field. Raise the current to reveal the field direction.'));
       }
 
@@ -7306,7 +7306,7 @@
           h('div', { className: 'mag-wire-stages', role: 'group', 'aria-label': aria },
             h('figure', { className: 'mag-wire-figure' },
               h('figcaption', { className: 'mag-wire-heading' }, h('b', null, 'VECTOR VIEW · x, y, z'), h('span', null, 'Wire and field in the screen · +z points out')),
-              h('svg', { 'data-wire-plane': 'true', viewBox: '0 24 260 184', role: 'img', 'aria-label': 'Wire-force vector view. ' + (state.deadSpot ? 'Force is zero.' : forceLabel + '.') + ' Current and field arrows follow their selected signs.' },
+              h('svg', { 'data-wire-plane': 'true', viewBox: '0 24 260 184', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_wire_force_vector_view_current_and_field_arrows_follow', 'Wire-force vector view. {value1} Current and field arrows follow their selected signs.'), { value1: state.deadSpot ? __alloT('stem.magnetism.a11y_force_is_zero', 'Force is zero.') : forceLabel + '.' }) },
                 h('rect', { x: 0, y: 24, width: 260, height: 184, fill: INSTRUMENT }),
                 h('line', { x1: cx, y1: cy, x2: 212, y2: cy, stroke: SOFT, strokeWidth: 1.5 }),
                 h('polygon', { points: '220,' + cy + ' 210,' + (cy - 4) + ' 210,' + (cy + 4), fill: SOFT }),
@@ -7333,7 +7333,7 @@
               h('div', { className: 'mag-wire-caption' }, h('b', { 'data-wire-force-direction': 'true' }, state.deadSpot ? 'No magnetic force' : 'F: ' + forceLabel), h('span', null, '⊙ +z out · ⊗ −z into the screen'), h('span', null, 'θ is wire tilt from the field axis; arrow reversals set direction.'))),
             h('figure', { className: 'mag-wire-figure' },
               h('figcaption', { className: 'mag-wire-heading' }, h('b', null, 'FORCE CURVE · |F| ∝ sin θ'), h('span', null, 'Marker follows the selected wire tilt')),
-              h('svg', { 'data-wire-curve-plane': 'true', viewBox: '280 32 240 168', role: 'img', 'aria-label': 'Force magnitude across wire tilt. Selected angle ' + state.angle.toFixed(0) + ' degrees and force ' + state.magnitude.toFixed(2) + ' relative units.' },
+              h('svg', { 'data-wire-curve-plane': 'true', viewBox: '280 32 240 168', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_force_magnitude_across_wire_tilt_selected_angle_degrees_and', 'Force magnitude across wire tilt. Selected angle {value1} degrees and force {value2} relative units.'), { value1: state.angle.toFixed(0), value2: state.magnitude.toFixed(2) }) },
                 h('rect', { x: 280, y: 32, width: 240, height: 168, fill: INSTRUMENT }),
                 h('line', { x1: 300, y1: 192, x2: 500, y2: 192, stroke: SOFT }),
                 h('line', { x1: 300, y1: 44, x2: 300, y2: 192, stroke: SOFT }),
@@ -7806,7 +7806,7 @@
               h('div', null, h('h4', null, panel.label), h('span', null, (projected ? 'Projected at ' : 'Latest sample at ') + (Number(end.time) || 0).toFixed(1) + ' s')),
               h('strong', { 'data-bench-reading': panel.key }, formatted + ' ' + panel.unit)),
             h('div', { className: 'mag-bench-chart-scale' }, 'Vertical scale: 0–' + Math.round(panel.max) + ' ' + panel.unit),
-            h('svg', { viewBox: '48 ' + (panel.top - 8) + ' 408 70', role: 'img', 'aria-label': panel.label + ' over zero to ten seconds. ' + (projected ? 'Dashed projected response.' : 'Solid recorded response.') + (comparisonSamples.length ? ' Dashed line is comparison trial ' + comparisonTrial.id + '.' : '') }, kids),
+            h('svg', { viewBox: '48 ' + (panel.top - 8) + ' 408 70', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_over_zero_to_ten_seconds', '{label} over zero to ten seconds. {value1}{value2}'), { label: panel.label, value1: projected ? __alloT('stem.magnetism.a11y_dashed_projected_response', 'Dashed projected response.') : __alloT('stem.magnetism.a11y_solid_recorded_response', 'Solid recorded response.'), value2: comparisonSamples.length ? __alloFill(__alloT('stem.magnetism.a11y_dashed_line_is_comparison_trial', ' Dashed line is comparison trial {id}.'), { id: comparisonTrial.id }) : '' }) }, kids),
             h('div', { className: 'mag-bench-chart-axis' }, h('span', null, '0 s'), h('span', null, '5 s'), h('span', null, '10 s')),
             h('figcaption', null, panel.targetMax == null ? 'Target: ≥ ' + panel.targetMin + ' ' + panel.unit : 'Target: ' + panel.targetMin + '–' + panel.targetMax + ' ' + panel.unit)));
         });
@@ -8368,7 +8368,7 @@
                 h('small', null, 'Detector radius'), h('b', null, mystery.scan ? mystery.scan.radius.toFixed(2) : '—'), h('span', null, mystery.scan ? 'at analyzer B ' + mystery.scan.analyzerField.toFixed(1) : 'scan required')),
               h('div', { className: 'mag-ion-reading', style: { '--mag-ion-tone': mystery.complete ? '#34d399' : '#a78bfa' } },
                 h('small', null, 'Identity claim'), h('b', null, identityValue), h('span', null, mystery.complete ? 'confirmed by rB/v' : mystery.checked ? 'revise from evidence' : 'ratio remains hidden'))),
-            h('div', { className: 'mag-ion-equation', 'aria-label': mystery.scan ? 'Mass-to-charge inference uses detector radius times analyzer field divided by speed' : 'Mass-to-charge inference waits for a detector scan' },
+            h('div', { className: 'mag-ion-equation', 'aria-label': mystery.scan ? __alloT('stem.magnetism.a11y_mass_to_charge_inference_uses_detector_radius_times', 'Mass-to-charge inference uses detector radius times analyzer field divided by speed') : __alloT('stem.magnetism.a11y_mass_to_charge_inference_waits_for_a_detector_scan', 'Mass-to-charge inference waits for a detector scan') },
               h('code', null, 'm/|q| = rB/v'), h('span', { 'aria-hidden': 'true' }, '\u2192'),
               h('b', null, mystery.scan ? mystery.scan.radius.toFixed(2) + ' × ' + mystery.scan.analyzerField.toFixed(1) + ' ÷ ' + mystery.scan.selectedSpeed.toFixed(2) + (mystery.checked ? ' = ' + mystery.target.ratio.toFixed(0) : ' = ?') : 'waiting for radius evidence')),
             mystery.scan ? h('fieldset', { className: 'mag-ion-options' },
@@ -8393,7 +8393,7 @@
           h('div', { className: 'mag-analyzer-stages', role: 'group', 'aria-label': aria },
             h('figure', { className: 'mag-analyzer-figure' },
               h('figcaption', { className: 'mag-analyzer-heading' }, h('span', null, h('b', null, '1 · Velocity selector'), h('small', null, 'Crossed E/B · ⊗ B into screen')), h('strong', null, species.symbol)),
-              h('svg', { viewBox: '0 0 310 300', role: 'img', 'aria-label': 'Velocity selector. ' + statusText + '. ' + balanceText + '.' },
+              h('svg', { viewBox: '0 0 310 300', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_velocity_selector', 'Velocity selector. {statusText}. {balanceText}.'), { statusText: statusText, balanceText: balanceText }) },
                 h('rect', { x: 0, y: 0, width: 310, height: 300, fill: INSTRUMENT }),
                 h('rect', { x: 55, y: 58, width: 240, height: 190, rx: 10, fill: 'rgba(56,189,248,.045)', stroke: BORDER }),
                 h('rect', { x: 65, y: 70, width: 220, height: 10, rx: 4, fill: '#e11d48' }),
@@ -8418,7 +8418,7 @@
               h('div', { className: 'mag-analyzer-caption' }, h('b', { 'data-selector-balance': 'true' }, balanceText), h('span', null, 'Electric force ↓ · magnetic force ↑. The slit tests the moving beam.'))),
             h('figure', { className: 'mag-analyzer-figure' },
               h('figcaption', { className: 'mag-analyzer-heading' }, h('span', null, h('b', null, '2 · Mass analyzer'), h('small', null, '⊗ B into screen · schematic arcs')), h('strong', null, !state.moving ? 'STILL' : state.passes ? 'PASS' : 'BLOCKED')),
-              h('svg', { 'data-analyzer-plane': 'true', viewBox: '292 ' + analyzerMinY + ' 308 ' + (300 - analyzerMinY), role: 'img', 'aria-label': 'Mass analyzer. ' + statusText + '. ' + (mystery.scan ? 'Saved unknown trace retained. ' : '') + 'Numerical radius is ' + state.analyzerRadius.toFixed(2) + ' relative units.' },
+              h('svg', { 'data-analyzer-plane': 'true', viewBox: '292 ' + analyzerMinY + ' 308 ' + (300 - analyzerMinY), role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_mass_analyzer_numerical_radius_is_relative_units', 'Mass analyzer. {statusText}. {value1}Numerical radius is {value2} relative units.'), { statusText: statusText, value1: mystery.scan ? __alloT('stem.magnetism.a11y_saved_unknown_trace_retained', 'Saved unknown trace retained. ') : '', value2: state.analyzerRadius.toFixed(2) }) },
                 h('rect', { x: 292, y: analyzerMinY, width: 308, height: 300 - analyzerMinY, fill: INSTRUMENT }),
                 h('rect', { x: 312, y: analyzerMinY < 0 ? analyzerMinY + 8 : 42, width: 276, height: 258 - (analyzerMinY < 0 ? analyzerMinY + 8 : 42), rx: 10, fill: 'rgba(167,139,250,.045)', stroke: BORDER }),
                 analyzerMarkers,
@@ -8497,7 +8497,7 @@
           d.chargeView === '3d' ? chargedParticle3DPanel() : h('figure', { className: 'mag-particle-figure', 'data-particle-stage': 'true' },
             h('figcaption', { className: 'mag-particle-heading' }, h('b', null, 'Beam chamber'), h('span', null, chargeName + ' charge · ' + (d.chargeField > 0 ? '⊙ B out of screen' : '⊗ B into screen'))),
             h('svg', { 'data-particle-plane': 'true', viewBox: '0 24 320 156', width: '100%', role: 'img',
-              'aria-label': 'A ' + chargeName + ' particle moving right through a field ' + fieldName + ', curving ' + (bendsUp ? 'up' : 'down') },
+              'aria-label': (bendsUp ? __alloFill(__alloT('stem.magnetism.a11y_a_particle_moving_right_through_a_field_curving_up', 'A {chargeName} particle moving right through a field {fieldName}, curving up'), { chargeName: chargeName, fieldName: fieldName }) : __alloFill(__alloT('stem.magnetism.a11y_a_particle_moving_right_through_a_field_curving_down', 'A {chargeName} particle moving right through a field {fieldName}, curving down'), { chargeName: chargeName, fieldName: fieldName })) },
               h('title', null, 'Charged-particle path and perpendicular magnetic force'),
               h('desc', null, 'The field symbols fill a uniform magnetic field. The amber arrow is the incoming velocity, the green arrow is the initial magnetic force, and the rose curve is the particle path. Magnetic force stays perpendicular to the instantaneous velocity.'),
               h('rect', { x: 0.5, y: 24.5, width: 319, height: 155, fill: INSTRUMENT, stroke: BORDER, rx: 10 }),
@@ -8646,7 +8646,7 @@
         var px = 18 + (((d.motorAngle % 360) + 360) % 360) / 360 * 284;
         var py = 46 - dir * Math.abs(Math.sin(d.motorAngle * Math.PI / 180)) * 28 * amplitudeScale;
         return h('svg', { viewBox: '0 0 320 82', width: '100%', style: { maxWidth: 520, display: 'block', margin: '0 auto 9px' }, role: 'img',
-          'aria-label': 'Torque versus coil angle graph. Current angle ' + Math.round(d.motorAngle) + ' degrees, amplitude ' + Math.round(amplitudeScale * 100) + ' percent of graph scale, torque direction ' + (dir > 0 ? 'clockwise' : 'counter-clockwise') },
+          'aria-label': __alloFill(__alloT('stem.magnetism.a11y_torque_versus_coil_angle_graph_current_angle_degrees', 'Torque versus coil angle graph. Current angle {value1} degrees, amplitude {value2} percent of graph scale, torque direction {value3}'), { value1: Math.round(d.motorAngle), value2: Math.round(amplitudeScale * 100), value3: dir > 0 ? __alloT('stem.magnetism.a11y_clockwise', 'clockwise') : __alloT('stem.magnetism.a11y_counter_clockwise', 'counter-clockwise') }) },
           h('rect', { x: 0, y: 0, width: 320, height: 82, fill: INSTRUMENT, rx: 9 }),
           h('text', { x: 18, y: 12, fill: SOFT, fontSize: 11 }, 'torque τ ∝ I·B·sin θ'),
           h('line', { x1: 18, y1: 46, x2: 302, y2: 46, stroke: BORDER }),
@@ -9063,7 +9063,7 @@
         var magnetX = 280 + x * 1.5;
         return h('div', { className: 'mag-instrument mag-hand-stage' },
           h('div', { className: 'mag-instrument-head' }, h('span', null, 'Hand generator'), h('b', null, 'x ' + Math.round(x) + ' · ' + (voltage === 0 ? 'zero voltage' : 'changing flux'))),
-          h('svg', { viewBox: '0 0 560 270', role: 'img', 'aria-label': 'A bar magnet at position ' + Math.round(x) + ' near a coil; bulb ' + (glow > 0.15 ? 'glowing' : 'dark') + '. Signed voltage ' + voltage.toFixed(2) + ' display-scaled volts.' },
+          h('svg', { viewBox: '0 0 560 270', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_a_bar_magnet_at_position_near_a_coil_bulb_signed_voltage', 'A bar magnet at position {value1} near a coil; bulb {value2}. Signed voltage {value3} display-scaled volts.'), { value1: Math.round(x), value2: glow > 0.15 ? __alloT('stem.magnetism.a11y_glowing', 'glowing') : __alloT('stem.magnetism.a11y_dark', 'dark'), value3: voltage.toFixed(2) }) },
             h('rect', { width: 560, height: 270, fill: INSTRUMENT }),
             Array.from({ length: 13 }, function (_, i) { return h('line', { key: 'gridx' + i, x1: 40 + i * 40, x2: 40 + i * 40, y1: 14, y2: 256, stroke: BORDER, opacity: 0.3 }); }),
             [40, 80, 120, 160, 200, 240].map(function (y) { return h('line', { key: 'gridy' + y, x1: 20, x2: 540, y1: y, y2: y, stroke: BORDER, opacity: 0.3 }); }),
@@ -9718,7 +9718,7 @@
           function xx(t) { return left + t / motion.controls.duration * (W - left - right); }
           function fy(flux) { return 128 - flux * 92; }
           function ey(emf) { return 92 - emf / scale * 56; }
-          return h('div', { className: 'mag-motion-charts', role: 'group', 'aria-label': 'Recorded flux and signed voltage over ' + motion.controls.duration.toFixed(2) + ' seconds. Sample ' + (selected + 1) + ' at ' + sample.time.toFixed(3) + ' seconds is selected.' },
+          return h('div', { className: 'mag-motion-charts', role: 'group', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_recorded_flux_and_signed_voltage_over_seconds_sample_at', 'Recorded flux and signed voltage over {value1} seconds. Sample {value2} at {value3} seconds is selected.'), { value1: motion.controls.duration.toFixed(2), value2: selected + 1, value3: sample.time.toFixed(3) }) },
             ['flux', 'voltage'].map(function (id) {
               var isFlux = id === 'flux', color = isFlux ? '#e11d48' : '#d97706';
               var values = isFlux ? motion.samples : motion.samples.slice(1);
@@ -9726,7 +9726,7 @@
                 h('figcaption', null,
                   h('span', null, h('b', null, isFlux ? 'Flux Φ' : 'Voltage ε'), h('small', null, isFlux ? 'Solid · relative units' : 'Dashed · display-scaled V')),
                   isFlux ? h('strong', { 'data-motion-flux-reading': 'true' }, sample.flux.toFixed(3)) : h('strong', { 'data-motion-voltage-reading': 'true' }, preceding ? signed(sample.emf) + ' V' : 'Initial')),
-                h('svg', { viewBox: '0 0 320 180', role: 'img', 'aria-label': (isFlux ? 'Recorded flux' : 'Recorded signed voltage') + ' over ' + motion.controls.duration.toFixed(2) + ' seconds. Selected sample ' + (selected + 1) + ' at ' + sample.time.toFixed(3) + ' seconds.' },
+                h('svg', { viewBox: '0 0 320 180', role: 'img', 'aria-label': __alloFill(isFlux ? __alloT('stem.magnetism.a11y_recorded_flux_over_seconds_selected_sample', 'Recorded flux over {value2} seconds. Selected sample {value3} at {value4} seconds.') : __alloT('stem.magnetism.a11y_recorded_signed_voltage_over_seconds_selected_sample', 'Recorded signed voltage over {value2} seconds. Selected sample {value3} at {value4} seconds.'), { value2: motion.controls.duration.toFixed(2), value3: selected + 1, value4: sample.time.toFixed(3) }) },
                   h('rect', { x: 0, y: 0, width: W, height: 180, fill: INSTRUMENT }),
                   (isFlux ? [0, 0.5, 1] : [-1, 0, 1]).map(function (v) {
                     var y = isFlux ? fy(v) : ey(v * scale);
@@ -9767,7 +9767,7 @@
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0' } },
               h('button', { type: 'button', disabled: selected === 0, onClick: function () { inspect(selected - 1); }, style: btn() }, 'Previous motion sample'),
               h('button', { type: 'button', disabled: selected === motion.samples.length - 1, onClick: function () { inspect(selected + 1); }, style: btn() }, 'Next motion sample')),
-            h('svg', { viewBox: '0 0 320 65', role: 'img', 'aria-label': 'Recorded magnet position ' + sample.x.toFixed(1) + '. Coil centered at zero.', style: { width: '100%', maxWidth: 560, display: 'block', background: INSTRUMENT, borderRadius: 8 } },
+            h('svg', { viewBox: '0 0 320 65', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_recorded_magnet_position_coil_centered_at_zero', 'Recorded magnet position {value1}. Coil centered at zero.'), { value1: sample.x.toFixed(1) }), style: { width: '100%', maxWidth: 560, display: 'block', background: INSTRUMENT, borderRadius: 8 } },
               h('line', { x1: 24, x2: 296, y1: 28, y2: 28, stroke: SOFT }),
               h('rect', { x: 145, y: 12, width: 30, height: 32, rx: 6, stroke: '#fbbf24', fill: 'none', strokeWidth: 2 }),
               h('circle', { cx: 24 + (sample.x + 100) / 200 * 272, cy: 28, r: 7, fill: '#fb7185', stroke: TEXT, strokeWidth: 2 }),
@@ -9825,7 +9825,7 @@
         return h('section', { className: 'mag-speed-evidence', 'aria-label': __alloT('stem.magnetism.a11y_generator_speed_evidence_board', 'Generator speed evidence board') },
           h('div', { className: 'mag-speed-head' },
             h('b', null, 'Controlled speed evidence'),
-            h('span', { 'aria-label': evidence.completedCount + ' of 3 generator trials complete' }, evidence.completedCount + '/3 runs')),
+            h('span', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_of_3_generator_trials_complete', '{completedCount} of 3 generator trials complete'), { completedCount: evidence.completedCount }) }, evidence.completedCount + '/3 runs')),
           h('div', { className: 'mag-speed-actions', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_generator_speed_trial_actions', 'Generator speed trial actions') },
             evidence.trials.map(function (trial) {
               var spec = specs[trial.kind];
@@ -9871,7 +9871,7 @@
               h('label', { htmlFor: 'mag-hand-generator-position', style: { display: 'flex', justifyContent: 'space-between', color: TEXT, fontSize: 13, fontWeight: 600, marginBottom: 4 } },
                 h('span', null, 'Magnet position — drag it through the coil'), h('span', { style: { color: TEXT, fontVariantNumeric: 'tabular-nums' } }, String(Math.round(d.induceX)))),
               h('input', { id: 'mag-hand-generator-position', type: 'range', min: -100, max: 100, step: 2, value: d.induceX,
-                'aria-valuetext': 'Magnet position relative to the coil: ' + String(Math.round(d.induceX)),
+                'aria-valuetext': __alloFill(__alloT('stem.magnetism.a11y_magnet_position_relative_to_the_coil', 'Magnet position relative to the coil: {value1}'), { value1: String(Math.round(d.induceX)) }),
                 onPointerDown: function () { handMotionRuntime.current.keyboard = false; handMotionRuntime.current.lastAt = window.performance.now(); },
                 onKeyDown: function () { handMotionRuntime.current.keyboard = true; },
                 onPointerUp: settleHandInduction, onPointerCancel: settleHandInduction, onBlur: settleHandInduction,
@@ -9972,12 +9972,12 @@
                 h('text', { x: phaseCx + phaseR + 10, y: phaseCy + 4, fill: SOFT, fontSize: 10.5 }, 'Φ max'),
                 h('text', { x: phaseCx + 4, y: phaseCy - phaseR - 10, fill: SOFT, fontSize: 10.5 }, 'ε max')),
               h('div', { className: 'mag-generator-normalized' },
-              h('div', { className: 'mag-generator-meter', role: 'meter', 'aria-label': 'Normalized flux Φ', 'aria-valuemin': -1, 'aria-valuemax': 1, 'aria-valuenow': Number(phase.fluxNorm.toFixed(6)) },
+              h('div', { className: 'mag-generator-meter', role: 'meter', 'aria-label': __alloT('stem.magnetism.a11y_normalized_flux', 'Normalized flux Φ'), 'aria-valuemin': -1, 'aria-valuemax': 1, 'aria-valuenow': Number(phase.fluxNorm.toFixed(6)) },
                 h('span', null, 'Normalized flux Φ'), h('b', { 'data-generator-normalized': 'flux' }, phase.fluxNorm.toFixed(2)),
                 h('div', { className: 'mag-generator-meter-track', 'aria-hidden': 'true' },
                   h('i', { style: { left: Math.min(50, 50 + phase.fluxNorm * 50) + '%', width: Math.abs(phase.fluxNorm) * 50 + '%' } }),
                   h('span', { style: { left: (50 + phase.fluxNorm * 50) + '%' } }))),
-              h('div', { className: 'mag-generator-meter', role: 'meter', 'aria-label': 'Normalized voltage ε', 'aria-valuemin': -1, 'aria-valuemax': 1, 'aria-valuenow': Number(phase.emfNorm.toFixed(6)) },
+              h('div', { className: 'mag-generator-meter', role: 'meter', 'aria-label': __alloT('stem.magnetism.a11y_normalized_voltage', 'Normalized voltage ε'), 'aria-valuemin': -1, 'aria-valuemax': 1, 'aria-valuenow': Number(phase.emfNorm.toFixed(6)) },
                 h('span', null, 'Normalized voltage ε'), h('b', { 'data-generator-normalized': 'voltage' }, phase.emfNorm.toFixed(2)),
                 h('div', { className: 'mag-generator-meter-track', 'aria-hidden': 'true' },
                   h('i', { style: { left: Math.min(50, 50 + phase.emfNorm * 50) + '%', width: Math.abs(phase.emfNorm) * 50 + '%' } }),
@@ -9986,7 +9986,7 @@
           h('div', { className: 'mag-generator-traces' },
             h('figure', { className: 'mag-generator-figure', 'data-generator-figure': 'flux' },
               h('div', { className: 'mag-generator-heading' }, h('b', null, 'flux Φ · cos θ · solid'), h('span', null, 'Circle marks the selected coil angle')),
-              h('svg', { viewBox: '168 36 152 76', role: 'img', 'aria-label': 'Normalized flux over one revolution. Solid curve with a circle at ' + angle + ' degrees.' },
+              h('svg', { viewBox: '168 36 152 76', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_normalized_flux_over_one_revolution_solid_curve_with_a', 'Normalized flux over one revolution. Solid curve with a circle at {angle} degrees.'), { angle: angle }) },
                 h('line', { x1: 176, y1: 72, x2: 312, y2: 72, stroke: BORDER, strokeDasharray: '3 3' }),
                 h('polyline', { 'data-generator-series': 'flux', points: fluxPts.join(' '), fill: 'none', stroke: '#f43f5e', strokeWidth: 2 }),
                 h('line', { 'data-generator-cursor': 'flux', x1: cursorX, y1: 38, x2: cursorX, y2: 106, stroke: SOFT, strokeDasharray: '3 3' }),
@@ -9994,7 +9994,7 @@
               h('figcaption', { className: 'mag-generator-axis' }, h('span', null, '0°'), h('span', null, 'One revolution'), h('span', null, '360°'))),
             h('figure', { className: 'mag-generator-figure', 'data-generator-figure': 'voltage' },
               h('div', { className: 'mag-generator-heading' }, h('b', null, 'voltage ε · sin θ · dashed'), h('span', null, 'Diamond marks the selected coil angle')),
-              h('svg', { viewBox: '168 112 152 76', role: 'img', 'aria-label': 'Induced voltage over one revolution, scaled by crank speed. Dashed curve with a diamond at ' + angle + ' degrees.' },
+              h('svg', { viewBox: '168 112 152 76', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_induced_voltage_over_one_revolution_scaled_by_crank_speed', 'Induced voltage over one revolution, scaled by crank speed. Dashed curve with a diamond at {angle} degrees.'), { angle: angle }) },
                 h('line', { x1: 176, y1: 148, x2: 312, y2: 148, stroke: BORDER, strokeDasharray: '3 3' }),
                 h('polyline', { 'data-generator-series': 'voltage', points: emfPts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '6 3' }),
                 h('line', { 'data-generator-cursor': 'voltage', x1: cursorX, y1: 114, x2: cursorX, y2: 182, stroke: SOFT, strokeDasharray: '3 3' }),
@@ -10044,7 +10044,7 @@
           h('figure', { className: 'mag-scope-figure' },
             h('figcaption', { className: 'mag-scope-head' }, h('b', null, 'Movement samples'), h('span', null, 'oldest → newest')),
           h('svg', { viewBox: '0 0 ' + W + ' ' + HH, width: '100%', role: 'img',
-            'aria-label': trace.length < 2 ? 'Empty voltage scope — move the magnet to draw a trace' : 'Voltage trace of your last ' + trace.length + ' magnet movements' },
+            'aria-label': trace.length < 2 ? __alloT('stem.magnetism.a11y_empty_voltage_scope_move_the_magnet_to_draw_a_trace', 'Empty voltage scope — move the magnet to draw a trace') : __alloFill(__alloT('stem.magnetism.a11y_voltage_trace_of_your_last_magnet_movements', 'Voltage trace of your last {value1} magnet movements'), { value1: trace.length }) },
             h('rect', { x: 0, y: 0, width: W, height: HH, fill: INSTRUMENT, rx: 8 }),
             [mid - (mid - 22) / 2, mid + (mid - 22) / 2].map(function (y) { return h('line', { key: y, x1: 40, y1: y, x2: W - 8, y2: y, stroke: BORDER, strokeWidth: 0.7, strokeDasharray: '2 5' }); }),
             h('line', { 'data-scope-zero': 'true', x1: 40, y1: mid, x2: W - 8, y2: mid, stroke: SOFT, strokeWidth: 1.2, strokeDasharray: '6 4' }),
@@ -10130,7 +10130,7 @@
         return h('div', { className: 'mag-instrument', 'data-eddy-instrument': 'true' },
           h('div', { className: 'mag-instrument-head' }, 'EDDY BRAKE · SLIDING PLATE', h('b', null, !moving ? 'Plate at rest' : !fieldOn ? 'Field off' : slit ? 'Interrupted current path' : 'Closed current path')),
           h('svg', { viewBox: '0 0 560 290', width: '100%', role: 'img',
-            'aria-label': material.name + ' eddy-current brake bench. Plate speed ' + state.speed + ' of 10 and magnet field ' + state.field + ' of 10. The current path is ' + state.loop + '. Relative magnetic drag is ' + Math.round(state.forcePercent) + ' percent, modeled stopping distance is ' + state.stoppingDistance.toFixed(1) + ', and eddy-current heat share is ' + Math.round(state.heatShare) + ' percent.' },
+            'aria-label': __alloFill(__alloT('stem.magnetism.a11y_eddy_current_brake_bench_plate_speed_of_10_and_magnet_field', '{name} eddy-current brake bench. Plate speed {speed} of 10 and magnet field {field} of 10. The current path is {loop}. Relative magnetic drag is {value1} percent, modeled stopping distance is {value2}, and eddy-current heat share is {value3} percent.'), { name: material.name, speed: state.speed, field: state.field, loop: state.loop, value1: Math.round(state.forcePercent), value2: state.stoppingDistance.toFixed(1), value3: Math.round(state.heatShare) }) },
             h('title', null, 'Eddy-current sliding-plate brake bench'),
             h('desc', null, 'A conducting plate in a north-south magnetic gap. ' + (moving ? 'The plate moves right. ' : 'The plate is at rest. ') + (braking ? 'Circulating loops show induced eddy current and a left arrow shows opposing drag. ' : 'No induced current or magnetic drag is shown. ') + 'One white stripe marks the north pole and two mark the south pole.'),
             h('rect', { x: 0, y: 0, width: 560, height: 290, fill: INSTRUMENT }),
@@ -10230,7 +10230,7 @@
             h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 5 } }, 'Tube race · conducting wall versus plastic control'),
             h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } },
               h('svg', { viewBox: '0 0 220 148', width: '100%', style: { maxWidth: 270 }, role: 'img',
-                'aria-label': material.name + ' tube versus plastic. Relative eddy braking ' + Math.round(brake * 100) + ' percent. ' + (d.eddySlit ? 'The conducting loop is cut by a slit.' : 'The conducting loop is closed.') },
+                'aria-label': __alloFill(__alloT('stem.magnetism.a11y_tube_versus_plastic_relative_eddy_braking_percent', '{name} tube versus plastic. Relative eddy braking {value1} percent. {value2}'), { name: material.name, value1: Math.round(brake * 100), value2: d.eddySlit ? __alloT('stem.magnetism.a11y_the_conducting_loop_is_cut_by_a_slit', 'The conducting loop is cut by a slit.') : __alloT('stem.magnetism.a11y_the_conducting_loop_is_closed', 'The conducting loop is closed.') }) },
                 h('rect', { x: 0, y: 0, width: 220, height: 148, fill: INSTRUMENT, rx: 10 }),
                 tube(72, material.name.toLowerCase(), prog.cu, material.color, true),
                 tube(148, 'plastic', prog.pl, '#64748b', false),
@@ -10291,11 +10291,11 @@
                 h('span', null, d.matRevealed ? evidence.correctCount + '/8 correct · best ' + best + '/8' : evidence.answeredCount + '/8 predictions')),
               h('div', { className: 'mag-material-track', role: 'progressbar', 'aria-label': __alloT('stem.magnetism.a11y_material_prediction_progress', 'Material prediction progress'), 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': evidence.answeredCount },
                 h('div', { className: 'mag-material-fill', style: { width: (evidence.answeredCount / MATERIALS.length * 100) + '%' } })),
-              h('div', { className: 'mag-material-magnet', role: 'img', 'aria-label': d.matRevealed ? 'Magnet test complete; samples are grouped by observed response' : 'Bar magnet ready; classify every sample before testing' },
+              h('div', { className: 'mag-material-magnet', role: 'img', 'aria-label': d.matRevealed ? __alloT('stem.magnetism.a11y_magnet_test_complete_samples_are_grouped_by_observed', 'Magnet test complete; samples are grouped by observed response') : __alloT('stem.magnetism.a11y_bar_magnet_ready_classify_every_sample_before_testing', 'Bar magnet ready; classify every sample before testing') },
                 h('span', null, 'N · TEST'), h('span', null, 'S · FIELD')),
-              h('div', { className: 'mag-material-flow', 'aria-label': d.matRevealed ? 'Observed material response groups' : 'Material prediction groups' },
+              h('div', { className: 'mag-material-flow', 'aria-label': d.matRevealed ? __alloT('stem.magnetism.a11y_observed_material_response_groups', 'Observed material response groups') : __alloT('stem.magnetism.a11y_material_prediction_groups', 'Material prediction groups') },
                 lanes.map(function (lane) {
-                  return h('section', { key: lane.id, className: 'mag-material-lane', 'data-lane': lane.id, 'aria-label': lane.title + ': ' + lane.items.length + ' samples' },
+                  return h('section', { key: lane.id, className: 'mag-material-lane', 'data-lane': lane.id, 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_samples', '{title}: {value1} samples'), { title: lane.title, value1: lane.items.length }) },
                     h('div', { className: 'mag-material-lane-title' }, lane.title, h('span', null, lane.items.length)),
                     h('div', { className: 'mag-material-chips' }, lane.items.length ? lane.items.map(function (item) { return materialChip(item, lane.id + '-'); }) : h('span', { className: 'mag-material-empty' }, lane.empty)));
                 })),
@@ -10305,7 +10305,7 @@
                   var result = d.matRevealed ? (item.correct ? 'confirmed' : item.correct === false ? 'revised' : 'unscored') : 'pending';
                   var resultText = item.correct ? 'Prediction confirmed' : item.correct === false ? 'Prediction revised' : 'No prediction recorded';
                   return h('article', { key: item.id, className: 'mag-material-tile', 'data-material-id': item.id, 'data-choice': choice, 'data-result': result,
-                    'aria-label': item.name + ', ' + (item.isMetal ? 'metal' : 'nonmetal') + (d.matRevealed ? ', ' + (item.magnetic ? 'lifted' : 'no pull') + ', ' + resultText.toLowerCase() : '') },
+                    'aria-label': item.name + ', ' + (item.isMetal ? __alloT('stem.magnetism.a11y_metal', 'metal') : __alloT('stem.magnetism.a11y_nonmetal', 'nonmetal')) + (d.matRevealed ? ', ' + (item.magnetic ? __alloT('stem.magnetism.a11y_lifted', 'lifted') : __alloT('stem.magnetism.a11y_no_pull', 'no pull')) + ', ' + resultText.toLowerCase() : '') },
                     h('div', { className: 'mag-material-tile-head' },
                       h('span', { className: 'mag-material-emoji', 'aria-hidden': 'true' }, item.emoji),
                       h('span', { className: 'mag-material-name' }, h('b', null, item.name), h('small', null, item.isMetal ? 'metal sample' : 'nonmetal sample')),
@@ -10434,7 +10434,7 @@
             memory.comparisons.map(function (item) {
               return h('button', { key: item.id, type: 'button', className: 'mag-domain-material',
                 'data-active': item.active ? 'true' : 'false', 'aria-pressed': item.active ? 'true' : 'false',
-                'aria-label': item.name + ': modeled zero-field memory ' + item.remanencePercent + ' percent; coercive threshold ' + item.coercivityPercent + ' percent',
+                'aria-label': __alloFill(__alloT('stem.magnetism.a11y_modeled_zero_field_memory_percent_coercive_threshold_percent', '{name}: modeled zero-field memory {remanencePercent} percent; coercive threshold {coercivityPercent} percent'), { name: item.name, remanencePercent: item.remanencePercent, coercivityPercent: item.coercivityPercent }),
                 onClick: function () { selectDomainMaterial(item.id); } },
                 h('span', { className: 'mag-domain-material-head' },
                   h('span', { className: 'mag-domain-material-icon', 'aria-hidden': 'true' }, item.icon),
@@ -10466,7 +10466,7 @@
             h('figure', { className: 'mag-domain-figure' },
               h('figcaption', null, 'H–M memory loop', h('span', null, memory.history ? (memory.branch < 0 ? 'increasing H · dashed branch' : 'decreasing H · solid branch') : 'mixed starting state')),
               h('svg', { viewBox: '0 0 260 170', role: 'img',
-                'aria-label': mat.name + ' hysteresis loop. Applied field ' + memory.field.toFixed(2) + '; signed magnetization ' + m.toFixed(2) + '; coercive threshold ' + mat.coercivity.toFixed(2) + '.' },
+                'aria-label': __alloFill(__alloT('stem.magnetism.a11y_hysteresis_loop_applied_field_signed_magnetization_coercive', '{name} hysteresis loop. Applied field {value1}; signed magnetization {value2}; coercive threshold {value3}.'), { name: mat.name, value1: memory.field.toFixed(2), value2: m.toFixed(2), value3: mat.coercivity.toFixed(2) }) },
                 h('title', null, mat.name + ' magnetic hysteresis loop'),
                 h('rect', { x: 0, y: 0, width: 260, height: 170, fill: INSTRUMENT, rx: 9 }),
                 h('line', { x1: 30, y1: 80, x2: 230, y2: 80, stroke: BORDER, strokeWidth: 1.2 }),
@@ -10491,7 +10491,7 @@
               h('span', { className: 'mag-section-label' }, 'Apply · remember · reverse'),
           h('section', { className: 'mag-domain-experiment', 'aria-label': __alloT('stem.magnetism.a11y_three_step_magnetic_memory_experiment', 'Three-step magnetic memory experiment') },
             h('div', { className: 'mag-domain-exp-head' }, h('b', null, 'Evidence trail · ' + mat.name), h('span', null, memory.completedCount + '/3 moments captured')),
-            h('progress', { className: 'mag-domain-progress', max: 3, value: memory.completedCount, 'aria-label': memory.completedCount + ' of 3 magnetic memory evidence moments captured' }),
+            h('progress', { className: 'mag-domain-progress', max: 3, value: memory.completedCount, 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_of_3_magnetic_memory_evidence_moments_captured', '{completedCount} of 3 magnetic memory evidence moments captured'), { completedCount: memory.completedCount }) }),
             h('ol', { className: 'mag-domain-steps' }, memory.steps.map(function (step, index) {
               return h('li', { key: step.key, className: 'mag-domain-step', 'data-state': step.state, 'aria-current': step.state === 'current' ? 'step' : null },
                 h('span', { className: 'mag-domain-step-index', 'aria-hidden': 'true' }, step.done ? '✓' : String(index + 1)),
@@ -10501,7 +10501,7 @@
               h('span', { className: 'mag-domain-next-icon', 'aria-hidden': 'true' }, memory.complete ? '🏁' : '→'),
               h('span', null, h('b', null, (memory.complete ? 'Compare next · ' : 'Next action · ') + memory.nextAction.label), memory.nextAction.detail),
               h('button', { type: 'button', onClick: function () { runDomainAction(memory.nextAction.key); }, style: btn(true),
-                'aria-label': (memory.complete ? 'Compare materials: ' : 'Run next experiment step: ') + memory.nextAction.label }, memory.complete ? 'Compare material →' : 'Run this step →'))),
+                'aria-label': __alloFill(memory.complete ? __alloT('stem.magnetism.a11y_compare_materials', 'Compare materials: {label}') : __alloT('stem.magnetism.a11y_run_next_experiment_step', 'Run next experiment step: {label}'), { label: memory.nextAction.label }) }, memory.complete ? 'Compare material →' : 'Run this step →'))),
           h('div', { className: 'mag-domain-hud', 'aria-label': __alloT('stem.magnetism.a11y_live_magnetic_evidence_readings', 'Live magnetic evidence readings') },
             h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#38bdf8' } }, h('small', null, 'Applied field H'), h('b', null, signed(memory.fieldPercent)), h('span', null, memory.fieldDirection === 'off' ? 'field off' : 'points ' + memory.fieldDirection)),
             h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#fbbf24' } }, h('small', null, 'Signed vector M'), h('b', null, signed(memory.signedPercent)), h('span', null, memory.magnetizationDirection === 'mixed' ? 'directions cancel' : 'net points ' + memory.magnetizationDirection)),
@@ -10685,7 +10685,7 @@
         var currentEvidence = evidence.items.find(function (entry) { return entry.id === currentItemId; });
         var evidenceLabel = currentEvidence ? (currentEvidence.tested ? ', evidence says ' + (currentEvidence.lifted ? 'lifted' : 'no pull') : currentEvidence.predicted !== null ? ', prediction says ' + (currentEvidence.predicted ? 'will lift' : 'no pull') : ', awaiting prediction') : '';
         return h('svg', { className: 'mag-crane-scene' + (d.cranePower ? ' is-powered' : ''), viewBox: '0 0 ' + W + ' ' + HH, width: '100%', role: 'img',
-          'aria-label': 'Junkyard crane at position ' + d.craneSlot + (d.cranePower ? ', magnet powered' : ', magnet off') + (d.craneHolding && itemById(d.craneHolding) ? ', carrying ' + itemById(d.craneHolding).name : '') + evidenceLabel }, kids);
+          'aria-label': __alloFill(__alloT('stem.magnetism.a11y_junkyard_crane_at_position', 'Junkyard crane at position {craneSlot}{value1}{value2}{evidenceLabel}'), { craneSlot: d.craneSlot, value1: d.cranePower ? __alloT('stem.magnetism.a11y_magnet_powered', ', magnet powered') : __alloT('stem.magnetism.a11y_magnet_off', ', magnet off'), value2: d.craneHolding && itemById(d.craneHolding) ? __alloFill(__alloT('stem.magnetism.a11y_carrying', ', carrying {name}'), { name: itemById(d.craneHolding).name }) : '', evidenceLabel: evidenceLabel }) }, kids);
       }
 
       function craneTab() {
@@ -10881,7 +10881,7 @@
             h('polygon', { points: '-15,0 3,-5 3,5', fill: '#e2e8f0' }))));
         var hereBearing = mazeBearingAt(d.mazePx, d.mazePy);
         return h('svg', { className: 'mag-walk-board', viewBox: '0 0 ' + W + ' ' + HH, width: '100%', role: 'img',
-          'aria-label': 'Field Walk board. Your compass at column ' + (d.mazePx + 1) + ', row ' + (d.mazePy + 1) + '; red needle points about ' + hereBearing.word + (d.mazeWon ? '. Magnet revealed.' : '. The hidden magnet is not visible — follow the needle.') }, kids);
+          'aria-label': __alloFill(d.mazeWon ? __alloT('stem.magnetism.a11y_field_walk_board_magnet_revealed', 'Field Walk board. Your compass at column {column}, row {row}; red needle points about {word}. Magnet revealed.') : __alloT('stem.magnetism.a11y_field_walk_board_follow_the_needle', 'Field Walk board. Your compass at column {column}, row {row}; red needle points about {word}. The hidden magnet is not visible — follow the needle.'), { column: d.mazePx + 1, row: d.mazePy + 1, word: hereBearing.word }) }, kids);
       }
 
       function mazeNextRound() {
@@ -10925,7 +10925,7 @@
         kids.push(h('text', { key: 'now', x: W - right, y: H - 6, fill: SOFT, fontSize: 10, fontWeight: 700, textAnchor: 'end' }, 'now'));
         var ratioText = evidence.signalRatio >= 100 ? evidence.signalRatio.toFixed(0) : evidence.signalRatio >= 10 ? evidence.signalRatio.toFixed(1) : evidence.signalRatio.toFixed(2);
         return h('svg', { className: 'mag-maze-chart', viewBox: '0 0 ' + W + ' ' + H, role: 'img',
-          'aria-label': 'Magnetic signal trail across ' + samples.length + ' sampled position' + (samples.length === 1 ? '' : 's') + '. Current signal is ' + ratioText + ' times the starting signal and is ' + evidence.signalTrend + '.' }, kids);
+          'aria-label': __alloFill(samples.length === 1 ? __alloT('stem.magnetism.a11y_magnetic_signal_trail_one_position', 'Magnetic signal trail across {count} sampled position. Current signal is {ratioText} times the starting signal and is {signalTrend}.') : __alloT('stem.magnetism.a11y_magnetic_signal_trail_positions', 'Magnetic signal trail across {count} sampled positions. Current signal is {ratioText} times the starting signal and is {signalTrend}.'), { count: samples.length, ratioText: ratioText, signalTrend: evidence.signalTrend }) }, kids);
       }
 
       function mazeTab() {
@@ -10951,7 +10951,7 @@
               h('div', { className: 'mag-motion-controls mag-walk-controls' },
                 h('span', { className: 'mag-section-label' }, 'Read · step · compare'),
                 h('div', { className: 'mag-walk-bearing' },
-                  h('svg', { viewBox: '0 0 80 80', width: 80, height: 80, role: 'img', 'aria-label': 'Current compass. The red tip points about ' + bearing.word + '.' },
+                  h('svg', { viewBox: '0 0 80 80', width: 80, height: 80, role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_current_compass_the_red_tip_points_about', 'Current compass. The red tip points about {word}.'), { word: bearing.word }) },
                     h('text', { x: 40, y: 9, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'N'), h('text', { x: 75, y: 43, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'E'),
                     h('text', { x: 40, y: 79, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'S'), h('text', { x: 5, y: 43, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'W'),
                     h('circle', { cx: 40, cy: 40, r: 25, fill: '#0f172a', stroke: SOFT, strokeWidth: 1.5 }),
@@ -10963,13 +10963,13 @@
               h('span', { role: 'status' }, h('b', null, 'Read the needle: '), d.learningMode === 'challenge' ? 'Use the needle bearing to choose your own step. No path hint is shown; your connected trail is the evidence.' : 'Its strongest cardinal component points ' + bearing.word + '. The gold-outlined step is the closest D-pad match; your connected trail records the field line you infer.')),
             h('div', { className: 'mag-walk-pad', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_field_walk_movement', 'Field Walk movement'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,44px)', gap: 4, justifyContent: 'center', marginBottom: 8 } },
               h('span', null, ''),
-              h('button', { 'aria-label': 'Walk up' + (d.learningMode !== 'challenge' && bearing.dy === -1 ? ', closest to the red needle direction' : ''), onClick: function () { mazeMove(0, -1); }, style: mazePadStyle(0, -1) }, '↑'),
+              h('button', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_up', 'Walk up{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dy === -1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(0, -1); }, style: mazePadStyle(0, -1) }, '↑'),
               h('span', null, ''),
-              h('button', { 'aria-label': 'Walk left' + (d.learningMode !== 'challenge' && bearing.dx === -1 ? ', closest to the red needle direction' : ''), onClick: function () { mazeMove(-1, 0); }, style: mazePadStyle(-1, 0) }, '←'),
+              h('button', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_left', 'Walk left{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dx === -1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(-1, 0); }, style: mazePadStyle(-1, 0) }, '←'),
               h('span', { style: { textAlign: 'center', color: SOFT, fontSize: 11, alignSelf: 'center' } }, d.mazeSteps + ' steps'),
-              h('button', { 'aria-label': 'Walk right' + (d.learningMode !== 'challenge' && bearing.dx === 1 ? ', closest to the red needle direction' : ''), onClick: function () { mazeMove(1, 0); }, style: mazePadStyle(1, 0) }, '→'),
+              h('button', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_right', 'Walk right{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dx === 1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(1, 0); }, style: mazePadStyle(1, 0) }, '→'),
               h('span', null, ''),
-              h('button', { 'aria-label': 'Walk down' + (d.learningMode !== 'challenge' && bearing.dy === 1 ? ', closest to the red needle direction' : ''), onClick: function () { mazeMove(0, 1); }, style: mazePadStyle(0, 1) }, '↓'),
+              h('button', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_down', 'Walk down{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dy === 1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(0, 1); }, style: mazePadStyle(0, 1) }, '↓'),
               h('span', null, '')))),
             h('div', { className: 'mag-maze-evidence' },
               h('div', { className: 'mag-maze-head' },
@@ -11093,7 +11093,7 @@
           var status = kind === 'baseline' ? 'reference' : gridLoss.status;
           var tone = kind === 'baseline' ? '#fbbf24' : gridLoss.status === 'cooler' ? '#34d399' : gridLoss.status === 'hotter' ? '#fb7185' : '#38bdf8';
           var voltageText = on ? lane.voltage.toFixed(0) + ' V' : 'OFF';
-          return h('article', { className: 'mag-grid-lane', 'data-lane': kind, 'data-status': status, 'aria-label': label + ': ' + (on ? lane.voltage.toFixed(0) + ' volts, ' + lane.current.toFixed(2) + ' amps, ' + lane.loss.toFixed(1) + ' watts wire heat' : 'no sustained power flow') },
+          return h('article', { className: 'mag-grid-lane', 'data-lane': kind, 'data-status': status, 'aria-label': label + ': ' + (on ? __alloFill(__alloT('stem.magnetism.a11y_volts_amps_watts_wire_heat', '{value1} volts, {value2} amps, {value3} watts wire heat'), { value1: lane.voltage.toFixed(0), value2: lane.current.toFixed(2), value3: lane.loss.toFixed(1) }) : __alloT('stem.magnetism.a11y_no_sustained_power_flow', 'no sustained power flow')) },
             h('div', { className: 'mag-grid-lane-head' }, h('small', null, kind === 'baseline' ? 'Reference line' : 'Current turns'), h('b', null, label)),
             h('div', { className: 'mag-grid-route', 'aria-hidden': 'true' }, h('span', null, 'SOURCE'), h('span', { className: 'mag-grid-wire' }, h('i', { style: { '--mag-grid-tone': tone, width: heatWidth.toFixed(1) + '%' } })), h('span', null, 'PAYLOAD')),
             h('dl', { className: 'mag-grid-readings' },
@@ -11101,7 +11101,7 @@
               h('div', null, h('dt', null, 'Line current'), h('dd', null, on ? lane.current.toFixed(2) + ' A' : '—')),
               h('div', null, h('dt', null, 'Source power'), h('dd', null, on ? lane.sourcePower.toFixed(1) + ' W' : '—'))),
             h('div', { className: 'mag-grid-heat-label' }, h('span', null, 'I²R wire heat · shared scale'), h('b', null, on ? lane.loss.toFixed(1) + ' W' : '—')),
-            h('div', { className: 'mag-grid-heat', role: 'img', 'aria-label': on ? label + ' wire heat ' + lane.loss.toFixed(1) + ' watts on a shared scale whose maximum is ' + gridLossScale.toFixed(1) + ' watts' : label + ' has no sustained wire heat' }, h('span', { style: { '--mag-grid-tone': tone, width: heatWidth.toFixed(1) + '%' } })));
+            h('div', { className: 'mag-grid-heat', role: 'img', 'aria-label': on ? __alloFill(__alloT('stem.magnetism.a11y_wire_heat_watts_on_a_shared_scale_whose_maximum_is_watts', '{label} wire heat {value1} watts on a shared scale whose maximum is {value2} watts'), { label: label, value1: lane.loss.toFixed(1), value2: gridLossScale.toFixed(1) }) : __alloFill(__alloT('stem.magnetism.a11y_has_no_sustained_wire_heat', '{label} has no sustained wire heat'), { label: label }) }, h('span', { style: { '--mag-grid-tone': tone, width: heatWidth.toFixed(1) + '%' } })));
         }
         function gridLossLens() {
           var presets = [{ factor: 0.5, label: '0.5× · 60 V' }, { factor: 1, label: '1× · 120 V' }, { factor: 2, label: '2× · 240 V' }, { factor: 4, label: '4× · 480 V' }];
@@ -11149,7 +11149,7 @@
             h('b', { className: 'mag-xfmr-reading' }, display),
             h('div', { className: 'mag-xfmr-track', role: 'meter', 'aria-label': criterion.label,
                 'aria-valuemin': 0, 'aria-valuemax': +scale.toFixed(2), 'aria-valuenow': +Math.min(criterion.value, scale).toFixed(2),
-                'aria-valuetext': display + '; target ' + criterion.target + '; ' + (criterion.met ? 'met' : 'not met') },
+                'aria-valuetext': __alloFill(criterion.met ? __alloT('stem.magnetism.a11y_target_met', '{display}; target {target}; met') : __alloT('stem.magnetism.a11y_target_not_met', '{display}; target {target}; not met'), { display: display, target: criterion.target }) },
               h('span', { className: 'mag-xfmr-band', 'aria-hidden': 'true', style: { left: bandLeft.toFixed(1) + '%', width: (bandRight - bandLeft).toFixed(1) + '%' } }),
               h('span', { className: 'mag-xfmr-marker', 'aria-hidden': 'true', style: { left: marker.toFixed(1) + '%' } })),
             h('span', { className: 'mag-xfmr-target' }, 'Target ' + criterion.target + ' · blue band'));
@@ -11174,7 +11174,7 @@
                 [{ key: 'primary', label: 'Primary', value: 120 }, { key: 'secondary', label: 'Secondary', value: load.vout }].map(function (reading) {
                   var width = reading.value / Math.max(120, load.vout) * 100;
                   return h('div', { key: reading.key, className: 'mag-transformer-bar-row' }, h('small', null, reading.label),
-                    h('div', { className: 'mag-transformer-track', role: 'img', 'aria-label': reading.label + ' voltage ' + reading.value.toFixed(0) + ' V; shared scale maximum ' + Math.max(120, load.vout).toFixed(0) + ' V' },
+                    h('div', { className: 'mag-transformer-track', role: 'img', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_voltage_v_shared_scale_maximum_v', '{label} voltage {value1} V; shared scale maximum {value2} V'), { label: reading.label, value1: reading.value.toFixed(0), value2: Math.max(120, load.vout).toFixed(0) }) },
                       h('span', { 'data-transformer-bar': reading.key, style: { width: width + '%' } })));
                 }))),
             h('div', { className: 'mag-motion-controls mag-transformer-controls' },
@@ -11212,7 +11212,7 @@
                 h('span', null, h('b', null, design.mission.label), design.mission.brief)),
               slider('Load resistance (ohms)', d.xfmrLoad, 20, 240, 10, function (v) { upd({ xfmrLoad: v, xfmrTouched: true }); }),
               slider('Transformer efficiency (%)', d.xfmrEfficiency, 80, 99, 1, function (v) { upd({ xfmrEfficiency: v, xfmrTouched: true }); }),
-              h('div', { className: 'mag-xfmr-goals', role: 'group', 'aria-label': design.mission.label + ' live constraint scorecard' }, design.criteria.map(transformerGoal)),
+              h('div', { className: 'mag-xfmr-goals', role: 'group', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_live_constraint_scorecard', '{label} live constraint scorecard'), { label: design.mission.label }) }, design.criteria.map(transformerGoal)),
               h('div', { className: 'mag-xfmr-feedback', 'data-status': feedbackStatus, role: 'status', 'aria-live': d.xfmrChecked || design.allMet ? 'polite' : 'off', 'aria-atomic': 'true' },
                 h('span', { 'aria-hidden': 'true' }, design.allMet ? '\u2713' : design.active ? '\u2192' : '\u26A0'),
                 h('span', null, h('b', null, feedbackTitle), feedbackDetail)),
@@ -11573,7 +11573,7 @@
               h('div', { className: 'mag-earth-shield-head' },
                 h('span', null, h('b', { id: 'mag-earth-shield-title' }, 'Shield Watch · quiet → storm'), h('small', null, 'Can you identify the magnetosphere’s three-part response signature?')),
                 h('span', { className: 'mag-earth-shield-count' }, shield.completedCount + '/3 captured')),
-              h('progress', { className: 'mag-earth-shield-progress', max: 3, value: shield.completedCount, 'aria-label': shield.completedCount + ' of 3 Shield Watch steps completed' }),
+              h('progress', { className: 'mag-earth-shield-progress', max: 3, value: shield.completedCount, 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_of_3_shield_watch_steps_completed', '{completedCount} of 3 Shield Watch steps completed'), { completedCount: shield.completedCount }) }),
               h('ol', { className: 'mag-earth-shield-steps' }, shield.steps.map(function (step, index) {
                 return h('li', { key: step.key, className: 'mag-earth-shield-step', 'data-state': step.state, 'aria-current': step.state === 'current' ? 'step' : null },
                   h('span', { className: 'mag-earth-shield-step-index', 'aria-hidden': 'true' }, step.done ? '✓' : String(index + 1)), h('b', null, step.label), h('small', null, step.detail));
@@ -11760,7 +11760,7 @@
                   h('div', { className: 'mag-quiz-topic-score' },
                     h('span', null, topic.needsReview ? topic.missed + ' to revisit' : 'Evidence secured'),
                     h('strong', null, topic.correct + '/' + topic.total)),
-                  h('div', { className: 'mag-quiz-topic-track', role: 'progressbar', 'aria-label': topicLabel + ' mastery: ' + topic.correct + ' of ' + topic.total + ' correct', 'aria-valuemin': 0, 'aria-valuemax': topic.total, 'aria-valuenow': topic.correct },
+                  h('div', { className: 'mag-quiz-topic-track', role: 'progressbar', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_mastery_of_correct', '{topicLabel} mastery: {correct} of {total} correct'), { topicLabel: topicLabel, correct: topic.correct, total: topic.total }), 'aria-valuemin': 0, 'aria-valuemax': topic.total, 'aria-valuenow': topic.correct },
                     h('span', { className: 'mag-quiz-topic-fill', style: { width: topic.percent + '%' } })),
                   topic.needsReview ? h('button', { onClick: function () { upd({ tab: topic.id }); announceToSR(__alloFill(__alloT('stem.magnetism.sr_opened_to_review', 'Opened {value1} to review'), { value1: topicLabel })); }, style: btn() }, 'Study: ' + topicLabel) : null);
               }))),
@@ -11789,7 +11789,7 @@
             h('ol', { className: 'mag-quiz-trail', 'aria-label': __alloT('stem.magnetism.a11y_question_evidence_trail', 'Question evidence trail') }, evidence.progress.map(function (step) {
               var mark = step.state === 'confirmed' ? '✓' : (step.state === 'revised' ? '↺' : step.number);
               var stateLabel = step.state === 'confirmed' ? 'confirmed' : (step.state === 'revised' ? 'needs review' : (step.state === 'current' ? 'current question' : 'upcoming'));
-              return h('li', { key: step.index, className: 'mag-quiz-step', 'data-state': step.state, 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_question', 'Question {value1}, {value2}'), { value1: step.number, value2: stateLabel }), title: 'Question ' + step.number + ' · ' + stateLabel }, mark);
+              return h('li', { key: step.index, className: 'mag-quiz-step', 'data-state': step.state, 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_question', 'Question {value1}, {value2}'), { value1: step.number, value2: stateLabel }), title: __alloFill(__alloT('stem.magnetism.a11y_question_2', 'Question {number} · {stateLabel}'), { number: step.number, stateLabel: stateLabel }) }, mark);
             })),
             h('section', { className: 'mag-quiz-question', 'aria-labelledby': 'mag-quiz-question-text' },
               h('p', { className: 'mag-quiz-kicker' }, 'Build the strongest claim'),
@@ -12035,7 +12035,7 @@
             'data-range-percent': String(range.percent), style: { '--mag-range-fill': range.percentCss } },
           h('div', { className: 'mag-range-head' },
             h('label', { htmlFor: sliderId, className: 'mag-range-label' }, label),
-            h('output', { htmlFor: sliderId, className: 'mag-range-value', 'aria-label': label + ' current value' }, range.valueDisplay)),
+            h('output', { htmlFor: sliderId, className: 'mag-range-value', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_current_value', '{label} current value'), { label: label }) }, range.valueDisplay)),
           h('span', { id: scaleId, className: 'mag-sronly' }, 'Minimum ' + range.minDisplay + ', maximum ' + range.maxDisplay + '.'),
           h('input', { id: sliderId, className: 'mag-range-input', type: 'range', min: range.min, max: range.max, step: range.step, value: range.value,
             'aria-describedby': scaleId,
@@ -12192,11 +12192,11 @@
               h('small', null, 'Magnetism & Electromagnetism Lab · Chapter ' + story.chapterNumber + '/' + story.chapterCount),
               h('h2', { id: 'mag-shell-title' }, station.icon + ' ' + station.label),
               h('p', null, h('b', null, guide.phase + '. '), guide.goal)),
-            h('div', { className: 'mag-shell-status', role: 'group', 'aria-label': station.label + ' progress: ' + station.doneCount + ' of ' + station.total + ' station milestones; ' + expedition.doneCount + ' of ' + expedition.total + ' journey milestones complete.' },
+            h('div', { className: 'mag-shell-status', role: 'group', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_progress_of_station_milestones_of_journey_milestones', '{label} progress: {doneCount} of {total} station milestones; {doneCount2} of {total2} journey milestones complete.'), { label: station.label, doneCount: station.doneCount, total: station.total, doneCount2: expedition.doneCount, total2: expedition.total }) },
               h('div', { className: 'mag-shell-status-head' },
                 h('span', null, station.complete ? 'Station evidence complete' : station.doneCount ? 'Evidence in progress' : 'Ready to investigate'),
                 h('b', null, station.doneCount + '/' + station.total)),
-              h('progress', { value: station.doneCount, max: station.total || 1, 'aria-label': station.label + ' evidence progress' }),
+              h('progress', { value: station.doneCount, max: station.total || 1, 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_evidence_progress', '{label} evidence progress'), { label: station.label }) }),
               h('small', null, 'Expedition ' + expedition.doneCount + '/' + expedition.total + ' · ' + activeModelLabel()))),
           h('div', { className: 'mag-shell-actions', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_primary_lab_actions', 'Primary lab actions') },
             h('button', { type: 'button', className: 'mag-shell-next', onClick: function () { openQuest(nextQuest); }, style: btn(true) },
@@ -12250,11 +12250,11 @@
               h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 850, color: TEXT, lineHeight: 1.2 } }, 'Magnetism & Electromagnetism'),
               h('p', null, chapter.concept)),
             h('div', { className: 'mag-story-now', role: 'group',
-                'aria-label': station.label + ': ' + story.statusLabel + '. ' + story.doneCount + ' of ' + story.total + ' expedition milestones complete.' },
+                'aria-label': __alloFill(__alloT('stem.magnetism.a11y_of_expedition_milestones_complete', '{label}: {statusLabel}. {doneCount} of {total} expedition milestones complete.'), { label: station.label, statusLabel: story.statusLabel, doneCount: story.doneCount, total: story.total }) },
               h('small', null, 'Now exploring \u00b7 station ' + story.stationNumber + '/' + story.stationCount),
               h('b', null, station.icon + ' ' + station.label),
               h('span', null, story.statusLabel),
-              h('progress', { value: station.doneCount, max: station.total, 'aria-label': station.label + ' evidence progress' }))),
+              h('progress', { value: station.doneCount, max: station.total, 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_evidence_progress', '{label} evidence progress'), { label: station.label }) }))),
           h('div', { className: 'mag-story-arc', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_magnetism_learning_arc', 'Magnetism learning arc') },
             story.chapters.map(function (stop) {
               var stopStatus = stop.selected ? 'selected' : stop.complete ? 'complete' : stop.status;
@@ -12279,12 +12279,12 @@
         var signalIcon = ({ up: '\u2197', down: '\u2198', same: '\u2014', baseline: '\u25cf' })[signal.trend] || '\u25cf';
         if (signalOnly && !(feedback && signal.active)) return null;
         return h('section', { className: 'mag-lab-toolbar' + (signalOnly ? ' is-signal-only' : '') + (settingsOnly ? ' is-settings-only' : ''),
-            'aria-label': signalOnly ? 'Cause and effect feedback' : 'Lab command bar' },
+            'aria-label': signalOnly ? __alloT('stem.magnetism.a11y_cause_and_effect_feedback', 'Cause and effect feedback') : __alloT('stem.magnetism.a11y_lab_command_bar', 'Lab command bar') },
           signalOnly ? null : h('div', { className: 'mag-lab-context' },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, g.icon),
             h('span', null, g.phase),
             h('span', { className: 'mag-model-badge' }, activeModelLabel())),
-          signalOnly ? null : h('span', { className: 'mag-model-badge', 'aria-label': progress.mission.label + ' mission progress: ' + progress.doneCount + ' of ' + progress.total }, progress.mission.icon + ' ' + progress.doneCount + '/' + progress.total),
+          signalOnly ? null : h('span', { className: 'mag-model-badge', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_mission_progress_of', '{label} mission progress: {doneCount} of {total}'), { label: progress.mission.label, doneCount: progress.doneCount, total: progress.total }) }, progress.mission.icon + ' ' + progress.doneCount + '/' + progress.total),
           signalOnly ? null : learningModeSwitch(),
           signalOnly ? null : h('button', { type: 'button', 'aria-pressed': d.labFocus ? 'true' : 'false', onClick: function () {
             upd({ labFocus: !d.labFocus, missionPanelOpen: false, labShellPanel: '' });
@@ -12693,8 +12693,8 @@
                     h('b', null, trial.station || 'Recorded station')),
                   h('p', null, (trial.setup || 'Setup not described') + ' → ' + (trial.result || 'Observation recorded')),
                   h('span', null, 'Prediction: ' + (trial.prediction || 'No prediction recorded')),
-                  normalizeInductionMotionExperiment(trial.motionExperiment) ? h('button', { type: 'button', 'aria-label': 'Reopen motion from trial ' + (index + 1), onClick: function () { reopenInductionMotion(trial.motionExperiment, index + 1); }, style: Object.assign({}, btn(), { marginTop: 8 }) }, 'Reopen motion') : null,
-                  normalizeFieldExperiment(trial.experiment) ? h('button', { type: 'button', 'aria-label': 'Reopen measurements from trial ' + (index + 1), onClick: function () { reopenFieldExperiment(trial.experiment, index + 1); }, style: Object.assign({}, btn(), { marginTop: 8 }) }, 'Reopen measurements') : null);
+                  normalizeInductionMotionExperiment(trial.motionExperiment) ? h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_reopen_motion_from_trial', 'Reopen motion from trial {value1}'), { value1: index + 1 }), onClick: function () { reopenInductionMotion(trial.motionExperiment, index + 1); }, style: Object.assign({}, btn(), { marginTop: 8 }) }, 'Reopen motion') : null,
+                  normalizeFieldExperiment(trial.experiment) ? h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_reopen_measurements_from_trial', 'Reopen measurements from trial {value1}'), { value1: index + 1 }), onClick: function () { reopenFieldExperiment(trial.experiment, index + 1); }, style: Object.assign({}, btn(), { marginTop: 8 }) }, 'Reopen measurements') : null);
               })) : h('div', { className: 'mag-studio-empty' },
               h('i', { 'aria-hidden': 'true' }, '＋'),
               h('span', null, 'No evidence recorded yet. Save this setup, change one variable, then capture the comparison.'))
@@ -12785,8 +12785,8 @@
               h('div', { style: { color: TEXT, fontWeight: 800, marginBottom: 3 } }, 'Trial ' + selected.ordinal + ' · ' + selected.station),
               h('div', null, h('b', { style: { color: TEXT } }, 'Recorded: '), selected.setup + ' → ' + selected.result),
               h('div', null, h('b', { style: { color: TEXT } }, 'Prediction: '), selected.prediction),
-              selected.motionExperiment ? h('button', { type: 'button', 'aria-label': 'Reopen motion from trial ' + selected.ordinal, onClick: function () { reopenInductionMotion(selected.motionExperiment, selected.ordinal); }, style: Object.assign({}, btn(), { margin: '8px 0' }) }, 'Reopen motion') : null,
-              selected.experiment ? h('button', { type: 'button', 'aria-label': 'Reopen measurements from trial ' + selected.ordinal, onClick: function () { reopenFieldExperiment(selected.experiment, selected.ordinal); }, style: Object.assign({}, btn(), { margin: '8px 0' }) }, 'Reopen measurements') : null,
+              selected.motionExperiment ? h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_reopen_motion_from_trial', 'Reopen motion from trial {value1}'), { value1: selected.ordinal }), onClick: function () { reopenInductionMotion(selected.motionExperiment, selected.ordinal); }, style: Object.assign({}, btn(), { margin: '8px 0' }) }, 'Reopen motion') : null,
+              selected.experiment ? h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_reopen_measurements_from_trial', 'Reopen measurements from trial {value1}'), { value1: selected.ordinal }), onClick: function () { reopenFieldExperiment(selected.experiment, selected.ordinal); }, style: Object.assign({}, btn(), { margin: '8px 0' }) }, 'Reopen measurements') : null,
               h('div', { style: { marginTop: 5, paddingTop: 5, borderTop: '1px solid ' + BORDER } }, h('b', { style: { color: TEXT } }, 'Live comparison: '), live.station + ' | ' + live.setup + ' -> ' + live.result),
               comparableMetrics.length ? h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_quantitative_replay_comparison', 'Quantitative replay comparison'), style: { marginTop: 8, paddingTop: 7, borderTop: '1px solid ' + BORDER } },
                 h('div', { style: { color: TEXT, fontWeight: 800, marginBottom: 4 } }, 'Quantitative comparison · matching measurements'),
@@ -12799,7 +12799,7 @@
                   var liveWidth = Math.min(100, Math.abs(pair.live.value) / max * 100);
                   var delta = pair.live.value - pair.trial.value;
                   var deltaText = (delta >= 0 ? '+' : '') + (pair.trial.digits === 0 ? String(Math.round(delta)) : delta.toFixed(pair.trial.digits));
-                  return h('div', { key: 'metric-compare-' + pair.trial.key, role: 'group', 'aria-label': pair.trial.label + ': recorded ' + pair.trial.display + ', live ' + pair.live.display, style: { marginBottom: 7 } },
+                  return h('div', { key: 'metric-compare-' + pair.trial.key, role: 'group', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_recorded_live', '{label}: recorded {display}, live {display2}'), { label: pair.trial.label, display: pair.trial.display, display2: pair.live.display }), style: { marginBottom: 7 } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: SOFT, fontSize: 11 } },
                       h('b', { style: { color: TEXT } }, pair.trial.label), h('span', null, 'Δ ' + deltaText + (pair.trial.unit ? ' ' + pair.trial.unit : ''))),
                     h('div', { 'aria-hidden': 'true', style: { height: 7, borderRadius: 5, overflow: 'hidden', background: 'rgba(148,163,184,.15)', margin: '3px 0' } },
@@ -13039,7 +13039,7 @@
               var statusLabel = chapter.complete ? 'complete' : chapter.status === 'current' ? 'current frontier' : chapter.doneCount ? 'in progress' : 'upcoming';
               return h('div', { key: chapter.id, role: 'listitem' },
                 h('button', { type: 'button', className: 'mag-expedition-stage', 'data-status': chapter.status, 'aria-current': chapter.status === 'current' ? 'step' : undefined,
-                    'aria-label': chapter.label + ': ' + chapter.doneCount + ' of ' + chapter.total + ' complete, ' + statusLabel + '. Open ' + (destination ? destination.label : 'chapter review') + '.',
+                    'aria-label': __alloFill(__alloT('stem.magnetism.a11y_of_complete_open', '{label}: {doneCount} of {total} complete, {statusLabel}. Open {value1}.'), { label: chapter.label, doneCount: chapter.doneCount, total: chapter.total, statusLabel: statusLabel, value1: destination ? destination.label : __alloT('stem.magnetism.a11y_chapter_review', 'chapter review') }),
                     onClick: function () { openQuest(destination); }, style: { '--mag-expedition-tone': chapter.accent } },
                   h('span', { className: 'mag-expedition-stage-icon', 'aria-hidden': 'true' }, chapter.complete ? '✓' : chapter.icon),
                   h('b', null, chapter.shortLabel),
@@ -13061,7 +13061,7 @@
                     h('span', { 'aria-hidden': 'true' }, chapter.icon),
                     h('b', null, chapter.label),
                     h('small', null, chapter.doneCount + '/' + chapter.total)),
-                  h('div', { className: 'mag-expedition-bar', role: 'progressbar', 'aria-label': chapter.label + ': ' + chapter.doneCount + ' of ' + chapter.total + ' complete', 'aria-valuemin': 0, 'aria-valuemax': chapter.total, 'aria-valuenow': chapter.doneCount },
+                  h('div', { className: 'mag-expedition-bar', role: 'progressbar', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_of_complete', '{label}: {doneCount} of {total} complete'), { label: chapter.label, doneCount: chapter.doneCount, total: chapter.total }), 'aria-valuemin': 0, 'aria-valuemax': chapter.total, 'aria-valuenow': chapter.doneCount },
                     h('span', { style: { width: chapter.percent + '%' } })),
                   h('p', null, chapter.concept),
                   h('div', { className: 'mag-expedition-quests' },
@@ -13069,7 +13069,7 @@
                       var state = quest.done ? 'done' : nextQuest && quest.id === nextQuest.id ? 'current' : 'todo';
                       return h('button', { key: quest.id, type: 'button', className: 'mag-expedition-quest', 'data-state': state,
                           'data-current-tab': d.tab === quest.tab ? 'true' : 'false',
-                          'aria-label': (quest.done ? 'Complete: ' : state === 'current' ? 'Current: ' : 'To do: ') + quest.label + '. Opens the ' + quest.tab + ' station.',
+                          'aria-label': __alloFill(quest.done ? __alloT('stem.magnetism.a11y_quest_complete_opens_station', 'Complete: {label}. Opens the {tab} station.') : state === 'current' ? __alloT('stem.magnetism.a11y_quest_current_opens_station', 'Current: {label}. Opens the {tab} station.') : __alloT('stem.magnetism.a11y_quest_to_do_opens_station', 'To do: {label}. Opens the {tab} station.'), { label: quest.label, tab: quest.tab }),
                           onClick: function () { openQuest(quest); } },
                         h('span', { 'aria-hidden': 'true' }, quest.icon),
                         h('b', null, quest.label),

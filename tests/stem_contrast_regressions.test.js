@@ -100,7 +100,7 @@ describe('Broader STEM contrast sweep', () => {
 
   it('pins readable secondary text in the remaining tools', () => {
     expect(source('stem_lab/stem_tool_typingpractice.js')).toContain(
-      "background: '#f1f5f9', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#475569'",
+      "background: '#f1f5f9', borderRadius: 4, fontSize: 12, fontStyle: 'italic', color: '#475569'",
     );
     expect(source('stem_lab/stem_tool_spacecolony.js')).toContain(
       "background: '#1e293b', color: '#94a3b8'",
@@ -216,7 +216,7 @@ describe('Small STEM control contrast sweep', () => {
     ['stem_lab/stem_tool_optics.js', "background: '#22c55e', color: '#052e16'"],
     ['stem_lab/stem_tool_fisherlab.js', "background: '#10b981', color: '#052e16'"],
     ['stem_lab/stem_tool_roadready.js', "background: '#be123c', color: '#fff'"],
-    ['stem_lab/stem_tool_nutritionlab.js', "fontSize: 10, color: '#075985'"],
+    ['stem_lab/stem_tool_nutritionlab.js', "fontSize: 12, color: '#075985'"],
     ['stem_lab/stem_tool_spacestation.js', "background: '#0ea5e9', color: '#082f49'"],
     // 10-10: ATC's practice button moved to the tower's .atc-primary class.
     ['stem_lab/stem_tool_atctower.js', '.atc-tower button.atc-primary{background:#99f6e4;color:#07332c}'],

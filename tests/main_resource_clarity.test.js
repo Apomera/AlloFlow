@@ -38,6 +38,25 @@ describe('resource navigation and limited teacher checks',()=>{
   const props={...common,resource:{type:'timeline',data:[{verification:{factual:true,position:true}},{verification:{factual:false,position:true}},{}]}};
   const {host,rerender}=mount(Footer,props);expect(host.querySelector('details')).toBeNull();rerender({...props,teacher:true});expect(host.textContent).toContain('1 timeline item has no saved AI review');expect(host.textContent).toContain('AI flagged 1 timeline items');
  });
+ it('hides to a thin strip, remembers it on this device, and shows again',()=>{
+  localStorage.removeItem('alloflow_resource_nav_hidden');
+  const {host}=mount(Footer,{...common,teacher:true,resource:{id:'r',data:{panels:[{imageUrl:'one'}]}}});
+  const full=host.querySelector('[data-resource-nav-full]'),mini=host.querySelector('[data-resource-nav-mini]');
+  expect(full.hidden).toBe(false);expect(mini.hidden).toBe(true);
+  act(()=>host.querySelector('[data-resource-nav-hide]').click());
+  expect(full.hidden).toBe(true);expect(mini.hidden).toBe(false);expect(localStorage.getItem('alloflow_resource_nav_hidden')).toBe('1');
+  expect(document.activeElement).toBe(host.querySelector('[data-resource-nav-show]'));
+  expect(mini.textContent).toContain('1 check needs attention');
+  const again=mount(Footer,{...common}).host;expect(again.querySelector('[data-resource-nav-full]').hidden).toBe(true);
+  act(()=>host.querySelector('[data-resource-nav-show]').click());
+  expect(full.hidden).toBe(false);expect(localStorage.getItem('alloflow_resource_nav_hidden')).toBe('0');
+ });
+ it('a live lesson always shows the bar and offers no hide control',()=>{
+  localStorage.setItem('alloflow_resource_nav_hidden','1');
+  const {host}=mount(Footer,{...common,sync:true});
+  expect(host.querySelector('[data-resource-nav-full]').hidden).toBe(false);expect(host.querySelector('[data-resource-nav-hide]')).toBeNull();expect(host.querySelector('[data-resource-nav-mini]')).toBeNull();
+  localStorage.removeItem('alloflow_resource_nav_hidden');
+ });
 });
 describe('deterministic Notes feedback source coverage',()=>{
  const valid={strength:'You linked two ideas.',growthNudge:'Explain how they connect.',sourceAlignment:{found:true,message:''},rubric:{completion:2,quality:10,alignment:3}};

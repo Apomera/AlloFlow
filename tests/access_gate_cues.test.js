@@ -69,23 +69,30 @@ function evalExpr(expr, scope) {
 const introExpr = (() => { const l = lineWith('canPlayIntro={'); return l.slice(l.indexOf('canPlayIntro={') + 'canPlayIntro={'.length, l.lastIndexOf('}')); })();
 const wizardExpr = (() => { const l = lineWith('isOpen={showWizard && hasSelectedRole'); return l.slice(l.indexOf('isOpen={') + 'isOpen={'.length, l.lastIndexOf('}')); })();
 const wizardMirrorExpr = (() => { const l = lineWith('_guidedWizardOpenRef.current = showWizard'); return l.slice(l.indexOf('=') + 1, l.indexOf(';')).trim(); })();
-const cues = (ctx) => ({
-  intro: !!evalExpr(introExpr, { canPlayBotIntro: true, isBotVisible: true, hasSelectedRole: ctx.hasSelectedRole, guidedMode: ctx.guidedMode, isGateOpen: ctx.isGateOpen }),
-  wizard: !!evalExpr(wizardExpr, { showWizard: ctx.showWizard, hasSelectedRole: ctx.hasSelectedRole, isTeacherMode: ctx.isTeacherMode, isGateOpen: ctx.isGateOpen }),
+// 2026-11-17 one guide at a time: the host derives the guide on screen; the tip waits for it, and the
+// AlloBot intro also waits for the tip to have had its turn.
+const guideExpr = between('  const _alloGuideOnScreen =', ";\n").slice('  const _alloGuideOnScreen ='.length);
+const settledExpr = lineWith('const _alloHelpTipSettled =').split('const _alloHelpTipSettled =')[1].replace(/;\s*$/, '');
+const guideOf = (ctx) => evalExpr(guideExpr, { hasSelectedRole: ctx.hasSelectedRole, runTour: false, isHelpMode: false, showUDLGuide: false, isGateOpen: ctx.isGateOpen, showWizard: ctx.showWizard, isTeacherMode: ctx.isTeacherMode });
+const cues = (ctx, tip) => ({
+  intro: !!evalExpr(introExpr, { canPlayBotIntro: true, isBotVisible: true, hasSelectedRole: ctx.hasSelectedRole, guidedMode: ctx.guidedMode, isGateOpen: ctx.isGateOpen,
+    _alloGuideOnScreen: guideOf(ctx), _alloHelpTipSettled: evalExpr(settledExpr, { showHelpOnboarding: tip ? tip.current() : false, safeGetItem: (k) => (tip ? tip.store[k] : undefined) }) }),
+  wizard: !!evalExpr(wizardExpr, { showWizard: ctx.showWizard, hasSelectedRole: ctx.hasSelectedRole, isTeacherMode: ctx.isTeacherMode, isGateOpen: ctx.isGateOpen, runTour: false }),
 });
 
 // The real first-run help-tip effect, run with React's dependency rule.
-const tipAt = source.indexOf('  // First-run help tip: only once a role is chosen');
+const tipAt = source.indexOf('  // One guide at a time: the guide on screen now.');
 const tipSrc = source.slice(source.indexOf('useEffect(', tipAt), source.indexOf(']);', source.indexOf('useEffect(', tipAt)) + 3);
 function tipEffect() {
-  const store = {}; const shown = []; let prevDeps = null; let cleanup;
+  // shown records visible changes only (React ignores setting the same value).
+  const store = {}; const shown = []; let prevDeps = null; let cleanup; let current = false;
   const render = (ctx) => {
     let fn; let deps;
-    const scope = { hasSelectedRole: ctx.hasSelectedRole, isGateOpen: ctx.isGateOpen, safeGetItem: (k) => store[k], safeSetItem: (k, v) => { store[k] = v; }, setShowHelpOnboarding: (v) => shown.push(v), useEffect: (f, d) => { fn = f; deps = d; } };
+    const scope = { _alloGuideOnScreen: guideOf(ctx), guidedMode: ctx.guidedMode, safeGetItem: (k) => store[k], safeSetItem: (k, v) => { store[k] = v; }, setShowHelpOnboarding: (v) => { if (v !== current) { current = v; shown.push(v); } }, useEffect: (f, d) => { fn = f; deps = d; } };
     new Function(...Object.keys(scope), tipSrc)(...Object.values(scope));
     if (!prevDeps || deps.some((d, i) => !Object.is(d, prevDeps[i]))) { if (typeof cleanup === 'function') cleanup(); cleanup = fn(); prevDeps = deps; }
   };
-  return { render, shown, store };
+  return { render, shown, store, current: () => current };
 }
 
 afterEach(() => vi.useRealTimers());
@@ -94,20 +101,23 @@ describe('access-code gate holds first-run cues', () => {
   it('nothing fires or mounts while the gate is up; after the code, the tip shows once and the intro may play', async () => {
     vi.useFakeTimers();
     expect(source.indexOf('const [isGateOpen, setIsGateOpen] = useState(false);'), 'gate state declared before the tip effect reads it').toBeLessThan(tipAt);
-    expect(wizardMirrorExpr).toBe(wizardExpr);
+    // Quick Start also waits while the tour runs; the earlier mirror cannot read the later tour state.
+    expect(wizardExpr).toBe(wizardMirrorExpr + ' && !runTour');
     const ctx = host(); const tip = tipEffect();
     tip.render(ctx);
     await ctx.api.chooseLaunchRole('teacher_full');
     expect(ctx.isGateOpen).toBe(true); expect(ctx.hasSelectedRole).toBe(true);
     tip.render(ctx);
-    expect(cues(ctx)).toEqual({ intro: false, wizard: false });
+    expect(cues(ctx, tip)).toEqual({ intro: false, wizard: false });
     vi.advanceTimersByTime(30000);
     expect(tip.shown, 'tip behind the gate').toEqual([]); expect(tip.store.allo_help_onboarded).toBeUndefined();
     acceptCode(ctx); tip.render(ctx);
     expect(ctx.isGateOpen).toBe(false); expect(ctx.hasSelectedRole).toBe(true);
-    expect(cues(ctx)).toEqual({ intro: true, wizard: false }); // Launch Pad doors never open the wizard
+    expect(cues(ctx, tip)).toEqual({ intro: false, wizard: false }); // Launch Pad doors never open the wizard; the tip goes first
     vi.advanceTimersByTime(4000); expect(tip.shown).toEqual([true]);
+    expect(cues(ctx, tip).intro, 'no intro over the tip').toBe(false);
     vi.advanceTimersByTime(20000); expect(tip.shown).toEqual([true, false]); expect(tip.store.allo_help_onboarded).toBe('true');
+    expect(cues(ctx, tip).intro, 'the intro after the tip').toBe(true);
   });
 
   it('backing out of the gate spends nothing', async () => {

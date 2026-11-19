@@ -186,7 +186,8 @@ describe('adapted text under hidden AI', () => {
     expect(simplified).toContain("(studentAiFeaturesHidden && props.interactionMode === 'explain')) ? 'read'");
     expect(simplified).toContain("...(studentAiFeaturesHidden ? [] : [['explain', 'simplified.explain_mode', 'Explain', HelpCircle]]),");
     const fab = readFileSync('view_fab_stack_source.jsx', 'utf8');
-    expect(fab).toContain("{!studentAiFeaturesHidden && <button\n                      data-student-tool=\"true\"\n                      data-help-toggle=\"true\"\n                      onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain');");
+    // 2026-11-17: the Explain button also declares type="button" now.
+    expect(fab).toContain("{!studentAiFeaturesHidden && <button type=\"button\"\n                      data-student-tool=\"true\"\n                      data-help-toggle=\"true\"\n                      onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain');");
     expect(host).toContain('isTeacherMode, studentAiFeaturesHidden, isProcessing, isPlaying,');
   });
 });

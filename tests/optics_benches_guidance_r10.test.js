@@ -91,7 +91,7 @@ describe('Mirror bench — every principal ray the diagram draws is the right ra
   it('F and C stay inside the diagram for every focal length the slider offers', () => {
     for (const [type, f] of [['convex', 12], ['convex', 30], ['concave', 30]]) {
       const html = shown('reflection', { reflMirrorType: type, reflFocal: f, reflDo: 25, reflObjH: 6 });
-      const xs = [...html.matchAll(/<text x="([-0-9.]+)" y="[-0-9.]+" fill="#(?:fbbf24|94a3b8)" font-size="9" text-anchor="middle">(?:F|C)<\/text>/g)].map((m) => Number(m[1]));
+      const xs = [...html.matchAll(/<text x="([-0-9.]+)" y="[-0-9.]+" fill="#(?:fbbf24|94a3b8)" font-size="12" text-anchor="middle">(?:F|C)<\/text>/g)].map((m) => Number(m[1]));
       expect(xs.length, `${type} ${f}`).toBe(2);
       for (const x of xs) { expect(x).toBeGreaterThan(0); expect(x).toBeLessThan(460); }
     }

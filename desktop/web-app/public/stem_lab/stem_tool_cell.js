@@ -12060,6 +12060,7 @@ window.StemLab = window.StemLab || {
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       // The header row paints no ground, so it sits on the HOST surface -
       // white in light and dark, pure BLACK in the contrast theme, where the
       // tool own title measured 1.44:1.
@@ -34507,7 +34508,7 @@ var d = labToolData.cell || {};
                   h('div', { 'data-cell-diagram-caption': true },
                     h('div', { 'data-cell-selection-caption': true }, h('span', null, selOrg ? 'SELECTED STRUCTURE' : 'EXPLORE THE CELL'), h('strong', null, selOrg ? selOrg.name : 'Select a structure to begin'), h('small', null, 'Schematic · not to scale')),
                     selOrg && h('div', { 'data-cell-selection-actions': true },
-                      h('button', { type: 'button', onClick: focusStructureInspector, 'aria-label': 'Read about ' + selOrg.name }, 'Read structure'),
+                      h('button', { type: 'button', onClick: focusStructureInspector, 'aria-label': __alloAriaFill(__alloT('stem.cell.a11y_read_about', 'Read about {name}'), { name: selOrg.name }) }, 'Read structure'),
                       h('button', { type: 'button', onClick: clearStructureSelection }, 'Clear selection')
                     )
                   )),
@@ -34577,7 +34578,7 @@ var d = labToolData.cell || {};
                   h('div', { 'data-cell-status-feedback': true },
                     canUndoStudy && h('div', null,
                       h('p', { role: 'status' }, selOrg.name + ' marked ' + studyStatusLabels[studyUndo.next].toLowerCase() + '.'),
-                      h('button', { type: 'button', onClick: undoStudyStatus, 'aria-label': 'Undo study status change for ' + selOrg.name }, 'Undo change')
+                      h('button', { type: 'button', onClick: undoStudyStatus, 'aria-label': __alloAriaFill(__alloT('stem.cell.a11y_undo_study_status_change_for', 'Undo study status change for {name}'), { name: selOrg.name }) }, 'Undo change')
                     ),
                     cellStudyStatus(d, sel) !== 'explored' && h('button', { type: 'button', 'data-cell-reset-study-status': true, onClick: function() { markMastery(sel, 'explored'); } }, 'Reset study status')
                   ),
@@ -34596,7 +34597,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
                       h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Connections in the cell'),
                       h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.connections))),
-                    relatedGuides.length > 0 && h('section', { 'data-cell-related-pathways': true, 'aria-label': 'Pathways involving ' + selOrg.name },
+                    relatedGuides.length > 0 && h('section', { 'data-cell-related-pathways': true, 'aria-label': __alloAriaFill(__alloT('stem.cell.a11y_pathways_involving', 'Pathways involving {name}'), { name: selOrg.name }) },
                       h('h5', null, 'See this structure in a pathway'),
                       h('p', null, 'Open a guided tour at this structure, then follow the surrounding steps.'),
                       relatedGuides.map(function(item) {
@@ -34776,7 +34777,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   ),
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' }, CTYPES.map(function (c) {
                     var compareSel = sel && interiorHas(c.id, sel) ? sel : null;
-                    return h('button', { key: 'compare-' + c.id, onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = compareSel; cel.interiorGuide = null; return cel; }); }, className: 'rounded-xl border border-indigo-200 bg-white p-1.5 text-left hover:border-indigo-500 transition-colors', 'aria-label': 'Open ' + c.label + ' in the main cell view' },
+                    return h('button', { key: 'compare-' + c.id, onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = compareSel; cel.interiorGuide = null; return cel; }); }, className: 'rounded-xl border border-indigo-200 bg-white p-1.5 text-left hover:border-indigo-500 transition-colors', 'aria-label': __alloAriaFill(__alloT('stem.cell.a11y_open_in_the_main_cell_view', 'Open {label} in the main cell view'), { label: c.label }) },
                       h('canvas', { key: 'compare-canvas-' + c.id + '-' + (compareSel || 'none'), width: 300, height: 190, role: 'img', 'aria-label': c.label + ' comparison diagram' + (compareSel ? ', ' + CELL_ORGANELLES[compareSel].name + ' highlighted' : ''), style: { width: '100%', height: 'auto', display: 'block', borderRadius: '0.6rem' }, ref: function (cv) {
                         if (!cv) return; var ctx = cv.getContext && cv.getContext('2d'); if (!ctx) return;
                         // Crisp on high-density screens; the study chrome is sized for the
@@ -34792,7 +34793,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     );
                   }))
                 ),
-                guide && h('section', { 'data-cell-guided-pathway': guideId, 'data-cell-study-surface': true, tabIndex: -1, 'aria-label': guide.label + ' guided pathway' },
+                guide && h('section', { 'data-cell-guided-pathway': guideId, 'data-cell-study-surface': true, tabIndex: -1, 'aria-label': __alloAriaFill(__alloT('stem.cell.a11y_guided_pathway', '{label} guided pathway'), { label: guide.label }) },
                   h('div', { 'data-cell-pathway-heading': true },
                     h('div', null, h('p', null, 'GUIDED PATHWAY'), h('h4', null, guide.label)),
                     h('button', { type: 'button', onClick: stopGuide }, 'Back to exploring')
@@ -35027,14 +35028,14 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   !activePlayDef && React.createElement("span", { className: "hidden rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[0.6875rem] font-black text-cyan-100 sm:inline-flex" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
                   !activePlayDef && React.createElement("span", { className: "hidden rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[0.6875rem] font-black text-amber-100 sm:inline-flex" }, effectiveCellPaused ? "Paused" : "Running"),
                   activePlayDef && React.createElement("button", {
-                    type: "button", "data-cell-play-hud": true, onClick: openCellPlayTutorial, "aria-label": "Open " + activePlayDef.label + " mission tutorial",
+                    type: "button", "data-cell-play-hud": true, onClick: openCellPlayTutorial, "aria-label": __alloAriaFill(__alloT('stem.cell.a11y_open_mission_tutorial', 'Open {label} mission tutorial'), { label: activePlayDef.label }),
                     className: "inline-flex items-center gap-1 rounded-full border border-violet-300/50 bg-violet-400/20 px-2.5 py-1 text-[0.6875rem] font-black text-violet-100 hover:bg-violet-400/35 active:scale-[0.97]"
                   },
                     React.createElement("span", { "aria-hidden": true }, "\u24D8"),
                     React.createElement("span", { "data-cell-play-hud-label": true }, "Tutorial")
                   ),
                   activePlayDef && React.createElement("button", {
-                    type: "button", "data-cell-center-player": true, onClick: centerActiveCellPlayOrganism, "aria-label": "Center " + activePlayDef.label + " in the live dish",
+                    type: "button", "data-cell-center-player": true, onClick: centerActiveCellPlayOrganism, "aria-label": __alloAriaFill(__alloT('stem.cell.a11y_center_in_the_live_dish', 'Center {label} in the live dish'), { label: activePlayDef.label }),
                     className: "inline-flex items-center gap-1 rounded-full border border-cyan-300/50 bg-cyan-400/20 px-2.5 py-1 text-[0.6875rem] font-black text-cyan-100 hover:bg-cyan-400/35 active:scale-[0.97]"
                   },
                     React.createElement("span", { "aria-hidden": true }, "\u25CE"),
@@ -35058,7 +35059,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     React.createElement("span", null, "Selected specimen")
                   ),
                   React.createElement("div", { "data-cell-observation-actions": true, role: "group", "aria-label": __alloT('stem.cell.inspect_selected_specimen','Inspect selected specimen') },
-                    React.createElement("button", { type: "button", "data-cell-observation-labels": true, "aria-pressed": d.observationLabels !== false, "aria-label": d.observationLabels === false ? "Show labels" : "Hide labels", onClick: function() {
+                    React.createElement("button", { type: "button", "data-cell-observation-labels": true, "aria-pressed": d.observationLabels !== false, "aria-label": d.observationLabels === false ? __alloT('stem.cell.a11y_show_labels', 'Show labels') : __alloT('stem.cell.a11y_hide_labels', 'Hide labels'), onClick: function() {
                       var visible = d.observationLabels === false;
                       upd('observationLabels', visible);
                       var cv = document.querySelector('[data-cell-sim-canvas]');
@@ -35177,7 +35178,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   ),
                   activePlayPredictionText && React.createElement("p", { "data-cell-prediction-compare": true, className: "mt-1 text-[0.625rem] font-bold leading-snug text-amber-100" }, React.createElement("strong", null, "Your prediction: "), activePlayPredictionText),
                   React.createElement("p", { className: "mt-1 text-[0.625rem] leading-snug text-white" }, activePlayFeedback.text),
-                  activePlayCueConsolidated && React.createElement("div", { "data-cell-target-guide-note": true, "data-cell-mission-cue": true, "data-cell-cue-layout": "consolidated", "aria-label": "Next action: " + activePlayCue.text, className: "mt-2 flex items-start gap-2 border-t border-emerald-200/20 pt-2" },
+                  activePlayCueConsolidated && React.createElement("div", { "data-cell-target-guide-note": true, "data-cell-mission-cue": true, "data-cell-cue-layout": "consolidated", "aria-label": __alloAriaFill(__alloT('stem.cell.a11y_next_action', 'Next action: {text}'), { text: activePlayCue.text }), className: "mt-2 flex items-start gap-2 border-t border-emerald-200/20 pt-2" },
                     React.createElement("span", { className: "inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-300 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-slate-950" }, React.createElement("span", { "aria-hidden": "true" }, "\u2192"), "Next"),
                     React.createElement("p", { className: "min-w-0 flex-1 text-[0.625rem] font-bold leading-snug text-amber-50" }, activePlayCue.text),
                     activePlayCue.announcement && React.createElement("span", { className: "sr-only" }, activePlayCue.announcement)
@@ -35185,7 +35186,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 )
               ),
 
-              d.playAsOrganism && activePlayTutorial && activePlayPredictionPending && !activeMissionEvidenceComplete && React.createElement("button", { type: "button", "data-cell-control-lock": true, "data-cell-control-lock-state": "waiting", onClick: openCellPredictionTutorial, "aria-label": "Predict or start without a prediction to unlock " + activePlayDef.label + " controls", className: "absolute left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-0.5 rounded-2xl border border-violet-200/70 bg-slate-950/90 px-4 py-2.5 text-center text-white shadow-2xl backdrop-blur transition motion-reduce:transition-none hover:border-white hover:bg-violet-950/95 focus-visible:outline focus-visible:outline-4 focus-visible:outline-white active:scale-[0.98]", style: { bottom: '44px', width: 'min(240px, calc(100% - 16px))' } },
+              d.playAsOrganism && activePlayTutorial && activePlayPredictionPending && !activeMissionEvidenceComplete && React.createElement("button", { type: "button", "data-cell-control-lock": true, "data-cell-control-lock-state": "waiting", onClick: openCellPredictionTutorial, "aria-label": __alloAriaFill(__alloT('stem.cell.a11y_predict_or_start_without_a_prediction_to_unlock_controls', 'Predict or start without a prediction to unlock {label} controls'), { label: activePlayDef.label }), className: "absolute left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-0.5 rounded-2xl border border-violet-200/70 bg-slate-950/90 px-4 py-2.5 text-center text-white shadow-2xl backdrop-blur transition motion-reduce:transition-none hover:border-white hover:bg-violet-950/95 focus-visible:outline focus-visible:outline-4 focus-visible:outline-white active:scale-[0.98]", style: { bottom: '44px', width: 'min(240px, calc(100% - 16px))' } },
                 React.createElement("span", { className: "text-[0.5625rem] font-black uppercase tracking-widest text-violet-200" }, "1 \u00B7 Predict"),
                 React.createElement("strong", { className: "text-xs font-black text-white" }, "Unlock controls"),
                 React.createElement("span", { className: "text-[0.5625rem] font-bold leading-snug text-violet-100" }, "Choose what you expect or start without a prediction.")
@@ -35283,7 +35284,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                 React.createElement("output", { "data-cell-control-value": "speed", "aria-label": __alloT('stem.cell.current_simulation_speed','Current simulation speed') }, (d.simSpeed || 1) + "×"),
 
-                React.createElement("button", { type: "button", title: effectiveCellPaused ? "Play simulation" : "Pause simulation", "aria-label": effectiveCellPaused ? "Play simulation" : "Pause simulation", "aria-pressed": !effectiveCellPaused, onClick: function () { var p = !effectiveCellPaused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (effectiveCellPaused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, cellControlIcon(effectiveCellPaused ? "play" : "pause"))
+                React.createElement("button", { type: "button", title: effectiveCellPaused ? __alloT('stem.cell.a11y_play_simulation', 'Play simulation') : __alloT('stem.cell.a11y_pause_simulation', 'Pause simulation'), "aria-label": effectiveCellPaused ? __alloT('stem.cell.a11y_play_simulation', 'Play simulation') : __alloT('stem.cell.a11y_pause_simulation', 'Pause simulation'), "aria-pressed": !effectiveCellPaused, onClick: function () { var p = !effectiveCellPaused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (effectiveCellPaused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, cellControlIcon(effectiveCellPaused ? "play" : "pause"))
 
               ),
 

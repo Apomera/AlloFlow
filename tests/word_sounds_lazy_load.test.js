@@ -102,8 +102,13 @@ describe('sibling Word Sounds surfaces are unaffected', () => {
   it('the player module registers only WordSoundsModal', () => {
     const mod = readFileSync(resolve(process.cwd(), 'word_sounds_module.js'), 'utf8');
     const registered = [...new Set(mod.match(/window\.AlloModules\.[A-Za-z]+ =/g) || [])];
-    expect(registered, 'deferring this module must not defer any other component')
-      .toEqual(['window.AlloModules.WordSoundsModal =']);
+    // 2026-11-17: since 4e4a4bf41b (11-14) it also exposes WordSoundsLetterTrace, a helper object (strokes, layout)
+    // that only tests read. Deferring is still safe as long as no other app surface depends on it.
+    expect(registered.sort(), 'deferring this module must not defer any other component')
+      .toEqual(['window.AlloModules.WordSoundsLetterTrace =', 'window.AlloModules.WordSoundsModal =']);
+    for (const file of ['AlloFlowANTI.txt', 'host_handlers_source.jsx', 'word_sounds_setup_module.js', 'view_word_sounds_preview_module.js']) {
+      expect(readFileSync(resolve(process.cwd(), file), 'utf8'), file).not.toContain('WordSoundsLetterTrace');
+    }
   });
 
   it('the generator, review panel and preview live in other modules', () => {

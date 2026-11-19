@@ -2960,6 +2960,32 @@ function createWordSoundsCore(options = {}) {
   return { OG_CONVENTIONS, SOUND_SOURCES, arpabetToSounds, arpabetEntry, loadPhonemeDictionary, dictionarySounds, alignGraphemes, soundAnalysis, mappingChipSpans, soundsNeedGlance, misspellings, derivedAnswerSets, LESSON_STARTING_POINTS, LESSON_LENGTHS, LESSON_LENGTH_DEFAULT, startingPoints, startingPointLabel, startingPointPlan, startingPointStatus, matchStartingPoint, suggestStartingPoint, scaleLessonCounts, lessonLengthOf, lessonPlanItems, lessonPlanMinutes, activityRunsInLanguage, activityBlockedBy, ACTIVITY_NEEDS, SYLLABLE_ACTIVITY_IDS, SYLLABLE_PLAN_DEFAULT_COUNT, isTopUpItem, lessonOwnItems, topUpItems, packItemPlaysIn, wordsForActivity, syllableActivityHasWords, syllableActivityPlan, compoundPartWords, ACTIVITY_SKILLS, SKILL_STRANDS, BIG5_NAMES, activityIds, activityEnglishName, activityLabel, activitySkillLabel, activityStrand, activityBig5, strandOrder, strandLabel, strandBig5, big5Label, strandBig5Label, groupActivitiesByStrand, soundAnswerMatches, phonemeBankCandidates, PHONEME_BANK_SPECIAL, PHONEME_BANK_MATCHES, lessonItemCeiling, PLAN_EXTENSION, planExtensionDecision, preparedSentenceParts, loadSyllablePronunciations, resolveSyllableCount, isTeacherSpokenSyllableCount, createReviewedSyllableCount, createSyllableCountAudioContext, selectSyllableCountAudio, recoverSyllableRecordingDraft, syllableCountWords, syllableRecordingTemplate, normalizeRecordedSyllableDependencies, packAudioLanguageKey, packAudioKey, packAudioAssets, portablePackAsset, packAudioProvenance, packAudioProfileStatus, packAudioInventory, planPackRepair, replacePackAssets, createReviewedSyllableTask, reviewedSyllableReady, syllableAssetSource, resolveSyllableTask, syllableReady, validSyllableBoard, syllableWords, isSyllableLanguageSupported, SYLLABLE_COMPOUNDS_VETTED, compoundWords, longerSyllableWords, READY_LIST_FIRST, readyMadeListGroups, readyListIdsFromDraft, defaultTickOffers, defaultTickedWords, mergeTickedWords, reviewedRhymeEdit, rhymePairStatus, createRhymeSession, buildSessionRhymeBoard, buildRhymeBoard, resolveManipulationTask, manipulationReady, VERSION, phonemeToken, phonemeLabel, soundKey, edgeSound, validSoundBoard, buildSoundSort, validWordFamilyBoard, wordFamilyInstruction, difficultyDecision, choiceLimit, soundCloseness, wordCloseness, trimChoices, countingChoices, isolationPositions, textEvidence, phonemeLabels, responseEvidence, profileCheck, knownWords: Object.keys(EDGES).filter((w) => !NOT_OFFERED.has(w)), edgeWords: Object.keys(EDGES) };
 }
 const WS_CORE = createWordSoundsCore();
+var WS_ACTIVITY_EXAMPLES = {
+  rhyming: { q: "Which word rhymes with cat: hat, dog or sun?", a: "hat" },
+  syllable_counting: { q: "How many syllables do you hear in rabbit?", a: "2" },
+  syllable_blending: { q: "Listen to the parts rab and bit. What word do they make?", a: "rabbit" },
+  word_families: { q: "Which words belong to the -at family: hat, mat or sun?", a: "hat and mat" },
+  isolation: { q: "What is the first sound in sun?", a: "/s/" },
+  sound_sort: { q: "Which words start with /m/: map, moon or cat?", a: "map and moon" },
+  blending: { q: "Listen to the sounds /k/ /a/ /t/. What word do they make?", a: "cat" },
+  segmentation: { q: "Say each sound in ship.", a: "/sh/ /i/ /p/" },
+  counting: { q: "How many sounds do you hear in ship?", a: "3" },
+  manipulation: { q: "Say cat. Now change /k/ to /h/.", a: "hat" },
+  mapping: { q: "Which letters spell each sound in ship?", a: "sh, i, p" },
+  letter_tracing: { q: "Trace the first letter of sun.", a: "" },
+  missing_letter: { q: "c _ t: which letter is missing?", a: "a" },
+  orthography: { q: "Hear dog, then spell it with letter tiles.", a: "d, o, g" },
+  word_scramble: { q: "Unscramble the letters t, a, c to make a word.", a: "cat" },
+  spelling_bee: { q: "Hear jump, then type it.", a: "jump" },
+  decoding: { q: "Read fish, then choose its picture.", a: "" },
+  read_sentence: { q: "Finish the sentence: The cat sat on the ___ (mat or run).", a: "mat" },
+  sentence_match: { q: 'Read "The dog is in the box." Which pictures match it?', a: "" },
+  read_passage: { q: "Read a short story, then choose the word that finishes a sentence about it.", a: "" }
+};
+var wsActivityExampleText = function(id) {
+  var row = WS_ACTIVITY_EXAMPLES[id];
+  return row ? "Example: " + row.q + (row.a ? " Answer: " + row.a + "." : "") : "";
+};
 const WORD_FAMILY_PRESETS = new Proxy({}, {
   get: (_, prop) => (window.WORD_FAMILY_PRESETS || {})[prop],
   ownKeys: () => Object.keys(window.WORD_FAMILY_PRESETS || {}),
@@ -8783,6 +8809,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     const shownBefore = lessonPlanOrder.slice(0, activityIndex).filter((id) => id !== "manipulation" || soundSwapAvailable);
     const startsStrand = !shownBefore.length || WS_CORE.activityStrand(shownBefore[shownBefore.length - 1]) !== strandKey;
     const skillText = WS_CORE.activitySkillLabel(actId, tf);
+    const exampleText = wsActivityExampleText(actId) ? tf("word_sounds.activity_example_" + actId, wsActivityExampleText(actId)) : "";
     return [
       startsStrand && strandKey ? /* @__PURE__ */ React.createElement("p", { key: "strand-" + activity.id, className: "pt-2 text-xs font-bold text-slate-800", "data-ws-lesson-strand": strandKey }, WS_CORE.strandLabel(strandKey, tf), /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600", "data-ws-lesson-strand-big5": "true" }, " \xB7 ", WS_CORE.strandBig5Label(strandKey, tf))) : null,
       /* @__PURE__ */ React.createElement(
@@ -8821,7 +8848,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           "input",
           {
             "aria-labelledby": `ws-activity-label-${activity.id}`,
-            "aria-describedby": skillText ? `ws-activity-skill-${activity.id}` : void 0,
+            "aria-describedby": [skillText && `ws-activity-skill-${activity.id}`, exampleText && `ws-activity-example-${activity.id}`].filter(Boolean).join(" ") || void 0,
             id: `ws-activity-check-${activity.id}`,
             type: "checkbox",
             checked: lessonPlan[activity.id]?.enabled,
@@ -8831,7 +8858,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             })),
             className: "accent-indigo-600 w-4 h-4"
           }
-        ), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { id: `ws-activity-label-${activity.id}`, htmlFor: `ws-activity-check-${activity.id}`, className: "text-sm font-semibold text-slate-700 cursor-pointer" }, activity.label), skillText && /* @__PURE__ */ React.createElement("span", { id: `ws-activity-skill-${activity.id}`, "data-ws-activity-skill": "true", className: "block text-xs leading-tight text-slate-600" }, skillText))), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1", role: "group", "aria-label": `Reorder ${activity.label}` }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "up"), disabled: activityIndex === 0, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} up` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2191")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "down"), disabled: activityIndex === lessonPlanOrder.length - 1, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} down` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2193")))),
+        ), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { id: `ws-activity-label-${activity.id}`, htmlFor: `ws-activity-check-${activity.id}`, className: "text-sm font-semibold text-slate-700 cursor-pointer" }, activity.label), skillText && /* @__PURE__ */ React.createElement("span", { id: `ws-activity-skill-${activity.id}`, "data-ws-activity-skill": "true", className: "block text-xs leading-tight text-slate-600" }, skillText), exampleText && /* @__PURE__ */ React.createElement("span", { id: `ws-activity-example-${activity.id}`, "data-ws-activity-example": "true", className: "block text-xs leading-tight italic text-slate-600" }, exampleText))), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1", role: "group", "aria-label": `Reorder ${activity.label}` }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "up"), disabled: activityIndex === 0, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} up` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2191")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "down"), disabled: activityIndex === lessonPlanOrder.length - 1, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} down` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2193")))),
         lessonPlan[activity.id].enabled && planFineTuneOpen && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mb-1 flex items-center gap-3" }, /* @__PURE__ */ React.createElement(
           "input",
           {

@@ -1,6 +1,6 @@
 # STEM Visual QA Audit
 
-Generated: 2026-10-17T00:16:40.205Z
+Generated: 2026-11-19T00:23:21.916Z
 
 ## Scope
 
@@ -13,12 +13,12 @@ Generated: 2026-10-17T00:16:40.205Z
 | Metric | Count |
 | --- | ---: |
 | Load errors | 2 |
-| Marker passes | 73 |
-| Marker failures | 2 |
-| Monitored first-screen findings | 27 |
-| High-confidence monitored errors | 2 |
-| Source/public drift | 1 |
-| Any source/public/build drift | 1 |
+| Marker passes | 75 |
+| Marker failures | 0 |
+| Monitored first-screen findings | 32 |
+| High-confidence monitored errors | 0 |
+| Source/public drift | 0 |
+| Any source/public/build drift | 0 |
 | Monitored file drift | 0 |
 
 ## Visual Marker Coverage
@@ -64,8 +64,8 @@ Generated: 2026-10-17T00:16:40.205Z
 | pass | `birdLab` | `data-birdlab-field-station` | Rendered |
 | pass | `waterCycle` | `data-watercycle-focus` | Rendered |
 | pass | `playlab` | `data-playlab-gameplan` | Rendered |
-| fail | `plateTectonics` | `data-pt-sim-focus` | marker-missing |
-| fail | `astronomy` | `data-astronomy-command` | marker-missing |
+| pass | `plateTectonics` | `data-pt-sim-focus` | Rendered |
+| pass | `astronomy` | `data-astronomy-tonight=` | Rendered |
 | pass | `geologyExplorer` | `data-geology-command` | Rendered |
 | pass | `rockCycle` | `data-rockcycle-command` | Rendered |
 | pass | `aquarium` | `data-aquarium-focus-panel` | Rendered |
@@ -105,16 +105,13 @@ Generated: 2026-10-17T00:16:40.205Z
 
 | Severity | Code | Count | Tools |
 | --- | --- | ---: | --- |
-| error | `marker-missing` | 2 | `plateTectonics`, `astronomy` |
-| warning | `canvas-focus` | 12 | `cell`, `titrationLab` |
+| warning | `canvas-focus` | 18 | `cell`, `titrationLab`, `heatLab` |
 | warning | `canvas-name` | 11 | `cell` |
-| notice | `horizontal-overflow-risk` | 2 | `fireEcology`, `birdLab` |
+| notice | `horizontal-overflow-risk` | 3 | `fireEcology`, `birdLab`, `numberline` |
 
 ## Sync Drift
 
-| Status | File | Monitored | Hashes |
-| --- | --- | --- | --- |
-| source-public-drift | `stem_tool_coralreef.js` | no | source `7C2BB48471A8`, public `30F4819498A6`, build `30F4819498A6` |
+All source, public, and local build STEM tool copies match.
 
 ## Gate Policy
 

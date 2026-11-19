@@ -45,7 +45,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 21,
   "inputs": 0,
   "lengthBucket": 104,
-  "sha": "7c03dc0aecc2743e",
+  "sha": "1fb5a397af95464b",
   "svgs": 0,
 }
 `;
@@ -95,7 +95,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 122,
   "inputs": 2,
   "lengthBucket": 472,
-  "sha": "2784e9a548fc735c",
+  "sha": "800b01acaa0209f2",
   "svgs": 0,
 }
 `;
@@ -142,10 +142,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for playlab 1`] = `
 {
-  "buttons": 32,
+  "buttons": 36,
   "inputs": 4,
-  "lengthBucket": 95,
-  "sha": "43ed249274fee27c",
+  "lengthBucket": 105,
+  "sha": "2916ee26fe755354",
   "svgs": 0,
 }
 `;
@@ -165,7 +165,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 33,
   "inputs": 1,
   "lengthBucket": 77,
-  "sha": "e9e44ef1b0886bf3",
+  "sha": "6f4883679a201711",
   "svgs": 0,
 }
 `;
@@ -182,10 +182,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for typingPractice 1`] = `
 {
-  "buttons": 45,
+  "buttons": 51,
   "inputs": 1,
-  "lengthBucket": 198,
-  "sha": "b8c6bdc6e98d069f",
+  "lengthBucket": 218,
+  "sha": "668cfcaf07ae0181",
   "svgs": 0,
 }
 `;

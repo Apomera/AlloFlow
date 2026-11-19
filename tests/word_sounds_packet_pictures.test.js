@@ -356,6 +356,10 @@ describe('the builder: pictures off', () => {
   // "#summary" cell (three lines, 239 bytes). With the loader as it was before that change these inputs still give
   // the first values (11854e18..., 168847 bytes and ed033f0d..., 53296 bytes): nothing else moved.
   const BEFORE = {
+    // Re-pinned 2026-11-17 (late), deliberately: the player had changed three times since the last pin (+59.4 to 60.0 KB),
+    // each reviewed line by line in tests/packet_check_mode.test.js (its practice-file fixture, renewed the same day): the
+    // release of 11-17 (6028e1d31d; the two reading fonts are 42.5 KB of it), the Packets pass of 11-17 (4000c45e2b) and
+    // "Space between sounds" (tests/packets_sound_space_2026_11_17.test.js). Pictures off still adds nothing.
     // Re-pinned 2026-11-13: the right-answer tick pops in without reduced motion (one style line, +182 bytes). The loader
     // before that change still gives d1527ce8.../203072 and 4af49109.../84488.
     // Re-pinned 2026-11-12 (late): the reading tools button sits on its own line instead of floating over the question
@@ -408,7 +412,7 @@ describe('the builder: pictures off', () => {
     // in DEFAULT_LABELS and renderFinish (+62 bytes), 'Hear all' fallback shortened in blending/sound_sort/word_families (-36
     // bytes), and inputmode:'none' in spelling_bee (+14 bytes; +40 bytes net); the questions are the same 124.
     // The loader before still gives 02dc54de.../238953.
-    all: { sha256: '684e5d56d4d4f915d896807dfda0a37b2dcb5427d1cab4496ad261bcee2c5000', bytes: 238993, items: 124 },
+    all: { sha256: '1c9135c5481612c11e2441c7070ed0fec899b4bca9caf366c3a367401f725250', bytes: 298947, items: 124 },
     // Re-pinned 2026-11-12 (evening), as "all" above; the loader before still gives b3221d74.../71353.
     // Re-pinned 2026-11-12 (night), as "all" above; the loader before still gives 202974c1.../79452.
     // Re-pinned 2026-11-13 (polish pass, as "all" above: the R key and the end screen's practice line, +977 bytes); the loader before still gives dc61bb4c.../84670.
@@ -418,7 +422,7 @@ describe('the builder: pictures off', () => {
     // Re-pinned 2026-11-13 (engine fixes, as "all" above, +7038 bytes); the loader before still gives 3ec8e31e.../87481.
     // Re-pinned 2026-11-14 (T1 + @i18n P2, as "all" above: done_activity in DEFAULT_LABELS and renderFinish, +62 bytes);
     // the loader before still gives 87bce42c.../94519.
-    isolation: { sha256: '9458991bb53240d69ac1f3522112d1533cc24177b5ff979f16383eee441271e1', bytes: 94581, items: 5 },
+    isolation: { sha256: '5110f45b4a01d01cc6e3b3cd54d7c8381e24bb87fe94292df9fe02441a50ecef', bytes: 153963, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };
 

@@ -24,12 +24,12 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for beehive 1`] = `
 {
-  "buttons": 166,
+  "buttons": 179,
   "inputs": 13,
-  "lengthBucket": 1480,
+  "lengthBucket": 1802,
   "selects": 6,
-  "sha": "42c87b9d1673edd4",
-  "svgs": 15,
+  "sha": "930900a7352acf95",
+  "svgs": 113,
 }
 `;
 
@@ -39,7 +39,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 1,
   "lengthBucket": 5583,
   "selects": 0,
-  "sha": "600bca74de1249d6",
+  "sha": "bc2a16af7e9052f2",
   "svgs": 14,
 }
 `;
@@ -61,7 +61,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 0,
   "lengthBucket": 89,
   "selects": 0,
-  "sha": "dd3bc57a7aba62a0",
+  "sha": "eeb9d59a4e0863be",
   "svgs": 0,
 }
 `;
@@ -72,7 +72,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 0,
   "lengthBucket": 166,
   "selects": 0,
-  "sha": "9e577dfd9d926fc0",
+  "sha": "7602405ca72802b6",
   "svgs": 0,
 }
 `;
@@ -83,18 +83,18 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 1,
   "lengthBucket": 60,
   "selects": 0,
-  "sha": "50bd72b15a751b16",
+  "sha": "94371d314cffc630",
   "svgs": 0,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for printingPress 1`] = `
 {
-  "buttons": 25,
-  "inputs": 0,
-  "lengthBucket": 226,
+  "buttons": 30,
+  "inputs": 1,
+  "lengthBucket": 237,
   "selects": 0,
-  "sha": "59191292809ddccb",
+  "sha": "ae03f17f91c14bdc",
   "svgs": 2,
 }
 `;

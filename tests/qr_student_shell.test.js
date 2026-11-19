@@ -473,7 +473,9 @@ describe('homework QR hardening', () => {
     expect(rootSource).toContain("throw new Error('Assignment expired')");
     expect(rootSource).toContain('function _alloAssignmentIsExpired(packet)');
     expect(rootSource).toContain('expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000),');
-    expect(shareSessionSurfacesSource).toContain('ref={homeworkQrDialogRef} tabIndex={-1}');
+    // 2026-11-17: the lazily loaded dialog falls back to its own ref when the host's is absent, so focus still lands.
+    expect(shareSessionSurfacesSource).toContain('const activeQrDialogRef = homeworkQrDialogRef || fallbackQrDialogRef;');
+    expect(shareSessionSurfacesSource).toContain('ref={activeQrDialogRef} tabIndex={-1}');
     expect(rootSource).toContain('const printQrSheet = useCallback');
     expect(shareSessionSurfacesSource).toContain("printQrSheet(qrShareSvg, 'AlloFlow homework assignment'");
     expect(shareSessionSurfacesSource).toContain("openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')");
@@ -526,7 +528,9 @@ describe('homework QR hardening', () => {
     expect(sharedActivitySource).toContain("a: 'moderateactivity'");
     expect(sharedActivitySource).toContain('window.AlloModules?.LivePolling?.renderWordCloudItems');
     expect(shareSessionSurfacesSource).toContain("{t('share_collect.manage_shared') || 'Manage shared'}");
-    expect(shareSessionSurfacesSource).toContain("qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : 'class Word Cloud'");
+    // 2026-11-17: more shared activity types (poll, discussion, ...) were added before the Word Cloud default.
+    expect(shareSessionSurfacesSource).toContain("qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : qrShareModal.sharedActivity.type === 'poll' ? 'class poll'");
+    expect(shareSessionSurfacesSource).toMatch(/qrShareModal\.sharedActivity\.type === 'rating' \? 'class rating' :[^\n]*: 'class Word Cloud'/);
     expect(shareSessionSurfacesSource).toContain('Only the anonymous distribution appears after the participation threshold.');
     expect(rootSource).toContain('!isTeacherMode && sharedHostedActivity &&');
     expect(shareSessionSurfacesSource).toContain('Students contribute on their own time.');

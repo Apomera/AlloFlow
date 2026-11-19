@@ -54,7 +54,9 @@ describe('Cyber Defense deep-dive hardening', () => {
     expect(source).toContain('NIST SP 800-63B-4 centers length and blocklists');
     expect(source).toContain('15+ characters (single factor)');
     expect(source).toContain('forced symbol and number rules are not a substitute for length');
-    expect(source).toContain('Uniform-random search-space estimate');
+    // The estimate is pattern-aware now (repeats, sequences, keyboard walks,
+    // common words incl. leetspeak), so it no longer claims a uniform-random model.
+    expect(source).toContain('Search-space estimate after pattern checks');
   });
 
   it('renders a labelled tab interface and accessible strength meter', () => {

@@ -129,6 +129,17 @@ describe('module timeouts that recovered', () => {
     w.dispatchEvent(new w.CustomEvent('alloflow:module-registry-changed'));
     expect(badgeText(w)).toBe('');
   });
+
+  it('a [CDN-FAIL] the pinned mirror rescued drops out too (older Canvas paste)', () => {
+    const w = boot();
+    w.console.error('[CDN-FAIL] MiscComponents network error, trying an approved immutable fallback:', {});
+    w.console.error('[CDN-FAIL] DeadMod network error, trying an approved immutable fallback:', {});
+    expect(badgeText(w)).toContain('2 errors');
+    w.AlloModules.MiscComponents = {};
+    w.dispatchEvent(new w.CustomEvent('alloflow:module-registry-changed'));
+    expect(badgeText(w)).toContain('1 error');
+    expect(reportOf(w).what).toContain('recovered: MiscComponents loaded later');
+  });
 });
 
 describe('the live-session join secret never leaves the page', () => {

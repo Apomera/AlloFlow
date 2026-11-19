@@ -299,20 +299,26 @@ describe('the pages as files', () => {
 
   it('the front door links only to what exists, and claims only what is true today', () => {
     const doc = parse('packets.html');
-    const cards = [...doc.querySelectorAll('.card')].map((card) => ({ title: card.querySelector('h2').textContent, links: [...card.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')]), text: card.textContent }));
-    // One name for each maker, the name its own page gives itself (2026-11-12): Word Sounds practice, math fact practice, a math check.
+    // 2026-11-18 (owner): grouped by what a teacher wants to do (Practice, Check progress, Results and more), the checks
+    // given their own cards (each opens its maker set to a check, "#check-mode"), and the student's way in first.
+    const cards = [...doc.querySelectorAll('.card')].map((card) => ({ title: card.querySelector('h3').textContent, links: [...card.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')]), text: card.textContent }));
+    expect([...doc.querySelectorAll('.group-title')].map((h) => h.textContent)).toEqual(['Practice', 'Check progress', 'Results and more']);
     expect(cards.map((card) => [card.title, card.links])).toEqual([
       ['Make Word Sounds practice', [['Make Word Sounds practice', 'packets-make.html']]],
-      ['Make math fact practice or a math check', [['Math fact practice', 'packets-math-practice.html'], ['A math check', 'packets-check.html']]],
-      // 2026-11-12: the vocabulary maker, a third card that makes a file.
-      ['Make vocabulary practice', [['Make vocabulary practice', 'packets-vocab.html']]],
-      ['Make Symbol Runner practice', [['Make Symbol Runner practice', 'packets-symbol-runner.html']]],
-      ['Present and export word cards', [['Present and export word cards', 'packets-present-export.html']]],
+      ['Make math fact practice', [['Make math fact practice', 'packets-math-practice.html']]],
+      ['Make vocabulary practice', [['Make vocabulary practice', 'packets-vocab.html#practice-mode']]],
+      ['Make quick naming practice', [['Make quick naming practice', 'packets-symbol-runner.html#practice-mode']]],
+      ['Make a math check', [['Make a math check', 'packets-check.html']]],
+      ['Make a 1-minute naming check', [['Make a 1-minute naming check', 'packets-symbol-runner.html#check-mode']]],
+      ['Make a vocabulary check', [['Make a vocabulary check', 'packets-vocab.html#check-mode']]],
       ['Add up results', [['Add up results', 'packets-results.html']]],
-      // 2026-11-16: the student's way in was a text link 3,215 px down a phone page.
-      ['Open a practice file or check', [['Open a practice file or check', 'packets-open.html']]],
+      ['Present and export word cards', [['Present and export word cards', 'packets-present-export.html']]],
       ['Check it yourself', [['Check it yourself', '#check']]]]);
-    expect(cards[6].text).toContain('For a student who was given a file');
+    // 2026-11-16: the student's way in was a text link 3,215 px down a phone page; it now leads the section.
+    const door = doc.querySelector('section[aria-label="What you can do here"] > .student-door');
+    expect(door).toBeTruthy();
+    expect(door.querySelector('a').getAttribute('href')).toBe('packets-open.html');
+    expect(door.textContent).toContain('got a file from your teacher');
     expect(parse('packets-open.html').querySelector('h1').textContent).toBe('Open a practice file or check');
     // 2026-11-16: the hero is the headline, one line and the scope; the sizes and the voice note sit under the cards, so a maker is on the first screen.
     expect([...doc.querySelector('.hero .wrap').children].map((node) => node.tagName + '.' + node.className)).toEqual(['H1.', 'P.lead', 'P.scope']);
@@ -323,25 +329,24 @@ describe('the pages as files', () => {
       .toEqual(['Make Word Sounds practice', 'Make math fact practice', 'Make a math check']);
     expect(cards[0].text).toContain('Hearing sounds, letters and sounds, spelling, rhyme.');
     expect(cards[1].text).toContain('Feedback on every fact, for learning facts by heart.');
-    expect(cards[1].text).toContain('Three ready checks, or your own problems.');
-    expect(cards[1].text).toContain('Three steps each. No sound needed.');
-    expect(cards[2].text).toContain('Practice, or a short check.');
+    expect(cards[4].text).toContain('or your own problems.');
+    expect(cards[1].text).toContain('Three steps. No sound needed.');
     expect(cards[3].text).toContain('Works offline.');
-    expect(cards[4].text).toContain('PowerPoint slides');
-    expect(cards[5].text).toContain('not uploaded');
-    expect(cards[5].text).toContain('each student over time');
+    expect(cards[3].text).not.toMatch(/Stroop|flanker|3D|5x8/);
+    expect(cards[8].text).toContain('PowerPoint slides');
+    expect(cards[7].text).toContain('not uploaded');
+    expect(cards[7].text).toContain('each student over time');
     expect(doc.getElementById('check')).toBeTruthy();
     expect(doc.body.textContent).toContain('For practice and for checking progress. Not a standardized test.');
-    // Five cards (four before the vocabulary maker, 2026-11-12), each a direct child of the grid. Four are built the same way: a heading that is the card's one link, a line, a foot;
-    // packets.css stretches that link over the whole card (.card a::after). The math card names its two makers: a plain heading, then
-    // one link for each with its own line, not stretched (.card .card-links). The three that make a file are filled; the two for what
-    // comes after are outlined.
-    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main card-pair', 'card card-main', 'card card-main', 'card card-main', 'card card-go', 'card card-go', 'card card-go']);
+    // Each card is built the same way: a heading that is the card's one link, a line, a foot; packets.css stretches that
+    // link over the whole card (.card a::after). The ones that make a file are filled; the three for what comes after are outlined.
+    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual([...Array(7).fill('card card-main'), 'card card-go', 'card card-go', 'card card-go']);
     for (const card of doc.querySelectorAll('.card')) {
-      const pair = card.classList.contains('card-pair');
-      expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(pair ? ['H2', 'UL.card-links', 'P.card-foot'] : ['H2', 'P', 'P.card-foot']);
-      expect(!!card.querySelector('h2 > a')).toBe(!pair);
+      expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(['H3', 'P', 'P.card-foot']);
+      expect(!!card.querySelector('h3 > a')).toBe(true);
     }
+    // The titles of the filled cards are light on the accent, as their text is.
+    expect(read('packets.css')).toContain('.card-main h2, .card-main h3, .card-main p, .card-main .card-foot { color: var(--on-accent); }');
     expect(read('packets.css')).toContain('.card .card-links a::after { content: none; }');
     expect(read('packets.css')).not.toContain('card-also');
     expect(doc.body.textContent).not.toContain('Or make');
@@ -553,7 +558,8 @@ describe('the maker, run with the real builder', () => {
     expect(early).toEqual({ loading: true, step1: false });
     expect(page.seen('step-1') && !page.seen('loading') && !page.seen('load-problem')).toBe(true);
     expect(page.asked).toEqual([]);
-    const strands = [...page.d.querySelectorAll('.strand')].map((group) => ({ name: group.querySelector('h3').textContent, ids: [...group.querySelectorAll('input')].map((box) => box.value) }));
+    // 2026-11-18: the heading also names the reading area (' · phonemic awareness'), and a line under it says what students do.
+    const strands = [...page.d.querySelectorAll('.strand')].map((group) => ({ name: group.querySelector('h3').firstChild.textContent, area: (group.querySelector('h3 .strand-area') || {}).textContent, line: (group.querySelector('.strand-line') || {}).textContent, ids: [...group.querySelectorAll('input')].map((box) => box.value) }));
     const offered = strands.flatMap((strand) => strand.ids);
     // No list in the script says what is held back: the page works it out as it opens, from the word list's recording flags.
     // The rule, applied here to a REAL build (the stand-in sound files have the real keys): of the first 16 words the page
@@ -586,6 +592,11 @@ describe('the maker, run with the real builder', () => {
     for (const id of held) expect(trial.byActivity[id].noRecording, id).toBeGreaterThan(0);
     expect(strands.map((strand) => strand.name)).toEqual(core.SKILL_STRANDS.filter((row) => offered.some((id) => core.activityStrand(id) === row.key)).map((row) => row.name));
     for (const strand of strands) for (const id of strand.ids) expect(core.strandLabel(core.activityStrand(id)), id).toBe(strand.name);
+    for (const strand of strands) {
+      expect(strand.area, strand.name).toBe(' · ' + core.strandBig5Label(core.activityStrand(strand.ids[0])));
+      expect(strand.line, strand.name).toMatch(/^Students .+\.$/);
+      expect(strand.line.split(/, | and /).length, strand.name).toBe(strand.ids.length);
+    }
     for (const box of page.d.querySelectorAll('.strand input')) {
       const label = box.closest('label');
       expect(label.querySelector('.choice-name').textContent, box.value).toBe(core.ACTIVITY_SKILLS[box.value].name);
@@ -743,6 +754,8 @@ describe('the maker, run with the real builder', () => {
     // Mixed through the list, not at its end.
     expect(now.slice(-k).every(([, tag]) => tag === 'Review')).toBe(k === 1 ? now[now.length - 1][1] === 'Review' : false);
     expect(page.$('pick-labels').textContent).toBe('Labels only you see: New ' + (total - k) + ', Review ' + k + '. Students see the words mixed, with no label.');
+    // 2026-11-17: the line above the words counts every group's words (it said the first group's count, under all of them).
+    expect(page.$('pick-sub').textContent).toBe('The file uses ' + total + ' words, shown here. Remove a word and another takes its place.');
     expect(page.$('g1-said').textContent).toBe((k === 1 ? '1 word' : k + ' words') + ' in the file: ' + review.join(', ') + '.');
     // A sound for the second group only.
     page.set('g1-sound', 'sh');
@@ -766,7 +779,13 @@ describe('the maker, run with the real builder', () => {
     page.$('group-add').click();
     await wait(60);
     expect(page.$('group-add').disabled).toBe(true);
-    expect(page.d.querySelectorAll('.group')).toHaveLength(3);
+    // 2026-11-17, deliberately: the words chosen at the top have only their label field (g0-label), no box of their own;
+    // each further group is one compact row (.group-row). Three groups in all is two rows.
+    expect(page.d.querySelectorAll('.group')).toHaveLength(2);
+    expect(page.d.querySelectorAll('.group-row')).toHaveLength(2);
+    expect(page.$('g0-label').closest('.group')).toBeNull();
+    expect(page.$('more-2-now').textContent).toContain('3 groups of words');
+    expect(page.$('more-2').open).toBe(true);
     page.$('g2-remove').click();
     await wait(60);
     page.$('g1-remove').click();
@@ -1932,7 +1951,8 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     expect(page.$('count-field').hidden).toBe(false);
     expect(page.$('f-count').value).toBe(String(lessonOf(page.built()).blocks[0].items.length));
     expect(page.d.querySelector('[data-length="custom"]').textContent).toBe('Choose the number of words, up to 40.');
-    expect(page.$('count-hint').textContent).toBe('From 1 to 40. A file has at most 40 questions in each activity, one for each word.');
+    // 2026-11-18 (owner: shorter hints in step 2), deliberately: the same rule in fewer words.
+    expect(page.$('count-hint').textContent).toBe('1 to 40: one question for each word in each activity.');
     expect(page.$('f-count').getAttribute('min')).toBe('1');
     expect(page.$('f-count').getAttribute('max')).toBe('40');
     expect(page.$('f-count').closest('.field').querySelector('label').getAttribute('for')).toBe('f-count');
@@ -2292,7 +2312,12 @@ describe('the maker: quick make, the word count, Pick different words and More o
     const doc = parse('packets-make.html');
     const inside = (id) => [...doc.querySelectorAll('#' + id + ' input, #' + id + ' select, #' + id + ' textarea')].map((node) => node.id || node.name + '=' + node.value);
     expect(inside('more-1')).toEqual(['f-trace-cases', 'f-choices']);
-    expect(inside('more-2')).toEqual(['f-sound', 'f-position', 'f-shape', 'f-stage-other', 'version=A', 'version=B', 'version=C']);
+    // 2026-11-17 (owner: simpler step 2), deliberately: the box now comes after the words and also holds groups of words
+    // (drawn by the page, so not listed here), "Choose the words yourself" (f-find, f-only-pictures, f-add) and "Why not
+    // more words?" (tests/packets_site_pages.test.js 'a second group of words').
+    expect(inside('more-2')).toEqual(['f-sound', 'f-position', 'f-shape', 'f-stage-other', 'version=A', 'version=B', 'version=C', 'f-find', 'f-only-pictures', 'f-add']);
+    expect(doc.getElementById('panel-pick').compareDocumentPosition(doc.getElementById('more-2')) & 4).toBeTruthy();
+    for (const id of ['group-add', 'pick-list', 'pick-out-box']) expect(doc.getElementById(id).closest('#more-2'), id).not.toBeNull();
     expect(inside('more-3')).toEqual(['length=short', 'length=regular', 'length=long', 'length=custom', 'f-pictures', 'f-directions-once', 'f-repeat-missed', 'f-code-name']); // 2026-11-17
     for (const id of ['more-1', 'more-2', 'more-3']) {
       const box = doc.getElementById(id);
@@ -2302,7 +2327,7 @@ describe('the maker: quick make, the word count, Pick different words and More o
       expect(box.querySelector('summary .more-now').id, id).toBe(id + '-now');
     }
     // What stays on show: the activities, the grade level or the typed words, the count and the words, the title, save.
-    for (const id of ['quick-make', 'next-1', 'f-stage', 'f-own', 'pick-shuffle', 'pick-chips', 'pick-list', 'f-title', 'save', 'try', 'print-cards', 'open-present-export', 'batch'])
+    for (const id of ['quick-make', 'next-1', 'f-stage', 'f-own', 'pick-shuffle', 'pick-chips', 'f-title', 'save', 'try', 'print-cards', 'open-present-export', 'batch'])
       expect(doc.getElementById(id).closest('details.more'), id).toBeNull();
     const page = await openMaker();
     // Step 1: the groups are boxes, open where an activity is chosen; the line says how many.

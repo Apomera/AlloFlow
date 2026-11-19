@@ -1902,7 +1902,9 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           if (!isCurrentMathGeneration()) return;
           let prompt = "";
           const effectiveMode = modeOverride || mathMode;
-          const requestedCount = effectiveMode === 'Freeform Builder' || effectiveMode === 'Problem Set Generator'
+          // Spiral Review and Difficulty Ladder are problem sets too: they use the count box (2026-11-18).
+          const _isSpiralSet = effectiveMode === 'Spiral Review', _isLadderSet = effectiveMode === 'Difficulty Ladder';
+          const requestedCount = effectiveMode === 'Freeform Builder' || effectiveMode === 'Problem Set Generator' || _isSpiralSet || _isLadderSet
             ? resolveMathRequestedCount(problemToSolve, mathQuantity) : 1;
           if (effectiveMode === 'Freeform Builder') {
               prompt = `
@@ -1967,13 +1969,16 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                   "graphData": null
                 }
               `;
-          } else if (effectiveMode === 'Problem Set Generator') {
+          } else if (effectiveMode === 'Problem Set Generator' || _isSpiralSet || _isLadderSet) {
               prompt = `
                 You are an expert Math Curriculum Designer.
                 ${leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Topic/Skill: "${problemToSolve}"
                 ${mathContextPrompt}
                 Instruction: Create EXACTLY ${requestedCount} problems, matching the requested skill, types, and difficulty.
+                ${_isSpiralSet ? 'This is a SPIRAL REVIEW (mixed, cumulative practice) of the skills listed above. Rotate through every listed skill; never place two problems on the same skill next to each other. Mix difficulty ("easy", "medium", "hard") roughly evenly. Put the exact skill name from the list in "skill" and the level in "difficulty".'
+                  : _isLadderSet ? 'This is a DIFFICULTY LADDER on the one skill above. Order the problems strictly from easiest to hardest: start with a one-step entry problem, then add steps, then add a twist (missing information, a word problem, a non-integer), and end with one stretch problem. Set "difficulty" to "easy", "medium", "hard" or "stretch" for each, and "skill" to the skill name.' : ''}
+                ${_isSpiralSet || _isLadderSet ? 'Vary numbers and contexts; no two problems may be near-duplicates.' : ''}
                 Context Usage: Frame the word problems using characters, settings, or themes from the Source Context. Use names/concepts from the Student Interests.
                 Output Format:
                 Return a JSON object with a "problems" array.
@@ -1985,10 +1990,10 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 - "steps": An array of 2-5 step objects { "explanation": "Clear explanation of what to do in this step", "latex": "The math expression for this step", "expression": "The computed sub-expression" }. CRITICAL: Every problem MUST have detailed steps showing the complete solution process. Students see these after attempting the problem. Make explanations clear and educational.
                 Return ONLY JSON in the following format:
                 {
-                  "title": "Problem Set: ${problemToSolve.substring(0, 30)}...",
+                  "title": "${_isSpiralSet ? 'Spiral Review' : _isLadderSet ? 'Difficulty Ladder' : 'Problem Set'}: ${problemToSolve.substring(0, 30)}...",
                   "problems": [
                     {
-                      "question": "Problem 1 text...",
+                      "question": "Problem 1 text...",${_isSpiralSet || _isLadderSet ? '\n                      "skill": "skill name",\n                      "difficulty": "easy | medium | hard' + (_isLadderSet ? ' | stretch' : '') + '",' : ''}
                       "taskType": "simplify",
                       "answer": "Answer 1",
                       "steps": [{ "explanation": "First...", "latex": "x=..." }],

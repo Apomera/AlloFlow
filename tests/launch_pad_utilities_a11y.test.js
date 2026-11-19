@@ -57,7 +57,7 @@ describe('Launch-pad language and setup utility accessibility', () => {
     expect(source).toContain('__alloLaunchPadAIBackendModalPromise');
     expect(source).toContain('data-alloflow-launchpad-ai-settings');
     expect(source).toContain('id="launch-pad-ai-settings-status"');
-    expect(source).toContain('AI Backend Settings could not open. Activate Retry AI Backend Settings to try again.');
+    expect(source).toContain('AI setup could not open. Activate Retry AI setup to try again.'); // 2026-11-17: one name for the AI panel
     expect(source).toContain('setShowAIBackendModal(true);');
   });
 

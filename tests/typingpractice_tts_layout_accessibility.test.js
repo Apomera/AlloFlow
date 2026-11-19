@@ -26,7 +26,7 @@ describe('Typing Practice locale speech and profile controls', () => {
     expect(source).toContain("'aria-labelledby': 'tp-keyboard-layout-label'");
     expect(source).toContain("'aria-pressed': active ? 'true' : 'false'");
     expect(source).toContain("upd('keyboardLayout', opt.id)");
-    expect(source).toContain('renderOnScreenKeyboard(nextKeyMeta, palette, state.accommodations.focusKeyboard, state.keyboardLayout)');
+    expect(source).toContain('renderOnScreenKeyboard(nextKeyMeta, palette, state.accommodations.focusKeyboard, state.keyboardLayout, null, { hand: drill.oneHanded || null, fade: fade })');
     expect(source).toContain('renderErrorHeatmap(agg, maxErr, palette, state.keyboardLayout)');
   });
 

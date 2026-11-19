@@ -18,6 +18,8 @@ export const ERROR_KEYS = new Map([
   ['Choose a supported expedition kit on a tabletop board only.', 'err_choose_supported_expedition_kit_tabletop'],
   ['Use up to three expedition contracts on a tabletop board only.', 'err_use_up_three_expedition_contracts'],
   ['Choose core, expedition or architect as the board goal.', 'err_choose_core_expedition_architect_as'],
+  ['Choose strategic as the challenge level, or leave it out for relaxed play.', 'err_challenge_level'],
+  ['Relaxed costs must list every project on a strategic board.', 'err_relaxed_costs'],
   ['Choose a supported visual theme.', 'err_choose_supported_visual_theme'],
   ['Give two distinct, lesson-relevant resource names.', 'err_give_two_distinct_lesson_relevant'],
   ['Use two to four distinct lesson concepts.', 'err_use_two_four_distinct_lesson'],

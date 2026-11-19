@@ -171,6 +171,11 @@
     tools_directions_0: 'Every question',
     tools_directions_1: 'First question only',
     tools_directions_hint: 'Says what to do on the first question of each activity, then goes straight to each word or sound. Hear the question still plays everything.',
+    tools_sounds: 'Space between sounds',
+    tools_sounds_0: 'Some',
+    tools_sounds_1: 'More',
+    tools_sounds_2: 'Less',
+    tools_sounds_hint: 'The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together.',
     // "Hear all" (hearAllIn): plays or reads each answer choice in turn.
     hear_all: 'Hear all',
     hear_all_name: 'Hear all the choices, one at a time',
@@ -673,7 +678,8 @@
         };
         var halt = function () { token++; mark(-1); };
         var soundSteps = function () {
-          return item.sounds.map(function (id) { return { id: id, gap: 500 }; }).concat([{ id: item.question, gap: 100 }]);
+          var gap = ctx.soundGap ? ctx.soundGap() : 500;
+          return item.sounds.map(function (id) { return { id: id, gap: gap }; }).concat([{ id: item.question, gap: 100 }]);
         };
         var optionSteps = function (gap) {
           return item.choices.map(function (c, i) { return { id: c.audio, gap: gap, hi: i }; });
@@ -6759,7 +6765,7 @@
   // ---------------------------------------------------------------------------
   function takeHomeTools(o) {
     var doc = o.doc, win = o.win, L = o.L, el = o.el, page = o.page, html = doc.documentElement;
-    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest'], spacing: ['', 'spacingWide'], font: ['', 'lettersLexend', 'lettersAtkinson', 'lettersBook', 'lettersRounded'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''] };
+    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest'], spacing: ['', 'spacingWide'], font: ['', 'lettersLexend', 'lettersAtkinson', 'lettersBook', 'lettersRounded'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''], sounds: ['', 'soundsMore', 'soundsLess'] };
     var KEYS = Object.keys(NAMES), p = {}, groups = {}, rec = null, text = null, at = 0, painted = '', read = null;
     var def = function (k) { return k === 'directions' && o.directionsOnce ? 1 : 0; };
     var clean = function (raw) {
@@ -6789,6 +6795,7 @@
       group('lens', L.tools_lens, [L.tools_off, L.tools_on], L.tools_lens_hint),
       group('choices', L.tools_choices, [L.tools_off, L.tools_on], L.tools_choices_hint),
       group('directions', L.tools_directions, [L.tools_directions_0, L.tools_directions_1], L.tools_directions_hint),
+      group('sounds', L.tools_sounds, [L.tools_sounds_0, L.tools_sounds_1, L.tools_sounds_2], L.tools_sounds_hint),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', 'data-tools-reset': '', on: { click: function () { clean(); apply(); o.store(); } }, text: L.tools_reset }),
         el('button', { type: 'button', 'data-tools-close': '', on: { click: back }, text: L.tools_close })]),
@@ -6882,7 +6889,7 @@
       if (!rec) return;
       var s = rec.supports = rec.supports && typeof rec.supports === 'object' ? rec.supports : {}, changed = false, forced = false;
       try { forced = win.matchMedia('(forced-colors: active)').matches; } catch (_) {}
-      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], NAMES.font[p.font], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens], o.choices ? NAMES.choices[p.choices] : ''].forEach(function (n) {
+      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], NAMES.font[p.font], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens], o.choices ? NAMES.choices[p.choices] : '', o.sounds ? NAMES.sounds[p.sounds] : ''].forEach(function (n) {
         if (n && !s[n]) { s[n] = 1; changed = true; }
       });
       if (changed) o.save();
@@ -6935,6 +6942,7 @@
     win.addEventListener('resize', function () { copy = null; queue(); });
     groups.choices.box.hidden = !o.choices;
     groups.directions.box.hidden = !o.directions;
+    groups.sounds.box.hidden = !o.sounds;
     clean(o.prefs);
     // Letters use the device's own fonts (a file loads nothing). Rounded is offered only where the device has such
     // a font: a wide word is measured with and without it.
@@ -6956,6 +6964,7 @@
       dock: function (h) { h.parentNode.insertBefore(bar, h.nextSibling); h.parentNode.insertBefore(panel, bar.nextSibling); },
       autoRead: function () { return !!o.choices && p.choices === 1; },
       directionsOnce: function () { return !!o.directions && p.directions === 1; },
+      soundGap: function () { return o.sounds ? [500, 800, 250][p.sounds] || 500 : 500; },
       prefs: function () {
         var out = null;
         KEYS.forEach(function (k) { if (p[k] !== def(k)) (out = out || {})[k] = p[k]; });
@@ -7518,6 +7527,7 @@
       };
       var ctx = {
         root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters, skipDirections: skipDirections,
+        soundGap: function () { return tools && tools.soundGap ? tools.soundGap() : 500; },
         play: play, playAll: playAll, stop: stop, announce: announce,
         hearAll: hearAllIn(area, function (name) { ctx.support(name); }),
         image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
@@ -7827,7 +7837,8 @@
       // Read the choices: in a file whose choices are read by the device voice, or whose opening does not play its sound choices.
       choices: lesson.blocks.some(function (b) { return /^(isolation|segmentation|mapping)$/.test(b.activity) || b.items.some(function (it) { return it.read === true; }); }),
       directions: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return !/^(math_|vocab_|read_along$|manipulation$|sound_sort$|word_families$)/.test(b.activity); }),
-      directionsOnce: !!lesson.instructionsOnce }) : null;
+      directionsOnce: !!lesson.instructionsOnce,
+      sounds: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return b.activity === 'blending'; }) }) : null;
     // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.
     var check = kit.check ? kit.check({ doc: doc, win: win, lesson: lesson, L: L, kit: kit, items: items, renders: renders, matches: matches, el: el, fmt: fmt, announce: announce,
       screen: screen, statusLine: statusLine, fresh: fresh, save: save, now: now, clockStart: clockStart, clockStop: clockStop, clockHold: clockHold, play: play, playAll: playAll, stop: stop,

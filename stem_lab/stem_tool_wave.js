@@ -6463,22 +6463,33 @@ window.StemLab = window.StemLab || {
             return __alloT('stem.wave.coach_ms_free', 'Use v = f × λ: in any medium, speeding up frequency shrinks wavelength so v stays constant.');
           };
 
-          var readWaveAloud = function() {
+          var readWaveAloud = function(onDevice) {
             var coachStr = getWaveCoachTip();
             var spoken = __alloT('stem.wave.tts_prefix', 'Wave Simulator, ') + waveViewMeta.label + '. '
               + 'Amplitude ' + displayAmp + ', Frequency ' + displayFreq + ' hertz, Wavelength ' + waveMetrics.wavelength.toFixed(1) + ' meters, Wave speed ' + displayMediumSpeed + ' meters per second. '
               + (d.probeEnabled ? ('Probe at ' + Math.round(d.probeX * 100) + ' percent across, ' + probeReadout.cyclesFromLeft.toFixed(2) + ' wavelengths. ') : '')
               + coachStr;
-            if (typeof announceToSR === 'function') announceToSR(spoken);
-            if (typeof callTTS === 'function') {
-              try { callTTS(spoken); if (typeof addToast === 'function') addToast('🔊 ' + __alloT('stem.wave.toast_reading_aloud', 'Reading wave summary aloud'), 'info'); return; } catch (e) {}
+            var waveQuiet = function() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute; };
+            if (onDevice !== true) {
+              if (typeof announceToSR === 'function') announceToSR(spoken);
+              if (typeof callTTS === 'function') {
+                // A speak button: force past the header narration switch. The host never throws and resolves
+                // null when it played nothing: muted, student AI off (device voice used) or no voice came back.
+                var req = null;
+                try { req = callTTS(spoken, undefined, undefined, { force: true }); } catch (e) {}
+                if (typeof addToast === 'function') addToast('🔊 ' + __alloT('stem.wave.toast_reading_aloud', 'Reading wave summary aloud'), 'info');
+                var waveFallBack = function() { if (!waveQuiet() && window.__alloStudentAiDisabled !== true) readWaveAloud(true); };
+                Promise.resolve(req).then(function(url) { if (!url) waveFallBack(); }, waveFallBack);
+                return;
+              }
             }
+            if (waveQuiet()) return;
             try {
               if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
                 window.speechSynthesis.cancel();
                 var utt = new window.SpeechSynthesisUtterance(spoken);
                 window.speechSynthesis.speak(utt);
-                if (typeof addToast === 'function') addToast('🔊 ' + __alloT('stem.wave.toast_reading_aloud', 'Reading wave summary aloud'), 'info');
+                if (onDevice !== true && typeof addToast === 'function') addToast('🔊 ' + __alloT('stem.wave.toast_reading_aloud', 'Reading wave summary aloud'), 'info');
                 return;
               }
             } catch (e) {}
@@ -10139,7 +10150,7 @@ window.StemLab = window.StemLab || {
                         placeholder: field.ph,
                         'aria-label': field.label,
                         onChange: function(e) { upd(field.k, e.target.value); },
-                        className: "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
+                        className: "w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-xs text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300"
                       })
                     );
                   })

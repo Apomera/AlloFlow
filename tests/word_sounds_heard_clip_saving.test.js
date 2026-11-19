@@ -88,7 +88,9 @@ describe('Word Sounds saves clips the teacher heard', () => {
     expect(MODULE).toContain('const canSaveHeardClips = !!isTeacherMode && !isProbeMode && !isParentMode && typeof setWsPreloadedWords === "function" && !wsStudentDeviceVoiceOnly();');
     expect(MODULE).toContain('heardClipSinkRef.current = canSaveHeardClips ?');
     const audio = MODULE.slice(MODULE.indexOf('      const handleAudio = React.useCallback('), MODULE.indexOf('      const handleManualAudio = React.useCallback('));
-    expect(audio.match(/typeof heardClipSinkRef !== "undefined" && heardClipSinkRef\.current/g)).toHaveLength(2);
+    // 2026-11-18: four since the word audio shards (2026-11-15): a clip from the shard cache and a fetched shard clip are
+    // offered the same guarded way as a new and a retried TTS clip.
+    expect(audio.match(/typeof heardClipSinkRef !== "undefined" && heardClipSinkRef\.current/g)).toHaveLength(4);
   });
 
   it('keeps the public copy identical', () => {

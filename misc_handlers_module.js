@@ -5,6 +5,22 @@ if (window.AlloModules && window.AlloModules.MiscHandlersModule) { console.log('
 // handleFileUpload + handleLoadProject + handleRestoreView + detectClimaxArchetype
 // extracted from AlloFlowANTI.txt 2026-04-25.
 
+// A random ID (no name in it) kept with this student's saves, so a teacher's private dashboard notes find them again.
+const _alloStudentFileId = (nickname, adopt) => {
+    const valid = (v) => typeof v === 'string' && /^[A-Za-z0-9-]{8,64}$/.test(v);
+    let h = 5381; const n = String(nickname || '').trim().toLowerCase();
+    for (let i = 0; i < n.length; i++) h = ((h * 33) ^ n.charCodeAt(i)) >>> 0;
+    const k = 'n' + h.toString(36);
+    const mem = (window.__alloStudentFileIds = window.__alloStudentFileIds || {});
+    let map = {};
+    try { map = JSON.parse(localStorage.getItem('allo_student_file_ids') || '{}') || {}; } catch (_) {}
+    if (valid(adopt)) map[k] = adopt;
+    else if (!valid(map[k])) map[k] = valid(mem[k]) ? mem[k] : ((window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : 'sf-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12));
+    mem[k] = map[k];
+    try { localStorage.setItem('allo_student_file_ids', JSON.stringify(map)); } catch (_) {}
+    return map[k];
+};
+
 const _MISC_MIB = 1024 * 1024;
 const _MISC_INLINE_LIMIT_BYTES = 15 * _MISC_MIB;
 const _MISC_DOCUMENT_LIMIT_BYTES = 30 * _MISC_MIB;
@@ -851,6 +867,7 @@ const handleLoadProject = (e, deps) => {
                     });
                 }
                 const savedNickname = rawData.studentNickname || rawData.settings?.nickname;
+                if (rawData.mode === 'student' && rawData.studentFileId) _alloStudentFileId(savedNickname, rawData.studentFileId);
                 if (savedNickname) {
                     setStudentNickname(savedNickname);
                     setStudentProjectSettings(prev => ({ ...prev, nickname: savedNickname }));

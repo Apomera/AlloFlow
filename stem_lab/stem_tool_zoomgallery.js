@@ -741,13 +741,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           h('div', { style: card },
             h('p', { style: { margin: '0 0 6px' } }, ch.ask),
             chalLocked == null ? h('div', null,
-              h('label', { style: { display: 'block', fontSize: '0.71875rem', color: P.dim } }, I('chal_estimate_label'),
+              h('label', { style: { display: 'block', fontSize: '0.71875rem', color: P.dim } }, t('stem.zoomGallery.chal_estimate_label', INL.chal_estimate_label),
                 h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginTop: 4 } },
                   h('input', { type: 'text', inputMode: 'decimal', value: chalGuess, onChange: function (e) { setChalGuess(e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); chalLockIn(); } },
-                    'aria-label': I('chal_estimate_label') + ' (' + (ch.unit === 'ly' ? I('chal_unit_ly') : I('chal_unit_km')) + ')',
+                    'aria-label': t('stem.zoomGallery.chal_estimate_label', INL.chal_estimate_label) + ' (' + (ch.unit === 'ly' ? t('stem.zoomGallery.chal_unit_ly', INL.chal_unit_ly) : t('stem.zoomGallery.chal_unit_km', INL.chal_unit_km)) + ')',
                     style: { flex: '1 1 90px', minWidth: 0, padding: '6px 8px', borderRadius: 8, border: '1px solid ' + P.line, background: P.bg, color: P.text, fontSize: '0.8125rem' } }),
-                  h('span', { style: { fontSize: '0.75rem', color: P.text } }, ch.unit === 'ly' ? I('chal_unit_ly') : I('chal_unit_km')))),
+                  h('span', { style: { fontSize: '0.75rem', color: P.text } }, ch.unit === 'ly' ? t('stem.zoomGallery.chal_unit_ly', INL.chal_unit_ly) : t('stem.zoomGallery.chal_unit_km', INL.chal_unit_km)))),
               h('div', { style: { display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' } },
                 h('button', { type: 'button', onClick: chalLockIn, style: goBtn }, I('chal_lock')),
                 !chalReveal ? h('button', { type: 'button', onClick: function () { setChalReveal(true); }, style: btnBase }, I('chal_show_answer')) : null),
@@ -858,7 +858,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         if (typeof ctx.callTTS !== 'function' || !text) return null;
         var busy = speaking === key;
         return h('button', { type: 'button', onClick: function () { speak(key, text); }, disabled: busy,
-          'aria-label': label || W('read_aloud'), title: label || W('read_aloud'),
+          'aria-label': label || t('stem.zoomGallery.read_aloud', WIN.read_aloud), title: label || t('stem.zoomGallery.read_aloud', WIN.read_aloud),
           style: Object.assign({}, btnBase, { padding: '4px 8px', fontSize: '0.6875rem' }, busy ? { opacity: 0.6, cursor: 'progress' } : null) },
           busy ? '🔊 ' + W('read_aloud_busy') : '🔊');
       }
@@ -1216,7 +1216,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             h('h3', { style: { margin: '0 0 6px', fontSize: '0.8125rem', color: P.text } }, W('custom_heading')),
             h('p', { style: { margin: '0 0 8px', fontSize: '0.71875rem', color: P.dim, lineHeight: 1.45 } }, W('custom_help')),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              h('input', { type: 'url', value: customUrl, placeholder: W('custom_placeholder'), 'aria-label': W('custom_input_aria'),
+              h('input', { type: 'url', value: customUrl, placeholder: W('custom_placeholder'), 'aria-label': t('stem.zoomGallery.custom_input_aria', WIN.custom_input_aria),
                 onChange: function (e) { setCustomUrl(e.target.value); },
                 onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); openCustom(); } },
                 style: { flex: '1 1 260px', background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '7px 9px', fontSize: '0.8125rem' } }),
@@ -1242,7 +1242,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('div', { style: { display: 'flex', gap: 8, alignItems: 'flex-start' } },
                 h('span', { style: { flex: '1 1 auto' } }, '🔍 ' + imgText(current, 'notice')),
                 speakBtn('notice', imgText(current, 'notice'), W('read_prompt')))),
-            h('textarea', { key: 'ta', value: mem.notice, 'aria-label': W('notice_label'), placeholder: W('notice_placeholder'), style: ta,
+            h('textarea', { key: 'ta', value: mem.notice, 'aria-label': t('stem.zoomGallery.notice_label', WIN.notice_label), placeholder: W('notice_placeholder'), style: ta,
               onChange: function (e) { setNote(current.id, { notice: e.target.value }); } }),
             pinsText(mem) ? h('div', { key: 'pins', style: { fontSize: '0.75rem', color: P.dim, lineHeight: 1.5, whiteSpace: 'pre-wrap' } }, h('b', null, W('pins_heading')), '\n' + pinsText(mem)) : null,
             h('button', { key: 'go', type: 'button', style: goBtn, onClick: function () { if ((mem.notice || '').trim()) bumpSlice('noticedCount'); setStep('wonder'); } }, W('to_wonder'))
@@ -1253,7 +1253,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('div', { style: { display: 'flex', gap: 8, alignItems: 'flex-start' } },
                 h('span', { style: { flex: '1 1 auto' } }, '💭 ' + imgText(current, 'wonder')),
                 speakBtn('wonder', imgText(current, 'wonder'), W('read_prompt')))),
-            h('textarea', { key: 'ta', value: mem.wonder, 'aria-label': W('wonder_label'), placeholder: W('wonder_placeholder'), style: ta,
+            h('textarea', { key: 'ta', value: mem.wonder, 'aria-label': t('stem.zoomGallery.wonder_label', WIN.wonder_label), placeholder: W('wonder_placeholder'), style: ta,
               onChange: function (e) { setNote(current.id, { wonder: e.target.value }); } }),
             (mem.notice || '').trim() ? h('div', { key: 'rem', style: Object.assign({}, card, { borderColor: P.accent, whiteSpace: 'pre-wrap', fontSize: '0.78125rem' }) }, h('b', { style: { color: P.accent } }, W('you_noticed')), '\n' + mem.notice) : null,
             h('button', { key: 'go', type: 'button', style: goBtn, onClick: function () { setStep('coach'); } }, W('to_coach'))
@@ -1275,7 +1275,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           ];
         }
         return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          h('div', { role: 'tablist', 'aria-label': W('steps_aria'), style: { display: 'flex', gap: 4 } }, tabBtn('notice', W('step_notice')), tabBtn('wonder', W('step_wonder')), tabBtn('coach', W('step_coach'))),
+          h('div', { role: 'tablist', 'aria-label': t('stem.zoomGallery.steps_aria', WIN.steps_aria), style: { display: 'flex', gap: 4 } }, tabBtn('notice', W('step_notice')), tabBtn('wonder', W('step_wonder')), tabBtn('coach', W('step_coach'))),
           body
         );
       }
@@ -1293,15 +1293,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         // Painted ground: the host card is white in both themes, and these inks assume slate.
         style: { background: P.bg, color: P.text, borderRadius: 14, padding: 14, minWidth: 0 } },
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
-          typeof setStemLabTool === 'function' && h('button', { onClick: returnToCatalog, type: 'button', style: btnBase, 'aria-label': I('back_to_tools') },
-            ArrowLeft ? h(ArrowLeft, { size: 14, style: { display: 'inline', verticalAlign: '-2px', marginRight: 4 } }) : null, I('back_to_tools')),
+          typeof setStemLabTool === 'function' && h('button', { onClick: returnToCatalog, type: 'button', style: btnBase, 'aria-label': t('stem.zoomGallery.back_to_tools', INL.back_to_tools) },
+            ArrowLeft ? h(ArrowLeft, { size: 14, style: { display: 'inline', verticalAlign: '-2px', marginRight: 4 } }) : null, t('stem.zoomGallery.back_to_tools', INL.back_to_tools)),
           h('h2', { style: { margin: 0, fontSize: '1.0625rem', fontWeight: 700, color: P.text, flex: '1 1 auto' } }, I('title')),
           current ? h('button', { type: 'button', style: btnBase, onClick: backToGallery }, W('back_gallery')) : null,
-          current && current.id !== 'custom' ? h('button', { type: 'button', style: btnBase, onClick: copyLink, title: I('copy_link_title'), 'aria-label': I('copy_link_title') },
+          current && current.id !== 'custom' ? h('button', { type: 'button', style: btnBase, onClick: copyLink, title: t('stem.zoomGallery.copy_link_title', INL.copy_link_title), 'aria-label': t('stem.zoomGallery.copy_link_title', INL.copy_link_title) },
             linkState === 'copied' ? '✓ ' + I('link_copied') : I('copy_link')) : null,
           h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: P.dim } },
-            h('span', { className: 'sr-only' }, W('select_label')),
-            h('select', { value: current && current.id !== 'custom' ? current.id : '', 'aria-label': W('select_label'),
+            h('span', { className: 'sr-only' }, t('stem.zoomGallery.select_label', WIN.select_label)),
+            h('select', { value: current && current.id !== 'custom' ? current.id : '', 'aria-label': t('stem.zoomGallery.select_label', WIN.select_label),
               onChange: function (e) { if (e.target.value) openImage(e.target.value); },
               // Narrower once an image is open: the row then also carries Gallery,
               // Copy link and Fullscreen, and the full image name is in the credit
@@ -1309,7 +1309,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               style: { background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '6px 8px', fontSize: '0.8125rem', maxWidth: current ? 'min(30vw, 260px)' : '46vw' } },
               h('option', { value: '' }, W('select_placeholder')),
               IMAGES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + imgText(s, 'name')); }))),
-          h('button', { type: 'button', style: btnBase, onClick: function () { openPopout(current && current.id); }, title: I('pop_out_title'), 'aria-label': I('pop_out_title') }, I('pop_out')),
+          h('button', { type: 'button', style: btnBase, onClick: function () { openPopout(current && current.id); }, title: t('stem.zoomGallery.pop_out_title', INL.pop_out_title), 'aria-label': t('stem.zoomGallery.pop_out_title', INL.pop_out_title) }, I('pop_out')),
           // Labelled by the shared binder, which keeps the accessible name, the
           // pressed state and the glyph in step with the real fullscreen state --
           // including an Escape exit. Before this the button read "Fullscreen"
@@ -1318,8 +1318,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             type: 'button', style: btnBase,
             'data-allo-fs-btn': 'true',
             'aria-pressed': 'false',
-            'aria-label': I('fullscreen_enter'),
-            'data-fs-out': I('fullscreen_enter'),
+            'aria-label': t('stem.zoomGallery.fullscreen_enter', INL.fullscreen_enter),
+            'data-fs-out': t('stem.zoomGallery.fullscreen_enter', INL.fullscreen_enter),
             'data-fs-in': I('fullscreen_exit'),
             ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
             onClick: toggleFullscreen
@@ -1330,7 +1330,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         popupState === 'blocked' ? h('p', { role: 'alert', style: { margin: 0, fontSize: '0.75rem', color: P.warn } }, I('blocked_note')) : null,
         linkState === 'failed' && current ? h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
           h('span', { style: { fontSize: '0.71875rem', color: P.dim } }, I('link_failed')),
-          h('input', { type: 'text', readOnly: true, value: shareLinkFor(current.id), 'aria-label': I('link_field_aria'),
+          h('input', { type: 'text', readOnly: true, value: shareLinkFor(current.id), 'aria-label': t('stem.zoomGallery.link_field_aria', INL.link_field_aria),
             onFocus: function (e) { try { e.target.select(); } catch (_) {} },
             style: { flex: '1 1 260px', fontSize: '0.71875rem', padding: '4px 6px', borderRadius: 6, border: '1px solid ' + P.line, background: P.bg, color: P.text } })) : null,
         popupState === 'open' ? h('p', { style: { margin: 0, fontSize: '0.75rem', color: P.ok } }, I('open_note')) : null,
@@ -1365,8 +1365,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               // Our own zoom controls: OpenSeadragon's are unlabelled focusable divs.
               h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
                 h('button', { type: 'button', 'aria-label': W('zoom_in'), title: W('zoom_in'), onClick: function () { zoomBy(1.6); }, style: zoomBtn }, '＋'),
-                h('button', { type: 'button', 'aria-label': W('zoom_out'), title: W('zoom_out'), onClick: function () { zoomBy(1 / 1.6); }, style: zoomBtn }, '－'),
-                h('button', { type: 'button', 'aria-label': W('zoom_fit'), title: W('zoom_fit'), onClick: zoomHome, style: zoomBtn }, '⤢'))) : null,
+                h('button', { type: 'button', 'aria-label': t('stem.zoomGallery.zoom_out', WIN.zoom_out), title: t('stem.zoomGallery.zoom_out', WIN.zoom_out), onClick: function () { zoomBy(1 / 1.6); }, style: zoomBtn }, '－'),
+                h('button', { type: 'button', 'aria-label': t('stem.zoomGallery.zoom_fit', WIN.zoom_fit), title: t('stem.zoomGallery.zoom_fit', WIN.zoom_fit), onClick: zoomHome, style: zoomBtn }, '⤢'))) : null,
             current && imgState === 'open' ? h('div', { 'aria-hidden': 'true', style: Object.assign({}, chipBox, { position: 'absolute', top: 48, right: 8, zIndex: 6, fontSize: '0.6875rem', padding: '3px 8px' }) }, W('zoom_readout', { z: zoomX })) : null,
             // The scale bar. Hidden until the viewer reports a mapping; its text
             // is painted by updateScaleBar, never bound, and it is not live.
@@ -1376,7 +1376,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 h('span', { ref: scaleLineRef, 'aria-hidden': 'true', style: { display: 'inline-block', height: 0, borderTop: '3px solid currentColor', borderLeft: '2px solid currentColor', borderRight: '2px solid currentColor', boxSizing: 'border-box', width: 80, paddingTop: 5 } }),
                 h('span', { ref: scaleTextRef, style: { fontWeight: 700 } }, '')),
               h('div', { ref: scaleViewRef, style: { marginTop: 3, opacity: 0.9 } }, ''),
-              typeof setStemLabTool === 'function' ? h('button', { type: 'button', onClick: openInScaleExplorer, title: I('scale_open_sx_title'),
+              typeof setStemLabTool === 'function' ? h('button', { type: 'button', onClick: openInScaleExplorer, title: t('stem.zoomGallery.scale_open_sx_title', INL.scale_open_sx_title),
                 style: { marginTop: 4, padding: '2px 6px', fontSize: '0.65625rem', fontWeight: 700, borderRadius: 6, border: '1px solid currentColor', background: 'transparent', color: 'inherit', cursor: 'pointer' } }, I('scale_open_sx')) : null) : null,
             stageMsg ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: P.chipFg, fontSize: '0.8125rem', zIndex: 3, textAlign: 'center', padding: 20, pointerEvents: 'none' } }, stageMsg) : null,
             current && imgState === 'open' ? h('div', { style: Object.assign({}, chipBox, { position: 'absolute', bottom: 8, left: 8, right: navOn ? 218 : 8, zIndex: 6, fontSize: '0.65625rem', padding: '4px 9px', lineHeight: 1.35, pointerEvents: 'none' }) },
@@ -1386,7 +1386,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // alignSelf keeps the coach only as tall as it needs to be. Stretching
           // it to match the stage left a bordered empty column — about 1,400px of
           // it on the picker, where the coach has one sentence to say.
-          h('aside', { 'aria-label': W('coach_aria'), style: { flex: '0 1 300px', minWidth: 240, alignSelf: 'flex-start', background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 } },
+          h('aside', { 'aria-label': t('stem.zoomGallery.coach_aria', WIN.coach_aria), style: { flex: '0 1 300px', minWidth: 240, alignSelf: 'flex-start', background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 } },
             h('h3', { style: { margin: 0, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, W('coach_heading')),
             renderCoach(),
             renderChallenge(),

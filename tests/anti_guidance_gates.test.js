@@ -56,7 +56,8 @@ describe('Guided Mode is not competed with', () => {
   it('defers (does not spend) the AlloBot intro while Guided Mode runs', () => {
     const line = lineWith('canPlayIntro={');
     const expr = line.slice(line.indexOf('canPlayIntro={') + 'canPlayIntro={'.length, line.lastIndexOf('}'));
-    const on = { canPlayBotIntro: true, isBotVisible: true, hasSelectedRole: true, isGateOpen: false };
+    // 2026-11-17: also waits for a clear screen and for the first-run Help tip to have had its turn.
+    const on = { canPlayBotIntro: true, isBotVisible: true, hasSelectedRole: true, isGateOpen: false, _alloGuideOnScreen: null, _alloHelpTipSettled: true };
     expect(!!evalExpr(expr, { ...on, guidedMode: false })).toBe(true);
     expect(!!evalExpr(expr, { ...on, guidedMode: true })).toBe(false);
   });

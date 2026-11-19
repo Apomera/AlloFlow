@@ -18,7 +18,7 @@
   },
   "overrides": {
     "get-uri@8.0.1": {
-      "basic-ftp": "6.2.3"
+      "basic-ftp": "6.2.4"
     }
   }
 }

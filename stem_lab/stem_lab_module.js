@@ -4049,6 +4049,18 @@
     // STEM_AUTOSAVE_START
     // Keep the illusion gallery's progress and observations across visits.
     var _STEM_SAVED_KEYS = ['wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', 'butterfly', 'perceptionGallery', 'perceptionWalk', '_tutorialSeen'];
+    // Whole-bucket saves also caught in-flight flags (aiLoading: true). Reloading
+    // mid-request restored a spinner no reply would ever clear, so a request
+    // flag is never saved or restored. Only a boolean true is dropped.
+    var _STEM_BUSY_FLAG = /(?:Loading|Busy|Thinking|Generating|Fetching|Requesting)$|^_?(?:is)?(?:[Ll]oading|[Bb]usy|[Tt]hinking|[Gg]enerating|[Ff]etching|[Rr]equesting)(?:[A-Z_]|$)/;
+    function _stemDropBusy(bucket) {
+      if (!bucket || typeof bucket !== 'object' || Array.isArray(bucket)) return bucket;
+      var out = null;
+      Object.keys(bucket).forEach(function (k) {
+        if (bucket[k] === true && _STEM_BUSY_FLAG.test(k)) { if (!out) out = Object.assign({}, bucket); delete out[k]; }
+      });
+      return out || bucket;
+    }
     // Kitchen Lab keeps progress and preferences only: never a live cook, its
     // timers or dialogs. The tool type-checks what comes back (klCleanState).
     var _KITCHEN_LAB_SAVED = ['recipeHistory', 'recipeCompletedIds', 'aGradedRecipeIds', 'klUnlockedAchievements', 'competitionBests', 'tournamentBestTotal', 'tournamentLastTotal', 'tournamentsCompleted', 'klDetectiveSolved', 'klDetectiveCases', 'klBenchRuns', 'klUnits', 'klAltitudeFt', 'klIndependent', 'klRealKitchen', 'klPanMaterial', 'sandboxFood', 'klHandwashCompleted', 'maillardHunt'];
@@ -4303,6 +4315,9 @@
     function _stemHydrateLabToolData(prev, parsed) {
       var _parsedForHydration = Object.assign({}, parsed);
       Object.keys(_MATH_PROGRESS_SAVED).concat('_stemProgressPending').forEach(function (k) { delete _parsedForHydration[k]; });
+      _STEM_SAVED_KEYS.concat('flightSim').forEach(function (k) {
+        if (_parsedForHydration[k]) _parsedForHydration[k] = _stemDropBusy(_parsedForHydration[k]);
+      });
       var _coral = _crSaved(_parsedForHydration.coralReef);
       if (_coral) _parsedForHydration.coralReef = _coral; else delete _parsedForHydration.coralReef;
       var _road = _rrSaved(_parsedForHydration.roadReady);
@@ -4328,7 +4343,7 @@
           var _toSave = {};
           // @tool waterCycle
           _STEM_SAVED_KEYS.forEach(function (k) {
-            if (labToolData[k]) _toSave[k] = labToolData[k];
+            if (labToolData[k]) _toSave[k] = _stemDropBusy(labToolData[k]);
           });
           // flightSim progression (badges, visited airports, flight time,
           // discoveries, tutorial dismissals) was never in the whitelist, so
@@ -4339,7 +4354,7 @@
             var _fs = Object.assign({}, labToolData.flightSim);
             delete _fs.view; delete _fs.rescue; delete _fs.survey;
             delete _fs.weatherLesson; delete _fs.nearestWaypoint; delete _fs.showHelp;
-            _toSave.flightSim = _fs;
+            _toSave.flightSim = _stemDropBusy(_fs);
           }
           if (labToolData.beehive) {
             var _beehive = _serializeBeehiveForPersistence(labToolData.beehive);

@@ -8,6 +8,6 @@ it('restores the exact turn-start source after reversing only the macro and sele
  expect(raw.equals(readFileSync(resolve('desktop/web-app/public/stem_lab/stem_tool_weldlab.js')))).toBe(true);
  expect([...raw.subarray(0,3)]).toEqual([239,187,191]);expect(raw.toString('utf8')).not.toContain('\r');
  const before=stripWeldlabMacroFixes(raw.toString('utf8'));
- expect(createHash('sha256').update(before).digest('hex')).toBe('7a06863cf4ea11ff398205f9fc1ddaf184181f55d2850bb642dff229953e0a2a');
+ expect(createHash('sha256').update(before).digest('hex')).toBe('5e8ad0642fd9b876e47974805b3c3abb7323a6f04f40adf86a707a11bedc5fb8');
  expect(stripWeldlabMacroFixes(before)).toBe(before);
 });

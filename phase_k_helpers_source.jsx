@@ -3,6 +3,22 @@
 // translation, Firestore sync, Socratic chat, fluency recording,
 // reflection saving, grammar fixing, accuracy verification.
 
+// A random ID (no name in it) kept with this student's saves, so a teacher's private dashboard notes find them again.
+const _alloStudentFileId = (nickname, adopt) => {
+    const valid = (v) => typeof v === 'string' && /^[A-Za-z0-9-]{8,64}$/.test(v);
+    let h = 5381; const n = String(nickname || '').trim().toLowerCase();
+    for (let i = 0; i < n.length; i++) h = ((h * 33) ^ n.charCodeAt(i)) >>> 0;
+    const k = 'n' + h.toString(36);
+    const mem = (window.__alloStudentFileIds = window.__alloStudentFileIds || {});
+    let map = {};
+    try { map = JSON.parse(localStorage.getItem('allo_student_file_ids') || '{}') || {}; } catch (_) {}
+    if (valid(adopt)) map[k] = adopt;
+    else if (!valid(map[k])) map[k] = valid(mem[k]) ? mem[k] : ((window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : 'sf-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12));
+    mem[k] = map[k];
+    try { localStorage.setItem('allo_student_file_ids', JSON.stringify(map)); } catch (_) {}
+    return map[k];
+};
+
 // Persona TTS voice direction — shared by the live-play path and the preload
 // path in playSequence so every segment of a message generates with the SAME
 // instruction. They used to diverge: preloads sent a bare "[speak in character
@@ -2313,9 +2329,11 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
               try { addToast(message, 'error'); } catch (_) {}
               return { ok: false, reason: studentHelpersMissing ? 'student-resource-projection-unavailable' : 'student-resource-not-safe', narration: message };
           }
+          const studentFileId = _alloStudentFileId(studentNickname);
           dataStr = JSON.stringify({
               mode: 'student',
               studentNickname: studentNickname,
+              ...(studentFileId ? { studentFileId } : {}),
               history: studentHistory,
               responses: studentResponses,
               settings: {

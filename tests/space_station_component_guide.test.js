@@ -21,7 +21,7 @@ if (guideStart < 0 || guideEnd < guideStart || !modulesMatch) {
 const { entries, Guide, modules } = runInNewContext(
   `var MODULES = ${modulesMatch[1]};\n` + source.slice(guideStart, guideEnd) +
   '\n({entries:ISS_COMPONENT_GUIDE,Guide:IssComponentGuide,modules:MODULES});',
-  { document, ISS_TRUSS_Y: 0 }, { filename: 'space-station-component-guide.js' }
+  { document, ISS_TRUSS_Y: 0, __alloT: (key, fallback) => fallback }, { filename: 'space-station-component-guide.js' }
 );
 const byId = Object.fromEntries(entries.map(entry => [entry.id, entry]));
 const entryText = entry => [entry.purpose, entry.science, entry.connection, entry.model,

@@ -56,19 +56,21 @@ describe('Help in the compact header bar', () => {
 
   it('the first-run tip waits for a role and is not spent behind the Launch Pad', () => {
     const src = anti();
-    const a = src.indexOf('  // First-run help tip: only once a role is chosen');
+    // 2026-11-17: the tip now waits for the one guide on screen (no role yet = the Launch Pad), not just the role.
+    const a = src.indexOf('  // One guide at a time: the guide on screen now.');
     expect(a).toBeGreaterThan(src.indexOf('const [hasSelectedRole, setHasSelectedRole] = useState(false);'));
-    const body = src.slice(src.indexOf('useEffect(() => {', a), src.indexOf('}, [hasSelectedRole, isGateOpen]);', a) + '}, [hasSelectedRole, isGateOpen]);'.length);
+    expect(src.slice(a, src.indexOf(';', a))).toContain("!hasSelectedRole ? 'launch-pad'");
+    const body = src.slice(src.indexOf('useEffect(() => {', a), src.indexOf('}, [_alloGuideOnScreen, guidedMode]);', a) + '}, [_alloGuideOnScreen, guidedMode]);'.length);
     vi.useFakeTimers();
-    const store = {}; const shown = [];
-    const run = (hasSelectedRole) => { let cleanup; new Function('useEffect', 'hasSelectedRole', 'isGateOpen', 'safeGetItem', 'safeSetItem', 'setShowHelpOnboarding', body)(
-      (fn) => { cleanup = fn(); }, hasSelectedRole, false, (k) => store[k], (k, v) => { store[k] = v; }, (v) => shown.push(v)); return cleanup; };
+    const store = {}; const shown = []; let current = false;
+    const run = (hasSelectedRole) => { let cleanup; new Function('useEffect', '_alloGuideOnScreen', 'guidedMode', 'safeGetItem', 'safeSetItem', 'setShowHelpOnboarding', body)(
+      (fn) => { cleanup = fn(); }, hasSelectedRole ? null : 'launch-pad', false, (k) => store[k], (k, v) => { store[k] = v; }, (v) => { if (v !== current) { current = v; shown.push(v); } }); return cleanup; };
     run(false); vi.advanceTimersByTime(30000);
     expect(shown, 'no role yet: nothing shown, nothing marked seen').toEqual([]); expect(store.allo_help_onboarded).toBeUndefined();
     run(true); vi.advanceTimersByTime(4000); expect(shown).toEqual([true]);
     vi.advanceTimersByTime(20000); expect(shown).toEqual([true, false]); expect(store.allo_help_onboarded).toBe('true');
     // Seen once shown: someone who leaves after 5 s does not get the bouncing tip on every visit.
-    for (const k of Object.keys(store)) delete store[k]; shown.length = 0;
+    for (const k of Object.keys(store)) delete store[k]; shown.length = 0; current = false;
     const cleanup = run(true); vi.advanceTimersByTime(5000); cleanup();
     expect(shown).toEqual([true]); expect(store.allo_help_onboarded).toBe('true');
     shown.length = 0; run(true); vi.advanceTimersByTime(30000); expect(shown, 'next visit: no tip').toEqual([]);

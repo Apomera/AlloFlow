@@ -10028,7 +10028,7 @@ var geographyGroup = new THREE.Group();
           ),
           h('button', { type: 'button', onClick: logObservation, disabled: logCheck.code === 'capacity', 'aria-describedby': 'weather-station-log-status', className: buttonClass + ' mt-3 w-full disabled:opacity-50' }, '\uD83D\uDCDD Log this observation'),
           h('p', { id: 'weather-station-log-status', 'data-weather-station-log-status': true, tabIndex: -1, className: 'mt-2 rounded p-1 text-xs ' + mutedClass + ' focus:outline-none focus:ring-2 focus:ring-sky-500' }, normalizeWeatherObservationLog(d.observationLog).length + ' of ' + WEATHER_OBSERVATION_LOG_LIMIT + ' observations saved. ' + (logCheck.code === 'capacity' ? 'Notebook full. Open Observation Desk to download your observations or clear the notebook before logging more.' : 'New readings keep your saved evidence.')) ,
-          d.tab === 'forecast' && d.observationStatus && h('p', { role: 'status', 'data-weather-station-log-notice': true, className: 'mt-2 text-xs font-bold' }, d.observationStatus),
+          d.tab === 'forecast' && typeof d.observationStatus === 'string' && d.observationStatus && h('p', { role: 'status', 'data-weather-station-log-notice': true, className: 'mt-2 text-xs font-bold' }, d.observationStatus),
           d.tab !== 'observations' && h('button', { type: 'button', className: buttonClass + ' mt-2 w-full', onClick: function () { update({ tab: 'observations', playing: false }); } }, 'Open Observation Desk')
         );
       }
@@ -10756,7 +10756,7 @@ var geographyGroup = new THREE.Group();
           h('p', { className: 'px-3 pt-3 text-xs leading-relaxed ' + mutedClass }, 'Saved readings retain their original station, hour, and starting conditions; they are from the teaching model, not live weather observations.'),
           h('p', { id: 'weather-observation-capacity', 'data-weather-observation-capacity': true, tabIndex: -1, 'aria-live': 'polite', className: 'm-3 rounded p-1 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500' }, log.length + ' of ' + WEATHER_OBSERVATION_LOG_LIMIT + ' observations saved. ' + (log.length >= WEATHER_OBSERVATION_LOG_LIMIT ? 'Notebook full. Download the CSV or session to keep a copy, then clear the log before adding readings.' : 'New readings never replace saved observations automatically. Station networks are saved as a whole group.')),
           !log.length && h('p', { className: 'p-3 text-sm ' + mutedClass }, 'Log a station at two model hours to study a change, or log the network to compare locations at one hour.'),
-          d.observationStatus && h('p', { role: 'status', className: 'px-3 pt-3 text-sm font-bold' }, d.observationStatus),
+          typeof d.observationStatus === 'string' && d.observationStatus && h('p', { role: 'status', className: 'px-3 pt-3 text-sm font-bold' }, d.observationStatus),
           canUndo && h('p', { className: 'px-3 pt-2 text-xs ' + mutedClass }, 'Logging a new reading ends Undo for the cleared notebook. Undo is available in this workspace until the notebook changes or a session is restored.'),
           canUndo && h('button', { type: 'button', 'data-weather-observation-undo': true, 'aria-describedby': 'weather-observation-capacity', className: buttonClass + ' m-3', onClick: undoClearObservationNotebook }, 'Undo clear log'),
           log.length > 0 && h('div', { className: 'mt-3 overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.weather.savedObservationTable', 'Saved observation table') },
@@ -12804,7 +12804,7 @@ var geographyGroup = new THREE.Group();
                   checkpoints.length + ' of ' + LIVE_FORECAST_CHECKPOINT_LIMIT + ' forecast snapshots saved. ' + (journalFull ? 'Journal full. Download your report or session to keep a copy, then remove a snapshot before saving a new one.' : 'New snapshots never replace saved ones automatically.')),
                 alreadySaved && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'This forecast hour from this retrieval is already saved. Its original values are kept.'),
                 removedCheckpoint && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'Saving a new snapshot ends Undo for the removed snapshot.'),
-                d.liveReviewStatus && h('p', { role: 'status', className: 'mt-2 text-xs font-bold' }, d.liveReviewStatus),
+                typeof d.liveReviewStatus === 'string' && d.liveReviewStatus && h('p', { role: 'status', className: 'mt-2 text-xs font-bold' }, d.liveReviewStatus),
                 removedCheckpoint && h('button', { type: 'button', className: buttonClass + ' mt-3 disabled:opacity-50', 'data-weather-forecast-undo': true, disabled: journalFull || removedAlreadySaved, 'aria-describedby': 'weather-live-forecast-capacity', onClick: undoRemoveLiveForecastCheckpoint }, 'Undo remove forecast snapshot'),
                 removedCheckpoint && journalFull && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'The journal is full, so Undo cannot restore this removal. All saved snapshots are kept.'),
                 removedAlreadySaved && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'A snapshot with the removed ID is already saved. Undo will not overwrite it.')

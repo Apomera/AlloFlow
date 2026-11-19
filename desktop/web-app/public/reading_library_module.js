@@ -4484,13 +4484,15 @@
     }
 
     return e('div', {
-      className: 'allo-docsuite fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-3 sm:p-6',
+      className: 'allo-docsuite fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-0',
       role: 'presentation',
       onMouseDown: function (ev) { if (ev.target === ev.currentTarget && props.onClose) props.onClose(); },
     },
+      // Full screen (2026-11-17): the catalog is for browsing covers, and a framed
+      // dialog left a laptop only one row of them under the filters.
       e('div', {
         ref: containerRef,
-        className: 'relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col p-4 ' + chromeThemeClass(readerThemeId),
+        className: 'relative bg-white w-full h-full max-w-none flex flex-col p-4 ' + chromeThemeClass(readerThemeId),
         role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('readinglib_title', 'Reading Library'),
       },
         e('div', { className: 'flex items-center justify-between gap-2 pb-2' },

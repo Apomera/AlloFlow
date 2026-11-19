@@ -30,6 +30,15 @@ const HELPER_FIRST = {
   'stem_tool_beehive.js': 'write = window.StemLab && window.StemLab.writeClipboard',
   // Climate report recovery also supports hosts without navigator.clipboard.
   'stem_tool_climateExplorer.js': 'var helper = window.StemLab && window.StemLab.writeClipboard;',
+  // 11-18: copy buttons written helper-first since this sweep (teacher CSVs, summaries, plans, exports).
+  'stem_tool_arithmetic.js': "var api = window.StemLab && typeof window.StemLab.writeClipboard === 'function' ? window.StemLab.writeClipboard : null;",
+  'stem_tool_citylab.js': "var api = window.StemLab && typeof window.StemLab.writeClipboard === 'function' ? window.StemLab.writeClipboard : null;",
+  'stem_tool_heatlab.js': "var api = window.StemLab && typeof window.StemLab.writeClipboard === 'function' ? window.StemLab.writeClipboard : null;",
+  'stem_tool_unitconvert.js': "var api = window.StemLab && typeof window.StemLab.writeClipboard === 'function' ? window.StemLab.writeClipboard : null;",
+  'stem_tool_multtable.js': "var write = window.StemLab && typeof window.StemLab.writeClipboard === 'function' ? function(s) { return window.StemLab.writeClipboard(s); }",
+  'stem_tool_nutritionlab.js': 'var writer = window.StemLab && window.StemLab.writeClipboard;',
+  'stem_tool_rocks.js': "if (window.StemLab && typeof window.StemLab.writeClipboard === 'function') {",
+  'stem_tool_skatelab.js': "var writer = window.StemLab && typeof window.StemLab.writeClipboard === 'function'",
 };
 const GUARD_REACH = 700;
 const HELPER_AT = HELPER_CALL.indexOf('navigator.clipboard.writeText(');

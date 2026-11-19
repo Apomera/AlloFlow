@@ -30,6 +30,10 @@ afterEach(()=>{
   vi.clearAllTimers();vi.useRealTimers();vi.restoreAllMocks();vi.unstubAllGlobals();
   for(const name of ['__alloPrintLabPendingHandoff','__alloPrintLabGeometrySession','__alloPrintLabPackageEditSession','__alloGeometryWorldPendingBuild'])delete window[name];
 });
+// The host focuses its dialog synchronously on mount (cf1747d6d6). jsdom answers every
+// focus() with a selectionchange event queued through the faked setTimeout; that task is
+// jsdom's, not the app's, so the unmount checks count only timers the code itself set.
+function trackJsdomSelectionTimers(){const fake=globalThis.setTimeout,ids=new Set();globalThis.setTimeout=function(fn,...rest){if(!/[\\/]jsdom[\\/]lib[\\/]jsdom[\\/]living[\\/]selection[\\/]/.test(new Error().stack||''))return fake.call(this,fn,...rest);const id=fake.call(this,function(){ids.delete(id);return fn.apply(this,arguments);},...rest);ids.add(id);return id;};return {get pending(){return ids.size;},restore(){globalThis.setTimeout=fake;}};}
 function flushFrame(){const first=frames.entries().next();if(first.done)return false;const [id,fn]=first.value;frames.delete(id);React.act(()=>fn(1));return true;}
 function finish(){React.act(()=>vi.advanceTimersByTime(0));flushFrame();flushFrame();}
 function element(app,selector){return app.host.querySelector(selector);}
@@ -174,8 +178,11 @@ describe('Print Lab package-return focus across real parent/child host timers',(
     React.act(()=>vi.advanceTimersByTime(0));expect(document.activeElement).not.toBe(app.target());modal.remove();
   });
   it('clears the final task and both parent focus timers on unmount',async()=>{
-    const app=await mount({childBridge:true,mountFocus:true});flushFrame();flushFrame();expect(vi.getTimerCount()).toBeGreaterThan(0);
-    app.close();expect(vi.getTimerCount()).toBe(0);expect(frames.size).toBe(0);
+    const selection=trackJsdomSelectionTimers();
+    try{
+      const app=await mount({childBridge:true,mountFocus:true});flushFrame();flushFrame();expect(vi.getTimerCount()-selection.pending).toBeGreaterThan(0);
+      app.close();expect(vi.getTimerCount()-selection.pending).toBe(0);expect(frames.size).toBe(0);
+    }finally{selection.restore();}
   });
   it('returns only focus while preserving the exact package session, recipe bytes and persisted form state',async()=>{
     const app=await mount({childBridge:true,mountFocus:true}),session=window.__alloPrintLabPackageEditSession;

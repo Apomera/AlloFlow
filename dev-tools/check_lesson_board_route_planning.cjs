@@ -63,7 +63,7 @@ const html='<!doctype html><html lang="en"><head><title>Route planning verificat
 
         if(!payments.length){
           const real=await page.evaluate(()=>saved().run);await page.locator('[data-open-planning]').click();await page.locator('[data-sandbox-restart]').click();
-          await page.locator('[data-sandbox-construction="'+target.id+'"] [data-funding-option="'+payment.id+'"] input').check();await page.locator('[data-sandbox-add="'+target.id+'"]').click();
+          /* 2026-11-18: Relaxed play folds exchange payments under Other ways to pay. */await page.evaluate(()=>document.querySelectorAll('[data-funding-more]').forEach(d=>{d.open=true;}));await page.locator('[data-sandbox-construction="'+target.id+'"] [data-funding-option="'+payment.id+'"] input').check();await page.locator('[data-sandbox-add="'+target.id+'"]').click();
           await expect(page.locator('[data-board-map] [data-map-construction="'+target.id+'"] [data-plan-pin]')).toHaveCount(1);
           await page.locator('[data-plan-preview]>summary').click();await page.locator('[data-plan-preview-position]').selectOption('1');
           await expect(page.locator('[data-plan-preview-selection]')).toContainText(target.name);await scan('construction payment preview');
@@ -71,7 +71,7 @@ const html='<!doctype html><html lang="en"><head><title>Route planning verificat
           await page.locator('[data-sandbox-inspect]').click();expect(await page.evaluate(()=>saved().run)).toEqual(real);
           await expect(page.locator('.lb-current [data-funding-option="'+payment.id+'"] input')).toBeChecked();
         }
-        const before=await page.evaluate(()=>saved().run);await page.locator('.lb-current [data-funding-option='+payment.id+'] input').check();expect(await page.evaluate(()=>saved().run)).toEqual(before);
+        const before=await page.evaluate(()=>saved().run);/* 2026-11-18: Relaxed play folds exchange payments under Other ways to pay. */await page.evaluate(()=>document.querySelectorAll('[data-funding-more]').forEach(d=>{d.open=true;}));await page.locator('.lb-current [data-funding-option='+payment.id+'] input').check();expect(await page.evaluate(()=>saved().run)).toEqual(before);
         await page.locator('.lb-current [data-construction-funding]').scrollIntoViewIfNeeded();await scan('construction funding '+target.id);await page.screenshot({path:path.join(out,width+'-funding.png')});
         const prior=await page.evaluate(()=>snapshot().p);await page.locator('[data-board-move="'+target.id+'"]').click();const after=await page.evaluate(()=>snapshot().p),delta=after.balance.map((n,i)=>n-prior.balance[i]);
         expect(delta).toEqual(payment.cost.map((cost,i)=>-cost+(after.kitGains?.[i]||0)-(prior.kitGains?.[i]||0)));payments.push({id:target.id,funding:payment.id,cost:payment.cost});if(target.effect.kind==='path')await page.locator('[data-board-map]').screenshot({path:path.join(out,width+'-built-bridge.png')});

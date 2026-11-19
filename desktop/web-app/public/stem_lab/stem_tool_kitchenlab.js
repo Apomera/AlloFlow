@@ -5432,7 +5432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // ─── AI Judge (Gemini-powered personalized critique) ───
       function requestAiCritique(rec, judgement) {
         var callGemini = ctx.callGemini;
-        if (!callGemini) return;  // gracefully skip if AI not wired
+        if (!callGemini || ctx.aiAvailable === false) return;  // AI not wired, or switched off by the host
         var runId = d.recipeStartedAt;
         if (d.aiCritiqueRequestedFor === runId) return;  // already requested for this run
         // Build the prompt
@@ -5452,7 +5452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           'Write a 2-3 sentence personalized critique (max 80 words). Tone: encouraging but specific. Highlight ONE thing they did well, then ONE specific thing to work on next time. No hedging, no padding, no greeting. Plain text — no markdown, no quotes.'
         ].filter(Boolean).join('\n');
         // Mark as requested + loading
-        setKL({ aiCritiqueRequestedFor: runId, aiCritiqueLoading: true });
+        setKL({ aiCritiqueRequestedFor: runId, aiCritiqueLoading: true, aiCritiqueError: null });
         callGemini(prompt, false).then(function(result) {
           var text = typeof result === 'string' ? result : (result && result.text ? result.text : '');
           text = String(text || '').trim().replace(/^["']|["']$/g, '');
@@ -5460,7 +5460,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // A reply for a cook the student has already left belongs to nobody
           setKL(function(prior) { return prior.recipeStartedAt === runId ? { aiCritique: text, aiCritiqueLoading: false } : {}; });
         }).catch(function() {
-          setKL(function(prior) { return prior.recipeStartedAt === runId ? { aiCritique: null, aiCritiqueLoading: false } : {}; });
+          // Clear the "already requested" flag too, or the guard above ignores
+          // every later click and the coach goes silent for the rest of the run.
+          var errMsg = __alloT('stem.kitchenlab.ai_coach_error', 'The AI coach could not answer just now. Please try again in a moment.');
+          setKL(function(prior) { return prior.recipeStartedAt === runId ? { aiCritique: null, aiCritiqueLoading: false, aiCritiqueRequestedFor: null, aiCritiqueError: { runId: runId, msg: errMsg } } : {}; });
+          klAnnounce(errMsg);
         });
       }
 
@@ -5486,7 +5490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       }
       function runSuggester(input) {
         var callGemini = ctx.callGemini;
-        if (!callGemini) {
+        if (!callGemini || ctx.aiAvailable === false) {
           setKL({ suggesterError: 'AI suggester is offline. Try a recipe directly from the list below.' });
           return;
         }
@@ -6054,7 +6058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               d.klIndependent ? 'No forecast, no temperature ranges, no notes while you cook. The judge is the same; the cook is recorded as done without coaching.' : 'The cockpit forecasts where the cook is heading, shows each step\'s temperature range and explains what is happening.')),
 
           // ─── AI SUGGESTER CARD ───
-          ctx.callGemini && ctx.aiHintsEnabled !== false ? h('div', { style: { background: 'linear-gradient(135deg, rgba(167,139,250,0.18), rgba(56,189,248,0.12))',
+          ctx.callGemini && ctx.aiHintsEnabled !== false && ctx.aiAvailable !== false ? h('div', { style: { background: 'linear-gradient(135deg, rgba(167,139,250,0.18), rgba(56,189,248,0.12))',
               border: '2px solid rgba(167,139,250,0.55)', borderRadius: 14, padding: '18px 22px', marginBottom: 16 } },
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' } },
               h('div', { 'aria-hidden': 'true', style: { fontSize: 38, lineHeight: 1, flexShrink: 0 } }, '🤔'),
@@ -7383,7 +7387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var sbFood = isSandbox ? sandboxFood(d.sandboxFood) : null;
         // The AI critique is the student's to ask for, and only where the teacher
         // has AI on; it reads the judge's notes, it does not grade.
-        var aiOn = !isSandbox && !!ctx.callGemini && ctx.aiHintsEnabled !== false;
+        var aiOn = !isSandbox && !!ctx.callGemini && ctx.aiHintsEnabled !== false && ctx.aiAvailable !== false;
         var fix = isSandbox ? null : oneFix(j);
         var fixLesson = fix ? lessonFor(fix) : null;
         // Credit the finished cook and any new badges once, with the reason shown
@@ -7552,6 +7556,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             d.aiCritiqueLoading ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', padding: '8px 0' } },
               __alloT('stem.kitchenlab.chef_is_reviewing_your_work', '🤔 Chef is reviewing your work...')) :
             h('div', null,
+              // Error from THIS run only (keyed by run id, so a new cook starts clean).
+              (d.aiCritiqueError && d.aiCritiqueError.runId === d.recipeStartedAt) ? h('p', { 'data-kl-ai-error': '1', style: { fontSize: 12, color: '#fde68a', margin: '0 0 8px', lineHeight: 1.5 } }, d.aiCritiqueError.msg) : null,
               h('button', { type: 'button', 'data-kl-ai-ask': '1', onClick: function() { requestAiCritique(rec, j); },
                 style: { padding: '10px 16px', minHeight: 44, background: 'rgba(167,139,250,0.18)', color: '#e9d5ff', border: '1px solid rgba(167,139,250,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                 __alloT('stem.kitchenlab.ask_the_ai_coach', '💬 Ask the AI coach about this cook')),
@@ -7927,13 +7933,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       else if (section === 'maillardHunt') content = (function() {
         var iq = d.maillardHunt || { tempF: 350, aminoPct: 50, sugarPct: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { setKL({ maillardHunt: Object.assign({}, iq, patch) }); }
+        // Two regimes. Below ~450°F (230°C) browning needs heat AND both
+        // reactants (amino acids + reducing sugar). At ~450°F and up the surface
+        // chars (pyrolysis) whatever the mix: a 500°F pan burns food at 50/50.
+        // (The old model needed reactivity >= 0.9 to burn, reachable only at
+        // >= 460°F with both reactants near 100%.)
+        var BURN_F = 450;
         var reactivity = (iq.tempF > 280 ? (iq.tempF - 280) / 200 : 0) * (iq.aminoPct / 100) * (iq.sugarPct / 100);
         var state;
-        if (reactivity < 0.05) state = 'noReact';
+        if (iq.tempF >= BURN_F) state = 'burnt';
+        else if (reactivity < 0.05) state = 'noReact';
         else if (reactivity < 0.3) state = 'beginning';
         else if (reactivity < 0.6) state = 'active';
-        else if (reactivity < 0.9) state = 'deep';
-        else state = 'burnt';
+        else state = 'deep';
         // Sugar with little protein still browns once hot enough: that is
         // caramelisation, a different reaction (Maillard tab, ~320°F for sucrose)
         if ((state === 'noReact' || state === 'beginning') && iq.tempF >= 320 && iq.sugarPct >= 50 && iq.aminoPct <= 20) state = 'caramel';
@@ -7943,24 +7955,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           beginning: { label: __alloT('stem.kitchenlab.browning_begins', '🟡 Browning begins'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.kitchenlab.light_tan_color_mild_aroma', 'Light tan color, mild aroma.') },
           active:    { label: __alloT('stem.kitchenlab.active_maillard', '🟠 Active Maillard'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.kitchenlab.golden_brown_rich_aroma_compounds_form', 'Golden-brown, rich aroma compounds forming.') },
           deep:      { label: __alloT('stem.kitchenlab.deep_brown', '🟤 Deep brown'), color: '#92400e', bg: '#fef3c7', border: '#fbbf24', desc: __alloT('stem.kitchenlab.strong_flavors_approaching_upper_limit', 'Strong flavors. Approaching upper limit.') },
-          burnt:     { label: __alloT('stem.kitchenlab.burnt_acrylamide_risk', '⚫ Burnt / acrylamide risk'), color: '#1e293b', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.kitchenlab.pyrolysis_bitter_potential_acrylamide_', 'Pyrolysis. Bitter, potential acrylamide formation.') }
+          burnt:     { label: __alloT('stem.kitchenlab.burnt_acrylamide_risk', '⚫ Burnt / acrylamide risk'), color: '#1e293b', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.kitchenlab.pyrolysis_bitter_potential_acrylamide_', 'Pyrolysis: at about 450°F (230°C) and above the surface chars, whatever the amino acid and sugar mix. Bitter and smoky; acrylamide can form.') }
         }[state];
         return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 space-y-3' },
           h('h2', { className: 'text-sm font-black text-orange-700', style: { margin: 0 } }, __alloT('stem.kitchenlab.maillard_browning_discovery', '🔬 Maillard browning discovery')),
-          h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.kitchenlab.browning_lab_intro', 'Move the three sliders (surface temperature, amino acids and sugar) and watch which of five browning stages the food reaches.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.kitchenlab.browning_lab_intro', 'Move the three sliders (surface temperature, amino acids and sugar) and watch which of five browning stages the food reaches. Below about 450°F (230°C), browning needs heat and both reactants; at that heat and above, the surface burns whatever the mix.')),
           h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
             h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
             h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc)
           ),
           h('div', { className: 'grid grid-cols-3 gap-3' },
-            [{ k: 'tempF', l: 'Surface °F', mn: 200, mx: 500, st: 5 },
+            // The slider and the model stay in °F; only what the student reads
+            // follows the tool's °C switch (fmtT converts and adds the unit).
+            [{ k: 'tempF', l: units === 'C' ? 'Surface °C' : 'Surface °F', mn: 200, mx: 500, st: 5 },
              { k: 'aminoPct', l: 'Amino acid %', mn: 0, mx: 100, st: 5 },
              { k: 'sugarPct', l: 'Sugar %', mn: 0, mx: 100, st: 5 }].map(function(s) {
+              var shown = s.k === 'tempF' ? fmtT(iq.tempF) : iq[s.k];
               return h('div', { key: s.k },
-                h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-orange-700' }, iq[s.k])),
+                h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-orange-700' }, shown)),
                 h('input', { id: 'mh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                   onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                  className: 'w-full', 'aria-label': s.l }));
+                  className: 'w-full', 'aria-label': s.l, 'aria-valuetext': s.k === 'tempF' ? fmtT(iq.tempF) : undefined }));
             })
           ),
           h('div', { className: 'flex gap-2 items-center flex-wrap' },
@@ -7969,12 +7984,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           ),
           // The student's own trials: evidence to reason from, not an answer
           (iq.log || []).length ? h('table', { 'data-kl-mh-log': iq.log.length, className: 'w-full text-[0.6875rem] text-slate-700 border-collapse' },
-            h('thead', null, h('tr', null, ['Surface °F', 'Amino %', 'Sugar %', 'Stage'].map(function(hd) {
+            h('thead', null, h('tr', null, [units === 'C' ? 'Surface °C' : 'Surface °F', 'Amino %', 'Sugar %', 'Stage'].map(function(hd) {
               return h('th', { key: hd, scope: 'col', className: 'text-left font-bold border-b border-slate-300 py-1 pr-2' }, hd); }))),
             h('tbody', null, iq.log.map(function(r, i) {
               var st = { noReact: 'no reaction', beginning: 'browning begins', active: 'active Maillard', deep: 'deep brown', burnt: 'burnt', caramel: 'caramelisation' }[r.st] || String(r.st);
               var num = function(v) { return typeof v === 'number' && isFinite(v) ? String(v) : '—'; };
-              return h('tr', { key: i }, h('td', { className: 'py-1 pr-2 font-mono' }, num(r.t)), h('td', { className: 'py-1 pr-2 font-mono' }, num(r.a)), h('td', { className: 'py-1 pr-2 font-mono' }, num(r.s)), h('td', { className: 'py-1 pr-2' }, st));
+              return h('tr', { key: i }, h('td', { className: 'py-1 pr-2 font-mono' }, typeof r.t === 'number' && isFinite(r.t) ? String(units === 'C' ? fToC(r.t) : r.t) : '—'), h('td', { className: 'py-1 pr-2 font-mono' }, num(r.a)), h('td', { className: 'py-1 pr-2 font-mono' }, num(r.s)), h('td', { className: 'py-1 pr-2' }, st));
             }))) : null,
           h('textarea', { id: 'kitchen-maillard-hypothesis', 'aria-label': __alloT('stem.kitchenlab.a11y_maillard_reaction_hypothesis', 'Maillard reaction hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
             className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),

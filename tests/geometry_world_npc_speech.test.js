@@ -324,6 +324,24 @@ describe('the dialog speech bar, mounted', () => {
     expect(player.speak).not.toHaveBeenCalled();
     m.unmount();
   });
+
+  it('the growth-mindset "Help me think" coach still answers when the AI call fails or is empty', async () => {
+    fakePlayer();
+    const nudge = Object.assign({}, bucket, { showNpcDialog: false, showGrowthNudge: true });
+    const helpButton = (m) => Array.from(m.container.querySelectorAll('button')).find((b) => (b.textContent || '').indexOf('Help me think') === 0);
+    for (const callGemini of [vi.fn(() => Promise.reject(new Error('429 rate limited'))), vi.fn(() => Promise.resolve(''))]) {
+      window[ENGINE_KEY] = fakeEngine([liveNpc()]); // unmount disposes the engine
+      const addToast = vi.fn();
+      const m = mountTool(cfg, nudge, { callGemini, addToast, aiHintsEnabled: true });
+      m.rerender();
+      const help = helpButton(m);
+      expect(help).toBeTruthy();
+      await React.act(async () => { help.click(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); });
+      expect(callGemini).toHaveBeenCalledTimes(1);
+      expect(addToast).toHaveBeenCalledWith(expect.stringContaining('The coach could not answer right now'), 'info');
+      m.unmount();
+    }
+  });
 });
 
 describe('source contract', () => {

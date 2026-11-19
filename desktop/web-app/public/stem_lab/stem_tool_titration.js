@@ -4081,6 +4081,10 @@ var updMulti = function (obj) {
   ctx.updateMulti('titrationLab', obj);
 };
 
+// Unmount retires any AI request, so a saved aiLoading from a lab closed mid-call
+// would leave Explain disabled on "Thinking..." for good. Nothing is in flight yet.
+React.useEffect(function () { if (d.aiLoading) updMulti({ aiLoading: false }); }, []);
+
 // Timers belong to a mounted lab instance, never to render or to window. SSR and
 // abandoned renders create no work, and unmount always clears the countdown.
 React.useEffect(function () {

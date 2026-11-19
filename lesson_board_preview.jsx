@@ -27,9 +27,11 @@ const STOP_PRESETS = [
 function PreviewStyles() {
   return addBoardStyle(`.lb .lb-preview-nav{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:12px 0}.lb .lb-preview-nav label{margin:0;flex:1 1 220px}.lb .lb-preview-stop{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--bg)}.lb .lb-preview-stop h4{margin:0;font-size:1.15em}.lb .lb-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.84em;background:var(--panel)}.lb .lb-answer-key{border-inline-start:4px solid var(--route,#32725e);background:var(--route-soft,#e5f2ea);border-radius:10px;padding:10px 14px;margin:12px 0}.lb .lb-quality li{margin:6px 0}.lb .lb-quality li[data-level=fix]{font-weight:650}.lb .lb-symbol-results{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.lb .lb-symbol-results button{padding:4px;width:64px;height:64px;background:#fff}.lb .lb-symbol-results img{width:100%;height:100%;object-fit:contain}.lb .lb-preview-check[data-result=correct]{color:var(--route,#32725e);font-weight:700}`);
 }
-export function BoardTeacherPreview({ board, source, support, supportReady, language, disabled, stageText, onChange, onRefineStop, onRefineBoard, onSupport, onEditStop, t }) {
+export function BoardTeacherPreview({ startOpen = true, board, source, support, supportReady, language, disabled, stageText, onChange, onRefineStop, onRefineBoard, onSupport, onEditStop, t }) {
   const [index, setIndex] = useState(0), [showKey, setShowKey] = useState(false), [drafts, setDrafts] = useState({}), [checks, setChecks] = useState({}), [request, setRequest] = useState(''), [symbols, setSymbols] = useState({ busy: '', progress: '', message: '', error: '', results: [], query: undefined });
   const heading = useRef(null), controller = useRef(null), latest = useRef({ board, support }); latest.current = { board, support };
+  // A ready-made sample starts with this folded (its stops are already reviewed); a generated or
+  // imported board, or any quality finding, keeps it open so the teacher reads each stop.
   const quality = React.useMemo(() => boardQuality(board, source), [board, source]), stops = board.locations, node = stops[Math.min(index, stops.length - 1)], search = symbolSearch();
   useEffect(() => () => controller.current?.abort(), []);
   useEffect(() => { setRequest(''); controller.current?.abort(); setSymbols(state => ({ ...state, busy: '', results: [], query: undefined, message: '', error: '' })); }, [node?.id]);
@@ -67,7 +69,7 @@ export function BoardTeacherPreview({ board, source, support, supportReady, lang
     } catch (error) { if (!abort.signal.aborted) symbolFailure(error); }
   };
   const choose = item => { onSupport(withSymbols(support, board, { [node.id]: { src: item.svgUrl, label: item.label } }, symbolCredit())); setSymbols(state => ({ ...state, message: tr(t, 'symbol_chosen', 'Symbol added to {name}.', { name: node.name }) })); };
-  return <details className="lb-panel lb-teacher-preview" data-board-teacher-preview open><PreviewStyles/><RefineStyles/>
+  return <details className="lb-panel lb-teacher-preview" data-board-teacher-preview open={startOpen || quality.length > 0 || undefined}><PreviewStyles/><RefineStyles/>
     <summary>{tr(t, 'preview_title', 'Teacher preview: check every stop')}</summary>
     <p className="lb-muted">{tr(t, 'preview_help', 'See each stop the way learners will, try it, check the answer key, then refine or edit anything before play.')}</p>
     <section className="lb-quality" data-board-quality aria-label={tr(t, 'quality_title', 'Quality checks')}><h4>{tr(t, 'quality_title', 'Quality checks')}</h4>

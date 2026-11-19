@@ -161,8 +161,10 @@
   // "Math Fluency, grade 3, version B, untimed". It was "Missing Number check (KA, untimed)": KA read as a code.
   // The student sees it at the top of the file and the results file's name starts with it. Readers group results by
   // the measure and the packet id (packets_results_reader.js seriesKey), never by this title.
-  function formTitle(name, grade, form, untimed) {
-    return name + ', ' + (grade === 'K' ? 'kindergarten' : 'grade ' + grade) + ', version ' + form + (untimed ? ', untimed' : '');
+  // 2026-11-18 (owner): the student sees this title, so it names no grade ("Missing Number, version A"); the grade is in
+  // meta.grade and the packet id (-gk, -g3), which the results page reads. legacy = the 11-13 wording, for reopen.
+  function formTitle(name, grade, form, untimed, legacy) {
+    return name + (legacy ? ', ' + (grade === 'K' ? 'kindergarten' : 'grade ' + grade) : '') + ', version ' + form + (untimed ? ', untimed' : '');
   }
 
   // A fixed form of one of the three measures. bank = the parsed psychometric_math_probes.json.

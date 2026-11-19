@@ -2804,7 +2804,7 @@ function AIBackendModalBody(props) {
             <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
-                <h3 id="ai-backend-title" className="font-black text-lg">{isStudentAiSetup ? (t('ai_backend.personal_title') || 'Connect Personal AI') : (t('ai_backend.title') || 'AI Backend Settings')}</h3>
+                <h3 id="ai-backend-title" className="font-black text-lg">{isStudentAiSetup ? (t('ai_backend.personal_title') || 'Connect Personal AI') : (t('sidebar.ai_setup_name') || 'AI setup')}</h3>
             </div>
             <div className="space-y-4">
                 {/* ─── Section 1: Provider & Connection ─── */}
@@ -2863,7 +2863,7 @@ function AIBackendModalBody(props) {
                 <div id="ai-backend-sdturbo-strip" style={{ display: 'none' }} aria-live="polite" ref={(node) => { if (node && !node.dataset.sdInit) { node.dataset.sdInit = '1'; setTimeout(refreshSdTurboStrip, 0); } }}></div>
                 {renderApiKeyField()}
                 {renderGeminiCloudServicesField()}
-                <div>
+                {(readAIBackendConfig().wolframAppId || '') ? (<div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.wolfram_hint') || '(optional — enhances math)'}</span></label>
                     <input
                         data-help-key="ai_backend_wolfram_input"
@@ -2877,8 +2877,8 @@ function AIBackendModalBody(props) {
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-600 mt-1">{t('ai_backend.wolfram_free_note') || 'Free: 2,000 queries/month • Adds exact math solving & step-by-step verification'}</p>
-                </div>
+                    <p className="text-[11px] text-slate-600 mt-1">{t('ai_backend.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.'}</p>
+                </div>) : null}
                 </>)}
                 {/* ─── Ready banner (guided path, after a successful test) ─── */}
                 {!advancedOpen && guidedReady && (

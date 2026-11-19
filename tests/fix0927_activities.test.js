@@ -34,9 +34,14 @@ describe('A1: Simulation output contrast', () => {
   const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
   const ratio = (a, b) => { const [x, y] = [lum(HEX[a]), lum(HEX[b])].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
   it('every text colour on the dark prompt panel reaches 4.5:1', () => {
-    const anti = readFileSync(process.env.FIX0927_LP_ANTI || 'AlloFlowANTI.txt', 'utf8');
-    const start = anti.indexOf("{activeView === 'gemini-bridge' && generatedContent && (");
-    const block = anti.slice(start, anti.indexOf('{activeView ===', start + 20));
+    // 2026-11-17: the prompt panel left the host for view_cold_path_screens_source.jsx (GeminiBridgeView, third
+    // cold-path wave). The host keeps the gate; the colours are read where the panel lives now.
+    // FIX0927_LP_ANTI still names a scratch copy of the file that holds the panel, for mutation checks.
+    expect(readFileSync('AlloFlowANTI.txt', 'utf8')).toContain("{activeView === 'gemini-bridge' && generatedContent && (\n                    <GeminiBridgeView\n");
+    const screens = readFileSync(process.env.FIX0927_LP_ANTI || 'view_cold_path_screens_source.jsx', 'utf8');
+    const start = screens.indexOf('function GeminiBridgeView(props) {');
+    expect(start).toBeGreaterThan(-1);
+    const block = screens.slice(start, screens.indexOf('\nfunction ', start + 20));
     const pick = re => { const m = block.match(re); expect(m, String(re)).toBeTruthy(); return m[1]; };
     const checks = [
       [pick(/className="bg-slate-900 text-([a-z]+-\d+) p-6/), 'slate-900'],

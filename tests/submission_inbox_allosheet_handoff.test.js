@@ -1068,7 +1068,8 @@ describe('Submission Inbox -> AlloSheet packaging and host wiring', () => {
   });
 
   it('threads a receipt-aware callback through the Submission Inbox host mount', () => {
-    const start = hostSource.indexOf('{isSubmissionInboxOpen && (() => {');
+    // 2026-11-17: the inbox renders through a CDNModuleGate (it loads on demand).
+    const start = hostSource.indexOf('{isSubmissionInboxOpen && (');
     const end = hostSource.indexOf('<CDNModuleGate moduleKey="SeatingChart.SeatingChartPanel"', start);
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);

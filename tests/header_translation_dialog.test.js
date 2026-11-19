@@ -6,7 +6,6 @@ import { loadAlloModule } from './setup.js';
 const require = createRequire(import.meta.url);
 const React = require('../desktop/web-app/node_modules/react');
 const { createRoot } = require('../desktop/web-app/node_modules/react-dom/client');
-const babel = require('@babel/core');
 const strings = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
 const factory = new Function(readFileSync('host_handlers_source.jsx', 'utf8') + '\nreturn createHostHandlers;')();
 const roots = [];
@@ -29,15 +28,25 @@ function t(key, params = {}) {
   return typeof value === 'string' ? value.replace(/\{(\w+)\}/g, (match, name) => params[name] ?? match) : undefined;
 }
 
-async function mount(file, overrides = {}) {
+// 2026-11-17: the dialog left the host for view_cold_path_screens_module.js (TranslateModalView, third cold-path
+// wave, tests/third_wave_cdn_extraction.test.js). Each host copy is checked for the call that mounts it and for the
+// names it hands over; the dialog itself is drawn from the built module, which is what a browser runs.
+function hostCall(file) {
   const source = readFileSync(file, 'utf8');
-  const start = source.indexOf('{isTranslateModalOpen &&');
+  const start = source.indexOf('{isTranslateModalOpen && <TranslateModalView\n');
   const end = source.indexOf('      {showCloudWarning &&', start);
   if (start < 0 || end < 0) throw new Error('Missing translation dialog');
-  const expression = source.slice(start + 1, end).trim().slice(0, -1);
-  const code = babel.transformSync('const Dialog = () => (' + expression + ');', {
-    plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false
-  }).code;
+  const call = source.slice(start, end);
+  return /\{\.\.\.\{([\s\S]*?)\}\}/.exec(call)[1].split(',').map(name => name.trim()).filter(Boolean);
+}
+
+async function mount(file, overrides = {}) {
+  const handed = hostCall(file);
+  window.React = React;
+  // The focus trap is the host's hook; it has its own tests. Here it only has to be callable.
+  window.__alloHooks = window.__alloHooks || { useFocusTrap() {} };
+  loadAlloModule('view_cold_path_screens_module.js');
+  const View = window.AlloModules.TranslateModalView;
   const current = { id: 'one', type: 'simplified', config: { language: 'Spanish', unitId: 'lesson-a' }, data: 'Hola' };
   const history = [current, { id: 'two', type: 'quiz', config: { unitId: 'lesson-a' } },
     { id: 'other', type: 'simplified', config: { unitId: 'lesson-b' } },
@@ -52,16 +61,16 @@ async function mount(file, overrides = {}) {
     resolveTranslationPolicy: helpers.resolveTranslationPolicy,
     translationTargetChoices: helpers.translationTargetChoices,
     _alloHostHandlersOptional: () => host,
-    translateModalRef: { current: null }, handleSetIsTranslateModalOpenToFalse: actions.close,
+    handleSetIsTranslateModalOpenToFalse: actions.close,
     setTranslateScope: actions.setScope, handleTranslateAction: actions.translate,
     t, X: () => null, Languages: () => null, isProcessing: false, ...overrides
   };
-  const renderDialog = new Function(...Object.keys(bindings), 'targetTranslationLang', 'setTargetTranslationLang',
-    'headerTranslationMode', 'setHeaderTranslationMode', code + '\nreturn Dialog();');
   function Component() {
     const [language, setLanguage] = React.useState('German');
     const [mode, setMode] = React.useState(null);
-    return renderDialog(...Object.values(bindings), language, setLanguage, mode, setMode);
+    const props = { ...bindings, targetTranslationLang: language, setTargetTranslationLang: setLanguage, headerTranslationMode: mode, setHeaderTranslationMode: setMode };
+    // The dialog gets exactly the names the host hands it: a name the host forgot would be undefined here too.
+    return React.createElement(View, { ...Object.fromEntries(handed.map(name => [name, props[name]])), onTrapEscape: actions.close });
   }
   const node = document.createElement('div'); document.body.appendChild(node);
   const root = createRoot(node); roots.push({ root, node });

@@ -1050,6 +1050,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ColdPathScreens',
+        filename: 'view_cold_path_screens_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'EndSessionPreview',
         filename: 'view_end_session_preview_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -2156,6 +2161,13 @@ const COMPILE_PAIRS = [
         wrap(src) { return require('./_build_first_wave_view_modules.js').buildFirstWaveModule('ColdPathSurfaces', src); },
     },
     {
+        name: 'ColdPathScreens',
+        srcPath: path.join(ROOT, 'view_cold_path_screens_source.jsx'),
+        modPath: path.join(ROOT, 'view_cold_path_screens_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/view_cold_path_screens_module.js'),
+        wrap(src) { return require('./_build_first_wave_view_modules.js').buildFirstWaveModule('ColdPathScreens', src); },
+    },
+    {
         name: 'VideoRefPlayer',
         srcPath: path.join(ROOT, 'view_video_ref_player_source.jsx'),
         modPath: path.join(ROOT, 'view_video_ref_player_module.js'),
@@ -2523,6 +2535,7 @@ const CONTENT_HASH_PINNED = new Set([
     'allo_command_context_module.js',
     'view_canvas_recovery_dialog_module.js',
     'view_cold_path_surfaces_module.js',
+    'view_cold_path_screens_module.js',
     'student_interaction_module.js',
     'view_student_join_panel_module.js',
     'view_student_save_adventure_module.js',
@@ -2743,6 +2756,9 @@ if (dryRun) {
         }
         runtimePaths.push(record.path);
     }
+    // The app boots from ui_strings_core.js and loads ui_strings_stem.js with STEAM Lab.
+    // Both are derived from ui_strings.js, which stays the full source of truth.
+    require('./dev-tools/build_ui_strings_split.cjs').run();
     const modulesToCopy = [
         // Root-level modules
         ...MODULES.map(m => m.filename),
@@ -2757,6 +2773,8 @@ if (dryRun) {
         'classroom_import_service.js',
         'classroom_import_app.js',
         'ui_strings.js',
+        'ui_strings_core.js',
+        'ui_strings_stem.js',
         'qrcode.js',
         'concept_quest_engine.js',
         'escape_room_module.js',

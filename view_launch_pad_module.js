@@ -1148,11 +1148,11 @@
     type: "button",
     onClick: openAIBackendSettings,
     className: "lp-ai-settings",
-    "aria-label": aiSettingsLoadStatus === 'error' ? 'Retry AI Backend Settings' : aiSettingsLoadStatus === 'loading' ? 'Loading AI Backend Settings' : 'AI Backend Settings',
+    "aria-label": aiSettingsLoadStatus === 'error' ? 'Retry AI setup' : aiSettingsLoadStatus === 'loading' ? 'Loading AI setup' : 'AI Backend Settings',
     "aria-describedby": "launch-pad-ai-settings-status",
     "aria-busy": aiSettingsLoadStatus === 'loading',
     "aria-disabled": aiSettingsLoadStatus === 'loading',
-    title: aiSettingsLoadStatus === 'error' ? 'Retry AI Backend Settings' : 'AI Backend Settings',
+    title: aiSettingsLoadStatus === 'error' ? 'Retry AI setup' : 'AI setup',
     style: {
       cursor: aiSettingsLoadStatus === 'loading' ? 'wait' : 'pointer',
       opacity: aiSettingsLoadStatus === 'loading' ? 0.75 : 1
@@ -1160,13 +1160,13 @@
   }, /*#__PURE__*/React.createElement(Unplug, {
     size: 15,
     "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", null, aiSettingsLoadStatus === 'error' ? 'Retry AI Settings' : aiSettingsLoadStatus === 'loading' ? 'Loading AI Settings…' : 'AI Backend Settings')), /*#__PURE__*/React.createElement("span", {
+  }), /*#__PURE__*/React.createElement("span", null, aiSettingsLoadStatus === 'error' ? 'Retry AI setup' : aiSettingsLoadStatus === 'loading' ? 'Loading AI setup…' : 'AI setup')), /*#__PURE__*/React.createElement("span", {
     id: "launch-pad-ai-settings-status",
     className: "sr-only",
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true"
-  }, aiSettingsLoadStatus === 'loading' ? 'Loading AI Backend Settings.' : aiSettingsLoadStatus === 'error' ? 'AI Backend Settings could not open. Activate Retry AI Backend Settings to try again.' : '')), /*#__PURE__*/React.createElement("div", {
+  }, aiSettingsLoadStatus === 'loading' ? 'Loading AI setup.' : aiSettingsLoadStatus === 'error' ? 'AI setup could not open. Activate Retry AI setup to try again.' : '')), /*#__PURE__*/React.createElement("div", {
     className: "lp-lang-switcher"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",

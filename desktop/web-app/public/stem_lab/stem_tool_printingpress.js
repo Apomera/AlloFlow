@@ -3672,12 +3672,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       // Calendar lab (Diaries). Britain kept the Julian (Old Style) calendar
       // until 1752; its year began on 25 March. Convert diary dates.
       function CalendarLab() {
-        var CASES = [
+        // Authored keys: 3 of 4 at B, none at C; ppPlaceBank deals the slots out.
+        var CASES = ppPlaceBank([
           { id: 'pepys', d: __alloT('stem.printingpress.lab_od_pepys', 'Samuel Pepys opens his diary: 1 January 1659/60'), opts: [__alloT('stem.printingpress.11_january_1660', '11 January 1660'), __alloT('stem.printingpress.11_january_1659', '11 January 1659'), __alloT('stem.printingpress.22_december_1659', '22 December 1659')], a: 0, why: __alloT('stem.printingpress.lab_od_pepys_w', 'Before 1700 add 10 days. Pepys wrote both years because the legal year had not yet turned (it turned on 25 March).') },
           { id: 'newton', d: __alloT('stem.printingpress.lab_od_newton', 'Isaac Newton is born: 25 December 1642'), opts: [__alloT('stem.printingpress.15_december_1642', '15 December 1642'), __alloT('stem.printingpress.4_january_1643', '4 January 1643'), __alloT('stem.printingpress.4_january_1642', '4 January 1642')], a: 1, why: __alloT('stem.printingpress.lab_od_newton_w', 'Add 10 days and you cross into the New Style year 1643. Newton was a Christmas baby only in Old Style.') },
           { id: 'wash', d: __alloT('stem.printingpress.lab_od_wash', 'George Washington is born: 11 February 1731'), opts: [__alloT('stem.printingpress.22_february_1731', '22 February 1731'), __alloT('stem.printingpress.22_february_1732', '22 February 1732'), __alloT('stem.printingpress.1_february_1732', '1 February 1732')], a: 1, why: __alloT('stem.printingpress.lab_od_wash_w', 'After 1700 add 11 days, and February still counted as 1731 because the old year ran to 24 March.') },
           { id: 'bard', d: __alloT('stem.printingpress.lab_od_bard', 'William Shakespeare dies: 23 April 1616'), opts: [__alloT('stem.printingpress.13_april_1616', '13 April 1616'), __alloT('stem.printingpress.3_may_1616', '3 May 1616'), __alloT('stem.printingpress.23_april_1617', '23 April 1617')], a: 1, why: __alloT('stem.printingpress.lab_od_bard_w', 'Add 10 days. April is after 25 March, so the year stays the same.') }
-        ];
+        ], 'd', 'opts', 'a');
         var pickRaw = useState({}); var pick = pickRaw[0], setPick = pickRaw[1];
         var done = CASES.filter(function(c) { return pick[c.id] !== undefined; }).length;
         var right = CASES.filter(function(c) { return pick[c.id] === c.a; }).length;

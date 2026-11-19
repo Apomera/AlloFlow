@@ -190,7 +190,8 @@ describe('post-session follow-up planner', () => {
       // selection resolves to nothing rather than a surviving subset; the mailbox host also gets the built pack.
       expect(source).toContain("const resourcesById = new Map(resourceCandidates.map(item => [String(item.id || ''), item]));");
       expect(source).toContain('if (requestedIds.some(id => !resourcesById.has(id))) return [];');
-      expect(source).toContain('hostPackOnMailboxRef.current(selectedResourceIds, { includeSharedActivity: false, preparedPack: built })');
+      // 2026-11-17: the caller's options travel too; includeSharedActivity: false still comes after them, so it wins.
+      expect(source).toContain('hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds, { ...options, includeSharedActivity: false, preparedPack: built }) : null');
       expect(source).toContain('onSendFollowUpToLiveSession={sendSavedFollowUpPlanToLiveSession}');
       expect(source).toContain('savedFollowUpLiveSendLockRef.current');
       expect(source).toContain('resolveSavedFollowUpLiveDeliverySnapshot(cleanSessionId)');

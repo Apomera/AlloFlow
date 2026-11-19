@@ -366,7 +366,7 @@ const require = createRequire(import.meta.url), modulesDir = resolve(process.cwd
 const React = require(resolve(modulesDir, 'react'));
 const ReactDOMClient = require(resolve(modulesDir, 'react-dom/client'));
 const { act } = React, save = vi.fn();
-const Study = runInNewContext(namedFunction('IssCupolaStudy') + '\nIssCupolaStudy;', { document, setLabToolData: save });
+const Study = runInNewContext(namedFunction('IssCupolaStudy') + '\nIssCupolaStudy;', { document, __alloT: (key, fallback) => fallback, setLabToolData: save });
 const mounts = [];
 let previousActEnvironment;
 beforeAll(() => { previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT; globalThis.IS_REACT_ACT_ENVIRONMENT = true; });

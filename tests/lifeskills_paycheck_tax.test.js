@@ -29,11 +29,12 @@ function loadTax(file) {
   if (!consts) throw new Error('tax constants not found');
   const fedTax = bodyOf(src, 'calcFedTax');
   const taxable = bodyOf(src, 'calcTaxableIncome');
-  if (!fedTax || !taxable) throw new Error('tax functions not found');
+  const fica = bodyOf(src, 'calcFicaTax');
+  if (!fedTax || !taxable || !fica) throw new Error('tax functions not found');
   // eslint-disable-next-line no-new-func
   return new Function(
-    consts[0] + '\n' + fedTax + '\n' + taxable +
-    '\n; return { calcFedTax: calcFedTax, calcTaxableIncome: calcTaxableIncome,' +
+    consts[0] + '\n' + fedTax + '\n' + taxable + '\n' + fica +
+    '\n; return { calcFedTax: calcFedTax, calcTaxableIncome: calcTaxableIncome, calcFicaTax: calcFicaTax,' +
     ' TAX_YEAR: TAX_YEAR, STD_DEDUCTION: STD_DEDUCTION, SS_WAGE_CAP: SS_WAGE_CAP };'
   )();
 }
@@ -54,12 +55,12 @@ describe('Life Skills Lab — paycheck federal tax', () => {
 
   it('taxes only the amount above the deduction, at the right brackets', () => {
     const { calcFedTax, calcTaxableIncome } = loadTax(SOURCE);
-    // $31,200 single: taxable is 31,200 - 14,600 = 16,600.
-    //   10% on the first 11,600 = 1,160
-    //   12% on the next  5,000  =   600   => 1,760
+    // $31,200 single (2026): taxable is 31,200 - 16,100 = 15,100.
+    //   10% on the first 12,400 = 1,240
+    //   12% on the next  2,700  =   324   => 1,564
     const { taxable } = calcTaxableIncome(31200, 'single');
-    expect(taxable).toBe(16600);
-    expect(calcFedTax(taxable, 'single').tax).toBeCloseTo(1760, 2);
+    expect(taxable).toBe(15100);
+    expect(calcFedTax(taxable, 'single').tax).toBeCloseTo(1564, 2);
   });
 
   it('gives married filers the larger deduction', () => {
@@ -119,10 +120,11 @@ describe('Life Skills Lab — paycheck federal tax', () => {
     // shows year-pinned numbers without naming the year goes quietly stale.
     // (feedback_copy_pinned_to_a_date_goes_stale_silently)
     const { TAX_YEAR, STD_DEDUCTION, SS_WAGE_CAP } = loadTax(SOURCE);
-    expect(TAX_YEAR).toBe(2024);
-    expect(STD_DEDUCTION.single).toBe(14600);
-    expect(STD_DEDUCTION.married).toBe(29200);
-    expect(SS_WAGE_CAP).toBe(168600);
+    // 2026 figures: IRS Rev. Proc. 2025-32; SSA wage base announced Oct 2025.
+    expect(TAX_YEAR).toBe(2026);
+    expect(STD_DEDUCTION.single).toBe(16100);
+    expect(STD_DEDUCTION.married).toBe(32200);
+    expect(SS_WAGE_CAP).toBe(184500);
     // The year must reach the student, not just live in a constant.
     expect(read(SOURCE)).toMatch(/federal_tax_brackets[^)]*\)\s*\+\s*' '\s*\+\s*TAX_YEAR/);
   });
@@ -130,9 +132,18 @@ describe('Life Skills Lab — paycheck federal tax', () => {
   it('applies the Social Security wage cap but not to Medicare', () => {
     // FICA has no standard deduction and SS stops at the cap; Medicare does not.
     // Both facts are on screen, so the call site must keep using the constant.
+    // Run the shared FICA helper rather than pinning its spelling.
+    const { calcFicaTax, SS_WAGE_CAP } = loadTax(SOURCE);
+    const low = calcFicaTax(30000, 'single');
+    expect(low.ss).toBeCloseTo(30000 * 0.062, 6);
+    expect(low.medicare).toBeCloseTo(30000 * 0.0145, 6);
+    const high = calcFicaTax(300000, 'single');
+    expect(high.ss).toBeCloseTo(SS_WAGE_CAP * 0.062, 6);
+    // Medicare has no cap; the 0.9% Additional Medicare Tax starts at $200K single, $250K joint.
+    expect(high.medicare).toBeCloseTo(300000 * 0.0145 + 100000 * 0.009, 6);
+    expect(calcFicaTax(300000, 'married').medicare).toBeCloseTo(300000 * 0.0145 + 50000 * 0.009, 6);
     const src = read(SOURCE);
-    expect(src).toContain('Math.min(grossAnnual, SS_WAGE_CAP) * 0.062');
-    expect(src).toContain('var medicareTax = grossAnnual * 0.0145;');
+    expect(src).toContain('var ficaParts = calcFicaTax(grossAnnual, payFiling);');
   });
 
   it('feeds the brackets taxable income, not gross pay', () => {

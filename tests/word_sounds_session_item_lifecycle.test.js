@@ -37,7 +37,8 @@ beforeEach(()=>{
     if (props?.activity === 'orthography' && props.data?.correct) observedOrthography = props.data;
     return createElement(type, props, ...children);
   });
-  window.__ALLO_ISOLATION_AUDIO={'1st':'data:audio/mp3;base64,FIRST','3rd':'data:audio/mp3;base64,THIRD'};
+  // 2026-11-18: the last sound of a word plays the 'last' clip (first/middle/last by place), not '3rd'.
+  window.__ALLO_ISOLATION_AUDIO={'1st':'data:audio/mp3;base64,FIRST','3rd':'data:audio/mp3;base64,THIRD','last':'data:audio/mp3;base64,LAST'};
   window.__ALLO_INSTRUCTION_AUDIO={inst_counting:'data:audio/mp3;base64,COUNT'};
   window.__ALLO_PHONEME_AUDIO_BANK={cat:'data:audio/mp3;base64,CAT',dog:'data:audio/mp3;base64,DOG',k:'data:audio/mp3;base64,K',a:'data:audio/mp3;base64,A',t:'data:audio/mp3;base64,T',d:'data:audio/mp3;base64,D',o:'data:audio/mp3;base64,O',g:'data:audio/mp3;base64,G'};
 });
@@ -430,7 +431,7 @@ describe('authored Word Sounds item advancement',()=>{
       if(index===1)expect(state.word).not.toBe(first);
       const board=state.data.activityItems[activity];
       if(activity==='isolation'){
-        expect(host.querySelector('h3')?.textContent).toContain('3rd');
+        expect(host.querySelector('h3')?.textContent).toContain('last');
         await clickSound(board.correctSound);
       }else if(activity==='blending'){
         const choices=host.querySelectorAll('button[data-ws-blend-choice]');expect(choices).toHaveLength(3);
@@ -541,7 +542,7 @@ describe('authored Word Sounds item advancement',()=>{
     await tick(900);expect(played).toContain('data:audio/mp3;base64,FIRST');
     await clickSound('k');expect(state.history.at(-1)).toMatchObject({itemId:'cat-first',itemIndex:0,correct:true});
     await tick(801);expect(state.word).toBe('cat');expect(state.data).toBe(items[1]);
-    await tick(900);expect(played).toContain('data:audio/mp3;base64,THIRD');
+    await tick(900);expect(played).toContain('data:audio/mp3;base64,LAST');expect(played).not.toContain('data:audio/mp3;base64,THIRD');
     await clickSound('t');expect(state.history.at(-1)).toMatchObject({itemId:'cat-last',itemIndex:1,correct:true});
     await tick(801);expect(state.word).toBe('dog');expect(state.data).toBe(items[2]);
     await clickSound('d');await tick(801);

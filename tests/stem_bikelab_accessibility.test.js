@@ -17,7 +17,7 @@ describe('Bike Lab accessibility', () => {
     expect(text).toContain("h('th', { scope: 'col'");
     expect(text).toContain("h('th', { key: j, scope: 'col'");
     expect(text).toContain("h('th', { scope: 'row'");
-    expect(text).toContain("'aria-label': 'Select ' + ct + '-tooth chainring");
+    expect(text).toContain("'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_select_tooth_chainring_and_tooth_cog_gear_inches', 'Select {ct}-tooth chainring");
     expect(text).toContain("'aria-pressed': isCur ? 'true' : 'false'");
     expect(text).toContain('min-h-6');
     expect(text).not.toContain("return h('td', { key: j, onClick:");
@@ -25,12 +25,12 @@ describe('Bike Lab accessibility', () => {
 
   it('names fit, signal, and parts visualizations', () => {
     const text = source();
-    expect(text).toContain("role: 'img', 'aria-label': 'Bike fit diagram showing saddle height '");
+    expect(text).toContain("role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_bike_fit_diagram_showing_saddle_height_centimeters_reach', 'Bike fit diagram showing saddle height {value1} centimeters");
     expect(text).toContain("var signalLabels = { left_straight:");
     // The pictures are named by what the arm is doing. A name like "for a right turn" would answer the question.
-    expect(text).toContain("h('div', { role: 'img', 'aria-label': signalLabels[kind] || 'Rider seen from behind' }, armPoseSvg(kind))");
+    expect(text).toContain("h('div', { role: 'img', 'aria-label': signalLabels[kind] || __alloT('stem.bikelab.a11y_rider_seen_from_behind', 'Rider seen from behind') }, armPoseSvg(kind))");
     expect(text.slice(text.indexOf('var signalLabels = {'), text.indexOf('armPoseSvg(kind))'))).not.toMatch(/for a (left|right) turn|slowing or stopping/);
-    expect(text).toContain("role: 'img', 'aria-label': 'Bicycle parts diagram. Selected part: '");
+    expect(text).toContain("role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_bicycle_parts_diagram_selected_part_use_the_parts_by', 'Bicycle parts diagram. Selected part: {name}.");
     expect(text).toContain('Use the Parts by category buttons to select a part.');
   });
 

@@ -1414,7 +1414,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     };
   }
 
-  function mmDescentVectorsView(h) {
+  function mmDescentVectorsView(h, translate) {
+    var t = mmAccessibleTranslator(translate);
     var text={fontSize:'12px',lineHeight:1.65,color:'#cbd5e1',margin:'8px 0',overflowWrap:'anywhere'};
     var forced='@media(forced-colors:active){[data-descent-vectors],[data-descent-vectors] *{color:CanvasText!important;background-color:Canvas!important;border-color:CanvasText!important;}'+
       '[data-descent-vector-grid],[data-descent-vector-craft] *{stroke:GrayText!important;fill:none!important;}'+
@@ -1429,7 +1430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     function diagram(name){var motion=name==='motion';return h('div',{'data-descent-vector-plot':name,style:{maxWidth:'360px',margin:'0 auto',minWidth:0}},
       h('div',{style:{display:'flex',justifyContent:'space-between',gap:'8px',fontSize:'12px',lineHeight:1.6,color:'#cbd5e1'}},h('span',null,'↑ Local up'),h('span',null,'Right →')),
       h('svg',{'data-descent-vector-diagram':name,viewBox:'0 0 400 360',preserveAspectRatio:'xMidYMid meet',role:'img',
-        'aria-label':motion?'Measured lateral and vertical velocity on equal speed axes.':'Thrust, gravity and net acceleration on equal acceleration axes.',style:{display:'block',width:'100%',height:'auto',background:'#081321',borderRadius:'8px'}},
+        'aria-label':motion?t('stem.moonmission.a11y_measured_lateral_and_vertical_velocity_on_equal_speed_axes', 'Measured lateral and vertical velocity on equal speed axes.'):t('stem.moonmission.a11y_thrust_gravity_and_net_acceleration_on_equal_acceleration', 'Thrust, gravity and net acceleration on equal acceleration axes.'),style:{display:'block',width:'100%',height:'auto',background:'#081321',borderRadius:'8px'}},
         h('g',{'data-descent-vector-grid':true,stroke:'#475569',fill:'none'},
           h('rect',{x:60,y:40,width:280,height:280,strokeDasharray:'2 5',vectorEffect:'non-scaling-stroke'}),
           h('circle',{cx:200,cy:180,r:140,vectorEffect:'non-scaling-stroke'}),
@@ -9502,7 +9503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('figure', { style: { margin: 0, minWidth: 0 } },
                 h('figcaption', { style: Object.assign({}, textStyle, { color: '#f8fafc', fontWeight: 700 }) }, profile.source.modelVersion === 2 ? 'Lift projection · looking along velocity' : 'Earlier signed in-plane lift'),
                 h('svg', { 'data-entry-dynamics-diagram': 'bank', 'data-bank': profile.source.modelVersion === 2 && Number.isFinite(sample.bank) ? sample.bank : '', 'data-plane': sample.liftPlane, 'data-lateral': sample.liftLateral, 'data-full-lift': sample.liftMagnitude, 'data-lift-scale': geometry.base.bankScale,
-                  viewBox: '0 0 300 220', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': profile.source.modelVersion === 2 ? 'Full lift projected onto the trajectory-plane normal and an illustrative lateral direction. The lateral magnitude is not an integrated crossrange trajectory.' : 'Earlier model signed in-plane lift; no bank angle or lateral flight is reconstructed.', style: { display: 'block', width: '100%', height: 'auto', maxHeight: '240px', background: '#0b1425', borderRadius: '8px' } },
+                  viewBox: '0 0 300 220', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': profile.source.modelVersion === 2 ? t('stem.moonmission.a11y_full_lift_projected_onto_the_trajectory_plane_normal_and', 'Full lift projected onto the trajectory-plane normal and an illustrative lateral direction. The lateral magnitude is not an integrated crossrange trajectory.') : t('stem.moonmission.a11y_earlier_model_signed_in_plane_lift_no_bank_angle', 'Earlier model signed in-plane lift; no bank angle or lateral flight is reconstructed.'), style: { display: 'block', width: '100%', height: 'auto', maxHeight: '240px', background: '#0b1425', borderRadius: '8px' } },
                   h('line', { x1: 30, y1: 110, x2: 270, y2: 110, stroke: '#334155', vectorEffect: 'non-scaling-stroke' }), h('line', { x1: 150, y1: 15, x2: 150, y2: 205, stroke: '#334155', vectorEffect: 'non-scaling-stroke' }),
                   h('circle', { cx: 150, cy: 110, r: 82, fill: 'none', stroke: '#334155', strokeDasharray: '3 5', vectorEffect: 'non-scaling-stroke' }),
                   h('line', { 'data-entry-dynamics-bank-projection': 'plane', x1: 150, y1: 110, x2: 150, y2: geometry.bank.endY, stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '4 3', vectorEffect: 'non-scaling-stroke' }),
@@ -9942,6 +9943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   function mmEntryThermalHistoryPoints(rows) { return rows.map(function(row) { return row.x.toFixed(3) + ',' + row.y.toFixed(3); }).join(' '); }
   function mmEntryThermalView(h, entryProfile, entrySample, controls, action, translate) {
     var t = mmAccessibleTranslator(translate);
+    var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
     controls = controls && typeof controls === 'object' ? controls : {};
     var snapshot = mmEntryThermalVisualSnapshot(entryProfile, entrySample, controls), values = mmEntryThermalValueTexts(snapshot), open = controls.open === true;
     function emit(name, value, ev) { if (typeof action === 'function') action(name, value, ev); }
@@ -9995,9 +9997,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px', fontSize: '12px', lineHeight: 1.65 } }, h('input', { 'data-entry-thermal-include-report': true, type: 'checkbox', checked: controls.includeReport === true, style: { width: '18px', height: '18px', flexShrink: 0 }, onChange: function(ev) { emit('includeReport', ev.target.checked, ev); } }), 'Include this lab snapshot in the flight report')),
           h('div', { style: { minWidth: 0 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.65 } }, h('span', null, 'Exposed face ', value('surface')), h('span', { style: { textAlign: 'right' } }, 'Insulated back ', value('back'))),
-            h('div', { 'data-entry-thermal-slab': true, role: 'img', 'aria-label': 'Generic slab temperature through its enlarged depth. Exposed face ' + values.surface + ', back face ' + values.back + '.', style: { display: 'grid', gridTemplateColumns: 'repeat(33,minmax(0,1fr))', height: '80px', border: '1px solid #94a3b8', borderRadius: '6px', overflow: 'hidden', marginTop: '8px' } }, geometry.cells.map(function(cell) {
+            h('div', { 'data-entry-thermal-slab': true, role: 'img', 'aria-label': __alloAriaFill(t('stem.moonmission.a11y_generic_slab_temperature_through_its_enlarged_depth_exposed', 'Generic slab temperature through its enlarged depth. Exposed face {surface}, back face {back}.'), { surface: values.surface, back: values.back }), style: { display: 'grid', gridTemplateColumns: 'repeat(33,minmax(0,1fr))', height: '80px', border: '1px solid #94a3b8', borderRadius: '6px', overflow: 'hidden', marginTop: '8px' } }, geometry.cells.map(function(cell) {
               return h('span', { key: cell.index, 'data-entry-thermal-cell': cell.index, 'data-entry-thermal-depth': cell.depth, 'data-entry-thermal-temperature': cell.temperature, 'aria-hidden': true,
-                title: (cell.depth * 1000).toFixed(1) + ' mm: ' + mmEntryThermalTemperature(cell.temperature), style: { background: cell.color, minWidth: 0 } });
+                title: __alloAriaFill(t('stem.moonmission.a11y_depth_mm_temperature', '{depth} mm: {temperature}'), { depth: (cell.depth * 1000).toFixed(1), temperature: mmEntryThermalTemperature(cell.temperature) }), style: { background: cell.color, minWidth: 0 } });
             })),
             h('p', { 'data-entry-thermal-color-scale': true, style: { margin: '8px 0', fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65 } }, 'Depth enlarged · ', value('thickness'), '. Shared temperature color scale: ' + mmEntryThermalTemperature(geometry.base.minK) + ' to ' + mmEntryThermalTemperature(geometry.base.maxK) + '.'),
             h('div', { style: { display: 'grid', gap: '6px', margin: '10px 0' } }, ['incoming', 'radiated', 'conducted'].map(function(key) {
@@ -12046,6 +12048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var addToast = ctx.addToast;
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (typeof v === 'string' && v && v !== k) ? v : (fb != null ? fb : k); };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var callTTS = ctx.callTTS;
@@ -12311,7 +12314,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 [0, 0.5, 1].map(function(f) { return h('span', { key: f, style: { position: 'absolute', right: 0, top: yAt(f * ceiling) + '%', transform: 'translateY(-50%)' } }, (f * ceiling).toFixed(ceiling < 10 ? 1 : 0)); })),
               h('div', { 'data-landing-plot-area': label, onClick: inspectChart,
                 style: { position: 'relative', minWidth: 0, height: '148px', cursor: 'crosshair', background: '#102035', borderRadius: '4px' } },
-                h('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img', 'aria-label': label + '. Click or tap to inspect a recorded sample, or use the time slider below.',
+                h('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img', 'aria-label': __alloAriaFill(t('stem.moonmission.a11y_click_or_tap_to_inspect_a_recorded_sample_or', '{label}. Click or tap to inspect a recorded sample, or use the time slider below.'), { label: label }),
                   style: { display: 'block', width: '100%', height: '100%', overflow: 'visible' } },
                   h('title', null, label + ' over ' + duration.toFixed(1) + ' seconds'),
                   [0, 0.5, 1].map(function(f) { return h('line', { key: f, x1: 0, y1: yAt(f * ceiling), x2: 100, y2: yAt(f * ceiling), stroke: '#334155', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
@@ -12353,7 +12356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           ),
           h('label', { htmlFor: 'moon-landing-scrub', style: { display: 'block', marginTop: '12px', fontSize: '13px', fontWeight: '700' } }, t('stem.moonmission.inspect_recorded_time', 'Inspect recorded time')),
           h('input', { id: 'moon-landing-scrub', 'data-landing-scrub': 'true', type: 'range', min: 0, max: lastIndex, step: 1, value: index,
-            'aria-valuetext': selected.t.toFixed(1) + ' seconds, altitude ' + selected.alt.toFixed(1) + ' metres',
+            'aria-valuetext': __alloAriaFill(t('stem.moonmission.a11y_seconds_altitude_metres', '{t} seconds, altitude {alt} metres'), { t: selected.t.toFixed(1), alt: selected.alt.toFixed(1) }),
             onChange: function(e) { inspect(Number(e.target.value), e.target); }, style: { width: '100%', height: '44px', accentColor: '#67e8f9' } }),
           h('p', { 'data-landing-selected-sample': 'true', style: { fontSize: '13px', lineHeight: '1.6', fontVariantNumeric: 'tabular-nums', margin: '0 0 10px' } },
             selected.t.toFixed(1) + ' s \u00b7 ' + selected.alt.toFixed(1) + ' m \u00b7 vertical ' + Math.abs(selected.v).toFixed(1) + ' m/s ' + (Math.abs(selected.v) < 0.05 ? 'still' : selected.v > 0 ? 'up' : 'down') + ' \u00b7 drift ' + Math.abs(selected.h).toFixed(1) + ' m/s ' + (Math.abs(selected.h) < 0.05 ? 'still' : selected.h < 0 ? 'left' : 'right') + ' \u00b7 throttle ' + Math.round(selected.throttle * 100) + '% \u00b7 fuel ' + selected.fuel.toFixed(1) + ' s'),
@@ -12901,7 +12904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // RENDER
       // ═══════════════════════════════════
 
-      return h('div', { className: 'max-w-5xl mx-auto px-1 space-y-3', role: 'main', 'data-moonmission-tool': 'true', 'aria-label': 'Apollo Moon Mission Simulator - ' + (phase >= 10 ? 'Mission complete' : 'Phase ' + (phase + 1) + ' of 10: ' + activePhase.name) },
+      return h('div', { className: 'max-w-5xl mx-auto px-1 space-y-3', role: 'main', 'data-moonmission-tool': 'true', 'aria-label': (phase >= 10 ? t('stem.moonmission.a11y_apollo_moon_mission_simulator_mission_complete', 'Apollo Moon Mission Simulator - Mission complete') : __alloAriaFill(t('stem.moonmission.a11y_apollo_moon_mission_simulator_phase_of_10', 'Apollo Moon Mission Simulator - Phase {value1} of 10: {name}'), { value1: phase + 1, name: activePhase.name })) },
 
         // Header
         h('div', { className: 'flex items-center justify-between mb-3 rounded-xl border border-slate-700 p-3 gap-2 flex-wrap', style: { background: '#0f172a', color: '#f8fafc' } },
@@ -12991,7 +12994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               // ten-segment bar under the dashboard) saying the same thing, and on a phone
               // the pair helped push the phase content a full screen down.
               h('div', { className: 'mt-3 sm:mt-4', role: 'progressbar', 'aria-valuenow': Math.min(phase + 1, 10), 'aria-valuemin': 1, 'aria-valuemax': 10,
-                'aria-label': phase >= 10 ? t('stem.moonmission.mission_progress_complete', 'Mission progress: complete, all 10 phases flown') : ('Mission progress: phase ' + (phase + 1) + ' of 10, ' + activePhase.name) },
+                'aria-label': phase >= 10 ? t('stem.moonmission.mission_progress_complete', 'Mission progress: complete, all 10 phases flown') : (__alloAriaFill(t('stem.moonmission.a11y_mission_progress_phase_of_10', 'Mission progress: phase {value1} of 10, {name}'), { value1: phase + 1, name: activePhase.name })) },
                 h('div', { className: 'flex gap-0.5 mb-1' },
                   PHASES.map(function(p, i) {
                     var status = phase >= 10 || i < phase ? 'completed' : i === phase ? 'active' : 'pending';
@@ -13049,7 +13052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         (d.activeEvent && typeof d.activeEvent === 'object' && !Array.isArray(d.activeEvent)
               && Array.isArray(d.activeEvent.stemConcepts) && Array.isArray(d.activeEvent.options)) && h('div', {
           className: 'mb-3 bg-gradient-to-br from-amber-950 to-slate-900 rounded-xl p-4 border border-amber-700/50 shadow-lg',
-          role: 'alertdialog', 'aria-label': 'Mission event: ' + d.activeEvent.title,
+          role: 'alertdialog', 'aria-label': __alloAriaFill(t('stem.moonmission.a11y_mission_event', 'Mission event: {title}'), { title: d.activeEvent.title }),
           tabIndex: -1, 'data-moonmission-event-card': 'true'
         },
           h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -13123,7 +13126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ── Quiz overlay (shown between key phases) ──
-        showQuiz && quizIdx < QUIZ_BANK.length && h('div', { className: 'mb-3 bg-gradient-to-br from-indigo-950 to-slate-900 rounded-xl p-4 border border-indigo-800', role: 'region', 'aria-label': 'Space knowledge quiz question ' + (quizIdx + 1) },
+        showQuiz && quizIdx < QUIZ_BANK.length && h('div', { className: 'mb-3 bg-gradient-to-br from-indigo-950 to-slate-900 rounded-xl p-4 border border-indigo-800', role: 'region', 'aria-label': __alloAriaFill(t('stem.moonmission.a11y_space_knowledge_quiz_question', 'Space knowledge quiz question {value1}'), { value1: quizIdx + 1 }) },
           h('div', { className: 'flex items-center gap-2 mb-3' },
             h('span', { className: 'text-xl' }, '\uD83E\uDDE0'),
             h('div', null,
@@ -13142,7 +13145,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               return h('button', {
                 key: oi,
                 disabled: quizAnswered,
-                'aria-label': 'Answer option ' + (oi + 1) + ': ' + opt + (showResult && isCorrect ? ', correct answer' : showResult && isSelected ? ', incorrect' : ''),
+                'aria-label': ((showResult && isCorrect) ? __alloAriaFill(t('stem.moonmission.a11y_answer_option_correct_answer', 'Answer option {value1}: {opt}, correct answer'), { value1: oi + 1, opt: opt }) : ((showResult && isSelected) ? __alloAriaFill(t('stem.moonmission.a11y_answer_option_incorrect', 'Answer option {value1}: {opt}, incorrect'), { value1: oi + 1, opt: opt }) : __alloAriaFill(t('stem.moonmission.a11y_answer_option', 'Answer option {value1}: {opt}'), { value1: oi + 1, opt: opt }))),
                 role: 'radio',
                 'aria-checked': isSelected ? 'true' : 'false',
                 onClick: function() {
@@ -13508,7 +13511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             // Each phase's action button is named by its visible text, so voice control can
             // say what it sees (WCAG 2.5.3); the fuller line is its title, which a screen
             // reader reads as the description.
-            title: 'Begin Moon mission. Proceed to launch phase. Difficulty: ' + DIFFICULTIES[difficulty].label,
+            title: __alloAriaFill(t('stem.moonmission.a11y_begin_moon_mission_proceed_to_launch_phase_difficulty', 'Begin Moon mission. Proceed to launch phase. Difficulty: {label}'), { label: DIFFICULTIES[difficulty].label }),
             onClick: function() {
               setPhase(1);
               upd('missionStartTime', Date.now());
@@ -14082,7 +14085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       })),
                       h('div', { style: { minWidth: 0 } },
                         h('div', { 'data-launch-chart-plot': key, style: { position: 'relative', height: '160px' } },
-                          h('svg', { 'data-launch-chart-plot-svg': key, 'data-launch-chart-label': title, 'data-launch-chart-maximum': maximum, 'data-launch-chart-divisor': divisor, viewBox: '0 0 600 160', preserveAspectRatio: 'none', role: 'img', 'aria-label': title + ': ' + reading + ' at ' + timeLabel + '. Computed launch history from liftoff to the selected time.', style: { width: '100%', height: '160px', display: 'block', overflow: 'visible' } },
+                          h('svg', { 'data-launch-chart-plot-svg': key, 'data-launch-chart-label': title, 'data-launch-chart-maximum': maximum, 'data-launch-chart-divisor': divisor, viewBox: '0 0 600 160', preserveAspectRatio: 'none', role: 'img', 'aria-label': __alloAriaFill(t('stem.moonmission.a11y_at_computed_launch_history_from_liftoff_to_the_selected', '{title}: {reading} at {timeLabel}. Computed launch history from liftoff to the selected time.'), { title: title, reading: reading, timeLabel: timeLabel }), style: { width: '100%', height: '160px', display: 'block', overflow: 'visible' } },
                             h('defs', null, h('clipPath', { id: 'mm-launch-trace-' + key }, h('rect', { 'data-launch-trace': true, x: 20, y: 0, width: Math.max(0, cursor - 20), height: 160 }))),
                             [12, 76, 140].map(function(y) { return h('line', { key: y, x1: 20, x2: 580, y1: y, y2: y, stroke: y === 140 ? '#64748b' : '#334155', strokeWidth: 1, vectorEffect: 'non-scaling-stroke', strokeDasharray: y === 140 ? undefined : '3 5' }); }),
                             h('polyline', { points: points.join(' '), fill: 'none', stroke: color, strokeWidth: 2, vectorEffect: 'non-scaling-stroke', clipPath: 'url(#mm-launch-trace-' + key + ')' }),
@@ -15513,7 +15516,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               h('input', { id: 'moon-descent-throttle', 'data-descent-throttle': 'true', type: 'range', min: 0, max: 100, step: 1, defaultValue: 0, 'aria-describedby': 'moon-descent-throttle-help', style: { display: 'block', width: '100%', height: '44px', accentColor: '#fbbf24' } }),
               h('p', { id: 'moon-descent-throttle-help', style: { fontSize: '12px', color: '#cbd5e1', margin: '0 0 10px' } }, t('stem.moonmission.throttle_help', 'Set a steady throttle, or hold THRUST / W to override it to 100%. Release returns to the slider setting. Set 0% to coast.')),
               h('p', { 'data-descent-guidance': 'true', style: { fontSize: '13px', lineHeight: '1.5', color: '#a5f3fc', margin: '8px 0' } }, t('stem.moonmission.guidance_initial', 'Flight guidance will appear as the descent begins.')),
-              mmDescentVectorsView(h),
+              mmDescentVectorsView(h, t),
               mmDescentHistoryView(h),
               mmDescentEnergyView(h, t),
               mmDescentPredictionView(h, d.descentPredictionOpen, function(open, ev) {
@@ -18791,7 +18794,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.explore_collect_samples_jump_in_1_6_gr', 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!'))
               ),
               h('button', {
-                title: 'End moonwalk EVA and return to Lunar Module. ' + (d.lunarSamples || []).length + ' samples collected.',
+                title: __alloAriaFill(t('stem.moonmission.a11y_end_moonwalk_eva_and_return_to_lunar_module_samples', 'End moonwalk EVA and return to Lunar Module. {value1} samples collected.'), { value1: (d.lunarSamples || []).length }),
                 disabled: eventPending,
                 onClick: function() {
                   if (!canProceed()) return;
@@ -19159,7 +19162,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               h('input', {
                 id: 'mm-entry-angle', type: 'range', min: -9, max: -4, step: 0.1, value: ang,
                 'aria-label': t('stem.moonmission.entry_flight_path_angle', 'Entry flight path angle in degrees'),
-                'aria-valuetext': ang.toFixed(1) + ' degrees. ' + predictionLabel + '. Peak load ' + predicted.peakG.toFixed(1) + ' g.',
+                'aria-valuetext': __alloAriaFill(t('stem.moonmission.a11y_degrees_peak_load_g', '{ang} degrees. {predictionLabel}. Peak load {peakG} g.'), { ang: ang.toFixed(1), predictionLabel: predictionLabel, peakG: predicted.peakG.toFixed(1) }),
                 onChange: function(e) { var next = Number(e.target.value); if (mmNum(next)) setReturnAngle(Math.max(-9, Math.min(-4, next))); },
                 className: 'w-full h-11 cursor-pointer accent-sky-400'
               }),
@@ -19172,7 +19175,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                   style: { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (selectedLift.mode === item[0] ? '#7dd3fc' : '#64748b'), background: selectedLift.mode === item[0] ? '#075985' : '#1e293b', color: '#f8fafc', fontSize: '12px', fontWeight: 700 } }, item[1]); })),
                 selectedLift.mode === 'bank' && h('label', { htmlFor: 'mm-entry-bank', style: { display: 'block', marginTop: '10px', color: '#e2e8f0', fontSize: '12px' } }, 'Fixed bank: ' + selectedLift.bank.toFixed(1) + '\u00b0',
                   h('input', { id: 'mm-entry-bank', 'data-entry-bank': true, type: 'range', min: 0, max: 180, step: 1, value: selectedLift.bank,
-                    'aria-label': t("stem.moonmission.a11y_fixed_entry_bank_angle_in_degrees", 'Fixed entry bank angle in degrees'), 'aria-valuetext': selectedLift.bank.toFixed(1) + ' degrees. Zero gives upward lift; 90 gives lateral lift; 180 gives downward lift.',
+                    'aria-label': t("stem.moonmission.a11y_fixed_entry_bank_angle_in_degrees", 'Fixed entry bank angle in degrees'), 'aria-valuetext': __alloAriaFill(t('stem.moonmission.a11y_degrees_zero_gives_upward_lift_90_gives_lateral_lift', '{bank} degrees. Zero gives upward lift; 90 gives lateral lift; 180 gives downward lift.'), { bank: selectedLift.bank.toFixed(1) }),
                     onChange: function(ev) { var value = Number(ev.target.value); if (mmNum(value)) upd('entryPlan', mmEntryPlan({ mode: 'bank', bank: value })); },
                     style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' } })),
                 h('p', { 'data-entry-selected-plan': true, style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.6 } },
@@ -19829,7 +19832,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                     var box = ev.currentTarget.getBoundingClientRect();
                     if (box.width > 0) entryAction(ev, 'seek', Math.max(0, Math.min(1, (ev.clientX - box.left) / box.width)) * duration);
                   }, style: { position: 'relative', minWidth: 0, height: '148px', cursor: 'crosshair', background: '#102035', borderRadius: '4px' } },
-                    h('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img', 'aria-label': title + ' in ' + unit + ' over entry time. Click or tap to inspect, or use the playback slider or Inspect peak button.', style: { display: 'block', width: '100%', height: '100%', overflow: 'visible' } },
+                    h('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img', 'aria-label': __alloAriaFill(t('stem.moonmission.a11y_in_over_entry_time_click_or_tap_to_inspect', '{title} in {unit} over entry time. Click or tap to inspect, or use the playback slider or Inspect peak button.'), { title: title, unit: unit }), style: { display: 'block', width: '100%', height: '100%', overflow: 'visible' } },
                       [0, 50, 100].map(function(y) { return h('line', { key: y, x1: 0, y1: y, x2: 100, y2: y, stroke: '#334155', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
                       h('polygon', { points: points + ' 100,100 0,100', fill: color, fillOpacity: 0.08 }),
                       key === 'loadG' && h('line', { 'data-entry-chart-limit': MM_ENTRY.cautionG, x1: 0, y1: yAt(MM_ENTRY.cautionG), x2: 100, y2: yAt(MM_ENTRY.cautionG), stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '5 5', vectorEffect: 'non-scaling-stroke' }),
@@ -19840,7 +19843,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                   h('div', { 'data-entry-chart-axis': key, 'aria-hidden': 'true', style: { display: 'flex', justifyContent: 'space-between', gap: '8px', color: '#cbd5e1', fontSize: '12px', marginTop: '10px', fontVariantNumeric: 'tabular-nums' } }, h('span', null, '0 s'), h('span', null, duration.toFixed(1) + ' s'))),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginTop: '12px' } },
                   h('span', { style: { color: color, fontSize: '12px', lineHeight: 1.5 } }, 'Peak ' + (peak[key] / divisor).toFixed(2) + ' ' + unit),
-                  h('button', { type: 'button', 'data-entry-chart-peak': key, 'aria-label': 'Inspect peak ' + title.toLowerCase(), style: entryButtonStyle, onClick: function(ev) { entryAction(ev, 'seek', peak.time); } }, 'Inspect peak')),
+                  h('button', { type: 'button', 'data-entry-chart-peak': key, 'aria-label': __alloAriaFill(t('stem.moonmission.a11y_inspect_peak', 'Inspect peak {title}'), { title: title.toLowerCase() }), style: entryButtonStyle, onClick: function(ev) { entryAction(ev, 'seek', peak.time); } }, 'Inspect peak')),
                 key === 'loadG' && h('p', { style: { margin: '8px 0 0', color: '#fde68a', fontSize: '12px', lineHeight: 1.5 } }, '\u2504 ' + MM_ENTRY.cautionG + ' g teaching threshold'));
             }
             var metricRows = [['time', 'Entry time', uiSample.time.toFixed(1) + ' s'], ['altitude', 'Altitude', (uiSample.altitude / 1000).toFixed(2) + ' km'], ['speed', 'Speed', (uiSample.speed / 1000).toFixed(3) + ' km/s'], ['load', 'Aerodynamic load', uiSample.loadG.toFixed(2) + ' g'], ['gamma', 'Flight path angle', (uiSample.gamma * 180 / Math.PI).toFixed(2) + '\u00b0'], ['verticalSpeed', 'Vertical speed', (uiSample.speed * Math.sin(uiSample.gamma)).toFixed(1) + ' m/s'], ['bank', 'Bank angle', uiProfile.version === 1 ? 'Not recorded' : uiSample.bank == null ? 'Lift inactive' : uiSample.bank.toFixed(1) + '\u00b0'], ['heat', 'Heat flux', (uiSample.heatFlux / 1e6).toFixed(2) + ' MW/m\u00b2'], ['heatLoad', 'Heat load', (uiSample.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2'], ['horizonDip', 'Geometric horizon dip', mmEntryHorizonGeometry(uiSample.altitude,500,320).dipDegrees.toFixed(2) + '\u00b0'], ['pressure', 'Dynamic pressure', (uiSample.dynamicPressure / 1000).toFixed(2) + ' kPa'], ['downrange', 'Downrange', (uiSample.downrange / 1000).toFixed(0) + ' km']];
@@ -20347,7 +20350,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 return h('div', { key: s.key },
                   h('label', { htmlFor: 'dv-' + s.key, className: 'block text-[0.625rem] font-bold text-slate-700 mb-0.5' },
                     s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val)),
-                  h('input', { id: 'dv-' + s.key, type: 'range', 'aria-valuetext': (s.key === 'massRatio' ? (s.val + ' to 1 mass ratio') : s.key === 'isp' ? (s.val + ' seconds specific impulse') : (s.val + ' seconds')), min: s.min, max: s.max, step: s.step, value: s.val,
+                  h('input', { id: 'dv-' + s.key, type: 'range', 'aria-valuetext': (s.key === 'massRatio' ? (__alloAriaFill(t('stem.moonmission.a11y_to_1_mass_ratio', '{val} to 1 mass ratio'), { val: s.val })) : s.key === 'isp' ? (__alloAriaFill(t('stem.moonmission.a11y_seconds_specific_impulse', '{val} seconds specific impulse'), { val: s.val })) : (__alloAriaFill(t('stem.moonmission.a11y_seconds', '{val} seconds'), { val: s.val }))), min: s.min, max: s.max, step: s.step, value: s.val,
                     onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
                     className: 'w-full h-11 cursor-pointer accent-indigo-600', 'aria-label': s.label }));   // was 16px tall
               })

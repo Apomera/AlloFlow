@@ -11,8 +11,8 @@
   var MODES = [
     {
       id: 'confusable_letters',
-      title: 'Confusable letters (b / d / p / q)',
-      short: 'Confusable letters',
+      title: 'Letters that look alike (b, d, p, q)',
+      short: 'Letters that look alike',
       description: 'Focus on mirror and form-confusable letters: b, d, p, q, m, n, u, i, j, l.',
       items: ['b', 'd', 'p', 'q', 'm', 'n', 'u', 'i', 'j', 'l'],
       category: 'letter',
@@ -20,7 +20,7 @@
     },
     {
       id: 'letters_lower',
-      title: 'Lowercase letters (a-z)',
+      title: 'Lowercase letters (a to z)',
       short: 'Lowercase letters',
       description: 'Rapid naming across all 26 lowercase letters.',
       items: 'a b c d e f g h i j k l m n o p q r s t u v w x y z'.split(' '),
@@ -29,7 +29,7 @@
     },
     {
       id: 'letters_upper',
-      title: 'Uppercase letters (A-Z)',
+      title: 'Uppercase letters (A to Z)',
       short: 'Uppercase letters',
       description: 'Rapid naming across all 26 uppercase letters.',
       items: 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split(' '),
@@ -38,7 +38,7 @@
     },
     {
       id: 'letter_sounds',
-      title: 'Letter and digraph sounds',
+      title: 'Letter sounds (a, b, sh, ch, th)',
       short: 'Letter sounds',
       description: 'Name the sound spelled by each letter or digraph (a, b, sh, ch, th).',
       items: [
@@ -70,8 +70,8 @@
     },
     {
       id: 'bigrams_rimes',
-      title: 'Letter teams and rimes',
-      short: 'Letter teams',
+      title: 'Letter teams and word endings (sh, st, at, ing)',
+      short: 'Letter teams and endings',
       description: 'Automatic recognition of digraphs, blends, and rimes: th, sh, ch, wh, ck, st, tr, at, an, ing.',
       items: ['th', 'sh', 'ch', 'wh', 'ck', 'st', 'tr', 'at', 'an', 'ing'],
       category: 'sound',
@@ -79,8 +79,8 @@
     },
     {
       id: 'vowel_teams_r',
-      title: 'Vowel teams and r-controlled vowels',
-      short: 'Vowel teams & r-controlled',
+      title: 'Vowel teams and vowels with r (ee, oa, ar, air)',
+      short: 'Vowel teams and vowels with r',
       description: 'Practice common two- and three-letter vowel teams and r-controlled vowel spellings.',
       items: ['ar', 'or', 'er', 'ir', 'ur', 'ee', 'oa', 'ay', 'ow', 'oy', 'oo', 'aw', 'air', 'ear'],
       category: 'sound',
@@ -88,8 +88,8 @@
     },
     {
       id: 'sight_words',
-      title: 'High-frequency sight words',
-      short: 'Sight words',
+      title: 'Common sight words (all, are, come)',
+      short: 'Common sight words',
       description: 'Read high-frequency irregular and core sight words smoothly at a glance.',
       items: ['all', 'are', 'away', 'been', 'both', 'busy', 'buy', 'call', 'cold', 'come', 'does', 'done', 'down', 'also'],
       category: 'word',
@@ -97,8 +97,8 @@
     },
     {
       id: 'sight_words_g1',
-      title: 'Grade 1 sight words (after, again, every, from)',
-      short: 'Grade 1 sight words',
+      title: 'Sight words: after, again, every, from',
+      short: 'Sight words: after, again',
       description: 'Read essential Grade 1 high-frequency words automatically without sounding out letter by letter.',
       items: ['after', 'again', 'ask', 'could', 'every', 'fly', 'from', 'give', 'going', 'had', 'has', 'her', 'him', 'his'],
       category: 'word',
@@ -106,8 +106,8 @@
     },
     {
       id: 'sight_words_g2_3',
-      title: 'Grades 2-3 sight words (always, because, together)',
-      short: 'Grades 2-3 sight words',
+      title: 'Sight words: always, because, together',
+      short: 'Sight words: always, because',
       description: 'Build automatic word recognition across high-utility Grade 2 and Grade 3 Dolch words.',
       items: ['always', 'around', 'because', 'before', 'best', 'both', 'carry', 'clean', 'laugh', 'light', 'myself', 'never', 'only', 'together'],
       category: 'word',
@@ -115,8 +115,8 @@
     },
     {
       id: 'multisyllable_words',
-      title: 'Multisyllabic decoding words (planet, habitat, volcano)',
-      short: 'Multisyllabic words',
+      title: 'Longer words to sound out (planet, habitat, volcano)',
+      short: 'Longer words to sound out',
       description: 'Decode two- and three-syllable science and reading words smoothly in a timed stream.',
       items: ['planet', 'magnet', 'rabbit', 'basket', 'sunset', 'picnic', 'napkin', 'velvet', 'habitat', 'volcano', 'continent', 'predator'],
       category: 'word',
@@ -125,7 +125,7 @@
     {
       id: 'morpheme_chunks',
       title: 'Prefixes and suffixes (un-, re-, -ing, -ment)',
-      short: 'Prefixes & suffixes',
+      short: 'Prefixes and suffixes',
       description: 'Spot common prefixes and suffixes instantly to speed multisyllabic decoding.',
       items: ['un', 're', 'pre', 'dis', 'non', 'mis', 'ing', 'ed', 'er', 'est', 'ful', 'less', 'ness', 'ment'],
       category: 'chunk',
@@ -133,8 +133,8 @@
     },
     {
       id: 'digits_single',
-      title: 'Single digits (0-9)',
-      short: 'Single digits',
+      title: 'Numbers 0 to 9',
+      short: 'Numbers 0 to 9',
       description: 'Rapid naming for digits 0 through 9.',
       items: '0 1 2 3 4 5 6 7 8 9'.split(' '),
       category: 'number',
@@ -142,8 +142,8 @@
     },
     {
       id: 'digits_teen_decade',
-      title: 'Teens and decades (12 / 21, 13 / 30)',
-      short: 'Teens and decades',
+      title: 'Teens and tens (12 and 21, 13 and 30)',
+      short: 'Teens and tens',
       description: 'Tell apart place-value reversals and teens vs. decades.',
       items: ['12', '21', '13', '30', '14', '40', '15', '50', '16', '60', '17', '70', '18', '80', '19', '90'],
       category: 'number',
@@ -151,8 +151,8 @@
     },
     {
       id: 'math_make_10',
-      title: 'Make-10 partners (6 + ? = 10)',
-      short: 'Make-10 partners',
+      title: 'Make 10 (6 + ? = 10)',
+      short: 'Make 10',
       description: 'Name the missing partner that makes 10 right away without counting on fingers.',
       items: [
         { display: '9 + ? = 10', answer: '1', category: 'number' },
@@ -171,8 +171,8 @@
     },
     {
       id: 'math_doubles',
-      title: 'Doubles and near-doubles (6 + 6, 6 + 7)',
-      short: 'Doubles & near-doubles',
+      title: 'Doubles and near doubles (6 + 6, 6 + 7)',
+      short: 'Doubles and near doubles',
       description: 'Answer addition doubles and near-doubles sums from memory.',
       items: [
         { display: '2 + 2', answer: '4', category: 'number' },
@@ -193,8 +193,8 @@
     },
     {
       id: 'math_mult_2_5_10',
-      title: 'Foundational 2s, 5s, and 10s (5 x 4, 10 x 6)',
-      short: 'Multiply 2s, 5s & 10s',
+      title: 'Times 2, 5 and 10 (5 x 4, 10 x 6)',
+      short: 'Times 2, 5 and 10',
       description: 'Name foundational 2s, 5s, and 10s multiplication products right away.',
       items: [
         { display: '2 x 3', answer: '6', category: 'number' },
@@ -215,8 +215,8 @@
     },
     {
       id: 'math_squares',
-      title: 'Multiplication squares (2 x 2 through 10 x 10)',
-      short: 'Multiplication squares',
+      title: 'Square facts (2 x 2 to 10 x 10)',
+      short: 'Square facts',
       description: 'Answer square multiplication facts from 2 x 2 through 10 x 10 from memory.',
       items: [
         { display: '2 x 2', answer: '4', category: 'number' },
@@ -234,8 +234,8 @@
     },
     {
       id: 'subitize_dots',
-      title: 'Subitizing dots (1-9)',
-      short: 'Subitizing dots',
+      title: 'Quick dot counting (1 to 9)',
+      short: 'Quick dot counting',
       description: 'Name the quantity of each dot pattern without counting one by one.',
       items: [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (n) {
         return { display: String(n) + ' dots', answer: String(n), dots: n, category: 'number' };
@@ -245,8 +245,8 @@
     },
     {
       id: 'ras_switch',
-      title: 'Alternating letters and numbers (RAS)',
-      short: 'Alternating letters & numbers',
+      title: 'Quick naming: letters and numbers in turn',
+      short: 'Letters and numbers in turn',
       description: 'Rapid Alternating Stimulus: switch smoothly between letter and number targets.',
       items: ['a', '3', 'b', '7', 'd', '4', 'p', '9', 'q', '2', 'm', '6', 'n', '8', 's', '5'],
       alternating: true,
@@ -254,8 +254,8 @@
     },
     {
       id: 'ras_triple',
-      title: '3-Way Alternating letters, numbers, and colors (RAS)',
-      short: '3-Way RAS (letter, number, color)',
+      title: 'Quick naming: letters, numbers and colors in turn',
+      short: 'Letters, numbers and colors in turn',
       description: 'Rapid Alternating Stimulus across three symbol categories: letters, digits, and color-shape badges.',
       items: [
         'b', '3', { display: 'RED', answer: 'red', category: 'color_stroop', congruent: true, stroopWord: 'RED', stroopInk: '#ef4444', stroopShape: '●', promptRule: 'Name ink color & shape' },
@@ -271,8 +271,8 @@
     },
     {
       id: 'flanker_letters',
-      title: 'Flanker crowd letters (focus middle in d b p q)',
-      short: 'Flanker letters',
+      title: 'Middle letter: b, d, p, q',
+      short: 'Middle letter',
       description: 'Pick the middle letter while ignoring matching or opposite surrounding letters.',
       items: [
         { display: 'bbbbb', answer: 'b', category: 'flanker', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
@@ -297,8 +297,8 @@
     },
     {
       id: 'quantity_stroop',
-      title: 'Quantity Stroop (count dots, ignore numeral)',
-      short: 'Quantity Stroop',
+      title: 'Count the dots, not the number',
+      short: 'Count the dots, not the number',
       description: 'Name how many dots appear while ignoring a matching or conflicting numeral inside.',
       items: [
         { display: '2', answer: '2', dots: 2, category: 'quantity_stroop', congruent: true, promptRule: 'Count dots, ignore digit' },
@@ -319,8 +319,8 @@
     },
     {
       id: 'number_size_stroop',
-      title: 'Number-Size Stroop (greater value vs. size)',
-      short: 'Number-size Stroop',
+      title: 'Bigger number, not bigger print',
+      short: 'Bigger number, not bigger print',
       description: 'Pick the numerically greater digit while ignoring which digit looks physically larger.',
       items: [
         { display: '2 | 8', answer: '8', category: 'size_stroop', congruent: true, sizePair: { left: '2', right: '8', leftScale: 0.68, rightScale: 1.45, pick: 'value' }, promptRule: 'Pick greater number value' },
@@ -341,8 +341,8 @@
     },
     {
       id: 'color_word_stroop',
-      title: 'Color-Shape Stroop (name ink color & shape badge)',
-      short: 'Color-Shape Stroop',
+      title: 'Name the ink color, not the word',
+      short: 'Ink color, not the word',
       description: 'Say or tap the ink color shown with its matching shape badge while ignoring the printed word.',
       items: [
         { display: 'RED', answer: 'red', category: 'color_stroop', congruent: true, stroopWord: 'RED', stroopInk: '#ef4444', stroopShape: '●', promptRule: 'Name ink color & shape' },
@@ -367,8 +367,8 @@
     },
     {
       id: 'custom',
-      title: 'Own symbol list',
-      short: 'Own symbols',
+      title: 'My own list',
+      short: 'My own list',
       description: 'Use your own letters, digraphs, or numbers.',
       items: ['b', 'd', 'p', 'q', '12', '21'],
       category: 'letter',
@@ -646,24 +646,35 @@
     };
   }
 
-  function parseCustomSymbols(input, pictureMap) {
+  // 2026-11-17: letters and digits of any language, with an apostrophe or hyphen inside a word (don't, self-made), up to
+  // 16 characters (it was A-Z and 0-9 only, at most 8, so "beautiful" and "niño" were dropped without a word). A word of
+  // more than one letter is a word, not a letter. customSymbolReport says what was kept and what was left out, and why.
+  var CUSTOM_OK = (function () { try { return new RegExp("^[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}'\u2019-]*[\\p{L}\\p{M}\\p{N}])?$", 'u'); } catch (_) { return /^[A-Za-z0-9](?:[A-Za-z0-9'-]*[A-Za-z0-9])?$/; } })();
+  function customSymbolReport(input, pictureMap) {
     var parts = Array.isArray(input)
       ? input
       : String(input == null ? '' : input).split(/[\s,;|\r\n]+/);
-    var out = [];
+    var out = [], skipped = [];
     var seen = Object.create(null);
     for (var i = 0; i < parts.length; i++) {
       var raw = parts[i];
       var s = typeof raw === 'object' && raw !== null ? String(raw.answer || raw.display || '').trim() : String(raw == null ? '' : raw).trim();
-      if (!s || s.length > 8) continue;
-      if (!/^[A-Za-z0-9]+$/.test(s)) continue;
-      if (seen[s]) continue;
-      seen[s] = true;
-      var item = normalizeSymbolItem(raw, null, pictureMap);
+      try { s = s.normalize('NFC'); } catch (_) {}
+      if (!s) continue;
+      if (s.length > 16) { skipped.push({ text: s, why: 'long' }); continue; }
+      if (!CUSTOM_OK.test(s)) { skipped.push({ text: s, why: 'characters' }); continue; }
+      var key = s.toLowerCase();
+      if (seen[key]) continue;
+      if (out.length >= 60) { skipped.push({ text: s, why: 'over60' }); continue; }
+      seen[key] = true;
+      var cat = /^[0-9]+$/.test(s) ? 'number' : Array.from(s).length > 1 ? 'word' : 'letter';
+      var item = normalizeSymbolItem(typeof raw === 'object' && raw !== null ? Object.assign({ category: cat }, raw) : { display: s, answer: s, category: cat }, null, pictureMap);
       if (item) out.push(item);
-      if (out.length >= 60) break;
     }
-    return out;
+    return { items: out, skipped: skipped };
+  }
+  function parseCustomSymbols(input, pictureMap) {
+    return customSymbolReport(input, pictureMap).items;
   }
 
   function buildModePool(modeId, customInput, pictureMap) {
@@ -677,20 +688,25 @@
     }).filter(Boolean);
   }
 
+  // 2026-11-17: the look-alike a child mixes up with each symbol. When it is in the set, it is always one of the keys.
+  var LOOK_ALIKES = { b: ['d', 'p'], d: ['b', 'q'], p: ['q', 'b'], q: ['p', 'd'], m: ['w', 'n'], w: ['m'], n: ['u', 'm'], u: ['n'], '6': ['9'], '9': ['6'],
+    '12': ['21'], '21': ['12'], '13': ['30', '31'], '30': ['13'], '31': ['13'], '14': ['40', '41'], '40': ['14'], '41': ['14'], '15': ['50', '51'], '50': ['15'], '51': ['15'],
+    '16': ['60', '61'], '60': ['16'], '61': ['16'], '17': ['70', '71'], '70': ['17'], '71': ['17'], '18': ['80', '81'], '80': ['18'], '81': ['18'], '19': ['90', '91'], '90': ['19'], '91': ['19'] };
   function buildChoicesFor(item, pool, rng, maxChoices) {
     var limit = Math.max(4, Math.min(10, maxChoices || 6));
     var chosen = [item.answer];
     var seen = Object.create(null);
     seen[item.answer.toLowerCase()] = true;
+    // Which of two numbers is bigger: the two numbers are the only keys.
     if (item.sizePair) {
-      [item.sizePair.left, item.sizePair.right].forEach(function (edge) {
-        var ek = String(edge || '').toLowerCase();
-        if (ek && !seen[ek] && chosen.length < limit) {
-          seen[ek] = true;
-          chosen.push(String(edge));
-        }
-      });
+      var pair = [String(item.sizePair.left), String(item.sizePair.right)];
+      if (pair.indexOf(String(item.answer)) >= 0 && pair[0] !== pair[1]) return rng() < 0.5 ? pair : [pair[1], pair[0]];
     }
+    var inPool = Object.create(null);
+    pool.forEach(function (p) { if (p.category === item.category) inPool[p.answer.toLowerCase()] = p.answer; });
+    (LOOK_ALIKES[item.answer.toLowerCase()] || []).forEach(function (alike) {
+      if (inPool[alike] && !seen[alike] && chosen.length < limit) { seen[alike] = true; chosen.push(inPool[alike]); }
+    });
     var sameCat = pool.filter(function (p) { return p.category === item.category; }).map(function (p) { return p.answer; });
     for (var si = sameCat.length - 1; si > 0; si--) {
       var sj = Math.floor(rng() * (si + 1));
@@ -897,26 +913,31 @@
       var correct = o.correct !== false;
       var firstTry = o.firstTry !== false && correct;
       var rtMs = Math.max(50, Math.min(30000, Math.round(Number(o.rtMs) || 0)));
-      var isSlow = rtMs > slowThresholdMs;
+      // 2026-11-17: 0.2 s more for each character past two (at most 2 s more), and 0.4 s more for a dot pattern.
+      var answerLength = String(item.display || item.answer || '').length;
+      var isSlow = rtMs > slowThresholdMs + Math.min(2000, 200 * Math.max(0, answerLength - 2)) + (item.dots > 0 ? 400 : 0);
       var stat = ensureStat(item);
       stat.trials++;
       if (correct) stat.correct++;
-      else stat.missed++;
+      // 2026-11-17: not right at the first try counts as a miss here, so a b/d mix-up fixed at once still reaches the practice list.
+      if (!firstTry) stat.missed++;
       if (firstTry) stat.firstTry++;
       if (isSlow) stat.slow++;
       if (rtMs > 0) stat.rts.push(rtMs);
 
-      history.push({ id: item.id, answer: item.answer, correct: correct, firstTry: firstTry, rtMs: rtMs, slow: isSlow, role: item.role, congruent: typeof item.congruent === 'boolean' ? item.congruent : null });
+      history.push({ id: item.id, answer: item.answer, correct: correct, firstTry: firstTry, rtMs: rtMs, slow: isSlow, role: item.role, helped: o.helped === true, congruent: typeof item.congruent === 'boolean' ? item.congruent : null });
 
-      // Incremental Rehearsal 1:1 -> 1:2 -> 1:4 -> 1:8 adaptive scheduling when missed or slow.
+      // Incremental Rehearsal 1 -> 2 -> 4 -> 8 (2026-11-17, owner-approved): a miss or a slow answer brings the symbol back
+      // after 1 card and starts its gaps over; each quick right answer after that brings it back after a wider gap, until 8.
       var key = item.answer.toLowerCase();
-      if (!firstTry || isSlow) {
-        var lvl = rehearsalLevel[key] || 0;
-        var maxExtra = Math.min(8, count);
-        if (lvl < spacingSteps.length && queue.length < count + maxExtra) {
-          var spacing = spacingSteps[lvl];
-          rehearsalLevel[key] = lvl + 1;
-          weaveRehearsal(item, spacing);
+      var maxExtra = Math.min(8, count);
+      if (!mode.alternating && queue.length < count + maxExtra) {
+        if (!firstTry || isSlow) {
+          weaveRehearsal(item, spacingSteps[0]);
+          rehearsalLevel[key] = 1;
+        } else if (typeof rehearsalLevel[key] === 'number' && rehearsalLevel[key] < spacingSteps.length) {
+          weaveRehearsal(item, spacingSteps[rehearsalLevel[key]]);
+          rehearsalLevel[key]++;
         }
       }
       cursor++;
@@ -928,6 +949,7 @@
       var medianMs = allRts.length ? allRts[Math.floor(allRts.length / 2)] : 0;
       var meanMs = allRts.length ? Math.round(allRts.reduce(function (s, n) { return s + n; }, 0) / allRts.length) : 0;
       var firstTryCount = history.filter(function (h) { return h.firstTry; }).length;
+      var helpedCount = history.filter(function (h) { return h.helped; }).length;
       var correctCount = history.filter(function (h) { return h.correct; }).length;
       var perSymbol = Object.keys(statsBySymbol).map(function (k) {
         var st = statsBySymbol[k];
@@ -954,6 +976,8 @@
 
       return {
         total: history.length,
+        baseCount: rawQueue.length,
+        helped: helpedCount,
         remaining: Math.max(0, queue.length - cursor),
         correct: correctCount,
         firstTryCorrect: firstTryCount,
@@ -1091,6 +1115,26 @@
       '.asr-lock-pill[data-locked="false"]{background:#b45309;color:#fff}',
       '.asr-ran-grid{width:100%;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;padding:12px;box-sizing:border-box}',
       '.asr-ran-grid[hidden]{display:none}',
+      // 2026-11-17: a part set hidden stays hidden, whatever display rule it has (lane row, color key, summary, canvas).
+      '.asr-wrap [hidden]{display:none!important}',
+      '.asr-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
+      '.asr-dots{display:inline-grid;grid-template-columns:repeat(3,7px);grid-template-rows:repeat(3,7px);gap:2px}',
+      '.asr-dots span{width:7px;height:7px;border-radius:50%}',
+      '.asr-dots span.on{background:currentColor}',
+      '.asr-cell-digit{font-size:11px;opacity:.85;margin-left:4px}',
+      '.asr-mid{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:3px;color:#facc15}',
+      '.asr-hc .asr-mid{color:#fff}',
+      '.asr-start-row{display:flex;justify-content:center;padding:28px 0}',
+      '.asr-start{min-height:64px;min-width:180px;padding:12px 32px;border-radius:16px;border:3px solid #a5b4fc;background:#4338ca;color:#fff;font-size:24px;font-weight:900;cursor:pointer}',
+      '.asr-start:focus-visible{outline:4px solid #facc15;outline-offset:3px}',
+      '.asr-hc .asr-start{background:#000;color:#ff0;border-color:#ff0}',
+      '.asr-stars{margin:0;font-size:28px;font-weight:900;color:#facc15}',
+      '.asr-tricky p{margin:0 0 6px;color:#e2e8f0;font-weight:700}',
+      '.asr-tricky-row{display:flex;flex-wrap:wrap;gap:10px}',
+      '.asr-tricky-sym{display:inline-grid;place-items:center;min-width:56px;min-height:56px;padding:4px 10px;border-radius:12px;background:#f8fafc;color:#0f172a;font-size:30px;font-weight:900}',
+      '.asr-adult summary{cursor:pointer;padding:8px 0;color:#cbd5e1;font-weight:700}',
+      '.asr-adult p{color:#e2e8f0;margin:6px 0}',
+      '.asr-summary h3:focus{outline:3px solid #facc15;outline-offset:3px}',
       '.asr-ran-cell{min-height:46px;border-radius:8px;border:2px solid #334155;background:#0f172a;color:#f8fafc;display:grid;place-items:center;font-weight:800;font-size:18px;padding:4px 2px;text-align:center;line-height:1.1}',
       '.asr-ran-cell[data-active="true"]{border-color:#facc15;background:#1e1b4b;box-shadow:0 0 0 2px #facc15}',
       '.asr-ran-cell[data-done="true"]{border-color:#15803d;background:#052e16;color:#bbf7d0}',
@@ -1124,15 +1168,101 @@
   }
 
   // Interactive 3D Star-Rail / 2D Flat-Lane runner mounted inside a container.
+  var RUNNER_SEQ = 0;
   function mountRunner(container, config) {
     var doc = (container && container.ownerDocument) || root.document;
     var cfg = config || {};
     injectRunnerStyles(doc);
 
+    // 2026-11-17: every word the game shows, by id. A host passes cfg.t(key, english, vars) to translate them (the app does,
+    // with its keys math_fluency.sr_<id>); without it the game is in English.
+    var SR_EN = {
+      "view_grid":"View: a sheet of 40",
+      "view_2d":"View: three flat lanes",
+      "view_3d":"View: cards coming down a road",
+      "mode_lockon":"Answer: point at the card first",
+      "mode_direct":"Answer: right away",
+      "high_contrast":"High contrast",
+      "sound_on":"Sound: On",
+      "sound_off":"Sound: Off",
+      "game_name":"Symbol Runner",
+      "canvas_label":"The card coming toward you",
+      "grid_label":"Naming grid",
+      "start":"Start",
+      "color_key":"Color key: ● red · ▲ blue · ■ green · ★ gold",
+      "hear":"Hear it",
+      "lane_0":"Left lane",
+      "lane_1":"Center lane",
+      "lane_2":"Right lane",
+      "lane_0_in":"the left lane",
+      "lane_1_in":"the middle lane",
+      "lane_2_in":"the right lane",
+      "type_label":"Or type it",
+      "check":"Check",
+      "locked_now":"Locked on. Now say it and tap it.",
+      "move_to":"Move to {lane}.",
+      "aim_first_long":"Aim at {lane} first (point at it, or press the left or right arrow).",
+      "yes":"Yes, {answer}. {time}.",
+      "aim_next":"Aim at the next one.",
+      "next_card":"Next card. {cue}",
+      "not_quite_ink":"Not quite. The ink is {answer}. Say it and tap it.",
+      "not_quite":"Not quite. It is {answer}. Say it and tap it.",
+      "round_done":"Round done: {first} of {total} right on the first try.",
+      "you_did_it":"You did it!",
+      "stars_one":"★ {n} star",
+      "stars_many":"★ {n} stars",
+      "practice_next_title":"Practice these next:",
+      "grownups":"For grown-ups: the numbers",
+      "right_first":"Right on the first try: {first} of {total}. About {time} each.",
+      "matched":"When the two things matched: about {a}. When they did not: about {b}.",
+      "practice_next":"Practice these next: {list}.",
+      "all_sure":"Quick and sure on every one this round.",
+      "helped_one":"Hear it was pressed on {n} card before the answer.",
+      "helped_many":"Hear it was pressed on {n} cards before the answer.",
+      "play_again_tricky":"Play again with the tricky ones",
+      "play_again":"Play again",
+      "mixed_up":"Mixed up: {list}.",
+      "mix_item":"{picked} for {target}",
+      "mix_item_times":"{picked} for {target} ({n} times)",
+      "cue_flanker":"Name the letter in the middle.",
+      "cue_count":"How many dots? Do not read the number.",
+      "cue_size":"Which number is bigger? Not the one that looks bigger. {a} or {b}",
+      "cue_color":"Say the color of the ink, not the word.",
+      "cue_dots":"How many dots?",
+      "cue_sound":"Say the sound: {s}",
+      "cue_say":"Say it and tap it: {s}",
+      "done":"Done",
+      "extra":"Extra practice · {done} of {total} done",
+      "card":"Card {n} of {total}",
+      "stars_aria":"{n} stars, right on the first try",
+      "about_each":"About {time} each",
+      "ready":"Ready",
+      "locked":"Locked on",
+      "aim":"Aim first",
+      "seconds":"{n} s",
+      "b_flanker":"Middle letter",
+      "b_count":"Count dots",
+      "b_size":"Bigger number",
+      "b_color":"Ink color",
+      "b_dots":"Dots",
+      "b_number":"Number",
+      "b_word":"Word",
+      "b_chunk":"Word part",
+      "b_sound":"Sound",
+      "b_letter":"Letter",
+    };
+    function T(id, vars) {
+      var en = SR_EN[id] || id, out = null;
+      if (typeof cfg.t === 'function') { try { out = cfg.t('math_fluency.sr_' + id, en, vars || null); } catch (_) { out = null; } }
+      if (typeof out !== 'string' || !out || out === 'math_fluency.sr_' + id) out = en;
+      return String(out).replace(/\{(\w+)\}/g, function (m, k) { return vars && vars[k] != null ? String(vars[k]) : m; });
+    }
     var prefersReduced = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
     var viewMode = cfg.viewMode === 'grid' ? 'grid' : (cfg.viewMode === '2d' || (cfg.viewMode !== '3d' && prefersReduced)) ? '2d' : '3d';
+    // 2026-11-17: times as a child or teacher reads them: 1754 -> "1.8 s".
+    function secs(ms) { var n = Number(ms) || 0; return T('seconds', { n: Math.round(n / 100) / 10 }); }
     function viewLabel(m) {
-      return m === 'grid' ? 'View: 5x8 RAN Grid' : m === '2d' ? 'View: 2D Lanes' : 'View: 3D Star-Rail';
+      return m === 'grid' ? T('view_grid') : m === '2d' ? T('view_2d') : T('view_3d');
     }
     var controlMode = cfg.controlMode === 'lockon' ? 'lockon' : 'direct';
     var highContrast = !!cfg.highContrast;
@@ -1161,12 +1291,23 @@
       return enLocal[0] || localVoices[0];
     }
 
+    // 2026-11-17: one clip at a time. Pressing Hear sound quickly, or a miss right after it, no longer layers the voice.
+    var activeClip = null;
+    function stopClip() {
+      if (activeClip) { try { activeClip.pause(); } catch (_) {} activeClip = null; }
+    }
     function playAnchorAudio(item, opts) {
       if (soundMuted || destroyed) return false;
       var uri = resolveItemAudio(item);
       if (uri && typeof root.Audio === 'function') {
         try {
+          stopClip();
           var clip = new root.Audio(uri);
+          activeClip = clip;
+          if (opts && opts.restartClock && current && item && current.id === item.id && typeof clip.addEventListener === 'function') {
+            var forCard = item.id;
+            clip.addEventListener('ended', function () { if (!destroyed && current && current.id === forCard) cardStartMs = Date.now(); });
+          }
           var res = typeof clip.play === 'function' ? clip.play() : null;
           if (res && typeof res.catch === 'function') res.catch(function () {});
           return true;
@@ -1204,7 +1345,22 @@
     var locked = controlMode !== 'lockon' || (current && aimLane === current.lane);
     var streak = 0;
     var cardStartMs = Date.now();
+    var started = !cfg.startButton;
+    // Cards that came round in this round, apart from woven-in extra practice (ids sr-ir-...).
+    var baseDone = 0;
+    function isExtra(item) { return !!item && /^sr-ir-/.test(String(item.id || '')); }
+    // 2026-11-17: while the page is hidden the card's clock stops; the hidden time is added to its start when it comes back.
+    var hiddenSince = 0;
+    function onVisibility() {
+      if (destroyed) return;
+      if (doc.hidden) { if (!hiddenSince) hiddenSince = Date.now(); }
+      else if (hiddenSince) { cardStartMs += Date.now() - hiddenSince; hiddenSince = 0; }
+    }
+    if (doc && typeof doc.addEventListener === 'function') doc.addEventListener('visibilitychange', onVisibility);
+    function onVoices() { if (!destroyed && current) updateUi(); }
+    if (root.speechSynthesis && typeof root.speechSynthesis.addEventListener === 'function') { try { root.speechSynthesis.addEventListener('voiceschanged', onVoices); } catch (_) {} }
     var firstTryFlag = true;
+    var helpedFlag = false;
     var keyBuffer = '';
     var approachProgress = 0.25;
     var rafId = 0;
@@ -1216,7 +1372,7 @@
     var wrap = doc.createElement('section');
     wrap.className = 'asr-wrap' + (highContrast ? ' asr-hc' : '');
     wrap.setAttribute('tabindex', '0');
-    wrap.setAttribute('aria-label', 'Star-Rail Symbol Runner');
+    wrap.setAttribute('aria-label', T('game_name'));
 
     var toolbar = doc.createElement('div');
     toolbar.className = 'asr-toolbar';
@@ -1258,31 +1414,33 @@
       draw();
     });
 
-    var modeBtn = makeToggleBtn(controlMode === 'lockon' ? 'Mode: Aim & Lock-On' : 'Mode: Direct', controlMode === 'lockon', function () {
+    var modeBtn = makeToggleBtn(controlMode === 'lockon' ? T('mode_lockon') : T('mode_direct'), controlMode === 'lockon', function () {
       controlMode = controlMode === 'lockon' ? 'direct' : 'lockon';
-      modeBtn.textContent = controlMode === 'lockon' ? 'Mode: Aim & Lock-On' : 'Mode: Direct';
+      modeBtn.textContent = controlMode === 'lockon' ? T('mode_lockon') : T('mode_direct');
       modeBtn.setAttribute('aria-pressed', controlMode === 'lockon' ? 'true' : 'false');
       syncLockState();
       updateUi();
       draw();
     });
 
-    var hcBtn = makeToggleBtn('High contrast', highContrast, function () {
+    var hcBtn = makeToggleBtn(T('high_contrast'), highContrast, function () {
       highContrast = !highContrast;
       hcBtn.setAttribute('aria-pressed', highContrast ? 'true' : 'false');
       wrap.className = 'asr-wrap' + (highContrast ? ' asr-hc' : '');
       draw();
     });
 
-    var soundBtn = makeToggleBtn(soundMuted ? 'Sound: Off' : 'Sound: On', !soundMuted, function () {
+    var soundBtn = makeToggleBtn(soundMuted ? T('sound_off') : T('sound_on'), !soundMuted, function () {
       soundMuted = !soundMuted;
-      soundBtn.textContent = soundMuted ? 'Sound: Off' : 'Sound: On';
+      soundBtn.textContent = soundMuted ? T('sound_off') : T('sound_on');
       soundBtn.setAttribute('aria-pressed', !soundMuted ? 'true' : 'false');
     });
 
-    controls.appendChild(viewBtn);
-    controls.appendChild(modeBtn);
-    controls.appendChild(hcBtn);
+    if (!cfg.hostControls) {
+      controls.appendChild(viewBtn);
+      controls.appendChild(modeBtn);
+      controls.appendChild(hcBtn);
+    }
     controls.appendChild(soundBtn);
 
     var SpeechRec = cfg.enableVoice !== false ? (root.SpeechRecognition || root.webkitSpeechRecognition) : null;
@@ -1305,21 +1463,32 @@
     canvas.className = 'asr-canvas';
     canvas.width = 640;
     canvas.height = 320;
-    canvas.setAttribute('aria-label', 'Symbol corridor display');
+    canvas.setAttribute('aria-label', T('canvas_label'));
     canvas.hidden = viewMode === 'grid';
     var ranGrid = doc.createElement('div');
     ranGrid.className = 'asr-ran-grid';
-    ranGrid.setAttribute('role', 'grid');
-    ranGrid.setAttribute('aria-label', '5 by 8 serial naming grid');
+    ranGrid.setAttribute('role', 'list');
+    ranGrid.setAttribute('aria-label', T('grid_label'));
     ranGrid.hidden = viewMode !== 'grid';
     stage.appendChild(canvas);
     stage.appendChild(ranGrid);
+    var startRow = doc.createElement('div');
+    startRow.className = 'asr-start-row';
+    var startBtn = doc.createElement('button');
+    startBtn.type = 'button';
+    startBtn.className = 'asr-start';
+    startBtn.setAttribute('data-sr-start', 'true');
+    startBtn.textContent = T('start');
+    startRow.appendChild(startBtn);
+    startRow.hidden = started;
+    wrap.appendChild(startRow);
+    stage.hidden = !started;
     wrap.appendChild(stage);
 
     var colorLegend = doc.createElement('div');
     colorLegend.className = 'asr-legend';
     colorLegend.hidden = true;
-    colorLegend.textContent = 'WCAG Shape-Color Key: ● Red (R) · ▲ Blue (B) · ■ Green (G) · ★ Gold (Y)';
+    colorLegend.textContent = T('color_key');
     wrap.appendChild(colorLegend);
 
     var cueBar = doc.createElement('div');
@@ -1336,18 +1505,21 @@
     var hearBtn = doc.createElement('button');
     hearBtn.type = 'button';
     hearBtn.className = 'asr-btn';
-    hearBtn.textContent = 'Hear sound';
+    hearBtn.textContent = T('hear');
     hearBtn.setAttribute('data-sr-hear', 'true');
     hearBtn.hidden = true;
     hearBtn.addEventListener('click', function () {
-      if (current) playAnchorAudio(current);
+      if (!current) return;
+      helpedFlag = true;
+      playAnchorAudio(current);
     });
     cueBar.appendChild(hearBtn);
     wrap.appendChild(cueBar);
 
     var lockRow = doc.createElement('div');
     lockRow.className = 'asr-lock-row';
-    var laneNames = ['Left lane', 'Center lane', 'Right lane'];
+    var laneNames = [T('lane_0'), T('lane_1'), T('lane_2')];
+    var laneIn = [T('lane_0_in'), T('lane_1_in'), T('lane_2_in')];
     var laneButtons = [0, 1, 2].map(function (laneIdx) {
       var b = doc.createElement('button');
       b.type = 'button';
@@ -1365,16 +1537,18 @@
     var inputRow = doc.createElement('div');
     inputRow.className = 'asr-input-row';
     var typeLabel = doc.createElement('label');
-    typeLabel.textContent = 'Say or type symbol';
+    typeLabel.textContent = T('type_label');
     var typeInput = doc.createElement('input');
     typeInput.type = 'text';
     typeInput.className = 'asr-input';
     typeInput.maxLength = 10;
-    typeInput.setAttribute('aria-label', 'Type symbol name');
+    typeInput.id = 'asr-type-' + (++RUNNER_SEQ);
+    typeLabel.htmlFor = typeInput.id;
+    typeInput.setAttribute('autocomplete', 'off');
     var submitBtn = doc.createElement('button');
     submitBtn.type = 'button';
     submitBtn.className = 'asr-btn';
-    submitBtn.textContent = 'Check';
+    submitBtn.textContent = T('check');
     inputRow.appendChild(typeLabel);
     inputRow.appendChild(typeInput);
     inputRow.appendChild(submitBtn);
@@ -1388,6 +1562,11 @@
     status.className = 'asr-status';
     status.setAttribute('role', 'status');
     status.setAttribute('aria-live', 'polite');
+    var statusSaid = doc.createElement('span');
+    var statusNext = doc.createElement('span');
+    statusNext.className = 'asr-sr';
+    status.appendChild(statusSaid);
+    status.appendChild(statusNext);
     wrap.appendChild(status);
 
     var summaryBox = doc.createElement('div');
@@ -1397,25 +1576,32 @@
 
     container.appendChild(wrap);
 
+    function say(text, next) { statusSaid.textContent = text || ''; statusNext.textContent = next ? ' ' + next : ''; }
+    // Lock-on has no lanes to aim at in the grid view: there the answer is taken at once.
     function syncLockState() {
       if (!current) { locked = false; return; }
-      locked = controlMode !== 'lockon' || aimLane === current.lane;
+      locked = controlMode !== 'lockon' || viewMode === 'grid' || aimLane === current.lane;
     }
 
     function setAimLane(laneIdx) {
       aimLane = Math.max(0, Math.min(2, Number(laneIdx) || 0));
+      var wasLocked = locked;
       syncLockState();
-      if (controlMode === 'lockon') {
-        status.textContent = locked ? 'Target locked! Say or type the symbol.' : 'Move to ' + laneNames[current.lane] + ' to lock on.';
+      // Said only when it changes: moving the pointer over the lanes does not repeat it.
+      if (controlMode === 'lockon' && viewMode !== 'grid' && (locked !== wasLocked || !statusSaid.textContent)) {
+        say(locked ? T('locked_now') : T('move_to', { lane: laneIn[current.lane] }));
       }
       updateUi();
       draw();
     }
 
     function handleAnswerAttempt(raw) {
-      if (!current || destroyed) return;
+      if (!current || destroyed || !started) return;
       if (controlMode === 'lockon' && !locked) {
-        status.textContent = 'Aim at ' + laneNames[current.lane] + ' first (hover mouse or press Left/Right arrow).';
+        // Keys pressed before aiming are dropped, so they are not joined to the answer typed after it.
+        keyBuffer = '';
+        typeInput.value = '';
+        say(T('aim_first_long', { lane: laneIn[current.lane] }));
         updateUi();
         return;
       }
@@ -1426,9 +1612,11 @@
         sparkle = 1;
         playChime(soundMuted);
         var prev = current;
-        current = scheduler.recordResult(prev, { correct: true, firstTry: firstTryFlag, rtMs: rt });
-        if (typeof cfg.onTrial === 'function') cfg.onTrial({ item: prev, correct: true, firstTry: firstTryFlag, rtMs: rt, stats: scheduler.stats() });
+        if (!isExtra(prev)) baseDone++;
+        current = scheduler.recordResult(prev, { correct: true, firstTry: firstTryFlag, rtMs: rt, helped: helpedFlag });
+        if (typeof cfg.onTrial === 'function') cfg.onTrial({ item: prev, correct: true, firstTry: firstTryFlag, rtMs: rt, helped: helpedFlag, stats: scheduler.stats() });
         firstTryFlag = true;
+        helpedFlag = false;
         keyBuffer = '';
         typeInput.value = '';
         approachProgress = 0.25;
@@ -1439,10 +1627,12 @@
         }
         aimLane = controlMode === 'lockon' ? (current.lane === aimLane ? (aimLane + 1) % 3 : aimLane) : current.lane;
         syncLockState();
-        status.textContent = 'Got ' + prev.display + ' (' + rt + ' ms).' + (controlMode === 'lockon' ? ' Aim at the next gate.' : '');
+        // The answer the child gave: the ink color, the count, the sum (not the word or digit printed on the card).
+        var named = /^(letter|word|sound|chunk|flanker)$/.test(String(prev.category || 'letter')) && !prev.dots ? prev.display : prev.answer;
+        say(T('yes', { answer: named, time: secs(rt) }) + (controlMode === 'lockon' && viewMode !== 'grid' ? ' ' + T('aim_next') : ''), T('next_card', { cue: cueLine(current) }));
         updateUi();
         draw();
-        if (current.study) playAnchorAudio(current);
+        if (current.study) playAnchorAudio(current, { restartClock: true });
       } else if (res === 'prefix') {
         keyBuffer = String(raw);
       } else {
@@ -1451,10 +1641,10 @@
         keyBuffer = '';
         typeInput.value = '';
         scheduler.recordMiss(current, raw);
-        playAnchorAudio(current, { allowStroop: true });
-        status.textContent = current.category === 'color_stroop'
-          ? ('Look closely at the ink color and shape badge: say or tap "' + current.answer + '".')
-          : ('Look closely: say or type "' + current.answer + '".');
+        playAnchorAudio(current, { allowStroop: true, restartClock: true });
+        say(current.category === 'color_stroop'
+          ? T('not_quite_ink', { answer: current.answer })
+          : T('not_quite', { answer: current.answer }));
         updateUi();
       }
     }
@@ -1463,63 +1653,121 @@
       stopVoice();
       if (rafId) { try { root.cancelAnimationFrame(rafId); } catch (_) {} rafId = 0; }
       var st = scheduler.stats();
-      status.textContent = 'Round complete. ' + st.firstTryCorrect + ' of ' + st.total + ' fast and accurate, average ' + st.meanMs + ' ms.';
+      say(T('round_done', { first: st.firstTryCorrect, total: st.total }));
       keypad.replaceChildren();
       lockRow.hidden = true;
       inputRow.hidden = true;
+      cueBar.hidden = true;
+      colorLegend.hidden = true;
+      // The track is empty now: the ending takes its place.
+      stage.hidden = true;
       summaryBox.hidden = false;
       summaryBox.replaceChildren();
       var h3 = doc.createElement('h3');
-      h3.textContent = 'Run summary';
+      h3.textContent = T('you_did_it');
+      h3.setAttribute('tabindex', '-1');
+      var stars = doc.createElement('p');
+      stars.className = 'asr-stars';
+      stars.textContent = T(st.firstTryCorrect === 1 ? 'stars_one' : 'stars_many', { n: st.firstTryCorrect });
+      var tricky = doc.createElement('div');
+      tricky.className = 'asr-tricky';
+      if (st.focusSuggestions.length) {
+        var tl = doc.createElement('p');
+        tl.textContent = T('practice_next_title');
+        tricky.appendChild(tl);
+        var tr = doc.createElement('div');
+        tr.className = 'asr-tricky-row';
+        st.focusSuggestions.slice(0, 4).forEach(function (a) { var b = doc.createElement('span'); b.className = 'asr-tricky-sym'; b.textContent = a; tr.appendChild(b); });
+        tricky.appendChild(tr);
+      }
+      var adult = doc.createElement('details');
+      adult.className = 'asr-adult';
+      var adultSum = doc.createElement('summary');
+      adultSum.textContent = T('grownups');
+      adult.appendChild(adultSum);
       var p1 = doc.createElement('p');
-      p1.textContent = 'First-try accuracy: ' + st.firstTryPct + '% (' + st.firstTryCorrect + '/' + st.total + ') · Average time: ' + st.meanMs + ' ms · Median: ' + st.medianMs + ' ms';
+      p1.textContent = T('right_first', { first: st.firstTryCorrect, total: st.total, time: secs(st.medianMs || st.meanMs) });
+      // The two kinds of card in a task with something to ignore (color words, the middle letter, dots and digits).
       if (st.congruentMeanMs && st.incongruentMeanMs) {
-        p1.textContent += ' · Congruent: ' + st.congruentMeanMs + ' ms · Incongruent: ' + st.incongruentMeanMs + ' ms · Interference cost: ' + st.interferenceCostMs + ' ms';
+        p1.textContent += ' ' + T('matched', { a: secs(st.congruentMeanMs), b: secs(st.incongruentMeanMs) });
       }
       var p2 = doc.createElement('p');
       p2.textContent = st.focusSuggestions.length
-        ? 'Focus symbols to practice next: ' + st.focusSuggestions.join(', ')
-        : 'Strong automaticity across all symbols in this run.';
+        ? T('practice_next', { list: st.focusSuggestions.join(', ') })
+        : T('all_sure');
+      if (st.helped) p2.textContent += ' ' + T(st.helped === 1 ? 'helped_one' : 'helped_many', { n: st.helped });
       var restartBtn = doc.createElement('button');
       restartBtn.type = 'button';
       restartBtn.className = 'asr-btn';
-      restartBtn.textContent = 'Run again (focus on tricky symbols)';
+      restartBtn.textContent = st.focusSuggestions.length ? T('play_again_tricky') : T('play_again');
       restartBtn.addEventListener('click', function () {
-        mountRunner(container, Object.assign({}, cfg, { viewMode: viewMode, controlMode: controlMode, highContrast: highContrast, muted: soundMuted, focusAnswers: st.focusSuggestions }));
+        destroy();
+        // A new order each time (the same seed gave the same cards and key positions), and straight in: no Start again.
+        var again = mountRunner(container, Object.assign({}, cfg, { viewMode: viewMode, controlMode: controlMode, highContrast: highContrast, muted: soundMuted, focusAnswers: st.focusSuggestions.slice(0, 4),
+          seed: String(cfg.seed == null ? 'again' : cfg.seed) + '-' + (++RUNNER_SEQ), startButton: false, autoFocus: true }));
+        Object.keys(again).forEach(function (k) { handle[k] = again[k]; });
       });
       summaryBox.appendChild(h3);
-      summaryBox.appendChild(p1);
-      summaryBox.appendChild(p2);
+      summaryBox.appendChild(stars);
+      summaryBox.appendChild(tricky);
+      adult.appendChild(p1);
+      adult.appendChild(p2);
+      summaryBox.appendChild(adult);
       if (st.confusionPairs && st.confusionPairs.length) {
         var pConf = doc.createElement('p');
         pConf.className = 'asr-confusions';
-        pConf.textContent = 'Common mix-ups: ' + st.confusionPairs.slice(0, 5).map(function (c) {
-          return c.target + ' vs ' + c.picked + ' (' + c.count + 'x)';
-        }).join(', ');
-        summaryBox.appendChild(pConf);
+        pConf.textContent = T('mixed_up', { list: st.confusionPairs.slice(0, 5).map(function (c) {
+          return T(c.count > 1 ? 'mix_item_times' : 'mix_item', { picked: c.picked, target: c.target, n: c.count });
+        }).join(', ') });
+        adult.appendChild(pConf);
       }
       summaryBox.appendChild(restartBtn);
       if (typeof cfg.onComplete === 'function') cfg.onComplete(st);
       draw();
+      try { h3.focus(); } catch (_) {}
     }
 
+    // Dots on a 3 by 3 field, in the places a dice face uses (1 to 9).
+    var DOT_PLACES = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8], 7: [0, 2, 3, 4, 5, 6, 8], 8: [0, 1, 2, 3, 5, 6, 7, 8], 9: [0, 1, 2, 3, 4, 5, 6, 7, 8] };
+    function dotPattern(n) {
+      var box = doc.createElement('span');
+      box.className = 'asr-dots';
+      box.setAttribute('aria-hidden', 'true');
+      var on = DOT_PLACES[Math.max(1, Math.min(9, n))] || [];
+      for (var i = 0; i < 9; i++) { var d = doc.createElement('span'); if (on.indexOf(i) >= 0) d.className = 'on'; box.appendChild(d); }
+      return box;
+    }
+    function cueLine(c) {
+      if (!c) return '';
+      return c.category === 'flanker' ? T('cue_flanker')
+        : c.category === 'quantity_stroop' ? T('cue_count')
+        : c.category === 'size_stroop' ? T('cue_size', { a: c.sizePair ? c.sizePair.left : c.display, b: c.sizePair ? c.sizePair.right : '' })
+        : c.category === 'color_stroop' ? T('cue_color')
+        : c.dots ? T('cue_dots')
+        : c.category === 'sound' ? T('cue_sound', { s: c.display })
+        : T('cue_say', { s: c.display });
+    }
     function updateUi() {
       var st = scheduler.stats();
-      progressPill.textContent = current ? ('Card ' + (current.index + 1) + ' of ' + current.total) : 'Done';
-      streakPill.textContent = 'Streak: ' + streak;
-      speedPill.textContent = st.meanMs ? ('Avg: ' + st.meanMs + ' ms') : 'Avg: --';
+      var baseTotal = st.baseCount || (current ? current.total : 0);
+      progressPill.textContent = !current ? T('done') : isExtra(current) ? T('extra', { done: baseDone, total: baseTotal }) : T('card', { n: Math.min(baseTotal, baseDone + 1), total: baseTotal });
+      streakPill.textContent = '\u2605 ' + st.firstTryCorrect;
+      streakPill.setAttribute('aria-label', T('stars_aria', { n: st.firstTryCorrect }));
+      speedPill.textContent = st.meanMs ? T('about_each', { time: secs(st.medianMs || st.meanMs) }) : T('ready');
       if (current) {
         lockPill.setAttribute('data-locked', locked ? 'true' : 'false');
-        lockPill.textContent = controlMode === 'lockon' ? (locked ? 'LOCKED' : 'AIM TO LOCK ON') : 'DIRECT READY';
-        catBadge.textContent = current.category === 'flanker' ? 'FLANKER'
-          : current.category === 'quantity_stroop' ? 'QTY STROOP'
-          : current.category === 'size_stroop' ? 'SIZE STROOP'
-          : current.category === 'color_stroop' ? 'COLOR STROOP'
-          : current.dots ? 'SUBITIZE'
-          : current.category === 'number' ? 'NUMBER'
-          : current.category === 'word' ? 'WORD'
-          : current.category === 'chunk' ? 'MORPHEME'
-          : current.category === 'sound' ? 'SOUND' : 'LETTER';
+        // Only the aiming mode has something to say here.
+        lockPill.hidden = controlMode !== 'lockon';
+        lockPill.textContent = controlMode === 'lockon' ? (locked ? T('locked') : T('aim')) : '';
+        catBadge.textContent = T(current.category === 'flanker' ? 'b_flanker'
+          : current.category === 'quantity_stroop' ? 'b_count'
+          : current.category === 'size_stroop' ? 'b_size'
+          : current.category === 'color_stroop' ? 'b_color'
+          : current.dots ? 'b_dots'
+          : current.category === 'number' ? 'b_number'
+          : current.category === 'word' ? 'b_word'
+          : current.category === 'chunk' ? 'b_chunk'
+          : current.category === 'sound' ? 'b_sound' : 'b_letter');
         if (current.picture) {
           cueImg.src = current.picture;
           cueImg.alt = current.pictureAlt || current.display;
@@ -1529,26 +1777,20 @@
           cueImg.removeAttribute('src');
         }
         colorLegend.hidden = current.category !== 'color_stroop';
-        cueText.textContent = current.category === 'flanker'
-          ? ('Focus on the MIDDLE letter: ' + current.display)
-          : current.category === 'quantity_stroop'
-            ? ('Count the dots only (ignore printed digit ' + current.display + ')')
-            : current.category === 'size_stroop'
-              ? ('Pick the GREATER NUMBER value (ignore physical size): ' + (current.sizePair ? (current.sizePair.left + ' vs ' + current.sizePair.right) : current.display))
-              : current.category === 'color_stroop'
-                ? ('Name ink color & shape badge (ignore printed word ' + (current.stroopWord || current.display) + ')')
-                : current.dots
-                  ? ('Name the quantity (' + current.dots + ' dots pattern)')
-                  : current.category === 'sound'
-                    ? ('Say or type sound: ' + (current.speak || current.display))
-                    : ('Say or type: ' + current.display);
+        cueText.textContent = cueLine(current);
         var hasSpokenFallback = cfg.localSpeechFallback !== false && !!resolveSpokenCueText(current) && !!pickLocalSpeechVoice();
-        hearBtn.hidden = !(resolveItemAudio(current) || hasSpokenFallback);
-        lockRow.hidden = controlMode !== 'lockon';
+        hearBtn.hidden = !(resolveItemAudio(current) || hasSpokenFallback) || current.dots > 0 || !started;
+        lockRow.hidden = controlMode !== 'lockon' || viewMode === 'grid' || !started;
+        keypad.hidden = !started;
+        // Before Start the card line is hidden too: it names the first symbol, and the clock has not started.
+        cueBar.hidden = !started;
+        inputRow.hidden = !started;
         laneButtons.forEach(function (b, idx) {
           b.setAttribute('aria-pressed', aimLane === idx ? 'true' : 'false');
           b.className = 'asr-lane-btn' + (aimLane === idx && current && current.lane === idx ? ' asr-lane-locked' : '');
         });
+        // The keys are drawn again for each card. If the focus was on one, it goes back to the key in the same place.
+        var focusedKey = doc.activeElement && doc.activeElement.parentNode === keypad ? Array.prototype.indexOf.call(keypad.children, doc.activeElement) : -1;
         keypad.replaceChildren();
         current.choices.forEach(function (ch) {
           var kb = doc.createElement('button');
@@ -1559,13 +1801,14 @@
           kb.textContent = cInfo ? (cInfo.shape + ' ' + ch) : ch;
           kb.addEventListener('click', function () {
             if (controlMode === 'lockon' && !locked) {
-              status.textContent = 'Aim at ' + laneNames[current.lane] + ' first (hover mouse or press Left/Right arrow).';
+              say(T('aim_first_long', { lane: laneIn[current.lane] }));
               return;
             }
             handleAnswerAttempt(ch);
           });
           keypad.appendChild(kb);
         });
+        if (focusedKey >= 0 && keypad.children.length) { try { keypad.children[Math.min(focusedKey, keypad.children.length - 1)].focus(); } catch (_) {} }
       }
       if (viewMode === 'grid') {
         ranGrid.replaceChildren();
@@ -1576,29 +1819,41 @@
         var slice = qList.slice(pageStart, pageStart + pageSize);
         slice.forEach(function (qItem, offset) {
           var absIdx = pageStart + offset;
-          var cell = doc.createElement('button');
-          cell.type = 'button';
+          var cell = doc.createElement('div');
+          cell.setAttribute('role', 'listitem');
           cell.className = 'asr-ran-cell';
+          if (absIdx === curIdx) cell.setAttribute('aria-current', 'true');
+          if (qItem.dots > 0) cell.setAttribute('aria-label', qItem.dots + ' dots');
           cell.setAttribute('data-sr-grid-index', String(absIdx));
           cell.setAttribute('data-active', absIdx === curIdx ? 'true' : 'false');
           cell.setAttribute('data-done', absIdx < curIdx ? 'true' : 'false');
           if (qItem.category === 'color_stroop') {
             cell.style.color = qItem.stroopInk || '#f8fafc';
             cell.textContent = (qItem.stroopShape || '') + ' ' + (qItem.stroopWord || qItem.display);
-          } else if (qItem.dots > 0 && qItem.category !== 'quantity_stroop') {
-            cell.textContent = Array(qItem.dots + 1).join('•');
-          } else if (qItem.category === 'quantity_stroop') {
-            cell.textContent = Array(qItem.dots + 1).join('•') + ' [' + qItem.display + ']';
+          } else if (qItem.dots > 0) {
+            // A dot pattern as on a dice face (3 by 3), not a row to count one by one; a printed digit stays beside it.
+            cell.appendChild(dotPattern(qItem.dots));
+            if (qItem.category === 'quantity_stroop') { var dg = doc.createElement('span'); dg.className = 'asr-cell-digit'; dg.textContent = qItem.display; cell.appendChild(dg); }
           } else if (qItem.sizePair) {
-            cell.textContent = qItem.sizePair.left + '|' + qItem.sizePair.right;
+            // The two numbers at their sizes: the task is to ignore how big they look.
+            [['left', 'leftScale'], ['right', 'rightScale']].forEach(function (side) {
+              var n = doc.createElement('span');
+              n.textContent = qItem.sizePair[side[0]];
+              n.style.fontSize = Math.round(13 * (Number(qItem.sizePair[side[1]]) || 1)) + 'px';
+              n.style.margin = '0 3px';
+              cell.appendChild(n);
+            });
+          } else if (qItem.category === 'flanker' && typeof qItem.flankerCenter === 'number') {
+            // The middle letter is the one to name: marked, as on the printed sheet.
+            String(qItem.display).split('').forEach(function (ch, ci) {
+              var l = doc.createElement('span');
+              l.textContent = ch;
+              if (ci === qItem.flankerCenter) l.className = 'asr-mid';
+              cell.appendChild(l);
+            });
           } else {
             cell.textContent = qItem.display;
           }
-          cell.addEventListener('click', function () {
-            if (absIdx === curIdx && current && controlMode === 'lockon') {
-              setAimLane(current.lane);
-            }
-          });
           ranGrid.appendChild(cell);
         });
       }
@@ -1681,7 +1936,7 @@
           ctx.fillStyle = highContrast ? '#00ffff' : 'rgba(148, 163, 184, 0.85)';
           ctx.font = '700 13px system-ui, sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText('NEXT: ' + (current.nextPreview.dots ? (current.nextPreview.dots + ' dots') : current.nextPreview.display), vx, vy - 10);
+          ctx.fillText('NEXT: ' + (current.nextPreview.dots ? 'dots' : current.nextPreview.display), vx, vy - 10);
         }
         // Active gate projection along lane
         if (current) {
@@ -1715,7 +1970,7 @@
         [0, 1, 2].forEach(function (i) {
           var lx = laneCenters[i] - laneW / 2;
           ctx.fillStyle = i === aimLane ? (highContrast ? '#111111' : '#0f172a') : '#020617';
-          ctx.strokeStyle = i === aimLane ? (locked ? '#4ade80' : '#38bdf8') : '#334155';
+          ctx.strokeStyle = i === aimLane ? (locked ? '#4ade80' : '#38bdf8') : (highContrast ? '#ffff00' : '#64748b');
           ctx.lineWidth = i === aimLane ? 3 : 1.5;
           ctx.fillRect(lx, 44, laneW, H - 64);
           ctx.strokeRect(lx, 44, laneW, H - 64);
@@ -1893,10 +2148,26 @@
       handleAnswerAttempt(typeInput.value);
     });
 
+    startBtn.addEventListener('click', function () {
+      if (started || destroyed) return;
+      started = true;
+      startRow.hidden = true;
+      stage.hidden = false;
+      cardStartMs = Date.now();
+      updateUi();
+      draw();
+      // Said for a screen reader only: the same words are on the card line just above.
+      say('', cueLine(current));
+      // A host can make room for the game now (the app's panel folds its settings away).
+      if (typeof cfg.onStart === 'function') { try { cfg.onStart(); } catch (_) {} }
+      if (keypad.firstChild) { try { keypad.firstChild.focus(); } catch (_) {} }
+      if (current && current.study) playAnchorAudio(current, { restartClock: true });
+    });
     syncLockState();
     updateUi();
     draw();
-    if (current && current.study) playAnchorAudio(current);
+    if (started && current && current.study) playAnchorAudio(current, { restartClock: true });
+    if (cfg.autoFocus && keypad.firstChild) { try { keypad.firstChild.focus(); } catch (_) {} }
     if (!prefersReduced && typeof root.requestAnimationFrame === 'function') {
       rafId = root.requestAnimationFrame(tick);
     }
@@ -1910,10 +2181,14 @@
       }
       if (rafId) { try { root.cancelAnimationFrame(rafId); } catch (_) {} rafId = 0; }
       wrap.removeEventListener('keydown', onKeyDown);
+      if (doc && typeof doc.removeEventListener === 'function') doc.removeEventListener('visibilitychange', onVisibility);
+      if (root.speechSynthesis && typeof root.speechSynthesis.removeEventListener === 'function') { try { root.speechSynthesis.removeEventListener('voiceschanged', onVoices); } catch (_) {} }
+      stopClip();
     }
 
-    return {
+    var handle = {
       destroy: destroy,
+      start: function () { startBtn.click(); },
       getState: function () {
         return { viewMode: viewMode, controlMode: controlMode, highContrast: highContrast, audioMode: audioMode, aimLane: aimLane, locked: locked, current: current, stats: scheduler.stats() };
       },
@@ -1941,6 +2216,7 @@
         if (current && current.study) playAnchorAudio(current);
       },
     };
+    return handle;
   }
 
   function escPrint(text) {
@@ -2011,7 +2287,16 @@
     var modeId = opts.modeId || 'confusable_letters';
     var mode = getMode(modeId);
     var title = String(opts.title || ('5x8 Naming Grid - ' + mode.short));
+    // 2026-11-17: onlyAnswers keeps just those symbols of the set (two or more found), e.g. a student's tricky ones.
+    var onlyPool = null;
+    if (Array.isArray(opts.onlyAnswers) && opts.onlyAnswers.length) {
+      var want = Object.create(null);
+      opts.onlyAnswers.forEach(function (a) { want[String(a).toLowerCase()] = true; });
+      onlyPool = buildModePool(mode.id, opts.customSymbols, opts.pictures).filter(function (p) { return want[String(p.answer).toLowerCase()]; });
+      if (onlyPool.length < 2) onlyPool = null;
+    }
     var sch = createScheduler({
+      pool: onlyPool,
       modeId: mode.id,
       customSymbols: opts.customSymbols,
       pictures: opts.pictures,
@@ -2253,6 +2538,7 @@
     getDotsForNumber: getDotsForNumber,
     getMode: getMode,
     parseCustomSymbols: parseCustomSymbols,
+    customSymbolReport: customSymbolReport,
     buildModePool: buildModePool,
     createScheduler: createScheduler,
     matchSpokenSymbol: matchSpokenSymbol,

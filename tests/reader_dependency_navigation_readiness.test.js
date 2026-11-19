@@ -88,3 +88,27 @@ describe('delayed resource navigation scrolling',()=>{
   it('ignores a detached original node',()=>{const{content,container}=navigationFixture();content.remove();vi.advanceTimersByTime(50);expect(container.scrollTop).toBe(87);});
   it('does not query or scroll a replacement resource node',()=>{const{ref,container}=navigationFixture();const replacement=document.createElement('article'),replacementContainer=document.createElement('div');replacementContainer.className='overflow-y-auto';replacementContainer.scrollTop=99;replacementContainer.appendChild(replacement);document.body.appendChild(replacementContainer);const closest=vi.spyOn(replacement,'closest');ref.current=replacement;vi.advanceTimersByTime(50);expect(closest).not.toHaveBeenCalled();expect(replacementContainer.scrollTop).toBe(99);expect(container.scrollTop).toBe(87);});
 });
+describe('previous/next opens resources the way History does',()=>{
+  const nav=(next,extra={})=>{
+    const current={id:'first',type:'analysis'};
+    const deps={getFilteredHistory:()=>[current,next],generatedContent:current,contentRef:{current:null},setIsMapLocked:vi.fn(),setGeneratedContent:vi.fn(),setActiveView:vi.fn(),setStickers:vi.fn(),stopPlayback:vi.fn(),_alloFollowResourceLive:vi.fn(),t:k=>k,handleRestoreView:vi.fn(),...extra};
+    window.AlloModules.createHostHandlers(deps).handleNavigateResource('next');return deps;
+  };
+  it('a book moves the sequence AND opens its reader window',()=>{
+    const book={id:'b1',type:'readingBook',data:{slug:'bed-time'}};const deps=nav(book);
+    expect(deps.setGeneratedContent).toHaveBeenCalledWith(book);expect(deps.setActiveView).toHaveBeenCalledWith('readingBook');
+    expect(deps.handleRestoreView).toHaveBeenCalledWith(book);expect(deps._alloFollowResourceLive).not.toHaveBeenCalled();
+  });
+  it('Word Sounds and Adventure use the History opener, which restores their saved state',()=>{
+    for(const type of ['word-sounds','adventure']){const item={id:'x-'+type,type};const deps=nav(item);
+      expect(deps.handleRestoreView).toHaveBeenCalledWith(item);expect(deps.setActiveView).not.toHaveBeenCalled();}
+  });
+  it('an ordinary resource keeps the direct path',()=>{
+    const quiz={id:'q1',type:'quiz'};const deps=nav(quiz);
+    expect(deps.handleRestoreView).not.toHaveBeenCalled();expect(deps.setActiveView).toHaveBeenCalledWith('quiz');expect(deps._alloFollowResourceLive).toHaveBeenCalled();
+  });
+  it('without a History opener a book still moves the sequence',()=>{
+    const book={id:'b2',type:'readingBook'};const deps=nav(book,{handleRestoreView:undefined});
+    expect(deps.setActiveView).toHaveBeenCalledWith('readingBook');expect(deps._alloFollowResourceLive).toHaveBeenCalled();
+  });
+});

@@ -146,13 +146,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
     function rngOf(rng) { return typeof rng === 'function' ? rng : Math.random; }
 
     // ── Personal finance ──
-    // Illustrative single-filer US taxes (2024): Social Security 6.2% up to its
-    // $168,600 wage cap plus Medicare 1.45% on all wages, federal brackets above
-    // the $14,600 standard deduction, and a flat ~4% state tax. Brackets are
-    // MARGINAL, so a raise can never lower take-home pay.
-    var FED_BRACKETS = [[11600, 0.10], [47150, 0.12], [100525, 0.22], [191950, 0.24], [243725, 0.32], [609350, 0.35], [Infinity, 0.37]];
-    var STD_DEDUCTION = 14600;
-    var SS_WAGE_CAP = 168600;
+    // Illustrative single-filer US taxes (2026; IRS Rev. Proc. 2025-32, SSA Oct
+    // 2025): Social Security 6.2% up to its $184,500 wage base plus Medicare 1.45%
+    // on all wages (+0.9% above $200,000), federal brackets above the $16,100
+    // standard deduction, and a flat ~4% state tax. Brackets are MARGINAL, so a
+    // raise can never lower take-home pay.
+    var FED_BRACKETS = [[12400, 0.10], [50400, 0.12], [105700, 0.22], [201775, 0.24], [256225, 0.32], [640600, 0.35], [Infinity, 0.37]];
+    var STD_DEDUCTION = 16100;
+    var SS_WAGE_CAP = 184500;
+    var ADDL_MEDICARE_THRESHOLD = 200000;
     function pfTax(salary) {
       var s = Math.max(0, num(salary, 0));
       var taxable = Math.max(0, s - STD_DEDUCTION);
@@ -162,9 +164,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
         if (taxable > lo) { fed += (Math.min(taxable, hi) - lo) * r; marginal = r; }
         lo = hi;
       }
-      var payroll = Math.min(s, SS_WAGE_CAP) * 0.062 + s * 0.0145, state = taxable * 0.04;
+      var payroll = Math.min(s, SS_WAGE_CAP) * 0.062 + s * 0.0145 + Math.max(0, s - ADDL_MEDICARE_THRESHOLD) * 0.009, state = taxable * 0.04;
       var total = Math.round(payroll + fed + state);
-      return { payroll: Math.round(payroll), federal: Math.round(fed), state: Math.round(state), total: total, rate: s > 0 ? total / s : 0, marginal: marginal + (s < SS_WAGE_CAP ? 0.0765 : 0.0145) + (taxable > 0 ? 0.04 : 0) };
+      return { payroll: Math.round(payroll), federal: Math.round(fed), state: Math.round(state), total: total, rate: s > 0 ? total / s : 0, marginal: marginal + (s < SS_WAGE_CAP ? 0.0765 : 0.0145) + (s > ADDL_MEDICARE_THRESHOLD ? 0.009 : 0) + (taxable > 0 ? 0.04 : 0) };
     }
 
     function has(obj, k) { return typeof k === 'string' && Object.prototype.hasOwnProperty.call(obj, k); }
@@ -2478,7 +2480,7 @@ var d = labToolData || {};
             { name: t('stem.economicslab.consumer_confidence', 'Consumer Confidence'), desc: t('stem.economicslab.survey_of_how_optimistic_consumers_fee', 'Survey of how optimistic consumers feel about the economy.'), good: 'Rising', bad: 'Sharp decline', icon: '\uD83D\uDE04' },
             { name: t('stem.economicslab.housing_starts', 'Housing Starts'), desc: t('stem.economicslab.number_of_new_residential_construction', 'Number of new residential construction projects begun.'), good: 'Steady growth', bad: 'Sharp decline', icon: '\uD83C\uDFE0' },
             { name: t('stem.economicslab.trade_balance', 'Trade Balance'), desc: t('stem.economicslab.exports_minus_imports_surplus_positive', 'Exports minus imports. Surplus = positive, deficit = negative.'), good: 'Balance/surplus', bad: 'Large persistent deficit', icon: '\uD83D\uDEA2' },
-            { name: t('stem.economicslab.national_debt', 'National Debt'), desc: t('stem.economicslab.total_government_borrowing_us_debt_is_', 'Total government borrowing. US debt is ~$34 trillion (2024).'), good: 'Stable debt-to-GDP', bad: 'Rising faster than GDP', icon: '\uD83D\uDCB3' },
+            { name: t('stem.economicslab.national_debt', 'National Debt'), desc: t('stem.economicslab.total_government_borrowing_us_debt_is_', 'Total government borrowing. US federal debt was about $36 trillion at the end of 2024, and over $38 trillion by late 2025 (U.S. Treasury).'), good: 'Stable debt-to-GDP', bad: 'Rising faster than GDP', icon: '\uD83D\uDCB3' },
             { name: t('stem.economicslab.yield_curve', 'Yield Curve'), desc: t('stem.economicslab.plots_interest_rates_vs_bond_maturity_', 'Plots interest rates vs bond maturity. Inverted = recession signal.'), good: 'Normal (upward)', bad: 'Inverted (downward)', icon: '\uD83D\uDCC9' },
             { name: t('stem.economicslab.pmi_purchasing_managers', 'PMI (Purchasing Managers)'), desc: t('stem.economicslab.survey_of_manufacturing_activity_50_ex', 'Survey of manufacturing activity. >50 = expanding, <50 = contracting.'), good: '>50', bad: '<45', icon: '\uD83C\uDFED' },
             { name: t('stem.economicslab.gini_coefficient', 'Gini Coefficient'), desc: t('stem.economicslab.measures_income_inequality_0_perfect_e', 'Measures income inequality. 0 = perfect equality, 1 = maximum inequality.'), good: '<0.3 (low inequality)', bad: '>0.5 (high inequality)', icon: '\u2696\uFE0F' }
@@ -5770,7 +5772,7 @@ var d = labToolData || {};
                       pfBud.invest > 0 && budgetLine('inv', t('stem.economicslab.pie_investing', 'Investing'), pfBud.invest, -1),
                       pfBud.debtPay > 0 && budgetLine('debt', t('stem.economicslab.bl_debt', 'Debt payments'), pfBud.debtPay, -1),
                       budgetLine('left', pfBud.leftover >= 0 ? t('stem.economicslab.bl_left', 'Left over (to savings)') : t('stem.economicslab.bl_over', 'Over budget (goes on a card)'), pfBud.leftover, pfBud.leftover >= 0 ? 1 : -1, true))),
-                  React.createElement('p', { className: 'text-[0.625rem] text-slate-600 mt-2 m-0' }, t('stem.economicslab.tax_note_1', 'Taxes are simplified: 7.65% payroll, 2024 federal brackets for a single filer, and about 4% state. Your next dollar of pay is taxed about') + ' ' + Math.round(tx.marginal * 100) + '%' + t('stem.economicslab.tax_note_2', ', but only the dollars ABOVE each bracket threshold pay the higher rates, so a raise never lowers your take-home pay.'))),
+                  React.createElement('p', { className: 'text-[0.625rem] text-slate-600 mt-2 m-0' }, t('stem.economicslab.tax_note_1', 'Taxes are simplified: 7.65% payroll, 2026 federal brackets for a single filer, and about 4% state. Your next dollar of pay is taxed about') + ' ' + Math.round(tx.marginal * 100) + '%' + t('stem.economicslab.tax_note_2', ', but only the dollars ABOVE each bracket threshold pay the higher rates, so a raise never lowers your take-home pay.'))),
 
                 // Itemized "where did the money go" card for the last simulated year
                 d.pfLastYear && typeof d.pfLastYear === 'object' && (function () {

@@ -254,6 +254,10 @@ describe('initial revision report focus across the actual STEM plugin-child tran
   vi.clearAllTimers();vi.useRealTimers();vi.restoreAllMocks();
   delete window.__stemPluginComponents;delete window.__geoWorldEngine;delete window.__alloGeometryWorldReturnProject;
  });
+ // The host focuses its dialog synchronously on mount (cf1747d6d6). jsdom answers every
+ // focus() with a selectionchange event queued through the faked setTimeout; that task is
+ // jsdom's, not the app's, so the unmount check counts only timers the code itself set.
+ function trackJsdomSelectionTimers(){const fake=globalThis.setTimeout,ids=new Set();globalThis.setTimeout=function(fn,...rest){if(!/[\\/]jsdom[\\/]lib[\\/]jsdom[\\/]living[\\/]selection[\\/]/.test(new Error().stack||''))return fake.call(this,fn,...rest);const id=fake.call(this,function(){ids.delete(id);return fn.apply(this,arguments);},...rest);ids.add(id);return id;};return {get pending(){return ids.size;},restore(){globalThis.setTimeout=fake;}};}
  function frame(){const item=frames.entries().next();if(item.done)return false;const [id,callback]=item.value;frames.delete(id);React.act(()=>callback(1));return true;}
  function timers(){React.act(()=>vi.advanceTimersByTime(0));}
  function finish(){for(let i=0;i<6;i++){timers();frame();}timers();}
@@ -325,6 +329,9 @@ describe('initial revision report focus across the actual STEM plugin-child tran
   const app=await incoming(),heading=app.heading();frame();frame();heading.remove();timers();expect(document.activeElement).not.toBe(heading);expect(frames.size).toBe(0);
  });
  it('removes its document listeners and all parent/child tasks on unmount',async()=>{
-  const added=vi.spyOn(document,'addEventListener'),removed=vi.spyOn(document,'removeEventListener'),app=await incoming();frame();frame();const listeners=added.mock.calls.filter(call=>call[0]==='focusin').map(call=>call[1]);expect(listeners.length).toBeGreaterThan(0);app.close();expect(frames.size).toBe(0);expect(vi.getTimerCount()).toBe(0);for(const listener of listeners)expect(removed.mock.calls.some(call=>call[0]==='focusin'&&call[1]===listener)).toBe(true);
+  const selection=trackJsdomSelectionTimers();
+  try{
+  const added=vi.spyOn(document,'addEventListener'),removed=vi.spyOn(document,'removeEventListener'),app=await incoming();frame();frame();const listeners=added.mock.calls.filter(call=>call[0]==='focusin').map(call=>call[1]);expect(listeners.length).toBeGreaterThan(0);app.close();expect(frames.size).toBe(0);expect(vi.getTimerCount()-selection.pending).toBe(0);for(const listener of listeners)expect(removed.mock.calls.some(call=>call[0]==='focusin'&&call[1]===listener)).toBe(true);
+  }finally{selection.restore();}
  });
 });

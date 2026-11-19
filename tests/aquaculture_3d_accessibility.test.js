@@ -188,7 +188,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
     expect(source).toContain('var missionProgressCount = Math.max(0, Math.min(6, Number(hud.missionProgress) || 0))');
     expect(source).toContain("'aria-valuemax': 6");
-    expect(source).toContain("missionProgressCount + ' of 6 mission milestones complete'");
+    expect(source).toContain("__alloAriaFill(__alloT('stem.aquaculture.a11y_of_6_mission_milestones_complete', '{missionProgressCount} of 6 mission milestones complete'), { missionProgressCount: missionProgressCount })");
     expect(source).toContain('(missionProgressCount / 6 * 100)');
     expect(source).toContain("missionProgressCount + '/6 complete'");
   });
@@ -225,8 +225,8 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain("'aria-pressed': comfortableReading");
     expect(source).toContain("comfortableReading ? ' aq-comfortable-reading' : ''");
     expect(source).toContain('var topicSequence = []');
-    expect(source).toContain("'aria-label': previousTopic ? 'Previous topic: '");
-    expect(source).toContain("'aria-label': nextTopic ? 'Next topic: '");
+    expect(source).toContain("'aria-label': previousTopic ? __alloAriaFill(__alloT('stem.aquaculture.a11y_previous_topic', 'Previous topic: {label}')");
+    expect(source).toContain("'aria-label': nextTopic ? __alloAriaFill(__alloT('stem.aquaculture.a11y_next_topic', 'Next topic: {label}')");
     expect(source).toContain("h('details', { open: libraryOpen");
     expect(source).toContain('onToggle: function(event) { setLibraryOpen(event.currentTarget.open); }');
     expect(source).toContain('setLibraryOpen(false)');
@@ -334,7 +334,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain("'Paths completed'");
     expect(source).toContain("'Recommended next: '");
     expect(source).toContain('Completion is your own progress marker; use experiments and checkpoints to show what you understand.');
-    expect(source).toContain("'aria-valuetext': summary.completed + ' of ' + journey.topics.length + ' lessons completed'");
+    expect(source).toContain("'aria-valuetext': __alloAriaFill(__alloT('stem.aquaculture.a11y_of_lessons_completed', '{completed} of {value1} lessons completed'), { completed: summary.completed, value1: journey.topics.length })");
     expect(source).toContain("className: 'aq-topic-reflection'");
     expect(source).toContain("id: 'aq-topic-note', value: noteDraft, maxLength: 600");
     expect(source).toContain("'aria-describedby': 'aq-topic-note-help aq-topic-note-status'");

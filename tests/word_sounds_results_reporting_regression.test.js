@@ -87,10 +87,17 @@ describe('Word Sounds zero accuracy remains measured evidence', () => {
     URL.createObjectURL = blob => {blobs.push(blob); return 'blob:analytics';}; URL.revokeObjectURL = () => {};
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     try {
-      Function('importedStudents', 't', 'return (' + initializer(analytics, 'handleExportCSV') + ')')(importedStudents, key => key)();
+      // 2026-11-18: the export calls the module's own _acCsvCell (every cell quoted, a leading = + - @ made text; since
+      // 2026-10-20) and _acLocalDate (the file's date); the real ones are loaded beside it, and the cells read unquoted.
+      const helper = (name, next) => analytics.slice(analytics.indexOf('  function ' + name + '('), analytics.indexOf(next, analytics.indexOf('  function ' + name + '(')));
+      const csvCell = Function(helper('_acCsvCell', '  function _acDownloadCsv(') + ';return _acCsvCell;')();
+      const localDate = Function(helper('_acLocalDate', '  // Rows saved before Word Sounds keyed mastery') + ';return _acLocalDate;')();
+      Function('importedStudents', 't', '_acCsvCell', '_acLocalDate', 'return (' + initializer(analytics, 'handleExportCSV') + ')')(importedStudents, key => key, csvCell, localDate)();
       const csv = await blobs[0].text(), rows = csv.split('\n');
-      const column = rows[0].split(',').indexOf('Word Sounds %');
-      expect(rows[1].split(',')[column]).toBe('0%'); expect(rows[2].split(',')[column]).toBe('N/A');
+      const cells = line => line.replace(/\r$/, '').split(',').map(cell => cell.replace(/^﻿/, '').replace(/^"|"$/g, '').replace(/""/g, '"'));
+      const column = cells(rows[0]).indexOf('Word Sounds %');
+      expect(column).toBeGreaterThan(0);
+      expect(cells(rows[1])[column]).toBe('0%'); expect(cells(rows[2])[column]).toBe('N/A');
     } finally {URL.createObjectURL = oldCreate; URL.revokeObjectURL = oldRevoke; click.mockRestore(); vi.unstubAllGlobals();}
   });
 });

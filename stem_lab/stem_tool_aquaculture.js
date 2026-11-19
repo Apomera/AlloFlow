@@ -75,7 +75,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       // so the label needs :focus-within or the ring would be invisible.
       '.aq-btn:focus-within { outline: 2px solid #14b8a6; outline-offset: 2px; }',
       '.aq-card { background: linear-gradient(135deg, rgba(8,30,28,0.92), rgba(4,18,18,0.92)); border: 1px solid rgba(20,184,166,0.22); border-radius: 12px; padding: 14px 16px; color: #e2e8f0; }',
-      '.aq-pill { display:inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(20,184,166,0.12); color:#a7f3d0; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }',
+      '.aq-pill { display:inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(20,184,166,0.12); color:#a7f3d0; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }',
       '@media (prefers-reduced-motion: reduce) { .aq-bob { animation: none !important; } .aq-pulse { animation: none !important; } }',
       '@keyframes aq-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }',
       '.aq-pulse { animation: aq-pulse 1.6s ease-in-out infinite; }'
@@ -9336,6 +9336,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       try { v = (ctx && typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; }
       return (v == null) ? (fb != null ? fb : k) : v;
     };
+    var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
     var React = window.React || (ctx && ctx.React);
     var h = React ? React.createElement : null;
     var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
@@ -10272,7 +10273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         return '<li><strong>' + aqEscapeHtml(path.title) + '</strong>: ' + path.completed + ' completed, ' + path.visited + ' visited, ' + path.total + ' total</li>';
       }).join('') + '</ul>';
       return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
-        '<title>Aquaculture Lab Learning Portfolio</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:36px auto;padding:0 22px;color:#102a2a;line-height:1.55}h1,h2,h3{color:#064e3b}header{border-bottom:4px solid #0f766e;margin-bottom:24px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat,article{border:1px solid #99b8b3;border-radius:10px;padding:12px}.stat b{display:block;font-size:24px;color:#0f766e}.area,li span{color:#475569;font-size:13px}.mission-samples{margin-top:12px;padding-top:8px;border-top:1px solid #cbd5e1}table{width:100%;border-collapse:collapse;font-size:13px}caption{text-align:left;font-weight:700;color:#0f766e;padding:5px 0}th,td{padding:6px;text-align:left;border-bottom:1px solid #cbd5e1}@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}table{font-size:11px}}body{overflow-wrap:anywhere}.aq-archive-report{margin:18px 0}.aq-archive-report h4,.aq-archive-report h5,.aq-archive-report h6{color:#064e3b;line-height:1.3}.aq-archive-report header{margin-bottom:14px}.aq-archive-context{padding:10px;background:#eef6f4;border-left:4px solid #0f766e}.aq-archive-results>div,.aq-archive-settings>div{display:grid;grid-template-columns:minmax(130px,1fr) minmax(0,2fr);gap:12px;padding:6px 0;border-bottom:1px solid #cbd5e1}.aq-archive-report dt{font-weight:700}.aq-archive-report dd{margin:0}.aq-archive-report small{display:block;font-size:12px;margin-top:4px}.aq-archive-sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.aq-archive-sides section{padding:10px;border:1px solid #99b8b3;border-radius:8px}.aq-archive-sides dl>div{margin:8px 0}.aq-archive-species{margin:16px 0}.aq-archive-report footer{border-top:2px solid #0f766e;margin-top:20px;font-size:13px}@media(max-width:650px){.aq-archive-sides{grid-template-columns:1fr}.aq-archive-results>div,.aq-archive-settings>div{grid-template-columns:1fr;gap:3px}}@media print{.aq-archive-report{break-inside:auto}.aq-archive-species,.aq-archive-results>div,.aq-archive-settings>div{break-inside:avoid}.aq-archive-context{background:none}}@media print{body{margin:0;max-width:none}.stat,article{break-inside:avoid}}</style></head><body>' +
+        '<title>Aquaculture Lab Learning Portfolio</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:36px auto;padding:0 22px;color:#102a2a;line-height:1.55}h1,h2,h3{color:#064e3b}header{border-bottom:4px solid #0f766e;margin-bottom:24px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat,article{border:1px solid #99b8b3;border-radius:10px;padding:12px}.stat b{display:block;font-size:24px;color:#0f766e}.area,li span{color:#475569;font-size:13px}.mission-samples{margin-top:12px;padding-top:8px;border-top:1px solid #cbd5e1}table{width:100%;border-collapse:collapse;font-size:13px}caption{text-align:left;font-weight:700;color:#0f766e;padding:5px 0}th,td{padding:6px;text-align:left;border-bottom:1px solid #cbd5e1}@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}table{font-size:12px}}body{overflow-wrap:anywhere}.aq-archive-report{margin:18px 0}.aq-archive-report h4,.aq-archive-report h5,.aq-archive-report h6{color:#064e3b;line-height:1.3}.aq-archive-report header{margin-bottom:14px}.aq-archive-context{padding:10px;background:#eef6f4;border-left:4px solid #0f766e}.aq-archive-results>div,.aq-archive-settings>div{display:grid;grid-template-columns:minmax(130px,1fr) minmax(0,2fr);gap:12px;padding:6px 0;border-bottom:1px solid #cbd5e1}.aq-archive-report dt{font-weight:700}.aq-archive-report dd{margin:0}.aq-archive-report small{display:block;font-size:12px;margin-top:4px}.aq-archive-sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.aq-archive-sides section{padding:10px;border:1px solid #99b8b3;border-radius:8px}.aq-archive-sides dl>div{margin:8px 0}.aq-archive-species{margin:16px 0}.aq-archive-report footer{border-top:2px solid #0f766e;margin-top:20px;font-size:13px}@media(max-width:650px){.aq-archive-sides{grid-template-columns:1fr}.aq-archive-results>div,.aq-archive-settings>div{grid-template-columns:1fr;gap:3px}}@media print{.aq-archive-report{break-inside:auto}.aq-archive-species,.aq-archive-results>div,.aq-archive-settings>div{break-inside:avoid}.aq-archive-context{background:none}}@media print{body{margin:0;max-width:none}.stat,article{break-inside:avoid}}</style></head><body>' +
         '<header><h1>Aquaculture Lab Learning Portfolio</h1><p>Exported ' + aqEscapeHtml(portfolio.exportedAt) + '</p></header>' +
         '<section class="stats"><div class="stat"><b>' + portfolio.summary.topicsVisited + '</b>Topics visited</div><div class="stat"><b>' + portfolio.summary.topicsCompleted + '</b>Lessons completed</div><div class="stat"><b>' + portfolio.summary.missionsCompleted + '</b>Missions completed</div><div class="stat"><b>' + portfolio.summary.topicsSaved + '</b>Saved topics</div><div class="stat"><b>' + portfolio.summary.reflections + '</b>Reflections</div><div class="stat"><b>' + portfolio.summary.ecosystemExperiments + '</b>Ecosystem experiments</div><div class="stat"><b>' + portfolio.summary.musselHealthChecks + '</b>Mussel field checks</div><div class="stat"><b>' + portfolio.summary.pathsCompleted + '</b>Paths completed</div></section>' +
         '<section><h2>Learning route</h2>' + profileMarkup + '</section><section><h2>Guided paths</h2>' + pathMarkup + '</section><section><h2>Completed lessons</h2>' + completedMarkup + '</section><section><h2>Mission evidence</h2>' + missionMarkup + '</section><section><h2>Ecosystem experiment evidence</h2>' + ecosystemMarkup + '</section><section><h2>Mussel field-check evidence</h2>' + musselMarkup + '</section><section><h2>Saved topics</h2>' + savedMarkup + '</section><section><h2>Reflections</h2>' + noteMarkup + '</section></body></html>';
@@ -11269,21 +11270,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             background: selected ? group.color : '#0b2b28', color: selected ? '#031c1a' : '#f1f5f9',
             border: '1px solid ' + (selected ? group.color : '#5c8580'), fontSize: 13, fontWeight: 750 } },
           topic.label,
-          showGroup ? h('span', { style: { display: 'block', marginTop: 3, fontSize: 10.5, fontWeight: 700,
+          showGroup ? h('span', { style: { display: 'block', marginTop: 3, fontSize: 12, fontWeight: 700,
             color: selected ? '#173f3a' : '#bfdbfe' } }, group.label) : null,
           searchSummary ? h('span', { style: { display: 'block', marginTop: 5, color: selected ? '#173f3a' : '#cbd5e1',
-            fontSize: 11.5, fontWeight: 650, lineHeight: 1.45 } }, searchSummary) : null);
+            fontSize: 12, fontWeight: 650, lineHeight: 1.45 } }, searchSummary) : null);
       }
 
       function shortcutTopicButton(topicId, collectionLabel) {
         var location = getTopicLocation(topicId);
         return h('button', { key: collectionLabel + '-' + topicId, type: 'button', className: 'aq-btn',
-          'aria-label': 'Open ' + location.topic.label + ' from ' + collectionLabel.toLowerCase(),
+          'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_open_from', 'Open {label} from {collectionLabel}'), { label: location.topic.label, collectionLabel: collectionLabel.toLowerCase() }),
           onClick: function() { navigateToTopic(topicId, location.topic.label + ' open'); },
           style: { minHeight: 44, padding: '8px 10px', textAlign: 'left', borderRadius: 8, cursor: 'pointer',
             background: '#0b2b28', color: '#f8fafc', border: '1px solid #66928d', fontSize: 12, fontWeight: 800 } },
           location.topic.label,
-          h('span', { style: { display: 'block', marginTop: 2, color: '#bfdbfe', fontSize: 10.5, fontWeight: 700 } }, location.group.label));
+          h('span', { style: { display: 'block', marginTop: 2, color: '#bfdbfe', fontSize: 12, fontWeight: 700 } }, location.group.label));
       }
 
       return h('nav', { className: 'aq-topic-nav', 'aria-label': __alloT('stem.aquaculture.a11y_aquaculturelab_sections', 'AquacultureLab sections'), style: {
@@ -11292,7 +11293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       } },
         h('div', { className: 'aq-nav-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
           h('div', null,
-            h('div', { style: { fontSize: 11, fontWeight: 900, color: '#99f6e4', textTransform: 'uppercase', letterSpacing: '0.09em' } }, 'Aquaculture Lab'),
+            h('div', { style: { fontSize: 12, fontWeight: 900, color: '#99f6e4', textTransform: 'uppercase', letterSpacing: '0.09em' } }, 'Aquaculture Lab'),
             h('div', { style: { marginTop: 3, fontSize: 14, fontWeight: 800, color: '#f8fafc' } },
               'Viewing: ', h('span', { style: { color: activeGroup.color } }, activeTopic.label),
               h('span', { style: { color: '#aebdca', fontWeight: 650 } }, ' · ' + activeGroup.label))),
@@ -11324,16 +11325,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           background: '#061a18', border: '1px solid #416c67'
         } },
           h('button', { type: 'button', className: 'aq-btn', disabled: !previousTopic,
-            'aria-label': previousTopic ? 'Previous topic: ' + previousTopic.topic.label : 'No previous topic',
+            'aria-label': previousTopic ? __alloAriaFill(__alloT('stem.aquaculture.a11y_previous_topic', 'Previous topic: {label}'), { label: previousTopic.topic.label }) : __alloT('stem.aquaculture.a11y_no_previous_topic', 'No previous topic'),
             onClick: function() { moveToTopic(previousTopic); },
             style: { minHeight: 42, padding: '8px 10px', borderRadius: 7, textAlign: 'left',
               cursor: previousTopic ? 'pointer' : 'not-allowed', opacity: previousTopic ? 1 : 0.5,
               background: '#0d302d', color: '#f1f5f9', border: '1px solid #5c8580', fontSize: 12, fontWeight: 750 } },
             previousTopic ? '← ' + previousTopic.topic.label : 'Start of library'),
-          h('div', { 'aria-live': 'polite', style: { color: '#cbd5e1', fontSize: 11.5, fontWeight: 800, textAlign: 'center', whiteSpace: 'nowrap' } },
+          h('div', { 'aria-live': 'polite', style: { color: '#cbd5e1', fontSize: 12, fontWeight: 800, textAlign: 'center', whiteSpace: 'nowrap' } },
             activeTopicIndex >= 0 ? (activeTopicIndex + 1) + ' of ' + topicSequence.length : ''),
           h('button', { type: 'button', className: 'aq-btn', disabled: !nextTopic,
-            'aria-label': nextTopic ? 'Next topic: ' + nextTopic.topic.label : 'No next topic',
+            'aria-label': nextTopic ? __alloAriaFill(__alloT('stem.aquaculture.a11y_next_topic', 'Next topic: {label}'), { label: nextTopic.topic.label }) : __alloT('stem.aquaculture.a11y_no_next_topic', 'No next topic'),
             onClick: function() { moveToTopic(nextTopic); },
             style: { minHeight: 42, padding: '8px 10px', borderRadius: 7, textAlign: 'right',
               cursor: nextTopic ? 'pointer' : 'not-allowed', opacity: nextTopic ? 1 : 0.5,
@@ -11350,15 +11351,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             (bookmarkedTopicIds.length || notedTopicIds.length || recentTopicIds.length) ? h('div', { className: 'aq-saved-topics',
               style: { display: 'grid', gap: 10, marginBottom: 12, padding: 11, borderRadius: 10, background: '#061a18', border: '1px solid #527a75' } },
               bookmarkedTopicIds.length ? h('section', { 'aria-labelledby': 'aq-saved-topics-heading' },
-                h('div', { id: 'aq-saved-topics-heading', style: { marginBottom: 6, color: '#fde68a', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Saved topics'),
+                h('div', { id: 'aq-saved-topics-heading', style: { marginBottom: 6, color: '#fde68a', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Saved topics'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 7 } },
                   bookmarkedTopicIds.map(function(topicId) { return shortcutTopicButton(topicId, 'Saved topics'); }))) : null,
               notedTopicIds.length ? h('section', { 'aria-labelledby': 'aq-noted-topics-heading' },
-                h('div', { id: 'aq-noted-topics-heading', style: { marginBottom: 6, color: '#bfdbfe', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Reflections'),
+                h('div', { id: 'aq-noted-topics-heading', style: { marginBottom: 6, color: '#bfdbfe', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Reflections'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 7 } },
                   notedTopicIds.map(function(topicId) { return shortcutTopicButton(topicId, 'Reflections'); }))) : null,
               recentTopicIds.length ? h('section', { 'aria-labelledby': 'aq-recent-topics-heading' },
-                h('div', { id: 'aq-recent-topics-heading', style: { marginBottom: 6, color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Recent topics'),
+                h('div', { id: 'aq-recent-topics-heading', style: { marginBottom: 6, color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Recent topics'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 7 } },
                   recentTopicIds.map(function(topicId) { return shortcutTopicButton(topicId, 'Recent topics'); }))) : null
             ) : null,
@@ -11378,7 +11379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   placeholder: 'Search oxygen, startup costs, boat rules, careers…',
                   style: { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 11px',
                     borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 14 } }),
-                h('div', { id: 'aq-topic-search-help', style: { marginTop: 5, color: '#cbd5e1', fontSize: 11.5 } },
+                h('div', { id: 'aq-topic-search-help', style: { marginTop: 5, color: '#cbd5e1', fontSize: 12 } },
                   'Searches topic names, summaries, curriculum keywords, and all 12 topic areas. Use several words to narrow results. Press / to open and Escape to clear or close.')),
               navSearch ? h('button', { type: 'button', className: 'aq-btn aq-topic-search-clear',
                 'aria-label': __alloT('stem.aquaculture.a11y_clear_topic_search', 'Clear topic search'), onClick: function() { setNavSearch(''); aqAnnounce(__alloT('stem.aquaculture.sr_topic_search_cleared', 'Topic search cleared')); },
@@ -11389,7 +11390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             query ? (
               searchMatches.length ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
                 shownMatches.map(function(item) { return topicButton(item.topic, item.group, true, item.summary); }),
-                searchMatches.length > shownMatches.length ? h('div', { style: { gridColumn: '1 / -1', padding: 9, color: '#cbd5e1', fontSize: 11.5 } },
+                searchMatches.length > shownMatches.length ? h('div', { style: { gridColumn: '1 / -1', padding: 9, color: '#cbd5e1', fontSize: 12 } },
                   'Showing the first ' + shownMatches.length + ' results. Add another word to narrow the list.') : null
               ) : h('div', { role: 'status', style: { padding: 12, borderRadius: 8, background: '#0b2b28',
                 border: '1px solid #527a75', color: '#f1f5f9', fontSize: 13 } },
@@ -11415,15 +11416,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var sourceLinks = selected.sources || [];
       return h('div', { className: 'aq-region-bar', style: { padding: '10px 14px', background: 'rgba(15,23,42,0.55)', borderRadius: 10, marginBottom: 12 } },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
-          h('label', { htmlFor: 'aq-region-select', style: { fontSize: 11, fontWeight: 800, color: '#dbeafe' } }, 'Region:'),
+          h('label', { htmlFor: 'aq-region-select', style: { fontSize: 12, fontWeight: 800, color: '#dbeafe' } }, 'Region:'),
           h('select', { id: 'aq-region-select', value: region, onChange: function(e) { setRegion(e.target.value); aqAnnounce('Region set to ' + REGIONS[e.target.value].label); }, style: { background: '#0f1c2f', color: '#f8fafc', border: '1px solid #789b97', borderRadius: 7, padding: '7px 9px', fontSize: 12 } }, Object.keys(REGIONS).map(function(rk) { return h('option', { key: rk, value: rk }, REGIONS[rk].label + (REGIONS[rk].complete ? '' : ' (preview)')); })),
-          selected.complete ? h('span', { style: { color: '#bbf7d0', fontSize: 11, fontWeight: 800 } }, 'Transfer pack ready') : h('span', { style: { color: '#fde68a', fontSize: 11, fontStyle: 'italic' } }, 'Preview region · Maine content remains the reference')),
+          selected.complete ? h('span', { style: { color: '#bbf7d0', fontSize: 12, fontWeight: 800 } }, 'Transfer pack ready') : h('span', { style: { color: '#fde68a', fontSize: 12, fontStyle: 'italic' } }, 'Preview region · Maine content remains the reference')),
         selected.complete ? h('details', { className: 'aq-region-context', style: { marginTop: 9, borderRadius: 8, background: '#061a18', border: '1px solid #527a75', overflow: 'hidden' } },
-          h('summary', { style: { minHeight: 40, boxSizing: 'border-box', padding: '8px 10px', cursor: 'pointer', color: '#f8fafc', fontSize: 11.5, fontWeight: 900, listStylePosition: 'inside' } }, selected.label + ' learning context'),
+          h('summary', { style: { minHeight: 40, boxSizing: 'border-box', padding: '8px 10px', cursor: 'pointer', color: '#f8fafc', fontSize: 12, fontWeight: 900, listStylePosition: 'inside' } }, selected.label + ' learning context'),
           h('div', { className: 'aq-region-context-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 9, padding: '0 10px 10px' } },
-            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Place and authority'), h('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 11, lineHeight: 1.45 } }, selected.portCoords), h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, selected.authority)),
-            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Focus species and signals'), h('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 11, lineHeight: 1.45 } }, selected.focusSpecies.join(' · ')), h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, selected.operatingSignals.join(' · '))),
-            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Farm and market context'), h('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 11, lineHeight: 1.45 } }, selected.marketContext), h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, color: '#bfdbfe', fontSize: 10.5, lineHeight: 1.45 } }, selected.sources.map(function(source) { return h('li', { key: source.url }, h('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' }, source.label)); }))))) : null);
+            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, 'Place and authority'), h('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 12, lineHeight: 1.45 } }, selected.portCoords), h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, selected.authority)),
+            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, 'Focus species and signals'), h('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 12, lineHeight: 1.45 } }, selected.focusSpecies.join(' · ')), h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, selected.operatingSignals.join(' · '))),
+            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, 'Farm and market context'), h('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 12, lineHeight: 1.45 } }, selected.marketContext), h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, color: '#bfdbfe', fontSize: 12, lineHeight: 1.45 } }, selected.sources.map(function(source) { return h('li', { key: source.url }, h('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' }, source.label)); }))))) : null);
     }
 
     function evidenceCoachCard(rawEvidence, prompt) {
@@ -11431,17 +11432,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var tone = quality.score === quality.total ? '#86efac' : quality.score > 0 ? '#fde68a' : '#cbd5e1';
       return h('div', { className: 'aq-evidence-coach', role: 'status', 'aria-label': __alloT('stem.aquaculture.a11y_evidence_coach', 'Evidence coach'), style: { marginTop: 9, padding: 9, borderRadius: 9, background: '#031714', border: '1px solid #527a75' } },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-          h('span', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Evidence coach'),
-          h('span', { style: { color: tone, fontSize: 11, fontWeight: 950 } }, quality.score + '/' + quality.total + ' fields drafted')),
+          h('span', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Evidence coach'),
+          h('span', { style: { color: tone, fontSize: 12, fontWeight: 950 } }, quality.score + '/' + quality.total + ' fields drafted')),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 4, marginTop: 7 } }, quality.fields.map(function(field) {
-          return h('div', { key: field.key, title: field.done ? field.label + ' drafted' : field.prompt, style: { height: 5, borderRadius: 999, background: field.done ? '#5eead4' : '#28443f' } });
+          return h('div', { key: field.key, title: field.done ? __alloAriaFill(__alloT('stem.aquaculture.a11y_drafted', '{label} drafted'), { label: field.label }) : field.prompt, style: { height: 5, borderRadius: 999, background: field.done ? '#5eead4' : '#28443f' } });
         })),
-        h('p', { style: { margin: '7px 0 0', color: '#dbeafe', fontSize: 10.8, lineHeight: 1.45 } }, h('b', null, 'Next move: '), quality.nextPrompt),
-        h('p', { style: { margin: '5px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45 } }, 'This checks draft completeness. Review the science and reasoning with a peer or teacher.'),
+        h('p', { style: { margin: '7px 0 0', color: '#dbeafe', fontSize: 12, lineHeight: 1.45 } }, h('b', null, 'Next move: '), quality.nextPrompt),
+        h('p', { style: { margin: '5px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, 'This checks draft completeness. Review the science and reasoning with a peer or teacher.'),
         prompt ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(148,163,184,.18)' } },
-          h('div', { style: { color: '#c4b5fd', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Investigation prompt'),
-          h('p', { style: { margin: '3px 0 0', color: '#f8fafc', fontSize: 11, lineHeight: 1.45 } }, prompt),
-          h('p', { style: { margin: '5px 0 0', color: '#dbeafe', fontSize: 11, lineHeight: 1.45 } }, 'Answer this question in your own words to draft a claim, then support it with observations.')) : null);
+          h('div', { style: { color: '#c4b5fd', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, 'Investigation prompt'),
+          h('p', { style: { margin: '3px 0 0', color: '#f8fafc', fontSize: 12, lineHeight: 1.45 } }, prompt),
+          h('p', { style: { margin: '5px 0 0', color: '#dbeafe', fontSize: 12, lineHeight: 1.45 } }, 'Answer this question in your own words to draft a claim, then support it with observations.')) : null);
     }
     function labPulse() {
       var model = aqCalculateEcosystem(ecosystemWorkspace);
@@ -11469,21 +11470,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         var badge = stage.done ? 'DONE' : stage.current ? 'NOW' : 'NEXT';
         return h('div', { key: stage.key, className: 'aq-lab-pulse-stage', style: { minWidth: 0, padding: 9, borderRadius: 9, background: stage.current ? 'rgba(253,230,138,.10)' : '#061a18', border: '1px solid ' + (stage.current ? '#b6a35d' : '#416c67') } },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 6, alignItems: 'center' } },
-            h('span', { style: { color: '#f8fafc', fontSize: 11.5, fontWeight: 950 } }, stage.label),
-            h('span', { style: { color: tone, fontSize: 9.5, fontWeight: 950, letterSpacing: '.06em' } }, badge)),
-          h('div', { style: { marginTop: 4, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.35 } }, stage.detail));
+            h('span', { style: { color: '#f8fafc', fontSize: 12, fontWeight: 950 } }, stage.label),
+            h('span', { style: { color: tone, fontSize: 12, fontWeight: 950, letterSpacing: '.06em' } }, badge)),
+          h('div', { style: { marginTop: 4, color: '#cbd5e1', fontSize: 12, lineHeight: 1.35 } }, stage.detail));
       }
       return h('section', { className: 'aq-lab-pulse', role: 'region', 'aria-labelledby': 'aq-lab-pulse-heading', style: { marginBottom: 12, padding: 11, borderRadius: 11, background: 'linear-gradient(105deg,rgba(4,31,29,.98),rgba(15,23,42,.92))', border: '1px solid #527a75' } },
         h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
-          h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Field brief'),
+          h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Field brief'),
             h('h2', { id: 'aq-lab-pulse-heading', style: { margin: '2px 0 0', color: '#f8fafc', fontSize: 17 } }, 'From place to proof')),
-          h('span', { style: { color: doneCount === 4 ? '#86efac' : '#fde68a', fontSize: 11, fontWeight: 900 } }, doneCount + '/4 milestones logged')),
-        h('p', { style: { margin: '5px 0 10px', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.45 } }, selected.complete ? 'Use this rail to carry one investigation from regional context through a modeled decision and portfolio-ready evidence.' : 'This region is still a preview. Treat the Maine context as your reference while you explore the controls.'),
+          h('span', { style: { color: doneCount === 4 ? '#86efac' : '#fde68a', fontSize: 12, fontWeight: 900 } }, doneCount + '/4 milestones logged')),
+        h('p', { style: { margin: '5px 0 10px', color: '#dbeafe', fontSize: 12, lineHeight: 1.45 } }, selected.complete ? 'Use this rail to carry one investigation from regional context through a modeled decision and portfolio-ready evidence.' : 'This region is still a preview. Treat the Maine context as your reference while you explore the controls.'),
         h('div', { className: 'aq-lab-pulse-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(145px,1fr))', gap: 7 } }, stages.map(stageCard)),
         evidenceCoachCard(latestEvidence, investigationPrompt, null),
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 9, flexWrap: 'wrap', marginTop: 9, paddingTop: 8, borderTop: '1px solid rgba(148,163,184,.18)' } },
-          h('span', { style: { color: '#cbd5e1', fontSize: 10.5 } }, 'Recommended handoff: ', h('b', { style: { color: '#f8fafc' } }, next.reason)),
-          h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(next.route, next.label); }, style: { minHeight: 38, padding: '7px 10px', borderRadius: 8, cursor: 'pointer', background: next.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 10.5, fontWeight: 950 } }, next.label + ' →')));
+          h('span', { style: { color: '#cbd5e1', fontSize: 12 } }, 'Recommended handoff: ', h('b', { style: { color: '#f8fafc' } }, next.reason)),
+          h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(next.route, next.label); }, style: { minHeight: 38, padding: '7px 10px', borderRadius: 8, cursor: 'pointer', background: next.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 950 } }, next.label + ' →')));
     }
     function labNotebookCard() {
       var entries = [];
@@ -11501,22 +11502,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       entries = entries.slice(0, 4);
       return h('section', { className: 'aq-notebook-card', role: 'region', 'aria-labelledby': 'aq-notebook-heading', style: { marginBottom: 12, padding: 13, borderRadius: 13, background: 'linear-gradient(135deg,rgba(6,26,24,.98),rgba(15,23,42,.94))', border: '1px solid #527a75' } },
         h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
-          h('div', null, h('div', { style: { color: '#fbbf24', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Lab notebook'),
+          h('div', null, h('div', { style: { color: '#fbbf24', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Lab notebook'),
             h('h2', { id: 'aq-notebook-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 18 } }, 'Your saved investigations'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.45, maxWidth: 700 } }, 'Keep the investigation alive: revisit a saved result, compare it with a new run, or strengthen the evidence moves before moving on.')),
-          h('span', { style: { padding: '4px 8px', borderRadius: 999, color: entries.length ? '#fde68a' : '#cbd5e1', background: entries.length ? 'rgba(251,191,36,.12)' : 'rgba(148,163,184,.12)', border: '1px solid ' + (entries.length ? '#b6a35d' : '#527a75'), fontSize: 10.5, fontWeight: 900 } }, entries.length ? entries.length + ' recent record' + (entries.length === 1 ? '' : 's') : 'No records yet')),
+            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.45, maxWidth: 700 } }, 'Keep the investigation alive: revisit a saved result, compare it with a new run, or strengthen the evidence moves before moving on.')),
+          h('span', { style: { padding: '4px 8px', borderRadius: 999, color: entries.length ? '#fde68a' : '#cbd5e1', background: entries.length ? 'rgba(251,191,36,.12)' : 'rgba(148,163,184,.12)', border: '1px solid ' + (entries.length ? '#b6a35d' : '#527a75'), fontSize: 12, fontWeight: 900 } }, entries.length ? entries.length + ' recent record' + (entries.length === 1 ? '' : 's') : 'No records yet')),
         entries.length ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 8, marginTop: 11 } }, entries.map(function(entry) {
           var tone = entry.quality.score === entry.quality.total ? '#86efac' : entry.quality.score > 0 ? '#fde68a' : '#bfdbfe';
           return h('article', { key: entry.id, style: { minWidth: 0, padding: 10, borderRadius: 9, background: '#031714', border: '1px solid #416c67' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 7, alignItems: 'center' } },
-              h('span', { style: { color: '#99f6e4', fontSize: 9.8, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.05em' } }, entry.kind),
-              h('span', { style: { color: tone, fontSize: 10, fontWeight: 900 } }, entry.quality.score ? entry.quality.score + '/4 fields drafted' : entry.status)),
+              h('span', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.05em' } }, entry.kind),
+              h('span', { style: { color: tone, fontSize: 12, fontWeight: 900 } }, entry.quality.score ? entry.quality.score + '/4 fields drafted' : entry.status)),
             h('h3', { style: { margin: '5px 0 3px', color: '#f8fafc', fontSize: 13, lineHeight: 1.25 } }, entry.title),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 10.8, lineHeight: 1.45 } }, entry.detail + (entry.quality.score < entry.quality.total ? ' ' + entry.quality.nextPrompt : '')),
-            h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(entry.route, entry.action); }, style: { minHeight: 36, marginTop: 8, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 10.5, fontWeight: 900 } }, entry.action + ' →'));
+            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, entry.detail + (entry.quality.score < entry.quality.total ? ' ' + entry.quality.nextPrompt : '')),
+            h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(entry.route, entry.action); }, style: { minHeight: 36, marginTop: 8, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 900 } }, entry.action + ' →'));
         })) : h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 9, flexWrap: 'wrap', marginTop: 10, padding: 10, borderRadius: 9, background: '#031714', border: '1px dashed #527a75' } },
-          h('span', { style: { color: '#dbeafe', fontSize: 11 } }, 'Save your first mission reflection or ecosystem snapshot and it will appear here.'),
-          h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic('ecosystem', 'Start your first ecosystem experiment'); }, style: { minHeight: 38, padding: '7px 10px', borderRadius: 7, cursor: 'pointer', background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 10.5, fontWeight: 900 } }, 'Start an experiment →')));
+          h('span', { style: { color: '#dbeafe', fontSize: 12 } }, 'Save your first mission reflection or ecosystem snapshot and it will appear here.'),
+          h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic('ecosystem', 'Start your first ecosystem experiment'); }, style: { minHeight: 38, padding: '7px 10px', borderRadius: 7, cursor: 'pointer', background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 900 } }, 'Start an experiment →')));
     }
     function homeTab() {
       var st = loadState();
@@ -11567,30 +11568,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         lastContentLocation && h('section', { className: 'aq-resume-card', role: 'status', 'aria-label': __alloT('stem.aquaculture.a11y_resume_aquaculture_learning', 'Resume aquaculture learning'),
           style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '11px 13px', marginBottom: 12, borderRadius: 12, background: 'linear-gradient(110deg, rgba(11,43,40,0.98), rgba(7,31,29,0.96))', border: '1px solid #5c8580' } },
           h('div', null,
-            h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Continue learning'),
+            h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Continue learning'),
             h('div', { style: { marginTop: 3, color: '#f8fafc', fontSize: 14, fontWeight: 850 } }, lastContentLocation.topic.label),
             h('div', { style: { marginTop: 2, color: '#cbd5e1', fontSize: 12 } }, lastContentLocation.group.label)),
           h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(lastContentTopicId, 'Resuming ' + lastContentLocation.topic.label); },
             style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#5eead4', color: '#032522', border: '1px solid #99f6e4', fontSize: 13, fontWeight: 900 } }, 'Resume topic \u2192')),
         h('section', { className: 'aq-home-card aq-next-action-card', 'aria-labelledby': 'aq-next-action-heading', role: 'region', style: { marginBottom: 12, padding: 13, borderRadius: 12, background: 'linear-gradient(110deg,rgba(7,31,29,.98),rgba(30,27,75,.9))', border: '1px solid #789b97' } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
-            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Your next investigation'), h('h2', { id: 'aq-next-action-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 18 } }, 'Observe. Make a decision. Explain with evidence.'), h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.5, maxWidth: 720 } }, adaptiveNext.reason)),
+            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Your next investigation'), h('h2', { id: 'aq-next-action-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 18 } }, 'Observe. Make a decision. Explain with evidence.'), h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.5, maxWidth: 720 } }, adaptiveNext.reason)),
             h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(adaptiveNext.route, adaptiveNext.label); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: adaptiveNext.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 900 } }, adaptiveNext.label + ' →'))),                h('details', { className: 'aq-home-card aq-context-disclosure' }, h('summary', { className: 'aq-disclosure-label' }, 'Region and session overview'), regionBar(), labPulse()),
         h('details', { className: 'aq-home-card aq-profile-card', 'aria-labelledby': 'aq-my-route-heading',
           style: { marginBottom: 12, padding: 14, borderRadius: 14, background: 'linear-gradient(135deg, rgba(12,45,42,0.98), rgba(28,25,52,0.92))', border: '1px solid #6d8f8a' } },
           h('summary', { className: 'aq-disclosure-label' }, 'Customize your route: role, goal and time'),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'flex-start' } },
             h('div', null,
-              h('div', { style: { color: '#c4b5fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.07em' } }, learnerProfile.configured ? 'Your learning route' : 'Start with your goal'),
+              h('div', { style: { color: '#c4b5fd', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.07em' } }, learnerProfile.configured ? 'Your learning route' : 'Start with your goal'),
               h('h2', { id: 'aq-my-route-heading', style: { margin: '3px 0 5px', color: '#f8fafc', fontSize: 20 } }, 'Make the lab fit this visit'),
               h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12.5, lineHeight: 1.55, maxWidth: 680 } }, 'Choose a role, goal, and available time. This changes the recommended starting point without hiding any content.')),
-            h('span', { style: { padding: '4px 9px', borderRadius: 999, color: '#d1fae5', background: 'rgba(45,212,191,.12)', border: '1px solid #5eead4', fontSize: 10.5, fontWeight: 900 } }, 'Private · saved on this device')),
+            h('span', { style: { padding: '4px 9px', borderRadius: 999, color: '#d1fae5', background: 'rgba(45,212,191,.12)', border: '1px solid #5eead4', fontSize: 12, fontWeight: 900 } }, 'Private · saved on this device')),
           h('div', { className: 'aq-profile-controls', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(150px,1fr))', gap: 9, marginTop: 12 } },
-            h('label', { style: { color: '#e2e8f0', fontSize: 11.5, fontWeight: 850 } }, 'I am a…',
+            h('label', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 850 } }, 'I am a…',
               h('select', { id: 'aq-profile-role', value: learnerProfile.role, onChange: function(event) { persistLearnerProfile({ role: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: '8px 9px', borderRadius: 8, background: '#071f1d', color: '#f8fafc', border: '1px solid #789b97' } }, LEARNER_PROFILE_OPTIONS.roles.map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); }))),
-            h('label', { style: { color: '#e2e8f0', fontSize: 11.5, fontWeight: 850 } }, 'My goal',
+            h('label', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 850 } }, 'My goal',
               h('select', { id: 'aq-profile-goal', value: learnerProfile.goal, onChange: function(event) { persistLearnerProfile({ goal: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: '8px 9px', borderRadius: 8, background: '#071f1d', color: '#f8fafc', border: '1px solid #789b97' } }, LEARNER_PROFILE_OPTIONS.goals.map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); }))),
-            h('label', { style: { color: '#e2e8f0', fontSize: 11.5, fontWeight: 850 } }, 'Time available',
+            h('label', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 850 } }, 'Time available',
               h('select', { id: 'aq-profile-session', value: learnerProfile.session, onChange: function(event) { persistLearnerProfile({ session: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: '8px 9px', borderRadius: 8, background: '#071f1d', color: '#f8fafc', border: '1px solid #789b97' } }, LEARNER_PROFILE_OPTIONS.sessions.map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); })))),
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: 11, paddingTop: 10, borderTop: '1px solid rgba(196,181,253,.28)' } },
             h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, (LEARNER_PROFILE_OPTIONS.roles.find(function(item) { return item.id === learnerProfile.role; }) || LEARNER_PROFILE_OPTIONS.roles[0]).detail),
@@ -11600,9 +11601,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('summary', { className: 'aq-disclosure-label' }, 'My learning, portfolio and backup'),
           h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
             h('div', null,
-              h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Your workspace'),
+              h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Your workspace'),
               h('h2', { id: 'aq-my-learning-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 18, lineHeight: 1.2 } }, 'My learning'),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } },
+              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } },
                 'A private, device-local snapshot of lessons explored, completed, and supported with evidence.')),
             h('button', { type: 'button', className: 'aq-btn',
               onClick: function() { navigateToTopic(recommendedJourney.nextTopic, 'Recommended next: ' + recommendedLocation.topic.label); },
@@ -11621,7 +11622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               ['Paths completed', fullyCompletedJourneyCount + '/' + LEARNING_JOURNEYS.length, '#c4b5fd']
             ].map(function(metric) {
               return h('div', { key: metric[0], className: 'aq-metric-card', style: { padding: '8px 9px', borderRadius: 9, background: '#061a18', border: '1px solid #416c67' } },
-                h('div', { style: { color: '#cbd5e1', fontSize: 10.5, fontWeight: 800 } }, metric[0]),
+                h('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 800 } }, metric[0]),
                 h('div', { style: { marginTop: 2, color: metric[2], fontSize: 17, fontWeight: 900 } }, metric[1]));
             })),
           h('details', { className: 'aq-portfolio-tools',
@@ -11629,7 +11630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '10px 11px', cursor: 'pointer',
               color: '#f8fafc', fontSize: 12, fontWeight: 900, listStylePosition: 'inside' } }, 'Portfolio & backup'),
             h('div', { style: { padding: '0 11px 11px' } },
-              h('p', { id: 'aq-portfolio-help', style: { margin: '0 0 9px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } },
+              h('p', { id: 'aq-portfolio-help', style: { margin: '0 0 9px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } },
                 'Download a printable learning portfolio or a JSON backup. Import merges validated learning data and keeps existing work.'),
               h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
                 h('button', { type: 'button', className: 'aq-btn', onClick: exportPrintablePortfolio,
@@ -11651,7 +11652,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                     style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }))),
               h('div', { role: 'status', 'aria-live': 'polite',
                 style: { marginTop: 8, color: learningNotice.kind === 'error' ? '#fecaca' : (learningNotice.kind === 'success' ? '#bbf7d0' : '#bfdbfe'),
-                  fontSize: 11.5, fontWeight: 750, lineHeight: 1.45 } }, learningNotice.message),
+                  fontSize: 12, fontWeight: 750, lineHeight: 1.45 } }, learningNotice.message),
               learningImportSummary ? h('p', { 'data-testid': 'aq-learning-import-summary',
                 style: { margin: '8px 0 0', color: '#dbeafe', fontSize: 13, lineHeight: 1.55 } },
                 'Saved investigations: ' + learningImportSummary.archive.added + ' added; ' + learningImportSummary.archive.alreadyPresent +
@@ -11664,7 +11665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           style: { marginBottom: 12, padding: 14, borderRadius: 14, background: 'linear-gradient(145deg, rgba(7,31,29,0.98), rgba(4,24,23,0.96))', border: '1px solid #527a75' } },
           h('summary', { className: 'aq-disclosure-label' }, 'Choose a guided learning path'),
           h('div', { style: { marginBottom: 11 } },
-            h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Choose a pathway'),
+            h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Choose a pathway'),
             h('h2', { id: 'aq-learning-journeys-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 20, lineHeight: 1.2 } }, 'Guided learning journeys'),
             h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.55 } }, 'Choose a path when you want more background. Completion is your own progress marker; use experiments and checkpoints to show what you understand.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 10 } },
@@ -11676,11 +11677,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
                   h('h3', { style: { margin: 0, color: '#f8fafc', fontSize: 15, lineHeight: 1.3 } },
                     h('span', { 'aria-hidden': 'true', style: { marginRight: 7 } }, journey.icon), journey.title),
-                  h('span', { style: { color: journey.tone, fontSize: 11, fontWeight: 900, whiteSpace: 'nowrap' } },
+                  h('span', { style: { color: journey.tone, fontSize: 12, fontWeight: 900, whiteSpace: 'nowrap' } },
                     summary.completed + '/' + journey.topics.length + ' completed')),
                 h('p', { style: { margin: '8px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, journey.description),
-                h('div', { className: 'aq-progress-track', role: 'progressbar', 'aria-label': journey.title + ' lessons completed', 'aria-valuemin': 0, 'aria-valuemax': journey.topics.length, 'aria-valuenow': summary.completed,
-                  'aria-valuetext': summary.completed + ' of ' + journey.topics.length + ' lessons completed',
+                h('div', { className: 'aq-progress-track', role: 'progressbar', 'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_lessons_completed', '{title} lessons completed'), { title: journey.title }), 'aria-valuemin': 0, 'aria-valuemax': journey.topics.length, 'aria-valuenow': summary.completed,
+                  'aria-valuetext': __alloAriaFill(__alloT('stem.aquaculture.a11y_of_lessons_completed', '{completed} of {value1} lessons completed'), { completed: summary.completed, value1: journey.topics.length }),
                   style: { height: 8, marginBottom: 10, overflow: 'hidden', borderRadius: 999, background: '#173f3a', border: '1px solid #527a75' } },
                   h('div', { className: 'aq-progress-fill', style: { width: summary.percent + '%', height: '100%', background: journey.tone } })),
                 h('ol', { className: 'aq-journey-steps', style: { display: 'grid', gap: 5, margin: '0 0 12px', padding: 0, listStyle: 'none' } },
@@ -11688,10 +11689,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                     var location = getTopicLocation(topicId);
                     var visited = !!visitedTopicMap[topicId];
                     var completed = !!completedTopicMap[topicId];
-                    return h('li', { key: topicId, style: { display: 'flex', gap: 7, alignItems: 'center', color: completed ? '#d1fae5' : (visited ? '#bfdbfe' : '#dbeafe'), fontSize: 11.5, fontWeight: 750 } },
+                    return h('li', { key: topicId, style: { display: 'flex', gap: 7, alignItems: 'center', color: completed ? '#d1fae5' : (visited ? '#bfdbfe' : '#dbeafe'), fontSize: 12, fontWeight: 750 } },
                       h('span', { 'aria-hidden': 'true', style: { color: completed ? '#86efac' : (visited ? '#7dd3fc' : '#94a3b8'), fontWeight: 900 } }, completed ? '✓' : (visited ? '•' : (index + 1))),
                       location.topic.label,
-                      visited && !completed ? h('span', { style: { marginLeft: 'auto', color: '#7dd3fc', fontSize: 9.5, fontWeight: 850 } }, 'Visited') : null);
+                      visited && !completed ? h('span', { style: { marginLeft: 'auto', color: '#7dd3fc', fontSize: 12, fontWeight: 850 } }, 'Visited') : null);
                   })),
                 h('button', { type: 'button', className: 'aq-btn',
                   onClick: function() { navigateToTopic(summary.nextTopic, (summary.complete ? 'Reviewing ' : 'Continuing ') + nextLocation.topic.label); },
@@ -11703,7 +11704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('summary', { className: 'aq-disclosure-label' }, 'Explore farm operations'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, alignItems: 'stretch' } },
             h('div', { style: { padding: 14, borderRadius: 14, background: 'rgba(15,23,42,0.54)', border: '1px solid rgba(148,163,184,0.18)' } },
-              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Farm operations'),
+              h('div', { style: { fontSize: 12, fontWeight: 900, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Farm operations'),
               h('h2', { style: { margin: '0 0 8px', color: '#ecfeff', fontSize: 22, lineHeight: 1.15 } }, 'Choose the next job on the lease.'),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, lineHeight: 1.55 } }, 'AquacultureLab has deep reference material, but students start best from the work loop: navigate, monitor, grow, and defend the site plan.'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
@@ -11713,7 +11714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   ['Probes', (probes || []).length, '#5eead4']
                 ].map(function(item) {
                   return h('div', { key: item[0], style: { padding: 9, borderRadius: 10, background: 'rgba(2,6,23,0.48)', border: '1px solid rgba(148,163,184,0.16)' } },
-                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0 } }, item[0]),
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0 } }, item[0]),
                     h('div', { style: { marginTop: 3, color: item[2], fontSize: 16, fontWeight: 900 } }, item[1])
                   );
                 })
@@ -11725,8 +11726,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   onClick: function() { navigateToTopic(route.tab, route.label); },
                   style: { textAlign: 'left', minHeight: 116, cursor: 'pointer', padding: 12, borderRadius: 12, border: '1px solid rgba(148,163,184,0.20)', borderTop: '4px solid ' + route.tone, background: 'rgba(15,23,42,0.58)', color: '#e2e8f0' } },
                   h('div', { style: { fontSize: 14, fontWeight: 900, color: route.tone, marginBottom: 5 } }, route.label),
-                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45, marginBottom: 10 } }, route.detail),
-                  h('div', { style: { fontSize: 11, fontWeight: 900, color: route.tone } }, 'Open workspace')
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45, marginBottom: 10 } }, route.detail),
+                  h('div', { style: { fontSize: 12, fontWeight: 900, color: route.tone } }, 'Open workspace')
                 );
               })
             )
@@ -11741,13 +11742,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(20,184,166,0.18)' } },
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, completedCount),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Missions completed')),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Missions completed')),
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24' } }, droppersDeployed + '/5'),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Droppers deployed')),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Droppers deployed')),
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#5eead4' } }, (probes || []).length),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Probe readings')))),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Probe readings')))),
         h('details', { className: 'aq-content-card aq-mission-studio', style: cardStyle },
           h('summary', { className: 'aq-disclosure-label' }, 'Mission studio: 13 field and decision challenges'),
           h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } },
@@ -11768,10 +11769,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
                 h('div', { style: { fontSize: 13, fontWeight: 900, color: missionTone } }, (done ? '✓ ' : (i + 1) + '. ') + m.title),
                 h('span', { style: { padding: '2px 7px', borderRadius: 999, background: done ? 'rgba(134,239,172,0.14)' : 'rgba(196,181,253,0.12)',
-                  color: missionTone, border: '1px solid ' + missionTone, fontSize: 10, fontWeight: 900 } },
+                  color: missionTone, border: '1px solid ' + missionTone, fontSize: 12, fontWeight: 900 } },
                   done ? 'Evidence saved' : (is3D ? '3D or guided 2D' : 'Decision scenario'))),
               h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 6 } }, m.brief),
-              h('ul', { style: { margin: '4px 0 8px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+              h('ul', { style: { margin: '4px 0 8px 18px', padding: 0, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
                 m.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                 h('button', { type: 'button', className: 'aq-btn',
@@ -11781,15 +11782,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                     else openScenarioMission(m.id);
                   },
                   style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: 'pointer',
-                    background: missionTone, color: '#032522', border: '1px solid #f8fafc', fontSize: 11.5, fontWeight: 900 } },
+                    background: missionTone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 900 } },
                   is3D ? (done ? 'Review boat mission →' : 'Choose 3D or guided 2D →') : (scenarioOpen ? 'Close decision lab' : (done ? 'Review decision evidence' : 'Open decision lab'))),
-                h('span', { style: { color: '#a7f3d0', fontSize: 10.5, fontWeight: 800 } }, m.reward)),
+                h('span', { style: { color: '#a7f3d0', fontSize: 12, fontWeight: 800 } }, m.reward)),
               scenarioOpen && scenario ? h('div', { className: 'aq-scenario-panel', style: {
                 marginTop: 10, padding: 11, borderRadius: 9, background: '#031714', border: '1px solid #527a75'
               } },
                 h('h3', { style: { margin: '0 0 6px', color: '#e9d5ff', fontSize: 13 } }, 'Decision point'),
                 h('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, scenario.prompt),
-                h('div', { role: 'group', 'aria-label': 'Choose a response for ' + m.title, style: { display: 'grid', gap: 7 } },
+                h('div', { role: 'group', 'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_choose_a_response_for', 'Choose a response for {title}'), { title: m.title }), style: { display: 'grid', gap: 7 } },
                   scenario.choices.map(function(choice, choiceIndex) {
                     var selected = activeScenario.choiceIndex === choiceIndex;
                     return h('button', { key: choiceIndex, type: 'button', className: 'aq-btn aq-scenario-choice',
@@ -11802,14 +11803,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                       },
                       style: { minHeight: 44, padding: '9px 11px', textAlign: 'left', borderRadius: 8, cursor: 'pointer',
                         background: selected ? '#c4b5fd' : '#0b2b28', color: selected ? '#24133f' : '#f8fafc',
-                        border: '1px solid ' + (selected ? '#e9d5ff' : '#527a75'), fontSize: 11.5, fontWeight: 800 } },
+                        border: '1px solid ' + (selected ? '#e9d5ff' : '#527a75'), fontSize: 12, fontWeight: 800 } },
                       choice.label);
                   })),
                 selectedChoice ? h('div', { role: 'status', className: 'aq-scenario-consequence', style: {
                   marginTop: 9, padding: 9, borderRadius: 8, background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(125,211,252,0.35)',
-                  color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5
+                  color: '#dbeafe', fontSize: 12, lineHeight: 1.5
                 } }, h('b', { style: { color: '#7dd3fc' } }, 'Trade-off: '), selectedChoice.consequence) : null,
-                h('label', { htmlFor: 'aq-scenario-reflection-' + m.id, style: { display: 'block', margin: '10px 0 5px', color: '#e9d5ff', fontSize: 11.5, fontWeight: 850 } },
+                h('label', { htmlFor: 'aq-scenario-reflection-' + m.id, style: { display: 'block', margin: '10px 0 5px', color: '#e9d5ff', fontSize: 12, fontWeight: 850 } },
                   scenario.reflection),
                 h('textarea', { id: 'aq-scenario-reflection-' + m.id, rows: 3, maxLength: 600,
                   value: activeScenario.reflection,
@@ -11821,14 +11822,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   style: { width: '100%', minHeight: 82, padding: '9px 10px', resize: 'vertical', borderRadius: 8,
                     background: '#071f1d', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } },
-                  h('span', { style: { color: activeScenario.reflection.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5, fontWeight: 750 } },
+                  h('span', { style: { color: activeScenario.reflection.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 12, fontWeight: 750 } },
                     activeScenario.reflection.trim().length + '/600 characters · 20 needed'),
                   h('button', { type: 'button', className: 'aq-btn', disabled: !selectedChoice || activeScenario.reflection.trim().length < 20,
                     onClick: function() { completeScenarioMission(m.id); },
                     style: { minHeight: 42, padding: '8px 11px', borderRadius: 8,
                       cursor: selectedChoice && activeScenario.reflection.trim().length >= 20 ? 'pointer' : 'not-allowed',
                       opacity: selectedChoice && activeScenario.reflection.trim().length >= 20 ? 1 : 0.55,
-                      background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 11.5, fontWeight: 900 } },
+                      background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12, fontWeight: 900 } },
                     done ? 'Update mission evidence' : 'Complete mission'))) : null);
           })),
         h('details', { className: 'aq-content-card', style: cardStyle },
@@ -11909,7 +11910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('p',{className:'aq-measurement-reading'},aqEcosystemMeasurementReading(note)),h('p',null,status.label),
               h('p',{className:'aq-measurement-meta'},'Model '+note.modelVersion+' · Captured '+(note.capturedAt?new Date(note.capturedAt).toISOString():'date not recorded')),
               h('p',{id:statusId},text),h('div',{className:'aq-recovery-actions'},
-                h('button',{type:'button',className:'aq-btn','aria-label':'Restore reading: '+heading,'aria-describedby':statusId,disabled:!result.ok,onClick:function(){restoreEcosystemMeasurement(removed.key);}},'Restore reading'),
+                h('button',{type:'button',className:'aq-btn','aria-label':__alloAriaFill(__alloT('stem.aquaculture.a11y_restore_reading', 'Restore reading: {heading}'), { heading: heading }),'aria-describedby':statusId,disabled:!result.ok,onClick:function(){restoreEcosystemMeasurement(removed.key);}},'Restore reading'),
                 result.matchId?h('button',{type:'button',className:'aq-btn','aria-describedby':statusId,onClick:function(){focusEcosystemControl('aq-live-measurement-'+result.matchId);}},result.state==='conflict'?'Review current reading':'Review matching reading'):
                 result.state==='full'?h('button',{type:'button',className:'aq-btn','aria-describedby':statusId,onClick:function(){focusEcosystemControl('aq-measurement-notebook-heading');}},'Review notebook space'):null));
           })));
@@ -11962,8 +11963,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 note.scope==='month'?h('p',null,'B event: '+(note.bEvent||'No scheduled disturbance')+(note.baselineScenario?' · A event: '+(note.aEvent||'No scheduled disturbance'):'')):null,
                 note.baselineScenario?settings(note.baselineScenario,'Capture A settings'):h('p',null,'No A was captured with this reading.'),
                 settings(note.currentScenario,'Capture B settings')),
-              !archived?h('div',{className:'aq-measurement-actions'},h('button',{type:'button',className:'aq-btn','aria-label':'Add reading to Evidence: '+heading,'aria-describedby':'aq-citation-status-'+note.id,onClick:function(){appendEcosystemMeasurement(note.id);}},'Add reading to Evidence'),
-                h('button',{type:'button',className:'aq-btn','aria-label':'Remove reading: '+heading,onClick:function(){removeEcosystemMeasurement(note.id);}},'Remove reading')):null);
+              !archived?h('div',{className:'aq-measurement-actions'},h('button',{type:'button',className:'aq-btn','aria-label':__alloAriaFill(__alloT('stem.aquaculture.a11y_add_reading_to_evidence', 'Add reading to Evidence: {heading}'), { heading: heading }),'aria-describedby':'aq-citation-status-'+note.id,onClick:function(){appendEcosystemMeasurement(note.id);}},'Add reading to Evidence'),
+                h('button',{type:'button',className:'aq-btn','aria-label':__alloAriaFill(__alloT('stem.aquaculture.a11y_remove_reading', 'Remove reading: {heading}'), { heading: heading }),onClick:function(){removeEcosystemMeasurement(note.id);}},'Remove reading')):null);
           })));
     }
     function ecosystemCapturePreview(readiness,prefix) {
@@ -12201,10 +12202,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('p',null,experiment.observation),
             h('p',{className:'aq-record-model'},experiment.modelVersion==='legacy'?'Original unversioned results are kept. Replay recalculates settings with the current classroom model.':'Saved model: '+experiment.modelVersion+(experiment.modelVersion!==AQ_ECOSYSTEM_MODEL_VERSION?'. Replay uses the current model.':'. Replay uses these model rules.')),
             h('div',{className:'aq-record-actions'},
-              h('button',{type:'button',className:'aq-btn','aria-label':'Download report for experiment '+(index+1)+': '+title,'aria-describedby':duplicate?identityNoteId:undefined,onClick:function(){exportEcosystemExperiment(target);}},'Download report'),
-              canReuse?h('button',{type:'button',className:'aq-btn','aria-label':'Replay experiment '+(index+1)+': '+title,'aria-describedby':reuseDescription,disabled:!!ecosystemWorkspace.parkedDraft,onClick:function(){replayEcosystemExperiment(target);}},'Replay experiment'):h('span',null,'Older record: full settings were not stored, so replay is unavailable.'),
-              canReuse?h('button',{type:'button',className:'aq-btn','aria-label':(experiment.kind==='comparison'?'Use saved B as A':'Use saved design as A')+' for experiment '+(index+1)+': '+title,'aria-describedby':reuseDescription,disabled:!!ecosystemWorkspace.parkedDraft,onClick:function(){branchEcosystemExperiment(target);}},experiment.kind==='comparison'?'Use saved B as A':'Use saved design as A'):null,
-              h('button',{type:'button',className:'aq-btn','aria-label':'Remove experiment '+(index+1)+': '+title,'aria-describedby':duplicate?identityNoteId:undefined,onClick:function(){deleteEcosystemExperiment(target);}},'Remove')),
+              h('button',{type:'button',className:'aq-btn','aria-label':__alloAriaFill(__alloT('stem.aquaculture.a11y_download_report_for_experiment', 'Download report for experiment {value1}: {title}'), { value1: index+1, title: title }),'aria-describedby':duplicate?identityNoteId:undefined,onClick:function(){exportEcosystemExperiment(target);}},'Download report'),
+              canReuse?h('button',{type:'button',className:'aq-btn','aria-label':__alloAriaFill(__alloT('stem.aquaculture.a11y_replay_experiment', 'Replay experiment {value1}: {title}'), { value1: index+1, title: title }),'aria-describedby':reuseDescription,disabled:!!ecosystemWorkspace.parkedDraft,onClick:function(){replayEcosystemExperiment(target);}},'Replay experiment'):h('span',null,'Older record: full settings were not stored, so replay is unavailable.'),
+              canReuse?h('button',{type:'button',className:'aq-btn','aria-label':(experiment.kind==='comparison' ? __alloAriaFill(__alloT('stem.aquaculture.a11y_use_saved_b_as_a_for_experiment', 'Use saved B as A for experiment {value1}: {title}'), { value1: index+1, title: title }) : __alloAriaFill(__alloT('stem.aquaculture.a11y_use_saved_design_as_a_for_experiment', 'Use saved design as A for experiment {value1}: {title}'), { value1: index+1, title: title })),'aria-describedby':reuseDescription,disabled:!!ecosystemWorkspace.parkedDraft,onClick:function(){branchEcosystemExperiment(target);}},experiment.kind==='comparison'?'Use saved B as A':'Use saved design as A'):null,
+              h('button',{type:'button',className:'aq-btn','aria-label':__alloAriaFill(__alloT('stem.aquaculture.a11y_remove_experiment', 'Remove experiment {value1}: {title}'), { value1: index+1, title: title }),'aria-describedby':duplicate?identityNoteId:undefined,onClick:function(){deleteEcosystemExperiment(target);}},'Remove')),
             canReuse?h('p',{id:branchNoteId,className:'aq-record-branch-note'},ecosystemWorkspace.parkedDraft?'Return to your draft before replaying or starting another branch.':'Using this design as A starts a fresh comparison with current model rules and keeps your existing draft.'):null,
             h('details',{className:'aq-saved-inputs'},h('summary',{className:'aq-disclosure-label'},'Review saved prediction, settings and evidence'),
               h('p',null,h('b',null,'Original prediction: '),experiment.prediction||'Not recorded.'),
@@ -12309,7 +12310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('p',{id:'aq-season-landmarks-context'},(organism&&metric.shared?'Shared system measurement: ':organism?organism.name+': ':'Whole system: ')+metric.label+'. Uses '+landmarks.validMonths+' of 12 B months. Low and high describe values, not which design is best. The gap compares B minus A in the same month, rounded to two decimal places.'),
           h('div',{className:'aq-season-landmark-grid'},landmarkCard('low','Lowest B value',landmarks.low),landmarkCard('high','Highest B value',landmarks.high),landmarkGap()),
           h('p',{className:'aq-season-landmark-help'},'Inspect a result, then use Record inspected result to keep that reading. To inspect another tied month, use the month buttons below. These are classroom model values, not farm forecasts.')),
-        h('div',{className:'aq-season-months','aria-label':'Inspect modeled month'},currentRun.timeline.map(function(item,index){return h('button',{key:item.month,type:'button',className:'aq-btn','aria-label':'Inspect '+item.month+', '+(organism?'system ':'')+item.status,'aria-controls':'aq-season-inspection','aria-pressed':index===seasonMonth,onClick:function(){setSeasonMonth(index);}},h('span',null,item.month),h('small',null,(organism?'System ':'')+item.status));})),
+        h('div',{className:'aq-season-months','aria-label':__alloT('stem.aquaculture.a11y_inspect_modeled_month', 'Inspect modeled month')},currentRun.timeline.map(function(item,index){return h('button',{key:item.month,type:'button',className:'aq-btn','aria-label':(organism ? __alloAriaFill(__alloT('stem.aquaculture.a11y_inspect_month_system_status', 'Inspect {month}, system {status}'), { month: item.month, status: item.status }) : __alloAriaFill(__alloT('stem.aquaculture.a11y_inspect_month_status', 'Inspect {month}, {status}'), { month: item.month, status: item.status })),'aria-controls':'aq-season-inspection','aria-pressed':index===seasonMonth,onClick:function(){setSeasonMonth(index);}},h('span',null,item.month),h('small',null,(organism?'System ':'')+item.status));})),
         h('article',{id:'aq-season-inspection','aria-labelledby':'aq-season-month-heading',className:'aq-season-inspection'},
           h('div',{className:'aq-season-inspection-header'},h('h3',{id:'aq-season-month-heading',tabIndex:-1,'aria-live':'polite'},month.month+' · '+(organism?'System ':'')+month.status),h('span',null,'B: '+(month.event||'No scheduled disturbance')),baseline?h('span',null,'A: '+(baseline.event||'No scheduled disturbance')):null),
           ecosystemCapturePreview(captureReadiness,'aq-month'),
@@ -12380,19 +12381,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var visibleOrganisms = ECOSYSTEM_ORGANISMS.filter(function(item) { return organismFilter === 'all' || item.group === organismFilter; });
       function metricCard(label, value, tone, explanation) {
         return h('div', { key: label, className: 'aq-eco-metric', title: explanation, style: { padding: 10, borderRadius: 10, background: '#061a18', border: '1px solid #527a75' } },
-          h('dt', { style: { color: '#cbd5e1', fontSize: 10.5, fontWeight: 850 } }, label),
+          h('dt', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 850 } }, label),
           h('dd', { style: { margin: '3px 0 0', color: tone, fontSize: 19, fontWeight: 950 } }, value),
-          h('div', { style: { marginTop: 3, color: '#bfdbfe', fontSize: 10, lineHeight: 1.35 } }, explanation));
+          h('div', { style: { marginTop: 3, color: '#bfdbfe', fontSize: 12, lineHeight: 1.35 } }, explanation));
       }
       function waterSlider(key, label, min, max, step, unit) {
         var value = ecosystemWorkspace.water[key];
-        return h('label', { key: key, className: 'aq-eco-slider', htmlFor: 'aq-eco-' + key, style: { display: 'block', padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #416c67', color: '#e2e8f0', fontSize: 11.5, fontWeight: 850 } },
+        return h('label', { key: key, className: 'aq-eco-slider', htmlFor: 'aq-eco-' + key, style: { display: 'block', padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #416c67', color: '#e2e8f0', fontSize: 12, fontWeight: 850 } },
           h('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } }, label, h('output', { htmlFor: 'aq-eco-' + key, style: { color: '#5eead4', fontWeight: 950 } }, value + unit)),
           h('input', { id: 'aq-eco-' + key, type: 'range', min: min, max: max, step: step, value: value, onChange: function(event) { updateEcosystemWater(key, event.target.value); }, style: { width: '100%', marginTop: 8 } }));
       }
       function evidenceField(key, label, placeholder) {
         var evidence = ecosystemWorkspace.evidence || {};
-        return h('label', { key: key, htmlFor: 'aq-eco-evidence-' + key, style: { display: 'block', color: '#dbeafe', fontSize: 11, fontWeight: 850 } }, label,
+        return h('label', { key: key, htmlFor: 'aq-eco-evidence-' + key, style: { display: 'block', color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, label,
           h('textarea', { id: 'aq-eco-evidence-' + key, rows: 3, maxLength: 500, value: evidence[key] || '', onChange: function(event) { updateEcosystemEvidenceField(key, event.target.value); }, placeholder: placeholder, style: { boxSizing: 'border-box', width: '100%', minHeight: 74, marginTop: 5, padding: 8, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, lineHeight: 1.45 } }),
           h('small',{className:'aq-evidence-count'},String(evidence[key]||'').length+'/500 characters'));
       }      return h('div', { className: 'aq-ecosystem-builder' },
@@ -12404,32 +12405,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('h2', { style: { margin: '0 0 7px', color: '#f8fafc', fontSize: 24, lineHeight: 1.15 } }, 'Build the community. Stress the system. Explain the trade-off.'),
               h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 13, lineHeight: 1.6, maxWidth: 780 } }, 'Each organism count is a comparable stocking unit, not a real farm density. The model teaches direction and relationships; it is not an engineering, veterinary, or permitting calculator.')),
             h('div', { role: 'status', 'aria-live': 'polite', style: { padding: 12, borderRadius: 12, background: '#031714', border: '2px solid ' + statusColor } },
-              h('div', { style: { color: '#cbd5e1', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Current model status'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, 'Current model status'),
               h('div', { style: { marginTop: 3, color: statusColor, fontSize: 25, fontWeight: 950 } }, model.status),
-              h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.45 } }, ecosystemNotice))),
+              h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 12, lineHeight: 1.45 } }, ecosystemNotice))),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 13 } },
-            ECOSYSTEM_PRESETS.map(function(preset) { return h('button', { key: preset.id, type: 'button', className: 'aq-btn aq-eco-preset', onClick: function() { applyEcosystemPreset(preset); }, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: ecosystemWorkspace.environmentId === preset.environmentId ? '#99f6e4' : '#123a36', color: ecosystemWorkspace.environmentId === preset.environmentId ? '#032522' : '#f8fafc', border: '1px solid #789b97', fontSize: 11.5, fontWeight: 850 } }, preset.name); }),
-            h('button', { type: 'button', className: 'aq-btn', onClick: resetEcosystemWorkspace, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 11.5, fontWeight: 850 } }, 'Reset builder'))),
+            ECOSYSTEM_PRESETS.map(function(preset) { return h('button', { key: preset.id, type: 'button', className: 'aq-btn aq-eco-preset', onClick: function() { applyEcosystemPreset(preset); }, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: ecosystemWorkspace.environmentId === preset.environmentId ? '#99f6e4' : '#123a36', color: ecosystemWorkspace.environmentId === preset.environmentId ? '#032522' : '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 850 } }, preset.name); }),
+            h('button', { type: 'button', className: 'aq-btn', onClick: resetEcosystemWorkspace, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 12, fontWeight: 850 } }, 'Reset builder'))),
 
         h('details', { className: 'aq-content-card aq-ecosystem-card', style: cardStyle },
           h('summary', { className: 'aq-disclosure-label' }, 'Customize environment: ' + model.environment.name),
           h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '1 · Choose an environment'),
           h('h2', { id: 'aq-eco-environment-heading', style: { margin: '0 0 10px', color: '#f8fafc', fontSize: 18 } }, model.environment.name),
           h('div', { className: 'aq-eco-environments', role: 'radiogroup', 'aria-label': __alloT('stem.aquaculture.a11y_farm_environment', 'Farm environment'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(185px,1fr))', gap: 8 } },
-            Object.keys(ECOSYSTEM_ENVIRONMENTS).map(function(environmentId) { var environment = ECOSYSTEM_ENVIRONMENTS[environmentId], selected = ecosystemWorkspace.environmentId === environmentId; return h('button', { key: environmentId, type: 'button', role: 'radio', 'aria-checked': selected, tabIndex: selected ? 0 : -1, onKeyDown: ecosystemRadioKey, className: 'aq-btn aq-eco-environment', onClick: function() { selectEcosystemEnvironment(environmentId); }, style: { minHeight: 112, padding: 11, textAlign: 'left', cursor: 'pointer', borderRadius: 10, background: selected ? '#ccfbf1' : '#071f1d', color: selected ? '#052e2b' : '#f8fafc', border: '2px solid ' + (selected ? '#5eead4' : '#527a75') } }, h('div', { style: { fontSize: 21 } }, environment.icon), h('div', { style: { marginTop: 4, fontSize: 13, fontWeight: 950 } }, environment.name), h('div', { style: { marginTop: 4, color: selected ? '#164e49' : '#cbd5e1', fontSize: 10.5, lineHeight: 1.4 } }, environment.detail)); }))),
+            Object.keys(ECOSYSTEM_ENVIRONMENTS).map(function(environmentId) { var environment = ECOSYSTEM_ENVIRONMENTS[environmentId], selected = ecosystemWorkspace.environmentId === environmentId; return h('button', { key: environmentId, type: 'button', role: 'radio', 'aria-checked': selected, tabIndex: selected ? 0 : -1, onKeyDown: ecosystemRadioKey, className: 'aq-btn aq-eco-environment', onClick: function() { selectEcosystemEnvironment(environmentId); }, style: { minHeight: 112, padding: 11, textAlign: 'left', cursor: 'pointer', borderRadius: 10, background: selected ? '#ccfbf1' : '#071f1d', color: selected ? '#052e2b' : '#f8fafc', border: '2px solid ' + (selected ? '#5eead4' : '#527a75') } }, h('div', { style: { fontSize: 21 } }, environment.icon), h('div', { style: { marginTop: 4, fontSize: 13, fontWeight: 950 } }, environment.name), h('div', { style: { marginTop: 4, color: selected ? '#164e49' : '#cbd5e1', fontSize: 12, lineHeight: 1.4 } }, environment.detail)); }))),
 
         h('div', { className: 'aq-eco-workbench', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(290px,.8fr)', gap: 12, alignItems: 'start' } },
           h('details', { className: 'aq-content-card aq-ecosystem-card', style: cardStyle },
             h('summary', { className: 'aq-disclosure-label' }, 'Customize community: ' + model.selected.length + ' organism types'),
             h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '2 · Compose the community'),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
-              h('div', null, h('h2', { id: 'aq-eco-organisms-heading', tabIndex:-1, style: { margin: 0, color: '#f8fafc', fontSize: 18 } }, 'Organism library'), h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11.5 } }, 'Crops, beneficial microbes, food-web support, recyclers, and habitat.')),
-              h('label', { style: { color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'Show ', h('select', { id: 'aq-eco-organism-filter', value: organismFilter, onChange: function(event) { setOrganismFilter(event.target.value); }, style: { minHeight: 40, marginLeft: 5, padding: '7px 8px', borderRadius: 7, background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } }, organismGroups.map(function(group) { return h('option', { key: group, value: group }, group === 'all' ? 'All roles' : group); })))),
+              h('div', null, h('h2', { id: 'aq-eco-organisms-heading', tabIndex:-1, style: { margin: 0, color: '#f8fafc', fontSize: 18 } }, 'Organism library'), h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 12 } }, 'Crops, beneficial microbes, food-web support, recyclers, and habitat.')),
+              h('label', { style: { color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'Show ', h('select', { id: 'aq-eco-organism-filter', value: organismFilter, onChange: function(event) { setOrganismFilter(event.target.value); }, style: { minHeight: 40, marginLeft: 5, padding: '7px 8px', borderRadius: 7, background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } }, organismGroups.map(function(group) { return h('option', { key: group, value: group }, group === 'all' ? 'All roles' : group); })))),
             h('div', { className: 'aq-eco-organism-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 8 } },
               visibleOrganisms.map(function(organism) { var count = Number(ecosystemWorkspace.organisms[organism.id]) || 0, compatible = organism.systems.indexOf(ecosystemWorkspace.environmentId) >= 0; return h('article', { key: organism.id, className: 'aq-eco-organism', style: { display: 'flex', flexDirection: 'column', minHeight: 180, padding: 10, borderRadius: 10, background: count ? 'rgba(13,63,57,.82)' : '#061a18', border: '1px solid ' + (count ? '#5eead4' : '#416c67') } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } }, h('div', null, h('div', { style: { color: '#f8fafc', fontSize: 13, fontWeight: 950 } }, h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, organism.icon), organism.name), h('div', { style: { color: '#a7f3d0', fontSize: 10.5, fontStyle: 'italic' } }, organism.sci)), h('span', { style: { alignSelf: 'start', padding: '2px 6px', borderRadius: 999, color: compatible ? '#bbf7d0' : '#fecaca', background: compatible ? 'rgba(34,197,94,.1)' : 'rgba(244,63,94,.1)', border: '1px solid ' + (compatible ? '#4ade80' : '#fb7185'), fontSize: 9.5, fontWeight: 900 } }, compatible ? 'Compatible' : 'Mismatch')),
-                h('p', { style: { margin: '7px 0', color: '#cbd5e1', fontSize: 10.8, lineHeight: 1.45 } }, organism.detail),
-                h('div', { style: { marginTop: 'auto', display: 'grid', gridTemplateColumns: '44px 1fr 44px', gap: 6, alignItems: 'center' } }, h('button', { type: 'button', className: 'aq-btn', disabled: !count, 'aria-label': 'Remove one stocking unit of ' + organism.name, onClick: function() { adjustEcosystemOrganism(organism.id, -1); }, style: { minHeight: 42, borderRadius: 7, background: '#123a36', color: '#f8fafc', border: '1px solid #789b97', cursor: count ? 'pointer' : 'not-allowed', opacity: count ? 1 : .5, fontSize: 18, fontWeight: 900 } }, '−'), h('div', { 'aria-live': 'polite', style: { textAlign: 'center', color: count ? '#5eead4' : '#94a3b8', fontSize: 12, fontWeight: 900 } }, count ? count + ' units' : 'Not added'), h('button', { type: 'button', className: 'aq-btn', disabled: count >= 5, 'aria-label': 'Add one stocking unit of ' + organism.name, onClick: function() { adjustEcosystemOrganism(organism.id, 1); }, style: { minHeight: 42, borderRadius: 7, background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', cursor: count < 5 ? 'pointer' : 'not-allowed', opacity: count < 5 ? 1 : .5, fontSize: 18, fontWeight: 900 } }, '+'))); })) ),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } }, h('div', null, h('div', { style: { color: '#f8fafc', fontSize: 13, fontWeight: 950 } }, h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, organism.icon), organism.name), h('div', { style: { color: '#a7f3d0', fontSize: 12, fontStyle: 'italic' } }, organism.sci)), h('span', { style: { alignSelf: 'start', padding: '2px 6px', borderRadius: 999, color: compatible ? '#bbf7d0' : '#fecaca', background: compatible ? 'rgba(34,197,94,.1)' : 'rgba(244,63,94,.1)', border: '1px solid ' + (compatible ? '#4ade80' : '#fb7185'), fontSize: 12, fontWeight: 900 } }, compatible ? 'Compatible' : 'Mismatch')),
+                h('p', { style: { margin: '7px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, organism.detail),
+                h('div', { style: { marginTop: 'auto', display: 'grid', gridTemplateColumns: '44px 1fr 44px', gap: 6, alignItems: 'center' } }, h('button', { type: 'button', className: 'aq-btn', disabled: !count, 'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_remove_one_stocking_unit_of', 'Remove one stocking unit of {name}'), { name: organism.name }), onClick: function() { adjustEcosystemOrganism(organism.id, -1); }, style: { minHeight: 42, borderRadius: 7, background: '#123a36', color: '#f8fafc', border: '1px solid #789b97', cursor: count ? 'pointer' : 'not-allowed', opacity: count ? 1 : .5, fontSize: 18, fontWeight: 900 } }, '−'), h('div', { 'aria-live': 'polite', style: { textAlign: 'center', color: count ? '#5eead4' : '#94a3b8', fontSize: 12, fontWeight: 900 } }, count ? count + ' units' : 'Not added'), h('button', { type: 'button', className: 'aq-btn', disabled: count >= 5, 'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_add_one_stocking_unit_of', 'Add one stocking unit of {name}'), { name: organism.name }), onClick: function() { adjustEcosystemOrganism(organism.id, 1); }, style: { minHeight: 42, borderRadius: 7, background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', cursor: count < 5 ? 'pointer' : 'not-allowed', opacity: count < 5 ? 1 : .5, fontSize: 18, fontWeight: 900 } }, '+'))); })) ),
 
           h('aside', { className: 'aq-content-card aq-ecosystem-card aq-eco-dashboard', style: Object.assign({}, cardStyle, { position: 'sticky', top: 10 }), 'aria-labelledby': 'aq-eco-model-heading' },
             h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, 'Live system model'),
@@ -12437,30 +12438,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 7, margin: 0 } },
               metricCard('Carrying pressure', model.carryingPressure + '%', model.carryingPressure > 100 ? '#fda4af' : '#5eead4', 'Relative biomass load versus this learning environment.'), metricCard('Dissolved oxygen', model.oxygen + ' mg/L', model.oxygen < 6 ? '#fda4af' : '#86efac', 'After stocking, exchange, and disturbance effects.'), metricCard('Ammonia', model.ammonia + ' mg/L', model.ammonia > .4 ? '#fda4af' : '#86efac', 'Modeled production minus uptake and exchange.'), metricCard('Water clarity', model.clarity + '/100', '#7dd3fc', 'Particles, filtration, exchange, and bloom effects.'), metricCard('Habitat value', model.habitat + '/100', '#c4b5fd', 'Structure supplied by habitat-forming organisms.'), metricCard('Resilience', model.resilience + '/100', model.resilience > 60 ? '#86efac' : '#fde68a', 'Relative comparison of diversity, habitat, and species oxygen and temperature stress.')),
             h('h3', { style: { margin: '13px 0 6px', color: '#f8fafc', fontSize: 12.5 } }, 'Community'),
-            model.selected.length ? h('ul', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 10.8, lineHeight: 1.5 } }, model.selected.map(function(organism) { return h('li', { key: organism.id }, organism.name + ' × ' + ecosystemWorkspace.organisms[organism.id]); })) : h('p', { style: { color: '#cbd5e1', fontSize: 11.5 } }, 'Add organisms to begin.'),
-            model.warnings.length ? h('div', { role: 'alert', style: { marginTop: 11, padding: 9, borderRadius: 8, background: 'rgba(127,29,29,.24)', border: '1px solid #fb7185' } }, h('h3', { style: { margin: '0 0 5px', color: '#fecdd3', fontSize: 12 } }, 'Investigate these signals'), h('ul', { style: { margin: 0, paddingLeft: 17, color: '#ffe4e6', fontSize: 10.8, lineHeight: 1.5 } }, model.warnings.slice(0, 8).map(function(item, index) { return h('li', { key: index }, item.text); }))) : h('p', { role: 'status', style: { marginTop: 11, color: '#bbf7d0', fontSize: 11.5, fontWeight: 850 } }, 'No modeled warning signals right now. Apply a disturbance or change stocking.'))),
+            model.selected.length ? h('ul', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, model.selected.map(function(organism) { return h('li', { key: organism.id }, organism.name + ' × ' + ecosystemWorkspace.organisms[organism.id]); })) : h('p', { style: { color: '#cbd5e1', fontSize: 12 } }, 'Add organisms to begin.'),
+            model.warnings.length ? h('div', { role: 'alert', style: { marginTop: 11, padding: 9, borderRadius: 8, background: 'rgba(127,29,29,.24)', border: '1px solid #fb7185' } }, h('h3', { style: { margin: '0 0 5px', color: '#fecdd3', fontSize: 12 } }, 'Investigate these signals'), h('ul', { style: { margin: 0, paddingLeft: 17, color: '#ffe4e6', fontSize: 12, lineHeight: 1.5 } }, model.warnings.slice(0, 8).map(function(item, index) { return h('li', { key: index }, item.text); }))) : h('p', { role: 'status', style: { marginTop: 11, color: '#bbf7d0', fontSize: 12, fontWeight: 850 } }, 'No modeled warning signals right now. Apply a disturbance or change stocking.'))),
 
         h('section', { className: 'aq-content-card aq-ecosystem-card', style: cardStyle, 'aria-labelledby': 'aq-eco-water-heading' },
           h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '3 · Tune conditions'),
           h('h2', { id: 'aq-eco-water-heading', style: { margin: '0 0 4px', color: '#f8fafc', fontSize: 18 } }, 'Water and exchange'),
-          h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 11.5 } }, 'Change one control at a time. These reference water settings apply each modeled month. Exchange is a relative 0–100 model setting, not a percentage of real water replaced.'),
+          h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12 } }, 'Change one control at a time. These reference water settings apply each modeled month. Exchange is a relative 0–100 model setting, not a percentage of real water replaced.'),
           h('div', { className: 'aq-eco-sliders', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 8 } }, waterSlider('temperature', 'Temperature', 0, 32, .5, '°C'), waterSlider('salinity', 'Salinity', 0, 38, 1, ' ppt'), waterSlider('oxygen', 'Starting oxygen', 2, 14, .2, ' mg/L'), waterSlider('pH', 'pH', 6.5, 9, .1, ''), waterSlider('ammonia', 'Starting ammonia', 0, 2, .05, ' mg/L'), waterSlider('exchange', 'Water exchange setting', 0, 100, 5, ' / 100'))),
 
         h('section', { className: 'aq-content-card aq-ecosystem-card', style: cardStyle, 'aria-labelledby': 'aq-eco-disturbance-heading' },
           h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '4 · Apply a disturbance'),
           h('h2', { id: 'aq-eco-disturbance-heading', style: { margin: '0 0 9px', color: '#f8fafc', fontSize: 18 } }, model.disturbance.name),
-          h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.aquaculture.a11y_ecosystem_disturbance', 'Ecosystem disturbance'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 7 } }, Object.keys(ECOSYSTEM_DISTURBANCES).map(function(disturbanceId) { var item = ECOSYSTEM_DISTURBANCES[disturbanceId], selected = ecosystemWorkspace.disturbanceId === disturbanceId; return h('button', { key: disturbanceId, type: 'button', role: 'radio', 'aria-checked': selected, tabIndex: selected ? 0 : -1, onKeyDown: ecosystemRadioKey, className: 'aq-btn', onClick: function() { setEcosystemDisturbance(disturbanceId); }, style: { minHeight: 74, padding: 9, textAlign: 'left', borderRadius: 9, cursor: 'pointer', background: selected ? '#fde68a' : '#071f1d', color: selected ? '#2a1900' : '#f8fafc', border: '1px solid ' + (selected ? '#fef3c7' : '#527a75') } }, h('div', { style: { fontSize: 12, fontWeight: 950 } }, item.name), h('div', { style: { marginTop: 3, color: selected ? '#713f12' : '#cbd5e1', fontSize: 10.3, lineHeight: 1.35 } }, item.detail)); })),
-          model.connections.length ? h('div', { style: { marginTop: 11, padding: 10, borderRadius: 9, background: 'rgba(30,64,175,.13)', border: '1px solid #60a5fa' } }, h('h3', { style: { margin: '0 0 5px', color: '#bfdbfe', fontSize: 12.5 } }, 'Modeled nutrient and habitat connections'), h('ul', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 11, lineHeight: 1.5 } }, model.connections.map(function(connection, index) { return h('li', { key: index }, connection); }))) : null),
+          h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.aquaculture.a11y_ecosystem_disturbance', 'Ecosystem disturbance'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 7 } }, Object.keys(ECOSYSTEM_DISTURBANCES).map(function(disturbanceId) { var item = ECOSYSTEM_DISTURBANCES[disturbanceId], selected = ecosystemWorkspace.disturbanceId === disturbanceId; return h('button', { key: disturbanceId, type: 'button', role: 'radio', 'aria-checked': selected, tabIndex: selected ? 0 : -1, onKeyDown: ecosystemRadioKey, className: 'aq-btn', onClick: function() { setEcosystemDisturbance(disturbanceId); }, style: { minHeight: 74, padding: 9, textAlign: 'left', borderRadius: 9, cursor: 'pointer', background: selected ? '#fde68a' : '#071f1d', color: selected ? '#2a1900' : '#f8fafc', border: '1px solid ' + (selected ? '#fef3c7' : '#527a75') } }, h('div', { style: { fontSize: 12, fontWeight: 950 } }, item.name), h('div', { style: { marginTop: 3, color: selected ? '#713f12' : '#cbd5e1', fontSize: 12, lineHeight: 1.35 } }, item.detail)); })),
+          model.connections.length ? h('div', { style: { marginTop: 11, padding: 10, borderRadius: 9, background: 'rgba(30,64,175,.13)', border: '1px solid #60a5fa' } }, h('h3', { style: { margin: '0 0 5px', color: '#bfdbfe', fontSize: 12.5 } }, 'Modeled nutrient and habitat connections'), h('ul', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, model.connections.map(function(connection, index) { return h('li', { key: index }, connection); }))) : null),
 
         h('section', { className: 'aq-content-card aq-ecosystem-card aq-time-compare', style: cardStyle, 'aria-labelledby': 'aq-eco-time-heading' },
           h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '5 · Time & Compare'),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'start', flexWrap: 'wrap' } },
             h('div', null,
               h('h2', { id: 'aq-eco-time-heading', tabIndex:-1, style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 18 } }, 'Follow the system through a modeled year'),
-              h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11.5, lineHeight: 1.55 } }, 'Each crop responds to its own conditions. Changing living biomass affects the next month’s water and pressure. Readiness indicates progress without harvesting stock. Values are illustrative learning indices, not farm forecasts.')),
+              h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.55 } }, 'Each crop responds to its own conditions. Changing living biomass affects the next month’s water and pressure. Readiness indicates progress without harvesting stock. Values are illustrative learning indices, not farm forecasts.')),
             h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
-              h('button', { type: 'button', className: 'aq-btn', onClick: captureEcosystemBaseline, disabled: !model.selected.length, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: ecosystemWorkspace.baselineScenario ? '#bfdbfe' : '#99f6e4', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 11.5, fontWeight: 900 } }, ecosystemWorkspace.baselineScenario ? 'Replace scenario A' : 'Save current as scenario A'),
-              ecosystemWorkspace.baselineScenario ? h('button', { type: 'button', className: 'aq-btn', onClick: clearEcosystemBaseline, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 11.5, fontWeight: 850 } }, 'Clear A') : null)),
+              h('button', { type: 'button', className: 'aq-btn', onClick: captureEcosystemBaseline, disabled: !model.selected.length, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: ecosystemWorkspace.baselineScenario ? '#bfdbfe' : '#99f6e4', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 900 } }, ecosystemWorkspace.baselineScenario ? 'Replace scenario A' : 'Save current as scenario A'),
+              ecosystemWorkspace.baselineScenario ? h('button', { type: 'button', className: 'aq-btn', onClick: clearEcosystemBaseline, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 12, fontWeight: 850 } }, 'Clear A') : null)),
           h('div', { className: 'aq-time-summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8, marginTop: 12 } },
             [
               { label: 'Ending crop biomass index', value: currentYearRun.summary.endingBiomass, delta: yearComparison && yearComparison.biomass, deltaUnit: ' index points', note: 'Includes surviving crop stock; support capacity is held fixed.' },
@@ -12471,30 +12472,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               { label: 'Operating effort', value: currentYearRun.summary.operatingEffort + '/100', delta: yearComparison && yearComparison.operatingEffort, deltaUnit: ' index points' }
             ].map(function(item) {
               return h('div', { key: item.label, style: { padding: 9, borderRadius: 9, background: '#061a18', border: '1px solid #527a75' } },
-                h('div', { style: { color: '#cbd5e1', fontSize: 10.2, fontWeight: 850 } }, item.label),
+                h('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 850 } }, item.label),
                 h('div', { style: { marginTop: 2, color: '#f8fafc', fontSize: 17, fontWeight: 950 } }, item.value),
-                item.note ? h('p', { style: { margin: '4px 0', color: '#cbd5e1', fontSize: 11 } }, item.note) : null,
-                yearComparison ? h('div', { style: { marginTop: 2, color: '#bfdbfe', fontSize: 10.2, fontWeight: 850 } }, item.delta == null ? 'Not applicable to this comparison' : (item.delta > 0 ? '+' : '') + item.delta + item.deltaUnit + ' (B minus A)') : h('div', { style: { marginTop: 2, color: '#bfdbfe', fontSize: 10.2 } }, 'Current design preview'));
+                item.note ? h('p', { style: { margin: '4px 0', color: '#cbd5e1', fontSize: 12 } }, item.note) : null,
+                yearComparison ? h('div', { style: { marginTop: 2, color: '#bfdbfe', fontSize: 12, fontWeight: 850 } }, item.delta == null ? 'Not applicable to this comparison' : (item.delta > 0 ? '+' : '') + item.delta + item.deltaUnit + ' (B minus A)') : h('div', { style: { marginTop: 2, color: '#bfdbfe', fontSize: 12 } }, 'Current design preview'));
             })),
-          baselineYearRun ? h('div', { role: 'status', style: { marginTop: 11, padding: 9, borderRadius: 8, background: 'rgba(30,64,175,.13)', border: '1px solid #60a5fa', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } },
+          baselineYearRun ? h('div', { role: 'status', style: { marginTop: 11, padding: 9, borderRadius: 8, background: 'rgba(30,64,175,.13)', border: '1px solid #60a5fa', color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } },
             'Scenario B finishes with ' + (yearComparison.biomass >= 0 ? '+' : '') + yearComparison.biomass + ' crop biomass index, ' + (yearComparison.survival == null ? 'no crop survival comparison, and ' : (yearComparison.survival >= 0 ? '+' : '') + yearComparison.survival + ' survival index percentage points, and ') + (yearComparison.riskMonths >= 0 ? '+' : '') + yearComparison.riskMonths + ' months with warning signals compared with scenario A.') :
-            h('p', { style: { margin: '11px 0 0', color: '#bfdbfe', fontSize: 11.5 } }, 'Save the current design as scenario A, change one input, then compare the new scenario B.'),
+            h('p', { style: { margin: '11px 0 0', color: '#bfdbfe', fontSize: 12 } }, 'Save the current design as scenario A, change one input, then compare the new scenario B.'),
           seasonalExplorer(currentYearRun, baselineYearRun),
           ecosystemRedesignPreview(currentYearRun),
           h('details', { style: { marginTop: 11, borderRadius: 9, border: '1px solid #527a75', background: '#061a18', overflow: 'hidden' } },
-            h('summary', { style: { minHeight: 44, padding: '10px 11px', boxSizing: 'border-box', cursor: 'pointer', color: '#f8fafc', fontSize: 11.5, fontWeight: 900 } }, 'Read the 12-month timeline as a table'),
-            h('div', { style: { overflowX: 'auto', padding: '0 9px 9px' } }, h('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 690, color: '#e2e8f0', fontSize: 10.5 } },
+            h('summary', { style: { minHeight: 44, padding: '10px 11px', boxSizing: 'border-box', cursor: 'pointer', color: '#f8fafc', fontSize: 12, fontWeight: 900 } }, 'Read the 12-month timeline as a table'),
+            h('div', { style: { overflowX: 'auto', padding: '0 9px 9px' } }, h('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 690, color: '#e2e8f0', fontSize: 12 } },
               h('thead', null, h('tr', null, ['Month', 'B status', 'B event', 'B temperature', 'A resilience', 'B resilience', 'B oxygen', 'B ammonia', 'B crop survival index', 'B opening crop biomass', 'B closing crop biomass', 'B opening pressure', 'B effort index', 'B newly ready units'].map(function(label) { return h('th', { key: label, scope: 'col', style: { padding: 7, textAlign: 'left', color: '#bfdbfe', borderBottom: '1px solid #527a75' } }, label); }))),
               h('tbody', null, currentYearRun.timeline.map(function(item, index) { var a = baselineYearRun && baselineYearRun.timeline[index]; return h('tr', { key: item.month }, h('th', { scope: 'row', style: { padding: 7, textAlign: 'left' } }, item.month), h('td', { style: { padding: 7 } }, item.status), h('td', { style: { padding: 7 } }, item.event || '—'), h('td', { style: { padding: 7 } }, item.temperature + ' C'), h('td', { style: { padding: 7 } }, a ? a.resilience : '—'), h('td', { style: { padding: 7 } }, item.resilience), h('td', { style: { padding: 7 } }, item.oxygen + ' mg/L'), h('td', { style: { padding: 7 } }, item.ammonia + ' mg/L'), h('td', { style: { padding: 7 } }, item.hasCrop ? item.survival + '%' : 'Not applicable'), h('td', { style: { padding: 7 } }, item.openingBiomass), h('td', { style: { padding: 7 } }, item.biomass), h('td', { style: { padding: 7 } }, item.carryingPressure + ' /100'), h('td', { style: { padding: 7 } }, item.effort), h('td', { style: { padding: 7 } }, item.harvestUnits ? item.harvestUnits + ' unit(s)' : '—')); })))))),
         h('section', { className: 'aq-content-card aq-ecosystem-card', style: cardStyle, 'aria-labelledby': 'aq-eco-evidence-heading' },
           h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '6 · Save evidence'),
           h('h2', { id: 'aq-eco-evidence-heading', style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 18 } }, 'Experiment log'),
           (ecosystemWorkspace.experiments || []).length >= 12 ? h('p', { className: 'aq-eco-history-full', role: 'status', style: { margin: '8px 0', padding: 10, borderRadius: 8, background: '#322712', color: '#fef3c7', border: '1px solid #fbbf24', fontSize: 12, lineHeight: 1.5 } }, 'Experiment log is full at 12 records. Export your portfolio from Home, then remove a record below to make space. Your draft and saved evidence are kept.') : null,
-          h('label', { htmlFor: 'aq-eco-observation', style: { display: 'block', color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'What changed, what evidence supports your explanation, and what would you test next?'),
+          h('label', { htmlFor: 'aq-eco-observation', style: { display: 'block', color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'What changed, what evidence supports your explanation, and what would you test next?'),
           h('textarea', { id: 'aq-eco-observation', rows: 4, maxLength: 600, value: ecosystemWorkspace.observation, onChange: function(event) { updateEcosystemObservation(event.target.value); }, placeholder: 'Example: When I added a third salmon unit, carrying pressure and ammonia rose. The biofilter reduced ammonia but oxygen became the limiting factor…', style: { boxSizing: 'border-box', width: '100%', minHeight: 100, marginTop: 6, padding: 10, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),
           ecosystemMeasurementNotebook(ecosystemWorkspace.measurements,ecosystemWorkspace,false),
           h('details', { className: 'aq-structured-evidence', style: { marginTop: 10, borderRadius: 9, background: '#061a18', border: '1px solid #527a75', overflow: 'hidden' } },
-            h('summary', { style: { minHeight: 42, boxSizing: 'border-box', padding: '9px 10px', cursor: 'pointer', color: '#f8fafc', fontSize: 11.5, fontWeight: 900, listStylePosition: 'inside' } }, 'Structure the explanation · optional but useful'),
+            h('summary', { style: { minHeight: 42, boxSizing: 'border-box', padding: '9px 10px', cursor: 'pointer', color: '#f8fafc', fontSize: 12, fontWeight: 900, listStylePosition: 'inside' } }, 'Structure the explanation · optional but useful'),
             evidenceCoachCard(ecosystemWorkspace.evidence, investigationPrompt),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 9, padding: '0 10px 10px' } },
               evidenceField('claim', 'Claim · What do you think happened?', 'Example: The added finfish pushed oxygen toward the limiting factor.'),
@@ -12503,7 +12504,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               evidenceField('nextTest', 'Revised explanation / next test · What would you try next?', 'Change one factor and predict what should move.'))),
           ecosystemSaveReadinessCard(saveReadiness),
           h('p', { id: 'aq-eco-save-status', className: 'aq-save-status', role: 'status' }, ecosystemWorkspace.experiments.length >= 12 ? 'Experiment log is full at 12 records. Export your portfolio, then remove a record to make space. Your draft and saved evidence were kept.' : ecosystemNotice),
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: ecosystemWorkspace.observation.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5, fontWeight: 800 } }, ecosystemWorkspace.observation.length + '/600 reflection characters · structured explanation is an alternative'), h('button', { type: 'button', className: 'aq-btn', disabled: !snapshotReady, 'aria-describedby': 'aq-eco-snapshot-readiness aq-eco-save-status'+(saveReadiness.captures.total?' aq-eco-capture-summary':''), onClick: saveEcosystemExperiment, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: snapshotReady ? 'pointer' : 'not-allowed', opacity: snapshotReady ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12, fontWeight: 950 } }, 'Save snapshot evidence'), h('button', { type: 'button', className: 'aq-btn', disabled: !comparisonReady, 'aria-describedby': 'aq-eco-comparison-readiness aq-eco-save-status'+(saveReadiness.captures.total?' aq-eco-capture-summary':''), onClick: saveEcosystemComparison, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: comparisonReady ? 'pointer' : 'not-allowed', opacity: comparisonReady ? 1 : .55, background: '#bfdbfe', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 950 } }, 'Save A/B comparison')),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: ecosystemWorkspace.observation.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 12, fontWeight: 800 } }, ecosystemWorkspace.observation.length + '/600 reflection characters · structured explanation is an alternative'), h('button', { type: 'button', className: 'aq-btn', disabled: !snapshotReady, 'aria-describedby': 'aq-eco-snapshot-readiness aq-eco-save-status'+(saveReadiness.captures.total?' aq-eco-capture-summary':''), onClick: saveEcosystemExperiment, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: snapshotReady ? 'pointer' : 'not-allowed', opacity: snapshotReady ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12, fontWeight: 950 } }, 'Save snapshot evidence'), h('button', { type: 'button', className: 'aq-btn', disabled: !comparisonReady, 'aria-describedby': 'aq-eco-comparison-readiness aq-eco-save-status'+(saveReadiness.captures.total?' aq-eco-capture-summary':''), onClick: saveEcosystemComparison, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: comparisonReady ? 'pointer' : 'not-allowed', opacity: comparisonReady ? 1 : .55, background: '#bfdbfe', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 950 } }, 'Save A/B comparison')),
           ecosystemExperimentLog()));
     }
 
@@ -12513,13 +12514,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('section', { className: 'aq-content-card aq-teacher-card', style: Object.assign({}, cardStyle, { background: 'linear-gradient(135deg,rgba(30,27,75,.9),rgba(4,47,46,.95))' }) }, h('div', { className: 'aq-section-kicker aq-teacher-kicker', style: headerStyle }, 'Teacher Studio'), h('h2', { style: { margin: '0 0 7px', color: '#f8fafc', fontSize: 23 } }, 'Turn the lab into a focused assignment.'), h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 13, lineHeight: 1.6 } }, 'Choose a ready investigation, adjust the audience and time, then download a printable brief. No student accounts or cloud storage are required.')),
         h('div', { className: 'aq-teacher-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(280px,.75fr) minmax(0,1.25fr)', gap: 12, alignItems: 'start' } },
           h('section', { className: 'aq-content-card aq-teacher-card', style: cardStyle, 'aria-labelledby': 'aq-teacher-settings-heading' }, h('div', { className: 'aq-section-kicker aq-teacher-kicker', style: headerStyle }, 'Assignment settings'), h('h2', { id: 'aq-teacher-settings-heading', style: { margin: '0 0 9px', color: '#f8fafc', fontSize: 18 } }, 'Shape the activity'),
-            h('label', { style: { display: 'block', marginBottom: 9, color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'Investigation', h('select', { id: 'aq-teacher-template', value: teacherPlan.templateId, onChange: function(event) { persistTeacherPlan({ templateId: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: 8, borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } }, TEACHER_LAB_TEMPLATES.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }))),
-            h('label', { style: { display: 'block', marginBottom: 9, color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'Audience', h('select', { value: teacherPlan.audience, onChange: function(event) { persistTeacherPlan({ audience: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: 8, borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } }, h('option', { value: 'middle' }, 'Middle grades'), h('option', { value: 'high' }, 'High school'), h('option', { value: 'adult' }, 'Adult / workforce'))),
-            h('label', { style: { display: 'block', marginBottom: 9, color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'Duration', h('select', { value: teacherPlan.duration, onChange: function(event) { persistTeacherPlan({ duration: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: 8, borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } }, h('option', { value: '30' }, '30 minutes'), h('option', { value: '45' }, '45 minutes'), h('option', { value: '90' }, '90 minutes / two periods'))),
-            h('label', { style: { display: 'flex', gap: 8, alignItems: 'center', minHeight: 38, color: '#e2e8f0', fontSize: 11.5, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: teacherPlan.includeReflection, onChange: function(event) { persistTeacherPlan({ includeReflection: event.target.checked }); } }), 'Include evidence reflection'),
-            h('label', { style: { display: 'flex', gap: 8, alignItems: 'center', minHeight: 38, color: '#e2e8f0', fontSize: 11.5, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: teacherPlan.includeCheckpoint, onChange: function(event) { persistTeacherPlan({ includeCheckpoint: event.target.checked }); } }), 'Include knowledge checkpoint'),
-            h('label', { htmlFor: 'aq-teacher-note', style: { display: 'block', marginTop: 8, color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'Teacher note (optional)'), h('textarea', { id: 'aq-teacher-note', rows: 4, maxLength: 600, value: teacherPlan.teacherNote, onChange: function(event) { persistTeacherPlan({ teacherNote: event.target.value }); }, placeholder: 'Add local context, materials, accommodations, or due-date guidance…', style: { boxSizing: 'border-box', width: '100%', minHeight: 90, marginTop: 5, padding: 9, borderRadius: 8, resize: 'vertical', background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } })),
-          h('section', { className: 'aq-content-card aq-teacher-card', style: cardStyle, 'aria-labelledby': 'aq-teacher-preview-heading' }, h('div', { className: 'aq-section-kicker aq-teacher-kicker', style: headerStyle }, 'Live assignment preview'), h('h2', { id: 'aq-teacher-preview-heading', style: { margin: '0 0 6px', color: '#f8fafc', fontSize: 20 } }, template.title), h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } }, [teacherPlan.duration + ' minutes', teacherPlan.audience === 'middle' ? 'Middle grades' : teacherPlan.audience === 'adult' ? 'Adult / workforce' : 'High school', template.checkpoint].map(function(tag) { return h('span', { key: tag, style: { padding: '3px 7px', borderRadius: 999, color: '#d1fae5', background: 'rgba(45,212,191,.1)', border: '1px solid #5eead4', fontSize: 10, fontWeight: 850 } }, tag); })), h('h3', { style: { margin: '0 0 4px', color: '#c4b5fd', fontSize: 12.5 } }, 'Driving question'), h('p', { style: { margin: '0 0 11px', color: '#e2e8f0', fontSize: 12.5, lineHeight: 1.55 } }, template.question), h('h3', { style: { margin: '0 0 5px', color: '#c4b5fd', fontSize: 12.5 } }, 'Investigation sequence'), h('ol', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 12, lineHeight: 1.65 } }, template.steps.map(function(step, index) { return h('li', { key: index }, step); })), teacherPlan.includeReflection ? h('div', { style: { marginTop: 11, padding: 9, borderRadius: 8, background: 'rgba(96,165,250,.1)', border: '1px solid #60a5fa', color: '#dbeafe', fontSize: 11.5 } }, h('b', null, 'Evidence prompt: '), 'What changed, what evidence supports your explanation, and what would you test next?') : null, h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 13 } }, h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(template.route, 'Opening the student investigation workspace'); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 900 } }, 'Open student workspace →'), h('button', { type: 'button', className: 'aq-btn', onClick: exportTeacherPlan, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: '#c4b5fd', color: '#24133f', border: '1px solid #ede9fe', fontSize: 12, fontWeight: 900 } }, 'Download printable assignment')))));
+            h('label', { style: { display: 'block', marginBottom: 9, color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'Investigation', h('select', { id: 'aq-teacher-template', value: teacherPlan.templateId, onChange: function(event) { persistTeacherPlan({ templateId: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: 8, borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } }, TEACHER_LAB_TEMPLATES.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }))),
+            h('label', { style: { display: 'block', marginBottom: 9, color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'Audience', h('select', { value: teacherPlan.audience, onChange: function(event) { persistTeacherPlan({ audience: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: 8, borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } }, h('option', { value: 'middle' }, 'Middle grades'), h('option', { value: 'high' }, 'High school'), h('option', { value: 'adult' }, 'Adult / workforce'))),
+            h('label', { style: { display: 'block', marginBottom: 9, color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'Duration', h('select', { value: teacherPlan.duration, onChange: function(event) { persistTeacherPlan({ duration: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: 8, borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } }, h('option', { value: '30' }, '30 minutes'), h('option', { value: '45' }, '45 minutes'), h('option', { value: '90' }, '90 minutes / two periods'))),
+            h('label', { style: { display: 'flex', gap: 8, alignItems: 'center', minHeight: 38, color: '#e2e8f0', fontSize: 12, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: teacherPlan.includeReflection, onChange: function(event) { persistTeacherPlan({ includeReflection: event.target.checked }); } }), 'Include evidence reflection'),
+            h('label', { style: { display: 'flex', gap: 8, alignItems: 'center', minHeight: 38, color: '#e2e8f0', fontSize: 12, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: teacherPlan.includeCheckpoint, onChange: function(event) { persistTeacherPlan({ includeCheckpoint: event.target.checked }); } }), 'Include knowledge checkpoint'),
+            h('label', { htmlFor: 'aq-teacher-note', style: { display: 'block', marginTop: 8, color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'Teacher note (optional)'), h('textarea', { id: 'aq-teacher-note', rows: 4, maxLength: 600, value: teacherPlan.teacherNote, onChange: function(event) { persistTeacherPlan({ teacherNote: event.target.value }); }, placeholder: 'Add local context, materials, accommodations, or due-date guidance…', style: { boxSizing: 'border-box', width: '100%', minHeight: 90, marginTop: 5, padding: 9, borderRadius: 8, resize: 'vertical', background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } })),
+          h('section', { className: 'aq-content-card aq-teacher-card', style: cardStyle, 'aria-labelledby': 'aq-teacher-preview-heading' }, h('div', { className: 'aq-section-kicker aq-teacher-kicker', style: headerStyle }, 'Live assignment preview'), h('h2', { id: 'aq-teacher-preview-heading', style: { margin: '0 0 6px', color: '#f8fafc', fontSize: 20 } }, template.title), h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } }, [teacherPlan.duration + ' minutes', teacherPlan.audience === 'middle' ? 'Middle grades' : teacherPlan.audience === 'adult' ? 'Adult / workforce' : 'High school', template.checkpoint].map(function(tag) { return h('span', { key: tag, style: { padding: '3px 7px', borderRadius: 999, color: '#d1fae5', background: 'rgba(45,212,191,.1)', border: '1px solid #5eead4', fontSize: 12, fontWeight: 850 } }, tag); })), h('h3', { style: { margin: '0 0 4px', color: '#c4b5fd', fontSize: 12.5 } }, 'Driving question'), h('p', { style: { margin: '0 0 11px', color: '#e2e8f0', fontSize: 12.5, lineHeight: 1.55 } }, template.question), h('h3', { style: { margin: '0 0 5px', color: '#c4b5fd', fontSize: 12.5 } }, 'Investigation sequence'), h('ol', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 12, lineHeight: 1.65 } }, template.steps.map(function(step, index) { return h('li', { key: index }, step); })), teacherPlan.includeReflection ? h('div', { style: { marginTop: 11, padding: 9, borderRadius: 8, background: 'rgba(96,165,250,.1)', border: '1px solid #60a5fa', color: '#dbeafe', fontSize: 12 } }, h('b', null, 'Evidence prompt: '), 'What changed, what evidence supports your explanation, and what would you test next?') : null, h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 13 } }, h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(template.route, 'Opening the student investigation workspace'); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 900 } }, 'Open student workspace →'), h('button', { type: 'button', className: 'aq-btn', onClick: exportTeacherPlan, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: '#c4b5fd', color: '#24133f', border: '1px solid #ede9fe', fontSize: 12, fontWeight: 900 } }, 'Download printable assignment')))));
     }
     function fieldScenarioDiagram(scenario) {
       var current = aqDescribeMissionCurrent(scenario.id);
@@ -12564,8 +12565,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('text', { x: 285, y: 91, textAnchor: 'middle', fill: '#f8fafc', fontSize: 10.5, fontWeight: 900 }, flowLabel),
           h('text', { x: 12, y: 20, fill: '#0f172a', fontSize: 11, fontWeight: 900 }, scenario.weather),
           h('text', { x: 12, y: 36, fill: '#334155', fontSize: 10.5, fontWeight: 850 }, scenario.tide)),
-        h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 10.8, lineHeight: 1.45 } }, 'Conceptual mission briefing - not to scale. Measure both depths instead of predicting the profile.'),
-        h('dl', { className: 'aq-field-current-key', style: { display: 'grid', gap: 6, margin: '8px 0 0', padding: 9, borderRadius: 8, background: '#061a18', border: '1px solid #527a75', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.45 } }, [
+        h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, 'Conceptual mission briefing - not to scale. Measure both depths instead of predicting the profile.'),
+        h('dl', { className: 'aq-field-current-key', style: { display: 'grid', gap: 6, margin: '8px 0 0', padding: 9, borderRadius: 8, background: '#061a18', border: '1px solid #527a75', color: '#e2e8f0', fontSize: 12, lineHeight: 1.45 } }, [
           { term: 'Current direction', value: current.direction },
           { term: 'Piloting effect', value: current.effect },
           { term: 'Operational clue', value: current.operationalClue }
@@ -12599,8 +12600,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       },
         h('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 7, alignItems: 'start' } },
           h('b', { style: { fontSize: 12.5 } }, scenario.name),
-          h('span', { style: { padding: '2px 5px', borderRadius: 999, background: selected ? 'rgba(236,254,255,.2)' : '#123a36', color: '#dbeafe', fontSize: 9, fontWeight: 900 } }, scenario.difficulty + (selected ? ' - Selected' : ''))),
-        h('span', { style: { display: 'block', marginTop: 5, color: '#dbeafe', fontSize: 10.5, lineHeight: 1.35 } }, scenario.tide + ' - ' + scenario.weather + ' - ' + scenario.currentLabel));
+          h('span', { style: { padding: '2px 5px', borderRadius: 999, background: selected ? 'rgba(236,254,255,.2)' : '#123a36', color: '#dbeafe', fontSize: 12, fontWeight: 900 } }, scenario.difficulty + (selected ? ' - Selected' : ''))),
+        h('span', { style: { display: 'block', marginTop: 5, color: '#dbeafe', fontSize: 12, lineHeight: 1.35 } }, scenario.tide + ' - ' + scenario.weather + ' - ' + scenario.currentLabel));
     }
 
     function fieldMissionBriefing() {
@@ -12612,11 +12613,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', null,
             h('h2', { id: 'aq-field-briefing-heading', style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 20 } }, 'Choose a simulated field day'),
             h('p', { style: { margin: 0, maxWidth: 760, color: '#dbeafe', fontSize: 12, lineHeight: 1.55 } }, 'The same condition drives the 3D environment, current, paired probe record, guided route, and debrief. Replay a different day to compare evidence.')),
-          h('span', { style: { padding: '4px 8px', borderRadius: 999, background: '#0b2b28', color: '#99f6e4', border: '1px solid #5eead4', fontSize: 10, fontWeight: 900 } }, '3 replayable field days')),
+          h('span', { style: { padding: '4px 8px', borderRadius: 999, background: '#0b2b28', color: '#99f6e4', border: '1px solid #5eead4', fontSize: 12, fontWeight: 900 } }, '3 replayable field days')),
         h('fieldset', { className: 'aq-field-scenario-fieldset', style: { margin: '12px 0 0', padding: 10, borderRadius: 9, border: '1px solid #789b97' } },
           h('legend', { id: 'aq-field-scenario-legend', style: { padding: '0 6px', color: '#f8fafc', fontSize: 12, fontWeight: 900 } }, 'Select one condition for either mission mode'),
           h('div', { role: 'radiogroup', 'aria-labelledby': 'aq-field-scenario-legend', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 } }, AQ_FIELD_MISSION_SCENARIOS.map(function(item, index) { return fieldScenarioChoice(item, index, locked); })),
-          locked ? h('div', { role: 'status', style: { marginTop: 7, color: '#fde68a', fontSize: 10.5 } }, 'Condition locked during this run. Finish or exit to choose another field day.') : null),
+          locked ? h('div', { role: 'status', style: { marginTop: 7, color: '#fde68a', fontSize: 12 } }, 'Condition locked during this run. Finish or exit to choose another field day.') : null),
         h('section', { className: 'aq-field-evidence-loop', 'aria-labelledby': 'aq-field-evidence-loop-heading', style: { marginTop: 10, padding: 10, borderRadius: 9, background: 'rgba(4,18,18,.58)', border: '1px solid #527a75' } },
           h('h3', { id: 'aq-field-evidence-loop-heading', style: { margin: '0 0 7px', color: '#bae6fd', fontSize: 12.5 } }, 'Mission evidence loop'),
           h('ol', { style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 7, margin: 0, padding: 0, listStyle: 'none' } }, [
@@ -12625,17 +12626,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             { title: 'Verify', note: 'Choose the strongest next check' },
             { title: 'Document', note: 'Return and save the evidence' }
           ].map(function(stage, index) { return h('li', { key: stage.title, style: { position: 'relative', minHeight: 66, boxSizing: 'border-box', padding: '8px 8px 8px 34px', borderRadius: 8, background: '#061a18', border: '1px solid #416c67', color: '#e2e8f0' } },
-            h('span', { 'aria-hidden': true, style: { position: 'absolute', top: 8, left: 8, width: 20, height: 20, display: 'grid', placeItems: 'center', borderRadius: 999, background: '#155e75', color: '#cffafe', fontSize: 10, fontWeight: 950 } }, index + 1),
-            h('b', { style: { display: 'block', color: '#f8fafc', fontSize: 11 } }, stage.title),
-            h('span', { style: { display: 'block', marginTop: 3, color: '#cbd5e1', fontSize: 9.8, lineHeight: 1.35 } }, stage.note)); }))),
+            h('span', { 'aria-hidden': true, style: { position: 'absolute', top: 8, left: 8, width: 20, height: 20, display: 'grid', placeItems: 'center', borderRadius: 999, background: '#155e75', color: '#cffafe', fontSize: 12, fontWeight: 950 } }, index + 1),
+            h('b', { style: { display: 'block', color: '#f8fafc', fontSize: 12 } }, stage.title),
+            h('span', { style: { display: 'block', marginTop: 3, color: '#cbd5e1', fontSize: 12, lineHeight: 1.35 } }, stage.note)); }))),
         h('div', { className: 'aq-field-condition-layout', style: { display: 'grid', gridTemplateColumns: 'minmax(260px,.9fr) minmax(0,1.1fr)', gap: 12, alignItems: 'center', marginTop: 11 } },
           fieldScenarioDiagram(scenario),
           h('section', { 'aria-labelledby': 'aq-selected-field-heading', style: { padding: 11, borderRadius: 10, background: '#031714', border: '1px solid #527a75' } },
             h('h3', { id: 'aq-selected-field-heading', style: { margin: '0 0 7px', color: '#bae6fd', fontSize: 15 } }, scenario.name),
-            h('div', { className: 'aq-field-condition-tags', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, [scenario.tide, scenario.weather, scenario.currentLabel].map(function(label) { return h('span', { key: label, style: { padding: '3px 6px', borderRadius: 999, color: '#d1fae5', background: '#123a36', border: '1px solid #527a75', fontSize: 10, fontWeight: 850 } }, label); })),
+            h('div', { className: 'aq-field-condition-tags', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, [scenario.tide, scenario.weather, scenario.currentLabel].map(function(label) { return h('span', { key: label, style: { padding: '3px 6px', borderRadius: 999, color: '#d1fae5', background: '#123a36', border: '1px solid #527a75', fontSize: 12, fontWeight: 850 } }, label); })),
             h('p', { style: { margin: '9px 0 0', color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, scenario.briefing),
-            h('div', { style: { marginTop: 9, padding: 9, borderRadius: 8, background: 'rgba(30,64,175,.18)', color: '#dbeafe', border: '1px solid #60a5fa', fontSize: 11.5, lineHeight: 1.5 } }, h('b', null, 'Evidence question: '), scenario.question),
-            h('p', { style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'Illustrative learning conditions, not a forecast, closure notice, or harvest-status determination.'))));
+            h('div', { style: { marginTop: 9, padding: 9, borderRadius: 8, background: 'rgba(30,64,175,.18)', color: '#dbeafe', border: '1px solid #60a5fa', fontSize: 12, lineHeight: 1.5 } }, h('b', null, 'Evidence question: '), scenario.question),
+            h('p', { style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, 'Illustrative learning conditions, not a forecast, closure notice, or harvest-status determination.'))));
     }
     function missionDecisionPanel(config) {
       var scenario = aqFieldMissionScenario(config.scenarioId);
@@ -12651,23 +12652,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var prefix = config.idPrefix;
       var selectedId = String(config.selectedId || '');
       return h('section', { className: 'aq-mission-decision-panel ' + (config.className || ''), 'aria-labelledby': prefix + '-heading', style: { marginTop: 10, padding: 11, borderRadius: 10, background: '#041b22', border: '1px solid #67e8f9', boxShadow: '0 12px 28px rgba(0,0,0,.24)' } },
-        h('div', { className: 'aq-section-kicker', style: { color: '#67e8f9', fontSize: 10, fontWeight: 950, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Evidence checkpoint'),
+        h('div', { className: 'aq-section-kicker', style: { color: '#67e8f9', fontSize: 12, fontWeight: 950, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Evidence checkpoint'),
         h('h3', { id: prefix + '-heading', ref: config.focusRef, tabIndex: -1, style: { margin: '4px 0 5px', color: '#f8fafc', fontSize: 16, outline: 'none' } }, 'Choose the best next verification'),
-        h('p', { style: { margin: '0 0 8px', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } }, scenario.decision.prompt),
+        h('p', { style: { margin: '0 0 8px', color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, scenario.decision.prompt),
         h('div', { className: 'aq-mission-warning-signals', style: { marginBottom: 9, padding: 8, borderRadius: 8, background: '#061a18', border: '1px solid #527a75' } },
-          h('div', { style: { color: '#fde68a', fontSize: 10.5, fontWeight: 900 } }, 'Signals to verify'),
-          warningSignals.length ? h('ul', { style: { margin: '5px 0 0', paddingLeft: 18, color: '#e2e8f0', fontSize: 10.5, lineHeight: 1.5 } }, warningSignals.map(function(signal, index) { return h('li', { key: index }, signal); })) : h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'No threshold flags in this pair. Repeat the same method before treating the pattern as typical.')),
+          h('div', { style: { color: '#fde68a', fontSize: 12, fontWeight: 900 } }, 'Signals to verify'),
+          warningSignals.length ? h('ul', { style: { margin: '5px 0 0', paddingLeft: 18, color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 } }, warningSignals.map(function(signal, index) { return h('li', { key: index }, signal); })) : h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, 'No threshold flags in this pair. Repeat the same method before treating the pattern as typical.')),
         h('fieldset', { style: { margin: 0, padding: 0, border: 0 }, 'aria-describedby': prefix + '-feedback ' + prefix + '-lock' },
-          h('legend', { style: { marginBottom: 6, color: '#bae6fd', fontSize: 11, fontWeight: 900 } }, 'Select one response, then check it'),
+          h('legend', { style: { marginBottom: 6, color: '#bae6fd', fontSize: 12, fontWeight: 900 } }, 'Select one response, then check it'),
           scenario.decision.options.map(function(option) {
             var selected = selectedId === option.id;
-            return h('label', { key: option.id, className: 'aq-mission-decision-option', style: { display: 'flex', alignItems: 'flex-start', gap: 8, minHeight: 44, boxSizing: 'border-box', marginBottom: 6, padding: 8, borderRadius: 8, cursor: 'pointer', background: selected ? 'rgba(34,211,238,.14)' : '#061a18', color: '#f8fafc', border: '1px solid ' + (selected ? '#67e8f9' : '#527a75'), fontSize: 11, lineHeight: 1.4 } },
+            return h('label', { key: option.id, className: 'aq-mission-decision-option', style: { display: 'flex', alignItems: 'flex-start', gap: 8, minHeight: 44, boxSizing: 'border-box', marginBottom: 6, padding: 8, borderRadius: 8, cursor: 'pointer', background: selected ? 'rgba(34,211,238,.14)' : '#061a18', color: '#f8fafc', border: '1px solid ' + (selected ? '#67e8f9' : '#527a75'), fontSize: 12, lineHeight: 1.4 } },
               h('input', { type: 'radio', name: prefix + '-choice', value: option.id, checked: selected, onChange: function() { config.onSelect(option.id); }, style: { marginTop: 2, accentColor: '#22d3ee' } }),
               h('span', null, option.label));
           })),
-        h('div', { id: prefix + '-feedback', role: 'status', 'aria-live': 'polite', style: { minHeight: 34, boxSizing: 'border-box', marginTop: 7, padding: 7, borderRadius: 7, background: 'rgba(30,64,175,.16)', color: '#dbeafe', fontSize: 10.8, lineHeight: 1.45 } }, config.feedback || 'Choose a response to hear why it fits or what needs another look.'),
-        h('p', { id: prefix + '-lock', style: { margin: '7px 0', color: '#fde68a', fontSize: 10.5, lineHeight: 1.4 } }, 'The return leg remains locked until the evidence-aligned response is recorded.'),
-        h('button', { type: 'button', className: 'aq-btn', disabled: !selectedId, onClick: config.onSubmit, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: selectedId ? 'pointer' : 'not-allowed', opacity: selectedId ? 1 : .55, background: '#67e8f9', color: '#082f49', border: '1px solid #cffafe', fontSize: 11, fontWeight: 900 } }, 'Check verification response'));
+        h('div', { id: prefix + '-feedback', role: 'status', 'aria-live': 'polite', style: { minHeight: 34, boxSizing: 'border-box', marginTop: 7, padding: 7, borderRadius: 7, background: 'rgba(30,64,175,.16)', color: '#dbeafe', fontSize: 12, lineHeight: 1.45 } }, config.feedback || 'Choose a response to hear why it fits or what needs another look.'),
+        h('p', { id: prefix + '-lock', style: { margin: '7px 0', color: '#fde68a', fontSize: 12, lineHeight: 1.4 } }, 'The return leg remains locked until the evidence-aligned response is recorded.'),
+        h('button', { type: 'button', className: 'aq-btn', disabled: !selectedId, onClick: config.onSubmit, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: selectedId ? 'pointer' : 'not-allowed', opacity: selectedId ? 1 : .55, background: '#67e8f9', color: '#082f49', border: '1px solid #cffafe', fontSize: 12, fontWeight: 900 } }, 'Check verification response'));
     }
 
     function guided2DMissionPanel() {
@@ -12678,7 +12679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var guidedInvestigationPrompt = guidedScenario.decision.prompt;
       var guidedDecisionResult = guidedMission.decisionId ? aqEvaluateMissionDecision(guidedScenario.id, guidedMission.surfaceReading, guidedMission.cropDepthReading, guidedMission.decisionId) : null;
       function actionButton(label, action, tone) {
-        return h('button', { key: action, type: 'button', className: 'aq-btn', onClick: function() { guidedMissionAction(action); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: tone || '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 11.5, fontWeight: 900 } }, label);
+        return h('button', { key: action, type: 'button', className: 'aq-btn', onClick: function() { guidedMissionAction(action); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: tone || '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 900 } }, label);
       }
       var actions = null;
       if (guidedMission.step === 0) actions = actionButton('Depart the landing', 'depart');
@@ -12686,8 +12687,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       else if (guidedMission.step === 2) actions = h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } }, actionButton('Follow the marked channel', 'channel'), actionButton('Cut close to shore', 'shoreline', '#fecdd3'));
       else if (guidedMission.step === 3) actions = actionButton('Deploy seeded dropper ' + (guidedMission.droppers + 1) + ' of 5', 'dropper', '#fde68a');
       else if (guidedMission.step === 4) actions = h('div', { className: 'aq-guided-sample-actions', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
-        guidedMission.surfaceSampled ? h('span', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(134,239,172,.14)', color: '#bbf7d0', border: '1px solid #4ade80', fontSize: 11.5, fontWeight: 900 } }, '✓ Surface sample') : actionButton('Take surface sample', 'surface-probe', '#bae6fd'),
-        guidedMission.cropDepthSampled ? h('span', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(134,239,172,.14)', color: '#bbf7d0', border: '1px solid #4ade80', fontSize: 11.5, fontWeight: 900 } }, '✓ Crop-depth sample') : actionButton('Take crop-depth sample', 'crop-probe', '#c4b5fd'));
+        guidedMission.surfaceSampled ? h('span', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(134,239,172,.14)', color: '#bbf7d0', border: '1px solid #4ade80', fontSize: 12, fontWeight: 900 } }, '✓ Surface sample') : actionButton('Take surface sample', 'surface-probe', '#bae6fd'),
+        guidedMission.cropDepthSampled ? h('span', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(134,239,172,.14)', color: '#bbf7d0', border: '1px solid #4ade80', fontSize: 12, fontWeight: 900 } }, '✓ Crop-depth sample') : actionButton('Take crop-depth sample', 'crop-probe', '#c4b5fd'));
       else if (guidedMission.step === 5) actions = missionDecisionPanel({
         idPrefix: 'aq-guided-decision',
         className: 'aq-guided-decision-panel',
@@ -12701,8 +12702,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         onSubmit: function() { guidedMissionAction('decision-submit'); }
       });
       else if (guidedMission.step === 6) actions = h('div', { className: 'aq-guided-decision-result', style: { padding: 10, borderRadius: 9, background: 'rgba(134,239,172,.12)', border: '1px solid #4ade80' } },
-        h('div', { style: { color: '#bbf7d0', fontSize: 11.5, fontWeight: 900 } }, 'Verification plan recorded'),
-        h('p', { style: { margin: '5px 0 8px', color: '#e2e8f0', fontSize: 10.8, lineHeight: 1.45 } }, guidedDecisionResult ? guidedDecisionResult.label + '. ' + guidedDecisionResult.outcome : guidedMission.decisionFeedback),
+        h('div', { style: { color: '#bbf7d0', fontSize: 12, fontWeight: 900 } }, 'Verification plan recorded'),
+        h('p', { style: { margin: '5px 0 8px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.45 } }, guidedDecisionResult ? guidedDecisionResult.label + '. ' + guidedDecisionResult.outcome : guidedMission.decisionFeedback),
         h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } }, actionButton('Revise verification response', 'decision-revise', '#bae6fd'), actionButton('Return and secure the vessel', 'return', '#c4b5fd')));
       return h('section', { className: 'aq-content-card aq-guided-mission', style: Object.assign({}, cardStyle, { background: 'linear-gradient(135deg,rgba(4,47,46,.96),rgba(30,41,59,.95))' }), 'aria-labelledby': 'aq-guided-mission-heading' },
         h('div', { className: 'aq-section-kicker aq-guided-kicker', style: headerStyle }, 'Boat Mission · Guided 2D'),
@@ -12710,40 +12711,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', null,
             h('h2', { id: 'aq-guided-mission-heading', style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 20 } }, 'Complete the same field decisions without WebGL'),
             h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.55 } }, 'Buoyage, route choice, lease work, paired depth samples, a verification response, and return-to-dock completion match the 3D mission in a structured, screen-reader-friendly format.')),
-          h('span', { style: { padding: '4px 8px', borderRadius: 999, background: complete ? '#86efac' : '#0b2b28', color: complete ? '#052e24' : '#d1fae5', border: '1px solid #5eead4', fontSize: 10.5, fontWeight: 900 } }, (complete ? 'Route complete' : (guidedMission.step + 1) + ' of 7') + ' - ' + guidedScenario.name)),
-        h('div', { className: 'aq-guided-condition', style: { marginTop: 9, padding: '7px 9px', borderRadius: 8, background: 'rgba(30,64,175,.14)', color: '#dbeafe', border: '1px solid #60a5fa', fontSize: 10.8, lineHeight: 1.45 } }, h('b', null, guidedScenario.name + ': '), guidedScenario.tide + ' - ' + guidedCurrent.narrative),
+          h('span', { style: { padding: '4px 8px', borderRadius: 999, background: complete ? '#86efac' : '#0b2b28', color: complete ? '#052e24' : '#d1fae5', border: '1px solid #5eead4', fontSize: 12, fontWeight: 900 } }, (complete ? 'Route complete' : (guidedMission.step + 1) + ' of 7') + ' - ' + guidedScenario.name)),
+        h('div', { className: 'aq-guided-condition', style: { marginTop: 9, padding: '7px 9px', borderRadius: 8, background: 'rgba(30,64,175,.14)', color: '#dbeafe', border: '1px solid #60a5fa', fontSize: 12, lineHeight: 1.45 } }, h('b', null, guidedScenario.name + ': '), guidedScenario.tide + ' - ' + guidedCurrent.narrative),
         !guidedMission.active ? h('div', { style: { marginTop: 12, padding: 11, borderRadius: 9, background: '#031714', border: '1px solid #527a75' } },
-          h('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 11.5 } }, 'Use this mode when 3D is unavailable, motion is uncomfortable, or you prefer explicit choices and written feedback.'),
+          h('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 12 } }, 'Use this mode when 3D is unavailable, motion is uncomfortable, or you prefer explicit choices and written feedback.'),
           h('button', { type: 'button', className: 'aq-btn', disabled: sim.active || sim.loading, 'aria-disabled': sim.active || sim.loading, onClick: startGuidedMission, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: sim.active || sim.loading ? 'not-allowed' : 'pointer', opacity: sim.active || sim.loading ? .55 : 1, background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 950 } }, completedMissions['mission-1'] ? 'Run guided mission again' : 'Start guided 2D mission')) :
           h('div', { style: { marginTop: 12 } },
-            h('ol', { className: 'aq-guided-steps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 7, margin: 0, padding: 0, listStyle: 'none' } }, steps.map(function(label, index) { var done = guidedMission.step > index, current = guidedMission.step === index; return h('li', { key: label, 'aria-current': current ? 'step' : undefined, style: { padding: 8, borderRadius: 8, background: done ? 'rgba(134,239,172,.12)' : current ? 'rgba(125,211,252,.13)' : '#061a18', color: done ? '#bbf7d0' : current ? '#bae6fd' : '#cbd5e1', border: '1px solid ' + (done ? '#4ade80' : current ? '#7dd3fc' : '#416c67'), fontSize: 10.5, fontWeight: 800 } }, (done ? '✓ ' : (index + 1) + '. ') + label); })),
-            h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 10, padding: 10, minHeight: 44, boxSizing: 'border-box', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 11.5, lineHeight: 1.5 } }, guidedMission.feedback),
+            h('ol', { className: 'aq-guided-steps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 7, margin: 0, padding: 0, listStyle: 'none' } }, steps.map(function(label, index) { var done = guidedMission.step > index, current = guidedMission.step === index; return h('li', { key: label, 'aria-current': current ? 'step' : undefined, style: { padding: 8, borderRadius: 8, background: done ? 'rgba(134,239,172,.12)' : current ? 'rgba(125,211,252,.13)' : '#061a18', color: done ? '#bbf7d0' : current ? '#bae6fd' : '#cbd5e1', border: '1px solid ' + (done ? '#4ade80' : current ? '#7dd3fc' : '#416c67'), fontSize: 12, fontWeight: 800 } }, (done ? '✓ ' : (index + 1) + '. ') + label); })),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 10, padding: 10, minHeight: 44, boxSizing: 'border-box', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, lineHeight: 1.5 } }, guidedMission.feedback),
             guidedMission.surfaceReading && guidedMission.cropDepthReading ? h('section', { className: 'aq-guided-sample-comparison', 'aria-labelledby': 'aq-guided-comparison-heading', style: { marginTop: 10, padding: 10, borderRadius: 9, background: 'rgba(30,64,175,.14)', border: '1px solid #7dd3fc' } },
               h('h3', { id: 'aq-guided-comparison-heading', style: { margin: '0 0 6px', color: '#dbeafe', fontSize: 13 } }, 'Paired depth record'),
-              h('table', { style: { width: '100%', borderCollapse: 'collapse', color: '#e2e8f0', fontSize: 11.5 } },
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', color: '#e2e8f0', fontSize: 12 } },
                 h('caption', { style: { textAlign: 'left', color: '#bae6fd', paddingBottom: 6 } }, guidedScenario.name + ' - illustrative readings from the same lease visit'),
                 h('thead', null, h('tr', null, ['Depth', 'Temp', 'Salinity', 'DO', 'pH', 'Chl-a'].map(function(label) { return h('th', { key: label, scope: 'col', style: { padding: '5px 6px', textAlign: 'left', borderBottom: '1px solid #527a75' } }, label); }))),
                 h('tbody', null, [
                   { label: 'Surface', reading: guidedMission.surfaceReading },
                   { label: 'Crop depth', reading: guidedMission.cropDepthReading }
                 ].map(function(row) { return h('tr', { key: row.label }, h('th', { scope: 'row', style: { padding: '6px', textAlign: 'left', color: '#f8fafc' } }, row.label), h('td', { style: { padding: 6 } }, row.reading.temp + '°C'), h('td', { style: { padding: 6 } }, row.reading.salinity + ' PSU'), h('td', { style: { padding: 6 } }, row.reading.DO + ' mg/L'), h('td', { style: { padding: 6 } }, row.reading.pH), h('td', { style: { padding: 6 } }, row.reading.chlA + ' µg/L')); }))),
-              h('p', { style: { margin: '7px 0 0', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } }, aqDescribeMissionDepthComparison(guidedMission.surfaceReading, guidedMission.cropDepthReading) + ' Treat this visit as evidence, not a universal depth rule.')) : null,
+              h('p', { style: { margin: '7px 0 0', color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, aqDescribeMissionDepthComparison(guidedMission.surfaceReading, guidedMission.cropDepthReading) + ' Treat this visit as evidence, not a universal depth rule.')) : null,
             h('div', { style: { marginTop: 9 } }, actions),
             complete ? h('div', { style: { marginTop: 11, padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #4ade80' } },
-              h('label', { htmlFor: 'aq-guided-reflection', style: { display: 'block', color: '#d1fae5', fontSize: 11.5, fontWeight: 850 } }, 'What navigation or farm-work evidence shows that you completed the mission safely?'),
+              h('label', { htmlFor: 'aq-guided-reflection', style: { display: 'block', color: '#d1fae5', fontSize: 12, fontWeight: 850 } }, 'What navigation or farm-work evidence shows that you completed the mission safely?'),
               h('textarea', { id: 'aq-guided-reflection', rows: 3, maxLength: 600, value: guidedMission.reflection, onChange: function(event) { var value = String(event.target.value || '').slice(0, 600); setGuidedMission(function(previous) { return Object.assign({}, previous, { reflection: value }); }); }, placeholder: 'Explain the buoy choice, route, deployment, depth comparison, or return procedure…', style: { boxSizing: 'border-box', width: '100%', minHeight: 84, marginTop: 6, padding: 9, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),              h('details', { className: 'aq-structured-evidence', style: { marginTop: 9, borderRadius: 8, background: '#031714', border: '1px solid #527a75', overflow: 'hidden' } },
-                h('summary', { style: { minHeight: 40, boxSizing: 'border-box', padding: '8px 9px', cursor: 'pointer', color: '#f8fafc', fontSize: 11, fontWeight: 900, listStylePosition: 'inside' } }, 'Organize your mission evidence · optional'),
+                h('summary', { style: { minHeight: 40, boxSizing: 'border-box', padding: '8px 9px', cursor: 'pointer', color: '#f8fafc', fontSize: 12, fontWeight: 900, listStylePosition: 'inside' } }, 'Organize your mission evidence · optional'),
                 evidenceCoachCard(guidedMission.evidence, guidedInvestigationPrompt, function() { updateGuidedEvidenceField('claim', guidedInvestigationPrompt); }),
                 h('div', { style: { display: 'grid', gap: 8, padding: '0 9px 9px' } },
-                  h('label', { htmlFor: 'aq-guided-claim', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Claim', h('textarea', { id: 'aq-guided-claim', rows: 2, maxLength: 500, value: guidedMission.evidence.claim, onChange: function(event) { updateGuidedEvidenceField('claim', event.target.value); }, placeholder: __alloT('stem.aquaculture.what_did_you_do_safely','What did you do safely?'), style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
-                  h('label', { htmlFor: 'aq-guided-evidence', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Evidence', h('textarea', { id: 'aq-guided-evidence', rows: 2, maxLength: 500, value: guidedMission.evidence.evidence, onChange: function(event) { updateGuidedEvidenceField('evidence', event.target.value); }, placeholder: __alloT('stem.aquaculture.which_buoy_route_probe_or_deployment_record','Which buoy, route, probe, or deployment record shows it?'), style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
-                  h('label', { htmlFor: 'aq-guided-reasoning', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Reasoning', h('textarea', { id: 'aq-guided-reasoning', rows: 2, maxLength: 500, value: guidedMission.evidence.reasoning, onChange: function(event) { updateGuidedEvidenceField('reasoning', event.target.value); }, placeholder: __alloT('stem.aquaculture.why_did_those_choices_reduce_risk','Why did those choices reduce risk?'), style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
-                  h('label', { htmlFor: 'aq-guided-next-test', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Next test', h('textarea', { id: 'aq-guided-next-test', rows: 2, maxLength: 500, value: guidedMission.evidence.nextTest, onChange: function(event) { updateGuidedEvidenceField('nextTest', event.target.value); }, placeholder: __alloT('stem.aquaculture.what_would_you_practice_or_measure_next','What would you practice or measure next?'), style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })))),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: guidedMission.reflection.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5 } }, guidedMission.reflection.trim().length + '/600 characters · 20 needed'), h('button', { type: 'button', className: 'aq-btn', disabled: guidedMission.reflection.trim().length < 20, onClick: completeGuidedMission, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: guidedMission.reflection.trim().length >= 20 ? 'pointer' : 'not-allowed', opacity: guidedMission.reflection.trim().length >= 20 ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 11.5, fontWeight: 900 } }, 'Save mission evidence'))) : null,
-            complete && completedMissions['mission-1'] && completedMissions['mission-1'].mode === 'guided-2d' ? h('button', { type: 'button', className: 'aq-btn', onClick: function() { openMissionEvidenceAtHealth('crop'); }, style: { minHeight: 42, marginTop: 9, marginRight: 8, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 11.5, fontWeight: 900 } }, 'Analyze saved samples \u2192') : null,
+                  h('label', { htmlFor: 'aq-guided-claim', style: { color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'Claim', h('textarea', { id: 'aq-guided-claim', rows: 2, maxLength: 500, value: guidedMission.evidence.claim, onChange: function(event) { updateGuidedEvidenceField('claim', event.target.value); }, placeholder: __alloT('stem.aquaculture.what_did_you_do_safely','What did you do safely?'), style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
+                  h('label', { htmlFor: 'aq-guided-evidence', style: { color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'Evidence', h('textarea', { id: 'aq-guided-evidence', rows: 2, maxLength: 500, value: guidedMission.evidence.evidence, onChange: function(event) { updateGuidedEvidenceField('evidence', event.target.value); }, placeholder: __alloT('stem.aquaculture.which_buoy_route_probe_or_deployment_record','Which buoy, route, probe, or deployment record shows it?'), style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
+                  h('label', { htmlFor: 'aq-guided-reasoning', style: { color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'Reasoning', h('textarea', { id: 'aq-guided-reasoning', rows: 2, maxLength: 500, value: guidedMission.evidence.reasoning, onChange: function(event) { updateGuidedEvidenceField('reasoning', event.target.value); }, placeholder: __alloT('stem.aquaculture.why_did_those_choices_reduce_risk','Why did those choices reduce risk?'), style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
+                  h('label', { htmlFor: 'aq-guided-next-test', style: { color: '#dbeafe', fontSize: 12, fontWeight: 850 } }, 'Next test', h('textarea', { id: 'aq-guided-next-test', rows: 2, maxLength: 500, value: guidedMission.evidence.nextTest, onChange: function(event) { updateGuidedEvidenceField('nextTest', event.target.value); }, placeholder: __alloT('stem.aquaculture.what_would_you_practice_or_measure_next','What would you practice or measure next?'), style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })))),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: guidedMission.reflection.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 12 } }, guidedMission.reflection.trim().length + '/600 characters · 20 needed'), h('button', { type: 'button', className: 'aq-btn', disabled: guidedMission.reflection.trim().length < 20, onClick: completeGuidedMission, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: guidedMission.reflection.trim().length >= 20 ? 'pointer' : 'not-allowed', opacity: guidedMission.reflection.trim().length >= 20 ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12, fontWeight: 900 } }, 'Save mission evidence'))) : null,
+            complete && completedMissions['mission-1'] && completedMissions['mission-1'].mode === 'guided-2d' ? h('button', { type: 'button', className: 'aq-btn', onClick: function() { openMissionEvidenceAtHealth('crop'); }, style: { minHeight: 42, marginTop: 9, marginRight: 8, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 900 } }, 'Analyze saved samples \u2192') : null,
             h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 9 } },
-              h('button', { type: 'button', className: 'aq-btn', onClick: startGuidedMission, style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 10.5, fontWeight: 850 } }, 'Replay this condition'),
-              complete ? h('button', { type: 'button', className: 'aq-btn', onClick: closeGuidedMission, style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 10.5, fontWeight: 850 } }, 'Choose another condition') : h('button', { type: 'button', className: 'aq-btn', onClick: closeGuidedMission, style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#fecdd3', color: '#4c0519', border: '1px solid #ffe4e6', fontSize: 10.5, fontWeight: 850 } }, 'Exit guided mission'))));
+              h('button', { type: 'button', className: 'aq-btn', onClick: startGuidedMission, style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 850 } }, 'Replay this condition'),
+              complete ? h('button', { type: 'button', className: 'aq-btn', onClick: closeGuidedMission, style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 850 } }, 'Choose another condition') : h('button', { type: 'button', className: 'aq-btn', onClick: closeGuidedMission, style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#fecdd3', color: '#4c0519', border: '1px solid #ffe4e6', fontSize: 12, fontWeight: 850 } }, 'Exit guided mission'))));
     }
     function simTab() {
       var clampRoute = function(value, min, max) { return Math.max(min, Math.min(max, Number(value) || 0)); };
@@ -12782,7 +12783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         guided2DMissionPanel(),
         h('div', { className: 'aq-content-card', style: cardStyle },
           h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Boat Mission · 3D Mode'),
-          h('div', { className: 'aq-3d-condition-banner', style: { margin: '8px 0 2px', padding: '8px 10px', borderRadius: 8, background: '#031714', color: '#dbeafe', border: '1px solid #527a75', fontSize: 11, lineHeight: 1.45 } }, h('b', { style: { color: '#99f6e4' } }, active3DScenario.name + ': '), active3DScenario.weather + ' - ' + active3DCurrent.narrative),
+          h('div', { className: 'aq-3d-condition-banner', style: { margin: '8px 0 2px', padding: '8px 10px', borderRadius: 8, background: '#031714', color: '#dbeafe', border: '1px solid #527a75', fontSize: 12, lineHeight: 1.45 } }, h('b', { style: { color: '#99f6e4' } }, active3DScenario.name + ': '), active3DScenario.weather + ' - ' + active3DCurrent.narrative),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'three.js r128 loads from cdnjs (~600 KB) on demand.'),
             h('button', { className: 'aq-btn', disabled: guidedMission.active, 'aria-disabled': guidedMission.active, onClick: startSim,
@@ -12791,13 +12792,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           sim.loading ? h('div', { role: 'status', 'aria-live': 'polite', style: { textAlign: 'center', padding: 20, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, '\u23F3 Loading three.js\u2026') : null,
           sim.threeError ? h('div', { role: 'alert', style: { padding: 14, background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.4)' } },
             h('div', { style: { color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⚠ 3D engine / WebGL failed to load or initialize'),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'Guided 2D above provides the same mission decisions and evidence without WebGL. Other curriculum tabs remain available.'),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'Guided 2D above provides the same mission decisions and evidence without WebGL. Other curriculum tabs remain available.'),
             h('button', {
               onClick: function() {
                 setSim({ active: false, threeLoaded: false, threeError: false, loading: false });
                 setTimeout(startSim, 50);
               },
-              style: { padding: '6px 12px', background: '#b91c1c', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
+              style: { padding: '6px 12px', background: '#b91c1c', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 'bold', cursor: 'pointer' }
             }, 'Retry 3D Mode')
           ) : null,
           sim.threeLoaded && !sim.active ? h('div', { style: { textAlign: 'center', padding: 14 } },
@@ -12816,7 +12817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(94,234,212,0.55)', color: '#ccfbf1', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
             }, h('span', { 'aria-hidden': 'true' }, '⛶')),
             h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application', 'aria-roledescription': __alloT('stem.aquaculture.interactive_3d_aquaculture_farm_simulator','Interactive 3D aquaculture farm simulator'), 'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight F P C Escape', onPointerDown: function (event) { try { event.currentTarget.focus(); } catch (error) {} }, onFocus: function (event) { event.currentTarget.style.outline = '3px solid #5eead4'; event.currentTarget.style.outlineOffset = '-3px'; }, onBlur: function (event) { event.currentTarget.style.outline = 'none'; }, style: { width: '100%', height: 460, display: 'block', borderRadius: 8, background: active3DScenario.scene.sky, outline: 'none' },
-              'aria-label': active3DScenario.name + ' 3D Bagaduce River farm scene. ' + active3DCurrent.narrative + ' WASD or arrow keys to pilot, F to drop a seeded line, P for a surface sample, and C for a crop-depth sample at the lease.' }),
+              'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_3d_bagaduce_river_farm_scene_wasd_or_arrow_keys', '{name} 3D Bagaduce River farm scene. {narrative} WASD or arrow keys to pilot, F to drop a seeded line, P for a surface sample, and C for a crop-depth sample at the lease.'), { name: active3DScenario.name, narrative: active3DCurrent.narrative }) }),
             hud.decisionPending ? h('div', {
               className: 'aq-3d-decision-wrap',
               style: { position: 'absolute', zIndex: 8, top: 24, left: '50%', transform: 'translateX(-50%)', width: 'min(620px,calc(100% - 40px))', maxHeight: 'calc(100% - 48px)', overflowY: 'auto' }
@@ -12841,7 +12842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('p', { style: { margin: '4px 0', color: '#f8fafc', fontSize: 10.5, lineHeight: 1.4 } }, active3DDecision.label),
               h('p', { style: { margin: '0 0 6px', color: '#cbd5e1', fontSize: 9.8, lineHeight: 1.4 } }, active3DDecision.outcome),
               h('button', { type: 'button', className: 'aq-btn', onClick: reviseFarmDecision, style: { minHeight: 36, padding: '5px 8px', borderRadius: 7, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 9.8, fontWeight: 850 } }, 'Revise verification response')) : null,
-            h('div', { className: 'aq-3d-stats', style: { position: 'absolute', top: 10, left: 10, background: 'rgba(4,18,18,0.88)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } },
+            h('div', { className: 'aq-3d-stats', style: { position: 'absolute', top: 10, left: 10, background: 'rgba(4,18,18,0.88)', padding: '8px 12px', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } },
               h('div', null, 'Field day: ', h('b', { style: { color: '#bae6fd' } }, active3DScenario.name)),
               h('div', null, 'Current: ', h('b', { style: { color: '#bae6fd' } }, active3DCurrent.strength)),
               h('div', null, 'Set: ', h('b', { style: { color: '#bae6fd' } }, active3DCurrent.direction)),
@@ -12858,20 +12859,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 5, color: '#bae6fd', fontSize: 9.5 } },
                 h('span', null, 'Target ' + Math.max(0, Number(hud.targetDistance) || 0).toFixed(0) + ' m'),
                 h('span', null, missionProgressCount + '/6 complete')),
-              h('div', { role: 'progressbar', 'aria-label': __alloT('stem.aquaculture.a11y_3d_mission_progress', '3D mission progress'), 'aria-valuemin': 0, 'aria-valuemax': 6, 'aria-valuenow': missionProgressCount, 'aria-valuetext': missionProgressCount + ' of 6 mission milestones complete', style: { height: 5, margin: '5px 0 6px', borderRadius: 999, overflow: 'hidden', background: '#163f3b' } },
+              h('div', { role: 'progressbar', 'aria-label': __alloT('stem.aquaculture.a11y_3d_mission_progress', '3D mission progress'), 'aria-valuemin': 0, 'aria-valuemax': 6, 'aria-valuenow': missionProgressCount, 'aria-valuetext': __alloAriaFill(__alloT('stem.aquaculture.a11y_of_6_mission_milestones_complete', '{missionProgressCount} of 6 mission milestones complete'), { missionProgressCount: missionProgressCount }), style: { height: 5, margin: '5px 0 6px', borderRadius: 999, overflow: 'hidden', background: '#163f3b' } },
                 h('span', { style: { display: 'block', width: (missionProgressCount / 6 * 100) + '%', height: '100%', background: '#5eead4' } })),
               h('svg', { key: active3DScenario.id, className: 'aq-3d-route-map', viewBox: '0 0 160 108', role: 'img', 'aria-labelledby': 'aq-3d-route-title aq-3d-route-desc', style: { display: 'block', width: '100%', height: 108, borderRadius: 7, background: '#cfe8ed' } },
                 h('title', { id: 'aq-3d-route-title' }, active3DScenario.name + ' live route and current map'),
                 h('desc', { id: 'aq-3d-route-desc' }, 'The boat marker moves between the southern landing, channel buoys, and northern lease. ' + active3DCurrent.narrative + ' The teal current arrow uses map orientation; the dashed purple line points to the mission target.'),
                 h('defs', null, h('marker', { id: 'aq-3d-current-arrowhead', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5.5, markerHeight: 5.5, orient: 'auto-start-reverse' }, h('path', { className: 'aq-current-arrowhead', d: 'M 0 0 L 10 5 L 0 10 z', fill: '#0e7490' }))),
                 h('line', { className: 'aq-3d-current-arrow', x1: routeCurrentX1, y1: routeCurrentY1, x2: routeCurrentX2, y2: routeCurrentY2, stroke: '#0e7490', strokeWidth: active3DCurrent.phase === 'slack' ? 1.5 : 2.4, strokeDasharray: active3DCurrent.phase === 'slack' ? '3 3' : undefined, markerEnd: active3DCurrent.phase === 'slack' ? undefined : 'url(#aq-3d-current-arrowhead)' }),
-                h('text', { x: 24, y: 34, textAnchor: 'middle', fill: '#164e63', fontSize: 7.5, fontWeight: 900 }, routeCurrentLabel),
+                h('text', { x: 24, y: 34, textAnchor: 'middle', fill: '#164e63', fontSize: 12, fontWeight: 900 }, routeCurrentLabel),
                 h('rect', { x: 53, y: 9, width: 54, height: 18, rx: 3, fill: 'rgba(250,204,21,.24)', stroke: '#a16207', strokeWidth: 1.5, strokeDasharray: '3 2' }),
-                h('text', { x: 80, y: 20, textAnchor: 'middle', fill: '#713f12', fontSize: 7, fontWeight: 800 }, 'MUSSEL LEASE'),
+                h('text', { x: 80, y: 20, textAnchor: 'middle', fill: '#713f12', fontSize: 12, fontWeight: 800 }, 'MUSSEL LEASE'),
                 h('path', { d: 'M80 28 V92', fill: 'none', stroke: '#528b9a', strokeWidth: 18, opacity: .28 }),
                 [43, 61, 79].map(function(y) { return h('g', { key: y }, h('polygon', { points: '94,' + (y + 4) + ' 102,' + (y + 4) + ' 98,' + (y - 4), fill: '#c8302a' }), h('rect', { x: 59, y: y - 4, width: 8, height: 8, fill: '#2a7c44' })); }),
                 h('rect', { x: 62, y: 95, width: 36, height: 7, rx: 2, fill: '#8a6c47' }),
-                h('text', { x: 80, y: 93, textAnchor: 'middle', fill: '#3f3f46', fontSize: 7, fontWeight: 700 }, 'LANDING'),
+                h('text', { x: 80, y: 93, textAnchor: 'middle', fill: '#3f3f46', fontSize: 12, fontWeight: 700 }, 'LANDING'),
                 h('line', { x1: routeBoatX, y1: routeBoatY, x2: routeTargetX, y2: routeTargetY, stroke: '#7c3aed', strokeWidth: 1.6, strokeDasharray: '4 3' }),
                 h('circle', { cx: routeTargetX, cy: routeTargetY, r: 4.5, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.7 }),
                 h('g', { transform: 'translate(' + routeBoatX + ' ' + routeBoatY + ') rotate(' + ((Number(hud.heading) || 0) * 180 / Math.PI) + ')' },
@@ -12893,9 +12894,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   h('span', null, 'Sal ' + latest.salinity + ' PSU'),
                   h('span', { style: { color: parseFloat(latest.DO) < 6 ? '#fb923c' : '#86efac' } }, 'DO ' + latest.DO + ' mg/L'),
                   h('span', null, 'pH ' + latest.pH)),
-                n > 1 && h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Dissolved oxygen across ' + n + ' probe readings; latest ' + latest.DO + ' milligrams per liter, danger floor 6.' },
+                n > 1 && h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_dissolved_oxygen_across_probe_readings_latest_milligrams_per', 'Dissolved oxygen across {value1} probe readings; latest {DO} milligrams per liter, danger floor 6.'), { value1: n, DO: latest.DO }) },
                   h('line', { x1: 0, y1: sy(6), x2: W, y2: sy(6), stroke: '#fb923c', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.75 }),
-                  h('text', { x: W - 2, y: sy(6) - 2, textAnchor: 'end', fontSize: 6, fill: '#fb923c' }, '6 mg/L floor'),
+                  h('text', { x: W - 2, y: sy(6) - 2, textAnchor: 'end', fontSize: 12, fill: '#fb923c' }, '6 mg/L floor'),
                   h('polyline', { points: pts, fill: 'none', stroke: '#22d3ee', strokeWidth: 1.5 })),
                 n > 1 && h('div', { style: { fontSize: 8, opacity: 0.7, marginTop: 2 } }, 'Dissolved O₂ across your ' + n + ' probes — warmer water holds less.'));
             })(),
@@ -12903,7 +12904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('div', { className: 'aq-3d-status-log', 'aria-label': __alloT('stem.aquaculture.a11y_recent_mission_events', 'Recent mission events'), style: { position: 'absolute', bottom: 10, left: 10, right: 88, maxHeight: 100, overflowY: 'auto', background: 'rgba(4,18,18,0.9)', padding: 8, borderRadius: 8 } },
               (status || []).slice(-4).map(function(ev, ei) {
                 var color = ev.type === 'probe' ? '#5eead4' : (ev.type === 'comparison' ? '#c4b5fd' : (ev.type === 'dropper' ? '#fbbf24' : (ev.type === 'warning' ? '#fde68a' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#a7f3d0')))));
-                return h('div', { key: ei, style: { fontSize: 11, color: color, marginBottom: 2 } }, '• ' + ev.text);
+                return h('div', { key: ei, style: { fontSize: 12, color: color, marginBottom: 2 } }, '• ' + ev.text);
               })),
             h('div', { className: 'aq-3d-controls', role: 'group', 'aria-label': __alloT('stem.aquaculture.a11y_on_screen_vessel_controls', 'On-screen vessel controls'), style: { position: 'absolute', left: 10, bottom: 116, width: 'min(250px, calc(100% - 20px))', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5, padding: 7, borderRadius: 9, background: 'rgba(4,18,18,0.88)' } },
               [
@@ -12934,14 +12935,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               })
             ),
             h('button', { type: 'button', onClick: stopSim, className: 'aq-btn aq-3d-exit',
-              style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.9)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '✕ Exit sim')) : null,
+              style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.9)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '✕ Exit sim')) : null,
           missionDebrief ? h('section', { className: 'aq-3d-debrief', 'aria-labelledby': 'aq-3d-debrief-heading', style: { marginTop: 12, padding: 13, borderRadius: 10, background: 'linear-gradient(135deg,rgba(30,64,175,.22),rgba(6,95,70,.2))', border: '1px solid #86efac' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'start', flexWrap: 'wrap' } },
               h('div', null,
-                h('div', { style: { color: '#86efac', fontSize: 10, fontWeight: 950, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Mission complete'),
+                h('div', { style: { color: '#86efac', fontSize: 12, fontWeight: 950, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Mission complete'),
                 h('h3', { id: 'aq-3d-debrief-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 20 } }, 'Captain’s debrief'),
-                h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } }, (debriefScenario ? debriefScenario.name + ' - ' + debriefScenario.tide + '. ' : '') + (debriefCurrent ? debriefCurrent.narrative + ' ' : '') + 'The route result is saved. Review what the mission measured, then add an optional evidence note.')),
-              h('div', { style: { display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'flex-end' } }, debriefBadges.map(function(badge) { return h('span', { key: badge, style: { padding: '4px 7px', borderRadius: 999, background: 'rgba(134,239,172,.14)', color: '#bbf7d0', border: '1px solid #4ade80', fontSize: 9.5, fontWeight: 850 } }, badge); }))),
+                h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, (debriefScenario ? debriefScenario.name + ' - ' + debriefScenario.tide + '. ' : '') + (debriefCurrent ? debriefCurrent.narrative + ' ' : '') + 'The route result is saved. Review what the mission measured, then add an optional evidence note.')),
+              h('div', { style: { display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'flex-end' } }, debriefBadges.map(function(badge) { return h('span', { key: badge, style: { padding: '4px 7px', borderRadius: 999, background: 'rgba(134,239,172,.14)', color: '#bbf7d0', border: '1px solid #4ade80', fontSize: 12, fontWeight: 850 } }, badge); }))),
             h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 7, margin: '10px 0 0' } },
               [
                 { label: 'Elapsed', value: missionDebrief.elapsedSeconds + ' sec' },
@@ -12950,28 +12951,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 { label: 'Tidal set', value: debriefCurrent ? debriefCurrent.phase.toUpperCase() + ' - ' + debriefCurrent.strength : 'Not recorded' },
                 { label: 'Verification attempts', value: String(missionDebrief.decisionAttempts || 0) },
                 { label: 'Droppers', value: missionDebrief.droppersDeployed + '/5' }
-              ].map(function(metric) { return h('div', { key: metric.label, style: { padding: 8, borderRadius: 8, background: '#031714', border: '1px solid #527a75' } }, h('dt', { style: { color: '#94a3b8', fontSize: 9.5 } }, metric.label), h('dd', { style: { margin: '2px 0 0', color: '#f8fafc', fontSize: 14, fontWeight: 900 } }, metric.value)); })),
+              ].map(function(metric) { return h('div', { key: metric.label, style: { padding: 8, borderRadius: 8, background: '#031714', border: '1px solid #527a75' } }, h('dt', { style: { color: '#94a3b8', fontSize: 12 } }, metric.label), h('dd', { style: { margin: '2px 0 0', color: '#f8fafc', fontSize: 14, fontWeight: 900 } }, metric.value)); })),
             debriefSurface && debriefCrop ? h('section', { className: 'aq-3d-depth-debrief', 'aria-labelledby': 'aq-3d-depth-heading', style: { marginTop: 10, padding: 10, borderRadius: 9, background: '#031714', border: '1px solid #7dd3fc' } },
               h('h4', { id: 'aq-3d-depth-heading', style: { margin: '0 0 6px', color: '#bae6fd', fontSize: 12.5 } }, 'Surface ↔ crop-depth comparison'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 7 } },
-                [{ label: 'Surface', reading: debriefSurface }, { label: 'Crop depth', reading: debriefCrop }].map(function(sample) { return h('div', { key: sample.label, style: { padding: 8, borderRadius: 7, background: '#061a18', color: '#e2e8f0', fontSize: 10.5, lineHeight: 1.45 } }, h('b', { style: { color: '#f8fafc' } }, sample.label), h('div', null, sample.reading.temp + '°C · DO ' + sample.reading.DO + ' mg/L'), h('div', null, sample.reading.salinity + ' PSU · pH ' + sample.reading.pH)); })),
-              h('p', { style: { margin: '7px 0 0', color: '#dbeafe', fontSize: 11, lineHeight: 1.45 } }, aqDescribeMissionDepthComparison(debriefSurface, debriefCrop) + ' This pair describes one simulated visit; verify patterns with repeated field measurements.')) : null,
+                [{ label: 'Surface', reading: debriefSurface }, { label: 'Crop depth', reading: debriefCrop }].map(function(sample) { return h('div', { key: sample.label, style: { padding: 8, borderRadius: 7, background: '#061a18', color: '#e2e8f0', fontSize: 12, lineHeight: 1.45 } }, h('b', { style: { color: '#f8fafc' } }, sample.label), h('div', null, sample.reading.temp + '°C · DO ' + sample.reading.DO + ' mg/L'), h('div', null, sample.reading.salinity + ' PSU · pH ' + sample.reading.pH)); })),
+              h('p', { style: { margin: '7px 0 0', color: '#dbeafe', fontSize: 12, lineHeight: 1.45 } }, aqDescribeMissionDepthComparison(debriefSurface, debriefCrop) + ' This pair describes one simulated visit; verify patterns with repeated field measurements.')) : null,
             debriefDecision ? h('section', { className: 'aq-3d-decision-debrief', 'aria-labelledby': 'aq-3d-decision-debrief-heading', style: { marginTop: 10, padding: 10, borderRadius: 9, background: 'rgba(134,239,172,.1)', border: '1px solid #4ade80' } },
               h('h4', { id: 'aq-3d-decision-debrief-heading', style: { margin: '0 0 5px', color: '#bbf7d0', fontSize: 12.5 } }, 'Recorded verification response'),
-              h('p', { style: { margin: 0, color: '#f8fafc', fontSize: 11.5, fontWeight: 850, lineHeight: 1.45 } }, debriefDecision.label),
-              h('p', { style: { margin: '4px 0 0', color: '#dbeafe', fontSize: 10.8, lineHeight: 1.45 } }, debriefDecision.outcome),
-              h('p', { style: { margin: '5px 0 0', color: '#cbd5e1', fontSize: 10 } }, missionDebrief.decisionAttempts + ' response attempt' + (missionDebrief.decisionAttempts === 1 ? '' : 's') + ' recorded.')) : null,
-            h('label', { htmlFor: 'aq-3d-debrief-note', style: { display: 'block', marginTop: 10, color: '#d1fae5', fontSize: 11.5, fontWeight: 850 } }, 'Optional captain’s evidence note'),
+              h('p', { style: { margin: 0, color: '#f8fafc', fontSize: 12, fontWeight: 850, lineHeight: 1.45 } }, debriefDecision.label),
+              h('p', { style: { margin: '4px 0 0', color: '#dbeafe', fontSize: 12, lineHeight: 1.45 } }, debriefDecision.outcome),
+              h('p', { style: { margin: '5px 0 0', color: '#cbd5e1', fontSize: 12 } }, missionDebrief.decisionAttempts + ' response attempt' + (missionDebrief.decisionAttempts === 1 ? '' : 's') + ' recorded.')) : null,
+            h('label', { htmlFor: 'aq-3d-debrief-note', style: { display: 'block', marginTop: 10, color: '#d1fae5', fontSize: 12, fontWeight: 850 } }, 'Optional captain’s evidence note'),
             h('textarea', { id: 'aq-3d-debrief-note', rows: 3, maxLength: 600, value: missionDebriefNote, onChange: function(event) { setMissionDebriefNote(String(event.target.value || '').slice(0, 600)); }, placeholder: __alloT('stem.aquaculture.what_navigation_choice_or_paired_reading_bes','What navigation choice or paired reading best supports your conclusion?'), style: { boxSizing: 'border-box', width: '100%', minHeight: 80, marginTop: 5, padding: 9, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12.5 } }),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } },
-              h('span', { style: { color: missionDebriefNote.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5 } }, missionDebriefNote.length + '/600 characters · 20 needed to save'),
+              h('span', { style: { color: missionDebriefNote.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 12 } }, missionDebriefNote.length + '/600 characters · 20 needed to save'),
               h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
-                h('button', { type: 'button', className: 'aq-btn', disabled: missionDebriefNote.trim().length < 20, onClick: save3DMissionNote, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: missionDebriefNote.trim().length >= 20 ? 'pointer' : 'not-allowed', opacity: missionDebriefNote.trim().length >= 20 ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 11, fontWeight: 900 } }, 'Save captain’s note'),
-                h('button', { type: 'button', className: 'aq-btn', onClick: function() { openMissionEvidenceAtHealth('crop', missionDebrief); }, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 11, fontWeight: 900 } }, 'Analyze crop-depth evidence \u2192')))) : null
+                h('button', { type: 'button', className: 'aq-btn', disabled: missionDebriefNote.trim().length < 20, onClick: save3DMissionNote, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: missionDebriefNote.trim().length >= 20 ? 'pointer' : 'not-allowed', opacity: missionDebriefNote.trim().length >= 20 ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12, fontWeight: 900 } }, 'Save captain’s note'),
+                h('button', { type: 'button', className: 'aq-btn', onClick: function() { openMissionEvidenceAtHealth('crop', missionDebrief); }, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 900 } }, 'Analyze crop-depth evidence \u2192')))) : null
         ),
         h('div', { className: 'aq-content-card', style: cardStyle },
           h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Controls'),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8, fontSize: 11 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8, fontSize: 12 } },
             [
               { k: 'W / ↑', d: 'Throttle forward', c: '#86efac' },
               { k: 'S / ↓', d: 'Reverse', c: '#fb923c' },
@@ -13002,19 +13003,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('text', { x: 18, y: 75, fill: '#3b4d2b', fontSize: 10, fontStyle: 'italic' }, 'Bagaduce River — narrow, ~3 nm long'),
           h('path', { d: 'M335 300 V112', fill: 'none', stroke: '#7c3aed', strokeWidth: 2, strokeDasharray: '6 4' }),
           h('polygon', { points: '335,103 328,116 342,116', fill: '#7c3aed' }),
-          h('text', { x: 346, y: 205, fill: '#5b21b6', fontSize: 9, fontWeight: 700 }, 'Inbound / returning'),
+          h('text', { x: 346, y: 205, fill: '#5b21b6', fontSize: 10, fontWeight: 700 }, 'Inbound / returning'),
           // Channel buoys: red is east/starboard when traveling north from the landing.
           h('g', null,
             [{ x: 350, y: 125 }, { x: 350, y: 190 }, { x: 350, y: 255 }].map(function(b, i) {
               return h('g', { key: 'r' + i },
                 h('polygon', { points: (b.x - 7) + ',' + (b.y + 10) + ' ' + (b.x + 7) + ',' + (b.y + 10) + ' ' + b.x + ',' + (b.y - 4), fill: '#c8302a' }),
-                h('text', { x: b.x + 12, y: b.y + 5, fill: '#9b1c17', fontSize: 9, fontWeight: 700 }, 'R' + (i * 2 + 2)));
+                h('text', { x: b.x + 12, y: b.y + 5, fill: '#9b1c17', fontSize: 10, fontWeight: 700 }, 'R' + (i * 2 + 2)));
             })),
           h('g', null,
             [{ x: 250, y: 125 }, { x: 250, y: 190 }, { x: 250, y: 255 }].map(function(b, i) {
               return h('g', { key: 'g' + i },
                 h('rect', { x: b.x - 6, y: b.y - 4, width: 12, height: 14, fill: '#2a7c44' }),
-                h('text', { x: b.x - 12, y: b.y + 5, fill: '#155b2f', fontSize: 9, fontWeight: 700, textAnchor: 'end' }, 'G' + (i * 2 + 1)));
+                h('text', { x: b.x - 12, y: b.y + 5, fill: '#155b2f', fontSize: 10, fontWeight: 700, textAnchor: 'end' }, 'G' + (i * 2 + 1)));
             })),
           // Lease rectangle
           h('rect', { x: 270, y: 70, width: 60, height: 30, fill: 'none', stroke: '#a16207', strokeWidth: 2, strokeDasharray: '4,3' }),
@@ -13024,7 +13025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('circle', { cx: 320, cy: 95, r: 3, fill: '#a16207' }),
           h('text', { x: 340, y: 88, fill: '#713f12', fontSize: 10, fontWeight: 700 }, 'Your lease (1 acre)'),
           // Depth labels
-          h('text', { x: 130, y: 175, fill: '#5a8ba5', fontSize: 9 }, 'depths 4-12 m'),
+          h('text', { x: 130, y: 175, fill: '#5a8ba5', fontSize: 10 }, 'depths 4-12 m'),
           // Compass
           h('g', { transform: 'translate(70, 360)' },
             h('circle', { cx: 0, cy: 0, r: 22, fill: 'rgba(255,255,255,0.5)', stroke: '#5a8ba5', strokeWidth: 1 }),
@@ -13043,16 +13044,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, s.emoji),
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4' } }, s.name),
-                  h('div', { style: { fontSize: 11, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.sci),
+                  h('div', { style: { fontSize: 12, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.sci),
                   h('span', { className: 'aq-pill' }, s.method))),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Growth time: '), s.growthMonths),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Yield: '), s.yield),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Market: '), s.marketPrice),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Reference ranges: '), s.tempRange + ' · ' + s.salinityRange),
-              h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Stressors: '), (s.stressors || []).join(' · ')),
-              h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(100,116,139,0.25)' } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Growth time: '), s.growthMonths),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Yield: '), s.yield),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Market: '), s.marketPrice),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Reference ranges: '), s.tempRange + ' · ' + s.salinityRange),
+              h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Stressors: '), (s.stressors || []).join(' · ')),
+              h('div', { style: { fontSize: 12, color: '#86efac', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(100,116,139,0.25)' } },
                 h('b', null, 'Why Maine: '), s.whyMaine,
-                h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginLeft: 6 } }, '(' + s.cite + ')')));
+                h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginLeft: 6 } }, '(' + s.cite + ')')));
           })));
     }
 
@@ -13064,23 +13065,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           WATER_QUALITY.map(function(p, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 8 } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, p.param + ' (' + p.symbol + ')'),
-              h('div', { style: { fontSize: 11, color: '#bef264', marginBottom: 3 } }, h('b', null, 'Teaching reference: '), p.optimal),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Effect: '), p.effect),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Monitor: '), p.monitor),
-              h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Action: '), p.action));
+              h('div', { style: { fontSize: 12, color: '#bef264', marginBottom: 3 } }, h('b', null, 'Teaching reference: '), p.optimal),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Effect: '), p.effect),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Monitor: '), p.monitor),
+              h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Action: '), p.action));
           })),
         probes && probes.length ? h('div', { className: 'aq-content-card', style: cardStyle },
           h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Your probe readings (' + probes.length + ')'),
           probes.slice(-10).reverse().map(function(r, i) {
             var ts = new Date(r.timestamp);
-            return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11 } },
+            return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 12 } },
               h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ts.toLocaleString()),
               h('div', null, 'T=', h('b', { style: { color: '#86efac' } }, r.temp + '°C'),
                 ' · S=', h('b', { style: { color: '#bae6fd' } }, r.salinity + ' PSU'),
                 ' · DO=', h('b', { style: { color: '#5eead4' } }, r.DO + ' mg/L'),
                 ' · pH=', h('b', { style: { color: '#fbbf24' } }, r.pH),
                 ' · Chl-a=', h('b', { style: { color: '#bef264' } }, r.chlA + ' µg/L')),
-              (r.warnings && r.warnings.length) ? h('div', { style: { color: '#fb923c', fontSize: 10, marginTop: 4 } },
+              (r.warnings && r.warnings.length) ? h('div', { style: { color: '#fb923c', fontSize: 12, marginTop: 4 } },
                 '⚠ ' + r.warnings.join(' · ')) : null);
           })) : null);
     }
@@ -13095,12 +13096,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           LEASE_TIERS.map(function(l, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (l.id === 'lpa' ? '#5eead4' : (l.id === 'standard' ? '#fbbf24' : '#a78bfa')) } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, l.tier),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Maximum area: '), l.maxAcres),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Term: '), l.term + ' · Renewable: ' + l.renewable),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Fee: '), l.fee),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Requires: '), l.requires),
-              h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Public hearing: '), l.pubHearing),
-              h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Who uses it: '), l.whoUses));
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Maximum area: '), l.maxAcres),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Term: '), l.term + ' · Renewable: ' + l.renewable),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Fee: '), l.fee),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Requires: '), l.requires),
+              h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Public hearing: '), l.pubHearing),
+              h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Who uses it: '), l.whoUses));
           })));
     }
 
@@ -13108,10 +13109,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       return h('div', null,
         h('div', { className: 'aq-content-card', style: cardStyle },
           h('div', { className: 'aq-section-kicker', style: headerStyle }, '💰 Starter Farm Economics (illustrative 1-acre aquaculture lease)'),
-          h('p', { style: { fontSize: 11, color: '#fb923c', fontStyle: 'italic', marginBottom: 10 } },
+          h('p', { style: { fontSize: 12, color: '#fb923c', fontStyle: 'italic', marginBottom: 10 } },
             'Order-of-magnitude only. Real numbers vary by zone, used vs new gear, market price, fuel, weather. Verify with Maine Aquaculture Association before signing checks.'),
           h('h4', { style: { fontSize: 12, color: '#5eead4', marginBottom: 6 } }, 'Startup capital'),
-          h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 14 } },
+          h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 14 } },
             h('thead', null, h('tr', { style: { background: 'rgba(20,184,166,0.15)' } },
               ['Item', 'Cost', 'Annual recurring'].map(function(c, ci) {
                 return h('th', { scope: 'col', key: ci, style: { padding: '6px 8px', textAlign: 'left', color: '#a7f3d0', fontWeight: 700 } }, c);
@@ -13129,12 +13130,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   '$' + ECONOMICS.startup.reduce(function(s, x) { return s + x.cost; }, 0).toLocaleString()),
                 h('td', { style: { padding: '6px 8px' } }, '—')))),
           h('h4', { style: { fontSize: 12, color: '#5eead4', marginBottom: 6 } }, 'Revenue trajectory (illustrative 1-acre mussel lease)'),
-          h('div', { style: { padding: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+          h('div', { style: { padding: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 8, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
             h('div', null, h('b', { style: { color: '#86efac' } }, 'Year 1: '), ECONOMICS.revenue.yearOne),
             h('div', null, h('b', { style: { color: '#86efac' } }, 'Year 2: '), ECONOMICS.revenue.yearTwo),
             h('div', null, h('b', { style: { color: '#86efac' } }, 'Year 3+: '), ECONOMICS.revenue.yearThree)),
           h('h4', { style: { fontSize: 12, color: '#5eead4', marginBottom: 6 } }, 'Notes'),
-          h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+          h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
             ECONOMICS.notes.map(function(n, i) { return h('li', { key: i }, n); }))));
     }
 
@@ -13146,7 +13147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         BUOYAGE_LATERAL.map(function(b, i) {
           return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, marginBottom: 6, borderLeft: '3px solid ' + (b.color === 'red' ? '#c8302a' : '#2a7c44') } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, b.type + ' · ' + b.shape + ' · ' + b.color),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, b.meaning));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, b.meaning));
         })));
     }
 
@@ -13155,7 +13156,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚓ COLREGS — Rules of the Road'),
         COLREGS.map(function(r, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '3px solid #14b8a6' } },
-            h('div', { style: { fontSize: 11, fontWeight: 700, color: '#5eead4', marginBottom: 4 } }, r.rule + ' · ' + r.title),
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: '#5eead4', marginBottom: 4 } }, r.rule + ' · ' + r.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } }, r.plain));
         })));
     }
@@ -13166,10 +13167,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         CAREERS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.title),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, c.desc),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'Training: '), c.training),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', { style: { color: '#86efac' } }, 'Pay: '), c.pay),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, h('b', { style: { color: '#a78bfa' } }, 'Future: '), c.future));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, c.desc),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'Training: '), c.training),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', { style: { color: '#86efac' } }, 'Pay: '), c.pay),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, h('b', { style: { color: '#a78bfa' } }, 'Future: '), c.future));
         })));
     }
 
@@ -13238,9 +13239,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         MAINE_AQUACULTURE_TOWNS.map(function(t, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, t.town + ' (' + t.county + ' County)'),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Leases: '), t.leases, ' · ', h('b', null, 'Species: '), t.species),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Notable: '), t.notable),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, t.tone));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Leases: '), t.leases, ' · ', h('b', null, 'Species: '), t.species),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Notable: '), t.notable),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, t.tone));
         })));
     }
 
@@ -13280,12 +13281,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           '26 categories + specific items used in modern Maine aquaculture, with specifications, costs, suppliers, lifespan, + practical notes. Prices 2026; suppliers + product names are illustrative — verify with current Maine Aquaculture Association supplier directory.'),
         EQUIPMENT_CATALOG.map(function(e, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
-            h('div', { style: { fontSize: 11, color: '#5eead4', fontWeight: 700, marginBottom: 2 } }, e.cat),
+            h('div', { style: { fontSize: 12, color: '#5eead4', fontWeight: 700, marginBottom: 2 } }, e.cat),
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#a7f3d0', marginBottom: 4 } }, e.item),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Spec: '), e.spec, ' · ', h('b', null, 'Purpose: '), e.purpose),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Cost: '), e.cost, ' · ', h('b', null, 'Lifespan: '), e.life),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Supplier: '), e.supplier),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, e.note));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Spec: '), e.spec, ' · ', h('b', null, 'Purpose: '), e.purpose),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Cost: '), e.cost, ' · ', h('b', null, 'Lifespan: '), e.life),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Supplier: '), e.supplier),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, e.note));
         })));
     }
 
@@ -13316,15 +13317,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           '~17 major diseases + pathogens affecting Maine aquaculture species. Drawn from Maine DMR Pathology Lab references, USDA APHIS Veterinary Services bulletins, + scholarly aquaculture-pathology literature. Each entry includes pathogen, symptoms, diagnosis methods, treatment, impact, + Maine-specific note.'),
         DISEASE_ATLAS.map(function(d, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
-            h('div', { style: { fontSize: 11, color: '#fb923c', fontWeight: 700, marginBottom: 2 } }, d.species),
+            h('div', { style: { fontSize: 12, color: '#fb923c', fontWeight: 700, marginBottom: 2 } }, d.species),
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, d.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Pathogen: '), d.pathogen),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Region: '), d.region),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Symptoms: '), d.symptoms),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Diagnosis: '), d.diagnosis),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Treatment: '), d.treatment),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Impact: '), d.impact),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '🦞 Maine: '), d.maineNote));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Pathogen: '), d.pathogen),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Region: '), d.region),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Symptoms: '), d.symptoms),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Diagnosis: '), d.diagnosis),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Treatment: '), d.treatment),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Impact: '), d.impact),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '🦞 Maine: '), d.maineNote));
         })));
     }
 
@@ -13355,12 +13356,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         WQ_INDEX.map(function(w, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, w.param + ' (' + w.symbol + ')'),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 2 } }, h('b', null, 'Healthy: '), w.healthy),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 2 } }, h('b', null, 'Warning: '), w.warning),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 2 } }, h('b', null, 'Critical: '), w.critical),
-            h('div', { style: { fontSize: 11, color: '#fca5a5', marginBottom: 4 } }, h('b', null, 'Mortality threshold: '), w.mortalityThreshold),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Measurement method: '), w.method),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, w.note));
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 2 } }, h('b', null, 'Healthy: '), w.healthy),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 2 } }, h('b', null, 'Warning: '), w.warning),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 2 } }, h('b', null, 'Critical: '), w.critical),
+            h('div', { style: { fontSize: 12, color: '#fca5a5', marginBottom: 4 } }, h('b', null, 'Mortality threshold: '), w.mortalityThreshold),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Measurement method: '), w.method),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, w.note));
         })));
     }
 
@@ -13399,11 +13400,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         PERMITS_BY_STATE.map(function(p, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (i === 0 ? '#fbbf24' : '#14b8a6') } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: i === 0 ? '#fbbf24' : '#5eead4', marginBottom: 2 } }, p.state + (i === 0 ? ' 🦞' : '')),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Agency: '), p.agency),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Lease types: '), p.leaseTypes),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Special: '), p.specialFeatures),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Species: '), p.commonSpecies, ' · ', h('b', null, 'Wait: '), p.wait),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0' } }, h('b', null, 'Web: '), p.web));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Agency: '), p.agency),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Lease types: '), p.leaseTypes),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Special: '), p.specialFeatures),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Species: '), p.commonSpecies, ' · ', h('b', null, 'Wait: '), p.wait),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0' } }, h('b', null, 'Web: '), p.web));
         })));
     }
 
@@ -13430,9 +13431,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         HATCHERY_PROTOCOLS.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, p.phase),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, lineHeight: 1.5 } }, p.detail),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Equipment: '), p.equipment),
-            h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, '⚠ Risk: '), p.risk));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, lineHeight: 1.5 } }, p.detail),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Equipment: '), p.equipment),
+            h('div', { style: { fontSize: 12, color: '#fb923c' } }, h('b', null, '⚠ Risk: '), p.risk));
         })));
     }
 
@@ -13457,11 +13458,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_BOATS.map(function(b, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, b.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Builder: '), b.builder),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Hull: '), b.hull, ' · ', h('b', null, 'Engine: '), b.engine),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Features: '), b.features),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Aquaculture use: '), b.aqUse),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, '💰 Used price: '), b.priceUsed));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Builder: '), b.builder),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Hull: '), b.hull, ' · ', h('b', null, 'Engine: '), b.engine),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Features: '), b.features),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Aquaculture use: '), b.aqUse),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, '💰 Used price: '), b.priceUsed));
         })));
     }
 
@@ -13488,9 +13489,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         TIDE_STATIONS.map(function(t, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, t.station),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'NOAA Station ID: '), t.stationId, ' · ', h('b', null, 'Mean range: '), t.meanRange, ' · ', h('b', null, 'Extreme: '), t.extremeRange),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, t.notable),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0', fontStyle: 'italic' } }, h('b', null, 'Use for: '), t.useFor));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'NOAA Station ID: '), t.stationId, ' · ', h('b', null, 'Mean range: '), t.meanRange, ' · ', h('b', null, 'Extreme: '), t.extremeRange),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, t.notable),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0', fontStyle: 'italic' } }, h('b', null, 'Use for: '), t.useFor));
         })));
     }
 
@@ -13516,11 +13517,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_CHEMICALS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.chemical),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Use: '), c.use),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Regulator: '), c.regulator),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Concentration: '), c.conc),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 2 } }, h('b', null, '⚠ Restrictions: '), c.restrictions),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.note));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Use: '), c.use),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Regulator: '), c.regulator),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Concentration: '), c.conc),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 2 } }, h('b', null, '⚠ Restrictions: '), c.restrictions),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.note));
         })));
     }
 
@@ -13545,10 +13546,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_LAWSUITS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, c.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Year(s): '), c.year, ' · ', h('b', null, 'Jurisdiction: '), c.jurisdiction),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Issue: '), c.issue),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Outcome: '), c.outcome),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Impact: '), c.impact));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Year(s): '), c.year, ' · ', h('b', null, 'Jurisdiction: '), c.jurisdiction),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Issue: '), c.issue),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Outcome: '), c.outcome),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Impact: '), c.impact));
         })));
     }
 
@@ -13573,12 +13574,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         CLIM_PROJECTIONS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, c.metric),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 1 } }, h('b', null, 'Current: '), c.current),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 1 } }, h('b', null, 'By 2030: '), c[2030]),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 1 } }, h('b', null, 'By 2050: '), c[2050]),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'By 2100: '), c[2100]),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 2 } }, h('b', null, 'Impact: '), c.impact),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, h('b', null, 'Source: '), c.source));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 1 } }, h('b', null, 'Current: '), c.current),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 1 } }, h('b', null, 'By 2030: '), c[2030]),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 1 } }, h('b', null, 'By 2050: '), c[2050]),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'By 2100: '), c[2100]),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 2 } }, h('b', null, 'Impact: '), c.impact),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, h('b', null, 'Source: '), c.source));
         })));
     }
 
@@ -13605,10 +13606,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         INTL_MARKETS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, c.country),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Industry: '), c.industry),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Species: '), c.species),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Focus: '), c.focus),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, '🦞 Maine relevance: '), c.maineRelevance));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Industry: '), c.industry),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Species: '), c.species),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Focus: '), c.focus),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, '🦞 Maine relevance: '), c.maineRelevance));
         })));
     }
 
@@ -13723,12 +13724,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_INSURANCE.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.product),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Carrier(s): '), c.carrier),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Coverage: '), c.coverage),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Cost: '), c.cost),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Notes: '), c.notes),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Link: '), c.link, ' · ', h('b', null, 'Applicability: '), c.applicability),
-            h('div', { style: { fontSize: 11, color: '#fb923c', fontStyle: 'italic' } }, h('b', null, '⚠ Critical: '), c.criticalNote));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Carrier(s): '), c.carrier),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Coverage: '), c.coverage),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Cost: '), c.cost),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, h('b', null, 'Notes: '), c.notes),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Link: '), c.link, ' · ', h('b', null, 'Applicability: '), c.applicability),
+            h('div', { style: { fontSize: 12, color: '#fb923c', fontStyle: 'italic' } }, h('b', null, '⚠ Critical: '), c.criticalNote));
         })));
     }
 
@@ -13823,12 +13824,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_LOANS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.program),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Type: '), c.type),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Amount: '), c.amount, ' · ', h('b', null, 'Terms: '), c.terms),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Eligibility: '), c.eligibility),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'For: '), c.forWhat),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Link: '), c.link),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, '🦞 Maine: '), c.maineNote));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Type: '), c.type),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Amount: '), c.amount, ' · ', h('b', null, 'Terms: '), c.terms),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Eligibility: '), c.eligibility),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'For: '), c.forWhat),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Link: '), c.link),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, '🦞 Maine: '), c.maineNote));
         })));
     }
 
@@ -13927,11 +13928,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         RESEARCH_STATIONS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Focus: '), c.focus),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Established: '), c.established),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Aquaculture relevance: '), c.relevance),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Notable: '), c.notable),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Web: '), c.web));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Focus: '), c.focus),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Established: '), c.established),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Aquaculture relevance: '), c.relevance),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Notable: '), c.notable),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Web: '), c.web));
         })));
     }
 
@@ -14006,11 +14007,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_GENOMICS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.program),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'What: '), c.what),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Result: '), c.result),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Timeline: '), c.timeline),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Impact: '), c.impact),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.notes));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'What: '), c.what),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Result: '), c.result),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Timeline: '), c.timeline),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Impact: '), c.impact),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.notes));
         })));
     }
 
@@ -14035,10 +14036,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         MICROALGAE.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.species),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Use: '), c.use, ' · ', h('b', null, 'Size: '), c.size),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Highlight: '), c.highlight),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Growth: '), c.growth, ' · ', h('b', null, 'Temp: '), c.tempRange, ' · ', h('b', null, 'Salinity: '), c.salinity),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.notes));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Use: '), c.use, ' · ', h('b', null, 'Size: '), c.size),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Highlight: '), c.highlight),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Growth: '), c.growth, ' · ', h('b', null, 'Temp: '), c.tempRange, ' · ', h('b', null, 'Salinity: '), c.salinity),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.notes));
         })));
     }
 
@@ -14064,10 +14065,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_CONFERENCES.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, c.event),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'When: '), c.when, ' · ', h('b', null, 'Where: '), c.where),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Focus: '), c.focus),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Who: '), c.who, ' · ', h('b', null, 'Web: '), c.web),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, '🦞 Maine: '), c.maineNote));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'When: '), c.when, ' · ', h('b', null, 'Where: '), c.where),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Focus: '), c.focus),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Who: '), c.who, ' · ', h('b', null, 'Web: '), c.web),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, '🦞 Maine: '), c.maineNote));
         })));
     }
 
@@ -14096,11 +14097,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         WATERFRONT_DETAIL.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.town),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Wharves: '), c.wharves),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Public access: '), c.publicAccess),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Leases: '), c.leases),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Notes: '), c.notes),
-            h('div', { style: { fontSize: 11, color: '#fb923c', fontStyle: 'italic' } }, h('b', null, '⚠ Concerns: '), c.concerns));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Wharves: '), c.wharves),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Public access: '), c.publicAccess),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Leases: '), c.leases),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Notes: '), c.notes),
+            h('div', { style: { fontSize: 12, color: '#fb923c', fontStyle: 'italic' } }, h('b', null, '⚠ Concerns: '), c.concerns));
         })));
     }
 
@@ -14128,9 +14129,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, c.species),
             h('div', { style: { fontSize: 14, color: '#fbbf24', fontWeight: 800, marginBottom: 2 } }, c.co2Per100g),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Method: '), c.method),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Notes: '), c.notes),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, h('b', null, 'Source: '), c.source));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Method: '), c.method),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Notes: '), c.notes),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, h('b', null, 'Source: '), c.source));
         })));
     }
 
@@ -14155,11 +14156,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         PAIRINGS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.species),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Wines: '), c.wines),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Beers: '), c.beers),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Cocktails: '), c.cocktails),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Flavors: '), c.complementaryFlavors),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0', fontStyle: 'italic' } }, c.notes));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Wines: '), c.wines),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Beers: '), c.beers),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Cocktails: '), c.cocktails),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Flavors: '), c.complementaryFlavors),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0', fontStyle: 'italic' } }, c.notes));
         })));
     }
 
@@ -14186,10 +14187,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_SOFTWARE.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, c.product),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Purpose: '), c.purpose),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Features: '), c.features),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Cost: '), c.cost, ' · ', h('b', null, 'Adoption: '), c.adoption),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.notes));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Purpose: '), c.purpose),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Features: '), c.features),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Cost: '), c.cost, ' · ', h('b', null, 'Adoption: '), c.adoption),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.notes));
         })));
     }
 
@@ -14213,10 +14214,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         MARINE_PATROL.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.region),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Personnel: '), c.officer),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Focus: '), c.focus),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, c.notes),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0' } }, h('b', null, 'Contact: '), c.contact));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Personnel: '), c.officer),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Focus: '), c.focus),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, c.notes),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0' } }, h('b', null, 'Contact: '), c.contact));
         })));
     }
 
@@ -14242,7 +14243,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, c.medium),
             c.items.map(function(it, j) {
-              return h('div', { key: j, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, '• ' + it);
+              return h('div', { key: j, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, '• ' + it);
             }));
         })));
     }
@@ -14268,11 +14269,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_LABORATORY.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.test),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'What: '), c.what),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Use for: '), c.useFor),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Turnaround: '), c.turnaround, ' · ', h('b', null, 'Cost: '), c.cost),
-            h('div', { style: { fontSize: 11, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Lab: '), c.lab),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.notes));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'What: '), c.what),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Use for: '), c.useFor),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 2 } }, h('b', null, 'Turnaround: '), c.turnaround, ' · ', h('b', null, 'Cost: '), c.cost),
+            h('div', { style: { fontSize: 12, color: '#a7f3d0', marginBottom: 2 } }, h('b', null, 'Lab: '), c.lab),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, c.notes));
         })));
     }
 
@@ -14309,11 +14310,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         MAINE_FARMS_DETAIL.map(function(f, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, f.name + ' (' + f.town + ', est. ' + f.founded + ')'),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Owners: '), f.owners),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Species: '), f.species),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Site: '), f.sizeAcres + ' acres'),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Gear: '), f.gear),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Employees: '), f.employees),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Owners: '), f.owners),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Species: '), f.species),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Site: '), f.sizeAcres + ' acres'),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Gear: '), f.gear),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Employees: '), f.employees),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, fontStyle: 'italic' } }, f.story));
         })));
     }
@@ -14338,15 +14339,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           'Ten growing methods compared. Bottom culture is cheapest gear but slowest growth and highest predation. FlipFarm is highest gear cost but lowest labor. Choose based on your site (intertidal vs subtidal), labor availability, and target market price tier.'),
         OYSTER_METHOD_DETAIL.map(function(m, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #5eead4' } },
-            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, m.method + '  ', h('span', { style: { fontSize: 11, color: '#fbbf24' } }, m.priceTier)),
+            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, m.method + '  ', h('span', { style: { fontSize: 12, color: '#fbbf24' } }, m.priceTier)),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, fontStyle: 'italic' } }, m.desc),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 4 } }, h('b', null, '✓ Pros:')),
-            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 4 } }, h('b', null, '✓ Pros:')),
+            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               m.pros.map(function(p, pi) { return h('li', { key: pi }, p); })),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 4 } }, h('b', null, '✗ Cons:')),
-            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 4 } }, h('b', null, '✗ Cons:')),
+            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               m.cons.map(function(c, ci) { return h('li', { key: ci }, c); })),
-            h('div', { style: { fontSize: 11, color: '#bae6fd' } }, h('b', null, 'Used by: '), m.examples.join(', ')));
+            h('div', { style: { fontSize: 12, color: '#bae6fd' } }, h('b', null, 'Used by: '), m.examples.join(', ')));
         })));
     }
 
@@ -14372,12 +14373,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #818cf8' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, m.method),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, fontStyle: 'italic' } }, m.desc),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6, fontSize: 11 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6, fontSize: 12 } },
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', { style: { color: '#fbbf24' } }, 'Density: '), m.density),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', { style: { color: '#fbbf24' } }, 'Yield: '), m.yield),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', { style: { color: '#fbbf24' } }, 'Time to market: '), m.timeToMarket),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', { style: { color: '#fbbf24' } }, 'Example: '), m.exampleFarm)),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginTop: 6, fontStyle: 'italic' } }, m.notes));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginTop: 6, fontStyle: 'italic' } }, m.notes));
         })));
     }
 
@@ -14431,8 +14432,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SALMON_ASC_STANDARDS.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, s.category),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 5 } }, h('b', { style: { color: '#fbbf24' } }, 'Requirement: '), s.requirement),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', lineHeight: 1.5 } }, h('b', null, 'Verification: '), s.verification));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 5 } }, h('b', { style: { color: '#fbbf24' } }, 'Requirement: '), s.requirement),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', lineHeight: 1.5 } }, h('b', null, 'Verification: '), s.verification));
         })));
     }
 
@@ -14461,10 +14462,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         RAS_ENGINEERING.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb7185' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, s.system),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'Spec: '), s.spec),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Vendor: '), s.vendor),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Cost: '), s.cost),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Purpose: '), s.purpose));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'Spec: '), s.spec),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Vendor: '), s.vendor),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Cost: '), s.cost),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Purpose: '), s.purpose));
         })));
     }
 
@@ -14520,11 +14521,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         VACCINE_CATALOG.map(function(v, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, v.name),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Target species: '), v.target),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Diseases: '), v.diseases),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Delivery: '), v.deliv),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Manufacturer: '), v.mfgr),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, h('b', null, 'When: '), v.when));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Target species: '), v.target),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Diseases: '), v.diseases),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Delivery: '), v.deliv),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Manufacturer: '), v.mfgr),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, h('b', null, 'When: '), v.when));
         })));
     }
 
@@ -14551,11 +14552,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         PREDATOR_CONTROL.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #f97316' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, p.predator),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 5, fontStyle: 'italic' } }, h('b', null, 'Threat: '), p.threat),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Methods:')),
-            h('ul', { style: { margin: '0 0 5px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 5, fontStyle: 'italic' } }, h('b', null, 'Threat: '), p.threat),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Methods:')),
+            h('ul', { style: { margin: '0 0 5px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               p.methods.map(function(m, mi) { return h('li', { key: mi }, m); })),
-            h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'Legal: '), p.legal));
+            h('div', { style: { fontSize: 12, color: '#fb923c' } }, h('b', null, 'Legal: '), p.legal));
         })));
     }
 
@@ -14607,9 +14608,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         UV_OZONE_SPECS.map(function(u, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #818cf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#a5b4fc', marginBottom: 4 } }, u.tech),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Dose: '), u.dose),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Use: '), u.application),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, u.notes));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Dose: '), u.dose),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Use: '), u.application),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, u.notes));
         })));
     }
 
@@ -14634,12 +14635,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         BIOTOXIN_PROTOCOLS.map(function(b, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #f87171' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, b.tox),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Producer: '), b.producer),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Toxin: '), b.toxin),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Closure threshold: '), b.closure),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Symptoms: '), b.symptoms),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Test method: '), b.test),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, h('b', null, 'Season: '), b.season));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Producer: '), b.producer),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Toxin: '), b.toxin),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Closure threshold: '), b.closure),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Symptoms: '), b.symptoms),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Test method: '), b.test),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, h('b', null, 'Season: '), b.season));
         })));
     }
 
@@ -14729,8 +14730,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           'Sensory notes from Maine farm-to-table tastings. Brine intensity reflects salinity of growing site. Meat texture reflects growing method (bottom = firm; floating = plump). Match flavor profile to recipe + wine.'),
         TASTING_NOTES.map(function(t, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
-            h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, t.farm + ' — ', h('span', { style: { fontSize: 11, color: '#5eead4' } }, t.tier)),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 4, fontSize: 11 } },
+            h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, t.farm + ' — ', h('span', { style: { fontSize: 12, color: '#5eead4' } }, t.tier)),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 4, fontSize: 12 } },
               h('div', { style: { color: '#bae6fd' } }, h('b', null, 'Meat: '), t.meat),
               h('div', { style: { color: '#bae6fd' } }, h('b', null, 'Brine: '), t.brine),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', gridColumn: '1 / -1' } }, h('b', null, 'Flavor: '), t.flavor),
@@ -14764,11 +14765,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         RESTAURANT_CASE_STUDIES.map(function(r, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb7185' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, r.restaurant),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Concept: '), r.concept),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Sourcing: '), r.sourcing),
-            r.volume ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Volume: '), r.volume) : null,
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Signature: '), r.signature),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Impact: '), r.impact));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Concept: '), r.concept),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Sourcing: '), r.sourcing),
+            r.volume ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Volume: '), r.volume) : null,
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Signature: '), r.signature),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Impact: '), r.impact));
         })));
     }
 
@@ -14795,10 +14796,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         DISTRIBUTOR_NETWORK.map(function(d, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, d.name),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Specialty: '), d.specialty),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Reach: '), d.reach),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Sources: '), d.sources),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Model: '), d.model));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Specialty: '), d.specialty),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Reach: '), d.reach),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Sources: '), d.sources),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Model: '), d.model));
         })));
     }
 
@@ -14825,9 +14826,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         COLD_CHAIN_DEEP.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#7dd3fc', marginBottom: 4 } }, c.stop),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Target: '), c.goal),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Method: '), c.method),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Failure mode: '), c.failure));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Target: '), c.goal),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Method: '), c.method),
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Failure mode: '), c.failure));
         })));
     }
 
@@ -14852,7 +14853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { className: 'aq-section-kicker', style: headerStyle }, '💵 Maine Wholesale Price History (2014-2026)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Approximate 13-year wholesale price history. Oyster prices nearly doubled; mussel + kelp grew steadily. Salmon peaked 2023 then softened. 2020 COVID dip was sharp but short-lived. All prices in US$ for high-quality grade Maine product. Sources: USDA, MAA, ASF reports.'),
-        h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } },
+        h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } },
           h('thead', null, h('tr', { style: { background: 'rgba(15,23,42,0.7)' } },
             h('th', { scope: 'col', style: { padding: 8, textAlign: 'left', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Year'),
             h('th', { scope: 'col', style: { padding: 8, textAlign: 'right', borderBottom: '1px solid rgba(100,116,139,0.4)' } }, 'Oyster $/ea'),
@@ -14867,9 +14868,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('td', { style: { padding: 6, textAlign: 'right', color: '#bae6fd' } }, '$' + p.mussel.toFixed(2)),
               h('td', { style: { padding: 6, textAlign: 'right', color: '#86efac' } }, '$' + p.kelp.toFixed(2)),
               h('td', { style: { padding: 6, textAlign: 'right', color: '#fda4af' } }, '$' + p.salmon.toFixed(2)),
-              h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10 } }, p.note));
+              h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12 } }, p.note));
           }))),
-        h('div', { style: { marginTop: 12, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
+        h('div', { style: { marginTop: 12, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
           'Prices are illustrative wholesale market averages, not farm-take prices (typically 50-70% of wholesale after distributor margin).')));
     }
 
@@ -14922,7 +14923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb7185' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, s.event),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 6 } }, s.what),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Lesson: '), s.lesson));
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Lesson: '), s.lesson));
         })));
     }
 
@@ -14952,10 +14953,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SURVIVAL_GEAR.map(function(g, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, g.item),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Spec: '), g.spec),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Use: '), g.use),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Wear time: '), g.wearTime),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Cost: '), g.cost));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Spec: '), g.spec),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Use: '), g.use),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Wear time: '), g.wearTime),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Cost: '), g.cost));
         })));
     }
 
@@ -14981,7 +14982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #06b6d4' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#67e8f9', marginBottom: 4 } }, p.phase),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 6 } }, p.what),
-            p.mitigation ? h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Mitigation: '), p.mitigation) : null);
+            p.mitigation ? h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Mitigation: '), p.mitigation) : null);
         })));
     }
 
@@ -15006,9 +15007,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         INSURANCE_CLAIMS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, c.story),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, h('b', { style: { color: '#fbbf24' } }, 'Claim: '), c.claim),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Payout: '), c.payout),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Lesson: '), c.lesson));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, h('b', { style: { color: '#fbbf24' } }, 'Claim: '), c.claim),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Payout: '), c.payout),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Lesson: '), c.lesson));
         })));
     }
 
@@ -15033,11 +15034,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         EXPORT_DOCS.map(function(d, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, d.doc),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#5eead4' } }, 'Purpose: '), d.purpose),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Issuer: '), d.issuer),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Cost: '), d.cost),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Valid days: '), d.validityDays),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'When: '), d.when));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#5eead4' } }, 'Purpose: '), d.purpose),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Issuer: '), d.issuer),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Cost: '), d.cost),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Valid days: '), d.validityDays),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'When: '), d.when));
         })));
     }
 
@@ -15119,9 +15120,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         WORKER_INJURY_CASES.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #f87171' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, c.incident),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Cause: '), c.cause),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Outcome: '), c.outcome),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Prevention: '), c.prevention));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Cause: '), c.cause),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Outcome: '), c.outcome),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Prevention: '), c.prevention));
         })));
     }
 
@@ -15148,13 +15149,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SEAWEED_SPECIES_DEEP.map(function(s, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #34d399' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#6ee7b7', marginBottom: 4 } }, s.name),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Habitat: '), s.habitat),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Season: '), s.season),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Yield: '), s.yield),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#86efac' } }, 'Uses: '), s.uses),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Nutrition: '), s.nutrition),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Price: '), s.priceWet),
-            h('div', { style: { fontSize: 11, color: '#a5b4fc', fontStyle: 'italic' } }, h('b', null, 'Growers: '), s.growers));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Habitat: '), s.habitat),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Season: '), s.season),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Yield: '), s.yield),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#86efac' } }, 'Uses: '), s.uses),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Nutrition: '), s.nutrition),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Price: '), s.priceWet),
+            h('div', { style: { fontSize: 12, color: '#a5b4fc', fontStyle: 'italic' } }, h('b', null, 'Growers: '), s.growers));
         })));
     }
 
@@ -15311,8 +15312,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#7dd3fc', marginBottom: 4 } }, s.sector),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 5 } }, s.overview),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Employment: '), s.employment),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Future risks: '), s.futureRisks));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Employment: '), s.employment),
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Future risks: '), s.futureRisks));
         })));
     }
 
@@ -15364,9 +15365,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         BENTHIC_MONITORING.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, s.sample),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'What: '), s.what),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Protocol: '), s.protocol),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Frequency: '), s.frequency));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'What: '), s.what),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Protocol: '), s.protocol),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Frequency: '), s.frequency));
         })));
     }
 
@@ -15392,13 +15393,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         FEED_FORMULATIONS.map(function(f, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, f.species),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6, fontSize: 11 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6, fontSize: 12 } },
               h('div', { style: { color: '#bae6fd' } }, h('b', null, 'Protein: '), f.protein),
               h('div', { style: { color: '#bae6fd' } }, h('b', null, 'Fat: '), f.fat),
               h('div', { style: { color: '#bae6fd' } }, h('b', null, 'Carbs: '), f.carbs),
               h('div', { style: { color: '#fde68a' } }, h('b', null, 'Feed rate: '), f.feedRate)),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 5 } }, h('b', { style: { color: '#86efac' } }, 'Ingredients: '), f.mainIngredients),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 3, fontStyle: 'italic' } }, h('b', null, 'Conversion: '), f.conversion));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 5 } }, h('b', { style: { color: '#86efac' } }, 'Ingredients: '), f.mainIngredients),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginTop: 3, fontStyle: 'italic' } }, h('b', null, 'Conversion: '), f.conversion));
         })));
     }
 
@@ -15428,10 +15429,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         WATER_TESTING_METHODS.map(function(t, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #06b6d4' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#67e8f9', marginBottom: 4 } }, t.test),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'Method: '), t.method),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Equipment: '), t.equipment),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Frequency: '), t.frequency),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Healthy: '), t.healthyRange));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, h('b', { style: { color: '#fbbf24' } }, 'Method: '), t.method),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Equipment: '), t.equipment),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Frequency: '), t.frequency),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Healthy: '), t.healthyRange));
         })));
     }
 
@@ -15483,10 +15484,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         BIVALVE_FILTRATION.map(function(b, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#7dd3fc', marginBottom: 4 } }, b.species),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Filter rate: '), b.filterRate),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Filters: '), b.whatFiltered),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Impact: '), b.impact),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Applications: '), b.applications));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Filter rate: '), b.filterRate),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Filters: '), b.whatFiltered),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Impact: '), b.impact),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Applications: '), b.applications));
         })));
     }
 
@@ -15565,9 +15566,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         CARBON_SEQUESTRATION.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #34d399' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#6ee7b7', marginBottom: 4 } }, c.source),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Value: '), c.value),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Mechanism: '), c.mechanism),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Credits: '), c.credits));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Value: '), c.value),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Mechanism: '), c.mechanism),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Credits: '), c.credits));
         })));
     }
 
@@ -15624,8 +15625,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         EQUIPMENT_CARE.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, e.item),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 5, lineHeight: 1.5 } }, h('b', { style: { color: '#5eead4' } }, 'Care: '), e.care),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Lifespan: '), e.lifespan));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 5, lineHeight: 1.5 } }, h('b', { style: { color: '#5eead4' } }, 'Care: '), e.care),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Lifespan: '), e.lifespan));
         })));
     }
 
@@ -15653,8 +15654,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, w.entry),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 5 } }, w.detail),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Cost: '), w.cost),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Leads to: '), w.leads));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Cost: '), w.cost),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Leads to: '), w.leads));
         })));
     }
 
@@ -15679,12 +15680,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         DEEP_FARM_TYPES.map(function(f, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, f.type),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6, fontSize: 11, marginBottom: 6 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6, fontSize: 12, marginBottom: 6 } },
               h('div', { style: { color: '#fde68a' } }, h('b', null, 'Staff: '), f.staff),
               h('div', { style: { color: '#86efac' } }, h('b', null, 'Income: '), f.income),
               h('div', { style: { color: '#fb7185' } }, h('b', null, 'CAPEX: '), f.capex)),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Strategy: '), f.strategy),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Growth: '), f.growthPath));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Strategy: '), f.strategy),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Growth: '), f.growthPath));
         })));
     }
 
@@ -15737,8 +15738,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         INVASIVE_SPECIES.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb7185' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, s.species),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Threat: '), s.threat),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Management: '), s.management));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Threat: '), s.threat),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Management: '), s.management));
         })));
     }
 
@@ -15807,7 +15808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           DEEP_GLOSSARY.map(function(g, i) {
             return h('div', { key: i, style: { padding: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid #5eead4' } },
               h('div', { style: { fontSize: 12, fontWeight: 900, color: '#5eead4', marginBottom: 3 } }, g.term),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.def));
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.def));
           }))));
     }
 
@@ -15851,10 +15852,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SAMPLE_LESSON_PLANS.map(function(l, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #34d399' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#6ee7b7', marginBottom: 4 } }, l.title),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Grade: '), l.grade, ' | ', h('b', null, 'Duration: '), l.duration),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Objectives: '), l.objectives),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 5 } }, h('b', null, 'Materials: '), l.materials),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, h('b', { style: { color: '#86efac' } }, 'Activity: '), l.activity));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Grade: '), l.grade, ' | ', h('b', null, 'Duration: '), l.duration),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Objectives: '), l.objectives),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 5 } }, h('b', null, 'Materials: '), l.materials),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, h('b', { style: { color: '#86efac' } }, 'Activity: '), l.activity));
         })));
     }
 
@@ -15886,10 +15887,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         MAINE_BAYS.map(function(b, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #06b6d4' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#67e8f9', marginBottom: 4 } }, b.bay),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Area: '), b.area, '  |  ', h('b', null, 'Size: '), b.size, '  |  ', h('b', null, 'Depth: '), b.depth),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Notable farms: '), b.notableFarms),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Hydrography: '), b.hydrography),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Issues: '), b.issues));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Area: '), b.area, '  |  ', h('b', null, 'Size: '), b.size, '  |  ', h('b', null, 'Depth: '), b.depth),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Notable farms: '), b.notableFarms),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Hydrography: '), b.hydrography),
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Issues: '), b.issues));
         })));
     }
 
@@ -15919,11 +15920,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         FINFISH_SPECIES.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb7185' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, s.species),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Native: '), s.native),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Farming method: '), s.farming),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Maine: '), s.maineRelevance),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Growth: '), s.growthRate),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Issues: '), s.issues));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Native: '), s.native),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Farming method: '), s.farming),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Maine: '), s.maineRelevance),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Growth: '), s.growthRate),
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Issues: '), s.issues));
         })));
     }
 
@@ -15951,7 +15952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, s.stage),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 5 } }, s.detail),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Tips: '), s.tips));
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Tips: '), s.tips));
         })));
     }
 
@@ -15976,10 +15977,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         BOAT_TYPES_DETAIL.map(function(b, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#7dd3fc', marginBottom: 4 } }, b.boat),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Use: '), b.use),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Specs: '), b.specs),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Cost: '), b.cost),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, b.notes));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Use: '), b.use),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Specs: '), b.specs),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Cost: '), b.cost),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, b.notes));
         })));
     }
 
@@ -16006,9 +16007,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         REGS_CROSSWALK.map(function(r, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde68a', marginBottom: 6 } }, r.topic),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Maine: '), r.maine),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'US: '), r.us),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'International: '), r.international));
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Maine: '), r.maine),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'US: '), r.us),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'International: '), r.international));
         })));
     }
 
@@ -16059,7 +16060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#7dd3fc', marginBottom: 4 } }, f.tool),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 4 } }, f.detail),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Use: '), f.use));
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Use: '), f.use));
         })));
     }
 
@@ -16086,9 +16087,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         MAINE_PORT_DATA.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, p.port),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Volume: '), p.volume),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Aquaculture role: '), p.aquacultureRole),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Waterfront: '), p.wfActive));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Volume: '), p.volume),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Aquaculture role: '), p.aquacultureRole),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Waterfront: '), p.wfActive));
         })));
     }
 
@@ -16115,9 +16116,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         ENVI_MONITORING.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, e.what),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Who: '), e.who, '  |  ', h('b', null, 'Frequency: '), e.frequency),
-            h('div', { style: { fontSize: 11, color: '#fda4af', marginBottom: 3 } }, h('b', null, 'Finfish: '), e.forFinfish),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', fontStyle: 'italic' } }, h('b', null, 'Shellfish: '), e.forShellfish));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Who: '), e.who, '  |  ', h('b', null, 'Frequency: '), e.frequency),
+            h('div', { style: { fontSize: 12, color: '#fda4af', marginBottom: 3 } }, h('b', null, 'Finfish: '), e.forFinfish),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, h('b', null, 'Shellfish: '), e.forShellfish));
         })));
     }
 
@@ -16144,8 +16145,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         YEAR_PLAN.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, m.month),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Happening: '), m.whatsHappening),
-            m.critical ? h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Critical: '), m.critical) : null);
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Happening: '), m.whatsHappening),
+            m.critical ? h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Critical: '), m.critical) : null);
         })));
     }
 
@@ -16171,7 +16172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, c.story + ' (' + c.timeline + ')'),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 6 } }, c.detail),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Lessons: '), c.lessons));
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Lessons: '), c.lessons));
         })));
     }
 
@@ -16196,9 +16197,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         MORE_LESSONS.map(function(l, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #34d399' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#6ee7b7', marginBottom: 4 } }, l.title),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Grade: '), l.grade, ' | ', h('b', null, 'Duration: '), l.duration),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Materials: '), l.materials),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, h('b', { style: { color: '#86efac' } }, 'Activity: '), l.activity));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Grade: '), l.grade, ' | ', h('b', null, 'Duration: '), l.duration),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Materials: '), l.materials),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, h('b', { style: { color: '#86efac' } }, 'Activity: '), l.activity));
         })));
     }
 
@@ -16286,7 +16287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           TECHNICAL_GLOSSARY.map(function(g, i) {
             return h('div', { key: i, style: { padding: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid #fbbf24' } },
               h('div', { style: { fontSize: 12, fontWeight: 900, color: '#fde68a', marginBottom: 3 } }, g.term),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.def));
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.def));
           }))));
     }
 
@@ -16328,12 +16329,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           'Twenty-six countries with significant aquaculture industries. China dominates (~60% of global). Norway leads salmon globally. Vietnam + Indonesia + India + Ecuador + Bangladesh are major shrimp + tropical fish producers. US ranks lower despite vast coastline; Maine is among the leading US states.'),
         GLOBAL_AQUACULTURE_PROFILES.map(function(c, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #38bdf8' } },
-            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#7dd3fc', marginBottom: 4 } }, c.country + ' — ', h('span', { style: { fontSize: 11, color: '#fde68a' } }, c.annualProduction)),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Primary species: '), c.primarySpecies),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Model: '), c.model),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Exports: '), c.exports),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, lineHeight: 1.5 } }, h('b', { style: { color: '#fbbf24' } }, 'Context: '), c.context),
-            h('div', { style: { fontSize: 11, color: '#fda4af', fontStyle: 'italic' } }, h('b', null, 'Maine relevance: '), c.maineRelevance));
+            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#7dd3fc', marginBottom: 4 } }, c.country + ' — ', h('span', { style: { fontSize: 12, color: '#fde68a' } }, c.annualProduction)),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Primary species: '), c.primarySpecies),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Model: '), c.model),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Exports: '), c.exports),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, lineHeight: 1.5 } }, h('b', { style: { color: '#fbbf24' } }, 'Context: '), c.context),
+            h('div', { style: { fontSize: 12, color: '#fda4af', fontStyle: 'italic' } }, h('b', null, 'Maine relevance: '), c.maineRelevance));
         })));
     }
 
@@ -16363,13 +16364,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         DISEASE_DEEP.map(function(d, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #f87171' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, d.disease),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Host: '), d.host),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Symptoms: '), d.symptoms),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Diagnosis: '), d.diagnosis),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Transmission: '), d.transmission),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Treatment: '), d.treatment),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3, lineHeight: 1.5 } }, h('b', { style: { color: '#fbbf24' } }, 'Impact: '), d.impact),
-            h('div', { style: { fontSize: 11, color: '#a5b4fc', fontStyle: 'italic' } }, h('b', null, 'Prevention: '), d.prevention));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Host: '), d.host),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Symptoms: '), d.symptoms),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Diagnosis: '), d.diagnosis),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Transmission: '), d.transmission),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Treatment: '), d.treatment),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3, lineHeight: 1.5 } }, h('b', { style: { color: '#fbbf24' } }, 'Impact: '), d.impact),
+            h('div', { style: { fontSize: 12, color: '#a5b4fc', fontStyle: 'italic' } }, h('b', null, 'Prevention: '), d.prevention));
         })));
     }
 
@@ -16393,8 +16394,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           'Ten profiles of Maine aquaculture professionals across roles: hatchery, farm, diver, scientist, chef, extension, vet, distributor, engineer, regulator. Each shares background + daily work + advice for newcomers.'),
         CAREER_INTERVIEWS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fb923c' } },
-            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, c.role + ' — ', h('span', { style: { fontSize: 11, color: '#fde68a' } }, c.name, ' @ ', c.employer)),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Background: '), c.background),
+            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, c.role + ' — ', h('span', { style: { fontSize: 12, color: '#fde68a' } }, c.name, ' @ ', c.employer)),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Background: '), c.background),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, lineHeight: 1.5 } }, h('b', { style: { color: '#5eead4' } }, 'Day in life: '), c.dayInLife),
             h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic', lineHeight: 1.5 } }, h('b', null, 'Advice: '), c.advice));
         })));
@@ -16458,7 +16459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         BUSINESS_PLAN_TEMPLATE.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #34d399' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#6ee7b7', marginBottom: 4 } }, s.section),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Length: '), s.wordCount),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Length: '), s.wordCount),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, s.whatToWrite));
         })));
     }
@@ -16500,8 +16501,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         KEY_TEXTBOOKS.map(function(b, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 3 } }, b.title + ' (' + b.year + ')'),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'By: '), b.authors, '  |  ', h('b', null, 'Pub: '), b.pub),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, fontStyle: 'italic' } }, b.topic));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'By: '), b.authors, '  |  ', h('b', null, 'Pub: '), b.pub),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, fontStyle: 'italic' } }, b.topic));
         })));
     }
 
@@ -16536,7 +16537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         FAMOUS_AQUA_FIGURES.map(function(f, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb7185' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fda4af', marginBottom: 3 } }, f.name),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Role: '), f.role),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Role: '), f.role),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, f.contribution));
         })));
     }
@@ -16667,7 +16668,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             inCat.map(function(s, i) {
               return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid #5eead4' } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#5eead4', marginBottom: 2 } }, s.sp),
-                h('div', { style: { fontSize: 10, color: '#bae6fd' } }, h('b', null, 'Region: '), s.region, '  |  ', h('b', null, 'Status: '), s.status));
+                h('div', { style: { fontSize: 12, color: '#bae6fd' } }, h('b', null, 'Region: '), s.region, '  |  ', h('b', null, 'Status: '), s.status));
             }));
         })));
     }
@@ -16802,7 +16803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           COMPLETE_TERMINOLOGY.map(function(t, i) {
             return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid #34d399' } },
               h('div', { style: { fontSize: 12, fontWeight: 900, color: '#6ee7b7', marginBottom: 2 } }, t.t),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, t.d));
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, t.d));
           }))));
     }
 
@@ -16833,7 +16834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, f.name + ' (' + f.town + ', est. ' + f.founded + ')'),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 5 } }, f.story),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', fontStyle: 'italic' } }, h('b', null, 'Details: '), f.details));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, h('b', null, 'Details: '), f.details));
         })));
     }
 
@@ -16873,9 +16874,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         GEAR_VENDOR_DIRECTORY.map(function(v, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 3 } }, v.vendor),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Specialty: '), v.specialty),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Region: '), v.region, '  |  ', h('b', null, 'Founded: '), v.founded),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, v.notes));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Specialty: '), v.specialty),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Region: '), v.region, '  |  ', h('b', null, 'Founded: '), v.founded),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, v.notes));
         })));
     }
 
@@ -17008,8 +17009,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 6 } },
           ACRONYM_DIRECTORY.map(function(a, i) {
             return h('div', { key: i, style: { padding: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 4, display: 'flex', gap: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#fbbf24', minWidth: 80 } }, a.ac),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } }, a.exp));
+              h('div', { style: { fontSize: 12, fontWeight: 900, color: '#fbbf24', minWidth: 80 } }, a.ac),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } }, a.exp));
           }))));
     }
 
@@ -17161,12 +17162,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         MAINE_AQUACULTURE_REGS_DEEP.map(function(r, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a', marginBottom: 6 } }, r.title),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Scope: '), r.scope),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Process: '), r.process),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Criteria: '), r.criteria),
-            h('div', { style: { fontSize: 11, color: '#fda4af', marginBottom: 4 } }, h('b', null, 'Annual fee: '), r.annualFee),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Bond: '), r.bond),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, fontStyle: 'italic' } }, h('b', { style: { color: '#fbbf24' } }, 'Notes: '), r.notes));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Scope: '), r.scope),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Process: '), r.process),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Criteria: '), r.criteria),
+            h('div', { style: { fontSize: 12, color: '#fda4af', marginBottom: 4 } }, h('b', null, 'Annual fee: '), r.annualFee),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Bond: '), r.bond),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, fontStyle: 'italic' } }, h('b', { style: { color: '#fbbf24' } }, 'Notes: '), r.notes));
         })));
     }
 
@@ -17254,8 +17255,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, t.week),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 6 } }, t.whatHappens),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Critical checks: '), t.criticalChecks),
-            h('div', { style: { fontSize: 11, color: '#fda4af', fontStyle: 'italic' } }, h('b', null, 'Typical issues: '), t.typicalIssues));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Critical checks: '), t.criticalChecks),
+            h('div', { style: { fontSize: 12, color: '#fda4af', fontStyle: 'italic' } }, h('b', null, 'Typical issues: '), t.typicalIssues));
         })));
     }
 
@@ -17313,11 +17314,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #f87171' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fda4af', marginBottom: 6 } }, p.phase),
             h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Steps:')),
-            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               p.steps.map(function(s, si) { return h('li', { key: si }, s); })),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Key metrics: '), p.keyMetrics),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Infrastructure: '), p.infrastructure),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Critical risks: '), p.criticalRisks));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Key metrics: '), p.keyMetrics),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Infrastructure: '), p.infrastructure),
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Critical risks: '), p.criticalRisks));
         })));
     }
 
@@ -17417,9 +17418,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #06b6d4' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#67e8f9', marginBottom: 6 } }, p.issue),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 5, lineHeight: 1.5 } }, h('b', { style: { color: '#fbbf24' } }, 'What it is: '), p.whatItIs),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Current status: '), p.currentStatus),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Why it matters: '), p.whyItMatters),
-            h('div', { style: { fontSize: 11, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Proposed solutions: '), p.proposedSolutions));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Current status: '), p.currentStatus),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Why it matters: '), p.whyItMatters),
+            h('div', { style: { fontSize: 12, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Proposed solutions: '), p.proposedSolutions));
         })));
     }
 
@@ -17584,13 +17585,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         ENGINEERING_SPECS.map(function(e, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fdba74', marginBottom: 6 } }, e.component),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Material: '), e.material),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Dimensions: '), e.dimensions),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Weight: '), e.weight),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Flotation: '), e.flotation),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Installation: '), e.installation),
-            h('div', { style: { fontSize: 11, color: '#fda4af', marginBottom: 3 } }, h('b', null, 'Maintenance: '), e.maintenance),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Cost: '), e.cost));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Material: '), e.material),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Dimensions: '), e.dimensions),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Weight: '), e.weight),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Flotation: '), e.flotation),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Installation: '), e.installation),
+            h('div', { style: { fontSize: 12, color: '#fda4af', marginBottom: 3 } }, h('b', null, 'Maintenance: '), e.maintenance),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Cost: '), e.cost));
         })));
     }
 
@@ -17697,9 +17698,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #f87171' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fda4af', marginBottom: 6 } }, d.threat),
             h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Risk: '), d.risk),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Prevention: '), d.prevention),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Mitigation: '), d.mitigation),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Examples: '), d.examples));
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Prevention: '), d.prevention),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Mitigation: '), d.mitigation),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Examples: '), d.examples));
         })));
     }
 
@@ -17812,10 +17813,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         ECONOMIC_INDICATORS_MAINE.map(function(e, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, e.metric),
-            h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac', marginBottom: 3 } }, e.value, h('span', { style: { fontSize: 11, color: '#bae6fd', marginLeft: 8 } }, '(' + e.year + ')')),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', { style: { color: '#fbbf24' } }, 'Components: '), e.components),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Trend: '), e.trend),
-            h('div', { style: { fontSize: 11, color: '#fda4af', fontStyle: 'italic' } }, h('b', null, 'Comparison: '), e.comparison));
+            h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac', marginBottom: 3 } }, e.value, h('span', { style: { fontSize: 12, color: '#bae6fd', marginLeft: 8 } }, '(' + e.year + ')')),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', { style: { color: '#fbbf24' } }, 'Components: '), e.components),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Trend: '), e.trend),
+            h('div', { style: { fontSize: 12, color: '#fda4af', fontStyle: 'italic' } }, h('b', null, 'Comparison: '), e.comparison));
         })));
     }
 
@@ -17922,9 +17923,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #34d399' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#6ee7b7', marginBottom: 6 } }, a.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, lineHeight: 1.5 } }, a.explanation),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Formula: '), a.formula),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Example: '), a.example),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Key tip: '), a.keyTip));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Formula: '), a.formula),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Example: '), a.example),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Key tip: '), a.keyTip));
         })));
     }
 
@@ -18036,10 +18037,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, t.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, lineHeight: 1.5 } }, t.what),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Chemistry: '), t.chemistry),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Stoichiometry: '), t.stoichiometry),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Kinetics: '), t.kineticConstants),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Practical: '), t.practical));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Chemistry: '), t.chemistry),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Stoichiometry: '), t.stoichiometry),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Kinetics: '), t.kineticConstants),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Practical: '), t.practical));
         })));
     }
 
@@ -18186,15 +18187,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         INVESTMENT_PROFILES.map(function(p, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, p.type),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6, fontSize: 11, marginBottom: 6 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6, fontSize: 12, marginBottom: 6 } },
               h('div', { style: { color: '#fda4af' } }, h('b', null, 'CAPEX: '), p.capexInvest),
               h('div', { style: { color: '#86efac' } }, h('b', null, 'Revenue: '), p.annualRevenue),
               h('div', { style: { color: '#86efac' } }, h('b', null, 'Profit: '), p.annualProfit),
               h('div', { style: { color: '#fde68a' } }, h('b', null, 'Break-even: '), p.breakEvenMonths + ' mo'),
               h('div', { style: { color: '#fb7185' } }, h('b', null, 'Risk: '), p.riskLevel)),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Time: '), p.timeCommitment),
-            h('div', { style: { fontSize: 11, color: '#c4b5fd', marginBottom: 4 } }, h('b', null, 'Who for: '), p.whoIsThisFor),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Tradeoffs: '), p.keyTradeoffs));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Time: '), p.timeCommitment),
+            h('div', { style: { fontSize: 12, color: '#c4b5fd', marginBottom: 4 } }, h('b', null, 'Who for: '), p.whoIsThisFor),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, h('b', null, 'Tradeoffs: '), p.keyTradeoffs));
         })));
     }
 
@@ -18324,14 +18325,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         DEEP_CASE_STUDIES_LARGE.map(function(c, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fb7185' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, c.title),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Years: '), c.years, '  |  ', h('b', null, 'Founders: '), c.founders),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Starting point: '), c.startingPoint),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Key milestones:')),
-            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Years: '), c.years, '  |  ', h('b', null, 'Founders: '), c.founders),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Starting point: '), c.startingPoint),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Key milestones:')),
+            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } },
               c.keyMilestones.map(function(m, mi) { return h('li', { key: mi }, m); })),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Strategy: '), c.strategy),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Outcomes: '), c.outcomes),
-            h('div', { style: { fontSize: 11, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Lessons: '), c.lessons));
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Strategy: '), c.strategy),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Outcomes: '), c.outcomes),
+            h('div', { style: { fontSize: 12, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Lessons: '), c.lessons));
         })));
     }
 
@@ -18468,11 +18469,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24', display: 'flex', gap: 12, alignItems: 'flex-start' } },
             h('div', { style: { minWidth: 80 } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a' } }, o.time),
-              h('div', { style: { fontSize: 10, color: '#bae6fd', marginTop: 3, fontStyle: 'italic' } }, o.season)),
+              h('div', { style: { fontSize: 12, color: '#bae6fd', marginTop: 3, fontStyle: 'italic' } }, o.season)),
             h('div', { style: { flex: 1 } },
               h('div', { style: { fontSize: 13, fontWeight: 700, color: '#5eead4', marginBottom: 3 } }, o.task),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4, lineHeight: 1.5 } }, o.details),
-              h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Why: '), o.whyMatters)));
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4, lineHeight: 1.5 } }, o.details),
+              h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Why: '), o.whyMatters)));
         })));
     }
 
@@ -18782,14 +18783,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         TROUBLESHOOTING_GUIDE.map(function(t, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #f87171' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fda4af', marginBottom: 5 } }, '⚠ ' + t.problem),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 6 } }, h('b', null, 'Symptoms: '), t.symptoms),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Possible causes:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 6 } }, h('b', null, 'Symptoms: '), t.symptoms),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Possible causes:')),
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               t.possibleCauses.map(function(c, ci) { return h('li', { key: ci }, c); })),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Immediate actions:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Immediate actions:')),
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               t.immediateActions.map(function(a, ai) { return h('li', { key: ai }, a); })),
-            h('div', { style: { fontSize: 11, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Prevention: '), t.prevention));
+            h('div', { style: { fontSize: 12, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Prevention: '), t.prevention));
         })));
     }
 
@@ -18898,13 +18899,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #5eead4' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 5 } }, s.skill),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.5 } }, s.description),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Key indicators:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Key indicators:')),
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               s.keyIndicators.map(function(k, ki) { return h('li', { key: ki }, k); })),
-            h('div', { style: { fontSize: 11, color: '#fb7185', marginBottom: 4 } }, h('b', null, 'Common mistakes:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#fb7185', marginBottom: 4 } }, h('b', null, 'Common mistakes:')),
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               s.commonMistakes.map(function(m, mi) { return h('li', { key: mi }, m); })),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'When to use: '), s.whenToUse));
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'When to use: '), s.whenToUse));
         })));
     }
 
@@ -19003,10 +19004,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         CULINARY_DEEP.map(function(c, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fb7185' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, c.application),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Product: '), c.oysters || c.mussels || c.kelp || c.scallops || c.salmon),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Preparation: '), c.preparation),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Chef tips: '), c.chefTips),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Common errors: '), c.commonErrors));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Product: '), c.oysters || c.mussels || c.kelp || c.scallops || c.salmon),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Preparation: '), c.preparation),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Chef tips: '), c.chefTips),
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Common errors: '), c.commonErrors));
         })));
     }
 
@@ -19093,10 +19094,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         FARM_DESIGN_PATTERNS.map(function(p, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, p.pattern),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Layout: '), p.layout),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Best for: '), p.bestFor),
-            h('div', { style: { fontSize: 11, color: '#fb7185', marginBottom: 4 } }, h('b', null, 'Risks: '), p.risks),
-            h('div', { style: { fontSize: 11, color: '#fde68a', fontStyle: 'italic' } }, h('b', null, 'Examples: '), p.examples));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Layout: '), p.layout),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Best for: '), p.bestFor),
+            h('div', { style: { fontSize: 12, color: '#fb7185', marginBottom: 4 } }, h('b', null, 'Risks: '), p.risks),
+            h('div', { style: { fontSize: 12, color: '#fde68a', fontStyle: 'italic' } }, h('b', null, 'Examples: '), p.examples));
         })));
     }
 
@@ -19240,13 +19241,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         STUDENT_PROJECT_IDEAS.map(function(p, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #34d399' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#6ee7b7', marginBottom: 4 } }, p.project),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Grade: '), p.gradeLevel, ' | ', h('b', null, 'Duration: '), p.duration),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Materials: '), p.materials),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Steps:')),
-            h('ol', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Grade: '), p.gradeLevel, ' | ', h('b', null, 'Duration: '), p.duration),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Materials: '), p.materials),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Steps:')),
+            h('ol', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } },
               p.steps.map(function(s, si) { return h('li', { key: si }, s); })),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Learning outcomes: '), p.learningOutcomes),
-            h('div', { style: { fontSize: 11, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Science connections: '), p.scienceConnections));
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Learning outcomes: '), p.learningOutcomes),
+            h('div', { style: { fontSize: 12, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Science connections: '), p.scienceConnections));
         })));
     }
 
@@ -19361,12 +19362,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SUSTAINABILITY_CERTIFICATIONS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, c.cert),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Scope: '), c.scope, '  |  ', h('b', null, 'Founded: '), c.founded),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Criteria: '), c.criteria),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Audit: '), c.audit),
-            h('div', { style: { fontSize: 11, color: '#fb7185', marginBottom: 3 } }, h('b', null, 'Cost: '), c.cost),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Market impact: '), c.marketImpact),
-            h('div', { style: { fontSize: 11, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Examples: '), c.examples));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Scope: '), c.scope, '  |  ', h('b', null, 'Founded: '), c.founded),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Criteria: '), c.criteria),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Audit: '), c.audit),
+            h('div', { style: { fontSize: 12, color: '#fb7185', marginBottom: 3 } }, h('b', null, 'Cost: '), c.cost),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Market impact: '), c.marketImpact),
+            h('div', { style: { fontSize: 12, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Examples: '), c.examples));
         })));
     }
 
@@ -19504,9 +19505,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#7dd3fc', marginBottom: 6 } }, c.category),
             h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'CAPEX: '), c.capex),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 5, fontStyle: 'italic' } }, h('b', null, 'Scale: '), c.scale),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Items needed:')),
-            h('ul', { style: { margin: '0 0 4px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 5, fontStyle: 'italic' } }, h('b', null, 'Scale: '), c.scale),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Items needed:')),
+            h('ul', { style: { margin: '0 0 4px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } },
               c.items.map(function(item, ii) { return h('li', { key: ii }, item); })));
         })));
     }
@@ -19652,10 +19653,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, y.period),
             h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Focus: '), y.focus),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Key actions:')),
-            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Key actions:')),
+            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               y.keyActions.map(function(a, ai) { return h('li', { key: ai }, a); })),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Deliverables: '), y.deliverables));
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Deliverables: '), y.deliverables));
         })));
     }
 
@@ -19708,24 +19709,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fde68a', marginBottom: 6 } }, 'Year ' + y.year, h('span', { style: { fontSize: 14, color: '#86efac', marginLeft: 12 } }, 'Total: ' + y.totalEstimated)),
             h('div', { style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: '#5eead4', marginBottom: 2 } }, '🦪 Oysters'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Volume: '), y.oysters.volume, '  |  ', h('b', null, 'Price: '), '$' + y.oysters.avgPrice, '  |  ', h('b', null, 'Revenue: '), y.oysters.revenue),
-              h('div', { style: { fontSize: 11, color: '#bae6fd', fontStyle: 'italic' } }, y.oysters.notes)),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Volume: '), y.oysters.volume, '  |  ', h('b', null, 'Price: '), '$' + y.oysters.avgPrice, '  |  ', h('b', null, 'Revenue: '), y.oysters.revenue),
+              h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, y.oysters.notes)),
             h('div', { style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: '#5eead4', marginBottom: 2 } }, '🪨 Mussels'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Volume: '), y.mussels.volume, '  |  ', h('b', null, 'Price: '), '$' + y.mussels.avgPrice, '  |  ', h('b', null, 'Revenue: '), y.mussels.revenue),
-              h('div', { style: { fontSize: 11, color: '#bae6fd', fontStyle: 'italic' } }, y.mussels.notes)),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Volume: '), y.mussels.volume, '  |  ', h('b', null, 'Price: '), '$' + y.mussels.avgPrice, '  |  ', h('b', null, 'Revenue: '), y.mussels.revenue),
+              h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, y.mussels.notes)),
             h('div', { style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: '#5eead4', marginBottom: 2 } }, '🌿 Kelp'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Volume: '), y.kelp.volume, '  |  ', h('b', null, 'Price: '), '$' + y.kelp.avgPrice + '/lb wet', '  |  ', h('b', null, 'Revenue: '), y.kelp.revenue),
-              h('div', { style: { fontSize: 11, color: '#bae6fd', fontStyle: 'italic' } }, y.kelp.notes)),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Volume: '), y.kelp.volume, '  |  ', h('b', null, 'Price: '), '$' + y.kelp.avgPrice + '/lb wet', '  |  ', h('b', null, 'Revenue: '), y.kelp.revenue),
+              h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, y.kelp.notes)),
             h('div', { style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: '#5eead4', marginBottom: 2 } }, '🐟 Salmon'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Volume: '), y.salmon.volume, '  |  ', h('b', null, 'Price: '), '$' + y.salmon.avgPrice, '  |  ', h('b', null, 'Revenue: '), y.salmon.revenue),
-              h('div', { style: { fontSize: 11, color: '#bae6fd', fontStyle: 'italic' } }, y.salmon.notes)),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Volume: '), y.salmon.volume, '  |  ', h('b', null, 'Price: '), '$' + y.salmon.avgPrice, '  |  ', h('b', null, 'Revenue: '), y.salmon.revenue),
+              h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, y.salmon.notes)),
             h('div', { style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.4)', borderRadius: 6 } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: '#5eead4', marginBottom: 2 } }, '🐚 Other Species'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Revenue: '), y.otherSpecies.revenue),
-              h('div', { style: { fontSize: 11, color: '#bae6fd', fontStyle: 'italic' } }, y.otherSpecies.notes)));
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Revenue: '), y.otherSpecies.revenue),
+              h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, y.otherSpecies.notes)));
         })));
     }
 
@@ -19892,7 +19893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SPECIES_PROFILES_DETAIL.map(function(s, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 14, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, s.species),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 4, fontSize: 11, marginBottom: 6 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 4, fontSize: 12, marginBottom: 6 } },
               h('div', { style: { color: '#bae6fd' } }, h('b', null, 'Native range: '), s.nativeRange),
               h('div', { style: { color: '#bae6fd' } }, h('b', null, 'Habitat: '), s.habitat),
               h('div', { style: { color: '#fde68a' } }, h('b', null, 'Diet: '), s.diet),
@@ -19901,10 +19902,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('div', { style: { color: '#fb7185' } }, h('b', null, 'Diseases: '), s.diseases),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Farming: '), s.farmingMethods),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, h('b', null, 'Market size: '), s.marketSize)),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Economics: '), s.keyEconomics),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Maine: '), s.maineSignificance),
-            h('div', { style: { fontSize: 11, color: '#a78bfa', marginBottom: 4 } }, h('b', null, 'Sustainability: '), s.sustainability),
-            h('div', { style: { fontSize: 11, color: '#fde68a', fontStyle: 'italic' } }, h('b', null, '🌟 Fun fact: '), s.funFact));
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Economics: '), s.keyEconomics),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Maine: '), s.maineSignificance),
+            h('div', { style: { fontSize: 12, color: '#a78bfa', marginBottom: 4 } }, h('b', null, 'Sustainability: '), s.sustainability),
+            h('div', { style: { fontSize: 12, color: '#fde68a', fontStyle: 'italic' } }, h('b', null, '🌟 Fun fact: '), s.funFact));
         })));
     }
 
@@ -19999,12 +20000,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         EQUIPMENT_TROUBLESHOOTING_DETAIL.map(function(t, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #f87171' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fda4af', marginBottom: 4 } }, t.equipment + ' — ' + t.symptom),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Causes:')),
-            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Causes:')),
+            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               t.causes.map(function(c, ci) { return h('li', { key: ci }, c); })),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Diagnosis: '), t.diagnosis),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Repair: '), t.repair),
-            h('div', { style: { fontSize: 11, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Prevention: '), t.prevention));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Diagnosis: '), t.diagnosis),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 4 } }, h('b', null, 'Repair: '), t.repair),
+            h('div', { style: { fontSize: 12, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Prevention: '), t.prevention));
         })));
     }
 
@@ -20103,10 +20104,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         COASTAL_COMMUNITY_PARTNERSHIPS.map(function(p, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #06b6d4' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#67e8f9', marginBottom: 4 } }, p.partnership),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Challenge: '), p.challenge),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Approach: '), p.approach),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Successes: '), p.successes),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Challenges: '), p.challenges));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Challenge: '), p.challenge),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Approach: '), p.approach),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Successes: '), p.successes),
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Challenges: '), p.challenges));
         })));
     }
 
@@ -20172,7 +20173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 8 } }, '"' + v.quote + '"'),
             h('div', { style: { fontSize: 12, fontWeight: 700, color: '#c4b5fd', marginBottom: 3 } }, '— ' + v.speaker),
-            h('div', { style: { fontSize: 11, color: '#bae6fd' } }, v.context));
+            h('div', { style: { fontSize: 12, color: '#bae6fd' } }, v.context));
         })));
     }
 
@@ -20208,7 +20209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 700, color: '#7dd3fc', marginBottom: 3 } }, s.metric),
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#86efac', marginBottom: 3 } }, s.value),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, s.detail));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, s.detail));
         })));
     }
 
@@ -20289,11 +20290,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         DEEP_RECIPE_COLLECTION.map(function(r, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 14, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fb7185' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fda4af', marginBottom: 6 } }, r.recipe),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Ingredients: '), r.ingredients),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 5, lineHeight: 1.5 } }, h('b', { style: { color: '#5eead4' } }, 'Instructions: '), r.instructions),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Serving: '), r.serving),
-            h('div', { style: { fontSize: 11, color: '#a78bfa', marginBottom: 3 } }, h('b', null, 'Wine: '), r.wine),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Chef notes: '), r.chefNotes));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Ingredients: '), r.ingredients),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 5, lineHeight: 1.5 } }, h('b', { style: { color: '#5eead4' } }, 'Instructions: '), r.instructions),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Serving: '), r.serving),
+            h('div', { style: { fontSize: 12, color: '#a78bfa', marginBottom: 3 } }, h('b', null, 'Wine: '), r.wine),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Chef notes: '), r.chefNotes));
         })));
     }
 
@@ -20372,10 +20373,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SCIENTIFIC_PAPERS_NOTES.map(function(p, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, p.paper),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'In: '), p.journal, ' (' + p.year + ')'),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Key findings: '), p.keyFindings),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Implications: '), p.implications),
-            h('div', { style: { fontSize: 11, color: '#5eead4', fontStyle: 'italic' } }, h('b', null, 'Actionable: '), p.actionable));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'In: '), p.journal, ' (' + p.year + ')'),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Key findings: '), p.keyFindings),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Implications: '), p.implications),
+            h('div', { style: { fontSize: 12, color: '#5eead4', fontStyle: 'italic' } }, h('b', null, 'Actionable: '), p.actionable));
         })));
     }
 
@@ -20433,9 +20434,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a', marginBottom: 4 } }, s.scenario),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 5, lineHeight: 1.5 } }, h('b', { style: { color: '#5eead4' } }, 'Outlook: '), s.outlook),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Drivers: '), s.drivers),
-            h('div', { style: { fontSize: 11, color: '#fb7185', marginBottom: 4 } }, h('b', null, 'Risks: '), s.risks),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Opportunities: '), s.opportunities));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Drivers: '), s.drivers),
+            h('div', { style: { fontSize: 12, color: '#fb7185', marginBottom: 4 } }, h('b', null, 'Risks: '), s.risks),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Opportunities: '), s.opportunities));
         })));
     }
 
@@ -20507,9 +20508,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #06b6d4' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#67e8f9', marginBottom: 4 } }, c.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 5, lineHeight: 1.5 } }, c.description),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Why matters: '), c.whyMatters),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Examples: '), c.examples),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Implementation: '), c.howToImplement));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Why matters: '), c.whyMatters),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Examples: '), c.examples),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Implementation: '), c.howToImplement));
         })));
     }
 
@@ -20616,11 +20617,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         STARTUP_GUIDE_DETAILED.map(function(p, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #34d399' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#6ee7b7', marginBottom: 5 } }, p.phase),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Budget: '), p.budgetEstimate),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Key activities:')),
-            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Budget: '), p.budgetEstimate),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Key activities:')),
+            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               p.keyActivities.map(function(a, ai) { return h('li', { key: ai }, a); })),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Common pitfalls: '), p.commonPitfalls));
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Common pitfalls: '), p.commonPitfalls));
         })));
     }
 
@@ -20678,8 +20679,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #c4b5fd' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 5 } }, r.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, lineHeight: 1.6 } }, h('b', { style: { color: '#5eead4' } }, 'Observation: '), r.observation),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Why it matters: '), r.whyItMatters),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'What\'s next: '), r.whatNext));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 5 } }, h('b', null, 'Why it matters: '), r.whyItMatters),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'What\'s next: '), r.whatNext));
         })));
     }
 
@@ -20745,7 +20746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('div', { style: { minWidth: 80, fontSize: 12, fontWeight: 900, color: '#fdba74' } }, t.year),
             h('div', { style: { flex: 1 } },
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 3 } }, t.event),
-              h('div', { style: { fontSize: 10, color: '#86efac', fontStyle: 'italic' } }, t.significance)));
+              h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, t.significance)));
         })));
     }
 
@@ -20875,10 +20876,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 5 } }, o.category),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, lineHeight: 1.5 } }, o.details),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Critical steps:')),
-            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Critical steps:')),
+            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               o.criticalSteps.map(function(s, si) { return h('li', { key: si }, s); })),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Common mistakes: '), o.commonMistakes));
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'Common mistakes: '), o.commonMistakes));
         })));
     }
 
@@ -20957,11 +20958,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         COMPLETE_BUYER_GUIDE.map(function(b, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a', marginBottom: 5 } }, b.buyerType),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Who they are: '), b.whoTheyAre),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'What they want: '), b.whatTheyWant),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'How they buy: '), b.howTheyBuy),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Relationship: '), b.relationshipModel),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Key for farmer: '), b.keyForFarmer));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Who they are: '), b.whoTheyAre),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'What they want: '), b.whatTheyWant),
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'How they buy: '), b.howTheyBuy),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Relationship: '), b.relationshipModel),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Key for farmer: '), b.keyForFarmer));
         })));
     }
 
@@ -21112,8 +21113,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           'Ten academic disciplines with their aquaculture connections. Use to design integrated curriculum or to identify which subjects bring aquaculture context. Aquaculture is rich integrated STEM + Social Studies content.'),
         SCIENCE_CONNECTIONS_BY_DISCIPLINE.map(function(d, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
-            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 5 } }, d.discipline, h('span', { style: { fontSize: 11, color: '#86efac', marginLeft: 10 } }, '(Grade ' + d.grade + ')')),
-            h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 5 } }, d.discipline, h('span', { style: { fontSize: 12, color: '#86efac', marginLeft: 10 } }, '(Grade ' + d.grade + ')')),
+            h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               d.connections.map(function(c, ci) { return h('li', { key: ci }, c); })));
         })));
     }
@@ -21178,8 +21179,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #34d399' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#6ee7b7', marginBottom: 5 } }, a.action),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, lineHeight: 1.5 } }, a.details),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Timeframe: '), a.timeframe),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '➜ Next step: '), a.nextStep));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 4 } }, h('b', null, 'Timeframe: '), a.timeframe),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '➜ Next step: '), a.nextStep));
         })));
     }
 
@@ -21216,8 +21217,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         FINAL_RESOURCES.map(function(r, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#7dd3fc', marginBottom: 3 } }, r.resource),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Site: '), r.website),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, r.use));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'Site: '), r.website),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, r.use));
         })));
     }
 
@@ -21289,8 +21290,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             inCat.map(function(it, i) {
               return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid #fb923c' } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fdba74', marginBottom: 2 } }, it.item),
-                h('div', { style: { fontSize: 10, color: '#bae6fd' } }, h('b', null, 'Specs: '), it.specs),
-                h('div', { style: { fontSize: 10, color: '#fde68a' } }, h('b', null, 'Cost: '), it.cost, '  |  ', h('b', null, 'Maint: '), it.maint));
+                h('div', { style: { fontSize: 12, color: '#bae6fd' } }, h('b', null, 'Specs: '), it.specs),
+                h('div', { style: { fontSize: 12, color: '#fde68a' } }, h('b', null, 'Cost: '), it.cost, '  |  ', h('b', null, 'Maint: '), it.maint));
             }));
         })));
     }
@@ -21543,8 +21544,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 6 } },
           GLOSSARY_EXTENDED_PT2.map(function(g, i) {
             return h('div', { key: i, style: { padding: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 4 } },
-              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, g.t),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.d));
+              h('div', { style: { fontSize: 12, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, g.t),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.d));
           }))));
     }
 
@@ -21588,10 +21589,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         BIBLIOGRAPHY_COMPREHENSIVE.map(function(b, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, b.title),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'By: '), b.author),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Pub: '), b.publisher, ' (' + b.year + ')'),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'ISBN: '), b.isbn, '  |  ', h('b', null, 'Pages: '), b.pages),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, b.topic));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 3 } }, h('b', null, 'By: '), b.author),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Pub: '), b.publisher, ' (' + b.year + ')'),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'ISBN: '), b.isbn, '  |  ', h('b', null, 'Pages: '), b.pages),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic' } }, b.topic));
         })));
     }
 
@@ -21667,7 +21668,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a', marginBottom: 6 } }, (i + 1) + '. ' + t.takeaway),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, lineHeight: 1.5 } }, t.elaboration),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '➜ Actionable: '), t.actionable));
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '➜ Actionable: '), t.actionable));
         })));
     }
 
@@ -22004,8 +22005,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         KEY_INSIGHTS_FINAL.map(function(insight, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a', marginBottom: 6 } }, '★ ' + insight.insight),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Evidence: '), insight.evidence),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Implication: '), insight.implication));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Evidence: '), insight.evidence),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Implication: '), insight.implication));
         })));
     }
 
@@ -22031,7 +22032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 5 } }, t.tradition),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, lineHeight: 1.5 } }, t.description),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Modern relevance: '), t.modernRelevance));
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Modern relevance: '), t.modernRelevance));
         })));
     }
 
@@ -22146,8 +22147,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 14, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 15, fontWeight: 900, color: '#fdba74', marginBottom: 8 } }, c.chapter),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.6 } }, c.narrative),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 5 } }, h('b', null, '🎯 Key lessons: '), c.keyLessons),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '🔗 Modern connection: '), c.modernConnection));
+            h('div', { style: { fontSize: 12, color: '#fde68a', marginBottom: 5 } }, h('b', null, '🎯 Key lessons: '), c.keyLessons),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '🔗 Modern connection: '), c.modernConnection));
         })));
     }
 
@@ -22259,8 +22260,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 6 } },
           COMPLETE_GLOSSARY_ROUND3.map(function(g, i) {
             return h('div', { key: i, style: { padding: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 4 } },
-              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, g.t),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.d));
+              h('div', { style: { fontSize: 12, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, g.t),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.d));
           }))));
     }
 
@@ -22336,8 +22337,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 5 } }, t.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 5, lineHeight: 1.5 } }, t.outlook),
-            h('div', { style: { fontSize: 11, color: '#fb7185', marginBottom: 4 } }, h('b', null, 'Challenges: '), t.challenges),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Opportunity: '), t.opportunity));
+            h('div', { style: { fontSize: 12, color: '#fb7185', marginBottom: 4 } }, h('b', null, 'Challenges: '), t.challenges),
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Opportunity: '), t.opportunity));
         })));
     }
 
@@ -22402,11 +22403,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SCENARIO_PLANNING_DEEP.map(function(s, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a', marginBottom: 6 } }, s.scenario),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Key assumptions:')),
-            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Key assumptions:')),
+            h('ul', { style: { margin: '0 0 6px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               s.keyAssumptions.map(function(a, ai) { return h('li', { key: ai }, a); })),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Outcome: '), s.outcome),
-            h('div', { style: { fontSize: 11, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'What to watch: '), s.whatToWatch));
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Outcome: '), s.outcome),
+            h('div', { style: { fontSize: 12, color: '#fb7185', fontStyle: 'italic' } }, h('b', null, 'What to watch: '), s.whatToWatch));
         })));
     }
 
@@ -22477,10 +22478,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         EQUITY_DEEP_DIVE.map(function(e, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #06b6d4' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#67e8f9', marginBottom: 5 } }, e.topic),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Current state: '), e.currentState),
-            h('div', { style: { fontSize: 11, color: '#fda4af', marginBottom: 5 } }, h('b', null, 'Gaps: '), e.gaps),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Solutions: '), e.solutions),
-            h('div', { style: { fontSize: 11, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Success examples: '), e.successExamples));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 5 } }, h('b', null, 'Current state: '), e.currentState),
+            h('div', { style: { fontSize: 12, color: '#fda4af', marginBottom: 5 } }, h('b', null, 'Gaps: '), e.gaps),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 5 } }, h('b', null, 'Solutions: '), e.solutions),
+            h('div', { style: { fontSize: 12, color: '#c4b5fd', fontStyle: 'italic' } }, h('b', null, 'Success examples: '), e.successExamples));
         })));
     }
 
@@ -22571,7 +22572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             return h('div', { key: i, style: { padding: 14, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #14b8a6', textAlign: 'center' } },
               h('div', { style: { fontSize: 24, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, s.value),
               h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 4 } }, s.label),
-              h('div', { style: { fontSize: 10, color: '#bae6fd', fontStyle: 'italic' } }, s.context));
+              h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, s.context));
           }))));
     }
 
@@ -22639,7 +22640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 14, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, a.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.5 } }, a.content),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', fontStyle: 'italic' } }, h('b', null, 'Details: '), a.details));
+            h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, h('b', null, 'Details: '), a.details));
         })));
     }
 
@@ -22694,7 +22695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SIGN_OFF_NOTES.map(function(s, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #34d399', textAlign: 'left' } },
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 6 } }, s.message),
-            h('div', { style: { fontSize: 11, color: '#86efac', textAlign: 'right' } }, '— ' + s.signedBy));
+            h('div', { style: { fontSize: 12, color: '#86efac', textAlign: 'right' } }, '— ' + s.signedBy));
         })));
     }
 
@@ -22904,7 +22905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 14, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fde68a', marginBottom: 6 } }, o.outlook),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.6 } }, o.body),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Key forces: '), o.keyForces));
+            h('div', { style: { fontSize: 12, color: '#86efac', fontStyle: 'italic' } }, h('b', null, 'Key forces: '), o.keyForces));
         })));
     }
 
@@ -23115,8 +23116,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 6 } },
           ULTIMATE_GLOSSARY_FINAL.map(function(g, i) {
             return h('div', { key: i, style: { padding: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 4 } },
-              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, g.t),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.d));
+              h('div', { style: { fontSize: 12, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, g.t),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.d));
           }))));
     }
 
@@ -23282,8 +23283,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 6 } },
           FINAL_GLOSSARY_CROSSING.map(function(g, i) {
             return h('div', { key: i, style: { padding: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 4 } },
-              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, g.t),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.d));
+              h('div', { style: { fontSize: 12, fontWeight: 900, color: '#5eead4', marginBottom: 2 } }, g.t),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.4 } }, g.d));
           }))));
     }
 
@@ -23309,7 +23310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         GLOSSARY.map(function(g, i) {
           return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#5eead4', marginBottom: 2 } }, g.term),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, g.def));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, g.def));
         })));
     }
 
@@ -23340,7 +23341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Knowledge checkpoints'),
             h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } },
               'The full review is divided into seven focused checkpoints of ten questions each. Choose any checkpoint, move backward, skip when unsure, and review explanations at the end.'),
-            h('div', { style: { color: '#99f6e4', fontSize: 11.5, fontWeight: 850 } },
+            h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 850 } },
               completedCheckpointCount + ' of ' + QUIZ_CHECKPOINTS.length + ' checkpoints attempted')),
           h('div', { className: 'aq-checkpoint-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
             QUIZ_CHECKPOINTS.map(function(item, index) {
@@ -23349,13 +23350,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 display: 'flex', flexDirection: 'column', minHeight: 180, padding: 12, borderRadius: 12,
                 background: '#061a18', border: '1px solid #416c67', borderTop: '4px solid ' + item.tone
               } },
-                h('div', { style: { color: item.tone, fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                h('div', { style: { color: item.tone, fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } },
                   'Checkpoint ' + (index + 1)),
                 h('h2', { style: { margin: '5px 0 6px', color: '#f8fafc', fontSize: 16, lineHeight: 1.25 } }, item.title),
-                h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, item.detail),
-                result ? h('div', { style: { marginBottom: 9, color: '#d1fae5', fontSize: 11.5, fontWeight: 850 } },
+                h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, item.detail),
+                result ? h('div', { style: { marginBottom: 9, color: '#d1fae5', fontSize: 12, fontWeight: 850 } },
                   'Best: ' + result.bestScore + '/' + result.total + ' · Latest: ' + result.latestScore + '/' + result.total) :
-                  h('div', { style: { marginBottom: 9, color: '#bfdbfe', fontSize: 11.5, fontWeight: 750 } }, 'Not attempted yet'),
+                  h('div', { style: { marginBottom: 9, color: '#bfdbfe', fontSize: 12, fontWeight: 750 } }, 'Not attempted yet'),
                 h('button', { type: 'button', className: 'aq-btn', onClick: function() { startQuizCheckpoint(item.id); },
                   style: { minHeight: 44, marginTop: 'auto', padding: '9px 11px', borderRadius: 8, cursor: 'pointer',
                     background: item.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 900 } },
@@ -23378,12 +23379,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               var picked = quizState.answers[questionIndex];
               var correct = picked === question.correct;
               return h('div', { key: questionIndex, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + (correct ? '#86efac' : '#fb923c') } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: correct ? '#86efac' : '#fb923c', marginBottom: 4 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: correct ? '#86efac' : '#fb923c', marginBottom: 4 } },
                   (correct ? '✓ ' : '✕ ') + 'Q' + (questionIndex + 1) + ': ' + question.q),
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
                   'Your answer: ' + (typeof picked === 'number' ? question.a[picked] : 'skipped')),
-                !correct ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 2 } }, 'Correct: ' + question.a[question.correct]) : null,
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, question.explain));
+                !correct ? h('div', { style: { fontSize: 12, color: '#86efac', marginTop: 2 } }, 'Correct: ' + question.a[question.correct]) : null,
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, question.explain));
             })),
           h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 } },
             h('button', { type: 'button', className: 'aq-btn', onClick: function() { startQuizCheckpoint(checkpoint.id); },
@@ -23401,7 +23402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
         h('div', { className: 'aq-section-kicker', style: headerStyle },
           checkpoint.title + ' · Question ' + (quizState.idx + 1) + ' of ' + checkpointQuestions.length),
-        h('div', { role: 'progressbar', 'aria-label': checkpoint.title + ' checkpoint progress', 'aria-valuemin': 1,
+        h('div', { role: 'progressbar', 'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_checkpoint_progress', '{title} checkpoint progress'), { title: checkpoint.title }), 'aria-valuemin': 1,
           'aria-valuemax': checkpointQuestions.length, 'aria-valuenow': quizState.idx + 1,
           style: { height: 8, marginBottom: 12, overflow: 'hidden', borderRadius: 999, background: '#173f3a', border: '1px solid #527a75' } },
           h('div', { className: 'aq-progress-fill', style: { width: ((quizState.idx + 1) / checkpointQuestions.length * 100) + '%', height: '100%', background: checkpoint.tone } })),
@@ -23453,9 +23454,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SITE_SELECTION.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, s.factor),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Criteria: '), s.criteria),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'How to assess: '), s.assessment),
-            h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, '🚩 Red flag: '), s.red_flag));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Criteria: '), s.criteria),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'How to assess: '), s.assessment),
+            h('div', { style: { fontSize: 12, color: '#fb923c' } }, h('b', null, '🚩 Red flag: '), s.red_flag));
         })));
     }
 
@@ -23482,7 +23483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, hs.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, hs.body),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), hs.practical));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Practical: '), hs.practical));
         })));
     }
 
@@ -23495,11 +23496,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         DISEASES.map(function(d, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, d.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Species affected: '), d.species),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Transmission: '), d.transmission),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Symptoms: '), d.symptoms),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Management: '), d.management),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Maine context: '), d.maine));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Species affected: '), d.species),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Transmission: '), d.transmission),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Symptoms: '), d.symptoms),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Management: '), d.management),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Maine context: '), d.maine));
         })));
     }
 
@@ -23513,8 +23514,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 6 } }, c.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.body),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'For farmers: '), c.farming),
-            c.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'For farmers: '), c.farming),
+            c.cite ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
         })));
     }
 
@@ -23527,9 +23528,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         HISTORY.map(function(hh, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, hh.era),
-            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               hh.events.map(function(e, ei) { return h('li', { key: ei }, e); })),
-            hh.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + hh.cite + ')') : null);
+            hh.cite ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + hh.cite + ')') : null);
         })));
     }
 
@@ -23594,8 +23595,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         KNOTS.map(function(k, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', marginBottom: 4 } }, k.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Use: '), k.use, ' · ', h('b', null, 'Where: '), k.where),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Mnemonic: '), k.mnemonic));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Use: '), k.use, ' · ', h('b', null, 'Where: '), k.where),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Mnemonic: '), k.mnemonic));
         })));
     }
 
@@ -23609,7 +23610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, w.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, w.body),
-            w.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + w.cite + ')') : null);
+            w.cite ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + w.cite + ')') : null);
         })));
     }
 
@@ -23628,7 +23629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               return h('div', { key: a.id, style: { padding: 10, background: done ? 'rgba(134,239,172,0.12)' : 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (done ? '#86efac' : '#475569'), opacity: done ? 1 : 0.65 } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, a.icon),
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: done ? '#86efac' : '#cbd5e1', marginBottom: 2 } }, (done ? '✓ ' : '') + a.name),
-                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, a.desc));
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, a.desc));
             }))));
     }
 
@@ -23641,8 +23642,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SAFETY.map(function(s, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fdba74' } }, s.emoji + ' ' + s.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, h('b', null, 'Required: '), s.required),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginTop: 4, fontStyle: 'italic' } }, h('b', null, 'Reality: '), s.reality));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, h('b', null, 'Required: '), s.required),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginTop: 4, fontStyle: 'italic' } }, h('b', null, 'Reality: '), s.reality));
         })));
     }
 
@@ -23655,11 +23656,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         BOATS.map(function(b, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, b.emoji + ' ' + b.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Use: '), b.use),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Power: '), b.power, ' · ', h('b', null, 'Crew: '), b.crew),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, '✓ Pros: '), b.pros),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, '✗ Cons: '), b.cons),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Cost: '), b.typical));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Use: '), b.use),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Power: '), b.power, ' · ', h('b', null, 'Crew: '), b.crew),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, '✓ Pros: '), b.pros),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, '✗ Cons: '), b.cons),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Cost: '), b.typical));
         })));
     }
 
@@ -23685,8 +23686,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         WATER_COLUMN_AQ.map(function(z, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, z.zone),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Uses: '), z.use),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Considerations: '), z.considerations));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Uses: '), z.use),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Considerations: '), z.considerations));
         })));
     }
 
@@ -23699,8 +23700,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         WEATHER_AQ.map(function(w, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, w.name),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, '⚠ Threat: '), w.threat),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, '✓ Response: '), w.response));
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, '⚠ Threat: '), w.threat),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, '✓ Response: '), w.response));
         })));
     }
 
@@ -23713,10 +23714,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         OPERATOR_PROFILES.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, p.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Founded: '), p.founded),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Operation: '), p.operation),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), p.role),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Lesson: '), p.lesson));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Founded: '), p.founded),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Operation: '), p.operation),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), p.role),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Lesson: '), p.lesson));
         })));
     }
 
@@ -23730,14 +23731,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 6 } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac' } }, lp.title),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Grade ' + lp.grade + ' · ' + lp.subject)),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 6 } }, h('b', null, 'Objectives:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Grade ' + lp.grade + ' · ' + lp.subject)),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 6 } }, h('b', null, 'Objectives:')),
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               lp.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, h('b', null, 'Materials: '), lp.materials.join(' · ')),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Flow: '), lp.flow),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Assessment: '), lp.assessment),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Cross-cuts: '), lp.crosscuts.join(' · ')));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, h('b', null, 'Materials: '), lp.materials.join(' · ')),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Flow: '), lp.flow),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Assessment: '), lp.assessment),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Cross-cuts: '), lp.crosscuts.join(' · ')));
         })));
     }
 
@@ -23748,14 +23749,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'All claims in AquacultureLab trace to one of these sources.'),
         BIBLIOGRAPHY.map(function(b, i) {
-          return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+          return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
             h('div', null,
               h('b', { style: { color: '#5eead4' } }, b.authors + ' (' + b.year + '). '),
               h('span', { style: { fontStyle: 'italic' } }, b.title),
               b.journal ? h('span', null, '. ' + b.journal) : null,
               h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ' [' + b.type + ']')),
-            b.notes ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, b.notes) : null,
-            b.url ? h('div', { style: { fontSize: 10, color: '#86efac', marginTop: 2 } }, b.url) : null);
+            b.notes ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, b.notes) : null,
+            b.url ? h('div', { style: { fontSize: 12, color: '#86efac', marginTop: 2 } }, b.url) : null);
         })));
     }
 
@@ -23768,10 +23769,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         FARM_CALENDAR.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, m.month),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Conditions: '), m.conditions),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Tasks: '), m.tasks),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Threats: '), m.threats),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Notes: '), m.notes));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Conditions: '), m.conditions),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Tasks: '), m.tasks),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Threats: '), m.threats),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Notes: '), m.notes));
         })));
     }
 
@@ -23785,8 +23786,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: idx, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, i.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, i.body),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Benefit: '), i.benefit),
-            i.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + i.cite + ')') : null);
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Benefit: '), i.benefit),
+            i.cite ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + i.cite + ')') : null);
         })));
     }
 
@@ -23800,8 +23801,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 6 } }, f.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, f.body),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Management: '), f.management),
-            f.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + f.cite + ')') : null);
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Management: '), f.management),
+            f.cite ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + f.cite + ')') : null);
         })));
     }
 
@@ -23815,7 +23816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, c.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.body),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), c.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), c.relevance));
         })));
     }
 
@@ -23842,7 +23843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, g.region),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, g.body),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Maine: '), g.maine));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Maine: '), g.maine));
         })));
     }
 
@@ -23855,9 +23856,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         REGULATORY.map(function(r, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, r.agency),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), r.role),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Responsibilities: '), r.responsibilities),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Contact: '), r.contact));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), r.role),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Responsibilities: '), r.responsibilities),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Contact: '), r.contact));
         })));
     }
 
@@ -23870,9 +23871,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         CARBON_DETAIL.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, c.stage),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 3 } }, h('b', null, 'Science: '), c.science),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Net: '), c.net),
-            c.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 3 } }, h('b', null, 'Science: '), c.science),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Net: '), c.net),
+            c.cite ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
         })));
     }
 
@@ -23885,12 +23886,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         CAREER_PROFILES.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, p.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Path: '), p.path),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Day: '), p.day),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Challenges: '), p.challenges),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Rewards: '), p.rewards),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Pay: '), p.pay),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', fontStyle: 'italic' } }, h('b', null, 'Advice: '), p.advice));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Path: '), p.path),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Day: '), p.day),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Challenges: '), p.challenges),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Rewards: '), p.rewards),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Pay: '), p.pay),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', fontStyle: 'italic' } }, h('b', null, 'Advice: '), p.advice));
         })));
     }
 
@@ -23904,10 +23905,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 8 } }, u.unit),
             h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 6 } }, h('b', null, 'Essential Questions:')),
-            h('ul', { style: { margin: '0 0 10px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+            h('ul', { style: { margin: '0 0 10px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               u.essential_questions.map(function(q, qi) { return h('li', { key: qi, style: { marginBottom: 3 } }, q); })),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 4 } }, h('b', null, 'Key Concepts: '), u.key_concepts),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Assessments: '), u.assessments));
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 4 } }, h('b', null, 'Key Concepts: '), u.key_concepts),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Assessments: '), u.assessments));
         })));
     }
 
@@ -23920,7 +23921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         FAILURE_MODES.map(function(f, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #ef4444' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fca5a5', marginBottom: 4 } }, '⚠️ ' + (i+1) + '. ' + f.mode),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, f.detail));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, f.detail));
         })));
     }
 
@@ -23935,7 +23936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', marginBottom: 4 } },
               h('div', { style: { fontSize: 12, fontWeight: 800, color: '#5eead4' } }, m.metric),
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac' } }, m.value)),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, m.context));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, m.context));
         })));
     }
 
@@ -23948,7 +23949,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_TIMELINE.map(function(t, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #06b6d4' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#67e8f9', marginBottom: 4 } }, '📅 ' + t.era + ' — ' + t.event),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, t.detail));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, t.detail));
         })));
     }
 
@@ -23974,54 +23975,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         HATCHERY_DEEP.map(function(d, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #ec4899' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#f9a8d4', marginBottom: 6 } }, '🏭 ' + d.topic),
-            d.summary ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Summary: '), d.summary) : null,
-            d.maine_examples ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Maine examples: '), d.maine_examples) : null,
-            d.scale ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Scale: '), d.scale) : null,
-            d.criteria ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Criteria: '), d.criteria) : null,
-            d.sources ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Sources: '), d.sources) : null,
-            d.genetic_concerns ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Genetic concerns: '), d.genetic_concerns) : null,
-            d.process ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Process: '), d.process) : null,
-            d.yield ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Yield: '), d.yield) : null,
-            d.hatchery_skill ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Skill: '), d.hatchery_skill) : null,
-            d.biology ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Biology: '), d.biology) : null,
-            d.tank_conditions ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Tank conditions: '), d.tank_conditions) : null,
-            d.feed ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Feed: '), d.feed) : null,
-            d.mortality ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Mortality: '), d.mortality) : null,
-            d.transition ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Transition: '), d.transition) : null,
-            d.remote_set ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Remote set: '), d.remote_set) : null,
-            d.single_set ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Single set: '), d.single_set) : null,
-            d.cultch_set ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Cultch set: '), d.cultch_set) : null,
-            d.after_set ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'After set: '), d.after_set) : null,
-            d.growth_rate ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Growth rate: '), d.growth_rate) : null,
-            d.grading ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Grading: '), d.grading) : null,
-            d.packing ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Packing: '), d.packing) : null,
-            d.species ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Species: '), d.species) : null,
-            d.cascade_system ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Cascade system: '), d.cascade_system) : null,
-            d.contamination ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Contamination: '), d.contamination) : null,
-            d.cost ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Cost: '), d.cost) : null,
-            d.what ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'What: '), d.what) : null,
-            d.how_made ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'How made: '), d.how_made) : null,
-            d.maine_use ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Maine use: '), d.maine_use) : null,
-            d.ethical_practical ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Ethical/practical: '), d.ethical_practical) : null,
-            d.msx_dermo ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'MSX/Dermo: '), d.msx_dermo) : null,
-            d.oshv ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'OsHV-1: '), d.oshv) : null,
-            d.qpx ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'QPX: '), d.qpx) : null,
-            d.bio_security ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Biosecurity: '), d.bio_security) : null,
-            d.genetic_resistance ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Genetic resistance: '), d.genetic_resistance) : null,
-            d.ocean_acidification ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Ocean acidification: '), d.ocean_acidification) : null,
-            d.thermal_tolerance ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Thermal tolerance: '), d.thermal_tolerance) : null,
-            d.maine_programs ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Maine programs: '), d.maine_programs) : null,
-            d.open_question ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Open question: '), d.open_question) : null,
-            d.capital ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Capital: '), d.capital) : null,
-            d.operating ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Operating: '), d.operating) : null,
-            d.pricing ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Pricing: '), d.pricing) : null,
-            d.maine_market ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Maine market: '), d.maine_market) : null,
-            d.policy_advocacy ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Policy/advocacy: '), d.policy_advocacy) : null,
-            d.hatchery_technician ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Hatchery technician: '), d.hatchery_technician) : null,
-            d.hatchery_biologist ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Hatchery biologist: '), d.hatchery_biologist) : null,
-            d.hatchery_manager ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Hatchery manager: '), d.hatchery_manager) : null,
-            d.research_scientist ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Research scientist: '), d.research_scientist) : null,
-            d.careers_to_farms ? h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'Careers → farms: '), d.careers_to_farms) : null);
+            d.summary ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Summary: '), d.summary) : null,
+            d.maine_examples ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Maine examples: '), d.maine_examples) : null,
+            d.scale ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Scale: '), d.scale) : null,
+            d.criteria ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Criteria: '), d.criteria) : null,
+            d.sources ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Sources: '), d.sources) : null,
+            d.genetic_concerns ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Genetic concerns: '), d.genetic_concerns) : null,
+            d.process ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Process: '), d.process) : null,
+            d.yield ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Yield: '), d.yield) : null,
+            d.hatchery_skill ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Skill: '), d.hatchery_skill) : null,
+            d.biology ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Biology: '), d.biology) : null,
+            d.tank_conditions ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Tank conditions: '), d.tank_conditions) : null,
+            d.feed ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Feed: '), d.feed) : null,
+            d.mortality ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Mortality: '), d.mortality) : null,
+            d.transition ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Transition: '), d.transition) : null,
+            d.remote_set ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Remote set: '), d.remote_set) : null,
+            d.single_set ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Single set: '), d.single_set) : null,
+            d.cultch_set ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Cultch set: '), d.cultch_set) : null,
+            d.after_set ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'After set: '), d.after_set) : null,
+            d.growth_rate ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Growth rate: '), d.growth_rate) : null,
+            d.grading ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Grading: '), d.grading) : null,
+            d.packing ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Packing: '), d.packing) : null,
+            d.species ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Species: '), d.species) : null,
+            d.cascade_system ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Cascade system: '), d.cascade_system) : null,
+            d.contamination ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Contamination: '), d.contamination) : null,
+            d.cost ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Cost: '), d.cost) : null,
+            d.what ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'What: '), d.what) : null,
+            d.how_made ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'How made: '), d.how_made) : null,
+            d.maine_use ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Maine use: '), d.maine_use) : null,
+            d.ethical_practical ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Ethical/practical: '), d.ethical_practical) : null,
+            d.msx_dermo ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'MSX/Dermo: '), d.msx_dermo) : null,
+            d.oshv ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'OsHV-1: '), d.oshv) : null,
+            d.qpx ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'QPX: '), d.qpx) : null,
+            d.bio_security ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Biosecurity: '), d.bio_security) : null,
+            d.genetic_resistance ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Genetic resistance: '), d.genetic_resistance) : null,
+            d.ocean_acidification ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Ocean acidification: '), d.ocean_acidification) : null,
+            d.thermal_tolerance ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Thermal tolerance: '), d.thermal_tolerance) : null,
+            d.maine_programs ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Maine programs: '), d.maine_programs) : null,
+            d.open_question ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Open question: '), d.open_question) : null,
+            d.capital ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Capital: '), d.capital) : null,
+            d.operating ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Operating: '), d.operating) : null,
+            d.pricing ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Pricing: '), d.pricing) : null,
+            d.maine_market ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Maine market: '), d.maine_market) : null,
+            d.policy_advocacy ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Policy/advocacy: '), d.policy_advocacy) : null,
+            d.hatchery_technician ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Hatchery technician: '), d.hatchery_technician) : null,
+            d.hatchery_biologist ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Hatchery biologist: '), d.hatchery_biologist) : null,
+            d.hatchery_manager ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Hatchery manager: '), d.hatchery_manager) : null,
+            d.research_scientist ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Research scientist: '), d.research_scientist) : null,
+            d.careers_to_farms ? h('div', { style: { fontSize: 12, color: '#fb923c' } }, h('b', null, 'Careers → farms: '), d.careers_to_farms) : null);
         })));
     }
 
@@ -24034,14 +24035,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         COMPOSITE_GROW_SEASONS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 14, background: 'rgba(15,23,42,0.6)', borderRadius: 10, borderLeft: '5px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#2dd4bf', marginBottom: 6 } }, '🔄 ' + c.title),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Site: '), c.site),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 8 } }, h('b', null, 'Gear: '), c.gear),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Site: '), c.site),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 8 } }, h('b', null, 'Gear: '), c.gear),
             h('div', { style: { padding: 10, background: 'rgba(0,0,0,0.25)', borderRadius: 6, marginBottom: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, 'Month-by-month narrative:'),
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, 'Month-by-month narrative:'),
               c.narrative.map(function(line, j) {
-                return h('div', { key: j, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 4, paddingLeft: 6, borderLeft: '2px solid rgba(20,184,166,0.3)' } }, line);
+                return h('div', { key: j, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 4, paddingLeft: 6, borderLeft: '2px solid rgba(20,184,166,0.3)' } }, line);
               })),
-            h('div', { style: { fontSize: 11, color: '#86efac', padding: 8, background: 'rgba(134,239,172,0.08)', borderRadius: 6 } }, h('b', null, 'Lessons: '), c.lessons));
+            h('div', { style: { fontSize: 12, color: '#86efac', padding: 8, background: 'rgba(134,239,172,0.08)', borderRadius: 6 } }, h('b', null, 'Lessons: '), c.lessons));
         })));
     }
 
@@ -24054,37 +24055,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         KELP_DEEP.map(function(k, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #84cc16' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bef264', marginBottom: 6 } }, '🌿 ' + k.topic),
-            k.bio ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Biology: '), k.bio) : null,
-            k.culture ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Culture: '), k.culture) : null,
-            k.market ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Market: '), k.market) : null,
-            k.bottlenecks ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Bottlenecks: '), k.bottlenecks) : null,
-            k.explanation ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Explanation: '), k.explanation) : null,
-            k.why_complex ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Why complex: '), k.why_complex) : null,
-            k.maine_hatcheries ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Maine hatcheries: '), k.maine_hatcheries) : null,
-            k.carbon ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Carbon: '), k.carbon) : null,
-            k.nitrogen ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Nitrogen: '), k.nitrogen) : null,
-            k.acidification ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Acidification: '), k.acidification) : null,
-            k.caveats ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Caveats: '), k.caveats) : null,
-            k.concept ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Concept: '), k.concept) : null,
-            k.barriers ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Barriers: '), k.barriers) : null,
-            k.research ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Research: '), k.research) : null,
-            k.atlantic_sea_farms ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Atlantic Sea Farms: '), k.atlantic_sea_farms) : null,
-            k.ocean_approved ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Ocean Approved: '), k.ocean_approved) : null,
-            k.springtide_seaweed ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Springtide Seaweed: '), k.springtide_seaweed) : null,
-            k.university_research ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'University research: '), k.university_research) : null,
-            k.international ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'International: '), k.international) : null,
-            k.lease ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Lease: '), k.lease) : null,
-            k.species_native ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Native species: '), k.species_native) : null,
-            k.food_safety ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Food safety: '), k.food_safety) : null,
-            k.contaminants ? h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Contaminants: '), k.contaminants) : null,
-            k.capital ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Capital: '), k.capital) : null,
-            k.labor ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Labor: '), k.labor) : null,
-            k.revenue ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Revenue: '), k.revenue) : null,
-            k.margin ? h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Margin: '), k.margin) : null,
-            k.growth_path ? h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Growth path: '), k.growth_path) : null,
-            k.growth ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Growth: '), k.growth) : null,
-            k.buyers ? h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Buyers: '), k.buyers) : null,
-            k.outlook ? h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Outlook: '), k.outlook) : null);
+            k.bio ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Biology: '), k.bio) : null,
+            k.culture ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Culture: '), k.culture) : null,
+            k.market ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Market: '), k.market) : null,
+            k.bottlenecks ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Bottlenecks: '), k.bottlenecks) : null,
+            k.explanation ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Explanation: '), k.explanation) : null,
+            k.why_complex ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Why complex: '), k.why_complex) : null,
+            k.maine_hatcheries ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Maine hatcheries: '), k.maine_hatcheries) : null,
+            k.carbon ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Carbon: '), k.carbon) : null,
+            k.nitrogen ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Nitrogen: '), k.nitrogen) : null,
+            k.acidification ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Acidification: '), k.acidification) : null,
+            k.caveats ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Caveats: '), k.caveats) : null,
+            k.concept ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Concept: '), k.concept) : null,
+            k.barriers ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Barriers: '), k.barriers) : null,
+            k.research ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Research: '), k.research) : null,
+            k.atlantic_sea_farms ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Atlantic Sea Farms: '), k.atlantic_sea_farms) : null,
+            k.ocean_approved ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Ocean Approved: '), k.ocean_approved) : null,
+            k.springtide_seaweed ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Springtide Seaweed: '), k.springtide_seaweed) : null,
+            k.university_research ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'University research: '), k.university_research) : null,
+            k.international ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'International: '), k.international) : null,
+            k.lease ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Lease: '), k.lease) : null,
+            k.species_native ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Native species: '), k.species_native) : null,
+            k.food_safety ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Food safety: '), k.food_safety) : null,
+            k.contaminants ? h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Contaminants: '), k.contaminants) : null,
+            k.capital ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Capital: '), k.capital) : null,
+            k.labor ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Labor: '), k.labor) : null,
+            k.revenue ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Revenue: '), k.revenue) : null,
+            k.margin ? h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Margin: '), k.margin) : null,
+            k.growth_path ? h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Growth path: '), k.growth_path) : null,
+            k.growth ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Growth: '), k.growth) : null,
+            k.buyers ? h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Buyers: '), k.buyers) : null,
+            k.outlook ? h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Outlook: '), k.outlook) : null);
         })));
     }
 
@@ -24098,8 +24099,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, f.profile),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, f.story),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Lessons: '), f.lessons),
-            h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'Challenges: '), f.challenges));
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Lessons: '), f.lessons),
+            h('div', { style: { fontSize: 12, color: '#fb923c' } }, h('b', null, 'Challenges: '), f.challenges));
         })));
     }
 
@@ -24112,10 +24113,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         STUDENT_CAREER.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, '❓ ' + s.question),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Consider: '), s.decision_factors),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Pathways: '), s.pathways),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 4 } }, h('b', null, 'Key steps: '), s.key_steps),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Timeline: '), s.timeline));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, h('b', null, 'Consider: '), s.decision_factors),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Pathways: '), s.pathways),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 4 } }, h('b', null, 'Key steps: '), s.key_steps),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Timeline: '), s.timeline));
         })));
     }
 
@@ -24129,7 +24130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), c.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), c.relevance));
         })));
     }
 
@@ -24143,7 +24144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, w.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, w.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), w.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), w.relevance));
         })));
     }
 
@@ -24157,7 +24158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, h_.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, h_.content),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Relevance: '), h_.relevance));
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Relevance: '), h_.relevance));
         })));
     }
 
@@ -24171,7 +24172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, f.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, f.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), f.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), f.relevance));
         })));
     }
 
@@ -24185,7 +24186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, s.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, s.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), s.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), s.relevance));
         })));
     }
 
@@ -24199,7 +24200,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, r.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, r.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), r.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), r.relevance));
         })));
     }
 
@@ -24213,7 +24214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, t.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, t.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), t.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), t.relevance));
         })));
     }
 
@@ -24227,7 +24228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 4 } }, k.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, k.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), k.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), k.relevance));
         })));
     }
 
@@ -24241,7 +24242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, s.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, s.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), s.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), s.relevance));
         })));
     }
 
@@ -24255,7 +24256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, o.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, o.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), o.relevance));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Relevance: '), o.relevance));
         })));
     }
 
@@ -24345,7 +24346,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             style: { padding: 14, borderRadius: 12, background: 'linear-gradient(145deg, rgba(5,46,43,.96), rgba(15,23,42,.98))', border: '1px solid #5f8f88' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' } },
               h('div', null,
-                h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Interactive field investigation · model ' + MUSSEL_HEALTH_MODEL_VERSION),
+                h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Interactive field investigation · model ' + MUSSEL_HEALTH_MODEL_VERSION),
                 h('h2', { id: 'aq-mussel-health-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 21 } }, 'Mussel health station'),
                 h('p', { style: { margin: 0, maxWidth: 760, color: '#dbeafe', fontSize: 13, lineHeight: 1.55 } }, 'Read a lease case, predict the priority signal, inspect seven measurements, and reveal the model. Then explain what you would verify rather than treating one reading as a diagnosis.')),
               h('button', { type: 'button', className: 'aq-btn', onClick: resetMusselHealthWorkspace,
@@ -24360,17 +24361,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 var stepBackground = current ? 'rgba(109,40,217,.24)' : (complete ? 'rgba(13,148,136,.16)' : 'rgba(15,23,42,.5)');
                 var stepBorder = current ? '#c4b5fd' : (complete ? '#5eead4' : '#475569');
                 return h('li', { key: step, 'data-step-state': stepState, 'aria-current': current ? 'step' : undefined, 'aria-label': step + ', ' + stepState,
-                  style: { padding: '7px 8px', borderRadius: 8, color: stepColor, background: stepBackground, border: '1px solid ' + stepBorder, fontSize: 11.5, fontWeight: current ? 950 : 850 } },
+                  style: { padding: '7px 8px', borderRadius: 8, color: stepColor, background: stepBackground, border: '1px solid ' + stepBorder, fontSize: 12, fontWeight: current ? 950 : 850 } },
                   h('span', { 'aria-hidden': 'true' }, complete ? '✓ ' : (current ? '→ ' : '')), step);
               })),
             missionDepthComparison ? h('section', { className: 'aq-mussel-mission-evidence', 'aria-labelledby': 'aq-mussel-mission-evidence-heading', 'data-loaded-depth': missionEvidenceDepth || 'none',
               style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'linear-gradient(135deg,rgba(30,64,175,.2),rgba(6,78,59,.18))', border: '1px solid #7dd3fc' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 9, alignItems: 'start', flexWrap: 'wrap' } },
                 h('div', null,
-                  h('div', { style: { color: '#93c5fd', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Latest boat mission \u00B7 paired evidence' + (missionDepthComparison.summary.scenarioName ? ' \u00B7 ' + missionDepthComparison.summary.scenarioName : '')),
+                  h('div', { style: { color: '#93c5fd', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Latest boat mission \u00B7 paired evidence' + (missionDepthComparison.summary.scenarioName ? ' \u00B7 ' + missionDepthComparison.summary.scenarioName : '')),
                   h('h3', { id: 'aq-mussel-mission-evidence-heading', style: { margin: '3px 0', color: '#f8fafc', fontSize: 16 } }, 'Choose which depth to analyze'),
-                  h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } }, 'Both samples came from one lease visit. Load either depth, make a prediction, then test whether the model priority changes.')),
-                h('span', { style: { padding: '4px 8px', borderRadius: 999, color: '#d1fae5', background: '#0b2b28', border: '1px solid #5eead4', fontSize: 10, fontWeight: 900 } }, missionEvidenceDepth ? (missionEvidenceDepth === 'surface' ? 'Surface loaded' : 'Crop depth loaded') : 'Not loaded')),
+                  h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, 'Both samples came from one lease visit. Load either depth, make a prediction, then test whether the model priority changes.')),
+                h('span', { style: { padding: '4px 8px', borderRadius: 999, color: '#d1fae5', background: '#0b2b28', border: '1px solid #5eead4', fontSize: 12, fontWeight: 900 } }, missionEvidenceDepth ? (missionEvidenceDepth === 'surface' ? 'Surface loaded' : 'Crop depth loaded') : 'Not loaded')),
               h('div', { className: 'aq-mussel-mission-evidence-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(210px,.7fr) minmax(360px,1.3fr)', gap: 10, marginTop: 10, alignItems: 'stretch' } },
                 h('figure', { className: 'aq-mussel-mission-profile', style: { margin: 0, padding: 8, borderRadius: 9, background: '#061a25', border: '1px solid #416c67' } },
                   h('svg', { viewBox: '0 0 300 180', role: 'img', 'aria-labelledby': 'aq-mussel-mission-profile-title aq-mussel-mission-profile-desc', style: { display: 'block', width: '100%', height: 'auto' } },
@@ -24386,9 +24387,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                     h('text', { x: 88, y: 132, fill: '#d1fae5', fontSize: 12, fontWeight: 800 }, 'Crop \u00B7 ' + missionDepthComparison.crop.temp + '\u00B0C \u00B7 DO ' + missionDepthComparison.crop.DO),
                     h('text', { x: 16, y: 26, fill: '#cffafe', fontSize: 11, fontWeight: 800 }, 'same visit'),
                     h('text', { x: 88, y: 99, fill: '#bfdbfe', fontSize: 10.5 }, 'compare, then interpret')),
-                  h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'Highlighted ring = depth currently loaded into the seven-signal model.')),
+                  h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, 'Highlighted ring = depth currently loaded into the seven-signal model.')),
                 h('div', { style: { overflowX: 'auto' } },
-                  h('table', { className: 'aq-mussel-mission-evidence-table', style: { width: '100%', borderCollapse: 'collapse', minWidth: 520, color: '#e2e8f0', fontSize: 11 } },
+                  h('table', { className: 'aq-mussel-mission-evidence-table', style: { width: '100%', borderCollapse: 'collapse', minWidth: 520, color: '#e2e8f0', fontSize: 12 } },
                     h('caption', { style: { textAlign: 'left', color: '#bfdbfe', paddingBottom: 6, fontWeight: 850 } }, 'Crop-depth change relative to the surface'),
                     h('thead', null, h('tr', { style: { background: '#0f2d2a' } }, ['Signal', 'Surface', 'Crop depth', 'Change'].map(function(label) { return h('th', { key: label, scope: 'col', style: { padding: 7, textAlign: 'left', borderBottom: '1px solid #789b97' } }, label); }))),
                     h('tbody', null, missionDepthComparison.metrics.map(function(metric) {
@@ -24401,16 +24402,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                         h('td', { style: { padding: 7, borderBottom: '1px solid #345c57', fontFamily: 'monospace' } }, cropText),
                         h('td', { style: { padding: 7, borderBottom: '1px solid #345c57', color: metric.delta === 0 ? '#cbd5e1' : '#fde68a', fontFamily: 'monospace', fontWeight: 850 } }, deltaText));
                     }))))),
-              h('p', { id: 'aq-mussel-mission-evidence-note', style: { margin: '9px 0 0', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } },
+              h('p', { id: 'aq-mussel-mission-evidence-note', style: { margin: '9px 0 0', color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } },
                 h('strong', { style: { color: '#fef3c7' } }, 'Measured by probe: '), 'temperature, salinity, dissolved oxygen, pH, and chlorophyll-a. ',
                 h('strong', { style: { color: '#fecdd3' } }, 'Not measured: '), 'biofouling and attachment; those begin as balanced placeholders and require a separate stock inspection.'),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 9 } },
                 ['surface', 'crop'].map(function(depth) {
                   var selected = missionEvidenceDepth === depth;
                   return h('button', { key: depth, type: 'button', className: 'aq-btn aq-mussel-mission-depth', 'aria-pressed': selected, 'aria-describedby': 'aq-mussel-mission-evidence-note', onClick: function() { loadMissionEvidenceAtDepth(depth); },
-                    style: { minHeight: 44, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: selected ? '#fef08a' : (depth === 'crop' ? '#bbf7d0' : '#bae6fd'), color: '#082f49', border: '2px solid ' + (selected ? '#fff7ed' : '#e0f2fe'), fontSize: 11.5, fontWeight: 900 } }, depth === 'surface' ? 'Use surface in model' : 'Use crop depth in model');
+                    style: { minHeight: 44, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: selected ? '#fef08a' : (depth === 'crop' ? '#bbf7d0' : '#bae6fd'), color: '#082f49', border: '2px solid ' + (selected ? '#fff7ed' : '#e0f2fe'), fontSize: 12, fontWeight: 900 } }, depth === 'surface' ? 'Use surface in model' : 'Use crop depth in model');
                 }),
-                h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic('sim', 'Opening the boat mission to collect a new paired water profile.'); }, style: { minHeight: 44, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 11.5, fontWeight: 850 } }, 'Collect a new profile \u2192'))) : null,
+                h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic('sim', 'Opening the boat mission to collect a new paired water profile.'); }, style: { minHeight: 44, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 850 } }, 'Collect a new profile \u2192'))) : null,
             h('figure', { className: 'aq-mussel-lease-figure', style: { margin: '12px 0 0', padding: 9, borderRadius: 10, background: '#061a25', border: '1px solid #527a75' } },
               h('svg', { viewBox: '0 0 720 210', role: 'img', 'aria-labelledby': 'aq-mussel-lease-title aq-mussel-lease-desc', style: { display: 'block', width: '100%', height: 'auto', maxHeight: 230 } },
                 h('title', { id: 'aq-mussel-lease-title' }, 'Mussel raft and crop-depth sampling cross-section'),
@@ -24433,11 +24434,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 h('text', { x: 585, y: 136, fill: '#d1fae5', fontSize: 12 }, 'crop-depth sample'),
                 h('text', { x: 90, y: 94, fill: '#cffafe', fontSize: 12 }, 'Compare depth'),
                 h('text', { x: 90, y: 112, fill: '#cffafe', fontSize: 12 }, '+ tide + time')),
-              h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.45 } }, 'One surface reading can miss conditions around the crop. Scenario prompts ask you to compare depth, tidal phase, and timing.')),
+              h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, 'One surface reading can miss conditions around the crop. Scenario prompts ask you to compare depth, tidal phase, and timing.')),
             h('details', { className: 'aq-mussel-visual-guide', style: { marginTop: 10, borderRadius: 10, background: '#031714', border: '1px solid #527a75', overflow: 'hidden' } },
               h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '11px 12px', cursor: 'pointer', color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, 'Explore two more diagrams · culture journey + evidence ladder'),
               h('div', { style: { padding: '0 10px 10px' } },
-                h('p', { style: { margin: '0 0 9px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, 'These diagrams organize the investigation; they do not prescribe a universal production timeline or replace local operating procedures.'),
+                h('p', { style: { margin: '0 0 9px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, 'These diagrams organize the investigation; they do not prescribe a universal production timeline or replace local operating procedures.'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(290px,1fr))', gap: 10 } },
                   h('figure', { className: 'aq-mussel-culture-figure', style: { margin: 0, padding: 8, borderRadius: 9, background: '#061a25', border: '1px solid #416c67' } },
                     h('svg', { viewBox: '0 0 420 325', role: 'img', 'aria-labelledby': 'aq-mussel-culture-title aq-mussel-culture-desc', style: { display: 'block', width: '100%', height: 'auto' } },
@@ -24462,7 +24463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                             return h('text', { key: line, x: position.x + 18, y: position.y + 68 + lineIndex * 20, fill: '#ecfeff', fontSize: 12 }, line);
                           }));
                       })),
-                    h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 11, lineHeight: 1.45 } }, 'A learning sequence, not a fixed calendar: timing and methods vary with site, gear, permits, and operator practice.')),
+                    h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, 'A learning sequence, not a fixed calendar: timing and methods vary with site, gear, permits, and operator practice.')),
                   h('figure', { className: 'aq-mussel-evidence-figure', style: { margin: 0, padding: 8, borderRadius: 9, background: '#061a25', border: '1px solid #416c67' } },
                     h('svg', { viewBox: '0 0 420 325', role: 'img', 'aria-labelledby': 'aq-mussel-evidence-title aq-mussel-evidence-desc', style: { display: 'block', width: '100%', height: 'auto' } },
                       h('title', { id: 'aq-mussel-evidence-title' }, 'Five-step field evidence ladder'),
@@ -24481,12 +24482,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                           h('text', { x: 38, y: y + 19, fill: '#f8fafc', fontSize: 13, fontWeight: 900 }, step.title),
                           h('text', { x: 38, y: y + 36, fill: '#cbd5e1', fontSize: 11.5 }, step.note));
                       })),
-                    h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 11, lineHeight: 1.45 } }, 'The ladder turns one reading into a repeatable evidence trail instead of a diagnosis.'))))),
+                    h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, 'The ladder turns one reading into a repeatable evidence trail instead of a diagnosis.'))))),
             h('aside', { className: 'aq-mussel-3d-launch', style: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginTop: 10, padding: 11, borderRadius: 10, background: 'linear-gradient(135deg,rgba(30,64,175,.22),rgba(13,148,136,.18))', border: '1px solid #7dd3fc' } },
               h('div', { style: { flex: '1 1 300px' } },
-                h('div', { style: { color: '#bae6fd', fontSize: 10.5, fontWeight: 950, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Playable lease mission'),
+                h('div', { style: { color: '#bae6fd', fontSize: 12, fontWeight: 950, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Playable lease mission'),
                 h('h3', { style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 15 } }, 'Pilot, deploy, and compare depth samples'),
-                h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } }, 'Use keyboard or on-screen controls in 3D, or complete the same buoyage, dropper, surface-sample, crop-depth, and return decisions in guided 2D.')),
+                h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, 'Use keyboard or on-screen controls in 3D, or complete the same buoyage, dropper, surface-sample, crop-depth, and return decisions in guided 2D.')),
               h('button', { type: 'button', className: 'aq-btn aq-mussel-open-mission', onClick: function() { navigateToTopic('sim', 'Opening the playable lease mission. Choose guided 2D or launch the 3D farm.'); },
                 style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 950 } }, 'Open 3D + guided mission →')),
             h('fieldset', { className: 'aq-mussel-scenarios', style: { margin: '12px 0 0', padding: 10, borderRadius: 9, border: '1px solid #527a75' } },
@@ -24495,7 +24496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 MUSSEL_HEALTH_PRESETS.map(function(preset, presetIndex) {
                   var selected = musselHealthWorkspace.scenarioId === preset.id;
                   return h('button', { key: preset.id, type: 'button', role: 'radio', 'aria-checked': selected, tabIndex: selected ? 0 : -1, className: 'aq-btn aq-mussel-preset', onClick: function() { applyMusselHealthPreset(preset); }, onKeyDown: function(event) { handleMusselPresetKeyDown(event, presetIndex); },
-                    style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: selected ? '#0f766e' : '#123a36', color: '#f8fafc', border: '2px solid ' + (selected ? '#99f6e4' : '#789b97'), fontSize: 11.5, fontWeight: 850 } }, preset.name);
+                    style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: selected ? '#0f766e' : '#123a36', color: '#f8fafc', border: '2px solid ' + (selected ? '#99f6e4' : '#789b97'), fontSize: 12, fontWeight: 850 } }, preset.name);
                 }))),
             h('section', { 'aria-labelledby': 'aq-mussel-case-heading', style: { marginTop: 9, padding: 10, borderRadius: 9, background: 'rgba(8,145,178,.12)', border: '1px solid #67e8f9' } },
               h('h3', { id: 'aq-mussel-case-heading', style: { margin: 0, color: '#cffafe', fontSize: 13.5 } }, scenarioName),
@@ -24515,7 +24516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 style: { marginLeft: 9, minHeight: 36, padding: '5px 9px', borderRadius: 7, cursor: 'pointer', background: '#ccfbf1', color: '#134e4a', border: '1px solid #99f6e4', fontWeight: 900 } }, 'Undo remove') : null),
             h('section', { 'aria-labelledby': 'aq-mussel-inspect-heading', style: { marginTop: 12 } },
               h('h3', { id: 'aq-mussel-inspect-heading', style: { margin: '0 0 7px', color: '#f8fafc', fontSize: 14 } }, '3 · Inspect and adjust seven signals'),
-              h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 11.5 } }, 'Use the slider for exploration or the number field for exact entry. Model bands remain hidden until reveal.'),
+              h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 12 } }, 'Use the slider for exploration or the number field for exact entry. Model bands remain hidden until reveal.'),
               h('div', { className: 'aq-mussel-controls', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(235px,1fr))', gap: 9 } },
                 controls.map(function(control) {
                   var factor = assessment.factors.find(function(item) { return item.id === control.id; });
@@ -24526,18 +24527,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   var sourceLabel = missionMeasuredSignal ? 'boat probe \u00B7 ' + (missionEvidenceDepth === 'surface' ? 'surface' : 'crop depth') : 'not measured by probe \u00B7 inspect stock';
                   return h('div', { key: control.id, style: { padding: 10, borderRadius: 9, background: meta.background, border: '1px solid ' + meta.color } },
                     h('label', { htmlFor: 'aq-mussel-' + control.id, style: { display: 'flex', justifyContent: 'space-between', gap: 7, alignItems: 'center', flexWrap: 'wrap', color: '#f8fafc', fontSize: 12, fontWeight: 850 } }, control.label,
-                      missionEvidenceDepth ? h('span', { id: 'aq-mussel-' + control.id + '-source', style: { padding: '2px 6px', borderRadius: 999, color: missionMeasuredSignal ? '#dbeafe' : '#fee2e2', background: missionMeasuredSignal ? 'rgba(59,130,246,.16)' : 'rgba(244,63,94,.14)', border: '1px solid ' + (missionMeasuredSignal ? '#60a5fa' : '#fb7185'), fontSize: 9.5, fontWeight: 900 } }, sourceLabel) : null),
+                      missionEvidenceDepth ? h('span', { id: 'aq-mussel-' + control.id + '-source', style: { padding: '2px 6px', borderRadius: 999, color: missionMeasuredSignal ? '#dbeafe' : '#fee2e2', background: missionMeasuredSignal ? 'rgba(59,130,246,.16)' : 'rgba(244,63,94,.14)', border: '1px solid ' + (missionMeasuredSignal ? '#60a5fa' : '#fb7185'), fontSize: 12, fontWeight: 900 } }, sourceLabel) : null),
                     h('input', { id: 'aq-mussel-' + control.id, type: 'range', min: control.min, max: control.max, step: control.step, value: musselHealthWorkspace[control.id],
-                      'aria-valuetext': valueText + (musselAssessmentRevealed ? ', ' + meta.label : ', interpretation hidden until reveal'),
+                      'aria-valuetext': (musselAssessmentRevealed ? valueText + ', ' + meta.label : __alloAriaFill(__alloT('stem.aquaculture.a11y_interpretation_hidden_until_reveal', '{valueText}, interpretation hidden until reveal'), { valueText: valueText })),
                       'aria-describedby': 'aq-mussel-' + control.id + '-signal' + sourceDescriptionId, onChange: function(event) { updateMusselHealthReading(control.id, event.target.value); },
                       style: { width: '100%', margin: '9px 0 6px', accentColor: meta.color } }),
                     h('div', { style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' } },
-                      h('label', { htmlFor: 'aq-mussel-' + control.id + '-number', style: { color: '#cbd5e1', fontSize: 11 } }, 'Exact value'),
+                      h('label', { htmlFor: 'aq-mussel-' + control.id + '-number', style: { color: '#cbd5e1', fontSize: 12 } }, 'Exact value'),
                       h('input', { id: 'aq-mussel-' + control.id + '-number', type: 'number', min: control.min, max: control.max, step: control.step, value: musselHealthWorkspace[control.id],
-                        'aria-label': control.label + ' exact value', 'aria-describedby': 'aq-mussel-' + control.id + '-signal' + sourceDescriptionId, onChange: function(event) { updateMusselHealthReading(control.id, event.target.value); },
+                        'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_exact_value', '{label} exact value'), { label: control.label }), 'aria-describedby': 'aq-mussel-' + control.id + '-signal' + sourceDescriptionId, onChange: function(event) { updateMusselHealthReading(control.id, event.target.value); },
                         style: { width: 82, minHeight: 38, boxSizing: 'border-box', padding: '6px 7px', borderRadius: 7, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontFamily: 'monospace', fontSize: 13 } }),
                       h('span', { style: { color: meta.color, fontSize: 12, fontWeight: 900 } }, control.unit || 'pH')),
-                    h('div', { id: 'aq-mussel-' + control.id + '-signal', style: { marginTop: 6, color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.45 } },
+                    h('div', { id: 'aq-mussel-' + control.id + '-signal', style: { marginTop: 6, color: '#e2e8f0', fontSize: 12, lineHeight: 1.45 } },
                       musselAssessmentRevealed ? h(React.Fragment, null, h('strong', { style: { color: meta.color } }, meta.symbol + ' ' + meta.label + '. '), factor.signal) : 'Interpretation hidden. Compare the readings and commit to a prediction first.'));
                 }))),
             h('section', { className: 'aq-mussel-reveal-step', 'aria-labelledby': 'aq-mussel-reveal-heading',
@@ -24559,17 +24560,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('section', { ref: musselAssessmentRef, tabIndex: -1, className: 'aq-mussel-assessment', 'aria-labelledby': 'aq-mussel-result-heading',
                 style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 12, marginTop: 12, padding: 12, borderRadius: 10, background: '#031714', border: '2px solid ' + assessment.tone, outline: 'none' } },
                 h('div', null,
-                  h('div', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Model status'),
+                  h('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Model status'),
                   h('h3', { id: 'aq-mussel-result-heading', style: { margin: '3px 0', color: assessment.tone, fontSize: 20 } }, assessment.status),
                   h('div', { style: { color: '#e2e8f0', fontSize: 12 } }, assessment.summary)),
                 h('div', null,
-                  h('div', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Priority signal'),
+                  h('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Priority signal'),
                   h('div', { style: { marginTop: 3, color: assessment.tone, fontSize: 14, fontWeight: 900 } }, assessment.priorityFactor.label + ' · ' + statusMeta[assessment.priorityFactor.status].label),
                   h('p', { style: { margin: '4px 0 0', color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, assessment.priorityFactor.action)),
                 h('p', { style: { gridColumn: '1 / -1', margin: 0, paddingTop: 8, borderTop: '1px solid #345c57', color: predictionMatches ? '#bbf7d0' : '#fde68a', fontSize: 12, lineHeight: 1.5 } },
                   predictionMatches ? 'Your prediction aligned with the model. Explain what field evidence could still challenge it.' : 'You predicted ' + predictionLabel(musselPrediction) + '; the model prioritizes ' + assessment.priorityFactor.label + '. Use the factor evidence to explain the difference.')),
               h('div', { style: { overflowX: 'auto', marginTop: 12 } },
-                h('table', { className: 'aq-mussel-factor-table', style: { width: '100%', borderCollapse: 'collapse', color: '#e2e8f0', fontSize: 11.5 } },
+                h('table', { className: 'aq-mussel-factor-table', style: { width: '100%', borderCollapse: 'collapse', color: '#e2e8f0', fontSize: 12 } },
                   h('caption', { style: { padding: '0 0 7px', textAlign: 'left', color: '#bfdbfe', fontWeight: 850 } }, 'Seven-signal evidence table · model ' + assessment.modelVersion),
                   h('thead', null, h('tr', { style: { background: '#0f2d2a' } },
                     ['Signal', 'Reading', 'Reference-band result', 'What it suggests'].map(function(label) { return h('th', { key: label, scope: 'col', style: { padding: 8, textAlign: 'left', borderBottom: '1px solid #789b97' } }, label); }))),
@@ -24587,13 +24588,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   assessment.priorityActions.map(function(action, index) { return h('li', { key: index }, action); }))),
               h('section', { style: { marginTop: 12, padding: 11, borderRadius: 9, background: '#071f1d', border: '1px solid #527a75' } },
                 h('label', { htmlFor: 'aq-mussel-observation', style: { display: 'block', color: '#f8fafc', fontSize: 13, fontWeight: 900 } }, '5 · Field explanation'),
-                h('p', { id: 'aq-mussel-observation-help', style: { margin: '4px 0 7px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, 'Explain which pattern matters, an alternative explanation, and what you would verify next. Your draft saves when you leave this field.'),
+                h('p', { id: 'aq-mussel-observation-help', style: { margin: '4px 0 7px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, 'Explain which pattern matters, an alternative explanation, and what you would verify next. Your draft saves when you leave this field.'),
                 h('textarea', { id: 'aq-mussel-observation', rows: 4, maxLength: 600, value: musselHealthWorkspace.observation,
                   'aria-describedby': 'aq-mussel-observation-help aq-mussel-observation-count', onChange: function(event) { updateMusselHealthObservation(event.target.value); }, onBlur: commitMusselHealthObservation,
                   placeholder: __alloT('stem.aquaculture.example_low_oxygen_and_warm_water_occur_toge','Example: Low oxygen and warm water occur together, so I would repeat calibrated readings at crop depth after the tide turns before attributing weak attachment to one cause.'),
                   style: { boxSizing: 'border-box', width: '100%', minHeight: 104, resize: 'vertical', padding: 9, borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 14, lineHeight: 1.5 } }),
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 9, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } },
-                  h('span', { id: 'aq-mussel-observation-count', style: { color: musselHealthWorkspace.observation.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 11.5, fontWeight: 800 } }, musselHealthWorkspace.observation.length + '/600 characters · 20 needed'),
+                  h('span', { id: 'aq-mussel-observation-count', style: { color: musselHealthWorkspace.observation.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 12, fontWeight: 800 } }, musselHealthWorkspace.observation.length + '/600 characters · 20 needed'),
                   h('button', { type: 'button', className: 'aq-btn', disabled: musselHealthWorkspace.observation.trim().length < 20 || historyFull, onClick: saveMusselHealthCheck,
                     style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: musselHealthWorkspace.observation.trim().length >= 20 && !historyFull ? 'pointer' : 'not-allowed', opacity: musselHealthWorkspace.observation.trim().length >= 20 && !historyFull ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12.5, fontWeight: 950 } }, historyFull ? 'History full · remove a check to save' : 'Save field-check evidence')))
             ) : h('section', { className: 'aq-mussel-result-hidden', style: { marginTop: 12, padding: 12, borderRadius: 9, background: 'rgba(30,41,59,.72)', border: '1px dashed #94a3b8', color: '#e2e8f0' } },
@@ -24608,42 +24609,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' } },
                     h('div', null,
                       h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900 } }, check.status + ' · priority: ' + (check.prioritySignal || check.limitingFactor)),
-                      h('div', { style: { marginTop: 2, color: '#bfdbfe', fontSize: 11 } }, savedLabel + ' · model ' + (check.modelVersion || 'legacy'))),
-                      check.evidenceSource ? h('div', { style: { marginTop: 2, color: '#99f6e4', fontSize: 10.5, fontWeight: 850 } }, 'Boat mission source \u00B7 ' + (check.evidenceSource === 'mission-surface' ? 'surface sample' : 'crop-depth sample')) : null,
+                      h('div', { style: { marginTop: 2, color: '#bfdbfe', fontSize: 12 } }, savedLabel + ' · model ' + (check.modelVersion || 'legacy'))),
+                      check.evidenceSource ? h('div', { style: { marginTop: 2, color: '#99f6e4', fontSize: 12, fontWeight: 850 } }, 'Boat mission source \u00B7 ' + (check.evidenceSource === 'mission-surface' ? 'surface sample' : 'crop-depth sample')) : null,
                     h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                       h('button', { type: 'button', className: 'aq-btn', onClick: function() { loadMusselHealthCheck(check); },
-                        'aria-label': 'Load ' + check.status + ' mussel field check saved ' + savedLabel + ', check ' + (checkIndex + 1) + ' of ' + musselHealthWorkspace.checks.length,
-                        style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#123a36', color: '#ccfbf1', border: '1px solid #5eead4', fontSize: 11, fontWeight: 850 } }, 'Load this check'),
+                        'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_load_mussel_field_check_saved_check_of', 'Load {status} mussel field check saved {savedLabel}, check {value1} of {value2}'), { status: check.status, savedLabel: savedLabel, value1: checkIndex + 1, value2: musselHealthWorkspace.checks.length }),
+                        style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#123a36', color: '#ccfbf1', border: '1px solid #5eead4', fontSize: 12, fontWeight: 850 } }, 'Load this check'),
                       h('button', { type: 'button', className: 'aq-btn', onClick: function() { deleteMusselHealthCheck(check.id); },
-                        'aria-label': 'Remove ' + check.status + ' mussel field check saved ' + savedLabel + ', check ' + (checkIndex + 1) + ' of ' + musselHealthWorkspace.checks.length,
-                        style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 11, fontWeight: 850 } }, 'Remove'))),
-                  h('p', { style: { margin: '6px 0 0', color: '#dbeafe', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.5 } },
+                        'aria-label': __alloAriaFill(__alloT('stem.aquaculture.a11y_remove_mussel_field_check_saved_check_of', 'Remove {status} mussel field check saved {savedLabel}, check {value1} of {value2}'), { status: check.status, savedLabel: savedLabel, value1: checkIndex + 1, value2: musselHealthWorkspace.checks.length }),
+                        style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 12, fontWeight: 850 } }, 'Remove'))),
+                  h('p', { style: { margin: '6px 0 0', color: '#dbeafe', fontFamily: 'monospace', fontSize: 12, lineHeight: 1.5 } },
                     readings.temperature + ' °C · ' + readings.salinity + ' PSU · O₂ ' + readings.oxygen + ' mg/L · pH ' + readings.pH + ' · Chl-a ' + readings.chlorophyll + ' µg/L · fouling ' + readings.fouling + '% · attachment ' + readings.attachment + '%'),
-                  h('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.5 } }, check.observation));
-              }))) : h('p', { style: { margin: '11px 0 0', color: '#cbd5e1', fontSize: 11.5 } }, 'No field-check evidence saved yet.'),
+                  h('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 } }, check.observation));
+              }))) : h('p', { style: { margin: '11px 0 0', color: '#cbd5e1', fontSize: 12 } }, 'No field-check evidence saved yet.'),
             h('details', { style: { marginTop: 12, borderRadius: 9, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
               h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '11px 12px', cursor: 'pointer', color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, 'Field glossary · six terms'),
-              h('dl', { style: { display: 'grid', gridTemplateColumns: 'minmax(120px,.35fr) minmax(0,1fr)', gap: '7px 12px', margin: 0, padding: '0 12px 12px', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.5 } },
+              h('dl', { style: { display: 'grid', gridTemplateColumns: 'minmax(120px,.35fr) minmax(0,1fr)', gap: '7px 12px', margin: 0, padding: '0 12px 12px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 } },
                 h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Byssal attachment'), h('dd', { style: { margin: 0 } }, 'How firmly mussels remain connected by protein threads to rope, shell, or another surface.'),
                 h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Chlorophyll-a'), h('dd', { style: { margin: 0 } }, 'A pigment measurement used here as a rough phytoplankton food proxy; it does not identify harmful species or actual ingestion.'),
                 h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Freshet'), h('dd', { style: { margin: 0 } }, 'A pulse of freshwater runoff that can lower near-surface salinity after rain or snowmelt.'),
                 h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Slack tide'), h('dd', { style: { margin: 0 } }, 'The interval near a tidal turn when current speed is relatively low.'),
                 h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'PSU'), h('dd', { style: { margin: 0 } }, 'Practical Salinity Unit, commonly used to report seawater salinity.'),
                 h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Crop depth'), h('dd', { style: { margin: 0 } }, 'The depth where most cultured mussels sit, which may differ from conditions at the surface.'))),
-            h('p', { style: { margin: '12px 0 0', paddingTop: 9, borderTop: '1px solid #345c57', color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } },
+            h('p', { style: { margin: '12px 0 0', paddingTop: 9, borderTop: '1px solid #345c57', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } },
               'Illustrative learning model only. “Within reference band” means inside this comparison model’s broad teaching band, not universally optimal conditions. Confirm sensors, sampling method, depth, tide, site history, and current agency guidance.'))),
         h('details', { style: { marginTop: 10, borderRadius: 9, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
           h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '11px 12px', cursor: 'pointer', color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, 'Compare 10 growing methods · Maine and global context'),
           h('div', { style: { padding: '0 12px 12px' } },
-            h('p', { style: { margin: '0 0 9px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, 'Maine Sea Grant identifies bottom and raft culture as Maine’s principal methods. The others are regional or global comparisons, not site recommendations.'),
+            h('p', { style: { margin: '0 0 9px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, 'Maine Sea Grant identifies bottom and raft culture as Maine’s principal methods. The others are regional or global comparisons, not site recommendations.'),
             MUSSEL_METHOD_DETAIL.map(function(method, index) {
               return h('article', { key: index, style: { padding: 11, marginBottom: 8, borderRadius: 8, background: 'rgba(15,23,42,.72)', borderLeft: '4px solid #818cf8' } },
                 h('div', { style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' } },
                   h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 13.5 } }, method.method),
-                  h('span', { style: { padding: '2px 6px', borderRadius: 999, color: '#dbeafe', border: '1px solid #60a5fa', fontSize: 10, fontWeight: 850 } }, method.context)),
-                h('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.5 } }, method.desc),
-                h('p', { style: { margin: '5px 0 0', color: '#bfdbfe', fontSize: 11, lineHeight: 1.45 } }, method.timeToMarket + ' · ' + method.yield),
-                h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45 } }, method.notes));
+                  h('span', { style: { padding: '2px 6px', borderRadius: 999, color: '#dbeafe', border: '1px solid #60a5fa', fontSize: 12, fontWeight: 850 } }, method.context)),
+                h('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 } }, method.desc),
+                h('p', { style: { margin: '5px 0 0', color: '#bfdbfe', fontSize: 12, lineHeight: 1.45 } }, method.timeToMarket + ' · ' + method.yield),
+                h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45 } }, method.notes));
             }))),
         h('details', { style: { marginTop: 10, borderRadius: 9, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
           h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '11px 12px', cursor: 'pointer', color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, 'Explore Maine mussel industry evidence'),
@@ -24659,8 +24660,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('article', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('h3', { style: { margin: '0 0 4px', fontSize: 13.5, fontWeight: 900, color: '#5eead4' } }, m.topic),
             h('p', { style: { margin: '0 0 5px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, m.content),
-            h('p', { style: { margin: '0 0 5px', fontSize: 11.5, color: '#fbbf24', lineHeight: 1.45 } }, h('b', null, 'Why it matters: '), m.relevance),
-            m.sourceUrl ? h('a', { href: m.sourceUrl, target: '_blank', rel: 'noopener noreferrer', style: { color: '#bfdbfe', fontSize: 11.5, fontWeight: 850 } }, m.sourceLabel || 'Open source') : null);
+            h('p', { style: { margin: '0 0 5px', fontSize: 12, color: '#fbbf24', lineHeight: 1.45 } }, h('b', null, 'Why it matters: '), m.relevance),
+            m.sourceUrl ? h('a', { href: m.sourceUrl, target: '_blank', rel: 'noopener noreferrer', style: { color: '#bfdbfe', fontSize: 12, fontWeight: 850 } }, m.sourceLabel || 'Open source') : null);
         })));
     }
 
@@ -24674,8 +24675,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, e.metric),
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#86efac', marginBottom: 3 } }, e.value),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Detail: '), e.detail),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Planning: '), e.planning));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Detail: '), e.detail),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Planning: '), e.planning));
         })));
     }
 
@@ -24688,11 +24689,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         CERTIFICATIONS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 4 } }, '✅ ' + c.cert),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Issuer: '), c.issuer),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Scope: '), c.scope),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Requirements: '), c.requirements),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Cost: '), c.cost),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Benefit: '), c.benefit));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Issuer: '), c.issuer),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Scope: '), c.scope),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Requirements: '), c.requirements),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Cost: '), c.cost),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Benefit: '), c.benefit));
         })));
     }
 
@@ -24705,10 +24706,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         NOTABLE_PEOPLE.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, p.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Era: '), p.era),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), p.role),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Contribution: '), p.contribution),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Legacy: '), p.legacy));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Era: '), p.era),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), p.role),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Contribution: '), p.contribution),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Legacy: '), p.legacy));
         })));
     }
 
@@ -24721,9 +24722,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         GLOBAL_PERSPECTIVES.map(function(g, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, g.region),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Production: '), g.production),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Maine comparison: '), g.maine_comparison),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Lessons: '), g.lessons));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Production: '), g.production),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Maine comparison: '), g.maine_comparison),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Lessons: '), g.lessons));
         })));
     }
 
@@ -24737,8 +24738,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, t.initiative),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, t.content),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Partnerships: '), t.partnerships),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Future: '), t.future));
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Partnerships: '), t.partnerships),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Future: '), t.future));
         })));
     }
 
@@ -24751,10 +24752,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         INDUSTRY_GROUPS.map(function(g, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, g.group),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), g.role),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Function: '), g.function),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Contact: '), g.contact),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Relevance: '), g.relevance));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Role: '), g.role),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Function: '), g.function),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Contact: '), g.contact),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Relevance: '), g.relevance));
         })));
     }
 
@@ -24767,7 +24768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         TERMINOLOGY_ESSAYS.map(function(t, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', marginBottom: 4 } }, t.term),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, t.essay));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, t.essay));
         })));
     }
 
@@ -24780,7 +24781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         GEAR_MASTER.map(function(g, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, g.category),
-            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               g.items.map(function(it, ii) { return h('li', { key: ii, style: { marginBottom: 2 } }, it); })));
         })));
     }
@@ -24795,7 +24796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, v.speaker)),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5, marginBottom: 4 } }, '"' + v.quote + '"'),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Context: '), v.context));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Context: '), v.context));
         })));
     }
 
@@ -24809,7 +24810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, m.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, m.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), m.practical));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Practical: '), m.practical));
         })));
     }
 
@@ -24823,7 +24824,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, f.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, f.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Maine implications: '), f.maine_implications));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Maine implications: '), f.maine_implications));
         })));
     }
 
@@ -24837,9 +24838,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, e.metric),
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#86efac', marginBottom: 3 } }, e.value),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Context: '), e.context),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Breakdown: '), e.breakdown),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Growth: '), e.growth));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Context: '), e.context),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Breakdown: '), e.breakdown),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Growth: '), e.growth));
         })));
     }
 
@@ -24852,9 +24853,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SAFETY_MANUAL.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, '🛟 ' + s.topic),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3, lineHeight: 1.5 } }, h('b', null, 'Detail: '), s.detail),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Training: '), s.training),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Best practice: '), s.best_practice));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3, lineHeight: 1.5 } }, h('b', null, 'Detail: '), s.detail),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Training: '), s.training),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Best practice: '), s.best_practice));
         })));
     }
 
@@ -24867,9 +24868,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         PLAYBOOKS.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 6 } }, '📕 ' + p.situation),
-            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               p.walkthrough.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 2 } }, s); })),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Learning: '), p.learning));
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Learning: '), p.learning));
         })));
     }
 
@@ -24880,14 +24881,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Comprehensive reading list — books, papers, websites, organizations.'),
         BIBLIOGRAPHY_EXT.map(function(b, i) {
-          return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+          return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
             h('div', null,
               h('b', { style: { color: '#5eead4' } }, b.author + ' (' + b.year + '). '),
               h('span', { style: { fontStyle: 'italic' } }, b.title),
               h('span', null, ' '), h('span', null, b.publisher),
               h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ' [' + b.type + ']')),
-            h('div', { style: { fontSize: 10, color: '#86efac', marginTop: 2 } }, h('b', null, 'Relevance: '), b.relevance),
-            h('div', { style: { fontSize: 10, color: '#fbbf24', marginTop: 2 } }, h('b', null, 'Use: '), b.use));
+            h('div', { style: { fontSize: 12, color: '#86efac', marginTop: 2 } }, h('b', null, 'Relevance: '), b.relevance),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginTop: 2 } }, h('b', null, 'Use: '), b.use));
         })));
     }
 
@@ -24901,8 +24902,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, r.metric),
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#86efac', marginBottom: 3 } }, r.value),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Context: '), r.context),
-            h('div', { style: { fontSize: 11, color: '#5eead4' } }, h('b', null, 'Practical: '), r.practical));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Context: '), r.context),
+            h('div', { style: { fontSize: 12, color: '#5eead4' } }, h('b', null, 'Practical: '), r.practical));
         })));
     }
 
@@ -24915,11 +24916,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         NOTABLE_EVENTS.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, '📅 ' + e.event),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Year: '), e.year),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Cause: '), e.cause),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Response: '), e.response),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Lessons: '), e.lessons),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Maine: '), e.maine_implications));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Year: '), e.year),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Cause: '), e.cause),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Response: '), e.response),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Lessons: '), e.lessons),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Maine: '), e.maine_implications));
         })));
     }
 
@@ -24932,12 +24933,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         CULINARY.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, '🍽 ' + c.product),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Species: '), c.species),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Preparation: '), c.preparation),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Pairing: '), c.pairing),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Market: '), c.market),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Best season: '), c.best_season),
-            h('div', { style: { fontSize: 11, color: '#a78bfa' } }, h('b', null, 'Cultural: '), c.cultural));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Species: '), c.species),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Preparation: '), c.preparation),
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 3 } }, h('b', null, 'Pairing: '), c.pairing),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Market: '), c.market),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Best season: '), c.best_season),
+            h('div', { style: { fontSize: 12, color: '#a78bfa' } }, h('b', null, 'Cultural: '), c.cultural));
         })));
     }
 
@@ -24950,9 +24951,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         WORKFORCE_PIPELINE.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, s.stage),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Activities: '), s.activities),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Partnerships: '), s.partnerships),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Outcomes: '), s.outcomes));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Activities: '), s.activities),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Partnerships: '), s.partnerships),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Outcomes: '), s.outcomes));
         })));
     }
 
@@ -24965,9 +24966,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         EMERGENCY_PROCEDURES.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #dc2626' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fca5a5', marginBottom: 6 } }, '🚨 ' + e.emergency),
-            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               e.response.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 2 } }, s.replace(/^\d+\.\s*/, '')); })),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Training: '), e.training));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Training: '), e.training));
         })));
     }
 
@@ -24980,10 +24981,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         REG_FRAMEWORK.map(function(r, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, r.law),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Year: '), r.year),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Scope: '), r.scope),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Maine relevance: '), r.relevance),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Keys: '), r.keys));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Year: '), r.year),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Scope: '), r.scope),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Maine relevance: '), r.relevance),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Keys: '), r.keys));
         })));
     }
 
@@ -24996,11 +24997,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         MAINTENANCE_SCHEDULES.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, m.equipment),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Daily: '), m.daily),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Weekly: '), m.weekly),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Monthly: '), m.monthly),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Annually: '), m.annually),
-            m.every5yr ? h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, '5-year: '), m.every5yr) : null);
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Daily: '), m.daily),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Weekly: '), m.weekly),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Monthly: '), m.monthly),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Annually: '), m.annually),
+            m.every5yr ? h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, '5-year: '), m.every5yr) : null);
         })));
     }
 
@@ -25013,7 +25014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         FAQ_PUBLIC.map(function(f, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#5eead4', marginBottom: 4 } }, 'Q: ' + f.q),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, h('b', null, 'A: '), f.a));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, h('b', null, 'A: '), f.a));
         })));
     }
 
@@ -25026,11 +25027,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         TRAINING_CHECKLIST.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, m.module),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Skills:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Skills:')),
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               m.skills.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 2 } }, s); })),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Duration: '), m.duration),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Certification: '), m.certification));
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Duration: '), m.duration),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Certification: '), m.certification));
         })));
     }
 
@@ -25044,11 +25045,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, a.activity),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, a.content),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Learning Objectives:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 4 } }, h('b', null, 'Learning Objectives:')),
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               a.learning_objectives.map(function(o, oi) { return h('li', { key: oi }, o); })),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Materials: '), a.materials.join(' · ')),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Time: '), a.time));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Materials: '), a.materials.join(' · ')),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Time: '), a.time));
         })));
     }
 
@@ -25062,10 +25063,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, c.model),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.description),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Example: '), c.example),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Strengths: '), c.strengths),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Limitations: '), c.limitations),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Lesson: '), c.lesson));
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Example: '), c.example),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Strengths: '), c.strengths),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Limitations: '), c.limitations),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Lesson: '), c.lesson));
         })));
     }
 
@@ -25079,9 +25080,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, '🏆 ' + s.name),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, s.story),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Keys: '), s.keys),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Result: '), s.result),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Lessons: '), s.lessons));
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 3 } }, h('b', null, 'Keys: '), s.keys),
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Result: '), s.result),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Lessons: '), s.lessons));
         })));
     }
 
@@ -25098,7 +25099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         allEntries.map(function(g, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, g.letter),
-            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               g.entries.map(function(e, ei) { return h('li', { key: ei, style: { marginBottom: 2 } }, e); })));
         })));
     }
@@ -25112,8 +25113,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         AQ_FACTS.map(function(f, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fde047', marginBottom: 4 } }, '🔑 ' + f.fact),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Context: '), f.context),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Implication: '), f.implication));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Context: '), f.context),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Implication: '), f.implication));
         })));
     }
 
@@ -25126,7 +25127,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         PROCEDURES.map(function(p, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 8 } }, p.title),
-            h('ol', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+            h('ol', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               p.content.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 4 } }, s.replace(/^Step \d+:\s*/, '').replace(/^[A-Z][a-z]+:\s*/, function(m) { return '[' + m.replace(':', '') + '] '; })); })));
         })));
     }
@@ -25157,7 +25158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 8 } }, e.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } }, e.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), e.practical));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Practical: '), e.practical));
         })));
     }
 
@@ -25170,9 +25171,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         HATCHERY_WORKFLOW.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, s.stage),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Details: '), s.detail),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Duration: '), s.duration),
-            h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'Challenges: '), s.challenges));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Details: '), s.detail),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Duration: '), s.duration),
+            h('div', { style: { fontSize: 12, color: '#fb923c' } }, h('b', null, 'Challenges: '), s.challenges));
         })));
     }
 
@@ -25185,10 +25186,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         EQUIPMENT_DETAIL.map(function(e, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', marginBottom: 3 } }, e.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Description: '), e.description),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Cost: '), e.cost),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Lifespan: '), e.lifespan),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Maintenance: '), e.maintenance));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Description: '), e.description),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Cost: '), e.cost),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Lifespan: '), e.lifespan),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Maintenance: '), e.maintenance));
         })));
     }
 
@@ -25201,8 +25202,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         DAILY_OPS.map(function(d, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', marginBottom: 4 } }, d.task),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Details: '), d.details),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Time: '), d.time));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Details: '), d.details),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Time: '), d.time));
         })));
     }
 
@@ -25215,7 +25216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         FAQ.map(function(f, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#bae6fd', marginBottom: 4 } }, 'Q: ' + f.question),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, h('b', null, 'A: '), f.answer));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, h('b', null, 'A: '), f.answer));
         })));
     }
 
@@ -25228,10 +25229,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SEASONAL_TASKS.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, s.species),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Spring: '), s.spring),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Summer: '), s.summer),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Fall: '), s.fall),
-            h('div', { style: { fontSize: 11, color: '#bae6fd' } }, h('b', null, 'Winter: '), s.winter));
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, 'Spring: '), s.spring),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Summer: '), s.summer),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Fall: '), s.fall),
+            h('div', { style: { fontSize: 12, color: '#bae6fd' } }, h('b', null, 'Winter: '), s.winter));
         })));
     }
 
@@ -25244,8 +25245,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         COMMON_MISTAKES.map(function(m, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 4 } }, '⚠ ' + m.mistake),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Consequence: '), m.consequence),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Fix: '), m.fix));
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Consequence: '), m.consequence),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Fix: '), m.fix));
         })));
     }
 
@@ -25258,10 +25259,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         COLD_CHAIN.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, c.stage),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Requirements: '), c.requirements),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Time/Temp: '), c.time_temp),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Challenges: '), c.challenges),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Cost: '), c.cost));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Requirements: '), c.requirements),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Time/Temp: '), c.time_temp),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Challenges: '), c.challenges),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Cost: '), c.cost));
         })));
     }
 
@@ -25274,8 +25275,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         RESTAURANT_PARTNERSHIPS.map(function(p, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 4 } }, p.stage),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Approach: '), p.detail),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Tips: '), p.tips));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Approach: '), p.detail),
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Tips: '), p.tips));
         })));
     }
 
@@ -25288,9 +25289,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         CARBON_EXAMPLES.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, c.example),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3, fontFamily: 'ui-monospace, Menlo, monospace' } }, h('b', null, 'Math: '), c.math),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Context: '), c.context),
-            c.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3, fontFamily: 'ui-monospace, Menlo, monospace' } }, h('b', null, 'Math: '), c.math),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Context: '), c.context),
+            c.cite ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '(' + c.cite + ')') : null);
         })));
     }
 
@@ -25304,14 +25305,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 6 } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac' } }, lp.title),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Grade ' + lp.grade + ' · ' + lp.subject)),
-            h('div', { style: { fontSize: 11, color: '#5eead4', marginBottom: 6 } }, h('b', null, 'Objectives:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Grade ' + lp.grade + ' · ' + lp.subject)),
+            h('div', { style: { fontSize: 12, color: '#5eead4', marginBottom: 6 } }, h('b', null, 'Objectives:')),
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               lp.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, h('b', null, 'Materials: '), lp.materials.join(' · ')),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Flow: '), lp.flow),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Assessment: '), lp.assessment),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Cross-cuts: '), lp.crosscuts.join(' · ')));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, h('b', null, 'Materials: '), lp.materials.join(' · ')),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } }, h('b', null, 'Flow: '), lp.flow),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Assessment: '), lp.assessment),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Cross-cuts: '), lp.crosscuts.join(' · ')));
         })));
     }
 
@@ -25325,7 +25326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, c.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c.summary),
-            h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Sources: ' + c.sources));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Sources: ' + c.sources));
         })));
     }
 
@@ -25338,9 +25339,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         HATCHERY_GEAR.map(function(g, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', marginBottom: 4 } }, g.item),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Purpose: '), g.purpose),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Cost: '), g.typical),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, h('b', null, 'Notes: '), g.notes));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Purpose: '), g.purpose),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Cost: '), g.typical),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, h('b', null, 'Notes: '), g.notes));
         })));
     }
 
@@ -25354,7 +25355,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, r.rule),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, r.detail),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Practical: '), r.practical));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Practical: '), r.practical));
         })));
     }
 
@@ -25368,8 +25369,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, p.step),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Action: '), p.action),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Time: '), p.time),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Cost: '), p.cost));
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Time: '), p.time),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Cost: '), p.cost));
         })));
     }
 
@@ -25383,7 +25384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, r.topic),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, r.summary),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Key Rule: '), r.key_rule));
+            h('div', { style: { fontSize: 12, color: '#fbbf24' } }, h('b', null, 'Key Rule: '), r.key_rule));
         })));
     }
 
@@ -25396,11 +25397,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         WQ_THRESHOLDS.map(function(w, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, w.species),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Temperature: '), w.temp_range),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Salinity: '), w.salinity_range),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'DO min: '), w.DO_min),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'pH: '), w.pH_range),
-            h('div', { style: { fontSize: 11, color: '#fb923c' } }, h('b', null, 'Stress signs: '), w.stress_indicators));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Temperature: '), w.temp_range),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Salinity: '), w.salinity_range),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'DO min: '), w.DO_min),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'pH: '), w.pH_range),
+            h('div', { style: { fontSize: 12, color: '#fb923c' } }, h('b', null, 'Stress signs: '), w.stress_indicators));
         })));
     }
 
@@ -25413,14 +25414,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         SPECIES_DEEP_DIVES.map(function(s, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 8 } }, s.name),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, h('b', null, 'Taxonomy: '), s.taxonomy),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Life History: '), s.lifeHistory),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Biology: '), s.biology),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Aquaculture: '), s.aquaculture),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Market: '), s.market),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Stressors: '), s.stressors),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Stewardship: '), s.stewardship),
-            s.cite ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + s.cite + ')') : null);
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, h('b', null, 'Taxonomy: '), s.taxonomy),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Life History: '), s.lifeHistory),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Biology: '), s.biology),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, lineHeight: 1.6 } }, h('b', null, 'Aquaculture: '), s.aquaculture),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', marginBottom: 6 } }, h('b', null, 'Market: '), s.market),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 6 } }, h('b', null, 'Stressors: '), s.stressors),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Stewardship: '), s.stewardship),
+            s.cite ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, '(' + s.cite + ')') : null);
         })));
     }
 
@@ -25433,9 +25434,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         TECHNIQUES.map(function(t, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 6 } }, t.skill),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, lineHeight: 1.5 } }, h('b', null, 'How: '), t.details),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 4 } }, h('b', null, 'Mistake: '), t.mistake),
-            h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Practice: '), t.practice));
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, lineHeight: 1.5 } }, h('b', null, 'How: '), t.details),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 4 } }, h('b', null, 'Mistake: '), t.mistake),
+            h('div', { style: { fontSize: 12, color: '#86efac' } }, h('b', null, 'Practice: '), t.practice));
         })));
     }
 
@@ -25449,12 +25450,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 6 } }, s.title),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6, fontStyle: 'italic' } }, s.situation),
-            h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Options:')),
-            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+            h('div', { style: { fontSize: 12, color: '#bae6fd', marginBottom: 4 } }, h('b', null, 'Options:')),
+            h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               s.options.map(function(o, oi) { return h('li', { key: oi }, o); })),
-            h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 3 } }, h('b', null, '✓ Best: '), s.best),
-            h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, '✗ Worst: '), s.worst),
-            h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Lesson: '), s.lesson));
+            h('div', { style: { fontSize: 12, color: '#86efac', marginBottom: 3 } }, h('b', null, '✓ Best: '), s.best),
+            h('div', { style: { fontSize: 12, color: '#fb923c', marginBottom: 3 } }, h('b', null, '✗ Worst: '), s.worst),
+            h('div', { style: { fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } }, h('b', null, 'Lesson: '), s.lesson));
         })));
     }
 
@@ -25516,7 +25517,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           // DISCRETE state badge (not a continuous gradient)
           h('g', { transform: 'translate(260, 130)' },
             h('rect', { x: -52, y: -10, width: 104, height: 18, rx: 4, fill: stateColor, opacity: 0.85, stroke: stateColor, strokeWidth: 1 }),
-            h('text', { x: 0, y: 4, textAnchor: 'middle', fontSize: 10, fontWeight: 'bold', fill: '#04141f' }, stateLabel)
+            h('text', { x: 0, y: 4, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: '#04141f' }, stateLabel)
           )
         );
       }
@@ -25532,7 +25533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             { key: 'feed', label: 'Feed rate (g/day/fish)', val: sh.feed, min: 0.5, max: 8, step: 0.1 }
           ].map(function(slider) {
             return h('div', { key: slider.key },
-              h('label', { htmlFor: 'sh-' + slider.key, style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
+              h('label', { htmlFor: 'sh-' + slider.key, style: { display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
                 slider.label, ': ', h('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, slider.val)),
               h('input', { id: 'sh-' + slider.key, type: 'range', min: slider.min, max: slider.max, step: slider.step || 1, value: slider.val,
                 onChange: function(e) { var p = {}; p[slider.key] = parseFloat(e.target.value); setSH(p); },
@@ -25541,14 +25542,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         ),
         // Log + reset
         h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 } },
-          h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#0f1c2f', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '📋 Log observation'),
+          h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#0f1c2f', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '📋 Log observation'),
           h('button', { onClick: function() { setSH({ density: 12, exchange: 80, feed: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-            style: { padding: '4px 10px', background: '#0f1c2f', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, '↺ Reset'),
-          (sh.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (sh.log || []).length + ' observations logged')
+            style: { padding: '4px 10px', background: '#0f1c2f', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' } }, '↺ Reset'),
+          (sh.log || []).length > 0 && h('span', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, (sh.log || []).length + ' observations logged')
         ),
         // Log table
         (sh.log || []).length > 0 && h('div', { style: { overflowX: 'auto', marginBottom: 10 } },
-          h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1' } },
+          h('table', { style: { fontSize: 12, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1' } },
             h('thead', null, h('tr', { style: { background: '#1e293b' } },
               ['density', 'exchange %', 'feed g', 'DO mg/L', 'state'].map(function(c, i) {
                 return h('th', { scope: 'col', key: 'h' + i, style: { padding: '4px 8px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c);
@@ -25567,7 +25568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         ),
         // Free-text hypothesis
         h('div', { style: { marginBottom: 10 } },
-          h('label', { htmlFor: 'sh-hypo', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
+          h('label', { htmlFor: 'sh-hypo', style: { display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
             'Your hypothesis (free text — no right answer):'),
           h('textarea', { id: 'sh-hypo', value: sh.hypothesis || '',
             onChange: function(e) { setSH({ hypothesis: e.target.value }); },
@@ -25577,9 +25578,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         // Opt-in open questions
         h('div', { style: { marginBottom: 10 } },
           !sh.stuckRevealed && h('button', { onClick: function() { setSH({ stuckRevealed: true }); },
-            style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+            style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
             '🤔 I\'m stuck — show me questions to think about (no answers)'),
-          sh.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+          sh.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, 'Open questions — investigate by manipulating:'),
             h('ul', { style: { margin: 0, paddingLeft: 18 } },
               h('li', null, 'Start with density at 5. Slowly raise it. At what density does the state flip from healthy to stressed? Now raise exchange. Does the flip-point move?'),
@@ -25587,7 +25588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('li', null, 'Set density and feed to your favorite values. Now move only exchange. How much exchange is enough? Can you have too much?'),
               h('li', null, 'Log 5 healthy observations. Look at the DO column in your table. What range do they share? Is there a single threshold or a band?'),
               h('li', null, 'A real fish farmer cannot increase exchange beyond what their water source can supply. What does that constraint imply for stocking decisions?')),
-            h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 6 } }, 'No answers will be revealed. Investigate.'))
+            h('div', { style: { fontSize: 12, fontStyle: 'italic', color: '#94a3b8', marginTop: 6 } }, 'No answers will be revealed. Investigate.'))
         ),
         // Self-mark
         h('div', { style: { padding: 10, background: 'rgba(134,239,172,0.08)', border: '1px solid rgba(134,239,172,0.3)', borderRadius: 4 } },
@@ -25599,10 +25600,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             onChange: function(e) { setSH({ explanation: e.target.value }); },
             placeholder: __alloT('stem.aquaculture.explain_in_your_own_words_what_drives_oxygen','Explain in your own words: what drives oxygen consumption? What replenishes it? Why does feed rate matter even at constant density? What is the trade-off a real fish farmer faces?'),
             style: { width: '100%', minHeight: 80, padding: 6, background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(134,239,172,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 4 }),
-          sh.understood && (sh.explanation || '').trim().length >= 40 && h('div', { style: { marginTop: 6, fontSize: 10, fontStyle: 'italic', color: '#86efac' } },
+          sh.understood && (sh.explanation || '').trim().length >= 40 && h('div', { style: { marginTop: 6, fontSize: 12, fontStyle: 'italic', color: '#86efac' } },
             '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
         ),
-        h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } },
+        h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 4, fontSize: 12, fontStyle: 'italic', color: '#94a3b8' } },
           'Design note: no numeric score, no reveal button, no chip-selection. DO state is shown as a discrete 3-band marker (healthy / stressed / critical), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'));
     }
 
@@ -25680,7 +25681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         '.aq-topic-search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;}' +
         '.aq-eco-organism,.aq-eco-environment,.aq-eco-metric{transition:border-color .16s ease,background .16s ease,transform .16s ease;}' +
         '.aq-eco-organism:hover,.aq-eco-environment:hover{transform:translateY(-1px);border-color:#99f6e4!important;}' +
-        '.aq-seasonal-explorer,.aq-redesign-preview{margin-top:16px;padding:16px;border:1px solid #789b97;border-radius:12px;background:#031714;color:#e2e8f0}.aq-seasonal-explorer h3,.aq-redesign-preview h3{margin:0 0 8px;color:#f8fafc;font-size:19px}.aq-seasonal-explorer p,.aq-redesign-preview p{font-size:13px;line-height:1.6}.aq-season-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.aq-season-toolbar>div{flex:1 1 280px}.aq-season-toolbar label,.aq-redesign-preview label{display:block;font-size:13px;font-weight:750}.aq-seasonal-explorer select,.aq-redesign-preview select{display:block;box-sizing:border-box;max-width:100%;min-height:44px;margin-top:6px;background:#123a36;color:#f8fafc;border:1px solid #789b97;border-radius:7px;padding:8px;font:inherit}.aq-seasonal-explorer button,.aq-redesign-preview button{min-height:44px;padding:9px 12px;background:#123a36;color:#f8fafc;border:1px solid #789b97;border-radius:8px;cursor:pointer;font-size:13px;font-weight:750}.aq-season-figure{margin:14px 0}.aq-season-figure svg{display:block;width:100%;height:auto}.aq-season-figure figcaption{font-size:12px;color:#cbd5e1;line-height:1.5}.aq-season-months{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.aq-season-months button span,.aq-season-months button small{display:block}.aq-season-months button small{font-size:10px;margin-top:3px}.aq-season-months button[aria-pressed=true]{background:#ccfbf1;color:#052e2b;border:2px solid #5eead4}.aq-season-inspection{margin-top:12px;padding:14px;border:1px solid #527a75;border-radius:9px;background:#071f1d}.aq-season-inspection-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}.aq-season-inspection-header span{font-size:13px;color:#fde68a}.aq-season-readings{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:12px 0}.aq-season-readings>div{padding:10px;border:1px solid #527a75;border-radius:8px;min-width:0}.aq-season-readings dt{font-size:12px;color:#bfdbfe}.aq-season-readings dd{margin:6px 0;font-weight:800;font-size:15px;overflow-wrap:anywhere}.aq-season-readings small{font-size:12px;color:#cbd5e1}.aq-season-species{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;list-style:none;padding:0}.aq-season-species>li{padding:10px;border:1px solid #527a75;border-radius:8px;font-size:13px;line-height:1.5}.aq-season-species>li>span{display:block;color:#fde68a;font-size:12px;margin:4px 0}.aq-season-species p{margin:4px 0}.aq-season-species ul{padding-left:17px}.aq-season-limits{margin-top:12px;font-size:13px;line-height:1.6}.aq-seasonal-explorer summary{cursor:pointer;min-height:44px;padding:12px 0;box-sizing:border-box}.aq-redesign-tradeoff{padding:12px;border-left:3px solid #fbbf24;background:#252617}.aq-redesign-preview>button{background:#99f6e4;color:#032522}@media(max-width:620px){.aq-seasonal-explorer,.aq-redesign-preview,.aq-season-inspection{padding:10px}.aq-season-months{grid-template-columns:repeat(3,minmax(0,1fr))}.aq-season-toolbar{display:block}.aq-season-toolbar>button{width:100%;margin-top:12px}.aq-season-readings{grid-template-columns:1fr}.aq-season-species{grid-template-columns:1fr}}@media(forced-colors:active){.aq-season-months button[aria-pressed=true]{outline:3px solid Highlight}.aq-season-figure path,.aq-season-figure circle,.aq-season-figure line{stroke:CanvasText}.aq-season-figure text{fill:CanvasText}}' +
+        '.aq-seasonal-explorer,.aq-redesign-preview{margin-top:16px;padding:16px;border:1px solid #789b97;border-radius:12px;background:#031714;color:#e2e8f0}.aq-seasonal-explorer h3,.aq-redesign-preview h3{margin:0 0 8px;color:#f8fafc;font-size:19px}.aq-seasonal-explorer p,.aq-redesign-preview p{font-size:13px;line-height:1.6}.aq-season-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.aq-season-toolbar>div{flex:1 1 280px}.aq-season-toolbar label,.aq-redesign-preview label{display:block;font-size:13px;font-weight:750}.aq-seasonal-explorer select,.aq-redesign-preview select{display:block;box-sizing:border-box;max-width:100%;min-height:44px;margin-top:6px;background:#123a36;color:#f8fafc;border:1px solid #789b97;border-radius:7px;padding:8px;font:inherit}.aq-seasonal-explorer button,.aq-redesign-preview button{min-height:44px;padding:9px 12px;background:#123a36;color:#f8fafc;border:1px solid #789b97;border-radius:8px;cursor:pointer;font-size:13px;font-weight:750}.aq-season-figure{margin:14px 0}.aq-season-figure svg{display:block;width:100%;height:auto}.aq-season-figure figcaption{font-size:12px;color:#cbd5e1;line-height:1.5}.aq-season-months{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.aq-season-months button span,.aq-season-months button small{display:block}.aq-season-months button small{font-size:12px;margin-top:3px}.aq-season-months button[aria-pressed=true]{background:#ccfbf1;color:#052e2b;border:2px solid #5eead4}.aq-season-inspection{margin-top:12px;padding:14px;border:1px solid #527a75;border-radius:9px;background:#071f1d}.aq-season-inspection-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}.aq-season-inspection-header span{font-size:13px;color:#fde68a}.aq-season-readings{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:12px 0}.aq-season-readings>div{padding:10px;border:1px solid #527a75;border-radius:8px;min-width:0}.aq-season-readings dt{font-size:12px;color:#bfdbfe}.aq-season-readings dd{margin:6px 0;font-weight:800;font-size:15px;overflow-wrap:anywhere}.aq-season-readings small{font-size:12px;color:#cbd5e1}.aq-season-species{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;list-style:none;padding:0}.aq-season-species>li{padding:10px;border:1px solid #527a75;border-radius:8px;font-size:13px;line-height:1.5}.aq-season-species>li>span{display:block;color:#fde68a;font-size:12px;margin:4px 0}.aq-season-species p{margin:4px 0}.aq-season-species ul{padding-left:17px}.aq-season-limits{margin-top:12px;font-size:13px;line-height:1.6}.aq-seasonal-explorer summary{cursor:pointer;min-height:44px;padding:12px 0;box-sizing:border-box}.aq-redesign-tradeoff{padding:12px;border-left:3px solid #fbbf24;background:#252617}.aq-redesign-preview>button{background:#99f6e4;color:#032522}@media(max-width:620px){.aq-seasonal-explorer,.aq-redesign-preview,.aq-season-inspection{padding:10px}.aq-season-months{grid-template-columns:repeat(3,minmax(0,1fr))}.aq-season-toolbar{display:block}.aq-season-toolbar>button{width:100%;margin-top:12px}.aq-season-readings{grid-template-columns:1fr}.aq-season-species{grid-template-columns:1fr}}@media(forced-colors:active){.aq-season-months button[aria-pressed=true]{outline:3px solid Highlight}.aq-season-figure path,.aq-season-figure circle,.aq-season-figure line{stroke:CanvasText}.aq-season-figure text{fill:CanvasText}}' +
         '@media(forced-colors:active){.aq-investigation-loop,.aq-saved-experiments,.aq-notebook-card,.aq-measurement-notebook,.aq-measurement-capture,.aq-seasonal-explorer,.aq-investigation-loop *,.aq-saved-experiments *,.aq-notebook-card *,.aq-measurement-notebook *,.aq-measurement-capture *,.aq-seasonal-explorer *{color:CanvasText!important;background-color:Canvas!important;background-image:none!important;border-color:CanvasText!important;box-shadow:none!important;text-shadow:none!important}.aq-investigation-loop button,.aq-investigation-loop summary,.aq-saved-experiments button,.aq-saved-experiments summary,.aq-notebook-card button,.aq-notebook-card summary,.aq-measurement-notebook button,.aq-measurement-notebook summary,.aq-measurement-capture button,.aq-seasonal-explorer button,.aq-seasonal-explorer summary{color:ButtonText!important;background-color:ButtonFace!important;border-color:ButtonText!important}.aq-investigation-loop input,.aq-investigation-loop textarea,.aq-investigation-loop select,.aq-saved-experiments input,.aq-saved-experiments textarea,.aq-saved-experiments select,.aq-notebook-card input,.aq-notebook-card textarea,.aq-notebook-card select,.aq-measurement-capture select,.aq-seasonal-explorer select{color:FieldText!important;background-color:Field!important;border-color:FieldText!important}.aq-investigation-loop button:disabled,.aq-saved-experiments button:disabled,.aq-notebook-card button:disabled,.aq-measurement-notebook button:disabled,.aq-measurement-capture button:disabled,.aq-seasonal-explorer button:disabled{color:GrayText!important;border-color:GrayText!important;opacity:1}.aq-investigation-loop :focus-visible,.aq-saved-experiments :focus-visible,.aq-notebook-card :focus-visible,.aq-measurement-notebook :focus-visible,.aq-measurement-capture :focus-visible,.aq-seasonal-explorer :focus-visible{outline-color:Highlight!important}.aq-season-months button[aria-pressed=true]{color:HighlightText!important;background-color:Highlight!important;outline:3px solid Highlight}}' +
         ".aq-measurement-capture{margin:14px 0;padding:12px;background:#071f1d;border:1px solid #789b97;border-radius:9px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}.aq-measurement-capture label{font-size:13px;font-weight:750}.aq-measurement-capture p{grid-row:2;margin:0;font-size:13px;line-height:1.5}.aq-measurement-capture select{display:block;width:100%;min-height:44px;margin-top:6px;padding:8px;border:1px solid #789b97;background:#123a36;color:#f8fafc;border-radius:8px;font:inherit}.aq-measurement-capture button{grid-column:2;grid-row:1 / span 2}.aq-measurement-notebook{margin-top:12px;border:1px solid #789b97;border-radius:9px;background:#071f1d;color:#e2e8f0}.aq-measurement-notebook>summary{padding:12px}.aq-measurement-body{padding:0 12px 12px}.aq-measurement-body h3,.aq-measurement-body h5{margin:4px 0;font-size:17px;color:#f8fafc}.aq-measurement-row{margin-top:12px;padding:12px;background:#031714;border:1px solid #527a75;border-radius:9px;min-width:0}.aq-measurement-row h4,.aq-measurement-row h6{font-size:14px;color:#99f6e4;margin:0 0 6px}.aq-measurement-body p,.aq-measurement-body li{font-size:13px;line-height:1.6;margin:6px 0}.aq-measurement-row .aq-measurement-reading{font-size:15px;font-weight:800}.aq-measurement-row .aq-measurement-status{font-weight:750;color:#fde68a}.aq-measurement-row .aq-measurement-meta{font-size:12px;color:#cbd5e1}.aq-measurement-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.aq-measurement-actions button,.aq-measurement-capture button{min-height:44px;padding:9px 12px;border:1px solid #789b97;border-radius:8px;background:#123a36;color:#f8fafc;font-size:13px;font-weight:750;cursor:pointer}.aq-measurement-actions button:first-child,.aq-measurement-capture button{background:#99f6e4;color:#032522}.aq-measurement-capture button:disabled{opacity:.6;cursor:default}.aq-measurement-settings{margin:8px 0;padding:8px;border:1px solid #527a75;border-radius:8px;font-size:13px}.aq-measurement-notebook summary{min-height:44px;cursor:pointer}.aq-evidence-count{display:block;color:#cbd5e1;font-size:12px;margin-top:4px}@media(max-width:620px){.aq-measurement-capture{display:block}.aq-measurement-capture p{margin:8px 0}.aq-measurement-capture button{width:100%}.aq-measurement-row{padding:10px}.aq-measurement-actions{display:grid}.aq-measurement-actions button{width:100%}.aq-measurement-settings .aq-record-settings>div{grid-template-columns:1fr;gap:3px}}" +
         ".aq-input-isolation{border:1px solid #527a75;background:#071f1d;color:#e2e8f0;border-radius:10px;margin:14px 0;padding:0 12px}.aq-isolation-body{padding:0 0 12px}.aq-isolation-body h3{font-size:17px;color:#f8fafc;line-height:1.5;margin:6px 0}.aq-isolation-body h4{font-size:14px;color:#99f6e4;margin:8px 0}.aq-isolation-body p,.aq-isolation-body li{font-size:13px;line-height:1.6;overflow-wrap:anywhere}.aq-isolation-body label{display:block;font-size:13px;font-weight:750}.aq-isolation-body select{display:block;width:100%;box-sizing:border-box;min-height:44px;border:1px solid #789b97;border-radius:8px;background:#123a36;color:#f8fafc;padding:8px;margin:6px 0;font:inherit}.aq-isolation-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.aq-isolation-preview section{min-width:0;padding:10px;border:1px solid #527a75;border-radius:8px}.aq-isolation-preview ul{padding-left:18px}.aq-isolation-caution{grid-column:1/-1;border-left:3px solid #fbbf24;padding:8px 12px;background:#031714}.aq-isolation-actions{display:flex;gap:8px;flex-wrap:wrap}.aq-isolation-actions button{min-height:44px;min-width:44px;padding:9px 12px;border:1px solid #789b97;border-radius:8px;background:#123a36;color:#f8fafc;font-size:13px;font-weight:750;cursor:pointer}.aq-isolation-actions button:disabled{opacity:.6;cursor:default}.aq-input-isolation :focus-visible,.aq-input-isolation [tabindex=\"-1\"]:focus{outline:3px solid #fbbf24;outline-offset:2px}@media(max-width:760px){.aq-isolation-preview{grid-template-columns:1fr}.aq-isolation-actions{display:grid}.aq-isolation-actions button{width:100%}}@media(forced-colors:active){.aq-input-isolation,.aq-input-isolation *{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.aq-input-isolation button:disabled{color:GrayText!important;opacity:1!important}.aq-input-isolation :focus-visible,.aq-input-isolation [tabindex=\"-1\"]:focus{outline-color:Highlight!important}}" +
@@ -25715,21 +25716,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           margin: '0 0 12px', padding: '10px 12px', borderRadius: 10,
           background: 'linear-gradient(90deg, #061a18, rgba(11,43,40,0.92))', border: '1px solid #416c67', borderLeft: '4px solid ' + currentTopicLocation.group.color } },
           h('div', null,
-            h('div', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.07em' } },
+            h('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.07em' } },
               currentTopicLocation.group.label),
             h('h1', { id: 'aq-topic-heading', style: { margin: '3px 0 0', color: '#f8fafc', fontSize: 22, lineHeight: 1.2 } },
               currentTopicLocation.topic.label)),
           tab !== 'home' ? h(isActivityTopic ? 'details' : 'div', { className: 'aq-lesson-actions', style: { display: isActivityTopic ? 'block' : 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' } },
             isActivityTopic ? h('summary', { className: 'aq-disclosure-label' }, 'Topic progress and bookmark') : null,
             h('button', { type: 'button', className: 'aq-btn aq-complete-topic', 'aria-pressed': currentTopicCompleted,
-              'aria-label': (currentTopicCompleted ? 'Mark ' : 'Mark ') + currentTopicLocation.topic.label + (currentTopicCompleted ? ' incomplete' : ' complete'),
+              'aria-label': (currentTopicCompleted ? __alloAriaFill(__alloT('stem.aquaculture.a11y_mark_topic_incomplete', 'Mark {label} incomplete'), { label: currentTopicLocation.topic.label }) : __alloAriaFill(__alloT('stem.aquaculture.a11y_mark_topic_complete', 'Mark {label} complete'), { label: currentTopicLocation.topic.label })),
               onClick: function() { toggleTopicCompletion(tab); },
               style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
                 background: currentTopicCompleted ? '#86efac' : '#123a36', color: currentTopicCompleted ? '#052e24' : '#f8fafc',
                 border: '1px solid ' + (currentTopicCompleted ? '#bbf7d0' : '#66928d'), fontSize: 12, fontWeight: 900 } },
               currentTopicCompleted ? '✓ Completed' : 'Mark complete'),
             h('button', { type: 'button', className: 'aq-btn', 'aria-pressed': currentTopicBookmarked,
-              'aria-label': (currentTopicBookmarked ? 'Remove ' : 'Save ') + currentTopicLocation.topic.label + (currentTopicBookmarked ? ' from saved topics' : ' for later'),
+              'aria-label': (currentTopicBookmarked ? __alloAriaFill(__alloT('stem.aquaculture.a11y_remove_topic_from_saved_topics', 'Remove {label} from saved topics'), { label: currentTopicLocation.topic.label }) : __alloAriaFill(__alloT('stem.aquaculture.a11y_save_topic_for_later', 'Save {label} for later'), { label: currentTopicLocation.topic.label })),
               onClick: function() { toggleTopicBookmark(tab); },
               style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
                 background: currentTopicBookmarked ? '#fbbf24' : '#163f3b', color: currentTopicBookmarked ? '#2a1900' : '#f8fafc',
@@ -25743,22 +25744,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('span', { style: { color: currentTopicTrust.tone } }, 'Evidence & freshness'), ' · ', currentTopicTrust.label),
           h('div', { className: 'aq-trust-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.35fr) minmax(230px,.65fr)', gap: 12, padding: '0 12px 12px' } },
             h('div', null,
-              h('p', { style: { margin: '0 0 7px', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.55 } }, currentTopicTrust.context),
+              h('p', { style: { margin: '0 0 7px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, currentTopicTrust.context),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                h('span', { style: { padding: '3px 7px', borderRadius: 999, color: '#dbeafe', background: 'rgba(96,165,250,.1)', border: '1px solid #60a5fa', fontSize: 10, fontWeight: 800 } }, currentTopicTrust.jurisdiction),
-                h('span', { style: { padding: '3px 7px', borderRadius: 999, color: '#d1fae5', background: 'rgba(45,212,191,.1)', border: '1px solid #5eead4', fontSize: 10, fontWeight: 800 } }, currentTopicTrust.checked))),
+                h('span', { style: { padding: '3px 7px', borderRadius: 999, color: '#dbeafe', background: 'rgba(96,165,250,.1)', border: '1px solid #60a5fa', fontSize: 12, fontWeight: 800 } }, currentTopicTrust.jurisdiction),
+                h('span', { style: { padding: '3px 7px', borderRadius: 999, color: '#d1fae5', background: 'rgba(45,212,191,.1)', border: '1px solid #5eead4', fontSize: 12, fontWeight: 800 } }, currentTopicTrust.checked))),
             h('div', null,
-              h('div', { style: { marginBottom: 5, color: '#bfdbfe', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.05em' } }, 'Primary-source gateways'),
-              h('ul', { style: { margin: 0, paddingLeft: 17, color: '#e2e8f0', fontSize: 10.8, lineHeight: 1.55 } }, currentTopicTrust.sourceIds.map(function(sourceId) { var source = AQ_CONTENT_TRUST_SOURCES[sourceId]; return h('li', { key: sourceId }, h('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' }, source.label)); }))))) : null,
+              h('div', { style: { marginBottom: 5, color: '#bfdbfe', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.05em' } }, 'Primary-source gateways'),
+              h('ul', { style: { margin: 0, paddingLeft: 17, color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, currentTopicTrust.sourceIds.map(function(sourceId) { var source = AQ_CONTENT_TRUST_SOURCES[sourceId]; return h('li', { key: sourceId }, h('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' }, source.label)); }))))) : null,
         tab !== 'home' ? h('details', { className: 'aq-topic-reflection',
           style: { margin: '-2px 0 12px', borderRadius: 10, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
           h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '10px 12px', cursor: 'pointer',
             color: '#f8fafc', fontSize: 12.5, fontWeight: 850, listStylePosition: 'inside' } },
             'My reflection', currentTopicHasNote ? ' · Note saved' : ' · Add a note'),
           h('div', { style: { padding: '0 12px 12px' } },
-            h('p', { id: 'aq-topic-note-help', style: { margin: '0 0 7px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } },
+            h('p', { id: 'aq-topic-note-help', style: { margin: '0 0 7px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } },
               'Capture a question, observation, or connection. Your note saves on this device as you type.'),
-            h('label', { htmlFor: 'aq-topic-note', style: { display: 'block', marginBottom: 5, color: '#dbeafe', fontSize: 11.5, fontWeight: 800 } },
+            h('label', { htmlFor: 'aq-topic-note', style: { display: 'block', marginBottom: 5, color: '#dbeafe', fontSize: 12, fontWeight: 800 } },
               'Reflection for ' + currentTopicLocation.topic.label),
             h('textarea', { id: 'aq-topic-note', value: noteDraft, maxLength: 600, rows: 4,
               'aria-describedby': 'aq-topic-note-help aq-topic-note-status',
@@ -25767,7 +25768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               style: { boxSizing: 'border-box', width: '100%', minHeight: 96, resize: 'vertical', padding: '9px 10px',
                 borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 14, lineHeight: 1.5 } }),
             h('div', { id: 'aq-topic-note-status',
-              style: { marginTop: 5, color: learningNotice.kind === 'error' ? '#fecaca' : '#bfdbfe', fontSize: 10.5, fontWeight: 750 } },
+              style: { marginTop: 5, color: learningNotice.kind === 'error' ? '#fecaca' : '#bfdbfe', fontSize: 12, fontWeight: 750 } },
               noteDraft.length + '/600 characters · ' + (learningNotice.kind === 'error' ? 'Not saved — check Portfolio & backup on Home.' : 'Saved on this device')))) : null),
         tab === 'home' ? homeTab() :
       tab === 'ecosystem' ? ecosystemTab() :

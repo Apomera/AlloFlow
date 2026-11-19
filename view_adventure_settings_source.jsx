@@ -76,7 +76,7 @@ function AdventureSettingsSurface({ theme, children, compact = false }) {
 }
 
 function AdventureSettingSection({ title, summary, children }) {
-  return <details><summary><span>{title}</span>{' '}{summary && <span className="as-help">{summary}</span>}</summary><div className="as-detail">{children}</div></details>;
+  return <details data-help-key="adventure_setting_section"><summary><span>{title}</span>{' '}{summary && <span className="as-help">{summary}</span>}</summary><div className="as-detail">{children}</div></details>;
 }
 
 // Numeric drafts stay local until valid; empty drafts never erase a saved count.
@@ -209,7 +209,7 @@ function AdventureSetupFields(props) {
     {!props.hideSummary && <AdventureSetupSummary {...props} />}
     {fixed ? <>
       <p className="as-notice">{adventureSetupText(props.t, 'student_locked_hint', 'Your teacher has fixed this setup. You can review the settings and start your adventure.')}</p>
-      <details><summary>{adventureSetupText(props.t, 'view_teacher_settings', 'View teacher settings')}</summary>
+      <details data-help-key="adventure_setting_view_teacher"><summary>{adventureSetupText(props.t, 'view_teacher_settings', 'View teacher settings')}</summary>
         <AdventureSetupEditor {...props} hideNotice />
       </details>
     </> : <AdventureSetupEditor {...props} />}
@@ -234,11 +234,11 @@ function AdventureSetupEditor(props) {
   const fixedHint = (permission, key) => fixedByTeacher(permission) && <span className="as-help" id={id + '-' + key + '-fixed'}>{label('teacher_fixed_field', 'Set by your teacher.')}</span>;
   const describedBy = (permission, key, help) => [help && id + '-' + key + '-help', fixedByTeacher(permission) && id + '-' + key + '-fixed'].filter(Boolean).join(' ') || undefined;
   const change = (setter, value, permission) => { if (!locked(permission) && typeof props[setter] === 'function') props[setter](value); };
-  const toggle = (field, setter, title, help, permission, extraDisabled = false) => typeof props[setter] === 'function' && <label className="as-check">
+  const toggle = (field, setter, title, help, permission, extraDisabled = false) => typeof props[setter] === 'function' && <label className="as-check" data-help-key={'adventure_setting_' + field}>
     <input type="checkbox" aria-label={title} aria-describedby={describedBy(permission, field, help)} checked={!!props[field]} disabled={locked(permission) || extraDisabled} onChange={e => change(setter, e.target.checked, permission)} />
     <span>{title}{help && <span className="as-help" id={id + '-' + field + '-help'}>{help}</span>}{fixedHint(permission, field)}</span>
   </label>;
-  const field = (key, title, value, setter, options, permission, help) => <label className="as-field" htmlFor={id + '-' + key}>{title}
+  const field = (key, title, value, setter, options, permission, help) => <label className="as-field" htmlFor={id + '-' + key} data-help-key={'adventure_setting_' + key.replace(/-/g, '_')}>{title}
     <select className="as-control" aria-label={title} aria-describedby={describedBy(permission, key, help)} id={id + '-' + key} value={value} disabled={locked(permission) || typeof props[setter] !== 'function'} onChange={e => change(setter, key === 'language' && e.target.value === '__app__' && !hasLanguagePreference ? appLanguage : e.target.value, permission)}>
       {options.map(([value, text]) => <option key={value} value={value}>{text}</option>)}
     </select>{help && <span className="as-help" id={id + '-' + key + '-help'}>{help}</span>}{fixedHint(permission, key)}
@@ -316,7 +316,7 @@ function AdventureSetupEditor(props) {
   };
   const supports = typeof props.setAdventureAutoRead === 'function' || typeof props.setAdventureTypingPaceEnabled === 'function' || typeof props.setAdventureFluencyEnabled === 'function';
   const hasCloud = typeof props.setIsAdventureCloudEnabled === 'function';
-  const permissionToggle = (key, title, help, defaultAllowed = false) => props.isTeacherMode && typeof props.setStudentProjectSettings === 'function' && <label className="as-check">
+  const permissionToggle = (key, title, help, defaultAllowed = false) => props.isTeacherMode && typeof props.setStudentProjectSettings === 'function' && <label className="as-check" data-help-key={'adventure_permission_' + key}>
     <input type="checkbox" aria-label={title} checked={defaultAllowed ? permissions[key] !== false : permissions[key] === true} disabled={locked() || (key !== 'lockAllSettings' && permissions.lockAllSettings === true)} onChange={e => { const checked = e.target.checked; if (!locked() && (key === 'lockAllSettings' || !permissions.lockAllSettings)) props.setStudentProjectSettings(previous => ({ ...previous, adventurePermissions: { ...previous.adventurePermissions, [key]: checked } })); }} />
     <span>{title}<span className="as-help">{help}</span></span>
   </label>;
@@ -331,28 +331,28 @@ function AdventureSetupEditor(props) {
       <div className="as-grid">
         {field('input-mode', label('adventure.interaction_mode', 'Interaction mode'), props.adventureInputMode || 'choice', 'setAdventureInputMode', modes, 'allowModeSwitch', modeGuide)}
         {languageOptions.length > 1 && field('language', label('adventure.language_label', 'Adventure language'), languageSelection, 'setAdventureLanguageMode', languageOptions, 'allowLanguageSwitch', label('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.'))}
-        <label className="as-field" htmlFor={id + '-response'}>{label('response_format', 'Student responses')}
+        <label className="as-field" htmlFor={id + '-response'} data-help-key="adventure_setting_response">{label('response_format', 'Student responses')}
           <select aria-label={label('response_format', 'Student responses')} aria-describedby={describedBy('freeResponse', 'response')} id={id + '-response'} className="as-control" value={props.adventureFreeResponseEnabled ? 'written' : 'choice'} disabled={locked('freeResponse') || typeof props.setAdventureFreeResponseEnabled !== 'function'} onChange={e => change('setAdventureFreeResponseEnabled', e.target.value === 'written', 'freeResponse')}>
             <option value="choice">{label('response_choices', 'Choose from suggestions')}</option><option value="written">{label('response_written', 'Write or dictate')}</option>
           </select>{fixedHint('freeResponse', 'response')}
         </label>
       </div>
-      {props.isTeacherMode && typeof props.openUniversalSettings === 'function' && <button type="button" className="as-button" style={{ marginTop: 12 }} disabled={locked()} onClick={() => { if (!locked()) props.openUniversalSettings('languages'); }}>{languageOptions.length === 1 ? label('add_languages', 'Add languages in Universal Settings') : label('manage_languages', 'Manage languages in Universal Settings')}</button>}
-      <div style={{ marginTop: 16 }}><AdventureEpisodeSettings state={state} onChange={props.setAdventureState} t={props.t} theme={props.theme} locked={locked()} id={id + '-episode-length'} freeResponse={props.adventureFreeResponseEnabled} includeFinale /></div>
+      {props.isTeacherMode && typeof props.openUniversalSettings === 'function' && <button type="button" className="as-button" data-help-key="adventure_setting_manage_languages" style={{ marginTop: 12 }} disabled={locked()} onClick={() => { if (!locked()) props.openUniversalSettings('languages'); }}>{languageOptions.length === 1 ? label('add_languages', 'Add languages in Universal Settings') : label('manage_languages', 'Manage languages in Universal Settings')}</button>}
+      <div style={{ marginTop: 16 }} data-help-key="adventure_setting_episode"><AdventureEpisodeSettings state={state} onChange={props.setAdventureState} t={props.t} theme={props.theme} locked={locked()} id={id + '-episode-length'} freeResponse={props.adventureFreeResponseEnabled} includeFinale /></div>
       {toggle('isSocialStoryMode', 'setIsSocialStoryMode', label('adventure.social_story_mode_label', 'Social scenario mode'), label('social_mode_hint', 'Show a target social skill in Essential setup.'), 'allowModeSwitch')}
-      {props.isSocialStoryMode && <label className="as-field" htmlFor={id + '-social-focus'}>{label('social_focus', 'Social skill to practise')}
+      {props.isSocialStoryMode && <label className="as-field" htmlFor={id + '-social-focus'} data-help-key="adventure_setting_social_focus">{label('social_focus', 'Social skill to practise')}
         <input id={id + '-social-focus'} className="as-control" type="text" aria-describedby={describedBy('allowModeSwitch', 'social-focus')} value={props.socialStoryFocus || ''} disabled={locked('allowModeSwitch') || typeof props.setSocialStoryFocus !== 'function'} onChange={e => change('setSocialStoryFocus', e.target.value, 'allowModeSwitch')} placeholder={label('adventure.social_story_focus_placeholder', 'e.g., Sharing toys, Dealing with frustration')} />
         {fixedHint('allowModeSwitch', 'social-focus')}
       </label>}
       {props.adventureInputMode === 'system' && <div>
         {toggle('enableFactionResources', 'setEnableFactionResources', label('adventure.system_state_label', 'Track resources'), label('adventure.system_state_desc', 'Track how your decisions affect the system.'))}
         {props.enableFactionResources && <>
-          <label className="as-field" htmlFor={id + '-resource-mode'}>{label('resource_setup', 'Resource setup')}
+          <label className="as-field" htmlFor={id + '-resource-mode'} data-help-key="adventure_setting_resource_mode">{label('resource_setup', 'Resource setup')}
             <select aria-label={label('resource_setup', 'Resource setup')} className="as-control" id={id + '-resource-mode'} value={resourceMode} disabled={locked() || !(props.setFactionResourceMode || props.handleSetFactionResourceModeToManual)} onChange={e => setResourceMode(e.target.value)}>
               <option value="ai">{label('resources_ai', 'AI-generated resources')}</option><option value="manual">{label('resources_manual', 'Teacher-defined resources')}</option>
             </select>
           </label>
-          {resourceMode === 'manual' && <div ref={resourceEditorRef}>
+          {resourceMode === 'manual' && <div ref={resourceEditorRef} data-help-key="adventure_setting_resource_rows">
             <p className="as-help">{label('resources_manual_hint', 'Give each resource a distinct name and unit. Percentages stay between 0 and 100; other values can exceed 100 and include decimals.')}</p>
             {resources.length === 0 && <p className="as-notice">{label('resources_empty', 'No resources yet. Add a resource such as Budget (credits), Water (litres), or Trust (%).')}</p>}
             <p className="as-help">{label('resource_count', 'Resource rows')}: {resources.length} / 24</p>
@@ -374,7 +374,7 @@ function AdventureSetupEditor(props) {
       </div>}
     </section>
     {supports && <AdventureSettingSection title={label('learning_supports', 'Learning supports')} summary={[typeof props.setAdventureAutoRead === 'function' && label('auto_read_short', 'Auto-read') + ': ' + onOff(props.adventureAutoRead), label('microphone_practice', 'Microphone practice') + ': ' + onOff(props.adventureFluencyEnabled), props.adventureFreeResponseEnabled && label('adventure.typing_pace_label', 'Typing pace') + ': ' + onOff(props.adventureTypingPaceEnabled)].filter(Boolean).join(' · ')}>
-      {typeof props.setAdventureAutoRead === 'function' && <label className="as-check"><input type="checkbox" checked={!!props.adventureAutoRead} disabled={locked()} onChange={e => { change('setAdventureAutoRead', e.target.checked); if (!e.target.checked && typeof props.stopPlayback === 'function') props.stopPlayback(); }} />{label('auto_read_setup', 'Read each scene automatically')}</label>}
+      {typeof props.setAdventureAutoRead === 'function' && <label className="as-check" data-help-key="adventure_setting_auto_read"><input type="checkbox" checked={!!props.adventureAutoRead} disabled={locked()} onChange={e => { change('setAdventureAutoRead', e.target.checked); if (!e.target.checked && typeof props.stopPlayback === 'function') props.stopPlayback(); }} />{label('auto_read_setup', 'Read each scene automatically')}</label>}
       {toggle('adventureFluencyEnabled', 'setAdventureFluencyEnabled', label('adventure.fluency_setting_label', 'Scene reading practice'), label('adventure.fluency_setting_desc', 'Offer an optional microphone button for practising the current passage.'))}
       {props.adventureFreeResponseEnabled && toggle('adventureTypingPaceEnabled', 'setAdventureTypingPaceEnabled', label('adventure.typing_pace_label', 'Typing pace'), label('adventure.typing_pace_desc', 'Descriptive pace and word count for written responses. Never affects points or grades.'))}
     </AdventureSettingSection>}
@@ -391,18 +391,18 @@ function AdventureSetupEditor(props) {
     ].filter(Boolean).join(' · ')}>
       {field('art-style', label('adventure.art_style_label', 'Art style'), props.adventureArtStyle || 'auto', 'setAdventureArtStyle', ['universal', 'auto', 'storybook', 'pixel', 'cinematic', 'anime', 'crayon', 'custom'].map(value => [value, label('adventure.art_' + value, { universal: 'Use Universal style', auto: 'Auto', storybook: 'Storybook', pixel: 'Pixel art', cinematic: 'Cinematic', anime: 'Anime', crayon: 'Hand-drawn', custom: 'Custom' }[value])]), 'allowVisualsToggle')}
       {props.adventureArtStyle === 'universal' && <p className="as-help">{props.universalImageStyle || label('universal_style_empty', 'No Universal style is set; Adventure will use its automatic style.')}</p>}
-      {props.adventureArtStyle === 'custom' && <label className="as-field" htmlFor={id + '-custom-art'}>{label('custom_art', 'Custom art style')}<input id={id + '-custom-art'} aria-label={label('custom_art', 'Custom art style')} aria-describedby={describedBy('allowVisualsToggle', 'custom-art')} className="as-control" maxLength={160} placeholder={label('custom_art_placeholder', 'e.g., Watercolor picture book with soft outlines')} value={props.adventureCustomArtStyle || ''} disabled={locked('allowVisualsToggle')} onChange={e => change('setAdventureCustomArtStyle', e.target.value, 'allowVisualsToggle')} />{fixedHint('allowVisualsToggle', 'custom-art')}</label>}
+      {props.adventureArtStyle === 'custom' && <label className="as-field" htmlFor={id + '-custom-art'} data-help-key="adventure_setting_custom_art">{label('custom_art', 'Custom art style')}<input id={id + '-custom-art'} aria-label={label('custom_art', 'Custom art style')} aria-describedby={describedBy('allowVisualsToggle', 'custom-art')} className="as-control" maxLength={160} placeholder={label('custom_art_placeholder', 'e.g., Watercolor picture book with soft outlines')} value={props.adventureCustomArtStyle || ''} disabled={locked('allowVisualsToggle')} onChange={e => change('setAdventureCustomArtStyle', e.target.value, 'allowVisualsToggle')} />{fixedHint('allowVisualsToggle', 'custom-art')}</label>}
       {toggle('adventureConsistentCharacters', 'setAdventureConsistentCharacters', label('adventure.consistent_characters_label', 'Consistent characters'), label('adventure.consistent_characters_desc', 'Keep character appearances consistent across scenes.'), 'allowVisualsToggle')}
       {field('protagonist-age', label('adventure.protagonist_age_label', 'Protagonist age'), props.adventureProtagonistAge || 'auto', 'setAdventureProtagonistAge', [['auto', label('adventure.protagonist_age_auto', 'Auto (match the audience)')], ['child', label('adventure.protagonist_age_child', 'Child')], ['teen', label('adventure.protagonist_age_teen', 'Teen')], ['young-adult', label('adventure.protagonist_age_young_adult', 'Young adult')], ['adult', label('adventure.protagonist_age_adult', 'Adult')], ['older-adult', label('adventure.protagonist_age_older_adult', 'Older adult')]], 'allowVisualsToggle', label('adventure.protagonist_age_help', 'Who the learner plays as. Auto follows the target level. Reading level is unchanged either way.'))}
       {toggle('useLowQualityVisuals', 'setUseLowQualityVisuals', label('adventure.low_quality_label', 'Faster, simpler visuals'), label('adventure.low_quality_desc', 'Faster generation, less data.'), 'allowVisualsToggle')}
     </AdventureSettingSection>
     <AdventureSettingSection title={label('story_guidance', 'Story guidance')} summary={props.adventureCustomInstructions?.trim() ? label('guidance_added', 'Custom instructions added') : label('guidance_empty', 'No custom instructions')}>
-      <label className="as-field" htmlFor={id + '-custom-instructions'}>{label('input.custom_instructions', 'Custom instructions')}
+      <label className="as-field" htmlFor={id + '-custom-instructions'} data-help-key="adventure_setting_custom_instructions">{label('input.custom_instructions', 'Custom instructions')}
         <textarea id={id + '-custom-instructions'} aria-label={label('input.custom_instructions', 'Custom instructions')} aria-describedby={describedBy('allowCustomInstructions', 'custom-instructions')} className="as-control" value={props.adventureCustomInstructions || ''} disabled={locked('allowCustomInstructions')} onChange={e => change('setAdventureCustomInstructions', e.target.value, 'allowCustomInstructions')} placeholder={label('adventure.placeholder_custom', 'Add guidance for this adventure.')} />{fixedHint('allowCustomInstructions', 'custom-instructions')}
       </label>
     </AdventureSettingSection>
     {(hasCloud || (props.isTeacherMode && props.setStudentProjectSettings)) && <AdventureSettingSection title={label('saving_permissions', 'Saving & permissions')} summary={[label('cloud_images', 'Cloud images') + ': ' + onOff(props.isAdventureCloudEnabled), permissions.lockAllSettings ? label('student_setup_fixed', 'Student setup fixed') : label('student_setup_adjustable', 'Student setup adjustable')].join(' · ')}>
-      {hasCloud && (props.isTeacherMode || permissions.allowCloudImageStorage === true) && <label className="as-check">
+      {hasCloud && (props.isTeacherMode || permissions.allowCloudImageStorage === true) && <label className="as-check" data-help-key="adventure_setting_cloud_images">
         <input type="checkbox" checked={!!props.isAdventureCloudEnabled} disabled={locked('allowCloudImageStorage')} onChange={e => { if (locked('allowCloudImageStorage')) return; change('setIsAdventureCloudEnabled', e.target.checked, 'allowCloudImageStorage'); if (typeof props.safeSetItem === 'function') props.safeSetItem('allo_adventure_cloud', e.target.checked ? 'true' : 'false'); }} />
         <span>{label('adventure.cloud_storage_label', 'Cloud image storage')}<span className="as-help">{label('adventure.cloud_storage_desc', 'Store generated images online.')}</span></span>
       </label>}

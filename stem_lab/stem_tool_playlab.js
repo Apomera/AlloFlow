@@ -3011,6 +3011,10 @@ window.StemLab = window.StemLab || {
       var _plPickedState = React.useState(null);
       var pickedPlayerId = _plPickedState[0];
       var setPickedPlayerId = _plPickedState[1];
+      // WCAG 2.1.1: keyboard route for repositioning (same customPositions write as a drag).
+      var _plKeyMoveState = React.useState('WR1');
+      var keyMovePid = _plKeyMoveState[0];
+      var setKeyMovePid = _plKeyMoveState[1];
       function plWithPlayer(text, pid) { return String(text).split('{player}').join(String(pid)); }
       function placePlayerAt(pid, yardX, yardY) {
         var snappedX = Math.max(0.5, Math.min(FIELD_LENGTH - 0.5, Math.round(yardX)));
@@ -4773,7 +4777,25 @@ window.StemLab = window.StemLab || {
                 h('button', { type: 'button', 'data-pl-focusable': 'true', onClick: function() { setPickedPlayerId(null); plAnnounce(plWithPlayer(__alloT('stem.playlab.sr_player_put_down', '{player} put down.'), pickedPlayerId)); },
                   style: { minHeight: 28, padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.7)', background: 'rgba(15,23,42,0.88)', color: '#e2e8f0', fontWeight: 700, cursor: 'pointer' } },
                   __alloT('stem.playlab.cancel', 'Cancel'))
-              ) : null
+              ) : null,
+              !isSoccer ? (function() {
+                var movePlayer = rawFormation.filter(function(p) { return p.id === keyMovePid; })[0] || rawFormation[0];
+                if (!movePlayer) return null;
+                var moveBtnStyle = { minHeight: 32, minWidth: 36, padding: '2px 8px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.7)', background: 'rgba(15,23,42,0.88)', color: '#e2e8f0', fontWeight: 700, cursor: 'pointer' };
+                return h('div', { 'data-playlab-key-move': movePlayer.id, role: 'group', 'aria-label': __alloT('stem.playlab.key_move_group', 'Move a player with buttons'), className: 'playlab-chip-row', style: { marginTop: 6, alignItems: 'center' } },
+                  h('label', { className: 'playlab-chip' }, __alloT('stem.playlab.key_move_player', 'Player to move') + ' ',
+                    h('select', { value: movePlayer.id, 'data-pl-focusable': 'true', onChange: function(e) { setKeyMovePid(e.target.value); }, style: { marginLeft: 4, background: '#0f172a', color: '#f8fafc', border: '1px solid rgba(148,163,184,0.7)', borderRadius: 4 } },
+                      rawFormation.map(function(p) { return h('option', { key: p.id, value: p.id }, p.id); }))),
+                  [['left', -1, 0, '←', 'Move {player} one yard left'], ['right', 1, 0, '→', 'Move {player} one yard right'], ['up', 0, -1, '↑', 'Move {player} one yard up'], ['down', 0, 1, '↓', 'Move {player} one yard down']].map(function(m) {
+                    return h('button', { key: m[0], type: 'button', 'data-pl-focusable': 'true', 'data-playlab-key-move-dir': m[0], disabled: !!d.runActive,
+                      'aria-label': plWithPlayer(__alloT('stem.playlab.key_move_' + m[0], m[4]), movePlayer.id),
+                      onClick: function() {
+                        var spot = placePlayerAt(movePlayer.id, movePlayer.x + m[1], movePlayer.y + m[2]);
+                        if (pickedPlayerId) setPickedPlayerId(null);
+                        plAnnounce(plWithPlayer(__alloT('stem.playlab.sr_placed_player', 'Placed {player}. Position saved.'), movePlayer.id) + ' (' + spot.x + ', ' + spot.y + ')');
+                      }, style: moveBtnStyle }, m[3]);
+                  }));
+              })() : null
             ),
             // ── Run Play button — the headline action ──
             // A green pill below the canvas that animates the play.

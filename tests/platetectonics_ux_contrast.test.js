@@ -1054,7 +1054,7 @@ describe('Phone legibility — figures drawn in a fixed space', () => {
     const text = src();
     const start = text.indexOf("'data-pt-deeptime-zoom': 'true'");
     const body = text.slice(start, start + 4000);
-    expect(body).toMatch(/className: 'pt-tl-lbl text-\[10px\] font-bold whitespace-nowrap/);
+    expect(body).toMatch(/className: 'pt-tl-lbl text-\[12px\] font-bold whitespace-nowrap/);
     const legend = body.indexOf("'data-pt-deeptime-legend': 'true'");
     expect(legend).toBeGreaterThan(0);
     expect(body.slice(legend, legend + 700)).toMatch(/tail\.map\(function \(sp\)[\s\S]*ERAS\[sp\.i\]\.name/);
@@ -1180,7 +1180,7 @@ describe('Quick-Review cards are flash cards, not an answer sheet', () => {
   it('keeps the review card ink light, because the card is white in both themes', () => {
     const text = src();
     const field = text.slice(text.indexOf('var ptReviewField = function (label, text)'), text.indexOf('var ptReviewField = function (label, text)') + 600);
-    expect(field).toMatch(/className: 'text-\[11px\] text-slate-700 mb-1'/);
+    expect(field).toMatch(/className: 'text-\[12px\] text-slate-700 mb-1'/);
     expect(field).not.toMatch(/isDark/);
   });
 });

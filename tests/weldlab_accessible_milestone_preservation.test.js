@@ -9,6 +9,6 @@ it('restores the exact turn-start source, including unrelated work, after revers
   expect([...raw.subarray(0,3)]).toEqual([239,187,191]);
   expect(raw.toString('utf8')).not.toContain('\r');
   const restored=stripWeldlabMilestoneFixes(raw.toString('utf8'));
-  expect(createHash('sha256').update(restored,'utf8').digest('hex')).toBe('b0b581c9b4d7778e7462c08b3c1f2c85f93d96ea629dbbe1ae516f467264062c');
+  expect(createHash('sha256').update(restored,'utf8').digest('hex')).toBe('e9997fd62e4933cd320503cc0469575c3f284fff40019adc44f34c3e8438d789');
   expect(stripWeldlabMilestoneFixes(restored)).toBe(restored);
 });

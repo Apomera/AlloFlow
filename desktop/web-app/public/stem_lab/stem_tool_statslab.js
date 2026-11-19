@@ -2714,8 +2714,8 @@ window.StemLab = window.StemLab || {
     var t2 = d.multiColData;
     var kernelSQL = d.kernelSQL || 'SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name';
     var kernelBusy = !!d.kernelBusy;
-    var kernelError = d.kernelError || '';
-    var kernelResult = d.kernelResult && typeof d.kernelResult === 'object' ? d.kernelResult : null;
+    var kernelError = typeof d.kernelError === 'string' ? d.kernelError : '';
+    var kernelResult = d.kernelResult && typeof d.kernelResult === 'object' && Array.isArray(d.kernelResult.rows) && Array.isArray(d.kernelResult.columns) ? d.kernelResult : null;
     var kernelRows = [];
     function addKernelRows(group, values) {
       (values || []).forEach(function(value, index) {
@@ -5853,6 +5853,15 @@ window.StemLab = window.StemLab || {
     }
     return picked;
   }
+  // Authored keys sat at C in 13 of 25 (A and D: 3) and options render in bank
+  // order. Rotate each item's choices once at load onto slot (i * 3 + 1) % n and
+  // remap `correct` (grading is by index; `explain` is one string per item).
+  AP_QUIZ_BANK = AP_QUIZ_BANK.map(function(q, i) {
+    var n = Array.isArray(q.choices) ? q.choices.length : 0;
+    if (n < 2 || typeof q.correct !== 'number' || q.correct < 0 || q.correct >= n) return q;
+    var target = (i * 3 + 1) % n, shift = (q.correct - target + n) % n;
+    return shift ? Object.assign({}, q, { choices: q.choices.slice(shift).concat(q.choices.slice(0, shift)), correct: target }) : q;
+  });
 
   // ──────────────────────────────────────────────────────────────────
   // GLOSSARY — student-facing definitions of every stat term

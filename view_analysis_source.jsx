@@ -331,8 +331,15 @@ var _lazyIcon = function (name) {
         <summary className="cursor-pointer font-semibold">{analysisLabel('analysis.detailed_level', 'Detailed level check')}</summary>
         {checkedLevel && <div className="mt-2" data-source-level-rubric><p>{asText(checkedLevel.nuanceSummary || checkedLevel.feedback)}</p>
           <dl>{[['vocabulary', 'Vocabulary'], ['sentenceStructure', 'Sentence structure'], ['conceptDensity', 'Concept density']].map(([key, label]) => {
-            const row = checkedLevel.rubric?.[key]; return row && <React.Fragment key={key}><dt className="mt-2 font-semibold">{analysisLabel('analysis.rubric_' + key, label)}{Number.isFinite(row.score) ? ' (' + (row.score > 0 ? '+' : '') + row.score + ')' : ''}</dt><dd>{asText(row.reason)}</dd></React.Fragment>;
-          })}</dl>{checkedLevel.checkedChars < checkedLevel.totalChars && <p>{fillLabel(analysisLabel('analysis.checked_excerpt', 'Based on the first {count} characters.'), { count: checkedLevel.checkedChars })}</p>}</div>}
+            const row = checkedLevel.rubric?.[key]; if (!row) return null;
+            // Scores are relative to the target grade (-5..+5). 0 means "fits", never "none".
+            const raw = typeof row.score === 'string' && /^\s*[+-]?\d+(\.\d+)?\s*$/.test(row.score) ? Number(row.score) : row.score;
+            const score = typeof raw === 'number' && Number.isFinite(raw) && raw >= -5 && raw <= 5 ? raw : null;
+            const signed = score === null ? '' : (score > 0 ? '+' : '') + score;
+            const verdict = score === null ? analysisLabel('analysis.rubric_not_reported', 'score not reported')
+              : fillLabel(score > 1 ? analysisLabel('analysis.rubric_above', 'harder than your target grade ({score})') : score < -1 ? analysisLabel('analysis.rubric_below', 'easier than your target grade ({score})') : analysisLabel('analysis.rubric_fits', 'fits your target grade ({score})'), { score: signed });
+            return <React.Fragment key={key}><dt className="mt-2 font-semibold" data-rubric-score={score === null ? 'none' : score}>{analysisLabel('analysis.rubric_' + key, label)}: <span className="font-normal">{verdict}</span></dt><dd>{asText(row.reason)}</dd></React.Fragment>;
+          })}</dl><p className="mt-2 text-xs text-slate-600" data-rubric-scale>{analysisLabel('analysis.rubric_scale', 'Each score compares the passage with your target grade, from -5 (much easier) to +5 (much harder). 0 means it fits your target, not that the passage has none of it.')}</p>{checkedLevel.checkedChars < checkedLevel.totalChars && <p>{fillLabel(analysisLabel('analysis.checked_excerpt', 'Based on the first {count} characters.'), { count: checkedLevel.checkedChars })}</p>}</div>}
         <p className="my-2">{analysisLabel('analysis.level_help', 'Use the same two-pass review as Adapted Text to check vocabulary, sentence structure and concept density against your target grade.')}</p>
         <button type="button" disabled={props.isCheckingLevel === true || isProcessing || analysisAiOff} title={analysisAiTitle} onClick={props.onCheckSourceLevel} className="min-h-11 rounded border px-3 font-bold disabled:opacity-50 disabled:cursor-not-allowed">{props.isCheckingLevel === true ? analysisLabel('simplified.checking', 'Checking…') : analysisLabel('simplified.check_level', 'Check level')}</button>
       </details>}

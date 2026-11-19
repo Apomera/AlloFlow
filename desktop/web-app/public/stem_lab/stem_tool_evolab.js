@@ -6231,10 +6231,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       var callTTS = ctx.callTTS || null;
       // Read-aloud (UDL: multiple means of representation). Host TTS first,
       // then the browser's own speech synthesis so the button never dead-ends.
-      var speakText = function(text) {
+      // The host call never throws and resolves null when it played nothing: muted (stay silent),
+      // student AI off (it used the device voice) or no voice came back (then the browser voice).
+      var speakText = function(text, onDevice) {
         var s = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
         if (!s) return;
-        if (callTTS) { try { callTTS(s); return; } catch (e) {} }
+        var quiet = function() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute; };
+        if (callTTS && !onDevice) {
+          var req = null;
+          // A speak button: force past the header narration switch (it gates automatic narration).
+          try { req = callTTS(s, undefined, undefined, { force: true }); } catch (e) {}
+          var fallBack = function() { if (!quiet() && window.__alloStudentAiDisabled !== true) speakText(s, true); };
+          Promise.resolve(req).then(function(url) { if (!url) fallBack(); }, fallBack);
+          return;
+        }
+        if (quiet()) return;
         try {
           if (window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined') {
             var u = new SpeechSynthesisUtterance(s);

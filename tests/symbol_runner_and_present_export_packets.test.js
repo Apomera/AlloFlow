@@ -1,5 +1,6 @@
 // 2026-11-17 (review D5): the results page's practice buttons are links that open a new tab (a.nav-new-tab, href).
 // @vitest-environment jsdom
+// 2026-11-18 (owner): plain set and toolbar names (no Star-Rail, RAS, Stroop, Subitizing), the same as the Packets maker.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -274,7 +275,7 @@ describe('3. symbol_runner_core engine: modes, Incremental Rehearsal, speech/typ
     const wrap = stage.querySelector('.asr-wrap');
     expect(wrap).not.toBeNull();
     const viewBtn = [...stage.querySelectorAll('button')].find((b) => /^View:/i.test(b.textContent));
-    expect(viewBtn.textContent).toBe('View: 3D Star-Rail');
+    expect(viewBtn.textContent).toBe('View: cards coming down a road');
     expect(viewBtn.getAttribute('aria-pressed')).toBe('true');
 
     const st = handle.getState();
@@ -296,7 +297,7 @@ describe('3. symbol_runner_core engine: modes, Incremental Rehearsal, speech/typ
 
     viewBtn.click();
     expect(handle.getState().viewMode).toBe('2d');
-    expect(viewBtn.textContent).toBe('View: 2D Lanes');
+    expect(viewBtn.textContent).toBe('View: three flat lanes');
     expect(viewBtn.getAttribute('aria-pressed')).toBe('false');
     handle.destroy();
 
@@ -352,7 +353,8 @@ describe('4. FluencyMazePanel & embedded SymbolRunnerPanel in math_fluency_modul
     // No relative <script src="..."> injection should occur
     expect(w.document.head.querySelectorAll('script').length).toBe(headScriptsBefore);
 
-    const autoBtn = [...panel.querySelectorAll('button')].find((b) => /Auto-fill cue pictures/i.test(b.textContent));
+    // 2026-11-17: the button is now named "Add pictures from the library" (plainer words), in the teachers' fold.
+    const autoBtn = [...panel.querySelectorAll('button')].find((b) => /Add pictures from the library/i.test(b.textContent));
     expect(autoBtn).toBeTruthy();
     await act(async () => {
       autoBtn.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
@@ -1248,8 +1250,9 @@ describe('14. Wave 3: Symbol Runner bimodal audio anchors, confusion pairs, Resu
 
     // Check packets.html hub card copy refresh.
     const hubHtml = read('packets.html');
-    expect(hubHtml).toContain('5x8 sheet');
-    expect(hubHtml).toContain('1-minute check');
+    // 2026-11-18 (owner): the front door names Symbol Runner in plain words ('5x8 sheet', 'Stroop' were jargon there) and gives the check its own card.
+    expect(hubHtml).not.toMatch(/5x8|Stroop|flanker/);
+    expect(hubHtml).toContain('1-minute naming check');
     expect(hubHtml).toContain('Works offline.');
   });
 });
@@ -1459,7 +1462,8 @@ describe('17. Wave 4: Symbol Runner vowel_teams_r, ras_triple, embedded practice
     const mfSrc = read('math_fluency_module.js');
     // 2026-11-17: asked for at the app's file address first (_srFetchJson); beside the app's page it answered with a web page.
     expect(mfSrc).toContain("_srFetchJson('audio_bank/phonemes.json')");
-    expect(mfSrc).toContain('Already-known symbols');
+    // 2026-11-17: reworded "Already-known symbols" to "Symbols the student already knows".
+    expect(mfSrc).toContain('Symbols the student already knows');
   });
 });
 

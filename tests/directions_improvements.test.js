@@ -76,8 +76,20 @@ describe('directions improvements', () => {
  });
  it('escapes author-entered export fields and Markdown HTML', () => {
   const result=dom(generate({id:'d" onmouseover="evil',type:'directions',title:'<img src=x onerror=evil>',data:{body:'**Read <script>evil</script>**',objectives:[{label:'<img src=x onerror=evil>'}]}},false));
-  expect(result.querySelector('script,img,[onmouseover],[onerror]')).toBeNull();
+  expect(result.querySelector('img,[onmouseover],[onerror]')).toBeNull();
   expect(result.querySelector('strong').textContent).toBe('Read <script>evil</script>');
+  // 2026-11-17: since 2026-11-14 a student file carries the export's OWN goal-checklist script, so "no <script>
+  // at all" no longer holds. Pinned instead: that one script is the only one, and author text never becomes markup
+  // or code, including an id written to close the script early (it is JSON with "<" escaped).
+  const ownScript=s=>s.textContent.startsWith('(function(){var s=document.currentScript;');
+  for(const id of ['d" onmouseover="evil','</script><script>window.__evil=1</script><!--']){
+   const page=dom(generate({id,type:'directions',title:'x',data:{body:'Read.',objectives:[{label:'Goal'}]}},false));
+   const scripts=[...page.querySelectorAll('script')];
+   expect(scripts.length,id).toBe(1);
+   expect(ownScript(scripts[0]),id).toBe(true);
+   expect(scripts[0].textContent,id).not.toMatch(/<\/?script|<!--/i);
+   expect(page.querySelector('[onmouseover],[onerror]'),id).toBeNull();
+  }
  });
  it('preserves all resources, goals, long goal labels, and directions beyond the old limit', () => {
   const longGoal='Explain '.repeat(50)+'FINAL GOAL';

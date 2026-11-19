@@ -6343,6 +6343,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     }
   }, [teacherComments]);
   const _commentKey = (studentId, resourceId) => `${studentId || "unknown"}:${resourceId || "unknown"}`;
+  const _notesStudentId = (s) => s && typeof s.studentFileId === "string" && /^[A-Za-z0-9-]{8,64}$/.test(s.studentFileId) ? "sf:" + s.studentFileId : s && s.id;
   const getCommentsFor = React.useCallback((studentId, resourceId) => {
     return teacherComments.get(_commentKey(studentId, resourceId)) || [];
   }, [teacherComments]);
@@ -6494,13 +6495,13 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       const entriesHtml = notebookEntries.map((item) => {
         try {
           const body = generateResourceHTML ? generateResourceHTML(item, true, student.responses || {}) : "";
-          const comments = renderCommentsBlock(student.id, item.id);
+          const comments = renderCommentsBlock(_notesStudentId(student), item.id);
           return body + comments;
         } catch (_) {
           return "";
         }
       }).filter(Boolean).join('<hr style="margin:30px 0; border:0; border-top:1px dashed #cbd5e1;" />');
-      const commentCount = notebookEntries.reduce((sum, item) => sum + getCommentsFor(student.id, item.id).length, 0);
+      const commentCount = notebookEntries.reduce((sum, item) => sum + getCommentsFor(_notesStudentId(student), item.id).length, 0);
       return `
               <div style="margin-bottom:40px; ${sidx > 0 ? "page-break-before:always;" : ""}">
                   <h2 style="font-size:18px; font-weight:bold; color:#4f46e5; border-bottom:2px solid #c7d2fe; padding-bottom:6px; margin-bottom:16px;">
@@ -7315,9 +7316,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     )), /* @__PURE__ */ React.createElement(
       TeacherCommentThread,
       {
-        studentId: selectedStudent.id,
+        studentId: _notesStudentId(selectedStudent),
         resourceId: item.id,
-        comments: getCommentsFor(selectedStudent.id, item.id),
+        comments: getCommentsFor(_notesStudentId(selectedStudent), item.id),
         onAdd: addComment,
         onDelete: deleteComment,
         t
@@ -7417,7 +7418,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         const noteCount = (student.history || []).filter((h) => h && (h.type === "note-taking" || h.type === "anchor-chart")).length;
         return noteCount > 0 ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded ml-1 border border-violet-200", title: noteCount + " notebook entries (notes + anchor charts)" }, "\u{1F4D3}") : null;
       })(), (() => {
-        const commentCount = Array.from(teacherComments.keys()).filter((k) => k.startsWith(`${student.id}:`)).reduce((sum, k) => sum + (teacherComments.get(k) || []).length, 0);
+        const commentCount = Array.from(teacherComments.keys()).filter((k) => k.startsWith(`${_notesStudentId(student)}:`)).reduce((sum, k) => sum + (teacherComments.get(k) || []).length, 0);
         return commentCount > 0 ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200", title: commentCount + " private teacher notes on this student's work" }, "\u{1F4AC}") : null;
       })()), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-slate-600 font-mono text-xs" }, new Date(student.timestamp).toLocaleDateString(), " ", /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, new Date(student.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, /* @__PURE__ */ React.createElement("span", { className: "bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-bold border border-green-200" }, calculateScore(student.history))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, level !== "N/A" ? /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-bold border border-purple-200 flex items-center gap-1 w-fit" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 10 }), " Lvl ", level) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs" }, "-")), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-right" }, /* @__PURE__ */ React.createElement(
         "button",

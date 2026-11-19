@@ -110,7 +110,12 @@
         </div>
       </fieldset>
 
-      <div class="field block">
+      <fieldset class="block sr-sets-field">
+        <legend>Set of symbols</legend>
+        <div id="sr-sets"></div>
+      </fieldset>
+
+      <div class="field block" id="sr-mode-field" hidden>
         <label for="sr-mode">Set of symbols</label>
         <select id="sr-mode" aria-describedby="sr-mode-line">
           <optgroup label="Letters and sounds">
@@ -123,8 +128,8 @@
           </optgroup>
           <optgroup label="Words">
             <option value="sight_words" data-line="Words students see often and should read on sight.">Common sight words (all, are, come)</option>
-            <option value="sight_words_g1" data-line="Sight words often taught in grade 1.">Grade 1 sight words (after, again, every)</option>
-            <option value="sight_words_g2_3" data-line="Sight words often taught in grades 2 and 3.">Grades 2 and 3 sight words (always, because)</option>
+            <option value="sight_words_g1" data-line="Sight words often taught in grade 1.">Sight words: after, again, every</option>
+            <option value="sight_words_g2_3" data-line="Sight words often taught in grades 2 and 3.">Sight words: always, because, together</option>
             <option value="multisyllable_words" data-line="Words of two or more syllables to sound out.">Longer words to sound out (planet, volcano)</option>
             <option value="morpheme_chunks" data-line="Word parts that come at the start or the end of a word.">Prefixes and suffixes (un-, re-, -ing, -ment)</option>
           </optgroup>
@@ -137,13 +142,13 @@
             <option value="math_squares" data-line="A number times itself.">Square facts (2 x 2 to 10 x 10)</option>
             <option value="subitize_dots" data-line="Dots in a pattern. The student says how many without counting one by one.">Quick dot counting (1 to 9)</option>
           </optgroup>
-          <optgroup label="Switching and paying attention">
+          <optgroup label="Attention and switching" data-line="Practice for focus and for switching between kinds of symbols. Not reading or math practice.">
             <option value="ras_switch" data-line="Letters and numbers take turns, so the student switches every card.">Quick naming: letters and numbers in turn</option>
             <option value="ras_triple" data-line="Letters, numbers and color words take turns. For a color word, the student names the ink color.">Quick naming: letters, numbers and colors in turn</option>
-            <option value="flanker_letters" data-line="Five letters in a row, as in ddbdd. The student names only the middle one.">Middle letter (flanker): b, d, p, q</option>
-            <option value="quantity_stroop" data-line="A number made of dots. The student says how many dots, not the number.">Count the dots, not the number</option>
-            <option value="number_size_stroop" data-line="Two numbers in different sizes. The student picks the bigger number, not the bigger print.">Bigger number, not bigger print</option>
-            <option value="color_word_stroop" data-line="A color word printed in a color, such as RED in blue ink. The student names the ink color. Not suited to a student who is color-blind.">Color or word (Stroop): name the ink color</option>
+            <option value="flanker_letters" data-line="Five letters in a row, as in ddbdd. The student names only the middle one. (A flanker task.)">Middle letter: b, d, p, q</option>
+            <option value="quantity_stroop" data-line="A number made of dots. The student says how many dots, not the number. (A Stroop-style task.)">Count the dots, not the number</option>
+            <option value="number_size_stroop" data-line="Two numbers in different sizes. The student picks the bigger number, not the bigger print. (A Stroop-style task.)">Bigger number, not bigger print</option>
+            <option value="color_word_stroop" data-line="A color word printed in a color, such as RED in blue ink. The student names the ink color. Not suited to a student who is color-blind. (A Stroop task.)">Name the ink color, not the word</option>
           </optgroup>
           <optgroup label="Your own">
             <option value="custom" data-line="Type the letters, numbers or words you want below.">My own list</option>
@@ -166,8 +171,11 @@
     <section id="step-2" class="sheet" aria-labelledby="step-2-title" hidden>
       <p class="kicker">Step 2 of 3</p>
       <h2 id="step-2-title" tabindex="-1">How it works</h2>
-      <p class="sheet-intro">These choices can stay as they are. Try a round below to see them.</p>
+      <p class="sheet-intro">These choices can stay as they are. Open Settings to change how the student answers, the sounds or the pictures. Try a round below to see them.</p>
 
+      <details class="more block" id="sr-more-2">
+        <summary><span class="more-name">Settings</span><span class="more-now" id="sr-more-2-now"></span></summary>
+        <div class="more-body">
       <fieldset class="block">
         <legend>How the student answers</legend>
         <div class="choices">
@@ -230,6 +238,8 @@
           <input type="file" id="sr-pic-file" accept="image/*" hidden aria-label="A picture from this device">
         </div>
         <div id="sr-pic-list" class="sr-pic-list"></div>
+      </details>
+        </div>
       </details>
 
       <div class="block sr-live" id="sr-live">

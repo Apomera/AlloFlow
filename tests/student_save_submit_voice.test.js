@@ -206,7 +206,8 @@ describe('student save and submission semantic voice workflows', () => {
   it('labels the save modal cancel and save controls by their actual actions in every host', () => {
     for (const [label, source] of readAppSources()) {
       const start = source.indexOf('{showSaveModal && (');
-      const end = source.indexOf('{isTranslateModalOpen && (', start);
+      // 2026-11-17: the Translate dialog after it is now a lazy view call (`{isTranslateModalOpen && <TranslateModalView`).
+      const end = source.indexOf('{isTranslateModalOpen && ', start);
       expect(start, label).toBeGreaterThan(-1);
       expect(end, label).toBeGreaterThan(start);
       const modalSource = source.slice(start, end);

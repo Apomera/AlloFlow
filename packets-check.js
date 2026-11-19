@@ -19,10 +19,13 @@
   // compare, which is a question; the other checks are problems to work out.
   var READY = [
     { id: 'quantity_discrimination', what: 'Tap the bigger of two numbers.', item: 'question' },
-    { id: 'missing_number', what: 'Type the number that is missing from a number sentence, like {example}.' },
+    // 2026-11-18: the real problem this card showed ("like __ + 8 = 14") moved to the card's worked example (cardExample).
+    { id: 'missing_number', what: 'Type the number that is missing from a number sentence.' },
     { id: 'math_computation', what: 'Add, subtract, multiply or divide, a different mix for each grade.' },
   ];
   var OWN_NAME = 'My own problems';
+  // The problem the My own problems card's example types (2026-11-18), looked at as a typed problem is (checkPart).
+  var OWN_EXAMPLE = '6 x 4';
   var GRADE_ORDER = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
   var TIME_CHOICES = [0, 60, 120, 180, 300];   // seconds; 0 is no clock
   var TIME_DEFAULT = 120;
@@ -151,16 +154,30 @@
         });
       });
       limits.sort(function (a, b) { return a - b; });
-      // The example in a card's text is a real problem: the first one of grade 1, version A, when there is one.
-      // Its spaces do not break (2026-11-13, teacher-journey L11): "__ + 8 = 14" stays on one line at any width.
+      // The card's worked example is a real problem: the first one of grade 1, version A, when there is one (cardExample).
       var shown = formLesson(card.id, '1', 'A') || formLesson(card.id, grades[0], versionsOf(card.id, grades[0])[0]);
-      var example = String(scoredItems(shown)[0].display || '').replace(/ /g, NBSP);
-      var what = card.what.replace('{example}', function () { return example; });
+      var what = card.what;
       var time = limits.length > 1 ? minutes(limits[0]) + ' to ' + minutes(limits[limits.length - 1]) : minutes(limits[0]);
-      out.push({ id: card.id, name: measure.name, slug: measure.slug, what: what, grades: grades, item: card.item || 'problem',
+      out.push({ id: card.id, name: measure.name, slug: measure.slug, what: what, grades: grades, item: card.item || 'problem', example: cardExample(card.id, scoredItems(shown)[0]),
         line: what + ' ' + capital(time) + '. ' + gradeSpan(grades) + '.' + (measure.unit === 'digits_correct_per_minute' ? ' Scored by digits correct per minute.' : '') });
     });
     return out;
+  }
+  // A card's worked example (2026-11-18): the problem as the file shows it (the adapter's own prepare step), then the
+  // question in the file's words: its question label, or for Math Fluency its "{problem}. Type the answer." label.
+  // Its spaces do not break (2026-11-13, teacher-journey L11): "__ + 8 = 14" stays on one line at any width.
+  // tests/packets_maker_examples.test.js works each one out again from the builder.
+  function cardExample(id, item) {
+    var adapter = loader.CHECK_ADAPTERS[id], words = (adapter && adapter.labels) || {}, made = null;
+    try { made = adapter.prepare(item, {}); } catch (_) { made = null; }
+    if (!made || !made.item) return '';
+    var problem = String(made.item.word).replace(/ /g, NBSP);
+    var ask = words[id + '_question'] ? problem + '. ' + words[id + '_question'] : String(words[id + '_label'] || '').replace('{problem}', function () { return problem; });
+    return ask ? 'Example: ' + ask + ' Answer: ' + made.item.answer + '.' : '';
+  }
+  function ownExample() {
+    var seen = checkPart(OWN_EXAMPLE), label = loader.CHECK_ADAPTERS.math_computation.labels.math_computation_label;
+    return seen.ok && label ? 'Example: You type ' + OWN_EXAMPLE + '. The student sees ' + label.replace('{problem}', function () { return String(seen.text).replace(/ /g, NBSP); }) + ' Answer: ' + seen.answer + '.' : '';
   }
   // What one version holds, in numbers: said at step 2 and again in the summary.
   function mixOf(lesson) {
@@ -178,12 +195,14 @@
   // ---------------------------------------------------------------------------
   function drawCards() {
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="check"]'), function (radio) {
-      if (radio.value === OWN) return;
-      var row = readyRow(radio.value), label = radio.parentNode;
+      var label = radio.parentNode, example = label.querySelector('.choice-example');
+      if (radio.value === OWN) { if (example) example.textContent = ownExample(); return; }
+      var row = readyRow(radio.value);
       label.hidden = !row;
       if (!row) return;
       label.querySelector('.choice-name').textContent = row.name;
       label.querySelector('.choice-line').textContent = row.line;
+      if (example) example.textContent = row.example;
     });
   }
   function syncRadios(name, value) {

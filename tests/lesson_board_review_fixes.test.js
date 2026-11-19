@@ -140,7 +140,10 @@ describe('Feedback and reporting views', () => {
     await click('[data-board-retry]'); await change('[data-board-choice]', '1'); await click('[data-board-submit]');
     const done = element.querySelector('[data-board-recap]');
     expect(done.querySelector('details[data-board-reveal]')).toBeNull();
-    expect(done.querySelector('[data-board-solution]').textContent).toContain('Evaporation');
+    // 2026-11-18: a correct response IS the key, so the answer shows as the response and
+    // the repeated "Solution" line is left out (lesson_board_retry_recap_2026_11_18.test.js).
+    expect(done.querySelector('[data-board-answer-review]').textContent).toContain('Your response: Evaporation');
+    expect(done.querySelector('[data-board-solution]')).toBeNull();
     expect(e.stepOf(latest).result.success).toBe(true);
   });
   it('shows the lesson quote only when it adds to the explanation', async () => {

@@ -2514,6 +2514,34 @@ function createWordSoundsCore(options = {}) {
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
+// BEGIN ACTIVITY EXAMPLES (same in packets-make.js and word_sounds_setup_source.jsx; tests/activity_examples.test.js)
+var WS_ACTIVITY_EXAMPLES = {
+  rhyming: { q: 'Which word rhymes with cat: hat, dog or sun?', a: 'hat' },
+  syllable_counting: { q: 'How many syllables do you hear in rabbit?', a: '2' },
+  syllable_blending: { q: 'Listen to the parts rab and bit. What word do they make?', a: 'rabbit' },
+  word_families: { q: 'Which words belong to the -at family: hat, mat or sun?', a: 'hat and mat' },
+  isolation: { q: 'What is the first sound in sun?', a: '/s/' },
+  sound_sort: { q: 'Which words start with /m/: map, moon or cat?', a: 'map and moon' },
+  blending: { q: 'Listen to the sounds /k/ /a/ /t/. What word do they make?', a: 'cat' },
+  segmentation: { q: 'Say each sound in ship.', a: '/sh/ /i/ /p/' },
+  counting: { q: 'How many sounds do you hear in ship?', a: '3' },
+  manipulation: { q: 'Say cat. Now change /k/ to /h/.', a: 'hat' },
+  mapping: { q: 'Which letters spell each sound in ship?', a: 'sh, i, p' },
+  letter_tracing: { q: 'Trace the first letter of sun.', a: '' },
+  missing_letter: { q: 'c _ t: which letter is missing?', a: 'a' },
+  orthography: { q: 'Hear dog, then spell it with letter tiles.', a: 'd, o, g' },
+  word_scramble: { q: 'Unscramble the letters t, a, c to make a word.', a: 'cat' },
+  spelling_bee: { q: 'Hear jump, then type it.', a: 'jump' },
+  decoding: { q: 'Read fish, then choose its picture.', a: '' },
+  read_sentence: { q: 'Finish the sentence: The cat sat on the ___ (mat or run).', a: 'mat' },
+  sentence_match: { q: 'Read "The dog is in the box." Which pictures match it?', a: '' },
+  read_passage: { q: 'Read a short story, then choose the word that finishes a sentence about it.', a: '' }
+};
+var wsActivityExampleText = function (id) {
+  var row = WS_ACTIVITY_EXAMPLES[id];
+  return row ? 'Example: ' + row.q + (row.a ? ' Answer: ' + row.a + '.' : '') : '';
+};
+// END ACTIVITY EXAMPLES
     // Word family and sight word presets — exposed by AlloFlowANTI.txt on window
     // Use Proxy so reads happen at USE time (the module loads BEFORE AlloFlowANTI.txt populates window)
     const WORD_FAMILY_PRESETS = new Proxy({}, {
@@ -8009,6 +8037,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                 const shownBefore = lessonPlanOrder.slice(0, activityIndex).filter((id) => id !== 'manipulation' || soundSwapAvailable);
                                                 const startsStrand = !shownBefore.length || WS_CORE.activityStrand(shownBefore[shownBefore.length - 1]) !== strandKey;
                                                 const skillText = WS_CORE.activitySkillLabel(actId, tf);
+                                                const exampleText = wsActivityExampleText(actId) ? tf('word_sounds.activity_example_' + actId, wsActivityExampleText(actId)) : '';
                                                 return [
                                                 startsStrand && strandKey ? (
                                                     <p key={'strand-' + activity.id} className="pt-2 text-xs font-bold text-slate-800" data-ws-lesson-strand={strandKey}>
@@ -8045,7 +8074,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                     <div className="flex items-center justify-between gap-2">
                                                         <div className="flex items-center gap-2 min-w-0">
                                                             <GripVertical size={14} className="text-slate-600 cursor-grab active:cursor-grabbing" aria-hidden="true" />
-                                                            <input aria-labelledby={`ws-activity-label-${activity.id}`} aria-describedby={skillText ? `ws-activity-skill-${activity.id}` : undefined}
+                                                            <input aria-labelledby={`ws-activity-label-${activity.id}`} aria-describedby={[skillText && `ws-activity-skill-${activity.id}`, exampleText && `ws-activity-example-${activity.id}`].filter(Boolean).join(' ') || undefined}
                                                                 id={`ws-activity-check-${activity.id}`}
                                                                 type="checkbox"
                                                                 checked={lessonPlan[activity.id]?.enabled}
@@ -8058,6 +8087,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                             <span className="min-w-0">
                                                                 <label id={`ws-activity-label-${activity.id}`} htmlFor={`ws-activity-check-${activity.id}`} className="text-sm font-semibold text-slate-700 cursor-pointer">{activity.label}</label>
                                                                 {skillText && <span id={`ws-activity-skill-${activity.id}`} data-ws-activity-skill="true" className="block text-xs leading-tight text-slate-600">{skillText}</span>}
+                                                                {exampleText && <span id={`ws-activity-example-${activity.id}`} data-ws-activity-example="true" className="block text-xs leading-tight italic text-slate-600">{exampleText}</span>}
                                                             </span>
                                                         </div>
                                                         <div className="flex shrink-0 items-center gap-1" role="group" aria-label={`Reorder ${activity.label}`}>

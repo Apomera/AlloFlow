@@ -47,6 +47,11 @@ const CONFIGS = {
     output: 'view_cold_path_surfaces_module.js',
     exports: ['AiBackendSettingsView', 'LmsAuditBannerView', 'ReadThisPagePanelView'],
   },
+  ColdPathScreens: {
+    source: 'view_cold_path_screens_source.jsx',
+    output: 'view_cold_path_screens_module.js',
+    exports: ['GeminiBridgeView', 'SavedMathAssessmentView', 'AdventureCastLobbyView', 'StemArtworkHandoffView', 'SessionStartOptionsView', 'TranslateModalView'],
+  },
 };
 
 function buildFirstWaveModule(key, sourceOverride) {

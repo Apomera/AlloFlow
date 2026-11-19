@@ -72,7 +72,7 @@ describe('Visible control labels and named information groups',()=>{
  it('preserves every earlier source byte outside exact recorded accessibility changes',()=>{
   const source=readFileSync('stem_lab/stem_tool_weldlab.js','utf8'),restored=stripWeldlabCoverageFixes(source);
   expect(stripWeldlabCoverageFixes(restored)).toBe(restored);
-  expect(createHash('sha256').update(Buffer.from(restored.replace(/\n/g,'\r\n'))).digest('hex')).toBe('93f8f62eaa5cfbaa15d2cac458623116348e81089d95539e2caf086da81e6061');
+  expect(createHash('sha256').update(Buffer.from(restored.replace(/\n/g,'\r\n'))).digest('hex')).toBe('213a6ed6e42b92c5d045ae4b50055ec15dd3f07ee56cd006a79c17d38b6a07c0');
   expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_weldlab.js').equals(Buffer.from(source)), 'public mirror is byte-identical').toBe(true);
  });
 });

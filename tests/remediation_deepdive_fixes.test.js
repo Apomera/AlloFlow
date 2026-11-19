@@ -31,7 +31,9 @@ describe('H9 — inline anchors survive real hrefs and stay balanced', () => {
     // escapeTextField escapes & to &amp; first, and the old capture was [^&]*?, which cannot span
     // it. Every district-portal / Google / utm-tagged link shipped as visible literal markup.
     const out = p('See <a href="https://maine.gov/doe?topic=iep&lang=en">the DOE page</a>.');
-    expect(out).toContain('<a href="https://maine.gov/doe?topic=iep&lang=en">');
+    // 2026-11-17: `&` in an attribute is now written as `&amp;`, the correct HTML form; the browser reads the same URL.
+    expect(out).toContain('<a href="https://maine.gov/doe?topic=iep&amp;lang=en">');
+    expect(new DOMParser().parseFromString(out, 'text/html').querySelector('a').getAttribute('href')).toBe('https://maine.gov/doe?topic=iep&lang=en');
     expect(out).toContain('the DOE page</a>');
     expect(out).not.toMatch(/&lt;a\s/);
   });

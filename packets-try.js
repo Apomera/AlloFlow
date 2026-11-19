@@ -45,15 +45,34 @@
     frame.src = blobUrl;
   }
 
+  // 2026-11-18: "Hide answers" leaves the question's word out of the bar (the word is the answer in Word Sounds and
+  // vocabulary), for a preview shown to a class. Off when a preview opens; this page keeps nothing in the browser.
+  var hideAnswers = false;
+  var lastBar = null;
   function renderBar(bar) {
     if (!barHost) return;
+    lastBar = bar;
     barHost.textContent = '';
     if (!bar || bar.hidden) { barHost.hidden = true; return; }
     busyBar = !!bar.busy;
-    if (bar.where) {
+    var hide = doc.createElement('button');
+    hide.type = 'button';
+    hide.className = 'btn btn-small try-hide';
+    hide.setAttribute('data-preview-hide', '');
+    hide.setAttribute('aria-pressed', String(hideAnswers));
+    hide.textContent = 'Hide answers';
+    hide.addEventListener('click', function () {
+      hideAnswers = !hideAnswers;
+      renderBar(lastBar);
+      var again = barHost.querySelector('[data-preview-hide]');
+      if (again) again.focus();
+    });
+    barHost.appendChild(hide);
+    var shown = hideAnswers && typeof bar.whereQuiet === 'string' ? bar.whereQuiet : bar.where;
+    if (shown) {
       var where = doc.createElement('span');
       where.className = 'try-edit-where';
-      where.textContent = String(bar.where);
+      where.textContent = String(shown);
       barHost.appendChild(where);
     }
     var list = Array.isArray(bar.buttons) ? bar.buttons : [];

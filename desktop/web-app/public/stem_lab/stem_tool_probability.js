@@ -556,6 +556,17 @@ window.StemLab = window.StemLab || {
       if (_v3.onStatus) _v3.onStatus('webgl');
       return;
     }
+    // A context lost after boot used to freeze a blank view. Tear down through
+    // _v3Teardown, then report 'lost' next tick; Restart mounts a fresh canvas.
+    // Nothing in this tool force-loses a context.
+    var lossCanvas = _v3.canvas;
+    lossCanvas.addEventListener('webglcontextlost', function (ev) {
+      if (!lossCanvas.isConnected) return;
+      ev.preventDefault();
+      if (_v3.canvas !== lossCanvas) return;
+      _v3Teardown();
+      setTimeout(function () { if (_v3.onStatus) _v3.onStatus('lost'); }, 0);
+    });
     _v3.scene = new T.Scene();
     _v3.camera = new T.PerspectiveCamera(42, 1, 0.05, 100);
     _v3.camera.position.set(1.45, 1.05, 1.6);
@@ -642,7 +653,15 @@ window.StemLab = window.StemLab || {
       if (o.geometry) o.geometry.dispose();
       if (o.material) o.material.dispose();
     });
-    if (_v3.renderer) { try { _v3.renderer.dispose(); } catch (e) {} }
+    if (_v3.renderer) {
+      try {
+        // Free the context itself once the canvas leaves the page; dispose()
+        // alone left it held until the browser evicted it. Skip a lost one.
+        var relGl = _v3.renderer.getContext && _v3.renderer.getContext();
+        _v3.renderer.dispose();
+        if (!(relGl && relGl.isContextLost && relGl.isContextLost()) && window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(_v3.renderer);
+      } catch (e) {}
+    }
     _v3.renderer = _v3.scene = _v3.camera = _v3.controls = null;
     _v3.solid = _v3.cloud = _v3.boxLines = _v3.canvas = null;
     _v3.shapeId = null; _v3.cloudLen = -1; _v3.booted = false;
@@ -807,6 +826,17 @@ window.StemLab = window.StemLab || {
       // ── Tool body (probability) ──
       return (function() {
 var d = (labToolData.probability) || {};
+          // A saved file is input: diceSides 9999 drew a 9999x9999 two-dice grid and froze the tab.
+          // Wrong-typed fields crashed the whole tool, so each is reset to its empty value.
+          var _pFix = {};
+          if (d.diceSides != null && [4, 6, 8, 10, 12, 20].indexOf(d.diceSides) === -1) _pFix.diceSides = 6;
+          ['results', 'convergenceHistory', '_piPoints', '_completedChallenges', 'galtonFalling'].forEach(function (k) { if (d[k] != null && !Array.isArray(d[k])) _pFix[k] = []; });
+          if (d.galtonBins != null && !Array.isArray(d.galtonBins)) _pFix.galtonBins = null;
+          if (d.lastResult != null && typeof d.lastResult !== 'string' && typeof d.lastResult !== 'number') _pFix.lastResult = null;
+          // A die face must be a whole number on that die.
+          if ((d.mode === 'dice' || d.mode === 'dice2') && d.lastResult != null && !(Number.isInteger(d.lastResult) && d.lastResult >= 1 && d.lastResult <= 2 * (_pFix.diceSides || d.diceSides || 6))) _pFix.lastResult = null;
+          if (d._aiExplanation != null && typeof d._aiExplanation !== 'string') _pFix._aiExplanation = null;
+          if (Object.keys(_pFix).length) d = Object.assign({}, d, _pFix);
           // Default the experiment mode so the first render isn't a dead state (no active mode
           // in the selector + a bare "?" result card). Idempotent per render: re-applies whenever
           // the bucket has no mode yet, including before the user's first interaction.
@@ -2935,7 +2965,19 @@ var d = (labToolData.probability) || {};
               if (engine === 'idle') _v3EnsureThree(function(s) { upd('_v3Engine', s); });
               // Plain data handoff to the imperative scene; the animation frame
               // reconciles it. Idempotent, so a double render is harmless.
-              _v3.onStatus = function(s) { if (s === 'webgl') upd('_v3Engine', 'webgl-failed'); };
+              _v3.onStatus = function(s) {
+                if (s === 'webgl') upd('_v3Engine', 'webgl-failed');
+                else if (s === 'lost') upd('_v3Engine', 'webgl-lost');
+              };
+              var restartV3 = function() {
+                upd('_v3Engine', 'ready');
+                // The rebuilt canvas carries the arrow-key controls: hand it focus.
+                var tries = 0;
+                (function focusFresh() {
+                  if (_v3.canvas && _v3.canvas.isConnected) { _v3.canvas.focus(); return; }
+                  if (++tries < 20) setTimeout(focusFresh, 50);
+                })();
+              };
               var cloud = d.v3Cloud || [];
               if (!showMiss && cloud.length) {
                 var onlyHits = [];
@@ -3048,6 +3090,18 @@ var d = (labToolData.probability) || {};
                           }),
                           h('div', { className: 'text-[0.625rem] text-center py-1', style: { color: isDark || isContrast ? '#94a3b8' : '#475569' } },
                             t('stem.probability.volume3d_drag', 'Drag to rotate · scroll to zoom · or focus the view and use arrow keys, + and −'))
+                        )
+                      : engine === 'webgl-lost'
+                      ? h('div', { role: 'alert', 'data-probability-webgl-lost': 'true', className: 'rounded-lg p-4 text-center', style: { border: '1px solid ' + (isDark || isContrast ? 'rgba(100,116,139,0.6)' : '#94a3b8'), background: isDark || isContrast ? '#0b1220' : '#f8fafc', color: body, minHeight: 120, display: 'grid', gap: 8, justifyItems: 'center' } },
+                          h('h5', { style: { margin: 0, fontSize: 14, fontWeight: 800, color: head } }, t('stem.probability.webgl_lost_title', '3D view paused')),
+                          h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.5 } },
+                            t('stem.probability.webgl_lost_detail', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved, and every number below still works without it.')),
+                          h('button', {
+                            type: 'button', 'data-probability-webgl-restart': 'true', onClick: restartV3,
+                            ref: function(b) { if (b && !b._v3Focused) { b._v3Focused = true; var a = document.activeElement; if (!a || a === document.body) b.focus(); } },
+                            className: 'px-3 py-1.5 rounded-lg font-bold border-2',
+                            style: { fontSize: 12, minHeight: 32, background: isDark || isContrast ? '#e0f2fe' : '#075985', color: isDark || isContrast ? '#0f172a' : '#ffffff', borderColor: isDark || isContrast ? '#e0f2fe' : '#075985', cursor: 'pointer' }
+                          }, t('stem.probability.webgl_restart', 'Restart 3D view'))
                         )
                       : h('div', { className: 'rounded-lg p-4 text-center text-xs', style: { border: '1px dashed ' + (isDark || isContrast ? 'rgba(100,116,139,0.5)' : '#cbd5e1'), color: body, minHeight: 120 } },
                           engine === 'loading' ? t('stem.probability.volume3d_loading', '⏳ Loading the 3D engine…')

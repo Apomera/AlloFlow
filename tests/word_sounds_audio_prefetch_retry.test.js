@@ -27,7 +27,10 @@ const prefetch = between(
 );
 const retry = between('      const handleRetryFailedTTS =', '      const handleGenerateWordImage =');
 const edit = between('      const _ttsTextChanged =', '      const handleDeleteWord =');
-const usePrefetch = new Function('React', 'preloadedWords', 'setWsPreloadedWords', 'handleAudio', 'audioInstances', 'audioCache', 'debugLog', 'warnLog', 'isTeacherSpokenWord', 'audioRetryWordsRef', 'isMountedRef', 'WS_CORE', prefetch);
+const usePrefetch = new Function('React', 'preloadedWords', 'setWsPreloadedWords', 'handleAudio', 'audioInstances', 'audioCache', 'debugLog', 'warnLog', 'isTeacherSpokenWord', 'audioRetryWordsRef', 'isMountedRef', 'WS_CORE',
+  // 2026-11-18: since the word audio shards (2026-11-15) the effect also reads the voice, the language and the shard rule.
+  'wordSoundsVoiceRef', 'selectedVoice', 'wordSoundsLanguage', 'wsAllowsWordShardAudio', prefetch);
+const shardRule = new Function(between('    const wsAllowsWordShardAudio = ', '    const wsWordAudioBankWithShards = ') + ';return wsAllowsWordShardAudio;')();
 const useHandlers = new Function('React', 'preloadedWords', 'setWsPreloadedWords', 'setPreloadedWords', 'portableTtsLibrary', 'addToast', 'preloadedWordCache', 'debugLog', 'warnLog', 'isTeacherSpokenWord', 'audioRetryWordsRef', 'isMountedRef',
   `${retry}\n${edit}\nreturn { retry: handleRetryFailedTTS, edit: handleUpdatePreloadedWord };`);
 
@@ -68,7 +71,7 @@ async function mount(initialWords = [word()], isTeacherSpokenWord = () => false)
     state.words = words;
     state.setWords = setWords;
     state.handlers = handlers;
-    usePrefetch(React, words, setWords, handleAudio, audioInstances, audioCache, noop, warnLog, isTeacherSpokenWord, audioRetryWordsRef, isMountedRef, core);
+    usePrefetch(React, words, setWords, handleAudio, audioInstances, audioCache, noop, warnLog, isTeacherSpokenWord, audioRetryWordsRef, isMountedRef, core, { current: 'af_heart' }, 'af_heart', 'en', shardRule);
     return React.createElement(ReviewPanel, {
       preloadedWords: words, onUpdateWord: handlers.edit, onRetryFailedTTS: handlers.retry,
       teacherSpokenWords: words.filter(isTeacherSpokenWord).map(value => value.word),

@@ -150,7 +150,10 @@ describe('E2: Package & Deliver routes outside Guided Mode', () => {
   it('locks every route while a run is writing', () => {
     const view = mount(window.AlloModules.FullPackRunView, fprProps({ history: [reading], fullPackRun: { status: 'running', runId: 'run-12345678', resources: {} } }));
     const buttons = Array.from(routes(view.host).querySelectorAll('button'));
-    expect(buttons.length).toBe(4);
+    // 2026-11-17: cf1747d6d6 (11-15) added HTML and worksheet export routes; the rule is that EVERY route is locked.
+    expect(buttons.length).toBeGreaterThanOrEqual(6);
+    expect(view.host.querySelector('[data-testid="full-pack-export-html"]').disabled).toBe(true);
+    expect(view.host.querySelector('[data-testid="full-pack-export-worksheet"]').disabled).toBe(true);
     buttons.forEach(button => expect(button.disabled, button.textContent).toBe(true));
     expect(view.host.querySelector('[data-testid="full-pack-delivery-locked"]').textContent).toContain('Full Pack run finishes');
   });

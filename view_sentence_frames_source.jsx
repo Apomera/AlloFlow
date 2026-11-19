@@ -78,7 +78,7 @@ function SentenceFramesView(props) {
     || generatedContent?.data?.assessmentMode
     || (typeof window !== 'undefined' && window.__alloAssessmentMode === true)
   );
-  const canViewRubric = Boolean(isTeacherMode || (generatedContent?.data.rubric && !isAssessmentLockdown));
+  const canViewRubric = Boolean(isTeacherMode || (generatedContent?.data?.rubric && !isAssessmentLockdown));
   const textAiDoor = (typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function')
     ? window.__alloAiSetupDoorway('text', t)
     : null;
@@ -280,7 +280,7 @@ function SentenceFramesView(props) {
                             }}
                         />
                     </ErrorBoundary>
-                    ) : generatedContent?.data.mode === 'list' ? (
+                    ) : generatedContent?.data?.mode === 'list' ? (
                         <div className="grid grid-cols-1 gap-4">
                              {usableItems.map((item, idx) => isUsableItem(item) ? (
                                  <div key={idx} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors motion-reduce:transition-none" data-help-key="scaffolds_item">
@@ -337,14 +337,14 @@ function SentenceFramesView(props) {
                             {isEditingScaffolds ? (
                                 <textarea
                                     aria-label={t('scaffolds.edit_paragraph_frame') || 'Edit paragraph frame text'}
-                                    value={generatedContent?.data.text}
+                                    value={generatedContent?.data?.text}
                                     onChange={(e) => handleScaffoldTextChange('text', e.target.value)}
                                     className="w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
-                                    rows={getRows(generatedContent?.data.text)}
+                                    rows={getRows(generatedContent?.data?.text)}
                                 />
                             ) : (
                                 <div className="text-lg leading-loose text-slate-800 font-serif px-2 py-1">
-                                    {scaffoldParagraphParts(generatedContent?.data.text).map(({ text: part, responseKey }, i) => (
+                                    {scaffoldParagraphParts(generatedContent?.data?.text).map(({ text: part, responseKey }, i) => (
                                         responseKey ?
                                         <input aria-label={`${label('common.enter_student_responses', 'Student response')} ${(i + 1) / 2}: ${part.replace(/[\[\]]/g, '')}`}
                                             key={i}
@@ -359,20 +359,20 @@ function SentenceFramesView(props) {
                                     ))}
                                 </div>
                             )}
-                            {((isEditingScaffolds && leveledTextLanguage !== 'English') || generatedContent?.data.text_en) && (
+                            {((isEditingScaffolds && leveledTextLanguage !== 'English') || generatedContent?.data?.text_en) && (
                                 <div className="mt-8 pt-6 border-t border-slate-100">
                                     <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('common.english_translation')}</h4>
                                     {isEditingScaffolds ? (
                                         <textarea
                                             aria-label={t('scaffolds.edit_paragraph_translation') || 'Edit paragraph frame translation'}
-                                            value={generatedContent?.data.text_en || ''}
+                                            value={generatedContent?.data?.text_en || ''}
                                             onChange={(e) => handleScaffoldTextChange('text_en', e.target.value)}
                                             className="w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
-                                            rows={getRows(generatedContent?.data.text_en || '')}
+                                            rows={getRows(generatedContent?.data?.text_en || '')}
                                             placeholder={t('common.placeholder_translation')}
                                         />
                                     ) : (
-                                        generatedContent?.data.text_en && <p className="text-slate-600 italic leading-relaxed px-2 py-1">{generatedContent?.data.text_en}</p>
+                                        generatedContent?.data?.text_en && <p className="text-slate-600 italic leading-relaxed px-2 py-1">{generatedContent?.data?.text_en}</p>
                                     )}
                                 </div>
                             )}
@@ -395,12 +395,12 @@ function SentenceFramesView(props) {
                                         className="min-h-11 text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-700 px-3 py-1.5 rounded-full font-bold transition-colors motion-reduce:transition-none flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
                                         >
                                         {isGeneratingRubric ? <RefreshCw size={12} aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={12} aria-hidden="true"/>}
-                                        {generatedContent?.data.rubric
+                                        {generatedContent?.data?.rubric
                                             ? (isIndependentMode ? label('scaffolds.regenerate_self_checklist', 'Regenerate Self-Checklist') : label('scaffolds.regenerate_rubric', 'Regenerate Rubric'))
                                             : (isIndependentMode ? label('scaffolds.generate_self_checklist', 'Generate Self-Checklist') : label('scaffolds.generate_rubric', 'Generate Rubric'))}
                                         </button>
                                     )}
-                                    {generatedContent?.data.rubric && (
+                                    {generatedContent?.data?.rubric && (
                                         <>
                                             <button
                                                 type="button"
@@ -415,7 +415,7 @@ function SentenceFramesView(props) {
                                             <button
                                                 type="button"
                                                 aria-label={t('common.copy')}
-                                                onClick={() => copyToClipboard(generatedContent?.data.rubric)}
+                                                onClick={() => copyToClipboard(generatedContent?.data?.rubric)}
                                                 className="min-h-11 text-xs flex items-center gap-1 bg-white text-slate-700 hover:text-indigo-700 border border-slate-400 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                 title={t('scaffolds.rubric_copy_tooltip')}
                                             >
@@ -425,7 +425,7 @@ function SentenceFramesView(props) {
                                     )}
                                 </div>
                         </div>
-                        {generatedContent?.data.rubric && (
+                        {generatedContent?.data?.rubric && (
                             <div className={`bg-white p-4 rounded-xl border border-slate-400 relative shadow-sm transition-all motion-reduce:transition-none ${rubricZoom ? 'text-[11px]' : ''}`}>
                                 <style>{rubricZoom ? `
                                     .rubric-container table th, .rubric-container table td { padding: 4px !important; line-height: 1.2 !important; }
@@ -435,20 +435,20 @@ function SentenceFramesView(props) {
                                 {isEditingScaffolds ? (
                                     <textarea
                                         aria-label={t('scaffolds.edit_rubric') || 'Edit rubric'}
-                                        value={generatedContent?.data.rubric}
+                                        value={generatedContent?.data?.rubric}
                                         onChange={(e) => handleScaffoldTextChange('rubric', e.target.value)}
                                         className="w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600 focus:bg-slate-50 rounded p-2 focus:outline-none resize-y font-medium text-slate-700 transition-all motion-reduce:transition-none font-mono"
-                                        rows={getRows(generatedContent?.data.rubric)}
+                                        rows={getRows(generatedContent?.data?.rubric)}
                                         placeholder={t('scaffolds.rubric_placeholder')}
                                     />
                                 ) : (
                                     <div className="rubric-container prose prose-sm max-w-none text-slate-700 leading-relaxed overflow-x-auto">
-                                        {renderFormattedText(generatedContent?.data.rubric)}
+                                        {renderFormattedText(generatedContent?.data?.rubric)}
                                     </div>
                                 )}
                             </div>
                         )}
-                        {isTeacherMode && generatedContent?.data.rubric && (
+                        {isTeacherMode && generatedContent?.data?.rubric && (
                             <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm">
                                 <h4 className="font-bold text-indigo-900 mb-3 flex items-center gap-2">
                                     <CheckCircle2 size={18} aria-hidden="true" className="text-indigo-600"/> {t('scaffolds.auto_grader')}

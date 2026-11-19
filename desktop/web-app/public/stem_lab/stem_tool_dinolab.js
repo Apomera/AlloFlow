@@ -19690,7 +19690,7 @@ var CLASSIFY_CASES = [
         return el('div', null, sectionTitle('🌎', 'Where in the world?', 'Present-day fossil locations, shaped by continental drift and an uneven discovery record.'), mapBox, stats, detail, pangaea, foot);
       }
       function renderClassroom() {
-        var fp = d.filterPeriod || 'all', fdiet = d.filterDiet || 'all', fc = d.filterContinent || 'all', q = (d.query || '').trim().toLowerCase();
+        var fp = d.filterPeriod || 'all', fdiet = d.filterDiet || 'all', fc = d.filterContinent || 'all', q = strVal(d.query).trim().toLowerCase();
         var filtered = (fp !== 'all' || fdiet !== 'all' || fc !== 'all' || !!q);
         var list = DINOS.filter(function (dn) {
           if (fp !== 'all' && dn.period !== fp) return false;

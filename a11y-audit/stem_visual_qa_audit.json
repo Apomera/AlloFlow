@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T00:16:40.205Z",
+  "generatedAt": "2026-11-19T00:23:21.916Z",
   "source": {
     "stemToolFileCount": 152,
     "registeredToolCount": 152,
@@ -7,14 +7,14 @@
   },
   "summary": {
     "loadErrorCount": 2,
-    "markerPassCount": 73,
-    "markerFailCount": 2,
-    "monitoredIssueCount": 27,
-    "monitoredErrorCount": 2,
-    "monitoredWarningCount": 23,
-    "monitoredNoticeCount": 2,
-    "syncDriftCount": 1,
-    "sourcePublicDriftCount": 1,
+    "markerPassCount": 75,
+    "markerFailCount": 0,
+    "monitoredIssueCount": 32,
+    "monitoredErrorCount": 0,
+    "monitoredWarningCount": 29,
+    "monitoredNoticeCount": 3,
+    "syncDriftCount": 0,
+    "sourcePublicDriftCount": 0,
     "monitoredSyncDriftCount": 0
   },
   "loadErrors": [
@@ -34,14 +34,14 @@
       "marker": "data-opticslab-focus",
       "label": "Optics focus panel",
       "ok": true,
-      "htmlBytes": 22893,
+      "htmlBytes": 22894,
       "issues": [],
       "metrics": {
         "buttons": 35,
         "fields": 0,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 22893
+        "htmlBytes": 22894
       }
     },
     {
@@ -66,14 +66,14 @@
       "marker": "data-ecosystem-field-brief",
       "label": "Ecosystem field brief",
       "ok": true,
-      "htmlBytes": 47287,
+      "htmlBytes": 44147,
       "issues": [],
       "metrics": {
         "buttons": 49,
         "fields": 13,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47287
+        "htmlBytes": 44147
       }
     },
     {
@@ -82,14 +82,14 @@
       "marker": "data-epidemic-triage",
       "label": "Epidemic triage panel",
       "ok": true,
-      "htmlBytes": 97197,
+      "htmlBytes": 97181,
       "issues": [],
       "metrics": {
         "buttons": 25,
         "fields": 14,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 97197
+        "htmlBytes": 97181
       }
     },
     {
@@ -114,14 +114,14 @@
       "marker": "data-climate-mission-panel",
       "label": "Climate mission panel",
       "ok": true,
-      "htmlBytes": 35076,
+      "htmlBytes": 45643,
       "issues": [],
       "metrics": {
-        "buttons": 41,
+        "buttons": 44,
         "fields": 0,
         "canvases": 2,
-        "headings": 2,
-        "htmlBytes": 35076
+        "headings": 13,
+        "htmlBytes": 45643
       }
     },
     {
@@ -130,14 +130,14 @@
       "marker": "data-bridgelab-design-brief",
       "label": "Bridge design brief",
       "ok": true,
-      "htmlBytes": 70556,
+      "htmlBytes": 75711,
       "issues": [],
       "metrics": {
-        "buttons": 32,
+        "buttons": 37,
         "fields": 13,
         "canvases": 0,
-        "headings": 10,
-        "htmlBytes": 70556
+        "headings": 11,
+        "htmlBytes": 75711
       }
     },
     {
@@ -146,14 +146,14 @@
       "marker": "data-nutrition-practice-path",
       "label": "Nutrition practice path",
       "ok": true,
-      "htmlBytes": 33440,
+      "htmlBytes": 33397,
       "issues": [],
       "metrics": {
         "buttons": 24,
         "fields": 0,
         "canvases": 0,
         "headings": 17,
-        "htmlBytes": 33440
+        "htmlBytes": 33397
       }
     },
     {
@@ -162,14 +162,14 @@
       "marker": "data-baking-kitchen-bench",
       "label": "Baking kitchen bench",
       "ok": true,
-      "htmlBytes": 11384,
+      "htmlBytes": 10101,
       "issues": [],
       "metrics": {
-        "buttons": 16,
+        "buttons": 12,
         "fields": 0,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 11384
+        "htmlBytes": 10101
       }
     },
     {
@@ -178,14 +178,14 @@
       "marker": "data-cellularlab-focus-panel",
       "label": "Cellular focus panel",
       "ok": true,
-      "htmlBytes": 26480,
+      "htmlBytes": 40643,
       "issues": [],
       "metrics": {
-        "buttons": 52,
-        "fields": 3,
+        "buttons": 71,
+        "fields": 9,
         "canvases": 0,
-        "headings": 2,
-        "htmlBytes": 26480
+        "headings": 11,
+        "htmlBytes": 40643
       }
     },
     {
@@ -194,14 +194,14 @@
       "marker": "data-companion-workspace-stage",
       "label": "Companion Planting workspace stage",
       "ok": true,
-      "htmlBytes": 20982,
+      "htmlBytes": 20988,
       "issues": [],
       "metrics": {
         "buttons": 21,
         "fields": 0,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 20982
+        "htmlBytes": 20988
       }
     },
     {
@@ -210,14 +210,14 @@
       "marker": "data-dna-mission",
       "label": "DNA mission control",
       "ok": true,
-      "htmlBytes": 47505,
+      "htmlBytes": 56026,
       "issues": [],
       "metrics": {
         "buttons": 100,
         "fields": 4,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 47505
+        "htmlBytes": 56026
       }
     },
     {
@@ -242,14 +242,14 @@
       "marker": "data-swimlab-readiness",
       "label": "SwimLab water-safety readiness",
       "ok": true,
-      "htmlBytes": 13918,
+      "htmlBytes": 13094,
       "issues": [],
       "metrics": {
-        "buttons": 13,
+        "buttons": 12,
         "fields": 0,
         "canvases": 0,
         "headings": 5,
-        "htmlBytes": 13918
+        "htmlBytes": 13094
       }
     },
     {
@@ -274,14 +274,14 @@
       "marker": "data-stewardship-mission",
       "label": "Stewardship systems mission",
       "ok": true,
-      "htmlBytes": 38205,
+      "htmlBytes": 44825,
       "issues": [],
       "metrics": {
         "buttons": 21,
-        "fields": 6,
+        "fields": 7,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 38205
+        "htmlBytes": 44825
       }
     },
     {
@@ -290,14 +290,14 @@
       "marker": "data-spacecolony-life-support",
       "label": "Space Colony life-support mission",
       "ok": true,
-      "htmlBytes": 34412,
+      "htmlBytes": 34426,
       "issues": [],
       "metrics": {
         "buttons": 32,
         "fields": 8,
         "canvases": 1,
         "headings": 8,
-        "htmlBytes": 34412
+        "htmlBytes": 34426
       }
     },
     {
@@ -306,7 +306,7 @@
       "marker": "data-fireecology-mission",
       "label": "Fire Ecology stewardship mission",
       "ok": true,
-      "htmlBytes": 41794,
+      "htmlBytes": 41799,
       "issues": [
         {
           "toolId": "fireEcology",
@@ -330,7 +330,7 @@
         "fields": 0,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 41794
+        "htmlBytes": 41799
       }
     },
     {
@@ -339,14 +339,14 @@
       "marker": "data-behaviorlab-mission",
       "label": "Behavior Lab experiment mission",
       "ok": true,
-      "htmlBytes": 12765,
+      "htmlBytes": 12869,
       "issues": [],
       "metrics": {
         "buttons": 21,
         "fields": 5,
         "canvases": 0,
         "headings": 5,
-        "htmlBytes": 12765
+        "htmlBytes": 12869
       }
     },
     {
@@ -355,14 +355,14 @@
       "marker": "data-beehive-command",
       "label": "Beehive superorganism command deck",
       "ok": true,
-      "htmlBytes": 298179,
+      "htmlBytes": 361590,
       "issues": [],
       "metrics": {
-        "buttons": 170,
+        "buttons": 179,
         "fields": 30,
         "canvases": 1,
         "headings": 76,
-        "htmlBytes": 298179
+        "htmlBytes": 361590
       }
     },
     {
@@ -371,14 +371,14 @@
       "marker": "data-migration-mission",
       "label": "Migration field mission",
       "ok": true,
-      "htmlBytes": 9145,
+      "htmlBytes": 29601,
       "issues": [],
       "metrics": {
-        "buttons": 14,
-        "fields": 4,
+        "buttons": 36,
+        "fields": 13,
         "canvases": 0,
-        "headings": 3,
-        "htmlBytes": 9145
+        "headings": 9,
+        "htmlBytes": 29601
       }
     },
     {
@@ -403,7 +403,7 @@
       "marker": "data-cell-mission",
       "label": "Cell Simulator mission panel",
       "ok": true,
-      "htmlBytes": 90386,
+      "htmlBytes": 94899,
       "issues": [
         {
           "toolId": "cell",
@@ -605,11 +605,11 @@
         }
       ],
       "metrics": {
-        "buttons": 44,
+        "buttons": 46,
         "fields": 3,
         "canvases": 12,
         "headings": 7,
-        "htmlBytes": 90386
+        "htmlBytes": 94899
       }
     },
     {
@@ -618,14 +618,14 @@
       "marker": "data-evolab-command",
       "label": "EvoLab command panel",
       "ok": true,
-      "htmlBytes": 125697,
+      "htmlBytes": 125699,
       "issues": [],
       "metrics": {
         "buttons": 35,
         "fields": 0,
         "canvases": 0,
         "headings": 25,
-        "htmlBytes": 125697
+        "htmlBytes": 125699
       }
     },
     {
@@ -634,14 +634,14 @@
       "marker": "data-dinolab-command",
       "label": "Dino Lab mission deck",
       "ok": true,
-      "htmlBytes": 106954,
+      "htmlBytes": 121517,
       "issues": [],
       "metrics": {
-        "buttons": 51,
+        "buttons": 55,
         "fields": 7,
         "canvases": 0,
-        "headings": 3,
-        "htmlBytes": 106954
+        "headings": 7,
+        "htmlBytes": 121517
       }
     },
     {
@@ -650,14 +650,14 @@
       "marker": "data-aquaculture-command",
       "label": "Aquaculture operations dashboard",
       "ok": true,
-      "htmlBytes": 143544,
+      "htmlBytes": 143482,
       "issues": [],
       "metrics": {
         "buttons": 182,
         "fields": 6,
         "canvases": 0,
         "headings": 13,
-        "htmlBytes": 143544
+        "htmlBytes": 143482
       }
     },
     {
@@ -666,14 +666,14 @@
       "marker": "data-music-command",
       "label": "Music Synth studio deck",
       "ok": true,
-      "htmlBytes": 53867,
+      "htmlBytes": 54061,
       "issues": [],
       "metrics": {
-        "buttons": 98,
+        "buttons": 94,
         "fields": 22,
         "canvases": 2,
         "headings": 3,
-        "htmlBytes": 53867
+        "htmlBytes": 54061
       }
     },
     {
@@ -682,14 +682,14 @@
       "marker": "data-molecule-command",
       "label": "Molecule Lab command deck",
       "ok": true,
-      "htmlBytes": 29023,
+      "htmlBytes": 27341,
       "issues": [],
       "metrics": {
-        "buttons": 54,
-        "fields": 1,
+        "buttons": 49,
+        "fields": 0,
         "canvases": 0,
         "headings": 6,
-        "htmlBytes": 29023
+        "htmlBytes": 27341
       }
     },
     {
@@ -698,14 +698,14 @@
       "marker": "data-printingpress-command",
       "label": "PrintingPress shop dashboard",
       "ok": true,
-      "htmlBytes": 45474,
+      "htmlBytes": 47636,
       "issues": [],
       "metrics": {
-        "buttons": 25,
-        "fields": 0,
+        "buttons": 30,
+        "fields": 1,
         "canvases": 0,
         "headings": 5,
-        "htmlBytes": 45474
+        "htmlBytes": 47636
       }
     },
     {
@@ -730,14 +730,14 @@
       "marker": "data-raptorhunt-command",
       "label": "Raptor Hunt flight briefing",
       "ok": true,
-      "htmlBytes": 37139,
+      "htmlBytes": 42444,
       "issues": [],
       "metrics": {
-        "buttons": 53,
+        "buttons": 59,
         "fields": 1,
         "canvases": 0,
         "headings": 6,
-        "htmlBytes": 37139
+        "htmlBytes": 42444
       }
     },
     {
@@ -746,14 +746,14 @@
       "marker": "data-flightsim-briefing",
       "label": "SkySchool cockpit briefing",
       "ok": true,
-      "htmlBytes": 40500,
+      "htmlBytes": 47791,
       "issues": [],
       "metrics": {
-        "buttons": 35,
+        "buttons": 36,
         "fields": 4,
         "canvases": 0,
-        "headings": 9,
-        "htmlBytes": 40500
+        "headings": 10,
+        "htmlBytes": 47791
       }
     },
     {
@@ -794,14 +794,14 @@
       "marker": "data-brainatlas-mission",
       "label": "Brain Atlas mission panel",
       "ok": true,
-      "htmlBytes": 44605,
+      "htmlBytes": 45401,
       "issues": [],
       "metrics": {
         "buttons": 78,
         "fields": 1,
         "canvases": 1,
-        "headings": 6,
-        "htmlBytes": 44605
+        "headings": 9,
+        "htmlBytes": 45401
       }
     },
     {
@@ -810,14 +810,14 @@
       "marker": "data-anatomy-mission",
       "label": "Anatomy mission panel",
       "ok": true,
-      "htmlBytes": 54319,
+      "htmlBytes": 54166,
       "issues": [],
       "metrics": {
         "buttons": 86,
         "fields": 5,
         "canvases": 1,
         "headings": 10,
-        "htmlBytes": 54319
+        "htmlBytes": 54166
       }
     },
     {
@@ -826,15 +826,19 @@
       "marker": "data-birdlab-field-station",
       "label": "Bird Lab field station",
       "ok": true,
-      "htmlBytes": 562372,
+      "htmlBytes": 1105519,
       "issues": [
         {
           "toolId": "birdLab",
           "severity": "notice",
           "code": "horizontal-overflow-risk",
           "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 1,
+          "count": 2,
           "examples": [
+            {
+              "selector": "div.birdlab-atlas-scene-wrap:nth-of-type(1) > div.birdlab-atlas-scene:nth-of-type(1) > svg.birdlab-habitat-thumb > g.birdlab-illustrated-habitat > rect",
+              "width": "900"
+            },
             {
               "selector": "button.birdlab-module-card.birdlab-module-card--core:nth-of-type(1) > div.birdlab-module-plate:nth-of-type(1) > svg.birdlab-habitat-thumb > g.birdlab-illustrated-habitat > rect",
               "width": "900"
@@ -843,11 +847,11 @@
         }
       ],
       "metrics": {
-        "buttons": 136,
+        "buttons": 149,
         "fields": 1,
         "canvases": 0,
-        "headings": 129,
-        "htmlBytes": 562372
+        "headings": 130,
+        "htmlBytes": 1105519
       }
     },
     {
@@ -872,14 +876,14 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 19025,
+      "htmlBytes": 21036,
       "issues": [],
       "metrics": {
-        "buttons": 32,
-        "fields": 5,
+        "buttons": 36,
+        "fields": 6,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 19025
+        "htmlBytes": 21036
       }
     },
     {
@@ -887,45 +891,31 @@
       "file": "stem_tool_platetectonics.js",
       "marker": "data-pt-sim-focus",
       "label": "Plate Tectonics sim focus",
-      "ok": false,
-      "htmlBytes": 12235,
-      "issues": [
-        {
-          "toolId": "plateTectonics",
-          "severity": "error",
-          "code": "marker-missing",
-          "message": "Expected visual QA marker \"data-pt-sim-focus\" was not rendered."
-        }
-      ],
+      "ok": true,
+      "htmlBytes": 85164,
+      "issues": [],
       "metrics": {
-        "buttons": 13,
-        "fields": 1,
-        "canvases": 0,
-        "headings": 1,
-        "htmlBytes": 12235
+        "buttons": 70,
+        "fields": 14,
+        "canvases": 6,
+        "headings": 28,
+        "htmlBytes": 85164
       }
     },
     {
       "id": "astronomy",
       "file": "stem_tool_astronomy.js",
-      "marker": "data-astronomy-command",
-      "label": "Astronomy observation command",
-      "ok": false,
-      "htmlBytes": 25644,
-      "issues": [
-        {
-          "toolId": "astronomy",
-          "severity": "error",
-          "code": "marker-missing",
-          "message": "Expected visual QA marker \"data-astronomy-command\" was not rendered."
-        }
-      ],
+      "marker": "data-astronomy-tonight=",
+      "label": "Astronomy tonight observing plan",
+      "ok": true,
+      "htmlBytes": 34389,
+      "issues": [],
       "metrics": {
-        "buttons": 26,
-        "fields": 2,
+        "buttons": 32,
+        "fields": 4,
         "canvases": 0,
-        "headings": 3,
-        "htmlBytes": 25644
+        "headings": 7,
+        "htmlBytes": 34389
       }
     },
     {
@@ -950,14 +940,14 @@
       "marker": "data-rockcycle-command",
       "label": "Rock Cycle Earth systems command",
       "ok": true,
-      "htmlBytes": 34533,
+      "htmlBytes": 37596,
       "issues": [],
       "metrics": {
-        "buttons": 17,
+        "buttons": 23,
         "fields": 1,
         "canvases": 1,
-        "headings": 3,
-        "htmlBytes": 34533
+        "headings": 6,
+        "htmlBytes": 37596
       }
     },
     {
@@ -966,14 +956,14 @@
       "marker": "data-aquarium-focus-panel",
       "label": "Aquarium mission panel",
       "ok": true,
-      "htmlBytes": 29959,
+      "htmlBytes": 30298,
       "issues": [],
       "metrics": {
         "buttons": 24,
         "fields": 0,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 29959
+        "htmlBytes": 30298
       }
     },
     {
@@ -982,14 +972,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 28239,
+      "htmlBytes": 29227,
       "issues": [],
       "metrics": {
-        "buttons": 14,
+        "buttons": 16,
         "fields": 5,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 28239
+        "htmlBytes": 29227
       }
     },
     {
@@ -998,14 +988,14 @@
       "marker": "data-solarsystem-command-center",
       "label": "Solar System command center",
       "ok": true,
-      "htmlBytes": 55426,
+      "htmlBytes": 54828,
       "issues": [],
       "metrics": {
         "buttons": 49,
         "fields": 1,
         "canvases": 1,
         "headings": 8,
-        "htmlBytes": 55426
+        "htmlBytes": 54828
       }
     },
     {
@@ -1014,14 +1004,14 @@
       "marker": "data-bikelab-ride-focus",
       "label": "BikeLab ride focus",
       "ok": true,
-      "htmlBytes": 14214,
+      "htmlBytes": 16104,
       "issues": [],
       "metrics": {
         "buttons": 21,
         "fields": 4,
         "canvases": 1,
-        "headings": 1,
-        "htmlBytes": 14214
+        "headings": 2,
+        "htmlBytes": 16104
       }
     },
     {
@@ -1030,14 +1020,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 56360,
+      "htmlBytes": 56410,
       "issues": [],
       "metrics": {
         "buttons": 57,
         "fields": 8,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 56360
+        "htmlBytes": 56410
       }
     },
     {
@@ -1062,14 +1052,14 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 16927,
+      "htmlBytes": 29234,
       "issues": [],
       "metrics": {
-        "buttons": 14,
-        "fields": 21,
+        "buttons": 49,
+        "fields": 33,
         "canvases": 1,
-        "headings": 3,
-        "htmlBytes": 16927
+        "headings": 20,
+        "htmlBytes": 29234
       }
     },
     {
@@ -1078,14 +1068,14 @@
       "marker": "data-probability-command",
       "label": "Probability Lab command deck",
       "ok": true,
-      "htmlBytes": 29145,
+      "htmlBytes": 28912,
       "issues": [],
       "metrics": {
-        "buttons": 32,
+        "buttons": 31,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 29145
+        "htmlBytes": 28912
       }
     },
     {
@@ -1110,14 +1100,14 @@
       "marker": "data-funcgrapher-command",
       "label": "Function Grapher exploration console",
       "ok": true,
-      "htmlBytes": 40163,
+      "htmlBytes": 44803,
       "issues": [],
       "metrics": {
-        "buttons": 53,
-        "fields": 15,
+        "buttons": 48,
+        "fields": 9,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 40163
+        "htmlBytes": 44803
       }
     },
     {
@@ -1126,14 +1116,14 @@
       "marker": "data-calculus-command",
       "label": "Calculus concept studio",
       "ok": true,
-      "htmlBytes": 28009,
+      "htmlBytes": 40394,
       "issues": [],
       "metrics": {
-        "buttons": 30,
-        "fields": 9,
+        "buttons": 53,
+        "fields": 12,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 28009
+        "htmlBytes": 40394
       }
     },
     {
@@ -1142,14 +1132,14 @@
       "marker": "data-physics-command",
       "label": "Physics projectile mission",
       "ok": true,
-      "htmlBytes": 111838,
+      "htmlBytes": 133159,
       "issues": [],
       "metrics": {
-        "buttons": 42,
-        "fields": 17,
+        "buttons": 77,
+        "fields": 20,
         "canvases": 1,
-        "headings": 4,
-        "htmlBytes": 111838
+        "headings": 9,
+        "htmlBytes": 133159
       }
     },
     {
@@ -1158,14 +1148,14 @@
       "marker": "data-unitconvert-command",
       "label": "Unit Converter measurement workbench",
       "ok": true,
-      "htmlBytes": 18621,
+      "htmlBytes": 27340,
       "issues": [],
       "metrics": {
-        "buttons": 23,
-        "fields": 5,
-        "canvases": 1,
-        "headings": 3,
-        "htmlBytes": 18621
+        "buttons": 28,
+        "fields": 7,
+        "canvases": 0,
+        "headings": 4,
+        "htmlBytes": 27340
       }
     },
     {
@@ -1174,14 +1164,14 @@
       "marker": "data-punnett-cross-focus",
       "label": "Punnett cross focus board",
       "ok": true,
-      "htmlBytes": 21536,
+      "htmlBytes": 37266,
       "issues": [],
       "metrics": {
-        "buttons": 26,
+        "buttons": 30,
         "fields": 2,
         "canvases": 0,
-        "headings": 7,
-        "htmlBytes": 21536
+        "headings": 26,
+        "htmlBytes": 37266
       }
     },
     {
@@ -1190,14 +1180,14 @@
       "marker": "data-circuit-bench",
       "label": "Circuit electronics bench",
       "ok": true,
-      "htmlBytes": 56134,
+      "htmlBytes": 63407,
       "issues": [],
       "metrics": {
-        "buttons": 86,
+        "buttons": 95,
         "fields": 6,
         "canvases": 1,
-        "headings": 10,
-        "htmlBytes": 56134
+        "headings": 11,
+        "htmlBytes": 63407
       }
     },
     {
@@ -1206,14 +1196,14 @@
       "marker": "data-chembalance-command",
       "label": "Chemistry Lab bench",
       "ok": true,
-      "htmlBytes": 13397,
+      "htmlBytes": 13074,
       "issues": [],
       "metrics": {
-        "buttons": 16,
+        "buttons": 15,
         "fields": 1,
         "canvases": 0,
         "headings": 4,
-        "htmlBytes": 13397
+        "htmlBytes": 13074
       }
     },
     {
@@ -1222,7 +1212,7 @@
       "marker": "data-titration-command",
       "label": "Titration experiment command",
       "ok": true,
-      "htmlBytes": 77492,
+      "htmlBytes": 76101,
       "issues": [
         {
           "toolId": "titrationLab",
@@ -1230,15 +1220,15 @@
           "code": "canvas-focus",
           "message": "Canvas may be interactive but is not focusable in initial markup.",
           "index": 0,
-          "selector": "div#titration-panel > div.space-y-4:nth-of-type(9) > figure.rounded-2xl.border > div.aspect-[4/3].sm:aspect-[16/6]:nth-of-type(2) > canvas"
+          "selector": "div#titration-panel > div.space-y-4:nth-of-type(8) > figure.rounded-2xl.border > div.aspect-[4/3].sm:aspect-[16/6]:nth-of-type(2) > canvas"
         }
       ],
       "metrics": {
-        "buttons": 40,
+        "buttons": 36,
         "fields": 5,
         "canvases": 1,
         "headings": 14,
-        "htmlBytes": 77492
+        "htmlBytes": 76101
       }
     },
     {
@@ -1247,14 +1237,14 @@
       "marker": "data-areamodel-focus",
       "label": "Area Model workshop",
       "ok": true,
-      "htmlBytes": 16360,
+      "htmlBytes": 25987,
       "issues": [],
       "metrics": {
-        "buttons": 18,
-        "fields": 5,
+        "buttons": 34,
+        "fields": 4,
         "canvases": 0,
-        "headings": 3,
-        "htmlBytes": 16360
+        "headings": 5,
+        "htmlBytes": 25987
       }
     },
     {
@@ -1263,14 +1253,14 @@
       "marker": "data-coordinate-command",
       "label": "Coordinate spatial reasoning studio",
       "ok": true,
-      "htmlBytes": 15513,
+      "htmlBytes": 24173,
       "issues": [],
       "metrics": {
-        "buttons": 15,
-        "fields": 3,
+        "buttons": 32,
+        "fields": 4,
         "canvases": 0,
-        "headings": 1,
-        "htmlBytes": 15513
+        "headings": 2,
+        "htmlBytes": 24173
       }
     },
     {
@@ -1279,14 +1269,14 @@
       "marker": "data-protractor-command",
       "label": "Angle investigation studio",
       "ok": true,
-      "htmlBytes": 33239,
+      "htmlBytes": 20660,
       "issues": [],
       "metrics": {
-        "buttons": 69,
-        "fields": 5,
+        "buttons": 32,
+        "fields": 3,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 33239
+        "htmlBytes": 20660
       }
     },
     {
@@ -1295,14 +1285,14 @@
       "marker": "data-volume-command",
       "label": "Volume design brief",
       "ok": true,
-      "htmlBytes": 41964,
+      "htmlBytes": 41765,
       "issues": [],
       "metrics": {
-        "buttons": 33,
+        "buttons": 32,
         "fields": 8,
         "canvases": 2,
         "headings": 4,
-        "htmlBytes": 41964
+        "htmlBytes": 41765
       }
     },
     {
@@ -1311,14 +1301,14 @@
       "marker": "data-manipulatives-command",
       "label": "Math representation studio",
       "ok": true,
-      "htmlBytes": 17452,
+      "htmlBytes": 17424,
       "issues": [],
       "metrics": {
         "buttons": 34,
         "fields": 2,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 17452
+        "htmlBytes": 17424
       }
     },
     {
@@ -1327,14 +1317,14 @@
       "marker": "data-multtable-command",
       "label": "Multiplication fact strategy studio",
       "ok": true,
-      "htmlBytes": 35790,
+      "htmlBytes": 43033,
       "issues": [],
       "metrics": {
         "buttons": 23,
-        "fields": 7,
+        "fields": 3,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 35790
+        "htmlBytes": 43033
       }
     },
     {
@@ -1343,14 +1333,14 @@
       "marker": "data-inequality-command",
       "label": "Inequality solution-set studio",
       "ok": true,
-      "htmlBytes": 20061,
+      "htmlBytes": 29550,
       "issues": [],
       "metrics": {
-        "buttons": 30,
-        "fields": 8,
+        "buttons": 40,
+        "fields": 9,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 20061
+        "htmlBytes": 29550
       }
     },
     {
@@ -1359,14 +1349,32 @@
       "marker": "data-numberline-focus",
       "label": "Number Line workspace",
       "ok": true,
-      "htmlBytes": 20768,
-      "issues": [],
+      "htmlBytes": 32863,
+      "issues": [
+        {
+          "toolId": "numberline",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 2,
+          "examples": [
+            {
+              "selector": "div.space-y-4.allo-nl-bg-explore:nth-of-type(2) > div.bg-white.rounded-xl:nth-of-type(3) > div > svg.max-w-full > rect",
+              "width": "700"
+            },
+            {
+              "selector": "div.mt-3.rounded-xl:nth-of-type(2) > div.space-y-3 > div.space-y-2:nth-of-type(2) > svg > rect",
+              "width": "700"
+            }
+          ]
+        }
+      ],
       "metrics": {
-        "buttons": 22,
-        "fields": 5,
+        "buttons": 43,
+        "fields": 7,
         "canvases": 0,
         "headings": 4,
-        "htmlBytes": 20768
+        "htmlBytes": 32863
       }
     },
     {
@@ -1375,14 +1383,14 @@
       "marker": "data-moneymath-focus",
       "label": "Money Math studio",
       "ok": true,
-      "htmlBytes": 44699,
+      "htmlBytes": 45367,
       "issues": [],
       "metrics": {
         "buttons": 30,
         "fields": 2,
         "canvases": 0,
         "headings": 8,
-        "htmlBytes": 44699
+        "htmlBytes": 45367
       }
     },
     {
@@ -1391,14 +1399,14 @@
       "marker": "data-logiclab-focus",
       "label": "Logic Lab reasoning studio",
       "ok": true,
-      "htmlBytes": 23895,
+      "htmlBytes": 23637,
       "issues": [],
       "metrics": {
-        "buttons": 39,
+        "buttons": 38,
         "fields": 1,
         "canvases": 0,
         "headings": 6,
-        "htmlBytes": 23895
+        "htmlBytes": 23637
       }
     },
     {
@@ -1407,14 +1415,14 @@
       "marker": "data-fraction-focus",
       "label": "Fraction Lab focus panel",
       "ok": true,
-      "htmlBytes": 15543,
+      "htmlBytes": 15062,
       "issues": [],
       "metrics": {
-        "buttons": 41,
+        "buttons": 39,
         "fields": 2,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 15543
+        "htmlBytes": 15062
       }
     },
     {
@@ -1423,14 +1431,14 @@
       "marker": "data-galaxy-canvas",
       "label": "Galaxy 3D canvas",
       "ok": true,
-      "htmlBytes": 66765,
+      "htmlBytes": 77979,
       "issues": [],
       "metrics": {
-        "buttons": 71,
-        "fields": 5,
+        "buttons": 82,
+        "fields": 11,
         "canvases": 1,
-        "headings": 8,
-        "htmlBytes": 66765
+        "headings": 13,
+        "htmlBytes": 77979
       }
     },
     {
@@ -1439,14 +1447,14 @@
       "marker": "data-semiconductor-command",
       "label": "Semiconductor command bench",
       "ok": true,
-      "htmlBytes": 27299,
+      "htmlBytes": 27094,
       "issues": [],
       "metrics": {
-        "buttons": 29,
+        "buttons": 28,
         "fields": 9,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 27299
+        "htmlBytes": 27094
       }
     },
     {
@@ -1455,14 +1463,14 @@
       "marker": "data-wave-canvas",
       "label": "Wave canvas",
       "ok": true,
-      "htmlBytes": 28037,
+      "htmlBytes": 38728,
       "issues": [],
       "metrics": {
-        "buttons": 37,
+        "buttons": 57,
         "fields": 8,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 28037
+        "htmlBytes": 38728
       }
     },
     {
@@ -1471,77 +1479,81 @@
       "marker": "data-heat-lab",
       "label": "Heat & Thermodynamics Lab",
       "ok": true,
-      "htmlBytes": 89984,
-      "issues": [],
+      "htmlBytes": 236216,
+      "issues": [
+        {
+          "toolId": "heatLab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas may be interactive but is not focusable in initial markup.",
+          "index": 1,
+          "selector": "section#htsec-conduction > div.mt-2:nth-of-type(6) > div.mt-3.rounded-lg:nth-of-type(6) > div.mt-2.rounded-lg:nth-of-type(2) > canvas"
+        },
+        {
+          "toolId": "heatLab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas may be interactive but is not focusable in initial markup.",
+          "index": 3,
+          "selector": "section#htsec-touch > div.mt-2.rounded-lg:nth-of-type(4) > canvas"
+        },
+        {
+          "toolId": "heatLab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas may be interactive but is not focusable in initial markup.",
+          "index": 4,
+          "selector": "section#htsec-equilibrium > div.mt-2.rounded-lg:nth-of-type(6) > canvas"
+        },
+        {
+          "toolId": "heatLab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas may be interactive but is not focusable in initial markup.",
+          "index": 5,
+          "selector": "section#htsec-equilibrium > div.mt-2.rounded-lg:nth-of-type(8) > canvas"
+        },
+        {
+          "toolId": "heatLab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas may be interactive but is not focusable in initial markup.",
+          "index": 7,
+          "selector": "section#htsec-heatingcurve > div.mt-3.rounded-lg:nth-of-type(9) > div.mt-2.rounded-lg:nth-of-type(4) > canvas"
+        },
+        {
+          "toolId": "heatLab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas may be interactive but is not focusable in initial markup.",
+          "index": 8,
+          "selector": "section#htsec-radiation > div.mt-3.rounded-lg:nth-of-type(8) > div.mt-2.rounded-lg:nth-of-type(3) > canvas"
+        }
+      ],
       "metrics": {
-        "buttons": 106,
-        "fields": 15,
-        "canvases": 5,
-        "headings": 15,
-        "htmlBytes": 89984
+        "buttons": 321,
+        "fields": 73,
+        "canvases": 9,
+        "headings": 26,
+        "htmlBytes": 236216
       }
     }
   ],
   "sync": {
-    "drift": [
-      {
-        "file": "stem_tool_coralreef.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "7C2BB48471A8",
-          "public": "30F4819498A6",
-          "build": "30F4819498A6"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      }
-    ],
-    "sourcePublicDrift": [
-      {
-        "file": "stem_tool_coralreef.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "7C2BB48471A8",
-          "public": "30F4819498A6",
-          "build": "30F4819498A6"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      }
-    ],
+    "drift": [],
+    "sourcePublicDrift": [],
     "monitoredDrift": []
   },
   "topFindings": [
     {
-      "code": "marker-missing",
-      "severity": "error",
-      "count": 2,
-      "toolCount": 2,
-      "exampleTools": [
-        "plateTectonics",
-        "astronomy"
-      ]
-    },
-    {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 12,
-      "toolCount": 2,
+      "count": 18,
+      "toolCount": 3,
       "exampleTools": [
         "cell",
-        "titrationLab"
+        "titrationLab",
+        "heatLab"
       ]
     },
     {
@@ -1556,11 +1568,12 @@
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
-      "count": 2,
-      "toolCount": 2,
+      "count": 3,
+      "toolCount": 3,
       "exampleTools": [
         "fireEcology",
-        "birdLab"
+        "birdLab",
+        "numberline"
       ]
     }
   ]

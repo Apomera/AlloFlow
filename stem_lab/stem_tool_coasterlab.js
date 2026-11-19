@@ -470,7 +470,13 @@ function __clabDestroy(){
   }catch(_e){}
   try{ if(resources.renderer) resources.renderer.dispose(); }catch(_e){}
   try{
-    if(resources.renderer && typeof resources.renderer.forceContextLoss === 'function') resources.renderer.forceContextLoss();
+    const r = resources.renderer;
+    if(r && typeof r.forceContextLoss === 'function'){
+      // Flag first: forcing the loss fires webglcontextlost on this canvas.
+      if(r.domElement) r.domElement._clabTearingDown = true;
+      const gl = typeof r.getContext === 'function' ? r.getContext() : null;
+      if(!(gl && typeof gl.isContextLost === 'function' && gl.isContextLost())) r.forceContextLoss();
+    }
   }catch(_e){}
 }
 /* @clab-cleanup-end */
@@ -1323,6 +1329,16 @@ try{
   throw e;
 }
 __clabResources.renderer = renderer;
+/* A context lost after init (GPU reset, low-memory eviction) used to leave the
+   midway black for good. Tear down through __clabDestroy, then let the host
+   (refCb) swap in a restart panel on the next tick. */
+canvas.addEventListener('webglcontextlost', ev => {
+  if(!canvas.isConnected) return;   // a teardown that already removed it
+  ev.preventDefault();
+  if(canvas._clabTearingDown || __clabDead) return;   // our own dispose
+  __clabDestroy();
+  setTimeout(() => { if(rootEl.isConnected) rootEl.dispatchEvent(new CustomEvent('clab-gl-lost')); }, 0);
+});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -11141,6 +11157,16 @@ return { destroy: __clabDestroy };
     window.StemLab.ensureThree({ orbit: false }).then(function () { cb(window.THREE || null); }).catch(function () { cb(null); });
   }
 
+  // The engine's mount box. Restart after a lost WebGL context bumps the key, so
+  // the engine boots into a FRESH element: the old one still carries the dead
+  // engine's own keydown listeners.
+  function ClabStage(props) {
+    var st = props.React.useState(0);
+    var setGen = st[1];
+    props.refCb._restart = function () { setGen(function (n) { return n + 1; }); };
+    return props.React.createElement('div', { key: 'clab-stage-' + st[0], ref: props.refCb, role: 'group', 'aria-label': 'Coaster Lab 3-D designer', style: { position: 'absolute', inset: 0, outline: 'none' } });
+  }
+
   window.StemLab.registerTool('coasterLab', {
     icon: '🎢',
     label: 'Coaster Lab',
@@ -11157,6 +11183,7 @@ return { destroy: __clabDestroy };
     render: function (ctx) {
       var React = ctx.React;
       var h = React.createElement;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var setToolData = ctx.setToolData;
       var addToast = ctx.addToast;
       var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : null;
@@ -11251,6 +11278,32 @@ return { destroy: __clabDestroy };
         el._clabInit = true;
         el.tabIndex = 0;
         el.addEventListener('pointerdown', function () { try { el.focus({ preventScroll: true }); } catch (e) {} });
+        var restart = refCb._restart;
+        // The engine tore itself down after a lost context: say so, offer a way back.
+        el.addEventListener('clab-gl-lost', function () {
+          el.innerHTML = '';
+          var panel = document.createElement('div');
+          panel.setAttribute('role', 'alert');
+          panel.setAttribute('data-clab-gl-lost', 'true');
+          panel.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;background:#0f151c;color:#e8eef4;font-family:Segoe UI,system-ui,sans-serif';
+          var title = document.createElement('h2');
+          title.style.cssText = 'margin:0;font-size:18px;font-weight:700';
+          title.textContent = __alloT('stem.coasterlab.webgl_lost_title', '3D view paused');
+          var body = document.createElement('p');
+          body.style.cssText = 'margin:0;max-width:440px;font-size:14px;line-height:1.5;color:#c9d5e0';
+          body.textContent = __alloT('stem.coasterlab.webgl_lost_body', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved.');
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.style.cssText = 'min-height:44px;padding:0 18px;border:0;border-radius:8px;background:#f2a63c;color:#0f151c;font-size:14px;font-weight:700;cursor:pointer';
+          btn.textContent = __alloT('stem.coasterlab.webgl_lost_restart', 'Restart 3D view');
+          btn.addEventListener('click', function () { if (typeof restart === 'function') restart(); });
+          panel.appendChild(title); panel.appendChild(body); panel.appendChild(btn);
+          // The dead engine's shortcut listeners are still on el: keep keys from them.
+          panel.addEventListener('keydown', function (e) { e.stopPropagation(); });
+          el.addEventListener('keydown', function (e) { if (e.target === el) e.stopImmediatePropagation(); }, true);
+          el.appendChild(panel);
+          try { btn.focus(); } catch (e) {}
+        });
         var note = document.createElement('div');
         note.style.cssText = 'padding:28px;text-align:center;color:#9fb0c1;font-family:Segoe UI,system-ui,sans-serif;font-size:14px';
         note.textContent = '🎢 Building the midway…';
@@ -11278,7 +11331,7 @@ return { destroy: __clabDestroy };
         style: { position: 'relative', height: '78vh', minHeight: 540, borderRadius: 12, overflow: 'hidden', border: '1px solid #334155', background: '#0f151c' }
       },
         h('style', { dangerouslySetInnerHTML: { __html: CLAB_CSS } }),
-        h('div', { ref: refCb, role: 'group', 'aria-label': 'Coaster Lab 3-D designer', style: { position: 'absolute', inset: 0, outline: 'none' } })
+        h(ClabStage, { React: React, refCb: refCb })
       );
     }
   });

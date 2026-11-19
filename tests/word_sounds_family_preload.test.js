@@ -19,6 +19,9 @@ while (stack.length) {
 }
 if (audioDeclarations.length !== 1) throw new Error('Expected exactly one handleAudio declaration');
 const handleAudioSource = 'const ' + source.slice(audioDeclarations[0].start, audioDeclarations[0].end) + ';';
+// 2026-11-18: handleAudio calls wsAllowsWordShardAudio (word audio shards, 2026-11-15); the real one is loaded beside it.
+const declaredSource = (name) => { const found = []; const walk = [tree]; while (walk.length) { const node = walk.pop(); if (node.type === 'VariableDeclarator' && node.id?.name === name) found.push(node); for (const value of Object.values(node)) { if (Array.isArray(value)) value.forEach(child => { if (child?.type) walk.push(child); }); else if (value?.type) walk.push(value); } } if (found.length !== 1) throw new Error('Expected exactly one ' + name); return 'const ' + source.slice(found[0].start, found[0].end) + ';'; };
+const wsAllowsWordShardAudio = new Function(declaredSource('wsAllowsWordShardAudio') + ';return wsAllowsWordShardAudio;')();
 
 let React, client, act;
 const mounts = [];
@@ -112,7 +115,7 @@ function audioHarness({ packed = null, cached = null } = {}) {
     loadAudioFromStorage: () => null, ttsInflight: { current: new Map() }, callTTS: vi.fn(async () => null),
     saveAudioToStorage: vi.fn(), wordSoundsLanguage: 'en', preloadedWords: [], wordSoundsAudioLibrary: {}, speakWord: vi.fn(),
     wsStudentDeviceVoiceOnly: () => false, wsSpeakDeviceVoice: vi.fn(async () => false),
-    noteWordAudioPlayed: vi.fn(),
+    noteWordAudioPlayed: vi.fn(), wsAllowsWordShardAudio,
   };
   if (cached) environment.audioInstances.current.set('hat', cached);
   const handleAudio = new Function(...Object.keys(environment), handleAudioSource + ';return handleAudio;')(...Object.values(environment));

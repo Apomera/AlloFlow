@@ -346,7 +346,58 @@
   }
 
   // One short line under the set of symbols says what the chosen set is (the option's data-line).
+  // The sets as grouped choices, drawn from the dropdown (still the one source of truth, now hidden). Each group
+  // opens when it holds the chosen set; choosing one sets the dropdown and fires its own change handler.
+  function drawSetChooser() {
+    var host = doc.getElementById('sr-sets');
+    if (!host || !modeSelect) return;
+    host.textContent = '';
+    Array.prototype.forEach.call(modeSelect.querySelectorAll('optgroup'), function (group, gi) {
+      var box = doc.createElement('details'); box.className = 'strand sr-set-group';
+      var head = doc.createElement('summary'); head.className = 'strand-head';
+      var title = doc.createElement('h3'); title.id = 'sr-set-group-' + gi; title.textContent = group.label;
+      box.setAttribute('aria-labelledby', title.id);
+      head.appendChild(title);
+      var count = doc.createElement('span'); count.className = 'strand-count'; head.appendChild(count);
+      if (group.getAttribute('data-line')) { var gl = doc.createElement('span'); gl.className = 'strand-line'; gl.textContent = group.getAttribute('data-line'); head.appendChild(gl); }
+      box.appendChild(head);
+      var list = doc.createElement('div'); list.className = 'choices';
+      Array.prototype.forEach.call(group.querySelectorAll('option'), function (opt) {
+        var label = doc.createElement('label'); label.className = 'choice';
+        var radio = doc.createElement('input'); radio.type = 'radio'; radio.name = 'sr-set'; radio.value = opt.value;
+        radio.addEventListener('change', function () {
+          if (!radio.checked || modeSelect.value === opt.value) return;
+          modeSelect.value = opt.value;
+          modeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        var name = doc.createElement('span'); name.className = 'choice-name'; name.textContent = String(opt.textContent || '').trim();
+        var line = doc.createElement('span'); line.className = 'choice-line'; line.textContent = String(opt.getAttribute('data-line') || '');
+        label.appendChild(radio); label.appendChild(name); if (line.textContent) label.appendChild(line);
+        list.appendChild(label);
+      });
+      box.appendChild(list);
+      host.appendChild(box);
+    });
+    syncSetChooser();
+  }
+  function syncSetChooser() {
+    var host = doc.getElementById('sr-sets');
+    if (!host || !modeSelect) return;
+    Array.prototype.forEach.call(host.querySelectorAll('details.sr-set-group'), function (box) {
+      var on = false;
+      Array.prototype.forEach.call(box.querySelectorAll('input[name="sr-set"]'), function (radio) {
+        radio.checked = radio.value === modeSelect.value;
+        radio.parentNode.classList.toggle('is-on', radio.checked);
+        if (radio.checked) on = true;
+      });
+      var count = box.querySelector('.strand-count');
+      var sets = box.querySelectorAll('input[name="sr-set"]').length;
+      if (count) count.textContent = on ? 'chosen' : sets === 1 ? '1 set' : sets + ' sets';
+      if (on) box.open = true;
+    });
+  }
   function drawModeLine() {
+    syncSetChooser();
     if (!modeLineEl || !modeSelect) return;
     var opt = modeSelect.options && modeSelect.selectedIndex >= 0 ? modeSelect.options[modeSelect.selectedIndex] : null;
     modeLineEl.textContent = opt ? String(opt.getAttribute('data-line') || '') : '';
@@ -1423,6 +1474,44 @@
     $('sr-work-label').textContent = String(loader.DEFAULT_LABELS.save_work);
   }
   bindEvents();
+  drawSetChooser();
+  // Step 2's Settings fold says on its top line what the settings are now.
+  function drawSettingsNow() {
+    var nowEl = doc.getElementById('sr-more-2-now');
+    if (!nowEl) return;
+    var pick = function (sel) { var el = doc.querySelector(sel); return el || null; };
+    var check = pick('input[name="sr-packet-mode"][value="check"]');
+    var lock = pick('input[name="sr-control"][value="lockon"]');
+    var parts = [lock && lock.checked ? 'Point at the card first' : 'Answer right away'];
+    if (check && check.checked) {
+      var untimed = pick('#sr-untimed'), code = pick('#sr-teacher-code');
+      parts.push(untimed && untimed.checked ? 'no clock' : '60-second clock');
+      if (code && String(code.value || '').length >= 4) parts.push('teacher code set');
+    } else {
+      var rehearse = pick('#sr-rehearsal'), audio = pick('#sr-include-audio');
+      if (rehearse && rehearse.checked) parts.push('rehearsal with known symbols');
+      parts.push(audio && !audio.checked ? 'no sounds in the file' : 'sounds in the file');
+    }
+    var pics = doc.querySelectorAll('#sr-pic-list img').length;
+    if (pics) parts.push(pics === 1 ? '1 picture' : pics + ' pictures');
+    nowEl.textContent = parts.join(' · ');
+  }
+  doc.addEventListener('change', drawSettingsNow);
+  doc.addEventListener('input', drawSettingsNow);
+  drawSettingsNow();
+  // "#check-mode" / "#practice-mode" (the front door's cards) start on that kind of file, whatever was remembered.
+  (function applyKindHash() {
+    var hash = root.location ? String(root.location.hash || '') : '';
+    var kind = /^#(check|practice)-mode$/i.exec(hash);
+    if (!kind) return;
+    var radio = doc.querySelector('input[name="sr-packet-mode"][value="' + kind[1].toLowerCase() + '"]');
+    if (!radio) return;
+    try { if (root.history && typeof root.history.replaceState === 'function') root.history.replaceState(null, '', (root.location.pathname || '') + (root.location.search || '')); } catch (_) {}
+    radio.checked = true;
+    syncPacketModeUi();
+    savePreferences();
+    drawSettingsNow();
+  })();
   var initializedFromHash = applyRehearseHash() || applyModeHash() || applySymbolsHash();
   if (!initializedFromHash) {
     renderPictureList();

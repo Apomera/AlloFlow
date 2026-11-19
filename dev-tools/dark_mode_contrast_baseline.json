@@ -8,7 +8,8 @@
       "DARK-VARIANT-PAIRED|dark:text-gray-300+text-gray-600": 2,
       "DARK-VARIANT|dark:border-slate-700": 1,
       "DARK-VARIANT|dark:hover:bg-gray-700": 1,
-      "STATE-LIGHT-BG|hover:bg-gray-100": 1
+      "STATE-LIGHT-BG|hover:bg-gray-100": 1,
+      "STYLE-LITERAL-VS-VAR|position:'fixed',bottom:'var(--alloflow-fab-stack-clear, 5.5": 1
     },
     "accessibility_lab_module.js": {
       "PORTAL-ESCAPE|document.body": 1
@@ -28,6 +29,7 @@
       "DARK-ONLY-DEF|.allo-docsuite [data-reading-options] button:hover:not(:disabled)": 1,
       "DARK-ONLY-DEF|.allo-docsuite button": 1,
       "DARK-ONLY-DEF|.allo-docsuite button[class]:hover:not(:disabled)": 1,
+      "DARK-ONLY-DEF|.allo-docsuite button[class]:hover:not(:disabled) *": 1,
       "DARK-ONLY-DEF|.allo-docsuite input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([t": 2,
       "DARK-ONLY-DEF|.border-4.bg-white:not([data-stem-tool-surface] *)": 1,
       "DARK-ONLY-DEF|.prose a:not([data-stem-tool-surface] *)": 1,
@@ -38,6 +40,23 @@
       "DARK-ONLY-DEF|.ring-1.ring-slate-300:not([data-stem-tool-surface] *)": 1,
       "DARK-ONLY-DEF|.sort-card:not([data-stem-tool-surface] *)": 1,
       "DARK-ONLY-DEF|[class*=\"bg-\"]": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-amber-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-blue-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-cyan-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-emerald-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-fuchsia-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-green-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-indigo-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-orange-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-pink-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-purple-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-red-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-sky-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-teal-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-violet-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"bg-yellow-50/\"]:not([data-stem-tool-surface] *)": 1,
+      "DARK-ONLY-DEF|[class*=\"from-\"][class*=\"-50\"]:not(button):not([data-stem-tool-surface": 3,
+      "DARK-ONLY-DEF|[data-live-lesson-run], .theme-contrast [data-live-lesson-run] *:not(s": 1,
       "DARK-ONLY-DEF|[data-stem-tool-shell] .leaflet-bar a:hover:not(#hc-h):not(#hc-h):not(": 1,
       "DARK-ONLY-DEF|[data-stem-tool-shell] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):n": 3,
       "DARK-ONLY-DEF|[data-stem-tool-shell] button[aria-current]:not([aria-current=\"false\"]": 1,
@@ -47,9 +66,11 @@
       "DARK-ONLY-DEF|[style*=\"background: white\"], .theme-contrast [style*=\"background:#fff": 1,
       "DARK-ONLY-DEF|[style*=\"border: 1px solid #334155\"], .theme-contrast [style*=\"border:": 1,
       "DARK-ONLY-DEF|[style*=\"color: #cbd5e1\"], .theme-contrast [style*=\"color:#cbd5e1\"], .": 1,
+      "DARK-ONLY-DEF|a[href]:not([class*=\"bg-\"]):not([data-stem-tool-surface] *)": 1,
       "DARK-ONLY-DEF|h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme": 1
     },
     "view_header_source.jsx": {
+      "HALF-PAIR-FG|text-indigo-100": 1,
       "PORTAL-ESCAPE|document.body": 1
     },
     "view_misc_panels_source.jsx": {

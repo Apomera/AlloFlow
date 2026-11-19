@@ -445,7 +445,8 @@ describe('the finish screen', () => {
     expect(shown).not.toContain('Right on the first try');
     const blob = t.saveCsv();
     // 2026-11-14 (T1/makers2): PC.formTitle writes out the grade and version ("Math Fluency, grade 3, version A").
-    expect(blob.name).toMatch(/^Math-Fluency-grade-3-version-A__Ana__\d{4}-\d{2}-\d{2}\.csv$/);
+    // 2026-11-18 (owner): the title a student sees names no grade; the grade stays in meta.grade and the packet id.
+    expect(blob.name).toMatch(/^Math-Fluency-version-A__Ana__\d{4}-\d{2}-\d{2}\.csv$/);
     // 2026-11-13 (engine fixes): a download cannot be seen to finish, so the file says the browser is saving it.
     expect(t.text()).toContain('Your browser is saving ' + blob.name + '.');
   });
@@ -844,8 +845,8 @@ describe('the results of a check', () => {
     // 2026-11-13: then the time on the items (activeMs, the items' ms added up), a file saved from then on.
     expect(file.activeMs).toBe(file.items.reduce((n, it) => n + it.ms, 0));
     // 2026-11-14 (T1/makers2): PC.formTitle writes out the grade and version ("Math Fluency, grade 3, version A").
-    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency, grade 3, version A', 'active_s=' + Math.round(file.activeMs / 1000), 'accuracy_of_attempted_pct=92']);
-    expect(file.lessonTitle).toBe('Math Fluency, grade 3, version A');
+    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency, version A', 'active_s=' + Math.round(file.activeMs / 1000), 'accuracy_of_attempted_pct=92']);
+    expect(file.lessonTitle).toBe('Math Fluency, version A');
     expect(rows[28]).toEqual(['#score', file.sessionId, 'measure=math_dcpm', 'score=' + Math.round(digits / (25 / 60)), 'score_unit=digits_correct_per_minute', 'digits_correct=' + digits, 'digits_possible=' + possible,
       'items_correct=23', 'items_attempted=25', 'time_limit_s=120', 'elapsed_s=25', 'hidden_s=0', 'completion=complete', 'prorated=1', 'scoring_version=3', 'form_version=2', 'attempt=1', 'flags=',
       // Re-pinned 2026-11-12: the last cell names the reading tools on during a scored item (none here); the row is outside the integrity value.
@@ -1055,7 +1056,7 @@ describe('the score: the app\'s proration rules', () => {
 describe('each measure plays to a saved file, on a real form', () => {
   it('Quantity Discrimination, kindergarten form A: 60 s, items correct', () => {
     // 2026-11-14 (T1/makers2): PC.formTitle writes out "Quantity Discrimination, kindergarten, version A".
-    expect([QD.lessonId, QD.form, QD.timeLimitS, QD.title, QD.check]).toEqual(['quantity-discrimination-gk', 'A', 60, 'Quantity Discrimination, kindergarten, version A',
+    expect([QD.lessonId, QD.form, QD.timeLimitS, QD.title, QD.check]).toEqual(['quantity-discrimination-gk', 'A', 60, 'Quantity Discrimination, version A',
       { measure: 'quantity_discrimination', scoreUnit: 'items_correct', scoringVersion: 1, formVersion: BANK.QUANTITY_DISCRIMINATION_PROBES.K.A.version, allowSkip: false, grade: 'K' }]);
     const t = open(FILES.qd.html);
     t.run(QD, 'Blue Heron');
@@ -1227,7 +1228,8 @@ describe('the same inputs make the same bytes', () => {
     expect(named.manifest.packet).toMatchObject({ id: 'math-computation-g3', form: 'A', mode: 'check' });
     expect(named.manifest.packet.version).not.toBe(FILES.mc.manifest.packet.version);
     // 2026-11-14 (T1/makers2): PC.formTitle writes out "Math Fluency, grade 3, version A".
-    expect(MC.title).toBe('Math Fluency, grade 3, version A');
+    // 2026-11-18 (owner): the title a student sees names no grade; the grade stays in meta.grade and the packet id.
+    expect(MC.title).toBe('Math Fluency, version A');
   });
 });
 
@@ -1273,7 +1275,9 @@ describe('source check: a check file cannot send anything either', () => {
     // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). (185.9 to 188.6 KB).
     // Re-pinned 2026-11-17 from 192000: the review fixes in every file (pauses, start screen, device, licence; about +7 KB).
     // Re-pinned 2026-11-17 (later that day) from 200000: the engine's practice end screen and recall timing travel in every file (about +1.7 KB; about 197 KB). The page says "About 200 KB" since later that day.
-    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(204000);
+    // Re-pinned 2026-11-17 (late) from 204000: "Space between sounds" in Reading tools, which every file carries (+0.3 KB;
+    // about 204.2 KB; hidden in a check, which never changes the pause).
+    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(206000);
     expect(sealedOf(html)).toMatchObject({ audio: {}, images: {}, submit: null });
   });
 
@@ -1378,6 +1382,14 @@ describe('practice files are as they were', () => {
   // Renewed 2026-11-14 (T1 + @i18n P2, C:/tmp/packets_build_1111/T1/pin_diff.json), deliberately, by the recipe above:
   // DEFAULT_LABELS adds done_activity ('{first} of {total}') and renderFinish uses it on per-activity .tally rows (2 lines
   // out and 2 in). The lesson is unchanged. The two lists are empty.
+  // Renewed 2026-11-17 (late), deliberately, by the recipe above. Not renewed since 11-14, the fixture had fallen behind
+  // three changes to the player, all reviewed line by line (47 lines out and 204 in; C:/tmp/packets_pass_1117 pin review):
+  // the release of 11-17 (6028e1d31d: Letters and the two reading fonts, the read-along focus, the "missed questions once
+  // more" round, About's licence and source, Continue says whose answers, accuracy_of_attempted_pct, 60-character titles,
+  // the phone layout, paused cells, soundFailed, the double-tap guard, one try with two choices, shorter opening audio);
+  // the Packets pass of 11-17 (4000c45e2b: the young student's end screen with "Save my work" and the grown-ups fold,
+  // recall laps, spoken directions once); and "Space between sounds" (tests/packets_sound_space_2026_11_17.test.js).
+  // The lesson is unchanged. The two lists are empty.
   const REMOVED = [];
   const ADDED = [];
   it('byte for byte, but for the listed lines', () => {

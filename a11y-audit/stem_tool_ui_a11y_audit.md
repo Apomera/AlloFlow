@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-11-09T23:09:38.607Z
+Generated: 2026-11-18T21:20:50.910Z
 
 ## Scope
 
@@ -64,14 +64,14 @@ Generated: 2026-11-09T23:09:38.607Z
 | `arithmeticStudio` Arithmetic Strategy Studio | math | standard | 27 | 3 | 0 | 0 | 0 | 0 |  |
 | `artStudio` Art & Design Studio | creative | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `assessmentLiteracy` Assessment Literacy Lab | Literacy | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
-| `astronomy` Night Sky & Astronomy | science | standard | 28 | 4 | 0 | 0 | 0 | 0 |  |
+| `astronomy` Night Sky & Astronomy | science | standard | 32 | 4 | 0 | 0 | 0 | 0 |  |
 | `atcTower` ATC Tower | applied | standard | 12 | 2 | 0 | 0 | 0 | 0 |  |
 | `autoRepair` Auto Repair Shop | life-skills | standard | 56 | 1 | 0 | 0 | 0 | 0 |  |
 | `bakingScience` Baking Lab | science | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `base10` Math Manipulatives | math | standard | 34 | 2 | 0 | 0 | 0 | 0 |  |
-| `beehive` Beehive Simulator | science | standard | 166 | 30 | 1 | 0 | 0 | 0 |  |
+| `beehive` Beehive Simulator | science | standard | 179 | 30 | 1 | 0 | 0 | 0 |  |
 | `behaviorLab` Behavior Lab | science | standard | 21 | 5 | 0 | 0 | 0 | 0 |  |
-| `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
+| `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 22 | 0 | 0 | 0 | 0 | 0 |  |
 | `birdLab` BirdLab — I-Spy Ornithology | science | standard | 149 | 1 | 0 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `brainAtlas` Brain Atlas Explorer | science | standard | 78 | 1 | 1 | 1 | 0 | 0 | control-name x1 |
 | `bridgeLab` Bridge Engineering Lab | science | standard | 37 | 13 | 0 | 0 | 0 | 0 |  |
@@ -82,7 +82,7 @@ Generated: 2026-11-09T23:09:38.607Z
 | `cellularLab` Cellular Automaton Lab | math | standard | 71 | 9 | 0 | 0 | 0 | 0 |  |
 | `cephalopodLab` Cephalopod Lab | science | standard | 52 | 1 | 0 | 0 | 0 | 0 |  |
 | `chemBalance` Chemistry Lab | science | standard | 15 | 1 | 0 | 0 | 0 | 0 |  |
-| `circuit` Circuit Builder | science | standard | 63 | 3 | 0 | 0 | 0 | 0 |  |
+| `circuit` Circuit Builder | science | standard | 72 | 3 | 0 | 0 | 0 | 0 |  |
 | `circuitShelf` Circuit Shelf | engineering | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
 | `cityLab` City Planning Lab | engineering | standard | 217 | 1 | 0 | 0 | 0 | 0 |  |
 | `climateExplorer` Climate Explorer | science | standard | 44 | 0 | 2 | 0 | 0 | 0 |  |
@@ -130,7 +130,7 @@ Generated: 2026-11-09T23:09:38.607Z
 | `kitchenLab` Kitchen Lab | applied | standard | 13 | 0 | 0 | 0 | 0 | 0 |  |
 | `lawNavigator` Education Law Navigator | applied | standard | 1 | 0 | 0 | 0 | 1 | 0 | placeholder-render x1 |
 | `learningLab` Learning Lab | life-skills | standard | 22 | 0 | 0 | 0 | 0 | 0 |  |
-| `lifeSkills` Life Skills Lab | Life Skills | standard | 66 | 3 | 0 | 0 | 0 | 0 |  |
+| `lifeSkills` Life Skills Lab | Life Skills | standard | 122 | 4 | 0 | 0 | 0 | 0 |  |
 | `llmLiteracy` AI Literacy Lab | technology | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `logicLab` Logic Lab | math | standard | 38 | 1 | 0 | 0 | 0 | 0 |  |
 | `lumen` Lumen | data | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
@@ -153,10 +153,10 @@ Generated: 2026-11-09T23:09:38.607Z
 | `organismId` Taxonomy Explorer | science | standard | 75 | 0 | 0 | 0 | 0 | 0 |  |
 | `paperTrail` PaperTrail: Official Documents | applied | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `parentingLab` Science of Parenting Lab | science | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
-| `particleLab3d` Particle Lab 3D | science | standard | 63 | 12 | 1 | 0 | 0 | 0 |  |
+| `particleLab3d` Particle Lab 3D | science | standard | 171 | 59 | 1 | 0 | 0 | 0 |  |
 | `perceptionLab` Perception Lab | science | standard | 38 | 11 | 0 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `petsLab` Science of Pets Lab | life-earth-science | standard | 34 | 1 | 0 | 0 | 0 | 0 |  |
-| `physics` Physics Simulator | science | standard | 40 | 17 | 1 | 0 | 0 | 0 |  |
+| `physics` Physics Simulator | science | standard | 53 | 7 | 1 | 0 | 0 | 0 |  |
 | `plateTectonics` Plate Tectonics | science | standard | 13 | 1 | 0 | 0 | 0 | 0 |  |
 | `playlab` PlayLab | science | standard | 32 | 5 | 1 | 0 | 0 | 0 |  |
 | `printLab` Print Lab | engineering | standard | 23 | 3 | 1 | 0 | 0 | 0 |  |
@@ -167,7 +167,7 @@ Generated: 2026-11-09T23:09:38.607Z
 | `raptorHunt` Raptor Hunt: Predator Physics + Biology | science | standard | 59 | 1 | 0 | 0 | 0 | 0 |  |
 | `ratioLab` Ratios, Rates & Proportions Lab | math | standard | 22 | 9 | 0 | 0 | 0 | 0 |  |
 | `renewablesLab` Renewables Lab | physics-chemistry | standard | 19 | 0 | 0 | 0 | 0 | 0 |  |
-| `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 76 | 8 | 0 | 0 | 0 | 0 |  |
+| `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 86 | 9 | 0 | 0 | 0 | 0 |  |
 | `rockCycle` Rock Cycle | science | standard | 23 | 1 | 1 | 0 | 0 | 0 |  |
 | `rocks` Rocks & Minerals Explorer | science | standard | 19 | 1 | 1 | 0 | 0 | 0 |  |
 | `scaleExplorer` Scale Explorer | science | standard | 260 | 24 | 2 | 0 | 0 | 0 |  |
@@ -190,12 +190,12 @@ Generated: 2026-11-09T23:09:38.607Z
 | `titrationLab` Titration Lab | science | standard | 9 | 0 | 0 | 0 | 0 | 0 |  |
 | `trajectoryComputing` Trajectory Computing Lab | coding | standard | 11 | 5 | 0 | 0 | 0 | 0 |  |
 | `treeLab` Tree Life Lab | Life Science | standard | 47 | 11 | 0 | 0 | 0 | 0 |  |
-| `typingPractice` Typing Practice | life-skills | standard | 45 | 2 | 0 | 0 | 0 | 0 |  |
+| `typingPractice` Typing Practice | life-skills | standard | 51 | 2 | 0 | 0 | 0 | 0 |  |
 | `unitConvert` Unit Converter | math | standard | 28 | 7 | 0 | 0 | 0 | 0 |  |
 | `universe` Universe Explorer | science | standard | 178 | 15 | 1 | 0 | 0 | 0 |  |
 | `volume` 3D Volume Explorer | math | standard | 32 | 8 | 2 | 0 | 0 | 0 |  |
 | `waterCycle` Water Cycle | science | standard | 62 | 15 | 1 | 0 | 0 | 0 |  |
-| `wave` Wave Simulator | science | standard | 33 | 8 | 1 | 0 | 0 | 0 |  |
+| `wave` Wave Simulator | science | standard | 57 | 8 | 1 | 0 | 0 | 0 |  |
 | `weatherSystems` Weather Systems & Forecasting | science | standard | 47 | 10 | 1 | 0 | 0 | 0 |  |
 | `weldLab` WeldLab — Welding & Metal Joining | engineering | standard | 40 | 2 | 0 | 0 | 0 | 0 |  |
 | `wheelAndFire` Wheel & Fire: Pottery Lab | creative | standard | 26 | 12 | 0 | 0 | 0 | 0 |  |

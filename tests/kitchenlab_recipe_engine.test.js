@@ -715,7 +715,8 @@ describe('Kitchen Lab Free Cook sandbox', () => {
     expect(E.RECIPE_CATALOG.some((r) => r.id === 'freeCook')).toBe(false);
     expect(source.includes("if (rec.sandbox) {\n              return { recipePhase: 'done', recipeReplaySetup: captureCookSetup(prior), recipeJudgement: judgement, recipeCurrentStep: rec.steps.length - 1, klNewAchievements: [] };"), 'sandbox completion keeps its ungraded readout').toBe(true);
     // no AI critique for the sandbox, and only where the teacher has AI on
-    expect(source).toContain("var aiOn = !isSandbox && !!ctx.callGemini && ctx.aiHintsEnabled !== false;");
+    // ...and only while the host's AI switch is on (ctx.aiAvailable).
+    expect(source).toContain("var aiOn = !isSandbox && !!ctx.callGemini && ctx.aiHintsEnabled !== false && ctx.aiAvailable !== false;");
   });
 
   it('describes a soft scramble without a grade', () => {

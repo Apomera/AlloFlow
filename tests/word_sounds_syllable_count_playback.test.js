@@ -22,6 +22,10 @@ const createCore = new Function(readFileSync('word_sounds_core.js', 'utf8') + '\
 const core = createCore();
 const helpersSource = source.slice(source.indexOf('    const syllableCountWordKey ='), source.indexOf('    // SyllableCountingView'));
 const helpers = new Function('WS_CORE', 'window', helpersSource + '\nreturn { syllableCountWordKey, syllableCountContextKey, syllableCountDeliveryReady };')(core, {});
+// 2026-11-18: handleAudio calls wsAllowsWordShardAudio (word audio shards, 2026-11-15): the real one, from the module.
+const shardRuleSource = source.slice(source.indexOf('    const wsAllowsWordShardAudio = '), source.indexOf('    const wsWordAudioBankWithShards = '));
+if (!/^    const wsAllowsWordShardAudio = /.test(shardRuleSource)) throw new Error('wsAllowsWordShardAudio boundary missing');
+const wsAllowsWordShardAudio = new Function(shardRuleSource + ';return wsAllowsWordShardAudio;')();
 const deviceVoiceSource = source.slice(source.indexOf('  function wsStudentDeviceVoiceOnly() {'), source.indexOf('  function wsAnnounce(message) {'));
 const deviceVoice = win => new Function('window', 'SpeechSynthesisUtterance', deviceVoiceSource + '\nreturn { wsStudentDeviceVoiceOnly, wsSpeakDeviceVoice };')(win, function (text) { this.text = text; });
 const asset = value => {
@@ -70,6 +74,8 @@ async function harness({ word = 'air', activity = 'syllable_counting', clip = as
     reportPreparedRuntimePlayback: vi.fn(), cancelMicInput: vi.fn(), callTTS: vi.fn(async () => 'blob:new-tts'),
     portableTtsSrcFor: vi.fn(() => null), loadAudioFromStorage: vi.fn(() => null), saveAudioToStorage: vi.fn(),
     speakWord: vi.fn(), warnLog: vi.fn(), debugLog: vi.fn(), ts: () => '',
+    // 2026-11-18: the shard rule above, and playBlending's pause between sounds (Space between sounds; Some = 500 ms).
+    wsAllowsWordShardAudio, soundGapRef: { current: 500 },
   };
   const usePlayback = new Function(...Object.keys(env), `return function usePlayback(props) {
     const { wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes } = props;

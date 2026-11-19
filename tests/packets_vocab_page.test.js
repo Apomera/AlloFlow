@@ -96,7 +96,8 @@ describe('the page as a file', () => {
 
   it('is linked from the front door, and the front door names its builder', () => {
     const front = parse('packets.html');
-    expect([...front.querySelectorAll('a[href="packets-vocab.html"]')].map((a) => a.textContent)).toEqual(['Make vocabulary practice']);
+    // 2026-11-18 (owner): the front door opens the maker set to practice or to a check.
+    expect([...front.querySelectorAll('a[href^="packets-vocab.html"]')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Make vocabulary practice', 'packets-vocab.html#practice-mode'], ['Make a vocabulary check', 'packets-vocab.html#check-mode']]);
     expect(front.querySelector('.verify').textContent).toContain('packet_vocab_builder.js');
   });
 });

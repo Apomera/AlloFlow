@@ -93,8 +93,9 @@ describe('the builder: untimed: true takes the clock away and says what it took'
     expect(QD.timeLimitS).toBe(60);
     expect(QD.check).not.toHaveProperty('untimed');
     // 2026-11-14 (T1/makers2): PC.formTitle writes out the grade and version ("Quantity Discrimination, kindergarten, version A").
-    expect(QD.title).toBe('Quantity Discrimination, kindergarten, version A');
-    expect(QD_UNTIMED).toMatchObject({ timeLimitS: null, lessonId: QD.lessonId, form: 'A', title: 'Quantity Discrimination, kindergarten, version A, untimed' });
+    // 2026-11-18 (owner): the title a student sees names no grade; the grade stays in meta.grade and the packet id.
+    expect(QD.title).toBe('Quantity Discrimination, version A');
+    expect(QD_UNTIMED).toMatchObject({ timeLimitS: null, lessonId: QD.lessonId, form: 'A', title: 'Quantity Discrimination, version A, untimed' });
     expect(QD_UNTIMED.check).toMatchObject({ untimed: true, usualTimeLimitS: 60, measure: 'quantity_discrimination', scoreUnit: 'items_correct' });
     // A different revision: a different place in the browser's storage, so a timed try is never resumed untimed.
     expect(QD_UNTIMED.revision).not.toBe(QD.revision);

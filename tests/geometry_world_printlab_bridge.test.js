@@ -142,7 +142,9 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
       expect(source).not.toContain('persist({ bytes:');
       expect(source).toContain("selfAsset('stem_tool_geometryworld_builder.js')");
       expect(source).toContain('From Geometry World');
-      expect(source).toContain('function returnToGeometryWorld()');
+      // 2026-11-17: it can carry what to inspect on return; the plain button passes its click event, which this ignores.
+      expect(source).toContain('function returnToGeometryWorld(inspection)');
+      expect(source).toContain("var inspect=inspection && ['cell','connections'].includes(inspection.kind) ? inspection : null;");
       expect(source).toContain('Geometry World scale presets');
       expect(source).toContain('geometryWorldPrinterFit');
       expect(source).toContain('geometryWorldScaleRecommendation');

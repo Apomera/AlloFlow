@@ -2419,6 +2419,10 @@ const d = labToolData.artStudio || {};
           const pixelHistoryRef = React.useRef({ undo: [], redo: [] });
           const tessHistoryRef = React.useRef({undo:[],redo:[]});
           const fractalHistoryRef = React.useRef({undo:[],redo:[]});
+          // Sculpt 3D: a lost WebGL context swaps the preview for a restart panel;
+          // the generation keys a fresh canvas, since a lost one stays dead.
+          const [sculptGlLost, setSculptGlLost] = React.useState(false);
+          const [sculptGlGen, setSculptGlGen] = React.useState(0);
           const fractalModel = artStudioFractalModel(d);
           const fractalCanvasDescription = formatArtStudioLearningText(__alloT('stem.artstudio.fractal_output_description','{description}. {detail}, {zoom} times zoom, horizontal pan {x}, vertical pan {y}, {color} color scheme.'), {
             description:fractalModel.fractalType==='mandelbrot'?__alloT('stem.artstudio.fractal_description_mandelbrot','Mandelbrot fractal: a dark cardioid and circular bulbs bordered by repeating colored tendrils'):fractalModel.fractalType==='julia'?__alloT('stem.artstudio.fractal_description_julia','Julia fractal: self-similar colored branches generated from the selected complex constant'):fractalModel.fractalType==='burningShip'?__alloT('stem.artstudio.fractal_description_ship','Burning Ship fractal: an asymmetric ship-like boundary with flame-shaped repeating detail'):__alloT('stem.artstudio.fractal_description_sierpinski','Sierpinski triangle: a self-similar triangle subdivided into three smaller triangles'),
@@ -11671,6 +11675,8 @@ const d = labToolData.artStudio || {};
               // ── preview lifecycle (callback ref; state cached ON the canvas) ──
               var sculptRef = function(cnv) {
                 if (!cnv) return;
+                // Its context was lost: never build a renderer on the dead canvas.
+                if (cnv._artStudioGlLost) return;
                 _cnvBox.current = cnv;
                 var THREE = window.THREE;
                 cnv.dataset.auto = sculptAuto ? '1' : '0';
@@ -11687,6 +11693,39 @@ const d = labToolData.artStudio || {};
                   var cam = new THREE.PerspectiveCamera(45, cnv.width / cnv.height, 0.1, 100);
                   var ren = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
                   ren.setSize(cnv.width, cnv.height, false);
+                  // A context lost after init (GPU reset, low-memory eviction) used to
+                  // leave the preview black with no way back.
+                  cnv.addEventListener('webglcontextlost', function(ev) {
+                    // A teardown that already removed the canvas can still fire this.
+                    if (!cnv.isConnected) return;
+                    ev.preventDefault();
+                    // Our own teardown force-loses the context; that is not a failure.
+                    if (cnv._artStudioTearingDown) return;
+                    cnv._artStudioGlLost = true;
+                    if (cnv._p3dAnim) cancelAnimationFrame(cnv._p3dAnim);
+                    teardownSculptView();
+                    setTimeout(function() { setSculptGlLost(true); }, 0);
+                  });
+                  // One teardown for leaving the tab and for a lost context.
+                  function teardownSculptView() {
+                    var st = cnv._p3d;
+                    if (!st) return;
+                    try {
+                      st.scene.traverse(function(o) {
+                        if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+                        var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+                        mats.forEach(function(mx) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); mx.dispose(); } catch (e) {} });
+                      });
+                      if (st.resizeObserver) st.resizeObserver.disconnect();
+                      if (st.visibilityObserver) st.visibilityObserver.disconnect();
+                      st.ren.dispose();
+                      // Flag first: forcing the loss fires webglcontextlost on this canvas.
+                      cnv._artStudioTearingDown = true;
+                      var gl = st.ren.getContext && st.ren.getContext();
+                      if (st.ren.forceContextLoss && !(gl && gl.isContextLost && gl.isContextLost())) st.ren.forceContextLoss();
+                    } catch (e) {}
+                    cnv._p3d = null;
+                  }
                   scene3.add(new THREE.AmbientLight(0xffffff, 0.6));
                   var d1 = new THREE.DirectionalLight(0xffffff, 0.7); d1.position.set(2, 3, 2); scene3.add(d1);
                   var grid = new THREE.GridHelper(3, 12, 0x475569, 0x1e293b); scene3.add(grid);
@@ -12028,17 +12067,7 @@ const d = labToolData.artStudio || {};
                     var st = cnv._p3d;
                     if (!st) return;
                     if (!cnv.isConnected) {   // tab switched away — full teardown, no zombie loop
-                      try {
-                        st.scene.traverse(function(o) {
-                          if (o.geometry && o.geometry.dispose) o.geometry.dispose();
-                          var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
-                          mats.forEach(function(mx) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); mx.dispose(); } catch (e) {} });
-                        });
-                        if (st.resizeObserver) st.resizeObserver.disconnect();
-                        if (st.visibilityObserver) st.visibilityObserver.disconnect();
-                        st.ren.dispose(); if (st.ren.forceContextLoss) st.ren.forceContextLoss();
-                      } catch (e) {}
-                      cnv._p3d = null;
+                      teardownSculptView();
                       return;
                     }
                     var delta = st.lastFrame === undefined ? 16 : Math.max(0, Math.min(40, time - st.lastFrame));
@@ -12347,7 +12376,14 @@ const d = labToolData.artStudio || {};
                     activeHelp: 'One-finger sculpture interaction is active. Choose Scroll page when you want to move past the 3D preview.',
                     scrollHelp: 'One-finger scrolling is active. A stylus and mouse can still orbit or transform forms; choose Interact with sculpture for finger input.'
                   }),
-                  React.createElement("canvas", { id: "sculptCanvas", role: "img", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_sculpture_preview', '3D sculpture preview. {value1}. Auto-rotation {value2}. Position snapping {value3}. Transform constraint {value4}.'), { value1: sculptSummary, value2: (sculptAuto ? __alloT('stem.artstudio.a11y_state_running', 'running') : __alloT('stem.artstudio.a11y_state_paused', 'paused')), value3: (sculptSnap ? formatArtStudioLearningText(__alloT('stem.artstudio.a11y_snap_units', '{value1} units'), { value1: sculptSnap }) : __alloT('stem.artstudio.a11y_state_off', 'off')), value4: sculptTransformAxis }),
+                  sculptGlLost ? React.createElement('div', { role: 'alert', 'data-sculpt-gl-lost': 'true', className: 'w-full rounded-xl border border-slate-400 bg-slate-900 text-white flex flex-col items-center justify-center text-center gap-3 p-6', style: { aspectRatio: '4 / 3' } },
+                    React.createElement('h3', { className: 'text-base font-bold' }, __alloT('stem.artstudio.webgl_lost_title', '3D view paused')),
+                    React.createElement('p', { className: 'text-sm max-w-md text-slate-100' }, __alloT('stem.artstudio.webgl_lost_body', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved.')),
+                    React.createElement('button', { type: 'button', ref: function(b) { if (b && !b._artStudioFocused) { b._artStudioFocused = true; try { b.focus(); } catch (e) {} } },
+                      className: 'min-h-[44px] px-4 rounded-lg bg-pink-700 hover:bg-pink-800 text-white text-sm font-bold focus-visible:ring-4 focus-visible:ring-pink-300',
+                      onClick: function() { setSculptGlLost(false); setSculptGlGen(function(n) { return n + 1; }); } },
+                      __alloT('stem.artstudio.webgl_lost_restart', 'Restart 3D view'))
+                  ) : React.createElement("canvas", { key: 'sculpt-gl-' + sculptGlGen, id: "sculptCanvas", role: "img", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_sculpture_preview', '3D sculpture preview. {value1}. Auto-rotation {value2}. Position snapping {value3}. Transform constraint {value4}.'), { value1: sculptSummary, value2: (sculptAuto ? __alloT('stem.artstudio.a11y_state_running', 'running') : __alloT('stem.artstudio.a11y_state_paused', 'paused')), value3: (sculptSnap ? formatArtStudioLearningText(__alloT('stem.artstudio.a11y_snap_units', '{value1} units'), { value1: sculptSnap }) : __alloT('stem.artstudio.a11y_state_off', 'off')), value4: sculptTransformAxis }),
                     ref: sculptRef,
                     width: 960,
                     height: 720,

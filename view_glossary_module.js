@@ -1647,7 +1647,7 @@ function syncGlossaryRowTabStop(row, memory) {
   });
   return items;
 }
-// Shared reading settings (font, size, spacing) for the word list and activities.
+// Shared reading settings (font, size, spacing) for full-screen flashcards, which cover the header.
 // Rendered only once the host publishes them; the panel opens inside the opener's dialog.
 function GlossaryReadingSettingsButton(props) {
   var handleRef = React.useRef(null);
@@ -4575,12 +4575,7 @@ function GlossaryView(props) {
       size: 16,
       "aria-hidden": "true",
       className: 'motion-safe:transition-transform ' + (isGlossaryExportsOpen ? 'rotate-180' : '')
-    })), /*#__PURE__*/React.createElement(GlossaryReadingSettingsButton, {
-      showLabel: true,
-      t: t,
-      label: glossaryText('reading_settings.title', 'Reading settings'),
-      className: secondaryButton
-    })), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+    }))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
       id: "glossary-export-tools",
       "data-glossary-export-tools": true,
       role: "group",
@@ -5651,11 +5646,7 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement(Printer, {
     size: 14,
     "aria-hidden": "true"
-  }), " ", t('glossary.print_answer_key') || 'Answer key'), /*#__PURE__*/React.createElement(GlossaryReadingSettingsButton, {
-    t: t,
-    label: glossaryText('reading_settings.title', 'Reading settings'),
-    className: "no-print text-base bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:ring-teal-600"
-  }), /*#__PURE__*/React.createElement("button", {
+  }), " ", t('glossary.print_answer_key') || 'Answer key'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSetGameModeToNull,
     className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors",
@@ -6284,7 +6275,7 @@ function GlossaryView(props) {
     })), canEditGlossary && typeof props.handleMoveGlossaryItem === 'function' && [renderGlossaryMoveButton(item, idx, -1), renderGlossaryMoveButton(item, idx, 1)]))), /*#__PURE__*/React.createElement("td", {
       role: "cell",
       "data-glossary-definition": true,
-      className: "p-4 text-slate-600 align-top text-start"
+      className: "p-4 text-slate-600 align-middle text-start"
     }, /*#__PURE__*/React.createElement("span", {
       "data-glossary-mobile-label": true,
       "aria-hidden": "true"
@@ -6456,7 +6447,7 @@ function GlossaryView(props) {
         "data-glossary-translation": true,
         key: lang,
         "aria-busy": retryState && retryState.busy ? 'true' : undefined,
-        className: "p-4 text-slate-600 border-l border-slate-50 align-top text-start"
+        className: "p-4 text-slate-600 border-l border-slate-50 align-middle text-start"
       }, /*#__PURE__*/React.createElement("span", {
         "data-glossary-mobile-label": true,
         "aria-hidden": "true"

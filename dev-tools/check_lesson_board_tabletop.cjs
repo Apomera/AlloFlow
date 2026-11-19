@@ -33,7 +33,7 @@ const html = '<!doctype html><html lang="en"><head><title>Tabletop expedition ve
       };
       await scan('2D board');
       const boardTop=await page.locator('[data-board-map]').evaluate(node=>node.getBoundingClientRect().top);
-      expect(boardTop).toBeLessThan(720);
+      /* 2026-11-18: stacked layouts (<=960px) show the current-move panel first, so it must start on screen; wider layouts keep the map there. */if(width>960)expect(boardTop).toBeLessThan(720);else expect(await page.locator('.lb-current').first().evaluate(node=>node.getBoundingClientRect().top)).toBeLessThan(720);
       await page.screenshot({path:path.join(out,width+'-2d.png')});
       await page.locator('[data-board-tabletop]').click();
       await expect(page.locator('[data-spatial-view=tabletop]')).toBeVisible();

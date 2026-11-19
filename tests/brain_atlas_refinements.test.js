@@ -182,7 +182,10 @@ describe('brainAtlas refinement contracts', () => {
     expect(selected).toContain('data-brainatlas-has-selection="true"');
     expect(selected).toContain('data-brainatlas-detail-focus="true"');
     expect(selected).toMatch(/Selected region/);
-    expect(selected).toMatch(/stem\.synth_ui\.lateral.*Atlas/);
+    // 7d9bda5674 gave the one-arg view-name t() calls their English fallback,
+    // so the context line reads "Lateral · Atlas" instead of the raw key.
+    expect(selected).toContain('Lateral · Atlas');
+    expect(selected).not.toContain('stem.synth_ui.lateral');
     expect(selected).toMatch(/Focus:/);
     expect(selected).toMatch(/Executive function/);
   });
@@ -1130,8 +1133,11 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).toContain('transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease;');
     expect(src).not.toContain('transition:transform .14s ease,border-color .14s ease,background .14s ease;');
     expect(src).toContain('.theme-dark .brainatlas-tool-shell .brainatlas-group-button{background:#334155!important;color:#f8fafc!important;border-color:#64748b!important;}');
-    expect(src).toContain('.theme-dark .brainatlas-tool-shell .brainatlas-group-button[aria-pressed="true"]{background:#1f2937!important;}');
-    expect(src).toContain('.theme-dark .brainatlas-tool-shell .brainatlas-group-button span{color:#cbd5e1!important;}');
+    // 459f98bdf7 moved the selected state onto the shared --ba-selected-* tokens
+    // (dark: #e5ddff on #302945) and lets the summary inherit the button ink.
+    expect(src).toContain('.theme-dark .brainatlas-tool-shell .brainatlas-group-button[aria-pressed="true"]{background:var(--ba-selected-bg,#302945)!important;color:var(--ba-selected-ink,#e5ddff)!important;border-color:var(--ba-purple-ink)!important;}');
+    expect(src).toContain('.theme-dark .brainatlas-tool-shell{--ba-selected-bg:#302945;--ba-selected-ink:#e5ddff;');
+    expect(src).toContain('.theme-dark .brainatlas-tool-shell .brainatlas-group-button span{color:inherit!important;}');
     expect(src).toContain('.theme-contrast .brainatlas-tool-shell .brainatlas-group-button:not([aria-pressed="true"]) span{color:#fff!important;}');
     expect(src).toContain('.theme-contrast .brainatlas-tool-shell .brainatlas-group-button[aria-pressed="true"] span{color:#000!important;}');
   });

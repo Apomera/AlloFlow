@@ -12,16 +12,33 @@ for (const file of files) {
       host.innerHTML = renderTool('archStudio', { archStudio: { blocks: [], editorView: 'grid', ...state } }, overrides);
       return host;
     };
+    // b3cdbac0a1 hides the AI Architect unless the host hands over callGemini
+    // (student AI-off), so the full set needs AI on and the default render has one less.
+    const AI_ON = { callGemini: () => Promise.resolve('') };
     it('keeps every existing action available once in the compact toolbar', () => {
-      const host = dom();
+      const host = dom({}, AI_ON);
       expect(api.catalog()).toHaveLength(29);
       expect(new Set(api.catalog().map(item => item.id)).size).toBe(29);
       expect(host.querySelectorAll('.arch-studio-feature-strip button')).toHaveLength(30);
+      expect(host.querySelectorAll('.arch-studio-feature-strip [data-arch-tool-id="ai"]')).toHaveLength(1);
       expect(host.querySelector('#arch-tool-browser-toggle').getAttribute('aria-expanded')).toBe('false');
       expect(host.querySelector('#arch-tool-browser')).toBeNull();
+      const aiOff = dom();
+      expect(aiOff.querySelectorAll('.arch-studio-feature-strip button')).toHaveLength(29);
+      expect(aiOff.querySelector('[data-arch-tool-id="ai"]')).toBeNull();
+    });
+    it('lists and counts only the actions it renders when AI is off', () => {
+      const host = dom({ toolBrowserOpen: true });
+      expect(host.querySelectorAll('[data-arch-tool]')).toHaveLength(28);
+      expect(host.querySelector('[data-arch-tool="ai"]')).toBeNull();
+      expect(host.querySelector('[role=status]').textContent).toBe('28 tools');
+      const search = dom({ toolBrowserOpen: true, toolBrowserQuery: 'assistant' });
+      expect(search.querySelector('[role=status]').textContent).toBe('0 tools');
+      expect(search.querySelector('.arch-tool-empty')).not.toBeNull();
+      expect(search.querySelectorAll('.arch-tool-group')).toHaveLength(0);
     });
     it('renders all categories with descriptive, uniquely identified action cards', () => {
-      const host = dom({ toolBrowserOpen: true });
+      const host = dom({ toolBrowserOpen: true }, AI_ON);
       expect(host.querySelectorAll('.arch-tool-group')).toHaveLength(5);
       expect(host.querySelector('#arch-tool-category').getAttribute('aria-label')).toBe('Tool category');
       expect(host.querySelectorAll('[data-arch-tool]')).toHaveLength(29);
@@ -61,7 +78,7 @@ for (const file of files) {
       expect(api.filter(entries, { bad: true }, 'missing')).toHaveLength(29);
       entries[0].name = 'Changed';
       expect(api.catalog()[0].name).toBe('Editor style');
-      const host = dom({ toolBrowserOpen: true, toolBrowserQuery: [], toolBrowserGroup: 'missing' });
+      const host = dom({ toolBrowserOpen: true, toolBrowserQuery: [], toolBrowserGroup: 'missing' }, AI_ON);
       expect(host.querySelector('#arch-tool-search').value).toBe('');
       expect(host.querySelector('#arch-tool-category').value).toBe('all');
       expect(host.querySelectorAll('[data-arch-tool]')).toHaveLength(29);

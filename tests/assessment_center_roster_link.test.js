@@ -249,7 +249,8 @@ describe('module handleLinkImportedStudent', () => {
 
 describe('year boundary', () => {
   it('the archive carries every store plus the durable roster projection', () => {
-    const helpers = extractDecl(ac, 'function _acTrimStudentData(data)') + extractDecl(ac, 'function _acPersistableStudent(s)');
+    // 2026-11-17: _acPersistableStudent keeps screening records through _acKeptScreening (2026-11-13).
+    const helpers = extractDecl(ac, 'function _acTrimStudentData(data)') + extractDecl(ac, 'function _acKeptScreening(list)') + extractDecl(ac, 'function _acPersistableStudent(s)');
     // `() => ({...})` — the brace-balanced slice ends at the object's close,
     // so restore the arrow's wrapping paren before the terminator.
     const at = ac.indexOf('const buildYearArchive = () => (');
@@ -272,7 +273,7 @@ describe('year boundary', () => {
   });
 
   it('linked durable rows omit the original name and filename', () => {
-    const helpers = extractDecl(ac, 'function _acTrimStudentData(data)') + extractDecl(ac, 'function _acPersistableStudent(s)');
+    const helpers = extractDecl(ac, 'function _acTrimStudentData(data)') + extractDecl(ac, 'function _acKeptScreening(list)') + extractDecl(ac, 'function _acPersistableStudent(s)');
     // eslint-disable-next-line no-new-func
     const persist = new Function(helpers + ' return _acPersistableStudent;')();
     const linked = persist({

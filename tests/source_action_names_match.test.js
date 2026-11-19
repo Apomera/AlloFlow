@@ -19,7 +19,8 @@ describe('the five source actions share one name everywhere', () => {
     expect(panel).toContain("t('input.reading_catalog') || 'Reading catalog'");
     expect(panel).toContain("headerText('input.actions.write_with_ai', 'Write with AI')");
     expect(panel).toContain('panelText(\'sidebar.source_paste_or_type\', \'Paste or type your own text\')');
-    expect(panel).toContain("panelText('sidebar.source_ways_in_hint_named', 'Or start from Upload, Find online, Reading catalog or Write with AI above.");
+    // 2026-11-17: the hint under Paste only repeated the five buttons right above it, so it was removed.
+    expect(panel).not.toContain("panelText('sidebar.source_ways_in_hint_named'");
     expect(panel).not.toContain("t('common.link')");
     expect(panel).not.toContain("t('input.actions.books_short') || 'Books'");
   });

@@ -77,7 +77,7 @@ describe('SEL Hub control accessibility', () => {
     const text = source();
     expect(text).toContain("var SEL_TOOL_GUIDANCE = {");
     expect(text.match(/var SEL_TOOL_GUIDANCE = \{/g)).toHaveLength(1);
-    expect(text.indexOf('var SEL_TOOL_GUIDANCE = {')).toBeLessThan(text.indexOf('if (!window.SelHub) {'));
+    expect(text.indexOf('var SEL_TOOL_GUIDANCE = {')).toBeLessThan(text.indexOf('if (!window.SelHub || __alloSelHubShim) {'));
     expect(text).not.toContain('Object.assign(SEL_TOOL_GUIDANCE');
     expect(text).toContain("conflict: { mode: 'Practice repair'");
     expect(text).toContain("crisiscompanion: { mode: 'Urgent support'");

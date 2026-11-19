@@ -485,6 +485,7 @@ window.StemLab = window.StemLab || {
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -536,6 +537,27 @@ window.StemLab = window.StemLab || {
         var spriteColor = _gs.spriteColor || '#e74c3c';
         var spriteTool = _gs.spriteTool || 'draw';
         var spriteMirror = _gs.spriteMirror || false;
+
+        // Keyboard route for the two paint grids (WCAG 2.1.1): one cell is in the tab
+        // order, arrow keys move it, Enter/Space applies the current tool there.
+        var tileCur = (_gs.tileCur >= 0 && _gs.tileCur < gridW * gridH) ? _gs.tileCur : 0;
+        var spriteCur = (_gs.spriteCur >= 0 && _gs.spriteCur < 256) ? _gs.spriteCur : 0;
+        var gsGridKey = function(e, idx, cols, rows, curField, paint) {
+          var k = e.key, x = idx % cols, y = Math.floor(idx / cols), n = idx;
+          if (k === 'Enter' || k === ' ') { e.preventDefault(); paint(); return; }
+          if (k === 'ArrowRight') n = y * cols + Math.min(cols - 1, x + 1);
+          else if (k === 'ArrowLeft') n = y * cols + Math.max(0, x - 1);
+          else if (k === 'ArrowDown') n = Math.min(rows - 1, y + 1) * cols + x;
+          else if (k === 'ArrowUp') n = Math.max(0, y - 1) * cols + x;
+          else if (k === 'Home') n = y * cols;
+          else if (k === 'End') n = y * cols + cols - 1;
+          else return;
+          e.preventDefault();
+          if (n === idx) return;
+          var patch = {}; patch[curField] = n; upd(patch);
+          var next = e.currentTarget.parentNode && e.currentTarget.parentNode.children[n];
+          if (next && next.focus) next.focus();
+        };
 
         // Events
         var events = _gs.events || {};
@@ -902,7 +924,7 @@ window.StemLab = window.StemLab || {
                 },
                 disabled: aiLoading,
                 'aria-busy': aiLoading,
-                'aria-label': aiLoading ? 'Generating game asset' : 'AI generate game asset',
+                'aria-label': aiLoading ? __alloT('stem.gamestudio.a11y_generating_game_asset', 'Generating game asset') : __alloT('stem.gamestudio.a11y_ai_generate_game_asset', 'AI generate game asset'),
                 className: 'px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' +
                   (aiLoading ? 'bg-gray-400' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md')
               }, aiLoading ? '\u23F3 Generating...' : '\u2728 AI Generate')
@@ -955,6 +977,8 @@ window.StemLab = window.StemLab || {
               style: { maxHeight: '420px' }
             },
               h('div', {
+                role: 'group',
+                'aria-label': __alloT('stem.gamestudio.tile_grid_label', 'Level map. Arrow keys move between tiles; Enter or Space uses the current tool.'),
                 style: {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(' + gridW + ', 1fr)',
@@ -969,18 +993,22 @@ window.StemLab = window.StemLab || {
                   var tInfo = TILE_MAP[tId] || TILE_MAP.empty;
                   var danger = showDanger ? dangerAt(tiles, x, y) : 0;
                   var dangerOverlay = danger > 0 ? 'rgba(239,68,68,' + Math.min(0.6, danger * 0.15) + ')' : null;
-                  return h('div', { 
-                    key: k,
-                    onClick: function() {
-                      if (brushTool === 'eyedropper') { upd({ selectedTile: tId, brushTool: 'brush' }); }
-                      else if (brushTool === 'eraser') { var nt = Object.assign({}, tiles); delete nt[k]; upd({ tiles: nt }); }
-                      else if (brushTool === 'fill') {
-                        var nt2 = Object.assign({}, tiles);
-                        var target = nt2[k] || 'empty';
-                        if (target !== selectedTile) { floodFill(nt2, x, y, target, selectedTile, gridW, gridH); upd({ tiles: nt2 }); }
-                      }
-                      else { var nt3 = Object.assign({}, tiles); nt3[k] = selectedTile; upd({ tiles: nt3 }); }
-                    },
+                  var paintTile = function() {
+                    if (brushTool === 'eyedropper') { upd({ selectedTile: tId, brushTool: 'brush' }); }
+                    else if (brushTool === 'eraser') { var nt = Object.assign({}, tiles); delete nt[k]; upd({ tiles: nt }); }
+                    else if (brushTool === 'fill') {
+                      var nt2 = Object.assign({}, tiles);
+                      var target = nt2[k] || 'empty';
+                      if (target !== selectedTile) { floodFill(nt2, x, y, target, selectedTile, gridW, gridH); upd({ tiles: nt2 }); }
+                    }
+                    else { var nt3 = Object.assign({}, tiles); nt3[k] = selectedTile; upd({ tiles: nt3 }); }
+                  };
+                  return h('div', {
+                    key: k, role: 'button', tabIndex: i === tileCur ? 0 : -1,
+                    'aria-label': __alloT('stem.gamestudio.tile_cell', 'Column {x}, row {y}: {tile}').replace('{x}', x + 1).replace('{y}', y + 1).replace('{tile}', tInfo.label),
+                    onKeyDown: function(e) { gsGridKey(e, i, gridW, gridH, 'tileCur', paintTile); },
+                    onFocus: function() { if (i !== tileCur) upd({ tileCur: i }); },
+                    onClick: paintTile,
                     onMouseEnter: function(e) {
                       if (e.buttons === 1 && (brushTool === 'brush' || brushTool === 'eraser')) {
                         var nt = Object.assign({}, tiles);
@@ -1041,7 +1069,9 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-4 flex-wrap' },
               // 16x16 pixel canvas
               h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
-                h('div', { 
+                h('div', {
+                  role: 'group',
+                  'aria-label': __alloT('stem.gamestudio.sprite_grid_label', 'Sprite pixels, 16 by 16. Arrow keys move between pixels; Enter or Space uses the current tool.'),
                   style: {
                     display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)',
                     gap: '1px', background: '#e2e8f0', width: '320px', height: '320px',
@@ -1053,15 +1083,19 @@ window.StemLab = window.StemLab || {
                     var sk = sx + ',' + sy;
                     var px = spritePixels[sk] || null;
                     var mkSk = (15 - sx) + ',' + sy;
-                    return h('div', { 
-                      key: sk,
-                      onClick: function() {
-                        var np = Object.assign({}, spritePixels);
-                        if (spriteTool === 'erase') { delete np[sk]; if (spriteMirror) delete np[mkSk]; }
-                        else if (spriteTool === 'fill') { for (var fi = 0; fi < 256; fi++) np[(fi % 16) + ',' + Math.floor(fi / 16)] = spriteColor; }
-                        else { np[sk] = spriteColor; if (spriteMirror) np[mkSk] = spriteColor; }
-                        upd({ spritePixels: np });
-                      },
+                    var paintPixel = function() {
+                      var np = Object.assign({}, spritePixels);
+                      if (spriteTool === 'erase') { delete np[sk]; if (spriteMirror) delete np[mkSk]; }
+                      else if (spriteTool === 'fill') { for (var fi = 0; fi < 256; fi++) np[(fi % 16) + ',' + Math.floor(fi / 16)] = spriteColor; }
+                      else { np[sk] = spriteColor; if (spriteMirror) np[mkSk] = spriteColor; }
+                      upd({ spritePixels: np });
+                    };
+                    return h('div', {
+                      key: sk, role: 'button', tabIndex: i === spriteCur ? 0 : -1,
+                      'aria-label': __alloT('stem.gamestudio.pixel_cell', 'Pixel column {x}, row {y}: {color}').replace('{x}', sx + 1).replace('{y}', sy + 1).replace('{color}', px || __alloT('stem.gamestudio.pixel_empty', 'empty')),
+                      onKeyDown: function(e) { gsGridKey(e, i, 16, 16, 'spriteCur', paintPixel); },
+                      onFocus: function() { if (i !== spriteCur) upd({ spriteCur: i }); },
+                      onClick: paintPixel,
                       onMouseEnter: function(e) {
                         if (e.buttons === 1) {
                           var np = Object.assign({}, spritePixels);
@@ -1251,7 +1285,7 @@ window.StemLab = window.StemLab || {
                         // separator in the "When [event] -> [action]" rule row,
                         // not a caption. Borrowing it would have named the
                         // control "arrow".
-                        'aria-label': 'Action',
+                        'aria-label': __alloT('stem.gamestudio.a11y_action', 'Action'),
                         value: rule.action || 'move',
                         onChange: function(e) {
                           var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
@@ -1905,7 +1939,7 @@ window.StemLab = window.StemLab || {
                       h('label', { htmlFor: 'dt-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-rose-700' }, iq[s.k])),
                       h('input', { id: 'dt-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                        className: 'w-full', 'aria-valuetext': (iq[s.k] + ({ enemies: ' enemies', patrolSpeed: '% speed', hazards: '% hazards', coins: '% coin abundance', health: ' HP' }[s.k] || '')), 'aria-label': s.l }));
+                        className: 'w-full', 'aria-valuetext': __alloAriaFill({ enemies: __alloT('stem.gamestudio.a11y_value_enemies', '{value} enemies'), patrolSpeed: __alloT('stem.gamestudio.a11y_value_percent_speed', '{value}% speed'), hazards: __alloT('stem.gamestudio.a11y_value_percent_hazards', '{value}% hazards'), coins: __alloT('stem.gamestudio.a11y_value_percent_coin_abundance', '{value}% coin abundance'), health: __alloT('stem.gamestudio.a11y_value_hp', '{value} HP') }[s.k] || '{value}', { value: iq[s.k] }), 'aria-label': s.l }));
                   })
                 ),
                 // Log + reset

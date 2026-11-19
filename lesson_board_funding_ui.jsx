@@ -14,12 +14,19 @@ export function ConstructionFundingPicker({board,run,project,value,onChange,disa
   return <fieldset data-construction-funding disabled={disabled} style={{margin:'12px 0',minWidth:0}}>
     <legend>{tr(t,'funding_title','Fund this construction')}</legend>
     <p className="lb-muted">{student?tr(t,'funding_teacher_choice','Propose the project. Your teacher chooses its payment before building.'):tr(t,'funding_help','Build sooner by trading surplus supplies, or preserve them for a later project. Each exchange costs one extra token overall.')}</p>
-    <div style={{display:'grid',gap:8}}>{options.map(option=><label key={option.id} data-funding-option={option.id} style={{display:'flex',gap:9,alignItems:'flex-start',border:'1px solid var(--line)',borderRadius:10,padding:10,minHeight:44,background:option.id===value?'var(--soft)':'var(--panel)',overflowWrap:'anywhere'}}>
+    {(()=>{
+    // Relaxed play: when the plain price is payable and chosen, the exchange payments fold
+    // under "Other ways to pay". Strategic play, or a chosen exchange, keeps them all in view.
+    const standard=options.find(option=>option.id==='standard'),others=options.filter(option=>option!==standard);
+    const fold=engine.challengeOf(board)==='relaxed'&&!!standard?.legal&&others.length>0&&(!value||value==='standard');
+    const row=option=><label key={option.id} data-funding-option={option.id} style={{display:'flex',gap:9,alignItems:'flex-start',border:'1px solid var(--line)',borderRadius:10,padding:10,minHeight:44,background:option.id===value?'var(--soft)':'var(--panel)',overflowWrap:'anywhere'}}>
       {!student&&<input type="radio" name={group} value={option.id} checked={value===option.id} disabled={!option.legal} style={{width:'auto',flexShrink:0,marginTop:4}} onChange={()=>onChange(option.id)}/>}
       <span><strong>{fundingLabel(board,option.id,t)}</strong><br/><span>{option.cost.map((amount,index)=>amount+' '+board.resources[index]).join(' · ')}</span>
         {!option.legal&&<small style={{display:'block'}}>{option.reason==='completion-reserve'?tr(t,'funding_reserve','Keep these supplies: this exchange would leave too little to finish the mission.'):tr(t,'funding_shortfall','More supplies needed for this payment.')}</small>}
       </span>
-    </label>)}</div>
+    </label>;
+    return fold?<><div style={{display:'grid',gap:8}}>{row(standard)}</div><details data-funding-more style={{marginTop:8}}><summary>{tr(t,'funding_more','Other ways to pay')}</summary><div style={{display:'grid',gap:8,marginTop:8}}>{others.map(row)}</div></details></>:<div style={{display:'grid',gap:8}}>{options.map(row)}</div>;
+    })()}
     {!student&&<p className="lb-muted">{tr(t,'funding_not_spent','Supplies are spent only when you build. Construction refunds apply afterward.')}</p>}
   </fieldset>;
 }

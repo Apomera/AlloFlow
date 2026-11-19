@@ -1208,6 +1208,7 @@ window.StemLab = window.StemLab || {
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       // These sit on the HOST surface, not on one of this tool own panels -
       // white in light and dark, pure BLACK in the contrast theme, where the
       // grid heading measured 1.44:1.
@@ -2581,7 +2582,7 @@ window.StemLab = window.StemLab || {
                         return h('td', {
                           key: c,
                           className: 'w-16 h-16 text-center border border-slate-400 relative transition-colors duration-300 ' + pc.bg,
-                          'aria-label': parent1Gametes[r] + ' with ' + parent2Gametes[c] + ': genotype ' + g + ', ' + cellLabel
+                          'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_with_genotype', '{value1} with {value2}: genotype {g}, {cellLabel}'), { value1: parent1Gametes[r], value2: parent2Gametes[c], g: g, cellLabel: cellLabel })
                         },
                           h('span', { className: 'text-lg font-bold ' + pc.text }, g),
                           h('span', { className: 'block text-[0.625rem] leading-tight mt-1 ' + pc.sub }, cellLabel),
@@ -2765,7 +2766,7 @@ window.StemLab = window.StemLab || {
                         [0, 1].map(function(i) {
                           return h('select', {
                             key: 'p1g1_' + i,
-                            'aria-label': 'Parent 1 Gene 1 allele ' + (i + 1),
+                            'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_parent_1_gene_1_allele', 'Parent 1 Gene 1 allele {value1}'), { value1: i + 1 }),
                             value: diParent1Gene1[i],
                             onChange: function(e) {
                               var na = diParent1Gene1.slice();
@@ -2784,7 +2785,7 @@ window.StemLab = window.StemLab || {
                         [0, 1].map(function(i) {
                           return h('select', {
                             key: 'p1g2_' + i,
-                            'aria-label': 'Parent 1 Gene 2 allele ' + (i + 1),
+                            'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_parent_1_gene_2_allele', 'Parent 1 Gene 2 allele {value1}'), { value1: i + 1 }),
                             value: diParent1Gene2[i],
                             onChange: function(e) {
                               var na = diParent1Gene2.slice();
@@ -2807,7 +2808,7 @@ window.StemLab = window.StemLab || {
                         [0, 1].map(function(i) {
                           return h('select', {
                             key: 'p2g1_' + i,
-                            'aria-label': 'Parent 2 Gene 1 allele ' + (i + 1),
+                            'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_parent_2_gene_1_allele', 'Parent 2 Gene 1 allele {value1}'), { value1: i + 1 }),
                             value: diParent2Gene1[i],
                             onChange: function(e) {
                               var na = diParent2Gene1.slice();
@@ -2826,7 +2827,7 @@ window.StemLab = window.StemLab || {
                         [0, 1].map(function(i) {
                           return h('select', {
                             key: 'p2g2_' + i,
-                            'aria-label': 'Parent 2 Gene 2 allele ' + (i + 1),
+                            'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_parent_2_gene_2_allele', 'Parent 2 Gene 2 allele {value1}'), { value1: i + 1 }),
                             value: diParent2Gene2[i],
                             onChange: function(e) {
                               var na = diParent2Gene2.slice();
@@ -2864,7 +2865,7 @@ window.StemLab = window.StemLab || {
                             return h('td', {
                               key: ci,
                               className: 'w-14 h-14 text-center border border-slate-400 ' + dpc.bg,
-                              'aria-label': diGametes1[ri] + ' with ' + diGametes2[ci] + ': genotype ' + geno + ', phenotype ' + diPhenoLabel(dp)
+                              'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_with_genotype_phenotype', '{value1} with {value2}: genotype {geno}, phenotype {value3}'), { value1: diGametes1[ri], value2: diGametes2[ci], geno: geno, value3: diPhenoLabel(dp) })
                             },
                               h('span', { className: 'text-[0.6875rem] font-bold block ' + dpc.text }, geno.substring(0, 2)),
                               h('span', { className: 'text-[0.6875rem] font-bold block ' + dpc.text }, geno.substring(2)),
@@ -3248,7 +3249,7 @@ window.StemLab = window.StemLab || {
                 popRunning ? 'Simulation running. Select Pause to inspect recorded values.' : popHistory && popHistory.length ? (popHistory.length > popGens ? 'Simulation complete. Recorded generation data is available below.' : 'Simulation paused. Select Resume to continue the recorded run.') : 'Simulation ready. Choose settings, then select Simulate.'),
 
               // HW Equilibrium display
-              h('div', { className: 'grid grid-cols-3 gap-2 mb-3', role: 'group', 'aria-label': 'Current modeled genotype frequencies at p ' + displayedPopFreqA.toFixed(2) },
+              h('div', { className: 'grid grid-cols-3 gap-2 mb-3', role: 'group', 'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_current_modeled_genotype_frequencies_at_p', 'Current modeled genotype frequencies at p {displayedPopFreqA}'), { displayedPopFreqA: displayedPopFreqA.toFixed(2) }) },
                 h('div', { className: 'bg-emerald-50 rounded-xl p-2 text-center border border-emerald-200' },
                   h('p', { className: 'text-[0.6875rem] font-bold text-emerald-700' }, 'AA (p\u00B2)'),
                   h('p', { className: 'text-lg font-bold text-emerald-700' }, (displayedPopFreqA * displayedPopFreqA * 100).toFixed(1) + '%'),
@@ -3269,7 +3270,7 @@ window.StemLab = window.StemLab || {
               // Population visualization (dot field)
               h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, '\uD83D\uDC65 Population Sample (n=' + Math.min(popSize, 100) + ')'),
-                h('svg', { viewBox: '0 0 300 60', className: 'w-full', role: 'img', 'aria-label': 'Illustrative sample of ' + Math.min(popSize, 100) + ' individuals at allele frequency p ' + displayedPopFreqA.toFixed(2) },
+                h('svg', { viewBox: '0 0 300 60', className: 'w-full', role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_illustrative_sample_of_individuals_at_allele_frequency_p', 'Illustrative sample of {popSize} individuals at allele frequency p {displayedPopFreqA}'), { popSize: Math.min(popSize, 100), displayedPopFreqA: displayedPopFreqA.toFixed(2) }) },
                   (function() {
                     var dots = [];
                     var p = popHistory && popHistory.length > 0 ? popHistory[popHistory.length - 1] : popFreqA;
@@ -3296,7 +3297,7 @@ window.StemLab = window.StemLab || {
               // Allele frequency graph
               popHistory && popHistory.length > 1 && h('div', { className: 'bg-white rounded-xl border p-3' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, '\uD83D\uDCC8 Allele Frequency Over Generations'),
-                h('svg', { viewBox: '0 0 340 160', className: 'w-full', role: 'img', 'aria-label': 'Allele frequencies p and q across ' + (popHistory.length - 1) + ' simulated generations; current p is ' + displayedPopFreqA.toFixed(2) + ' and q is ' + (1 - displayedPopFreqA).toFixed(2) },
+                h('svg', { viewBox: '0 0 340 160', className: 'w-full', role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_allele_frequencies_p_and_q_across_simulated_generations_current', 'Allele frequencies p and q across {value1} simulated generations; current p is {displayedPopFreqA} and q is {value2}'), { value1: popHistory.length - 1, displayedPopFreqA: displayedPopFreqA.toFixed(2), value2: (1 - displayedPopFreqA).toFixed(2) }) },
                   // Grid
                   h('line', { x1: 30, y1: 10, x2: 30, y2: 140, stroke: '#e2e8f0', strokeWidth: 1 }),
                   h('line', { x1: 30, y1: 140, x2: 330, y2: 140, stroke: '#e2e8f0', strokeWidth: 1 }),
@@ -3785,14 +3786,14 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
                   h('div', { className: 'bg-emerald-50 rounded-xl p-2 border border-emerald-200' },
                     h('p', { className: 'text-[0.6875rem] font-bold text-emerald-700 mb-1' }, '\uD83E\uDDEC Your Cell'),
-                    h('div', { role: 'meter', 'aria-label': __alloT("stem.punnett.a11y_your_cell_health", 'Your cell health'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.max(0, Math.min(100, battleHP)), 'aria-valuetext': Math.max(0, Math.min(100, battleHP)) + ' HP remaining', className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden' },
+                    h('div', { role: 'meter', 'aria-label': __alloT("stem.punnett.a11y_your_cell_health", 'Your cell health'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.max(0, Math.min(100, battleHP)), 'aria-valuetext': __alloAriaFill(__alloT('stem.punnett.a11y_hp_remaining', '{value1} HP remaining'), { value1: Math.max(0, Math.min(100, battleHP)) }), className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden' },
                       h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: Math.max(0, battleHP) + '%', background: battleHP > 50 ? '#15803d' : battleHP > 25 ? '#b45309' : '#b91c1c' } })
                     ),
                     h('p', { className: 'text-[0.6875rem] font-bold text-emerald-700 mt-0.5' }, battleHP + ' HP')
                   ),
                   h('div', { className: 'bg-red-50 rounded-xl p-2 border border-red-200' },
                     h('p', { className: 'text-[0.6875rem] font-bold text-red-700 mb-1' }, '\uD83E\uDDA0 Mutation Virus'),
-                    h('div', { role: 'meter', 'aria-label': __alloT("stem.punnett.a11y_mutation_virus_health", 'Mutation virus health'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.max(0, Math.min(100, battleEnemyHP)), 'aria-valuetext': Math.max(0, Math.min(100, battleEnemyHP)) + ' HP remaining', className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden' },
+                    h('div', { role: 'meter', 'aria-label': __alloT("stem.punnett.a11y_mutation_virus_health", 'Mutation virus health'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.max(0, Math.min(100, battleEnemyHP)), 'aria-valuetext': __alloAriaFill(__alloT('stem.punnett.a11y_hp_remaining', '{value1} HP remaining'), { value1: Math.max(0, Math.min(100, battleEnemyHP)) }), className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden' },
                       h('div', { className: 'bg-red-700 h-full rounded-full transition-all duration-500', style: { width: Math.max(0, battleEnemyHP) + '%' } })
                     ),
                     h('p', { className: 'text-[0.6875rem] font-bold text-red-700 mt-0.5' }, battleEnemyHP + ' HP')

@@ -314,9 +314,10 @@ describe('GIS Studio region pack loader (mounted)', () => {
       minimum.dispatchEvent(new Event('input', { bubbles: true }));
       await Promise.resolve();
     });
-    // Maine densities: a floor of 100 keeps only the densest counties.
+    // Maine densities: a floor of 100 keeps only the densest counties
+    // (Androscoggin, Cumberland, Kennebec, Knox, Sagadahoc, York; Kennebec is 142 per Census 2020).
     expect(await settle(() => host.textContent.includes('of 16 mapped records shown'))).toBe(true);
-    expect(host.textContent).toContain('5 of 16 mapped records shown.');
+    expect(host.textContent).toContain('6 of 16 mapped records shown.');
 
     const select = host.querySelector('option[value="custom-otago-towns"]').closest('select');
     const selectSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;

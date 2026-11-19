@@ -4,7 +4,6 @@ import { resolve } from 'node:path';
 import { beforeAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { loadAlloModule } from './setup.js';
 const require = createRequire(import.meta.url);
-const { transformSync } = require('@babel/core');
 let React, createRoot, act, root, host, renderSaved, helpers;
 const source = readFileSync('host_handlers_source.jsx', 'utf8');
 const method = (name, next, deps) => new Function('__d', source.slice(source.indexOf('const ' + name + ' ='), source.indexOf('const ' + next + ' =', source.indexOf('const ' + name + ' ='))) + '\nreturn ' + name)(deps);
@@ -17,13 +16,21 @@ beforeAll(() => {
   loadAlloModule('math_helpers_module.js');
   loadAlloModule('generation_helpers_module.js');
   helpers = window.AlloModules.MathHelpers;
+  // 2026-11-17: the saved-assessment screen left the host for view_cold_path_screens_module.js (third cold-path
+  // wave, tests/third_wave_cdn_extraction.test.js). The host keeps the gate and hands the same eleven values as props;
+  // the screen is drawn here from the built module, which is what a browser runs.
   const anti = readFileSync('AlloFlowANTI.txt', 'utf8');
-  const start = anti.indexOf("                {activeView === 'stem-assessment' && (() => {");
+  const start = anti.indexOf("                {activeView === 'stem-assessment' && <SavedMathAssessmentView\n");
   const end = anti.indexOf("                {activeView === 'math' && window.AlloModules", start);
   expect(start).toBeGreaterThan(0); expect(end).toBeGreaterThan(start);
-  const expression = anti.slice(start,end).trim().slice(1,-1);
-  const compiled = transformSync('return (' + expression + ');', {plugins:['@babel/plugin-transform-react-jsx'],parserOpts:{allowReturnOutsideFunction:true},configFile:false,babelrc:false}).code;
-  renderSaved = new Function('React','activeView','generatedContent','t','formatInlineText','isTeacherMode','setAssessmentBlocks','setMathSubject','setGradeLevel','setLeveledTextLanguage','setShowAssessmentBuilder','openMathCreate',compiled);
+  const spread = /\{\.\.\.\{([\s\S]*?)\}\}/.exec(anti.slice(start, end));
+  const passed = spread[1].split(',').map((name) => name.trim()).filter(Boolean).sort();
+  expect(passed).toEqual(['formatInlineText','generatedContent','isTeacherMode','openMathCreate','setAssessmentBlocks','setGradeLevel','setLeveledTextLanguage','setMathSubject','setShowAssessmentBuilder','t']);
+  loadAlloModule('view_cold_path_screens_module.js');
+  const View = window.AlloModules.SavedMathAssessmentView;
+  expect(typeof View).toBe('function');
+  renderSaved = (ReactLib, activeView, generatedContent, t, formatInlineText, isTeacherMode, setAssessmentBlocks, setMathSubject, setGradeLevel, setLeveledTextLanguage, setShowAssessmentBuilder, openMathCreate) =>
+    activeView === 'stem-assessment' && ReactLib.createElement(View, { generatedContent, t, formatInlineText, isTeacherMode, setAssessmentBlocks, setMathSubject, setGradeLevel, setLeveledTextLanguage, setShowAssessmentBuilder, openMathCreate });
 });
 afterEach(() => { if(root) act(()=>root.unmount()); root=null; host?.remove(); });
 const roundtrip = value => JSON.parse(JSON.stringify(value));

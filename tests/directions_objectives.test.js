@@ -155,7 +155,9 @@ describe('wiring pins', () => {
     expect(anti).toContain('return txt.slice(0, 250);');
     // manifest still built exclusively from the student-safe-filtered packItems
     // (2026-07-20: TEACHER_ONLY filtering lives in _alloStudentSafeResources)
-    expect(anti).toMatch(/packItems = _alloStudentSafeResources\(history\)\.filter\(h => h\.type !== 'directions'\);[\s\S]{0,1200}?packItems\.map\(it =>/);
+    // 2026-11-17: the filtered list is then narrowed to the chosen lesson or ids (_scopePackCandidates only filters).
+    expect(anti).toMatch(/packItems = _scopePackCandidates\(_alloStudentSafeResources\(history\)\.filter\(h => h\.type !== 'directions'\), ids\);[\s\S]{0,1200}?packItems\.map\(it =>/);
+    expect(anti).toMatch(/const _scopePackCandidates = \(items, explicitIds = null\) => \{\n\s*const list = Array\.isArray\(items\) \? items : \[\];\n\s*if \(Array\.isArray\(explicitIds\) && explicitIds\.length\) \{\n\s*const wanted = new Set\(explicitIds\.map\(id => String\(id\)\)\);\n\s*return list\.filter\(/);
     // privacy line untouched
     expect(anti).toContain('PRIVACY: Never mention accommodations, IEPs, disabilities, reading levels, groupings, or why any student might get different work.');
   });

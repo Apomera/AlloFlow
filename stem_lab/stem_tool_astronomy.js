@@ -5986,6 +5986,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     category: 'science',
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -6803,7 +6804,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               }, 'The previous AI request was interrupted. You can ask again.') : null,
               h('div', { style: { marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                 h('button', {
-                  type: 'button', 'aria-label': astronomyAskLoading ? 'Sky guide is thinking' : 'Ask the sky guide',
+                  type: 'button', 'aria-label': astronomyAskLoading ? __alloT('stem.astronomy.a11y_sky_guide_is_thinking', 'Sky guide is thinking') : __alloT('stem.astronomy.a11y_ask_the_sky_guide', 'Ask the sky guide'),
                   onClick: function() { sendAstronomyQuestion(astronomyAskInput); },
                   className: 'astr-focus astr-btn',
                   disabled: astronomyAskLoading || !astronomyAskInput.trim() || !callGemini,
@@ -7538,7 +7539,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         }
         var targetDetailPanel = selectedTarget.body && targetForecast
           ? sectionCard('\uD83C\uDFAF ' + targetDisplayName,
-              h('div', { id: 'astronomy-sky-target-detail', 'aria-label': targetDisplayName + ' observing details' },
+              h('div', { id: 'astronomy-sky-target-detail', 'aria-label': __alloAriaFill(__alloT('stem.astronomy.a11y_observing_details', '{targetDisplayName} observing details'), { targetDisplayName: targetDisplayName }) },
                 h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,110px),1fr))', gap: '8px 12px', margin: 0 } },
                   targetFact(__alloT('stem.astronomy.altitude', 'Altitude'), selectedTarget.body.alt > 0
                     ? Math.round(selectedTarget.body.alt) + '\u00B0 ' + __alloT('stem.astronomy.above_horizon', 'above horizon')
@@ -7567,7 +7568,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               var altitudeText = Math.round(target.body.alt) + '\u00B0 ' + azCompass(target.body.az);
               return h('button', {
                 key: target.id, type: 'button', 'aria-pressed': selected,
-                'aria-label': target.name + ', ' + target.difficulty + ', ' + altitudeText + ' horizon',
+                'aria-label': __alloAriaFill(__alloT('stem.astronomy.a11y_target_difficulty_altitude_horizon', '{name}, {difficulty}, {altitudeText} horizon'), { name: target.name, difficulty: target.difficulty, altitudeText: altitudeText }),
                 onClick: function () { upd({ skyTarget: target.id }); },
                 className: 'astr-focus astr-btn',
                 style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 8, alignItems: 'center', width: '100%', minWidth: 0, marginTop: 5, padding: '6px 8px', borderRadius: 7, border: '1px solid ' + (selected ? '#fbbf24' : '#475569'), background: selected ? 'rgba(251,191,36,0.16)' : '#0f172a', color: '#e2e8f0', textAlign: 'left', cursor: 'pointer' }
@@ -7636,7 +7637,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 style: { minHeight: 32, padding: '6px 10px', borderRadius: 8, border: '1px solid #fbbf24', background: showingTonight ? '#fbbf24' : '#0f172a', color: showingTonight ? '#0f172a' : '#fde68a', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } },
                 '🌙 ' + journeyFill(__alloT('stem.astronomy.skymap_tonight_button', 'Tonight ({time})'), { time: utcMsToWallTime(mapEvening.utcMs, loc.timeZone).timeText })) : null,
               h('label', { style: { fontSize: 11.5, color: '#cbd5e1', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 } }, __alloT('stem.astronomy.spin_time', 'Spin time'),
-                h('input', { type: 'range', min: -12, max: 12, step: 0.5, value: hourOff, 'aria-label': anchorMs === null ? __alloT('stem.astronomy.a11y_hours_from_now', 'Hours from now') : __alloT('stem.astronomy.skymap_hours_from_set', 'Hours from selected time'), 'aria-valuetext': anchorMs === null && hourOff === 0 ? 'Now' : (hourOff > 0 ? '+' : '') + hourOff + (anchorMs === null ? ' hours from now' : ' hours from selected time'), onChange: function (e) { var next = boundedSkyOffset(e.target.value, -12, 12, 0.5); if (supportedMapMoment(base.getTime() + next * 3600000)) upd({ skyHourOffset: next }); }, style: { width: 130, maxWidth: '100%' } }),
+                h('input', { type: 'range', min: -12, max: 12, step: 0.5, value: hourOff, 'aria-label': anchorMs === null ? __alloT('stem.astronomy.a11y_hours_from_now', 'Hours from now') : __alloT('stem.astronomy.skymap_hours_from_set', 'Hours from selected time'), 'aria-valuetext': anchorMs === null && hourOff === 0 ? __alloT('stem.astronomy.a11y_now', 'Now') : (anchorMs === null ? __alloAriaFill(__alloT('stem.astronomy.a11y_offset_hours_from_now', '{offset} hours from now'), { offset: (hourOff > 0 ? '+' : '') + hourOff }) : __alloAriaFill(__alloT('stem.astronomy.a11y_offset_hours_from_selected_time', '{offset} hours from selected time'), { offset: (hourOff > 0 ? '+' : '') + hourOff })), onChange: function (e) { var next = boundedSkyOffset(e.target.value, -12, 12, 0.5); if (supportedMapMoment(base.getTime() + next * 3600000)) upd({ skyHourOffset: next }); }, style: { width: 130, maxWidth: '100%' } }),
                 h('span', { style: { color: '#e2e8f0', minWidth: 64 } }, (hourOff >= 0 ? '+' : '') + hourOff + 'h')),
               ctrlBtn('\u25C0 day', false, function () { upd({ skyDayOffset: Math.max(-365, dayOff - 1) }); }, 'dprev', false, dayOff <= -365 || !supportedMapMoment(localShown.getTime() - 86400000)),
               h('span', { role: 'status', 'aria-live': 'polite', 'aria-label': anchorMs === null ? __alloT('stem.astronomy.a11y_days_from_now', 'Days from now') : __alloT('stem.astronomy.skymap_days_from_set', 'Days from selected date'), style: { fontSize: 11.5, color: '#e2e8f0', minWidth: 30, textAlign: 'center' } }, (dayOff >= 0 ? '+' : '') + dayOff + 'd'),
@@ -7960,7 +7961,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           ),
           selected ? h('div', {
             id: 'astronomy-constellation-detail', role: 'region',
-            'aria-label': selected.name + ' details',
+            'aria-label': __alloAriaFill(__alloT('stem.astronomy.a11y_details', '{name} details'), { name: selected.name }),
             style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #64748b' }
           },
             h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'astr-sr-only' }, selected.name + ' selected'),
@@ -8000,7 +8001,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             h('div', { style: { marginTop: 12 } },
               h('button', {
                 type: 'button',
-                'aria-label': (selectedSaved ? 'Remove ' : 'Add ') + selected.name + (selectedSaved ? ' from' : ' to') + ' observing list',
+                'aria-label': (selectedSaved ? __alloAriaFill(__alloT('stem.astronomy.a11y_remove_from_observing_list', 'Remove {name} from observing list'), { name: selected.name }) : __alloAriaFill(__alloT('stem.astronomy.a11y_add_to_observing_list', 'Add {name} to observing list'), { name: selected.name })),
                 'aria-pressed': selectedSaved,
                 onClick: function() { setObservingTarget(selected.id, !selectedSaved); },
                 className: 'astr-focus astr-btn',
@@ -8707,9 +8708,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               ref: astroMoonGlRef,
               role: 'img',
               'data-a11y-static': 'true',
-              'aria-label': moonGlAlt + (moonViewMode === 'orbit'
-                ? ' Use arrow keys or drag to orbit, plus and minus to zoom, and Home to reset.'
-                : ' Use plus and minus or the mouse wheel to magnify, and Home to reset.'),
+              'aria-label': (moonViewMode === 'orbit'
+                ? __alloAriaFill(__alloT('stem.astronomy.a11y_moon_3d_orbit_help', '{moonGlAlt} Use arrow keys or drag to orbit, plus and minus to zoom, and Home to reset.'), { moonGlAlt: moonGlAlt })
+                : __alloAriaFill(__alloT('stem.astronomy.a11y_moon_3d_magnify_help', '{moonGlAlt} Use plus and minus or the mouse wheel to magnify, and Home to reset.'), { moonGlAlt: moonGlAlt })),
               'aria-describedby': 'astronomy-moon-3d-help',
               'aria-keyshortcuts': moonViewMode === 'orbit'
                 ? 'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home' : '+ - Home',
@@ -8871,8 +8872,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 upd(Object.assign(agePatch(parseFloat(e.target.value)), { moonPlaying: false }));
               },
               'aria-label': __alloT('stem.astronomy.a11y_lunar_age_through_the_synodic_month', 'Lunar age through the synodic month'),
-              'aria-valuetext': phase.name + ', about ' + phase.pct + '% illuminated, day '
-                + moonAgeDays.toFixed(2) + ' of ' + AM_SYNODIC.toFixed(2),
+              'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_about_illuminated_day_of', '{name}, about {pct}% illuminated, day {moonAgeDays} of {synodic}'), { name: phase.name, pct: phase.pct, moonAgeDays: moonAgeDays.toFixed(2), synodic: AM_SYNODIC.toFixed(2) }),
               'aria-describedby': 'astronomy-moon-phase-status',
               style: { width: '100%', accentColor: '#6366f1' }
             }),
@@ -9704,7 +9704,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('figcaption', { style: { fontSize: 14, fontWeight: 700, color: gold } }, text('orbit_title', 'Orbit and climate-model boundaries')),
               h('svg', { id: 'astronomy-hz-orbit', viewBox: '0 0 360 330', role: 'slider', tabIndex: 0, className: 'astr-focus',
                 'aria-label': text('orbit_a11y', 'Select orbital distance on the diagram'), 'aria-valuemin': 0.03, 'aria-valuemax': 20, 'aria-valuenow': m.distanceAu,
-                'aria-valuetext': n(m.distanceAu) + ' AU. ' + status, 'aria-orientation': 'horizontal', 'aria-describedby': 'astronomy-hz-orbit-help',
+                'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_distance_au_status', '{value1} AU. {status}'), { value1: n(m.distanceAu), status: status }), 'aria-orientation': 'horizontal', 'aria-describedby': 'astronomy-hz-orbit-help',
                 'data-distance-au': m.distanceAu, style: { width: '100%', height: 'auto', display: 'block', touchAction: 'pan-y' },
                 onKeyDown: function(e) { keys(e, distanceControl); },
                 onPointerDown: function(e) { if (e.button != null && e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); scrub(e); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} },
@@ -9912,7 +9912,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 return h('svg', { id: 'astronomy-transit-curve', viewBox: '0 0 400 300', role: 'slider', tabIndex: 0,
                   className: 'astr-focus', 'aria-label': __alloT('stem.astronomy.transit_scrub_label', 'Explore the transit light curve'),
                   'aria-describedby': 'astronomy-transit-help', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(m.time * 100),
-                  'aria-valuetext': (m.reference ? m.current.minutes.toFixed(1) + ' min' : Math.round(m.time * 100) + '%') + ' · ' + stageNames[m.stage] + ' · ' + (m.current.brightness * 100).toFixed(4) + '%',
+                  'aria-valuetext': (m.reference ? __alloAriaFill(__alloT('stem.astronomy.a11y_minutes_stage_brightness', '{minutes} min · {value1} · {value2}%'), { minutes: m.current.minutes.toFixed(1), value1: stageNames[m.stage], value2: (m.current.brightness * 100).toFixed(4) }) : Math.round(m.time * 100) + '%' + ' · ' + stageNames[m.stage] + ' · ' + (m.current.brightness * 100).toFixed(4) + '%'),
                   'data-axis-range': range, 'data-blocked': m.current.blocked,
                   style: { width: '100%', height: 'auto', display: 'block', touchAction: 'pan-y', cursor: 'crosshair' },
                   onKeyDown: keyScrub, onPointerDown: function(e) { if (e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); e.currentTarget.setPointerCapture(e.pointerId); scrub(e); },
@@ -10850,7 +10850,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             h('div', { style: panel },
               h('label', { htmlFor: 'astronomy-magnitude-mv', style: { color: gold, fontSize: 14, fontWeight: 700 } }, text('absolute_label', 'Absolute V magnitude M_V') + ': ' + signed(m.absoluteV)),
               h('input', { id: 'astronomy-magnitude-mv', type: 'range', min: -10, max: 15, step: 'any', value: m.absoluteV, className: 'astr-focus',
-                'aria-valuetext': signed(m.absoluteV) + ' mag', 'aria-describedby': 'astronomy-magnitude-mv-help', onKeyDown: magnitudeKeys,
+                'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_mag', '{value1} mag'), { value1: signed(m.absoluteV) }), 'aria-describedby': 'astronomy-magnitude-mv-help', onKeyDown: magnitudeKeys,
                 onChange: function(e) { upd({ magnitudeReference: 'custom', magnitudeMv: Number(e.target.value) }); }, style: { width: '100%', minHeight: 44, accentColor: gold } }),
               h('p', { id: 'astronomy-magnitude-mv-help', style: prose }, text('absolute_help', 'M_V is the star’s magnitude at 10 pc with extinction removed. Editing it creates a custom star. Arrow keys change 0.1 mag; Shift changes 1 mag.')),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
@@ -10859,7 +10859,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             h('div', { style: panel },
               h('label', { htmlFor: 'astronomy-magnitude-distance', style: { color: gold, fontSize: 14, fontWeight: 700 } }, text('distance_label', 'Simulated distance') + ': ' + number(m.distancePc) + ' pc'),
               h('input', { id: 'astronomy-magnitude-distance', type: 'range', min: -1, max: 4, step: 'any', value: m.distanceLog, className: 'astr-focus',
-                'aria-valuetext': number(m.distancePc) + ' pc', 'aria-describedby': 'astronomy-magnitude-distance-help', onKeyDown: distanceKeys,
+                'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_pc', '{value1} pc'), { value1: number(m.distancePc) }), 'aria-describedby': 'astronomy-magnitude-distance-help', onKeyDown: distanceKeys,
                 onChange: function(e) { setDistance(Math.pow(10, Number(e.target.value))); }, style: { width: '100%', minHeight: 44, accentColor: gold } }),
               h('p', { id: 'astronomy-magnitude-distance-help', style: prose }, number(m.distanceLy) + ' ' + text('light_years', 'light-years') + '. ' + text('distance_help', 'This control uses a logarithmic distance scale: equal movements multiply the distance. A distance of 10 pc is the standard for absolute magnitude.')),
               h('div', { role: 'group', 'aria-label': text('distance_examples', 'Distance examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
@@ -10867,7 +10867,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             h('div', { style: panel },
               h('label', { htmlFor: 'astronomy-magnitude-av', style: { color: gold, fontSize: 14, fontWeight: 700 } }, text('dust_label', 'Dust dimming A_V') + ': ' + number(m.extinctionV) + ' mag'),
               h('input', { id: 'astronomy-magnitude-av', type: 'range', min: 0, max: 5, step: 0.1, value: m.extinctionV, className: 'astr-focus',
-                'aria-valuetext': number(m.extinctionV) + ' mag', 'aria-describedby': 'astronomy-magnitude-av-help',
+                'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_mag', '{value1} mag'), { value1: number(m.extinctionV) }), 'aria-describedby': 'astronomy-magnitude-av-help',
                 onChange: function(e) { upd({ magnitudeAv: Number(e.target.value) }); }, style: { width: '100%', minHeight: 44, accentColor: gold } }),
               h('p', { id: 'astronomy-magnitude-av-help', style: prose }, text('dust_help', 'A_V is foreground extinction in the V band. Adding 1 mag transmits about 40% of the original V-band light. This assumption can be changed independently of distance.')),
               h('div', { role: 'group', 'aria-label': text('dust_examples', 'Dust examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
@@ -10886,7 +10886,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('h3', { style: { margin: '4px 2px 8px', fontSize: 15, color: gold } }, text('curve_title', 'Apparent magnitude and distance')),
               h('svg', { id: 'astronomy-magnitude-curve', viewBox: '0 0 360 380', role: 'slider', tabIndex: 0, className: 'astr-focus',
                 'aria-label': text('curve_control', 'Choose a simulated stellar distance'), 'aria-valuemin': 0.1, 'aria-valuemax': 10000, 'aria-valuenow': m.distancePc,
-                'aria-valuetext': number(m.distancePc) + ' pc; m_V ' + signed(m.apparentV), 'aria-describedby': 'astronomy-magnitude-curve-desc',
+                'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_pc_m_v', '{value1} pc; m_V {value2}'), { value1: number(m.distancePc), value2: signed(m.apparentV) }), 'aria-describedby': 'astronomy-magnitude-curve-desc',
                 onPointerDown: scrub, onKeyDown: distanceKeys, 'data-distance-pc': m.distancePc, style: { width: '100%', height: 'auto', display: 'block', touchAction: 'pan-y', cursor: 'crosshair' } },
                 h('title', null, text('curve_title', 'Apparent magnitude and distance')),
                 h('desc', { id: 'astronomy-magnitude-curve-desc' }, text('curve_desc', 'Magnitude becomes larger and fainter downward. Distance increases to the right on a logarithmic scale. The dashed line excludes dust, and the yellow line includes the selected extinction. Tap or use arrows to change distance; Shift makes a larger step. Home and End select the distance limits.')),
@@ -11150,7 +11150,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('figcaption', { style: { fontSize: 14, fontWeight: 700, color: gold } }, text('chart_title', 'How orbital speed changes')),
               h('svg', { id: 'astronomy-binary-chart', viewBox: '0 0 360 350', role: 'slider', tabIndex: 0, className: 'astr-focus',
                 'aria-label': text('chart_a11y', 'Select elapsed fraction of the binary orbit'), 'aria-valuemin': 0, 'aria-valuemax': 1, 'aria-valuenow': m.phase,
-                'aria-valuetext': n(m.phase * 100, 1) + '%; ' + n(m.elapsedYears) + ' ' + text('years', 'years') + '; ' + n(m.current.relativeSpeedKmS) + ' km/s',
+                'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_phase_years_speed', '{value1}%; {value2} {value3}; {value4} km/s'), { value1: n(m.phase * 100, 1), value2: n(m.elapsedYears), value3: text('years', 'years'), value4: n(m.current.relativeSpeedKmS) }),
                 'aria-orientation': 'horizontal', 'aria-describedby': 'astronomy-binary-chart-help', style: { width: '100%', height: 'auto', display: 'block', touchAction: 'pan-y' },
                 onKeyDown: function(e) { keys(e, timeControl); },
                 onPointerDown: function(e) { if (e.button != null && e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); scrub(e); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {} },
@@ -11357,7 +11357,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   key: s.id,
                   type: 'button',
                   onClick: function() { upd({ selectedStarType: s.id }); },
-                  'aria-label': 'Select ' + s.name + ' spectral class. Surface temperature ' + s.tempK + ' K. Example: ' + s.example + '.',
+                  'aria-label': __alloAriaFill(__alloT('stem.astronomy.a11y_select_spectral_class_surface_temperature_k_example', 'Select {name} spectral class. Surface temperature {tempK} K. Example: {example}.'), { name: s.name, tempK: s.tempK, example: s.example }),
                   'aria-pressed': active ? 'true' : 'false',
                   style: { padding: 8, borderRadius: 8, border: '1px solid ' + (active ? '#fbbf24' : '#334155'), background: active ? 'rgba(245,158,11,0.15)' : 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 60 }
                 },
@@ -12576,7 +12576,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           return h('svg', { id: 'astronomy-wave-curve', viewBox: '0 0 360 300', role: 'slider', tabIndex: 0, className: 'astr-focus',
             'aria-label': __alloT('stem.astronomy.wave_scrub_label', 'Explore one binary orbit'), 'aria-describedby': 'astronomy-wave-help',
             'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Number((m.phase * 100).toFixed(1)),
-            'aria-valuetext': (m.phase * 100).toFixed(1) + '% · ' + (m.current.seconds * 1000).toFixed(1) + ' ms · ' + strainText(m.current.strain),
+            'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_phase_ms_strain', '{value1}% · {value2} ms · {value3}'), { value1: (m.phase * 100).toFixed(1), value2: (m.current.seconds * 1000).toFixed(1), value3: strainText(m.current.strain) }),
             'data-wave-strain': m.current.strain, 'data-wave-phase': m.phase, 'data-axis-extent': extent,
             style: { display: 'block', width: '100%', height: 'auto', cursor: 'crosshair', touchAction: 'pan-y' }, onKeyDown: keyScrub,
             onPointerDown: function(e) { if (e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); e.currentTarget.setPointerCapture(e.pointerId); scrub(e); },
@@ -12781,7 +12781,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           return h('svg', { id: 'astronomy-pulsar-curve', viewBox: '0 0 360 280', role: 'slider', tabIndex: 0, className: 'astr-focus',
             'aria-label': __alloT('stem.astronomy.pulsar_scrub_label', 'Explore one pulsar rotation'), 'aria-describedby': 'astronomy-pulsar-help',
             'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(m.phase * 100),
-            'aria-valuetext': (m.phase * 100).toFixed(0) + '% · ' + m.current.timeMs.toFixed(m.spin.periodMs < 10 ? 3 : 2) + ' ms · ' + m.current.signal.toFixed(3) + ' ' + __alloT('stem.astronomy.pulsar_signal_unit', 'modeled signal'),
+            'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_phase_ms_signal', '{value1}% · {timeMs} ms · {signal} {value2}'), { value1: (m.phase * 100).toFixed(0), timeMs: m.current.timeMs.toFixed(m.spin.periodMs < 10 ? 3 : 2), signal: m.current.signal.toFixed(3), value2: __alloT('stem.astronomy.pulsar_signal_unit', 'modeled signal') }),
             'data-signal': m.current.signal, 'data-phase': m.phase, 'data-period-ms': m.spin.periodMs,
             style: { display: 'block', width: '100%', height: 'auto', touchAction: 'pan-y', cursor: 'crosshair' },
             onKeyDown: keyScrub,
@@ -13126,7 +13126,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             button(__alloT('stem.astronomy.rot_reset', 'Reset rotation explorer'), function() { upd({ rotationGalaxy: 'NGC3198', rotationML: 0.5, rotationPoint: 42 }); })),
           h('label', { htmlFor: 'astronomy-rotation-point', style: { display: 'block', color: '#e2e8f0', fontSize: 14, fontWeight: 750 } }, __alloT('stem.astronomy.rot_radius_control', 'Inspect a measured radius'), ': ' + number(p.radiusKpc) + ' kpc'),
           h('input', { id: 'astronomy-rotation-point', type: 'range', min: 0, max: m.points.length - 1, step: 1, value: m.index, className: 'astr-focus',
-            'aria-valuetext': number(p.radiusKpc) + ' kpc', 'aria-describedby': 'astronomy-rotation-help', onChange: function(event) { selectPoint(Number(event.target.value)); }, onKeyDown: keys, style: { width: '100%', minHeight: 44 } }),
+            'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_kpc', '{value1} kpc'), { value1: number(p.radiusKpc) }), 'aria-describedby': 'astronomy-rotation-help', onChange: function(event) { selectPoint(Number(event.target.value)); }, onKeyDown: keys, style: { width: '100%', minHeight: 44 } }),
           h('p', { id: 'astronomy-rotation-help', style: { margin: '0 0 12px', color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.rot_radius_help', 'Drag the radius slider or speed chart. Selection snaps to a published sample. Arrow keys move one sample; Shift moves five. Home selects the innermost sample and End selects the outermost. One kiloparsec (kpc) is about 3,260 light-years.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 14, alignItems: 'start' } },
             h('figure', { style: Object.assign({}, panel, { margin: 0 }) }, h('h4', { style: { margin: '0 0 8px', color: '#a5f3fc', fontSize: 14 } }, __alloT('stem.astronomy.rot_chart_heading', '1. Compare speeds')), graph(false),
@@ -13463,7 +13463,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               button(__alloT('stem.astronomy.cosmo_reset', 'Reset distance lab'), function() { upd({ cosmoZ: 1, cosmoH0: 67.4, cosmoRedshiftReference: '' }); }, undefined)),
             h('label', { htmlFor: 'astronomy-cosmo-h0', style: { display: 'block', color: '#e2e8f0', fontWeight: 750 } }, __alloT('stem.astronomy.cosmo_h0_control', 'Expansion rate today (H₀)'), ': ' + zText(m.h0) + ' km/s/Mpc'),
             h('input', { id: 'astronomy-cosmo-h0', type: 'range', min: 50, max: 90, step: 0.01, value: m.h0, className: 'astr-focus',
-              'aria-valuetext': zText(m.h0) + ' km/s/Mpc', 'aria-describedby': 'astronomy-cosmo-h0-help',
+              'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_km_s_mpc', '{value1} km/s/Mpc'), { value1: zText(m.h0) }), 'aria-describedby': 'astronomy-cosmo-h0-help',
               onChange: function(event) { upd({ cosmoH0: Number(event.target.value) }); }, style: { width: '100%', minHeight: 44 } }),
             h('p', { id: 'astronomy-cosmo-h0-help' }, __alloT('stem.astronomy.cosmo_h0_help', 'A larger H₀ gives shorter inferred distances and ages at the same redshift when the matter fraction stays fixed. Each Mpc is about 3.26 million light-years; H₀ is an expansion rate, not a speed for every galaxy.')),
             h('p', null, __alloT('stem.astronomy.cosmo_measurement_scope', 'Planck Collaboration (2018 results, published 2020) infers H₀ = 67.4 ± 0.5 km/s/Mpc and Ωₘ = 0.315 ± 0.007 under base ΛCDM. Riess et al. (2022) measure H₀ = 73.04 ± 1.04 km/s/Mpc with the Cepheid–supernova distance ladder. These are named studies, not a live consensus estimate. Quoted uncertainties are not propagated into these curves.')),
@@ -14729,7 +14729,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   h('select', { 'aria-label': __alloT('stem.astronomy.obs_environment', 'Landscape (representative)'), value: resolved.env, className: 'astr-focus', style: inputStyle, onChange: function(e) { upd({ obsEnv: e.target.value }); } },
                     OBSERVATORY_ENVIRONMENTS.map(function(id) { return h('option', { key: id, value: id }, ENV_NAMES[id]); }))),
                 h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_bortle', 'Sky darkness (Bortle 1 dark to 9 city)'),
-                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_bortle', 'Sky darkness (Bortle 1 dark to 9 city)'), type: 'range', min: 1, max: 9, step: 1, value: resolved.bortle, className: 'astr-focus', 'aria-valuetext': 'Bortle ' + resolved.bortle, onChange: function(e) { upd({ obsBortle: e.target.value }); } }))
+                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_bortle', 'Sky darkness (Bortle 1 dark to 9 city)'), type: 'range', min: 1, max: 9, step: 1, value: resolved.bortle, className: 'astr-focus', 'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_bortle', 'Bortle {bortle}'), { bortle: resolved.bortle }), onChange: function(e) { upd({ obsBortle: e.target.value }); } }))
                 ),
               h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.obs_layers', 'Sky layers'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
                 toggleButton(__alloT('stem.astronomy.obs_layer_stars', 'Stars'), resolved.layers.stars, function() { setLayers({ stars: !resolved.layers.stars }); }, null, 'stars'),
@@ -15213,7 +15213,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             return h('svg', {
               viewBox: '0 0 600 350',
               role: 'img',
-              'aria-label': 'Solar eclipse diagram. ' + solarStatus,
+              'aria-label': __alloAriaFill(__alloT('stem.astronomy.a11y_solar_eclipse_diagram', 'Solar eclipse diagram. {solarStatus}'), { solarStatus: solarStatus }),
               style: { width: '100%', height: 'auto', display: 'block', maxHeight: 400 }
             },
               h('defs', null,
@@ -15274,7 +15274,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             return h('svg', {
               viewBox: '0 0 600 350',
               role: 'img',
-              'aria-label': 'Lunar eclipse diagram. Phase ' + phase + '%. ' + lunarStatus,
+              'aria-label': __alloAriaFill(__alloT('stem.astronomy.a11y_lunar_eclipse_diagram_phase', 'Lunar eclipse diagram. Phase {phase}%. {lunarStatus}'), { phase: phase, lunarStatus: lunarStatus }),
               style: { width: '100%', height: 'auto', display: 'block', maxHeight: 400 }
             },
               h('rect', { x: 0, y: 0, width: 600, height: 350, fill: '#060b18' }),
@@ -15331,7 +15331,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 h('span', null, __alloT('stem.astronomy.eclipse_alignment_guide', 'How the bodies line up')),
                 h('span', { style: { color: '#94a3b8', fontWeight: 400 } }, __alloT('stem.astronomy.eclipse_not_to_scale', 'Illustration · not to scale'))
               ),
-              h('svg', { viewBox: '0 0 600 132', role: 'img', 'aria-label': lunar ? 'Lunar eclipse alignment: Sun, Earth, then Moon.' : 'Solar eclipse alignment: Sun, Moon, then Earth.', style: { width: '100%', display: 'block', maxHeight: 150 } },
+              h('svg', { viewBox: '0 0 600 132', role: 'img', 'aria-label': lunar ? __alloT('stem.astronomy.a11y_lunar_eclipse_alignment_sun_earth_then_moon', 'Lunar eclipse alignment: Sun, Earth, then Moon.') : __alloT('stem.astronomy.a11y_solar_eclipse_alignment_sun_moon_then_earth', 'Solar eclipse alignment: Sun, Moon, then Earth.'), style: { width: '100%', display: 'block', maxHeight: 150 } },
                 h('defs', null,
                   h('radialGradient', { id: 'astr-eclipse-earth' }, h('stop', { offset: '0%', stopColor: '#67e8f9' }), h('stop', { offset: '75%', stopColor: '#2563eb' }), h('stop', { offset: '100%', stopColor: '#172554' })),
                   h('radialGradient', { id: 'astr-eclipse-guide-sun' }, h('stop', { offset: '0%', stopColor: '#fffbeb' }), h('stop', { offset: '100%', stopColor: '#f59e0b' }))
@@ -15575,7 +15575,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               ),
 
               // Shower summary card
-              h('div', { id: 'astronomy-meteor-shower-summary', role: 'region', 'aria-live': 'polite', 'aria-label': selected.name + ' shower summary', style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 12 } },
+              h('div', { id: 'astronomy-meteor-shower-summary', role: 'region', 'aria-live': 'polite', 'aria-label': __alloAriaFill(__alloT('stem.astronomy.a11y_shower_summary', '{name} shower summary'), { name: selected.name }), style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 12 } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 6, flexWrap: 'wrap' } },
                   h('h3', { style: { margin: 0, color: '#fbbf24', fontSize: 17 } }, selected.name),
                   h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Peak: '),
@@ -15706,7 +15706,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     viewBox: '0 0 600 400',
                     style: { width: '100%', height: 'auto', display: 'block' },
                     role: 'img',
-                    'aria-label': selected.name + ' meteor shower diagram. Radiant in ' + selected.radiantConst + ' at ' + simAlt + ' degrees altitude. Illustrative 10-minute sample shows ' + meteorCount + (meteorCount === 1 ? ' meteor' : ' meteors') + ', based on an estimated rate of ' + effectiveRate + ' per hour under Bortle ' + simBortle + ' skies.',
+                    'aria-label': (meteorCount === 1 ? __alloAriaFill(__alloT('stem.astronomy.a11y_meteor_shower_diagram_one', '{name} meteor shower diagram. Radiant in {radiantConst} at {simAlt} degrees altitude. Illustrative 10-minute sample shows {meteorCount} meteor, based on an estimated rate of {effectiveRate} per hour under Bortle {simBortle} skies.'), { name: selected.name, radiantConst: selected.radiantConst, simAlt: simAlt, meteorCount: meteorCount, effectiveRate: effectiveRate, simBortle: simBortle }) : __alloAriaFill(__alloT('stem.astronomy.a11y_meteor_shower_diagram_many', '{name} meteor shower diagram. Radiant in {radiantConst} at {simAlt} degrees altitude. Illustrative 10-minute sample shows {meteorCount} meteors, based on an estimated rate of {effectiveRate} per hour under Bortle {simBortle} skies.'), { name: selected.name, radiantConst: selected.radiantConst, simAlt: simAlt, meteorCount: meteorCount, effectiveRate: effectiveRate, simBortle: simBortle })),
                     'aria-describedby': 'astronomy-meteor-rate-status astronomy-meteor-diagram-help'
                   },
                     // Sky gradient background
@@ -16197,7 +16197,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           function slider(id, label, value, min, max, step, key) {
             return h('div', { style: { padding: 12, minWidth: 0, border: '1px solid #475569', borderRadius: 10, background: '#0a1425' } },
               h('label', { htmlFor: id, style: { display: 'block', fontSize: 13, color: '#f8fafc', fontWeight: 700 } }, label + ': ' + value + ' mm'),
-              h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': value+' millimeters',
+              h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': __alloAriaFill(__alloT('stem.astronomy.a11y_millimeters', '{value} millimeters'), { value: value }),
                 'aria-describedby': 'astronomy-scope-status astronomy-scope-help', className: 'astr-focus', style: { width: '100%', display: 'block', minHeight: 44, margin: '4px 0 0', accentColor: '#a78bfa' },
                 onChange: function(event) { var patch = {}; patch[key] = Number(event.target.value); upd(patch); } }));
           }
@@ -16324,7 +16324,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   return h('button', {
                     key: b.class,
                     onClick: function() { upd({ bortleClass: b.class }); },
-                    'aria-label': 'Bortle class ' + b.class + ': ' + b.name,
+                    'aria-label': __alloAriaFill(__alloT('stem.astronomy.a11y_bortle_class', 'Bortle class {bortleClass}: {name}'), { bortleClass: b.class, name: b.name }),
                     'aria-pressed': active,
                     style: { flex: 1, padding: '8px 4px', borderRadius: 6, background: bgColor, border: '2px solid ' + (active ? '#fbbf24' : 'transparent'), color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
                   }, String(b.class));
@@ -16355,7 +16355,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     c.name + ' (' + c.season + ')',
                     h('button', {
                       type: 'button',
-                      'aria-label': 'Remove ' + c.name + ' from observing list',
+                      'aria-label': __alloAriaFill(__alloT('stem.astronomy.a11y_remove_from_observing_list', 'Remove {name} from observing list'), { name: c.name }),
                       onClick: function() { setObservingTarget(id, false); },
                       className: 'astr-focus astr-btn',
                       style: { marginLeft: 8, padding: '2px 6px', fontSize: 10, color: '#cbd5e1', background: 'transparent', border: '1px solid #475569', borderRadius: 5, cursor: 'pointer' }
@@ -17761,7 +17761,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       event.preventDefault(); setIQ({ lumin: Number(Math.pow(10, Math.log10(s.val) + delta).toPrecision(5)) });
                     },
                     style: { width: '100%', minHeight: 44 }, 'aria-label': s.label, 'aria-describedby': 'astronomy-hr-classification astronomy-hr-controls-note',
-                    'aria-valuetext': s.key === 'tempK' ? s.val + ' kelvin' : s.val + (s.key === 'mass' ? ' solar masses' : ' solar luminosities') }));
+                    'aria-valuetext': s.key === 'tempK' ? __alloAriaFill(__alloT('stem.astronomy.a11y_kelvin', '{val} kelvin'), { val: s.val }) : (s.key === 'mass' ? __alloAriaFill(__alloT('stem.astronomy.a11y_solar_masses', '{val} solar masses'), { val: s.val }) : __alloAriaFill(__alloT('stem.astronomy.a11y_solar_luminosities', '{val} solar luminosities'), { val: s.val })) }));
               })
             ),
             h('p', { id: 'astronomy-hr-controls-note', style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_control_note', 'The luminosity slider uses a log scale, so faint and bright stars are easy to reach. Mass is recorded separately and does not move the point or set its radius. These independent controls do not predict a star’s evolution.')),

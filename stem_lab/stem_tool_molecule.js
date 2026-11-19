@@ -1240,6 +1240,12 @@ window.StemLab = window.StemLab || {
           const moleculeDisplayStyle = d.moleculeDisplayStyle === 'spheres' ? 'spheres' : 'ball-stick';
           const showAtomLabels = d.showAtomLabels !== false;
           const [threeLoaded, setThreeLoaded] = useState(false);
+          // 'lost' (context lost after init) or 'failed' (renderer would not start):
+          // the viewport shows a restart panel. webglGen keys the canvas so a
+          // restart gets a FRESH canvas; a lost context never returns on the old one.
+          const [webglFail, setWebglFail] = useState(null);
+          const [webglGen, setWebglGen] = useState(0);
+          const webglRestartRef = useRef(null);
           const webglCanvasRef = useRef(null);
           const threeSceneRef = useRef(null);
           const threeCameraRef = useRef(null);
@@ -1401,7 +1407,21 @@ window.StemLab = window.StemLab || {
             } else {
               disposeThree();
             }
-          }, [mode, threeLoaded, d.atoms, d.bonds, d.formula, moleculeDisplayStyle, showAtomLabels]);
+          }, [mode, threeLoaded, d.atoms, d.bonds, d.formula, moleculeDisplayStyle, showAtomLabels, webglGen]);
+
+          useEffect(function() {
+            if (webglFail && webglRestartRef.current) webglRestartRef.current.focus();
+          }, [webglFail]);
+
+          const restartMoleculeWebgl = function() {
+            setWebglFail(null);
+            setWebglGen(function(g) { return g + 1; });
+            // The restart button leaves with the panel; land on the first camera control.
+            setTimeout(function() {
+              var fit = typeof document !== 'undefined' && document.querySelector('[data-molecule-camera-control="fit"]');
+              if (fit && fit.focus) fit.focus();
+            }, 0);
+          };
 
           useEffect(function() {
             return function() {
@@ -1490,6 +1510,16 @@ window.StemLab = window.StemLab || {
               }
               if (renderer.setClearColor) renderer.setClearColor(0x020617, 0);
               threeRendererRef.current = renderer;
+              // A context lost after init used to leave a black viewport. releaseGl
+              // force-loses only removed canvases (our own teardown); the renderer check
+              // skips a renderer disposeThree already dropped.
+              canvas.addEventListener('webglcontextlost', function(ev) {
+                if (!canvas.isConnected) return;
+                ev.preventDefault();
+                if (threeRendererRef.current !== renderer) return;
+                disposeThree();
+                setTimeout(function() { setWebglFail('lost'); }, 0);
+              });
 
               var scene = new THREE.Scene();
               threeSceneRef.current = scene;
@@ -1617,6 +1647,8 @@ window.StemLab = window.StemLab || {
               } catch(e){}
             } catch(e) {
               console.error("Error in initThree", e);
+              disposeThree();
+              setWebglFail('failed');
             }
           };
 
@@ -3471,7 +3503,24 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       'data-fs-in': __alloT('stem.molecule.exit_fullscreen', 'Exit fullscreen 3D molecular model (Escape)'),
                       style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.5)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
                     }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
-                    React.createElement("canvas", {
+                    webglFail ? React.createElement("div", {
+                      role: "alert",
+                      'data-molecule-webgl-lost': webglFail,
+                      style: { position: "absolute", inset: 0, zIndex: 25, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: 16, textAlign: "center", background: "#0f172a", color: "#e2e8f0", border: "1px solid var(--mol-accent, #5eead4)", borderRadius: 12 }
+                    },
+                      React.createElement("h5", { style: { margin: 0, fontSize: 15, fontWeight: 800, color: "#f8fafc" } }, webglFail === 'lost'
+                        ? __alloT('stem.molecule.webgl_lost_title', '3D view paused')
+                        : __alloT('stem.molecule.webgl_failed_title', '3D view could not start')),
+                      React.createElement("p", { style: { margin: 0, fontSize: 13, lineHeight: 1.5, maxWidth: 420 } }, webglFail === 'lost'
+                        ? __alloT('stem.molecule.webgl_lost_detail', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved.')
+                        : __alloT('stem.molecule.webgl_failed_detail', 'This device could not start the 3D view. Your work is saved.')),
+                      React.createElement("button", {
+                        type: "button", ref: webglRestartRef, 'data-molecule-webgl-restart': 'true', onClick: restartMoleculeWebgl,
+                        className: "min-h-11 rounded-lg px-4 py-2 font-bold",
+                        style: { fontSize: 13, background: "var(--mol-accent, #5eead4)", color: "var(--mol-accent-ink, #042f2e)", border: "2px solid #f8fafc", cursor: "pointer" }
+                      }, __alloT('stem.molecule.webgl_restart', 'Restart 3D view'))
+                    ) : React.createElement("canvas", {
+                      key: 'mol-gl-' + webglGen,
                       ref: webglCanvasRef,
                       role: "img",
                       "aria-label": "3D molecular model of " + ((typeof d.formula === 'string' && d.formula) ? d.formula : "the selected molecule") + ". Camera controls follow with front, side, top, zoom, and reset options. " + (moleculeDisplayStyle === "spheres" ? "Sphere model. " : "Ball-and-stick model. ") + (showAtomLabels ? "Atom labels shown." : "Atom labels hidden."),

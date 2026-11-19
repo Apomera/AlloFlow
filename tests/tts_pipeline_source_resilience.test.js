@@ -426,7 +426,8 @@ describe('source resilience contracts', () => {
     // Caller cancellation terminates; it must never masquerade as a promotion.
     expect(phase).toContain("String(e && e.name || '') !== 'AbortError'");
     // Speculative look-aheads carry no retry budget.
-    expect(phase).toMatch(/reason: 'read-aloud-preload',[\s\S]{0,120}maxRetries: 0,/);
+    // 2026-11-17: allowProviderFallback and signal now sit between them; the window grew, the rule did not.
+    expect(phase).toMatch(/reason: 'read-aloud-preload',[\s\S]{0,240}maxRetries: 0,/);
     // Terminal no-audio failure stops playback instead of silently advancing.
     expect(phase).toContain("terminatePlayback('tts-refused', err)");
     expect(phase).toContain("terminatePlayback('tts-unavailable', err)");

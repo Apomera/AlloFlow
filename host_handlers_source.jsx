@@ -361,13 +361,45 @@ const onUpdateResource = (resourceId, updater, options = {}) => {
     return true;
   };
 const focusGuidedTarget = () => {
-    const targetId = __d.GUIDED_TOUR_MAP[__d.guidedActiveSteps[__d.guidedStep]?.id];
-    const focusTarget = () => {
-      const target = targetId && document.getElementById(targetId);
+    const stepId = __d.guidedActiveSteps[__d.guidedStep]?.id;
+    const targetId = __d.GUIDED_TOUR_MAP[stepId];
+    const reduceMotion = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const afterPaint = (fn) => { if (window.requestAnimationFrame) window.requestAnimationFrame(() => window.requestAnimationFrame(fn)); else setTimeout(fn, 0); };
+    const usable = el => !!el && !el.disabled && !el.closest?.('[hidden]');
+    // The control to press: a panel's marked main button, else its first real control
+    // (never the panel's own open/close header or a disclosure toggle).
+    const controlIn = (root) => {
+      if (!root) return null;
+      const primary = [...root.querySelectorAll('[data-guided-primary]')].find(usable);
+      if (primary) return primary;
+      return [...root.querySelectorAll('button,input,select,textarea,a[href]')].find(el => usable(el) && !el.hasAttribute('aria-expanded')) || root;
+    };
+    const analysisControl = () => {
+      // Analyze / View analyzed source material live in the Source view.
+      const view = document.getElementById('source-check-panel');
+      if (view) return [view.querySelector('[data-source-check-details]'), view.querySelector('[data-source-run-check]')].find(usable) || view;
+      return null;
+    };
+    const focusTarget = (retry = true) => {
+      let target = null;
+      if (stepId === 'analysis') {
+        target = analysisControl();
+        if (!target) {
+          const opener = [...document.querySelectorAll('[data-source-open]')].find(usable);
+          if (opener && retry) { opener.click(); afterPaint(() => focusTarget(false)); return; }
+          target = [...document.querySelectorAll('[data-source-paste]')].find(usable) || (targetId && document.getElementById(targetId));
+        }
+      } else {
+        const panel = targetId && document.getElementById(targetId);
+        const toolId = __d.DOM_TO_TOOL_ID_MAP?.[targetId];
+        if (retry && toolId && Array.isArray(__d.expandedTools) && !__d.expandedTools.includes(toolId) && typeof __d.ensureToolVisible === 'function') {
+          __d.ensureToolVisible(toolId); afterPaint(() => focusTarget(false)); return;
+        }
+        target = controlIn(panel);
+      }
       if (!target) return;
-      target.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
-      const focusable = target.matches?.('button,input,textarea,select,a[href],[tabindex]:not([tabindex="-1"])') ? target : target.querySelector?.('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])');
-      if (focusable?.focus) focusable.focus({ preventScroll: true });
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+      if (target.matches?.('button,input,textarea,select,a[href]')) target.focus({ preventScroll: true });
       else {
         const previousTabIndex = target.getAttribute('tabindex');
         target.setAttribute('tabindex', '-1');
@@ -375,6 +407,7 @@ const focusGuidedTarget = () => {
         target.addEventListener('blur', restoreTabIndex, { once: true });
         try { target.focus({ preventScroll: true }); } catch (_) { target.focus(); }
       }
+      _showGuidedPointer(target, __d.t ? (__d.t('guided.click_here') || 'Click here') : 'Click here', reduceMotion);
     };
     // N2 (2026-08-16): now that History is reachable during Guided Mode, the tool this
     // wants to focus may not be mounted (the Create column is not rendered on the
@@ -4988,6 +5021,18 @@ const handleDeleteHistoryItem = (e, id, itemRef = null) => {
         __d.addToast(__d.t('directions.delete_ref_notice', { titles }), 'warning');
       }
     } catch (_) {}
+    // Undo (2026-11-18): the resource goes back where it was. Math answers in progress on it stay cleared.
+    if (deletedArtifact && typeof __d.addToast === 'function') {
+      const deletedTitle = String(__d._alloSafeArtifactField(deletedArtifact, 'title') || deletedArtifactType || 'resource').slice(0, 60);
+      __d.addToast((__d.t('toasts.deleted') || 'Deleted "') + deletedTitle + '"', 'info', { action: { label: __d.t('common.undo') || 'Undo', onClick: () => {
+        __d.setHistory(prev => {
+          if (!Array.isArray(prev) || prev.some(it => it && __d.sameArtifactInstance(it, deletedArtifact))) return prev;
+          const next = [...prev];
+          next.splice(Math.min(Math.max(referencedIndex, 0), next.length), 0, deletedArtifact);
+          return next;
+        });
+      } } });
+    }
     if (deletingActiveResource) {
         __d.setGeneratedContent(null);
       __d.setMbJoinError(false);
@@ -11045,13 +11090,71 @@ const handleNavigateResource = (direction) => {
           // Preserve the artifact-owned grade, standards, role, source links, and
           // complexity evidence when navigating history. Rebuilding three fields
           // here made later checks silently fall back to ambient Universal settings.
-          __d.setGeneratedContent({ ...targetItem });
-          __d.setActiveView(targetItem.type);
+          // Some resources open the way History opens them: books, sets, boards, videos
+          // and labs in their own window, and Word Sounds / Adventure with their saved state.
+          const opener = typeof __d.handleRestoreView === 'function' ? __d.handleRestoreView : null;
+          const type = targetItem.type;
+          const restoresState = type === 'word-sounds' || type === 'adventure';
+          const opensWindow = _NAV_WINDOW_TYPES.has(type);
           __d.setStickers([]);
           __d.stopPlayback();
+          if (opener && restoresState) {
+              try { opener(targetItem); return; } catch (error) { __d.warnLog?.('[navigate] History opener failed; showing the saved resource', error); }
+          }
+          __d.setGeneratedContent({ ...targetItem });
+          __d.setActiveView(type);
+          if (opener && opensWindow) {
+              try { opener(targetItem); return; } catch (error) { __d.warnLog?.('[navigate] Could not open the resource window', error); }
+          }
           __d._alloFollowResourceLive(targetItem, { blockedToast: __d.t('toasts.teacher_view_only') });
       }
   };
+// Guided "Show me where to click": a ring on the exact control plus a small label,
+// for about 4 seconds. Pointer-events none, so it never blocks the page.
+let _guidedPointerCleanup = null;
+const _showGuidedPointer = (target, label, reduceMotion) => {
+  if (!target || typeof document === 'undefined') return;
+  if (_guidedPointerCleanup) _guidedPointerCleanup();
+  if (!document.getElementById('allo-guided-pointer-style')) {
+    const style = document.createElement('style');
+    style.id = 'allo-guided-pointer-style';
+    style.textContent = '.allo-guided-pointer-ring{outline:3px solid #f59e0b!important;outline-offset:3px!important;border-radius:10px}'
+      + '@media (prefers-reduced-motion:no-preference){.allo-guided-pointer-ring{animation:alloGuidedPulse 1s ease-in-out 3}}'
+      + '@keyframes alloGuidedPulse{50%{outline-color:#fde68a;outline-offset:6px}}'
+      + '.allo-guided-pointer-label{position:fixed;z-index:2147483000;pointer-events:none;background:#1e1b4b;color:#fff;font:700 13px/1.2 system-ui,sans-serif;padding:6px 10px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.25);border:2px solid #f59e0b}';
+    document.head.appendChild(style);
+  }
+  const tag = document.createElement('div');
+  tag.className = 'allo-guided-pointer-label';
+  tag.setAttribute('aria-hidden', 'true');
+  tag.textContent = '↓ ' + label;
+  document.body.appendChild(tag);
+  target.classList.add('allo-guided-pointer-ring');
+  let frame = 0;
+  const place = () => {
+    if (!target.isConnected) { cleanup(); return; }
+    const rect = target.getBoundingClientRect();
+    const top = rect.top - tag.offsetHeight - 8;
+    tag.style.top = Math.max(4, top < 4 ? rect.bottom + 8 : top) + 'px';
+    tag.style.left = Math.max(4, Math.min(window.innerWidth - tag.offsetWidth - 4, rect.left + rect.width / 2 - tag.offsetWidth / 2)) + 'px';
+    if (top < 4) tag.textContent = '↑ ' + label;
+    frame = window.requestAnimationFrame ? window.requestAnimationFrame(place) : 0;
+  };
+  const timer = setTimeout(() => cleanup(), reduceMotion ? 5000 : 4000);
+  const cleanup = () => {
+    clearTimeout(timer);
+    if (frame && window.cancelAnimationFrame) window.cancelAnimationFrame(frame);
+    target.classList.remove('allo-guided-pointer-ring');
+    tag.remove();
+    target.removeEventListener('click', cleanup);
+    if (_guidedPointerCleanup === cleanup) _guidedPointerCleanup = null;
+  };
+  target.addEventListener('click', cleanup);
+  _guidedPointerCleanup = cleanup;
+  place();
+};
+const _NAV_WINDOW_TYPES = new Set(['readingBook', 'readingSet', 'aac-board', 'video-ref', 'manipulative-resource',
+  'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'lingua-config', 'lingua-submission']);
 // The source box follows edits to the analyzed text only while it still holds that
 // same text, so nothing typed in the box is ever overwritten. The follow is not a
 // separate undo step: undoing the analysis edit brings the box back with it.

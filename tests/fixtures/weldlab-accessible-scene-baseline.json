@@ -1,6 +1,6 @@
 {
   "description": "Exact additive accessibility scene and BackBar replacements; old snippets restore pre-a11y14 source for unrelated region hashes.",
-  "originalSceneHash": "bc485a5b9c0aaed9c4c19a8c8a3cc903d69349e1f8e0c727bf7ee7f83b0153dc",
+  "originalSceneHash": "2b425a793ffe1fc2d00cefc399b151070badf195faf62142cfcdaf578ef38b4c",
   "originalBackBarHash": "09a75d82336ebbf96462a04e76e8c32ddfb198a0005e09ee1eca3bf7664e9c76",
   "changes": [
     {

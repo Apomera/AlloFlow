@@ -15076,7 +15076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // GLOSSARY view — search-filterable term list
       // ─────────────────────────────────────────
       function renderGlossary() {
-        var query = (d.glossaryQuery || '').toLowerCase();
+        var query = (typeof d.glossaryQuery === 'string' ? d.glossaryQuery : '').toLowerCase();
         var tagFilter = d.glossaryTag || 'all';
         var tags = ['all', 'engine', 'electrical', 'brakes', 'drivetrain', 'fluids', 'general'];
         var filtered = GLOSSARY.filter(function(g) {

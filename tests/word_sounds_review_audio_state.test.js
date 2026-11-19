@@ -44,7 +44,8 @@ const REVIEW_PLAY_START = '      const handleReviewPlayAudio = React.useCallback
 const hasReviewPlay = source.includes(REVIEW_PLAY_START);
 const reviewPlaySource = hasReviewPlay ? between(REVIEW_PLAY_START, '      // END REVIEW PLAY AUDIO') : '';
 const helpersSource = source.slice(source.indexOf('    const syllableCountWordKey ='), source.indexOf('    // SyllableCountingView'));
-const helpers = new Function('WS_CORE', 'window', helpersSource + '\nreturn { syllableCountWordKey, syllableCountContextKey, syllableCountDeliveryReady };')(core, {});
+// 2026-11-17: wsAllowsWordShardAudio (word audio shards, 7a6123d51b 11-15) is read by handleAudio too.
+const helpers = new Function('WS_CORE', 'window', helpersSource + '\nreturn { syllableCountWordKey, syllableCountContextKey, syllableCountDeliveryReady, wsAllowsWordShardAudio };')(core, {});
 const deviceVoiceSource = source.slice(source.indexOf('  function wsStudentDeviceVoiceOnly() {'), source.indexOf('  function wsAnnounce(message) {'));
 const deviceVoice = win => new Function('window', 'SpeechSynthesisUtterance', deviceVoiceSource + '\nreturn { wsStudentDeviceVoiceOnly, wsSpeakDeviceVoice };')(win, function (text) { this.text = text; });
 

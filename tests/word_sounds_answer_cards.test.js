@@ -344,16 +344,17 @@ describe('isolation asks for a position the level can manage', () => {
   it('easy asks only for the first sound', async () => {
     lastPick();
     await mount({activity: 'isolation', wsPreloadedWords: words});
-    expect(heading()).toBe('What is the 1st sound?');
+    expect(heading()).toBe('What is the first sound?');
   });
   it('medium asks for the first or the last sound, hard any sound', async () => {
     const spy = lastPick();
     await mount({activity: 'isolation', wsPreloadedWords: words, wordSoundsDifficulty: 'medium'});
-    expect(heading()).toBe('What is the 3rd sound?');
+    // 2026-11-18: a position is named by its place (first, middle, last), not 1st/2nd/3rd.
+    expect(heading()).toBe('What is the last sound?');
     await act(async () => root.unmount()); container.remove();
     spy.mockReturnValue(0.5);
     await mount({activity: 'isolation', wsPreloadedWords: words, wordSoundsDifficulty: 'hard'});
-    expect(heading()).toBe('What is the 2nd sound?');
+    expect(heading()).toBe('What is the middle sound?');
     expect(core.isolationPositions('medium', 3)).toEqual([0, 2]);
     expect(core.isolationPositions('easy', 5)).toEqual([0]);
     expect(core.isolationPositions(undefined, 3)).toEqual([0, 1, 2]);
@@ -362,8 +363,18 @@ describe('isolation asks for a position the level can manage', () => {
     const item = makePackItem();
     item.activityItems.isolation = {position: 2, correctSound: 't', options: ['k', 'a', 't', 'm', 's', 'b']};
     await mount({activity: 'isolation', wsPreloadedWords: [item]});
-    expect(heading()).toBe('What is the 3rd sound?');
+    expect(heading()).toBe('What is the last sound?');
     expect(cards().length).toBe(3);
+  });
+  it('a longer word counts the sounds between first and last', async () => {
+    const spy = vi.spyOn(Math, 'random').mockReturnValue(0.3);
+    const stop = [generated('stop', ['s', 't', 'o', 'p'])];
+    await mount({activity: 'isolation', wsPreloadedWords: stop, wordSoundsDifficulty: 'hard'});
+    expect(heading()).toBe('What is the second sound?');
+    await act(async () => root.unmount()); container.remove();
+    spy.mockReturnValue(0.99);
+    await mount({activity: 'isolation', wsPreloadedWords: stop, wordSoundsDifficulty: 'hard'});
+    expect(heading()).toBe('What is the last sound?');
   });
 });
 

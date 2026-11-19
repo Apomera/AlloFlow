@@ -18,6 +18,22 @@ export const VERSION = 1;
 export const MAX_TURNS = 48;
 export const GOALS = ['core', 'expedition', 'architect'];
 export const goalOf = board => GOALS.includes(board?.goal) ? board.goal : 'core';
+// Challenge level. Relaxed (no field) plays the authored costs. Strategic raises each project cost
+// by half (at most 6), then trims so activity rewards still fund all three projects, and keeps the
+// authored costs in relaxedCosts so switching back restores them exactly.
+export const challengeOf = board => board?.challenge === 'strategic' ? 'strategic' : 'relaxed';
+export function withChallenge(board, level) {
+  const { challenge, relaxedCosts, ...rest } = board;
+  const authored = rest.projects.map(p => ({ ...p, cost: object(relaxedCosts) && pair(relaxedCosts[p.id], 6) ? relaxedCosts[p.id].slice() : p.cost.slice() }));
+  if (level !== 'strategic') return { ...rest, projects: authored };
+  const total = rest.locations.reduce((sum, node) => sum.map((v, i) => v + node.reward[i]), [0, 0]);
+  const raised = authored.map(p => ({ ...p, cost: p.cost.map(value => Math.min(6, Math.ceil(value * 1.5))) }));
+  for (let i = 0; i < 2; i++) for (let guard = 0; guard < 40 && raised.reduce((sum, p) => sum + p.cost[i], 0) > total[i]; guard++) {
+    const over = raised.filter((p, index) => p.cost[i] > authored[index].cost[i]).sort((a, b) => b.cost[i] - a.cost[i])[0];
+    if (!over) break; over.cost[i]--;
+  }
+  return { ...rest, projects: raised, challenge: 'strategic', relaxedCosts: Object.fromEntries(authored.map(p => [p.id, p.cost])) };
+}
 export const ICONS = ['leaf', 'water', 'book', 'gear', 'star', 'home', 'bridge', 'flask'];
 export const THEMES = ['garden', 'river', 'workshop', 'archive', 'space'];
 const key = v => typeof v === 'string' && /^[a-z][a-z0-9_-]{0,39}$/.test(v) && !['constructor', 'prototype'].includes(v);
@@ -36,6 +52,8 @@ export function validateBoard(board, source) {
   if (board.expeditionKit !== undefined && (!isTabletop(board) || !EXPEDITION_KIT_IDS.includes(board.expeditionKit))) fail('Choose a supported expedition kit on a tabletop board only.');
   if (board.contracts !== undefined && (!isTabletop(board) || !Array.isArray(board.contracts) || board.contracts.length > 3)) fail('Use up to three expedition contracts on a tabletop board only.');
   if (board.goal !== undefined && !GOALS.includes(board.goal)) fail('Choose core, expedition or architect as the board goal.');
+  if (board.challenge !== undefined && board.challenge !== 'strategic') fail('Choose strategic as the challenge level, or leave it out for relaxed play.');
+  if (board.relaxedCosts !== undefined && (board.challenge !== 'strategic' || !object(board.relaxedCosts) || !Array.isArray(board.projects) || Object.keys(board.relaxedCosts).length !== board.projects.length || !board.projects.every(p => object(p) && pair(board.relaxedCosts[p.id], 6)))) fail('Relaxed costs must list every project on a strategic board.');
   for (const name of ['title', 'mission', 'debrief']) if (!text(board[name], name === 'title' ? 120 : 1200)) fail('Invalid ' + name + '.');
   if (!THEMES.includes(board.theme)) fail('Choose a supported visual theme.');
   if (!Array.isArray(board.resources) || board.resources.length !== 2 || board.resources.some(v => !text(v, 60)) || new Set(board.resources).size !== 2) fail('Give two distinct, lesson-relevant resource names.');
@@ -116,7 +134,7 @@ export function validateBoard(board, source) {
 }
 export function prepareBoard(raw, source) {
   const errors = validateBoard(raw, source); if (errors.length) throw Error(errors.join('\n'));
-  return { version: VERSION, ...(raw.goal === undefined ? {} : { goal: raw.goal }), ...(raw.playStyle === 'tabletop' ? { playStyle: 'tabletop' } : {}), ...(raw.travelLimit === 3 ? { travelLimit: 3 } : {}), ...(raw.expeditionKit ? {expeditionKit:raw.expeditionKit} : {}), title: raw.title.trim(), mission: raw.mission.trim(), debrief: raw.debrief.trim(), theme: raw.theme, resources: raw.resources.slice(), concepts: raw.concepts.map(c => ({ id: c.id, name: c.name })), starts: raw.starts.slice(), edges: raw.edges.map(e => e.slice()),
+  return { version: VERSION, ...(raw.goal === undefined ? {} : { goal: raw.goal }), ...(raw.challenge === 'strategic' ? { challenge: 'strategic', ...(raw.relaxedCosts ? { relaxedCosts: Object.fromEntries(raw.projects.map(p => [p.id, raw.relaxedCosts[p.id].slice()])) } : {}) } : {}),...(raw.playStyle === 'tabletop' ? { playStyle: 'tabletop' } : {}), ...(raw.travelLimit === 3 ? { travelLimit: 3 } : {}), ...(raw.expeditionKit ? {expeditionKit:raw.expeditionKit} : {}), title: raw.title.trim(), mission: raw.mission.trim(), debrief: raw.debrief.trim(), theme: raw.theme, resources: raw.resources.slice(), concepts: raw.concepts.map(c => ({ id: c.id, name: c.name })), starts: raw.starts.slice(), edges: raw.edges.map(e => e.slice()),
     locations: raw.locations.map(n => { const node = Object.fromEntries(['id', 'name', 'scene', 'instruction', 'explanation', 'sourceQuote', 'conceptId', 'icon', 'kind'].map(k => [k, n[k]])); node.reward = n.reward.slice(); node.hints = n.hints.slice(); if (isPuzzle(n)) Object.assign(node, copyPuzzle(n)); if (isSpatialChallenge(n)) Object.assign(node, copyChallenge(n)); if (n.kind === 'choice') { node.options = n.options.slice(); node.answer = n.answer; } if (n.kind === 'order') { node.items = n.items.slice(); node.order = n.order.slice(); } if (n.kind === 'settings') node.controls = n.controls.map(c => ({ label: c.label, options: c.options.slice(), answer: c.answer })); if (n.symbol !== undefined) node.symbol = n.symbol.trim(); return node; }),
     projects: raw.projects.map(p => ({ id: p.id, name: p.name, description: p.description, icon: p.icon, cost: p.cost.slice(), effect: p.effect.kind === 'yield' ? { kind: 'yield', resource: p.effect.resource } : { kind: 'path', targetId: p.effect.targetId }, ...(p.symbol !== undefined ? { symbol: p.symbol.trim() } : {}) })),
     ...(raw.contracts?.length ? { contracts: raw.contracts.map(contract => ({ id: contract.id, title: contract.title.trim(), description: contract.description.trim(), locations: contract.locations.slice(), reward: contract.reward.slice() })) } : {}),

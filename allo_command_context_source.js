@@ -438,7 +438,7 @@ function buildAlloCommandContext(deps) {
       if (showSubmitModal) return 'Submit Work is open. Review the submission details, submit, or cancel.';
       if (showStudentEntry && hasSelectedRole && !isTeacherMode) return 'Student Entry is open. Enter the learner name or nickname, continue, or close the dialog.';
       if (runTour && tourRect) return invokeTutorialVoiceAction('describe') || 'The app tutorial is open.';
-      if (showAIBackendModal) return 'AI Backend Settings is open. Choose a provider and model, test the connection, or close the dialog.';
+      if (showAIBackendModal) return 'AI setup is open. Choose a provider and model, test the connection, or close the dialog.';
       if (showTextSettings) return 'Text Settings is open. Change text size, spacing, font, reading theme, or color support.';
       if (showVoiceSettings) return 'Voice & Audio Settings is open. Choose voice input, spoken output, speed, or volume.';
       if (isTranslateModalOpen) return 'The Translation dialog is open. Choose a language, translate the current resource, or close the dialog.';
@@ -630,7 +630,7 @@ function buildAlloCommandContext(deps) {
       if (showSubmitModal) { handleCloseSubmitModal(); return 'Submit Work closed.'; }
       if (showStudentEntry && hasSelectedRole && !isTeacherMode) { handleCloseStudentEntry(); return 'Student Entry closed.'; }
       if (runTour && tourRect) return invokeTutorialVoiceAction('exit') || 'Tutorial closed.';
-      if (showAIBackendModal) { setShowAIBackendModal(false); return 'AI Backend Settings closed.'; }
+      if (showAIBackendModal) { setShowAIBackendModal(false); return 'AI setup closed.'; }
       if (showTextSettings) { setShowTextSettings(false); return 'Text Settings closed.'; }
       if (showVoiceSettings) { setShowVoiceSettings(false); return 'Voice & Audio Settings closed.'; }
       if (isTranslateModalOpen) { setIsTranslateModalOpen(false); return 'Translation closed.'; }

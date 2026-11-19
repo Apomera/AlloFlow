@@ -145,18 +145,27 @@ describe('directions whose resources are not in the pack', () => {
     const handlers = read('host_handlers_source.jsx');
     const start = handlers.indexOf('const handleDeleteHistoryItem = (e, id, itemRef = null) => {');
     const toasts = [];
-    const d = { history: pack(), generatedContent: null, t, addToast: (message, kind) => toasts.push([message, kind]), _alloNormalizeDirectionsData: normalize,
+    const d = { history: pack(), generatedContent: null, t, addToast: (message, kind, options) => toasts.push([message, kind, options]), _alloNormalizeDirectionsData: normalize,
       _alloSafeArtifactPublicIdValue: value => value == null ? '' : String(value), getArtifactInstanceId: () => '',
       findArtifactInstanceIndex: (list, instance, id) => list.findIndex(item => item && String(item.id) === id), _alloSafeArtifactField: (item, field) => item ? item[field] : undefined,
       getMathResourceStateKey: item => item ? item.id : '', sameArtifactInstance: (a, b) => a === b, getArtifactPublicId: item => item && item.id,
       clearMathResourceState: () => {}, getMathStoredProblemKeys: () => [], setHistory: update => { d.history = update(d.history); },
       removeArtifactInstanceFromList: list => list, _alloArtifactListLength: list => list.length };
     const remove = new Function('__d', handlers.slice(start, handlers.indexOf('const handleGenerateExtensionGuide', start)) + ';return handleDeleteHistoryItem;')(d);
+    const before = d.history.map(item => item.id);
     remove(null, 'res-b');
     expect(d.history.map(item => item.id)).not.toContain('res-b');
-    expect(toasts).toEqual([['Heads up: Homework still uses this resource for a goal or activity choice. Edit the directions to update them.', 'warning']]);
+    const warnings = () => toasts.filter(row => row[1] === 'warning').map(row => [row[0], row[1]]);
+    expect(warnings()).toEqual([['Heads up: Homework still uses this resource for a goal or activity choice. Edit the directions to update them.', 'warning']]);
+    // 2026-11-18: every delete also offers Undo, which puts the resource back where it was, once.
+    const undo = toasts.find(row => row[2] && row[2].action);
+    expect(undo[2].action.label).toBeTruthy();
+    undo[2].action.onClick();
+    expect(d.history.map(item => item.id)).toEqual(before);
+    undo[2].action.onClick();
+    expect(d.history.map(item => item.id)).toEqual(before);
     remove(null, 'res-d');
-    expect(toasts).toHaveLength(1);
+    expect(warnings()).toHaveLength(1);
   });
 });
 

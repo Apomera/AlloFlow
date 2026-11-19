@@ -171,11 +171,12 @@ describe('interrupted and concurrent chunk streams', () => {
 });
 
 describe('real mailbox receipt authorization', () => {
+  // 2026-11-17: a mailbox is owned through setupMailboxOwner (security change 274914f9d6, 11-14), not a claim request.
   const testSource=fs.readFileSync('tests/class_mailbox.test.js','utf8');
   const factory=testSource.slice(testSource.indexOf('function makeGsSandbox()'),testSource.indexOf("describe('Code.gs protocol"));
   const fresh=()=>new Function('gsSource',factory+';return makeGsSandbox();')(fs.readFileSync('apps_script/session_mailbox/Code.gs','utf8'));
   const receipt={version:1,resourceId:'picture',status:'ready',loaded:2,total:2,omitted:0,assignmentAt:100,at:200};
-  const setup=()=>{const {call}=fresh(),admin=call({a:'claim'}).admin,c='ABC23',k='local_test_secret_123456';expect(call({a:'open',admin,c,k}).ok).toBe(true);const student=call({a:'join',c,k}),other=call({a:'join',c,k});expect(call({a:'dset',admin,c,p:'s',d:{roster:{[student.uid]:{uid:student.uid},[other.uid]:{uid:other.uid}}}}).ok).toBe(true);return{call,admin,c,student,other};};
+  const setup=()=>{const {call}=fresh(),admin=call.setupOwner().admin,c='ABC23',k='local_test_secret_123456';expect(call({a:'open',admin,c,k}).ok).toBe(true);const student=call({a:'join',c,k}),other=call({a:'join',c,k});expect(call({a:'dset',admin,c,p:'s',d:{roster:{[student.uid]:{uid:student.uid},[other.uid]:{uid:other.uid}}}}).ok).toBe(true);return{call,admin,c,student,other};};
   it('preserves image and activity receipts through independent student writes', () => {
     const {call,admin,c,student}=setup(),imagePath='roster.'+student.uid+'.imageDelivery',activityPath='roster.'+student.uid+'.activityProgress';
     const patch=u=>call({a:'dpatch',c,uid:student.uid,pt:student.pt,p:'s',u});

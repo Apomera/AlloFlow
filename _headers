@@ -115,7 +115,7 @@
   Document-Isolation-Policy: isolate-and-credentialless
 /speech_device_test.html
   Document-Isolation-Policy: isolate-and-credentialless
-# Practice-song library (scripts/build-song-packs.cjs in the Rachel Pomeranz site repo): Gemini Canvas fetches it
+# Practice-song library (built by scripts/build-song-packs.cjs in its source project): Gemini Canvas fetches it
 # cross-origin. Packs and data files carry their content hash in the name; songs.json must stay revalidated.
 /song_library/*
   Access-Control-Allow-Origin: *

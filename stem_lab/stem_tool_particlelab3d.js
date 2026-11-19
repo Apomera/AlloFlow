@@ -9117,7 +9117,7 @@
                 value: workbenchSearch,
                 onChange: function (e) { setWorkbenchSearch(String(e.target.value || '')); },
                 placeholder: __alloT('stem.particlelab3d.search_workbench_placeholder', 'Search 30 modules (Mach, Bohr, Jeans)...'),
-                className: 'min-h-11 sm:min-h-9 min-w-0 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-900'
+                className: 'min-h-11 sm:min-h-9 min-w-0 w-full rounded-lg border border-slate-500 bg-white px-3 py-1.5 text-xs font-semibold text-slate-900'
               }),
               workbenchSearch.trim() !== '' && h('button', {
                 id: 'particle-workbench-clear-search-btn',
@@ -9199,7 +9199,7 @@
                   value: glossarySearch,
                   onChange: function (e) { setGlossarySearch(e.target.value); },
                   placeholder: __alloT('stem.particlelab3d.glossary_search_placeholder', 'Search symbol or term (e.g. Kn, Z, H)...'),
-                  className: 'min-h-11 sm:min-h-9 w-full sm:w-64 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-500'
+                  className: 'min-h-11 sm:min-h-9 w-full sm:w-64 rounded-lg border border-slate-500 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-500'
                 })
               )
             ),
@@ -9365,7 +9365,7 @@
                           setGasSpeciesA(nextGA);
                           persist({ gasSpeciesA: nextGA });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       }, GAS_IDENTITIES.map(function (g) {
                         return h('option', { key: 'mixA-' + g.id, value: g.id }, g.name + ' (' + g.formula + ')');
                       }))
@@ -9380,7 +9380,7 @@
                           setMixMolesA(nextNA);
                           persist({ mixMolesA: nextNA });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       }, (MIX_MOLES_OPTIONS.indexOf(mixMolesA) < 0 ? [mixMolesA] : []).concat(MIX_MOLES_OPTIONS).map(function (nOpt, idx) {
                         return h('option', { key: 'na-' + idx + '-' + nOpt, value: String(nOpt) }, nOpt + ' mol');
                       }))
@@ -9395,7 +9395,7 @@
                           setGasSpeciesB(nextGB);
                           persist({ gasSpeciesB: nextGB });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       }, GAS_IDENTITIES.map(function (g) {
                         return h('option', { key: 'mixB-' + g.id, value: g.id }, g.name + ' (' + g.formula + ')');
                       }))
@@ -9410,7 +9410,7 @@
                           setMixMolesB(nextNB);
                           persist({ mixMolesB: nextNB });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       }, (MIX_MOLES_OPTIONS.indexOf(mixMolesB) < 0 ? [mixMolesB] : []).concat(MIX_MOLES_OPTIONS).map(function (nOpt, idx) {
                         return h('option', { key: 'nb-' + idx + '-' + nOpt, value: String(nOpt) }, nOpt + ' mol');
                       }))
@@ -9425,7 +9425,7 @@
                           setCalcVolumeL(nextV);
                           persist({ calcVolumeL: nextV });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       }, CALC_VOLUME_L_OPTIONS.map(function (vOpt) {
                         return h('option', { key: vOpt, value: String(vOpt) }, vOpt + ' L');
                       }))
@@ -9440,7 +9440,7 @@
                           setCalcTempK(nextT);
                           persist({ calcTempK: nextT });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       },
                         (CALC_TEMP_K_OPTIONS.indexOf(calcTempK) < 0 ? [calcTempK] : []).concat(CALC_TEMP_K_OPTIONS).map(function (tOpt, idx) {
                           var isCustom = CALC_TEMP_K_OPTIONS.indexOf(tOpt) < 0;
@@ -9488,7 +9488,7 @@
                           setGasSpeciesA(nextG);
                           persist({ gasSpeciesA: nextG });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       }, GAS_IDENTITIES.map(function (g) {
                         return h('option', { key: 'calc-' + g.id, value: g.id }, g.name + ' (' + g.formula + ')');
                       }))
@@ -9503,7 +9503,7 @@
                           setCalcMoles(nextN);
                           persist({ calcMoles: nextN });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       }, CALC_MOLES_OPTIONS.map(function (nOpt) {
                         return h('option', { key: nOpt, value: String(nOpt) }, nOpt + ' mol');
                       }))
@@ -9518,7 +9518,7 @@
                           setCalcVolumeL(nextV);
                           persist({ calcVolumeL: nextV });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       }, CALC_VOLUME_L_OPTIONS.map(function (vOpt) {
                         return h('option', { key: vOpt, value: String(vOpt) }, vOpt + ' L');
                       }))
@@ -9533,7 +9533,7 @@
                           setCalcTempK(nextT);
                           persist({ calcTempK: nextT });
                         },
-                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                       },
                         (CALC_TEMP_K_OPTIONS.indexOf(calcTempK) < 0 ? [calcTempK] : []).concat(CALC_TEMP_K_OPTIONS).map(function (tOpt, idx) {
                           var isCustom = CALC_TEMP_K_OPTIONS.indexOf(tOpt) < 0;
@@ -9730,7 +9730,7 @@
                   setDataStudioAxis(nextAxis);
                   persist({ dataStudioAxis: nextAxis });
                 },
-                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900'
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-3 py-1.5 text-xs font-bold text-slate-900'
               }, PARTICLE_SWEEP_AXES.map(function (axisKey) {
                 var spec = getParticleAxisSpec(axisKey);
                 return h('option', { key: axisKey, value: axisKey }, spec.label);
@@ -9839,7 +9839,7 @@
                   value: csvImportDraft,
                   onChange: function (e) { setCsvImportDraft(e.target.value); },
                   placeholder: __alloT('stem.particlelab3d.csv_import_placeholder', 'x, y (one pair per line, optional header)...'),
-                  className: 'mt-1 w-full resize-y rounded-lg border border-slate-300 bg-slate-50 p-2 font-mono text-xs text-slate-900 placeholder-slate-500'
+                  className: 'mt-1 w-full resize-y rounded-lg border border-slate-500 bg-slate-50 p-2 font-mono text-xs text-slate-900 placeholder-slate-500'
                 }),
                 h('div', { className: 'mt-2 flex flex-wrap gap-2' },
                   h('button', {
@@ -9978,7 +9978,7 @@
                       setGasSpeciesA(nextG);
                       persist({ gasSpeciesA: nextG });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, GAS_IDENTITIES.map(function (g) {
                     return h('option', { key: g.id, value: g.id }, g.name + ' • ' + g.molarMass.toFixed(1));
                   }))
@@ -9993,7 +9993,7 @@
                       setGasSpeciesB(nextG);
                       persist({ gasSpeciesB: nextG });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, GAS_IDENTITIES.map(function (g) {
                     return h('option', { key: g.id, value: g.id }, g.name + ' • ' + g.molarMass.toFixed(1));
                   }))
@@ -10033,7 +10033,7 @@
                   setThermoSource(nextSrc);
                   persist({ thermoSource: nextSrc });
                 },
-                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
               }, [
                 ['auto', 'Auto (Snapshots \u2192 Trials \u2192 Log)'],
                 ['snapshots', 'Pinned Snapshots A \u2192 B'],
@@ -10163,7 +10163,7 @@
                     setActiveChallengeId(nextId);
                     persist({ activeChallengeId: nextId });
                   },
-                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                 }, PARTICLE_CHALLENGES.map(function (ch) {
                   return h('option', { key: ch.id, value: ch.id }, (completedChallenges[ch.id] ? '\u2713 ' : '') + ch.title);
                 })),
@@ -10199,7 +10199,7 @@
                     setActiveMissionId(nextId);
                     persist({ activeMissionId: nextId });
                   },
-                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                 }, APPLIED_WORKBENCH_MISSIONS.map(function (ms) {
                   return h('option', { key: ms.id, value: ms.id }, (completedMissions[ms.id] ? '\u2713 ' : '') + ms.title);
                 })),
@@ -10253,7 +10253,7 @@
                   setTransportPressureAtm(nextP);
                   persist({ transportPressureAtm: nextP });
                 },
-                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
               }, [
                 ['0.001', '0.001 atm (Rough Vacuum)'],
                 ['0.01', '0.01 atm (Mesosphere)'],
@@ -10339,7 +10339,7 @@
                   setCycleType(nextC);
                   persist({ cycleType: nextC });
                 },
-                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
               }, [
                 ['carnot', 'Carnot Cycle (Ideal Limit)'],
                 ['otto', 'Otto Spark-Ignition'],
@@ -10357,7 +10357,7 @@
                       setCycleCompressionRatio(nextR);
                       persist({ cycleCompressionRatio: nextR });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, [2, 3, 4, 6].map(function (rv) { return h('option', { key: rv, value: String(rv) }, 'r_V = ' + rv + 'x'); }))
                 ),
                 h('div', { className: 'min-w-0' },
@@ -10370,7 +10370,7 @@
                       setCycleHotTemp(nextH);
                       persist({ cycleHotTemp: nextH });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, [480, 640, 840].map(function (th) { return h('option', { key: th, value: String(th) }, th + ' K'); }))
                 )
               ),
@@ -10470,7 +10470,7 @@
                       setPlanetId(nextP);
                       persist({ planetId: nextP });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, PLANETARY_BODIES.map(function (b) {
                     return h('option', { key: b.id, value: b.id }, b.name + ' (' + b.gravityMs2.toFixed(1) + ' m/s\u00B2)');
                   }))
@@ -10485,7 +10485,7 @@
                       setPlanetTempMode(nextM);
                       persist({ planetTempMode: nextM });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, [
                     ['planet', 'Planet (' + liveAtmosphere.planet.surfaceTempK + ' K)'],
                     ['chamber', 'Chamber (' + Math.round(displayTemperature || temperature) + ' K)']
@@ -10569,7 +10569,7 @@
                   setStatMechThreshold(nextU);
                   persist({ statMechThreshold: nextU });
                 },
-                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
               }, [
                 ['1.5', '1.5 k_B T (Above Mean)'],
                 ['2.5', '2.5 k_B T (Moderate Barrier)'],
@@ -10649,7 +10649,7 @@
                       setArrheniusEaKj(nextEa);
                       persist({ arrheniusEaKj: nextEa });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, ARRHENIUS_EA_OPTIONS.map(function (ea) { return h('option', { key: ea, value: String(ea) }, ea + ' kJ/mol'); }))
                 ),
                 h('div', { className: 'min-w-0' },
@@ -10662,7 +10662,7 @@
                       setStericFactor(nextSt);
                       persist({ stericFactor: nextSt });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, [
                     ['0.05', 'p = 0.05 (Bulky)'],
                     ['0.25', 'p = 0.25 (Oriented)'],
@@ -10738,7 +10738,7 @@
                       setAcousticFreqHz(nextF);
                       persist({ acousticFreqHz: nextF });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, ACOUSTIC_FREQUENCIES_HZ.map(function (hz) { return h('option', { key: hz, value: String(hz) }, hz + ' Hz'); }))
                 ),
                 h('div', { className: 'min-w-0' },
@@ -10751,7 +10751,7 @@
                       setAcousticFlowMs(nextU);
                       persist({ acousticFlowMs: nextU });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, ACOUSTIC_FLOW_SPEEDS_MS.map(function (ms) { return h('option', { key: ms, value: String(ms) }, ms + ' m/s'); }))
                 )
               ),
@@ -10826,7 +10826,7 @@
                   setSpectralWavelengthNm(nextWl);
                   persist({ spectralWavelengthNm: nextWl });
                 },
-                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
               }, [
                 ['121.6', '121.6 nm (Lyman-\u03B1 UV)'],
                 ['589', '589 nm (Sodium D)'],
@@ -10898,7 +10898,7 @@
                   setJtPressureDropAtm(nextDrop);
                   persist({ jtPressureDropAtm: nextDrop });
                 },
-                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
               }, JT_PRESSURE_DROPS_ATM.map(function (dp) { return h('option', { key: dp, value: String(dp) }, dp + ' atm valve drop'); })),
               h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
@@ -10966,7 +10966,7 @@
                   setOrificeDiameterMm(nextD);
                   persist({ orificeDiameterMm: nextD });
                 },
-                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
               }, ORIFICE_DIAMETERS_MM.map(function (mm) { return h('option', { key: mm, value: String(mm) }, mm + ' mm pinhole'); })),
               h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
@@ -11037,7 +11037,7 @@
                       setBrownianBeadNm(nextR);
                       persist({ brownianBeadNm: nextR });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, [
                     ['50', '50 nm (Virion)'],
                     ['250', '250 nm (Colloid)'],
@@ -11055,7 +11055,7 @@
                       setBrownianMedium(nextMed);
                       persist({ brownianMedium: nextMed });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, [
                     ['water', 'Liquid Water'],
                     ['cytosol', 'Cell Cytosol'],
@@ -11131,7 +11131,7 @@
                       setOsmoticMolarityM(nextC);
                       persist({ osmoticMolarityM: nextC });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, [
                     ['0.05', '0.05 M (Hypo)'],
                     ['0.15', '0.15 M (Saline)'],
@@ -11149,7 +11149,7 @@
                       setOsmoticVanTHoffI(nextI);
                       persist({ osmoticVanTHoffI: nextI });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, [
                     ['1', 'i = 1 (Glucose)'],
                     ['2', 'i = 2 (NaCl)'],
@@ -11225,7 +11225,7 @@
                       setElectrodeGapCm(nextGap);
                       persist({ electrodeGapCm: nextGap });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, ELECTRODE_GAPS_CM.map(function (cm) { return h('option', { key: cm, value: String(cm) }, cm + ' cm gap'); }))
                 ),
                 h('div', { className: 'min-w-0' },
@@ -11238,7 +11238,7 @@
                       setAppliedVoltageV(nextV);
                       persist({ appliedVoltageV: nextV });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, DISCHARGE_VOLTAGES_V.map(function (v) { return h('option', { key: v, value: String(v) }, v + ' V'); }))
                 )
               ),
@@ -11328,7 +11328,7 @@
                     setSolidCrystalId(nextCrystal);
                     persist({ solidCrystalId: nextCrystal });
                   },
-                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                 }, SOLID_CRYSTAL_IDS.map(function (cid) {
                   var cSpec = SOLID_CRYSTAL_SPECS[cid];
                   return h('option', { key: cid, value: cid }, cSpec.label + ' (\u0398_D=' + cSpec.debyeTempK + ' K)');
@@ -11410,7 +11410,7 @@
                       setVolatileLiquidId(nextLiquid);
                       persist({ volatileLiquidId: nextLiquid });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, VOLATILE_LIQUID_IDS.map(function (lid) {
                     var lSpec = VOLATILE_LIQUID_SPECS[lid];
                     return h('option', { key: lid, value: lid }, lSpec.label + ' (' + lSpec.normalBoilK.toFixed(0) + ' K)');
@@ -11426,7 +11426,7 @@
                       setRelativeHumidityPct(nextRh);
                       persist({ relativeHumidityPct: nextRh });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, RELATIVE_HUMIDITY_OPTIONS.map(function (rh) {
                     return h('option', { key: rh, value: String(rh) }, rh + '% RH');
                   }))
@@ -11514,7 +11514,7 @@
                     setCo2MixingPpm(nextPpm);
                     persist({ co2MixingPpm: nextPpm });
                   },
-                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                 }, CO2_MIXING_PPM_OPTIONS.map(function (ppm) {
                   var tag = ppm === 280 ? ' (Pre-industrial)' : (ppm === 425 ? ' (Modern)' : (ppm === 560 ? ' (2x CO\u2082)' : ' (3x CO\u2082)'));
                   return h('option', { key: ppm, value: String(ppm) }, ppm + ' ppm' + tag);
@@ -11597,7 +11597,7 @@
                     setShockMachNumber(nextMach);
                     persist({ shockMachNumber: nextMach });
                   },
-                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                 }, SHOCK_MACH_OPTIONS.map(function (mOpt) {
                   var tag = mOpt < 1 ? ' (Subsonic)' : (mOpt >= 5 ? ' (Hypersonic)' : ' (Supersonic)');
                   return h('option', { key: mOpt, value: String(mOpt) }, 'Mach ' + mOpt + tag);
@@ -11678,7 +11678,7 @@
                       setFusionFuelId(nextFuel);
                       persist({ fusionFuelId: nextFuel });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, FUSION_FUEL_IDS.map(function (fid) {
                     var fSpec = FUSION_FUEL_SPECS[fid];
                     return h('option', { key: fid, value: fid }, fSpec.label);
@@ -11694,7 +11694,7 @@
                       setGamowTempKeV(nextKev);
                       persist({ gamowTempKeV: nextKev });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, GAMOW_TEMP_KEV_OPTIONS.map(function (kev) {
                     return h('option', { key: kev, value: String(kev) }, kev + ' keV (' + Math.round(kev * 11.6045) + ' MK)');
                   }))
@@ -11780,7 +11780,7 @@
                       setNoiseResistanceOhm(nextR);
                       persist({ noiseResistanceOhm: nextR });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, NOISE_RESISTANCE_OHM_OPTIONS.map(function (rVal) {
                     var label = rVal >= 1e6 ? (rVal / 1e6) + ' M\u03A9' : (rVal >= 1e3 ? (rVal / 1e3) + ' k\u03A9' : rVal + ' \u03A9');
                     return h('option', { key: rVal, value: String(rVal) }, label);
@@ -11796,7 +11796,7 @@
                       setNoiseBandwidthHz(nextBw);
                       persist({ noiseBandwidthHz: nextBw });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, NOISE_BANDWIDTH_HZ_OPTIONS.map(function (bwVal) {
                     var label = bwVal >= 1e6 ? (bwVal / 1e6) + ' MHz' : (bwVal / 1e3) + ' kHz';
                     return h('option', { key: bwVal, value: String(bwVal) }, label);
@@ -11877,7 +11877,7 @@
                   setAstroCloudId(nextCloud);
                   persist({ astroCloudId: nextCloud });
                 },
-                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
               }, ASTRO_CLOUD_IDS.map(function (cId) {
                 return h('option', { key: cId, value: cId }, ASTRO_CLOUD_SPECS[cId].label);
               })),
@@ -11967,7 +11967,7 @@
                       setAerosolDropletUm(nextD);
                       persist({ aerosolDropletUm: nextD });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, AEROSOL_DROPLET_UM_OPTIONS.map(function (dUm) {
                     return h('option', { key: dUm, value: String(dUm) }, dUm + ' \u00B5m');
                   }))
@@ -11982,7 +11982,7 @@
                       setVentilationAch(nextA);
                       persist({ ventilationAch: nextA });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, VENTILATION_ACH_OPTIONS.map(function (achVal) {
                     return h('option', { key: achVal, value: String(achVal) }, achVal + ' ACH');
                   }))
@@ -12063,7 +12063,7 @@
                       setSorbentSurfaceId(nextS);
                       persist({ sorbentSurfaceId: nextS });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, SORBENT_SURFACE_IDS.map(function (sId) {
                     return h('option', { key: sId, value: sId }, SORBENT_SURFACE_SPECS[sId].label);
                   }))
@@ -12078,7 +12078,7 @@
                       setWindSpeedMs(nextW);
                       persist({ windSpeedMs: nextW });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, WIND_SPEED_MS_OPTIONS.map(function (wVal) {
                     return h('option', { key: wVal, value: String(wVal) }, wVal + ' m/s');
                   }))
@@ -12163,7 +12163,7 @@
                       setOceanDepthM(nextDepth);
                       persist({ oceanDepthM: nextDepth });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, OCEAN_DEPTH_M_OPTIONS.map(function (dVal) {
                     return h('option', { key: dVal, value: String(dVal) }, dVal + ' m');
                   }))
@@ -12178,7 +12178,7 @@
                       setOceanSalinityPsu(nextSal);
                       persist({ oceanSalinityPsu: nextSal });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, OCEAN_SALINITY_PSU_OPTIONS.map(function (sVal) {
                     var label = sVal === 0 ? '0 PSU (Fresh)' : (sVal === 18 ? '18 PSU (Brackish)' : '35 PSU (Seawater)');
                     return h('option', { key: sVal, value: String(sVal) }, label);
@@ -12258,7 +12258,7 @@
                       setAlveolarAltitudeM(nextAlt);
                       persist({ alveolarAltitudeM: nextAlt });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, ALVEOLAR_ALTITUDE_M_OPTIONS.map(function (aVal) {
                     var label = aVal === 0 ? '0 m (Sea Level)' : (aVal === 2400 ? '2400 m (Cabin)' : (aVal === 5300 ? '5300 m (Base Camp)' : '8848 m (Everest)'));
                     return h('option', { key: aVal, value: String(aVal) }, label);
@@ -12274,7 +12274,7 @@
                       setBloodPh(nextPh);
                       persist({ bloodPh: nextPh });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, BLOOD_PH_OPTIONS.map(function (phVal) {
                     var label = phVal === 7.2 ? 'pH 7.20 (Acidosis)' : (phVal === 7.6 ? 'pH 7.60 (Alkalosis)' : 'pH 7.40 (Normal)');
                     return h('option', { key: phVal, value: String(phVal) }, label);
@@ -12357,7 +12357,7 @@
                       setMagmaMeltId(nextMelt);
                       persist({ magmaMeltId: nextMelt });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, MAGMA_MELT_IDS.map(function (mId) {
                     return h('option', { key: mId, value: mId }, MAGMA_MELT_SPECS[mId].label);
                   }))
@@ -12372,7 +12372,7 @@
                       setMagmaDepthKm(nextZ);
                       persist({ magmaDepthKm: nextZ });
                     },
-                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-500 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
                   }, MAGMA_DEPTH_KM_OPTIONS.map(function (zVal) {
                     return h('option', { key: zVal, value: String(zVal) }, zVal + ' km');
                   }))
@@ -12588,7 +12588,7 @@
               onChange: function (e) { setSessionJsonDraft(e.target.value); },
               rows: 5,
               placeholder: __alloT('stem.particlelab3d.session_json_placeholder', 'Paste exported alloflow.particleLab3d.v1 JSON here...'),
-              className: 'mt-1.5 w-full resize-y rounded-xl border border-slate-600 bg-slate-950 p-3 font-mono text-xs text-cyan-100 placeholder-slate-400 outline-none focus:border-cyan-400'
+              className: 'mt-1.5 w-full resize-y rounded-xl border border-slate-500 bg-slate-950 p-3 font-mono text-xs text-cyan-100 placeholder-slate-400 outline-none focus:border-cyan-400'
             })
           )
         )

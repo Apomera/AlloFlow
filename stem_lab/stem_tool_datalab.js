@@ -820,11 +820,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   // ── Small helpers: clipboard, links, CSV ────────────────────────────────
   function copyText(text) {
     return new Promise(function (resolve) {
+      // The host helper carries the execCommand fallback Gemini Canvas needs (it blocks navigator.clipboard).
       try {
-        if (navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-          navigator.clipboard.writeText(text).then(function () { resolve(true); }, function () { resolve(false); });
-          return;
-        }
+        Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text)).then(function () { resolve(true); }, function () { resolve(false); });
+        return;
       } catch (_) {}
       resolve(false);
     });

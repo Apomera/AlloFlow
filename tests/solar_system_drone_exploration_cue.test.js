@@ -39,6 +39,9 @@ function harness(overrides = {}) {
     explorationLandmarkIndex: -1, pois: [{ name: 'Ridge', x: 6, z: -8 }, { name: 'Crater', x: 30, z: 0 }],
     discoveredPOIs: {}, playerPos: { x: 0, y: 0, z: 0 },
     recordDroneJournal: vi.fn(), awardStemXP: vi.fn(), markMissionStat: vi.fn(), upd: vi.fn(),
+    // The cue titles go through the tool's translator; in the app these come from render scope.
+    __alloT: (key, fallback) => fallback,
+    __alloFill: (template, values) => String(template).replace(/\{([A-Za-z0-9_]+)\}/g, (m, k) => (Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m)),
     ...overrides,
   });
   vm.runInContext(helpers, context);

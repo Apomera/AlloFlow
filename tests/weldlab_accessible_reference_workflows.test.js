@@ -52,7 +52,7 @@ describe('Focus after removing comparison or evidence controls',()=>{
  it('reverses only recorded accessibility edits and preserves source mirrors',()=>{
   const source=readFileSync('stem_lab/stem_tool_weldlab.js','utf8'),restored=stripWeldlabWorkflowFixes(source);
   expect(stripWeldlabWorkflowFixes(restored)).toBe(restored);
-  expect(createHash('sha256').update(Buffer.from(restored.replace(/\n/g,'\r\n'))).digest('hex')).toBe('7266d431321c35a2772696b634203fe635e17fe449619ea31891acd6d4a09a58');
+  expect(createHash('sha256').update(Buffer.from(restored.replace(/\n/g,'\r\n'))).digest('hex')).toBe('b34f4d38b12d6ab6888a67420c372127c32f771698aabe39da410301f8607934');
   expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_weldlab.js').equals(Buffer.from(source)), 'public mirror is byte-identical').toBe(true);
  });
 });

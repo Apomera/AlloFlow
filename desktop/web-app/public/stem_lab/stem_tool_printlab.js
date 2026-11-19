@@ -11,6 +11,7 @@
     try { v = (__alloPLCtx && typeof __alloPLCtx.t === "function") ? __alloPLCtx.t(k, fb) : null; } catch (e) { v = null; }
     return (v == null) ? (fb != null ? fb : k) : v;
   };
+  var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
   'use strict';
 
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
@@ -471,7 +472,7 @@
               entry.before && h('span',{className:'block'},'Before: '+changeRecipeLabel(entry.before)),
               entry.after && h('span',{className:'block'},'After: '+changeRecipeLabel(entry.after)),
               props.canInspect && props.canInspect(entry) && h('button',{
-                type:'button','data-print-inspect-cell':true,'aria-label':'Inspect block at '+cell+' in Geometry World',
+                type:'button','data-print-inspect-cell':true,'aria-label':__alloAriaFill(__alloT('stem.printlab.a11y_inspect_block_at_in_geometry_world', 'Inspect block at {cell} in Geometry World'), { cell: cell }),
                 className:'mt-2 min-h-[44px] w-full rounded-lg border border-cyan-400 px-3 py-2 text-sm font-bold text-cyan-100',
                 onClick:function(){props.onInspect(entry);}
               },'Inspect block in Geometry World'));
@@ -688,6 +689,15 @@
     var _fs = React.useState(false), isFs = _fs[0], setIsFs = _fs[1];
     var _status = React.useState('loading'), status = _status[0], setStatus = _status[1];
     var signature = [props.format, props.unitMm, props.revision, props.glbRoot ? 'glb' : '', props.bytes ? props.bytes.byteLength : 0].join('|');
+    // A lost WebGL context (GPU reset, low-memory eviction) swaps the canvas for a
+    // restart panel; glGen is what Restart bumps.
+    var _glLost = React.useState(false), glLost = _glLost[0], setGlLost = _glLost[1];
+    var _glGen = React.useState(0), glGen = _glGen[0], setGlGen = _glGen[1];
+    // Every rebuild gets a FRESH canvas: teardown force-loses the old context, and a
+    // canvas hands that dead context to the next renderer, so the preview failed.
+    var previewDeps = [signature, props.recipe, props.bytes, props.glbRoot, props.ready, glGen];
+    var canvasGenRef = React.useRef({ deps: null, n: 0 }), canvasGen = canvasGenRef.current;
+    if (!canvasGen.deps || previewDeps.some(function (v, i) { return v !== canvasGen.deps[i]; })) { canvasGen.deps = previewDeps; canvasGen.n++; }
 
     React.useEffect(function () {
       var alive = true, renderer = null, scene = null, controls = null, model = null, frame = 0, resizeObserver = null, visibilityHandler = null;
@@ -698,6 +708,15 @@
         if (!alive || !canvas.isConnected) return;
         try {
           renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
+          canvas.addEventListener('webglcontextlost', function (ev) {
+            // A teardown that already removed the canvas can still fire this.
+            if (!canvas.isConnected) return;
+            ev.preventDefault();
+            // Our own teardown force-loses the context; that is not a failure.
+            if (canvas._printLabTearingDown || !alive) return;
+            teardown();
+            setTimeout(function () { if (canvas.isConnected) { setGlLost(true); setStatus('failed'); } }, 0);
+          });
           renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
           renderer.setClearColor(0x07111f, 1);
           if (THREE.sRGBEncoding !== undefined) renderer.outputEncoding = THREE.sRGBEncoding;
@@ -760,7 +779,9 @@
           setStatus('ready'); draw();
         } catch (error) { setStatus('failed'); }
       }).catch(function () { if (alive) setStatus('failed'); });
-      return function () {
+      // One teardown for unmount, a rebuild and a lost context.
+      function teardown() {
+        if (!alive) return;
         alive = false; controllerRef.current = null;
         if (frame) cancelAnimationFrame(frame);
         if (resizeObserver) resizeObserver.disconnect();
@@ -774,9 +795,15 @@
             if (node.material && node.material.dispose) { try { node.material.dispose(); } catch (_) {} }
           });
         }
-        if (renderer) { try { renderer.dispose(); } catch (_) {} try { renderer.forceContextLoss(); } catch (_) {} }
-      };
-    }, [signature, props.recipe, props.bytes, props.glbRoot, props.ready]);
+        if (renderer) {
+          try { renderer.dispose(); } catch (_) {}
+          // Flag first: forcing the loss fires webglcontextlost on this canvas.
+          canvas._printLabTearingDown = true;
+          try { var gl = renderer.getContext(); if (!(gl && gl.isContextLost && gl.isContextLost())) renderer.forceContextLoss(); } catch (_) {}
+        }
+      }
+      return teardown;
+    }, previewDeps);
 
     React.useEffect(function () {
       var el = fsStageRef.current;
@@ -805,7 +832,7 @@
       h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' },
         h('div', null,
           h('h3', { id: 'print-lab-preview-title', className: 'text-sm font-black text-white' }, '3D preview'),
-          h('p', { className: 'text-[0.6875rem] text-slate-300' }, status === 'ready' ? 'Drag to orbit. Use the controls below for a keyboard path.' : status === 'failed' ? '3D preview unavailable; use the complete text preflight below.' : status === 'empty' ? 'Add or import geometry to preview it.' : 'Loading the local 3D preview…')
+          h('p', { className: 'text-[0.6875rem] text-slate-300' }, status === 'ready' ? 'Drag to orbit. Use the controls below for a keyboard path.' : glLost || status === 'failed' ? '3D preview unavailable; use the complete text preflight below.' : status === 'empty' ? 'Add or import geometry to preview it.' : 'Loading the local 3D preview…')
         ),
         h('div', { className: 'flex gap-1', 'aria-label': __alloT('stem.printlab.a11y_3d_preview_controls', '3D preview controls') },
           h('button', { type: 'button', onClick: useController('rotate', -Math.PI / 8), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': __alloT('stem.printlab.a11y_rotate_model_left', 'Rotate model left') }, '↶'),
@@ -826,7 +853,13 @@
           }, h('span', { 'aria-hidden': 'true' }, isFs ? '✕' : '⛶'))
         )
       ),
-      h('canvas', { ref: canvasRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'printlab-preview-desc',
+      glLost ? h('div', { role: 'alert', 'data-print-gl-lost': 'true', className: 'flex flex-col items-center justify-center gap-3 rounded-xl bg-[#07111f] p-6 text-center text-white ' + (isFs ? 'flex-1 min-h-0' : 'h-[360px]') },
+        h('h4', { className: 'text-base font-black' }, __alloT('stem.printlab.webgl_lost_title', '3D view paused')),
+        h('p', { className: 'max-w-md text-sm text-slate-200' }, __alloT('stem.printlab.webgl_lost_body', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved. The text preflight report still has every check.')),
+        h('button', { type: 'button', ref: function (b) { if (b && !b._printLabFocused) { b._printLabFocused = true; try { b.focus(); } catch (_) {} } },
+          onClick: function () { setGlLost(false); setGlGen(function (n) { return n + 1; }); },
+          className: 'min-h-[44px] rounded-lg bg-cyan-700 px-4 text-sm font-bold text-white hover:bg-cyan-800' }, __alloT('stem.printlab.webgl_lost_restart', 'Restart 3D view'))
+      ) : h('canvas', { key: 'print-preview-' + canvasGen.n, ref: canvasRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'printlab-preview-desc',
         // h-[360px] is right in the page; in fullscreen it would leave the model
         // the same size in a screen-tall box, so the canvas takes the free space.
         className: 'block w-full rounded-xl bg-[#07111f] ' + (isFs ? 'flex-1 min-h-0' : 'h-[360px]'), 'aria-label': __alloT('stem.printlab.a11y_interactive_preview_of_the_current_model_a_comp', 'Interactive preview of the current model. A complete text report is available in the Preflight tab.') }),
@@ -2533,7 +2566,7 @@
             h(PrintPreview, { React: React, ready: runtimeReady, format: format, recipe: recipe, bytes: currentTurnPreview ? currentTurnPreview.copy.bytes : fileBytes, glbRoot: glbRoot, unitMm: unitMm, revision: currentTurnPreview ? revision+'-turn-preview' : revision }),
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4' },
               h('h2', { className: 'text-sm font-black text-white' }, 'Physical scale'),
-              sourceContext && (sourceContext.sourceTool === 'geometryWorld' || sourceContext.sourceTool === 'archStudio') && h('div', { className: 'mt-3', 'aria-label': sourceContext.sourceTool === 'archStudio' ? 'Architecture Studio scale presets' : 'Geometry World scale presets' },
+              sourceContext && (sourceContext.sourceTool === 'geometryWorld' || sourceContext.sourceTool === 'archStudio') && h('div', { className: 'mt-3', 'aria-label': sourceContext.sourceTool === 'archStudio' ? __alloT('stem.printlab.a11y_architecture_studio_scale_presets', 'Architecture Studio scale presets') : __alloT('stem.printlab.a11y_geometry_world_scale_presets', 'Geometry World scale presets') },
                 h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-300' }, 'Scale presets'),
                 h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
                   [
@@ -2633,7 +2666,7 @@
                 geometryScaleRecommendation.canFit && h('button', {
                   type: 'button',
                   onClick: function () { applyUnitScale(geometryScaleRecommendation.recommendedUnitMm, 'Reduced Geometry World scale to ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per block to preserve a ' + geometryScaleRecommendation.clearanceMm + ' millimeter planning clearance. Run preflight again.'); },
-                  'aria-label': 'Use suggested scale of ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per Geometry World block',
+                  'aria-label': __alloAriaFill(__alloT('stem.printlab.a11y_use_suggested_scale_of_millimeters_per_geometry_world_block', 'Use suggested scale of {recommendedUnitMm} millimeters per Geometry World block'), { recommendedUnitMm: geometryScaleRecommendation.recommendedUnitMm }),
                   className: 'mt-3 min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-xs font-black text-white hover:bg-cyan-700'
                 }, 'Use ' + geometryScaleRecommendation.recommendedUnitMm + ' mm / block')
               ),
@@ -2678,7 +2711,7 @@
           });
         }
         return h('section',{'data-print-revision-summary':true,'data-print-saved-history':saved?true:undefined,
-          'aria-label':saved?'Saved revision comparison':'Print revision',className:'mt-3 min-w-0 rounded-xl border border-cyan-700 bg-slate-950 p-3'},
+          'aria-label':saved?__alloT('stem.printlab.a11y_saved_revision_comparison', 'Saved revision comparison'):__alloT('stem.printlab.a11y_print_revision', 'Print revision'),className:'mt-3 min-w-0 rounded-xl border border-cyan-700 bg-slate-950 p-3'},
           h('h3',{className:'text-base font-bold text-white'},saved?'Saved changes in revision '+sourceContext.revisionNumber:'Print revision '+versionNumber),
           h('p',{className:'mt-1 text-xs leading-5 text-slate-300'},saved?'This comparison was saved at export. The current printer check is shown in Preflight.':'Finished dimensions are width × depth × height.'),
           h('dl',null,row(previous && previous.basis==='package'?'Earlier print':'Before this edit',previousCount,beforeSize),
@@ -2801,7 +2834,7 @@
               !geometryClearanceFit && geometryScaleRecommendation && geometryScaleRecommendation.canFit && h('button', {
                 type: 'button',
                 onClick: function () { applyUnitScale(geometryScaleRecommendation.recommendedUnitMm, 'Applied the Geometry World safe-fit scale of ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per block. Run advisory preflight when ready.'); },
-                'aria-label': 'Apply suggested Geometry World scale of ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per block',
+                'aria-label': __alloAriaFill(__alloT('stem.printlab.a11y_apply_suggested_geometry_world_scale_of_millimeters_per_block', 'Apply suggested Geometry World scale of {recommendedUnitMm} millimeters per block'), { recommendedUnitMm: geometryScaleRecommendation.recommendedUnitMm }),
                 className: 'mt-2 min-h-[42px] w-full rounded-lg bg-cyan-700 px-3 text-xs font-black text-white hover:bg-cyan-700'
               }, 'Apply ' + geometryScaleRecommendation.recommendedUnitMm + ' mm / block')
             ),

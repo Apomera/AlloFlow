@@ -1481,7 +1481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   h('p', { className: 'text-xs text-teal-800 font-medium' }, t('stem.a11yauditor.impact', '👤 Impact: '), criterion.impact)
                 ),
                 callTTS && h('button', { 'aria-label': t('stem.a11yauditor.read_aloud', 'Read aloud'),
-                  onClick: function() { callTTS(__alloT(criterion.descKey || ('stem.a11yauditor.' + (criterion.id) + '_desc'), criterion.desc) + '. Impact: ' + criterion.impact); },
+                  onClick: function() { callTTS(__alloT(criterion.descKey || ('stem.a11yauditor.' + (criterion.id) + '_desc'), criterion.desc) + '. Impact: ' + criterion.impact, undefined, undefined, { force: true }); },
                   className: 'text-[0.6875rem] text-teal-700 hover:text-teal-900 font-bold'
                 }, t('stem.a11yauditor.read_aloud_2', '🔊 Read aloud'))
               )

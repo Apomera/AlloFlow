@@ -340,7 +340,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
       expect(recommended.getAttribute('aria-label')).toBe('Do recommended 10% water change');
     });
     expect(source).toContain('role: "listitem"');
-    expect(source).toContain('"Do recommended " + recommendedWaterChangePercent + "% water change"');
+    expect(source).toContain("__alloAriaFill(__alloT('stem.aquarium.a11y_do_recommended_water_change', 'Do recommended {value1}% water change'), { value1: recommendedWaterChangePercent })");
 
     const scheduleStart = source.indexOf('var lastWaterChangeTick =');
     // treatedOverride lets the recommended action always dechlorinate.
@@ -392,7 +392,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('_equipmentOutput[type] = _equipmentFaults[type] ? 0 : condition / 100');
     expect(source).toContain('_nextEquipmentCondition[type] = Math.max(0');
     expect(source).toContain('equipmentCondition: _nextEquipmentCondition');
-    expect(source).toContain("'aria-label': catalog.name + \" condition\"");
+    expect(source).toContain("'aria-label': __alloAriaFill(__alloT('stem.aquarium.a11y_condition', '{name} condition'), { name: catalog.name })");
     expect(source).toContain('equipmentNeedsServiceCount > 0 && React.createElement("span", { role: "status"');
     await withMountedCare({ equipmentCondition: { filter: 50 } }, async ({ host, state, activate }) => {
       const service = host.querySelector('[data-aquarium-equipment-action="filter"]');
@@ -778,7 +778,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('"Why vitality? Limiting: " + limitingVitalityFactor.label');
     expect(source).toContain('"Vitality trajectory"');
     expect(source).toContain("updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fishKey })");
-    expect(source).toContain('"Trace " + displayName + " through the ecosystem exchange network"');
+    expect(source).toContain("__alloAriaFill(__alloT('stem.aquarium.a11y_trace_through_the_ecosystem_exchange_network', 'Trace {displayName} through the ecosystem exchange network'), { displayName: displayName })");
   });
 
   it('models temperature, salinity, and volume-aware concentration behavior', () => {

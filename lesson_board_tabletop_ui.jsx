@@ -34,7 +34,7 @@ export function TabletopPlayStyles() {
     .lb .lb-tabletop-hud{display:flex;justify-content:space-between;gap:8px 18px;flex-wrap:wrap;align-items:center}
     .lb .lb-tabletop-hud p{margin:0}
     .lb .lb-tabletop-resources{display:flex;gap:8px;flex-wrap:wrap;font-size:.9em}
-    .lb .lb-tabletop-objective{font-size:.88em;color:var(--muted);margin:6px 0 0}
+    .lb .lb-tabletop-objective{font-size:.88em;color:var(--muted);margin:6px 0 0}.lb .lb-tabletop-next{margin:6px 0 0;padding:6px 10px;border-left:4px solid var(--accent);background:var(--soft,transparent);border-radius:4px}
     .lb .lb-tabletop-preview{display:grid;gap:10px;margin:12px 0}
     .lb .lb-tabletop-preview p{margin:0}
     .lb .lb-tabletop-route{border-inline-start:3px solid var(--route);padding-inline-start:10px;font-size:.9em}
@@ -43,16 +43,33 @@ export function TabletopPlayStyles() {
     .lb [data-spatial-play=true] .lb-presentation>button:last-child{display:none}
     .lb [data-spatial-play=true] .lb-workshop .lb-projects{grid-template-columns:repeat(3,minmax(0,1fr))}
     @media(min-width:1100px){.lb [data-spatial-play=true][data-play-phase=answer] .lb-columns,.lb [data-spatial-play=true][data-play-phase=review] .lb-columns{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
-    @media(max-width:960px){.lb [data-spatial-play=true] .lb-columns{grid-template-columns:minmax(0,1fr)}.lb [data-spatial-play=true] .lb-current{position:static;grid-row:auto}.lb [data-spatial-play=true] .lb-workshop .lb-projects{grid-template-columns:1fr}}
+    @media(max-width:960px){.lb [data-spatial-play=true] .lb-columns{grid-template-columns:minmax(0,1fr)}.lb [data-spatial-play=true] .lb-current{position:static;grid-row:1}.lb [data-spatial-play=true] .lb-workshop .lb-projects{grid-template-columns:1fr}}
     @media(max-width:500px){.lb-dialog[data-play-style=tabletop]{padding:12px}.lb [data-spatial-play=true] .lb-eyebrow{display:none}.lb [data-spatial-play=true] .lb-expedition-header h2{font-size:1.2em}.lb [data-spatial-play=true] .lb-phase-strip li>span{display:none}.lb [data-spatial-play=true] .lb-phase-strip li{font-size:.8em;padding:6px}.lb [data-spatial-play=true] .lb-presentation{gap:6px}.lb [data-spatial-play=true] .lb-presentation button{padding:7px 9px;font-size:.85em}.lb .lb-tabletop-hud{gap:6px}.lb .lb-tabletop-objective{font-size:.82em}}
   `);
 }
 
+// One plain next step toward finishing, while the objective is still open: build a project the
+// party can already pay for, otherwise explore what the mission still needs. Later stages
+// (use a construction, return to camp) already have their own objective line.
+export function tabletopNextGoal(board,run) {
+  const p=engine.derive(board,run),m=engine.missionProgress(board,run);
+  if(p.complete||p.requirementsMet||p.objectiveReady)return null;
+  const site=project=>board.locations.find(n=>n.id===engine.buildSite(board,project))?.name||'';
+  const open=board.projects.filter(project=>!p.built.includes(project.id)),total=project=>project.cost.reduce((sum,value)=>sum+value,0);
+  const affordable=m.remainingProjects>0?open.filter(project=>project.cost.every((value,index)=>(p.balance[index]||0)>=value)).sort((a,b)=>total(a)-total(b)):[];
+  if(affordable.length)return {kind:'build',params:{project:affordable[0].name,site:site(affordable[0])}};
+  const ideas=board.concepts.filter(concept=>!p.concepts.includes(concept.id)).map(concept=>concept.name);
+  if(m.requiredLocations>0&&m.remainingLocations>0)return {kind:'explore',params:{count:m.remainingLocations}};
+  if(ideas.length)return {kind:'concepts',params:{names:ideas.join(', ')}};
+  const next=m.remainingProjects>0&&open.sort((a,b)=>total(a)-total(b))[0];
+  return next?{kind:'pay',params:{project:next.name,site:site(next)}}:null;
+}
 export function TabletopHud({board,run,t}) {
-  const p=engine.derive(board,run),m=engine.missionProgress(board,run),position=board.locations.find(n=>n.id===p.position);
+  const p=engine.derive(board,run),m=engine.missionProgress(board,run),position=board.locations.find(n=>n.id===p.position),goal=tabletopNextGoal(board,run);
   return <div data-board-mission>
     <div className="lb-tabletop-hud"><p><strong>{tr(t,'tabletop_turn','Turn {turn}',{turn:run.turn+1})}</strong> · {position?tr(t,'tabletop_at','Party at {name}',{name:position.name}):tr(t,'tabletop_choose_start','Choose a starting space')}</p><ResourceCounters board={board} values={p.balance} t={t}/></div>
     <p className="lb-tabletop-objective">{p.complete?tr(t,'tabletop_delivered','Expedition complete. Your discoveries are back at camp.'):p.objectiveReady?p.position===board.starts[0]?tr(t,'tabletop_deliver_goal','Your discoveries are ready. Deliver them at camp to finish, or continue exploring.'):tr(t,'tabletop_return_goal','Bring your discoveries back to camp to finish the expedition.'):p.requirementsMet?tr(t,'tabletop_use_goal','Use a built bridge or earn a workshop bonus, then return to camp.'):tr(t,'tabletop_progress','Concepts {concepts}/{totalConcepts} · Builds {projects}/{requiredProjects}',m)}{!p.objectiveReady&&m.requiredLocations>0?' · '+tr(t,'tabletop_explored','Spaces {explored}/{requiredLocations}',m):''}</p>
+    {goal&&<p className="lb-tabletop-next" data-board-next-goal={goal.kind}><strong>{tr(t,'tabletop_next_label','Next goal:')}</strong> {goal.kind==='build'?tr(t,'tabletop_next_build','You can afford {project}. Build it at {site}.',goal.params):goal.kind==='explore'?tr(t,'tabletop_next_explore','Explore a new space to earn supplies. Spaces left: {count}.',goal.params):goal.kind==='concepts'?tr(t,'tabletop_next_concepts','Explore a space for each idea still open: {names}.',goal.params):tr(t,'tabletop_next_pay','Build {project} at {site}. Compare its payment options there.',goal.params)}</p>}
   </div>;
 }
 
@@ -101,5 +118,6 @@ export function isTabletopTravel(board,run) {
 }
 
 export function TabletopRules({board,t}) {
-  return <details className="lb-tabletop-help" data-tabletop-rules><summary>{tr(t,'tabletop_rules','How to play')}</summary><div>{lbMd().block(board.mission)}</div><ol><li>{board.travelLimit?tr(t,'tabletop_rule_tactical','Preview your route, then move up to {limit} segments per turn through cleared spaces. Stop at the first unexplored space. Each bridge counts as one segment.',{limit:board.travelLimit}):tr(t,'tabletop_rule_move','Select a space, preview the route, then move. Cleared spaces can be crossed in one travel turn.')}</li><li>{tr(t,'tabletop_rule_route_choice','When a built bridge offers another route, compare both paths before moving. The selected route determines bridge use and any kit bonus.')}</li><li>{tr(t,'tabletop_rule_explore','Explore a new space to earn supplies. Hints and retries are always available.')}</li>{board.chance&&<li>{tr(t,'tabletop_rule_field_routes','After exploring 2, 5, and 8 new spaces, choose one encounter benefit. Supplies and rendezvous events can offer resource exchanges; survey and passage events can offer deliveries back to explored stations. Deliveries pay once when a later travel move ends there.')}</li>}<li>{tr(t,'tabletop_rule_build','Return to a construction site to build. Bridges add routes and workshops increase future rewards.')}</li><li>{tr(t,'tabletop_rule_finish_delivery','Complete your objectives and use a construction, then return to camp. If you are already there, choose Deliver discoveries to finish.')}</li></ol></details>;
+  // The core loop first, in three steps; every detailed rule stays one click away.
+  return <details className="lb-tabletop-help" data-tabletop-rules><summary>{tr(t,'tabletop_rules','How to play')}</summary><div>{lbMd().block(board.mission)}</div><ol data-tabletop-core-loop><li><strong>{tr(t,'tabletop_core_move_label','Move')}</strong> {tr(t,'tabletop_core_move','Choose a space on the board and travel there.')}</li><li><strong>{tr(t,'tabletop_core_answer_label','Answer')}</strong> {tr(t,'tabletop_core_answer','Solve its challenge to earn supplies. Hints and retries are always available.')}</li><li><strong>{tr(t,'tabletop_core_build_label','Build')}</strong> {tr(t,'tabletop_core_build','Spend supplies on projects at their sites, then return to camp to finish.')}</li></ol><details data-tabletop-more-rules><summary>{tr(t,'tabletop_more_rules','More rules')}</summary><ol><li>{board.travelLimit?tr(t,'tabletop_rule_tactical','Preview your route, then move up to {limit} segments per turn through cleared spaces. Stop at the first unexplored space. Each bridge counts as one segment.',{limit:board.travelLimit}):tr(t,'tabletop_rule_move','Select a space, preview the route, then move. Cleared spaces can be crossed in one travel turn.')}</li><li>{tr(t,'tabletop_rule_route_choice','When a built bridge offers another route, compare both paths before moving. The selected route determines bridge use and any kit bonus.')}</li><li>{tr(t,'tabletop_rule_explore','Explore a new space to earn supplies. Hints and retries are always available.')}</li>{board.chance&&<li>{tr(t,'tabletop_rule_field_routes','After exploring 2, 5, and 8 new spaces, choose one encounter benefit. Supplies and rendezvous events can offer resource exchanges; survey and passage events can offer deliveries back to explored stations. Deliveries pay once when a later travel move ends there.')}</li>}<li>{tr(t,'tabletop_rule_build','Return to a construction site to build. Bridges add routes and workshops increase future rewards.')}</li><li>{tr(t,'tabletop_rule_finish_delivery','Complete your objectives and use a construction, then return to camp. If you are already there, choose Deliver discoveries to finish.')}</li></ol></details></details>;
 }

@@ -323,3 +323,8 @@ __pycache__/
 # Keep >25 MiB ffmpeg-core.wasm out of git at root level as well
 /video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm
 /desktop/web-app/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm
+
+# Personal correspondence: keep on disk, never in the public repo (untracked 2026-11-17)
+/email_to_hayley_didriksen.md
+/letter_to_knowbility.md
+/knowbility_meeting_prep.md

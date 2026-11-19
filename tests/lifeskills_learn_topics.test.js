@@ -94,10 +94,10 @@ describe('Life Skills Lab — Learn topics', () => {
     const cap = src.match(/var SS_WAGE_CAP = (\d+)/)[1];
     const prose = load(src, 'LEARN_TOPICS')
       .map((t) => Object.values(t.content || {}).join(' ')).join(' ');
-    expect(consts).toContain('14600');
-    expect(prose).toMatch(/14,600/);
-    expect(cap).toBe('168600');
-    expect(prose).toMatch(/168,600/);
+    expect(consts).toContain('16100');
+    expect(prose).toMatch(/16,100/);
+    expect(cap).toBe('184500');
+    expect(prose).toMatch(/184,500/);
   });
 
   it('ships the same Learn topics in the desktop mirror', () => {

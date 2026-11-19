@@ -15335,6 +15335,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (typeof v === 'string' && v && v !== k) ? v : (fb != null ? fb : k); };
       // Fills {value1}-style placeholders, so a translation can reorder them.
       var __alloFill = function (template, values) { return __alloOneWord(String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; })); };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
@@ -17027,8 +17028,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           _beeQuizAnswerLockedRef.current = false;
           _beeQuizContinueLockedRef.current = false;
           _beeQuizLogRef.current = [];
+          // Authored keys sit at B in 13 of 24 and the options render in bank
+          // order, so "always B" scored ~54%. Rotate each question's options
+          // onto slot (qi * 3 + 1) % n (an even spread) and remap ans; the draw
+          // is stored in state, so options never move mid-question.
+          var shuffled = QUIZ_QUESTIONS.map(function(q, qi) {
+            var n = Array.isArray(q.opts) ? q.opts.length : 0;
+            if (n < 2 || typeof q.ans !== 'number' || q.ans < 0 || q.ans >= n) return q;
+            var target = (qi * 3 + 1) % n, shift = (q.ans - target + n) % n;
+            return shift ? Object.assign({}, q, { opts: q.opts.slice(shift).concat(q.opts.slice(0, shift)), ans: target }) : q;
+          });
           // Fisher-Yates shuffle, then pick 10
-          var shuffled = QUIZ_QUESTIONS.slice();
           for (var i = shuffled.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
             var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
@@ -17142,8 +17152,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     var nextTab = typeof document !== 'undefined' ? document.getElementById('beehive-inspector-tab-' + nextUnexplored.id) : null;
                     if (nextTab && nextTab.focus) nextTab.focus();
                   },
-                  'aria-label': 'Explore next unvisited layer: ' + nextUnexplored.label,
-                  className: 'min-h-[44px] rounded-lg border border-amber-300/60 bg-amber-700/80 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300'
+                  'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_explore_next_unvisited_layer', 'Explore next unvisited layer: {label}'), { label: nextUnexplored.label }),
+                  className: 'min-h-[44px] rounded-lg border border-amber-300/60 bg-amber-700/80 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300'
                 }, 'Next: ' + nextUnexplored.emoji + ' ' + nextUnexplored.label + ' →'),
                 h('button', { type: 'button', onClick: function() { closeAccessibleBeePanel('inspection'); }, 'aria-label': __alloT('stem.beehive.a11y_return_to_colony_view_and_close_hive_inspector', 'Return to Colony View and close Hive Inspector'), className: 'min-h-[44px] rounded-lg bg-amber-800 px-3 py-1.5 text-xs font-bold transition-colors hover:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300' }, __alloT('stem.beehive.colony_view', '← Colony View')))),
             h('div', { 'data-inspector-progress-bar': 'true', 'aria-hidden': 'true', className: 'h-1.5 w-full overflow-hidden rounded-full bg-amber-950/80' },
@@ -17153,7 +17163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               layers.map(function(l, li) {
                 var active = inspectLayer === l.id;
                 return h('button', { key: l.id, id: 'beehive-inspector-tab-' + l.id, type: 'button', role: 'tab', 'data-inspection-tab': l.id, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'beehive-inspector-panel-' + l.id, tabIndex: active ? 0 : -1,
-                  'aria-label': l.label + ' inspection layer',
+                  'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_inspection_layer', '{label} inspection layer'), { label: l.label }),
                   onClick: function() { selectLayer(l.id); },
                   onKeyDown: function(ev) {
                     var nextIdx = li;
@@ -17914,7 +17924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       var active = mi === currentMonthIdx;
                       var bg = v === 2 ? 'bg-amber-400' : v === 1 ? 'bg-amber-600/60' : 'bg-amber-900/20';
                       var ring = active ? ' ring-1 ring-yellow-300' : '';
-                      return h('div', { key: mi, className: 'h-4 rounded-sm ' + bg + ring, title: MONTHS[mi] + ': ' + (v === 2 ? 'peak bloom' : v === 1 ? 'light bloom' : 'not blooming') });
+                      return h('div', { key: mi, className: 'h-4 rounded-sm ' + bg + ring, title: (v === 2 ? __alloAriaFill(__alloT('stem.beehive.a11y_month_peak_bloom', '{month}: peak bloom'), { month: MONTHS[mi] }) : (v === 1 ? __alloAriaFill(__alloT('stem.beehive.a11y_month_light_bloom', '{month}: light bloom'), { month: MONTHS[mi] }) : __alloAriaFill(__alloT('stem.beehive.a11y_month_not_blooming', '{month}: not blooming'), { month: MONTHS[mi] }))) });
                     }));
                 }),
                 // Legend
@@ -31911,7 +31921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('span', { 'data-flight-command-status': 'true', 'data-beehive-flight-paused-overlay': dronePaused && dronePacing !== 'steps' ? 'true' : undefined, role: 'status', 'aria-live': 'off' }, droneCommandStatus(state))),
             h('div', { className: 'bee-flight-command-actions' },
               h('button', { type: 'button', 'data-flight-end': 'true', onClick: leaveDroneFlight, 'aria-label': __alloT('stem.beehive.end_flight', 'End flight') }, __alloT('stem.beehive.end_flight_2', '✕ End Flight')),
-              dronePacing !== 'steps' && h('button', { type: 'button', onClick: toggleDronePause, 'data-beehive-flight-pause': 'true', 'aria-label': dronePaused ? 'Resume flight' : 'Pause flight', 'aria-keyshortcuts': 'P' }, dronePaused ? '▶ Resume' : 'Ⅱ Pause')),
+              dronePacing !== 'steps' && h('button', { type: 'button', onClick: toggleDronePause, 'data-beehive-flight-pause': 'true', 'aria-label': dronePaused ? __alloT('stem.beehive.a11y_resume_flight', 'Resume flight') : __alloT('stem.beehive.a11y_pause_flight', 'Pause flight'), 'aria-keyshortcuts': 'P' }, dronePaused ? '▶ Resume' : 'Ⅱ Pause')),
             renderDroneFlightConditions(state),
             h('div', { 'data-flight-training': 'true', 'data-training-state': cue.complete ? 'complete' : cue.active ? 'active' : 'inactive', 'data-training-step': cue.index >= 0 ? String(Math.min(cue.total, cue.index + 1)) : '0', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-hidden': cue.active ? 'false' : 'true', style: { display: cue.active ? 'block' : 'none' } },
               h('div', { className: 'bee-flight-training-heading' }, h('span', { 'data-flight-training-step': 'true' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('strong', { 'data-flight-training-label': 'true' }, cue.label)),
@@ -31951,7 +31961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function renderDroneDirector() {
           var state = _droneState.current, r = bhDroneFlightDirector(state), approach = bhDroneApproachGuide(state), dVis = bhDroneDirectorVisuals(state);
-          return h('details', { className: 'bee-flight-director', 'data-flight-director': 'true', 'data-reserve-low': String(r.energy < 25), 'aria-label': 'Flight direction guide. ' + r.text,
+          return h('details', { className: 'bee-flight-director', 'data-flight-director': 'true', 'data-reserve-low': String(r.energy < 25), 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_flight_direction_guide', 'Flight direction guide. {text}'), { text: r.text }),
             onToggle: function(event) { if (event.currentTarget.open) pauseDroneForDirectionReadings(); } },
             h('summary', { 'data-director-summary': 'true', onClick: function(event) { if (!event.currentTarget.parentElement.open) pauseDroneForDirectionReadings(); } },
             h('div', { className: 'bee-flight-director-heading' }, h('h3', null, 'Flight direction'),
@@ -31977,7 +31987,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('rect', { x: 4, y: 2, width: 100, height: 6, rx: 3, className: 'bee-director-gauge-track' }),
                   h('rect', { x: dVis.altitude.bandX, y: 1, width: dVis.altitude.bandW, height: 8, rx: 1.5, className: 'bee-director-gauge-band', 'data-director-alt-band': 'true' }),
                   h('circle', { cx: dVis.altitude.markerX, cy: 5, r: 3.2, className: 'bee-director-gauge-marker', 'data-director-alt-marker': 'true' })),
-                item[0] === 'energy' && h('div', { 'data-director-energy-meter': 'true', role: 'meter', 'aria-label': 'Energy as a percentage of this difficulty’s capacity', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': r.energy },
+                item[0] === 'energy' && h('div', { 'data-director-energy-meter': 'true', role: 'meter', 'aria-label': __alloT('stem.beehive.a11y_energy_as_a_percentage_of_this_difficulty_s_capacity', 'Energy as a percentage of this difficulty’s capacity'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': r.energy },
                   h('span', { 'data-director-energy-fill': 'true', style: { width: r.energy + '%' } })),
                 item[0] === 'energy' && h('span', { 'data-director-reserve': 'true' }, r.energy < 25 ? 'Low reserve' : 'Reserve available'),
                 item[0] === 'seconds' && h('svg', { className: 'bee-director-metric-gauge', 'data-director-metric-gauge': 'seconds', 'data-gauge-tone': dVis.seconds.tone, viewBox: '0 0 108 10', 'aria-hidden': 'true', focusable: 'false' },
@@ -32477,7 +32487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var entry = Array.isArray(log) && log.length ? log[log.length - 1] : null;
           var evidence = bhDroneManeuverEvidence(entry);
           if (!evidence) return null;
-          return h('section', { className: 'bee-maneuver-evidence', 'data-flight-maneuver-evidence': history ? undefined : 'true', 'data-flight-history-comparison': history ? 'true' : undefined, role: 'region', 'aria-label': history ? 'Selected maneuver comparison' : 'Last maneuver comparison', 'aria-live': 'off', tabIndex: planning ? -1 : undefined },
+          return h('section', { className: 'bee-maneuver-evidence', 'data-flight-maneuver-evidence': history ? undefined : 'true', 'data-flight-history-comparison': history ? 'true' : undefined, role: 'region', 'aria-label': history ? __alloT('stem.beehive.a11y_selected_maneuver_comparison', 'Selected maneuver comparison') : __alloT('stem.beehive.a11y_last_maneuver_comparison', 'Last maneuver comparison'), 'aria-live': 'off', tabIndex: planning ? -1 : undefined },
             h('div', { className: 'bee-maneuver-heading' }, h('h4', null, history ? 'Selected maneuver' : 'Last maneuver'), h('span', null, 'Recorded result')),
             h('p', { className: 'bee-maneuver-name', 'data-maneuver-title': 'true' }, evidence.title),
             h('p', { className: 'bee-maneuver-context', 'data-maneuver-context': 'true' }, evidence.context),
@@ -32694,7 +32704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('h5', null, icon('M3 7H19V17H3ZM19 10H22V14H19M7 10V14M11 10V14M15 10V14'), 'Energy reserve'),
                 h('p', { className: 'bee-plan-reading-value', 'data-planning-value': 'true' }, energy.text),
                 h('p', { className: 'bee-plan-reading-detail', 'data-planning-detail': 'true' }, energy.detail),
-                energy.fillPct != null && h('div', { className: 'bee-plan-energy-meter', 'data-planning-energy-meter': 'true', role: 'meter', 'aria-label': 'Energy as a percentage of this difficulty’s full reserve', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': energy.fillPct, 'aria-valuetext': energy.text + ' of this difficulty’s full reserve' },
+                energy.fillPct != null && h('div', { className: 'bee-plan-energy-meter', 'data-planning-energy-meter': 'true', role: 'meter', 'aria-label': __alloT('stem.beehive.a11y_energy_as_a_percentage_of_this_difficulty_s_full', 'Energy as a percentage of this difficulty’s full reserve'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': energy.fillPct, 'aria-valuetext': energy.text + ' of this difficulty’s full reserve' },
                   h('span', { 'data-planning-energy-fill': 'true', style: { width: energy.fillPct + '%' } })),
                 h('span', { className: 'bee-plan-energy-status', 'data-planning-energy-status': 'true' }, energy.value == null ? 'Reserve unavailable' : energy.low ? 'Low reserve' : 'Reserve remaining'))),
             h('p', { className: 'bee-plan-readings-note' }, r.roundingNote));
@@ -37354,7 +37364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', 'aria-pressed': queenMapExpanded, onClick: toggleQueenMapExpanded }, queenMapExpanded ? 'Exit expanded map' : 'Expand map'),
             h('span', { className: 'bee-rts-clock' }, 'Cycle ' + queenDay + ' · ' + (queenResult ? 'Review' : queenPaused ? 'Tactical pause' : 'Live')),
             h('button', { type: 'button', className: 'bee-discovery-button', disabled: !!queenResult, onClick: toggleQueenPause }, queenPaused ? 'Resume RTS' : 'Pause RTS'),
-            h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', disabled: !queenPaused || !!queenResult, onClick: advanceQueenDay, title: queenPaused ? 'Advance exactly one cycle, then stay paused' : 'Pause first to advance one cycle at a time' }, 'Step one cycle'),
+            h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', disabled: !queenPaused || !!queenResult, onClick: advanceQueenDay, title: queenPaused ? __alloT('stem.beehive.a11y_advance_exactly_one_cycle_then_stay_paused', 'Advance exactly one cycle, then stay paused') : __alloT('stem.beehive.a11y_pause_first_to_advance_one_cycle_at_a_time', 'Pause first to advance one cycle at a time') }, 'Step one cycle'),
             h('span', { className: 'bee-rts-pressure', 'data-raid-level': queen3dRaid >= .6 ? 'high' : 'watch' },
               h('span', null, 'Raid pressure ' + Math.round(queen3dRaid * 100) + '/100'),
               h('svg', { className: 'bee-rts-toolbar-pressure-bar', viewBox: '0 0 88 10', 'aria-hidden': 'true', focusable: 'false', 'data-raid-band': raidBarVis.raidBand },
@@ -37663,7 +37673,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
                 return h('div', { key: row.id, 'data-interior-change': row.id, 'data-selected': hiveInteriorTopic === row.id ? 'true' : 'false', 'data-interior-reading-scale': row.id, 'data-scale-available': scale.available ? 'true' : 'false', className: 'bee-interior-change-row' },
                   h('dt', { className: 'bee-interior-reading-heading' }, h('strong', null, row.label),
-                    h('button', { type: 'button', 'data-interior-reading-inspect': row.id, 'aria-label': 'Inspect ' + row.label + ' inside the hive', 'aria-pressed': hiveInteriorTopic === row.id ? 'true' : 'false', 'aria-controls': 'beehive-interior-detail', onClick: function(event) { inspectHiveReadingTopic(row.id, event); } }, 'Inspect in hive')),
+                    h('button', { type: 'button', 'data-interior-reading-inspect': row.id, 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_inspect_inside_the_hive', 'Inspect {label} inside the hive'), { label: row.label }), 'aria-pressed': hiveInteriorTopic === row.id ? 'true' : 'false', 'aria-controls': 'beehive-interior-detail', onClick: function(event) { inspectHiveReadingTopic(row.id, event); } }, 'Inspect in hive')),
                   h('dd', null,
                     h('div', { className: 'bee-interior-change-value' }, h('span', null, 'Held · Day ' + comparison.held.data.day), h('strong', { 'data-change-held': 'true' }, row.before), scale.available && readingBar('held', scale.heldPercent)),
                     h('div', { className: 'bee-interior-change-value' }, h('span', null, 'Current · Day ' + comparison.current.data.day), h('strong', { 'data-change-current': 'true' }, row.current), scale.available && readingBar('current', scale.currentPercent)),
@@ -37913,7 +37923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return h('div', { key: axis.id, 'data-interior-lens-axis': axis.id, className: 'bee-interior-lens-axis' },
                   h('label', null, axis.label, h('select', selectProps, Array.from({ length: axis.count }, function(_, index) { return h('option', { key: index, value: index }, String(index + 1)); }))),
                   h('p', { id: rangeId, 'data-interior-lens-range': axis.id, className: 'bee-interior-lens-range' }, axis.label + ' ' + (axis.value + 1) + ' of ' + axis.count),
-                  h('div', { className: 'bee-interior-lens-steps', role: 'group', 'aria-label': 'Move by illustration ' + axis.id }, axis.steps.map(function(step) {
+                  h('div', { className: 'bee-interior-lens-steps', role: 'group', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_move_by_illustration', 'Move by illustration {id}'), { id: axis.id }) }, axis.steps.map(function(step) {
                     var target = axis.value + step.delta, atEdge = target < 0 || target >= axis.count;
                     return h('button', { key: step.id, type: 'button', 'data-interior-lens-step': step.id, disabled: !canNavigate, 'aria-disabled': !canNavigate || atEdge ? 'true' : undefined, 'aria-describedby': rangeId,
                       onClick: function() { if (canNavigate && !atEdge) inspect(target); } }, h('span', { className: 'bee-interior-lens-step-icon', 'aria-hidden': 'true' }, step.symbol), h('span', null, step.label));
@@ -38080,7 +38090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 onClick: function() { upd(cfg.toggleKey, !cfg.open); announceBee(cfg.open ? cfg.title + ' hidden.' : cfg.title + ' shown.', false); },
                 'aria-expanded': cfg.open ? 'true' : 'false',
                 'aria-controls': 'beehive-3d-' + cfg.id + '-content',
-                'aria-label': (cfg.open ? 'Hide ' : 'Show ') + cfg.title,
+                'aria-label': (cfg.open ? __alloAriaFill(__alloT('stem.beehive.a11y_hide_title', 'Hide {title}'), { title: cfg.title }) : __alloAriaFill(__alloT('stem.beehive.a11y_show_title', 'Show {title}'), { title: cfg.title })),
                 className: 'inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg border px-3 text-[0.6875rem] font-black ' + accent.button
               }, h('span', { 'aria-hidden': 'true' }, cfg.open ? '▾' : '▸'), cfg.open ? __alloT('stem.beehive.bay3d_hide', 'Hide 3D') : __alloT('stem.beehive.bay3d_show', 'Show 3D'))),
             cfg.open && h('div', { id: 'beehive-3d-' + cfg.id + '-content', tabIndex: cfg.id === 'queen' ? -1 : undefined, className: 'mt-2 space-y-2' },
@@ -38101,7 +38111,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       : (BEE_3D_MISSING === 'host'
                         ? __alloT('stem.beehive.bay3d_host_too_old', 'The 3D view needs a newer STEAM Lab host than this build has. Everything else in this simulation still works.')
                         : cfg.fallback)))),
-              h('div', { 'data-bee-3d-camera-controls': cfg.id, role: 'group', 'aria-label': cfg.title + ' camera controls', className: 'bee-3d-camera-controls' },
+              h('div', { 'data-bee-3d-camera-controls': cfg.id, role: 'group', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_camera_controls', '{title} camera controls'), { title: cfg.title }), className: 'bee-3d-camera-controls' },
                 controls.map(function(control, index) {
                   return h('button', {
                     key: control[1], type: 'button', 'data-bee-3d-camera-action': String(index), 'aria-label': control[1], title: control[1],
@@ -38112,7 +38122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               cfg.layers,
               cfg.afterScene,
               h('p', { className: 'text-[0.6875rem] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, cfg.pickPrompt),
-              h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': cfg.title + ' parts' },
+              h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_parts', '{title} parts'), { title: cfg.title }) },
                 cfg.parts.map(function(part) {
                   var on = cfg.selected === part.id;
                   return h('button', {
@@ -38909,7 +38919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   'aria-label': taken
                     ? cell.label + ': occupied by ' + (takenLabel || 'a structure')
                     : 'Build ' + sType.label + ' at ' + cell.label,
-                  title: taken ? (takenLabel || 'Occupied') : cell.label,
+                  title: taken ? (takenLabel || __alloT('stem.beehive.a11y_occupied', 'Occupied')) : cell.label,
                   className: 'min-h-[44px] rounded-lg border px-1 py-1 text-[0.625rem] font-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 '
                     + (taken
                       ? (dk ? 'border-slate-700 bg-slate-900 text-slate-300 opacity-60' : 'border-slate-200 bg-slate-100 text-slate-600 opacity-70')
@@ -38984,16 +38994,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     type: 'button',
                     'data-dock-pause-toggle': 'true',
                     onClick: toggleQueenPause,
-                    'aria-label': (queenPaused ? 'Resume' : 'Pause') + ' Colony Network clock from quick dock',
+                    'aria-label': (queenPaused ? __alloT('stem.beehive.a11y_resume_colony_network_clock_from_quick_dock', 'Resume Colony Network clock from quick dock') : __alloT('stem.beehive.a11y_pause_colony_network_clock_from_quick_dock', 'Pause Colony Network clock from quick dock')),
                     className: 'min-h-[44px] rounded-lg border px-2.5 py-1.5 text-[0.6875rem] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (queenPaused
-                      ? 'border-emerald-600 bg-emerald-700 text-white hover:bg-emerald-600'
+                      ? 'border-emerald-600 bg-emerald-700 text-white hover:bg-emerald-800'
                       : (dk ? 'border-purple-600/60 bg-slate-900 text-purple-100 hover:bg-slate-800' : 'border-purple-300 bg-white text-purple-900 hover:bg-purple-100'))
                   }, queenPaused ? '▶ Resume' : '⏸ Pause'),
                   h('button', {
                     type: 'button',
                     'data-dock-step-cycle': 'true',
                     onClick: function() { if (!queenResult) advanceQueenDay(); },
-                    'aria-label': 'Step forward 1 Colony Network cycle' + (queenPaused ? ' while staying paused' : ''),
+                    'aria-label': (queenPaused ? __alloT('stem.beehive.a11y_step_forward_1_colony_network_cycle_while_staying_paused', 'Step forward 1 Colony Network cycle while staying paused') : __alloT('stem.beehive.a11y_step_forward_1_colony_network_cycle', 'Step forward 1 Colony Network cycle')),
                     className: 'min-h-[44px] rounded-lg border px-2.5 py-1.5 text-[0.6875rem] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (dk ? 'border-amber-500/60 bg-amber-950/50 text-amber-100 hover:bg-amber-900/60' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100')
                   }, '⏭ +1 Cycle'))),
               h('div', { className: 'grid grid-cols-3 gap-1.5 sm:min-w-[360px]', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_essential_colony_network_responses', 'Essential Colony Network responses') },
@@ -39162,7 +39172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white/80 bg-white/70') },
                   h('div', { className: 'flex items-center justify-between gap-2 text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-200' : 'text-slate-700') },
                     h('span', null, 'Raid pressure'), h('span', { 'data-rts-decision-pressure-value': 'true', className: 'tabular-nums' }, Math.round(Number(queenRival.pressure) || 0) + '% / 60 threshold')),
-                  h('div', { 'data-rts-decision-pressure-track': 'true', className: 'mt-1.5 h-2.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': __alloT('stem.beehive.a11y_raid_pressure_toward_the_60_percent_threshold', 'Raid pressure toward the 60 percent threshold'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': decisionPressure, 'aria-valuetext': Math.round(Number(queenRival.pressure) || 0) + ' percent raid pressure; 60 percent triggers the rival raid window' },
+                  h('div', { 'data-rts-decision-pressure-track': 'true', className: 'mt-1.5 h-2.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': __alloT('stem.beehive.a11y_raid_pressure_toward_the_60_percent_threshold', 'Raid pressure toward the 60 percent threshold'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': decisionPressure, 'aria-valuetext': __alloAriaFill(__alloT('stem.beehive.a11y_percent_raid_pressure_60_percent_triggers_the_rival_raid', '{value} percent raid pressure; 60 percent triggers the rival raid window'), { value: Math.round(Number(queenRival.pressure) || 0) }) },
                     h('span', { 'data-rts-decision-pressure-fill': 'true', className: 'block h-full rounded-full transition-all ' + (decision.tone === 'danger' ? 'bg-rose-500' : decision.tone === 'warning' ? 'bg-amber-400' : 'bg-cyan-500'), style: { width: decisionPressure + '%' } })),
                   h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, decisionPressure >= 100 ? 'Threshold reached: protect the entrance before investing elsewhere.' : Math.max(0, 60 - Math.round(Number(queenRival.pressure) || 0)) + ' pressure points remain before the automatic raid threshold.')),
                 h('div', { 'data-rts-decision-timing': 'true', className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white/80 bg-white/70') },
@@ -39776,7 +39786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('input', { id: 'bee-waggle-angle', type: 'range', min: -180, max: 180, step: r.dance % 15 === 0 ? 15 : 'any', value: r.dance, disabled: fixedFood, 'aria-valuetext': directionText, 'aria-describedby': 'bee-waggle-angle-help', onChange: function(e) { setControl('dance', Number(e.target.value)); } }),
                 h('small', { id: 'bee-waggle-angle-help' }, fixedFood ? 'Automatic: keeps the food location fixed.' : 'Negative = left of up; positive = right.')),
               h('label', { htmlFor: 'bee-waggle-sun' }, 'Sun bearing from north ', h('strong', null, angles.sun + '°'),
-                h('input', { id: 'bee-waggle-sun', type: 'range', min: 0, max: r.sun > 345 ? 360 : 345, step: r.sun % 15 === 0 ? 15 : 'any', value: r.sun, 'aria-valuetext': angles.sun + ' degrees clockwise from north', 'aria-describedby': 'bee-waggle-sun-help', onChange: function(e) { setControl('sun', Number(e.target.value)); } }),
+                h('input', { id: 'bee-waggle-sun', type: 'range', min: 0, max: r.sun > 345 ? 360 : 345, step: r.sun % 15 === 0 ? 15 : 'any', value: r.sun, 'aria-valuetext': __alloAriaFill(__alloT('stem.beehive.a11y_degrees_clockwise_from_north', '{sun} degrees clockwise from north'), { sun: angles.sun }), 'aria-describedby': 'bee-waggle-sun-help', onChange: function(e) { setControl('sun', Number(e.target.value)); } }),
                 h('small', { id: 'bee-waggle-sun-help' }, 'North 0° · east 90° · south 180° · west 270°.'))),
             h('div', { className: 'bee-waggle-presets', 'data-waggle-presets': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_time_of_day_sun_presets', 'Time of day sun presets') },
               [{ deg: 0, label: 'North 0°' }, { deg: 90, label: 'Morning 90°' }, { deg: 180, label: 'Noon 180°' }, { deg: 270, label: 'Afternoon 270°' }].map(function(p) {
@@ -40373,7 +40383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { 'data-reserve-current': 'true' }, 'About ' + reserveReading(row.amount) + ' lb'),
                   h('p', { 'data-reserve-origin': 'true' }, row.origin),
                   h('p', { 'data-reserve-status': 'true' }, status),
-                  h('div', { className: 'bee-colony-reserve-meter', 'data-reserve-meter': row.id, role: 'meter', 'aria-label': row.name + ' compared with seasonal reserve', 'aria-valuemin': 0, 'aria-valuemax': reserveScale, 'aria-valuenow': row.amount,
+                  h('div', { className: 'bee-colony-reserve-meter', 'data-reserve-meter': row.id, role: 'meter', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_compared_with_seasonal_reserve', '{name} compared with seasonal reserve'), { name: row.name }), 'aria-valuemin': 0, 'aria-valuemax': reserveScale, 'aria-valuenow': row.amount,
                     'aria-valuetext': 'About ' + reserveReading(row.amount) + ' lb. ' + status + ' of ' + currentReserve + ' lb. ' + row.origin },
                     h('span', { 'data-reserve-fill': 'true', style: { width: (row.amount / reserveScale * 100) + '%' } }),
                     h('span', { 'data-reserve-marker': 'true', 'aria-hidden': 'true', style: { left: (currentReserve / reserveScale * 100) + '%' } })),
@@ -40610,7 +40620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
           }
           var command = focusLayout ? renderBeeCommand() : null;
-          return h('section', { key: 'beehive-pulse', className: 'bee-pulse', 'data-beehive-pulse': 'true', 'data-pulse-state': state, 'data-pulse-source': source, 'data-command': command ? 'true' : undefined, 'aria-label': viewMode === 'queen' ? 'Colony Network status' : viewMode === 'drone' ? 'Drone flight status' : 'Colony vital signs' },
+          return h('section', { key: 'beehive-pulse', className: 'bee-pulse', 'data-beehive-pulse': 'true', 'data-pulse-state': state, 'data-pulse-source': source, 'data-command': command ? 'true' : undefined, 'aria-label': viewMode === 'queen' ? __alloT('stem.beehive.a11y_colony_network_status', 'Colony Network status') : viewMode === 'drone' ? __alloT('stem.beehive.a11y_drone_flight_status', 'Drone flight status') : __alloT('stem.beehive.a11y_colony_vital_signs', 'Colony vital signs') },
             h('div', { className: 'bee-pulse-heading' }, h('h2', null, 'At a glance'), h('span', { 'data-pulse-context': 'true' }, context)),
             h('dl', { className: 'bee-pulse-readings' }, items.map(function(item) {
               var bounded = Number.isFinite(item.amount) && Number.isFinite(item.maximum) && item.maximum > 0;
@@ -40647,7 +40657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
             if (el.focus) el.focus();
           }
-          return h('div', { className: 'bee-command', 'data-beehive-hud-command': viewMode, role: 'group', 'aria-label': timed ? 'Colony time and next move' : 'Next move' },
+          return h('div', { className: 'bee-command', 'data-beehive-hud-command': viewMode, role: 'group', 'aria-label': timed ? __alloT('stem.beehive.a11y_colony_time_and_next_move', 'Colony time and next move') : __alloT('stem.beehive.a11y_next_move', 'Next move') },
             timed && h('div', { className: 'bee-command-row' },
               h('span', { className: 'bee-command-ap', 'data-command-ap': String(actionPoints) },
                 h('span', { className: 'bee-command-ap-pips', 'aria-hidden': 'true' }, [0, 1, 2].map(function(i) { return h('i', { key: i, 'data-spent': actionPoints > i ? 'false' : 'true' }); })),
@@ -40665,8 +40675,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 'data-command-auto': d.autoAdvance ? 'on' : 'off',
                 'aria-pressed': !!d.autoAdvance,
                 'aria-keyshortcuts': 'Space',
-                title: d.autoAdvance ? 'Pause automatic days (Space)' : 'Auto-advance days automatically (Space)',
-                'aria-label': d.autoAdvance ? 'Pause automatic days' : 'Auto-advance days automatically',
+                title: d.autoAdvance ? __alloT('stem.beehive.a11y_pause_automatic_days_space', 'Pause automatic days (Space)') : __alloT('stem.beehive.a11y_auto_advance_days_automatically_space', 'Auto-advance days automatically (Space)'),
+                'aria-label': d.autoAdvance ? __alloT('stem.beehive.a11y_pause_automatic_days', 'Pause automatic days') : __alloT('stem.beehive.a11y_auto_advance_days_automatically', 'Auto-advance days automatically'),
                 onClick: function() {
                   var nextAuto = !d.autoAdvance;
                   upd('autoAdvance', nextAuto);
@@ -40703,7 +40713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     type: 'button',
                     className: 'bee-command-quest-go',
                     'data-quest-jump': next.targetSelector,
-                    'aria-label': (next.actionLabel || 'Go to colony move') + ' for goal: ' + next.label,
+                    'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_action_for_goal', '{action} for goal: {label}'), { action: next.actionLabel || __alloT('stem.beehive.a11y_go_to_colony_move', 'Go to colony move'), label: next.label }),
                     onClick: function() {
                       var targetEl = document.querySelector(next.targetSelector) || document.getElementById('beehive-colony-interventions');
                       if (!targetEl) return;
@@ -41112,7 +41122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'bee-brief-kicker' }, h('span', null, viewMode === 'queen' ? 'Colony systems brief' : viewMode === 'drone' ? 'Flight systems brief' : 'Superorganism brief'), h('span', { className: 'bee-brief-phase', 'data-brief-phase': 'true' }, phase)),
               h('p', { className: 'bee-brief-context' }, contextLabel),
               h('h2', { id: 'beehive-command-title' }, mission.title), h('p', null, mission.body)),
-            h('dl', { className: 'bee-brief-metrics', 'data-brief-metrics': 'true', 'aria-label': phase === 'Setup guide' ? 'Getting started' : phase }, metrics.map(function(metric, mIdx) {
+            h('dl', { className: 'bee-brief-metrics', 'data-brief-metrics': 'true', 'aria-label': phase === 'Setup guide' ? __alloT('stem.beehive.a11y_getting_started', 'Getting started') : phase }, metrics.map(function(metric, mIdx) {
               var barInfo = briefVis.metrics[mIdx];
               return h('div', { key: metric[1], className: 'bee-brief-metric', 'data-brief-metric': metric[1] },
                 h('dt', null, metric[1]),
@@ -41154,7 +41164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var roleIcon = viewMode === 'queen' ? '⬡' : viewMode === 'drone' ? '↗' : '🐝';
           var roleLabel = viewMode === 'queen' ? 'Colony Network learning brief' : viewMode === 'drone' ? 'Drone Flight learning brief' : 'Beekeeper learning brief';
           return h('details', { key: 'beehive-learning-brief', 'data-beehive-learning-brief': 'true', 'data-brief-role': viewMode, open: briefOpen, onToggle: function(e) { var nextOpen = e.currentTarget.open; if (nextOpen !== (d.missionBriefOpen === true)) upd('missionBriefOpen', nextOpen); }, className: 'bee-brief-shell' },
-            h('summary', { id: 'beehive-learning-brief-summary', className: 'bee-brief-summary', 'aria-label': (briefOpen ? 'Collapse ' : 'Expand ') + roleLabel, 'aria-describedby': 'beehive-brief-summary-hint beehive-brief-summary-status' },
+            h('summary', { id: 'beehive-learning-brief-summary', className: 'bee-brief-summary', 'aria-label': (briefOpen ? __alloAriaFill(__alloT('stem.beehive.a11y_collapse_role', 'Collapse {roleLabel}'), { roleLabel: roleLabel }) : __alloAriaFill(__alloT('stem.beehive.a11y_expand_role', 'Expand {roleLabel}'), { roleLabel: roleLabel })), 'aria-describedby': 'beehive-brief-summary-hint beehive-brief-summary-status' },
               h('span', { className: 'bee-brief-summary-icon', 'aria-hidden': 'true' }, roleIcon),
               h('span', { className: 'bee-brief-summary-copy' },
                 h('strong', { 'data-brief-summary-title': 'true' }, roleLabel),
@@ -41213,7 +41223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'bee-observations-record-body' },
                   h('p', { className: 'bee-observations-note' }, 'Source: recorded end of day. Saved on Day ' + (record.savedOnDay == null ? 'unknown' : record.savedOnDay) + '. Seed: ' + (record.simulationSeed == null ? 'not recorded' : record.simulationSeed) + '. Model recorded with the run: ' + (record.modelVersion || 'not recorded') + '.'),
                   h('dl', { className: 'bee-observations-grid' }, BH_COLONY_HISTORY_METRICS.map(function(metric) { var value = record.metrics[metric.id]; return h('div', { key: metric.id }, h('dt', null, metric.label), h('dd', null, value == null ? 'Unavailable' : value + ' ' + metric.unit)); })),
-                  h('button', { type: 'button', 'data-observation-remove': record.id, className: 'bee-forecast-button', onClick: function() { removeRecord(record, index); }, 'aria-label': 'Remove saved observation ' + record.id + ', Day ' + record.day }, 'Remove this observation')));
+                  h('button', { type: 'button', 'data-observation-remove': record.id, className: 'bee-forecast-button', onClick: function() { removeRecord(record, index); }, 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_remove_saved_observation_day', 'Remove saved observation {id}, Day {day}'), { id: record.id, day: record.day }) }, 'Remove this observation')));
             })),
             h('section', { 'data-observation-comparison': 'true', className: 'bee-observations-comparison', 'aria-labelledby': 'beehive-observation-comparison-title' },
               h('header', { className: 'bee-comparison-heading' },
@@ -41609,9 +41619,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { id: 'beehive-cer-review-title', className: 'text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Check your claim, evidence and reasoning'),
                     h('p', { className: 'mt-0.5 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Use the checklist after writing. It supports self-review; it does not grade your ideas.')),
                   h('span', { className: 'self-start rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + (reviewCompleted === 3 ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700')) }, reviewCompleted + ' / 3 ready')),
-                h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-white'), role: 'progressbar', 'aria-label': reviewCompleted + ' of 3 CER self-review checks ready', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': reviewCompleted },
+                h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-white'), role: 'progressbar', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_of_3_cer_self_review_checks_ready', '{reviewCompleted} of 3 CER self-review checks ready'), { reviewCompleted: reviewCompleted }), 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': reviewCompleted },
                   h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all', style: { width: (reviewCompleted / 3 * 100) + '%' } })),
-                h('div', { 'data-notebook-review-grid': 'true', className: 'mt-3 grid grid-cols-1 gap-2 lg:grid-cols-3', role: 'group', 'aria-label': roleName + ' claim evidence reasoning self-review' }, reviewItems.map(function(item) {
+                h('div', { 'data-notebook-review-grid': 'true', className: 'mt-3 grid grid-cols-1 gap-2 lg:grid-cols-3', role: 'group', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_claim_evidence_reasoning_self_review', '{roleName} claim evidence reasoning self-review'), { roleName: roleName }) }, reviewItems.map(function(item) {
                   var checkId = 'beehive-review-' + viewMode + '-' + item.id;
                   var cueId = checkId + '-cue';
                   return h('label', { key: item.id, htmlFor: checkId, 'data-beehive-review-criterion': item.id, className: 'flex min-h-[56px] items-start gap-3 rounded-lg border p-3 ' + (!item.available ? (dk ? 'border-slate-800 bg-slate-950/30 text-slate-400' : 'border-slate-200 bg-white/55 text-slate-500') : item.checked ? (dk ? 'border-emerald-700 bg-emerald-950/30 text-slate-100' : 'border-emerald-300 bg-white text-slate-900') : (dk ? 'border-indigo-700 bg-slate-900 text-slate-100' : 'border-indigo-200 bg-white text-slate-900')) },
@@ -41632,7 +41642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', null, 'Read your saved writing side by side, then use specific evidence to build a cross-perspective explanation. You can start a draft anytime.')),
                 h('div', { className: 'bee-portfolio-progress' },
                   h('strong', { 'data-notebook-portfolio-written': 'true' }, portfolioCompleted + ' / 10 written'),
-                  h('div', { role: 'progressbar', 'aria-label': __alloT("stem.beehive.a11y_portfolio_sections_written", 'Portfolio sections written'), 'aria-valuemin': 0, 'aria-valuemax': 10, 'aria-valuenow': portfolioCompleted, 'aria-valuetext': portfolioCompleted + ' of 10 sections written', 'aria-describedby': 'beehive-portfolio-progress-help' }, h('span', { style: { width: portfolioCompleted * 10 + '%' } })),
+                  h('div', { role: 'progressbar', 'aria-label': __alloT("stem.beehive.a11y_portfolio_sections_written", 'Portfolio sections written'), 'aria-valuemin': 0, 'aria-valuemax': 10, 'aria-valuenow': portfolioCompleted, 'aria-valuetext': __alloAriaFill(__alloT('stem.beehive.a11y_of_10_sections_written', '{portfolioCompleted} of 10 sections written'), { portfolioCompleted: portfolioCompleted }), 'aria-describedby': 'beehive-portfolio-progress-help' }, h('span', { style: { width: portfolioCompleted * 10 + '%' } })),
                   h('p', { id: 'beehive-portfolio-progress-help' }, 'Nine role sections plus one synthesis. Writing counts record where text is saved; self-review records the checks you chose. Neither is a grade.')),
                 h('p', { className: 'bee-portfolio-nav-help' }, 'Opening a notebook switches the simulation perspective. Your saved writing stays in place.'),
                 h('div', { 'data-notebook-role-grid': 'true', className: 'bee-portfolio-roles' }, portfolioRoles.map(function(role) {
@@ -42113,7 +42123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             portfolio.entries.map(function(entry) { return h('details', { key: entry.id, className: 'rounded-lg border p-3 ' + (dk ? 'border-slate-600 bg-slate-950 text-slate-100' : 'border-slate-300 bg-white text-slate-900') },
               h('summary', { className: 'min-h-[44px] cursor-pointer break-words text-xs font-bold' }, entry.title),
               h('pre', { className: 'mt-2 whitespace-pre-wrap break-words text-xs leading-relaxed', style: { overflowWrap: 'anywhere' } }, entry.text),
-              h('button', { type: 'button', className: 'mt-2 min-h-[44px] rounded-lg border px-3 text-xs font-bold', 'data-forecast-saved-remove': entry.id, 'aria-label': 'Remove saved forecast investigation: ' + entry.title, onClick: function() {
+              h('button', { type: 'button', className: 'mt-2 min-h-[44px] rounded-lg border px-3 text-xs font-bold', 'data-forecast-saved-remove': entry.id, 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_remove_saved_forecast_investigation', 'Remove saved forecast investigation: {title}'), { title: entry.title }), onClick: function() {
                 forecastStudyFocusRef.current = '#beehive-notebook-summary';
                 updFn(function(b) {
                   var live = bhNormalizeForecastPortfolio(b.notebook && b.notebook.forecastStudies);
@@ -42624,7 +42634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 onChange: function(event) { changeHoneyLab(field, event.target.value); } }));
           }
           function budget(run, name) {
-            return h('div', { className: 'bhh-table-wrap', tabIndex: 0, role: 'region', 'aria-label': name + ' food budget, scroll to read all columns' },
+            return h('div', { className: 'bhh-table-wrap', tabIndex: 0, role: 'region', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_food_budget_scroll_to_read_all_columns', '{name} food budget, scroll to read all columns'), { name: name }) },
               h('table', { className: 'bhh-table' },
                 h('caption', null, name + ': food budget in modeled pounds'),
                 h('thead', null, h('tr', null, ['Day', 'Start', 'Feed', 'Forage in', 'Consumed', 'Rounding', 'End'].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))),
@@ -42711,7 +42721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   { id: 'Food stores depend only on the number of bees.', label: 'Only the number of bees matters.' }]),
                 h('p', { className: 'bhh-note' }, 'Every prediction can be tested. A surprising result is a reason to revise your explanation.')),
               step >= 1 && step <= 4 && h('div', null,
-                h('div', { className: 'bhh-metrics', role: 'list', 'aria-label': (step >= 3 ? 'Run B' : 'Run A') + ' final-day readings' },
+                h('div', { className: 'bhh-metrics', role: 'list', 'aria-label': (step >= 3 ? __alloT('stem.beehive.a11y_run_b_final_day_readings', 'Run B final-day readings') : __alloT('stem.beehive.a11y_run_a_final_day_readings', 'Run A final-day readings')) },
                   [{ id: 'forage', label: 'Forage in', value: money(last.incoming) }, { id: 'consumed', label: 'Consumed', value: money(last.consumed) }, { id: 'stores', label: 'End stores', value: money(last.stores) }].map(function(metric) {
                     var mb = hlVis.dailyBars[metric.id];
                     return h('div', { key: metric.label, role: 'listitem' },
@@ -42979,12 +42989,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('textarea', { 'data-experiment-notebook-field': field.id, value: experimentNotebook[field.id] || '', onChange: function(event) { updateExperimentNotebookField(field.id, event.target.value); }, rows: field.maxLength > 800 ? 4 : 3, maxLength: field.maxLength, spellCheck: true, 'aria-describedby': promptId, placeholder: prompt.placeholder, className: 'mt-2 w-full resize-y rounded-lg border p-2.5 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-sky-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100 placeholder:text-slate-400' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-600') }));
             }
             return h('details', { 'data-beehive-experiment-notebook': 'true', 'data-experiment-notebook-complete': completed === notebookItemTotal && reviewCompleted === reviewItems.length ? 'true' : 'false', open: notebookOpen, onToggle: function(event) { var nextOpen = event.currentTarget.open; if (nextOpen !== (d.experimentNotebookOpen === true)) upd('experimentNotebookOpen', nextOpen); }, className: 'group mt-3 overflow-hidden rounded-xl border ' + (dk ? 'border-indigo-700/45 bg-slate-950/30' : 'border-indigo-200 bg-indigo-50/45') },
-              h('summary', { 'data-experiment-notebook-summary': 'true', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500', style: { listStyle: 'none' }, 'aria-label': (notebookOpen ? 'Collapse' : 'Expand') + ' fair-test planner. ' + completed + ' of ' + notebookItemTotal + ' planning and writing items complete.' },
+              h('summary', { 'data-experiment-notebook-summary': 'true', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500', style: { listStyle: 'none' }, 'aria-label': (notebookOpen ? __alloAriaFill(__alloT('stem.beehive.a11y_collapse_fair_test_planner_of_planning_and_writing_items', 'Collapse fair-test planner. {completed} of {notebookItemTotal} planning and writing items complete.'), { completed: completed, notebookItemTotal: notebookItemTotal }) : __alloAriaFill(__alloT('stem.beehive.a11y_expand_fair_test_planner_of_planning_and_writing_items', 'Expand fair-test planner. {completed} of {notebookItemTotal} planning and writing items complete.'), { completed: completed, notebookItemTotal: notebookItemTotal })) },
                 h('span', { className: 'grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-700 text-white', 'aria-hidden': 'true' }, '\u270E'),
                 h('span', { className: 'min-w-0 flex-1' },
                   h('span', { className: 'block text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, __alloT('stem.beehive.fair_test_planner', 'Fair-test planner: Run A vs Run B')),
                   h('span', { className: 'mt-0.5 block text-[0.625rem] font-semibold ' + bodyTone }, __alloT('stem.beehive.fair_test_planner_sub', 'Plan one change for Run B, compare it with Run A, then explain and export the evidence.')),
-                  h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': completed + ' of ' + notebookItemTotal + ' experiment planning and writing items complete', 'aria-valuemin': 0, 'aria-valuemax': notebookItemTotal, 'aria-valuenow': completed }, h('span', { className: 'block h-full rounded-full bg-indigo-600', style: { width: (completed / notebookItemTotal * 100) + '%' } }))),
+                  h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_of_experiment_planning_and_writing_items_complete', '{completed} of {notebookItemTotal} experiment planning and writing items complete'), { completed: completed, notebookItemTotal: notebookItemTotal }), 'aria-valuemin': 0, 'aria-valuemax': notebookItemTotal, 'aria-valuenow': completed }, h('span', { className: 'block h-full rounded-full bg-indigo-600', style: { width: (completed / notebookItemTotal * 100) + '%' } }))),
                 h('span', { className: 'rounded-full border px-2 py-1 text-[0.625rem] font-black ' + (dk ? 'border-indigo-700 text-indigo-200' : 'border-indigo-200 text-indigo-800') }, completed + '/' + notebookItemTotal),
                 h('span', { className: 'text-lg transition-transform group-open:rotate-180 motion-reduce:transition-none', 'aria-hidden': 'true' }, '\u2304')),
               h('div', { className: 'border-t p-3 sm:p-4 ' + (dk ? 'border-indigo-800/60' : 'border-indigo-200') },
@@ -43020,7 +43030,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('fieldset', { 'data-experiment-notebook-review': 'true', 'data-review-complete': reviewCompleted === reviewItems.length ? 'true' : 'false', className: 'mt-4 rounded-xl border p-3 ' + cardTone },
                   h('legend', { className: 'px-1 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, '3. Evidence self-review'),
                   h('p', { className: 'text-[0.625rem] leading-relaxed ' + bodyTone }, 'These checks unlock only when the related evidence is available.'),
-                  h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': reviewCompleted + ' of ' + reviewItems.length + ' experiment evidence checks ready', 'aria-valuemin': 0, 'aria-valuemax': reviewItems.length, 'aria-valuenow': reviewCompleted }, h('div', { className: 'h-full rounded-full bg-emerald-600', style: { width: (reviewCompleted / reviewItems.length * 100) + '%' } })),
+                  h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_of_experiment_evidence_checks_ready', '{reviewCompleted} of {total} experiment evidence checks ready'), { reviewCompleted: reviewCompleted, total: reviewItems.length }), 'aria-valuemin': 0, 'aria-valuemax': reviewItems.length, 'aria-valuenow': reviewCompleted }, h('div', { className: 'h-full rounded-full bg-emerald-600', style: { width: (reviewCompleted / reviewItems.length * 100) + '%' } })),
                   h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3' }, reviewItems.map(function(item) {
                     var cueId = 'beehive-experiment-review-' + item.id + '-cue';
                     return h('label', { key: item.id, className: 'flex min-h-[48px] items-start gap-2 rounded-lg border p-2.5 ' + (item.available ? cardTone : (dk ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')) },
@@ -43302,7 +43312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     renderPlanStageIcon(stage.id, stage.state)),
                   h('p', { className: 'mt-1.5 text-[0.5625rem] font-semibold leading-relaxed ' + bodyTone }, stage.meta));
               })),
-              issueItems.length > 0 && h('ul', { className: 'mt-2 flex flex-wrap gap-1.5', 'aria-label': audit.status === 'changed' ? 'Plan items edited after Run B began' : 'Plan items missing when Run B began' }, issueItems.map(function(item) {
+              issueItems.length > 0 && h('ul', { className: 'mt-2 flex flex-wrap gap-1.5', 'aria-label': audit.status === 'changed' ? __alloT('stem.beehive.a11y_plan_items_edited_after_run_b_began', 'Plan items edited after Run B began') : __alloT('stem.beehive.a11y_plan_items_missing_when_run_b_began', 'Plan items missing when Run B began') }, issueItems.map(function(item) {
                 return h('li', { key: item.id, className: 'rounded-full border px-2 py-1 text-[0.5625rem] font-bold ' + cardTone }, item.label);
               })),
               h('p', { className: 'mt-2 text-[0.5625rem] leading-relaxed ' + bodyTone }, 'The recorded copy is never overwritten by editing. Restarting Run B deliberately creates a new copy from the current plan.'));
@@ -43432,7 +43442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             return h('div', { 'data-experiment-actions': kind, className: 'rounded-xl border p-3 ' + cardTone },
               h('h5', { className: 'text-[0.6875rem] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, title),
               actions.length
-                ? h('ul', { className: 'mt-2 space-y-1.5', 'aria-label': title + ' recent management choices' }, actions.map(function(action, index) {
+                ? h('ul', { className: 'mt-2 space-y-1.5', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_recent_management_choices', '{title} recent management choices'), { title: title }) }, actions.map(function(action, index) {
                     return h('li', { key: action.day + '-' + action.label + '-' + index, className: 'text-[0.625rem] leading-relaxed ' + bodyTone },
                       h('strong', { className: dk ? 'text-slate-200' : 'text-slate-800' }, 'Day ' + action.day + ': '),
                       action.label + (action.cost ? ' (' + action.cost + ')' : ''));
@@ -44111,7 +44121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('strong', { id: 'beehive-tools-title' }, __alloT('stem.beehive.tools_help', 'Tools & help')),
                 viewMode === 'beekeeper' && h('button', { type: 'button', 'data-open-honey-lab': 'true', onClick: openHoneyLab, className: 'min-h-[44px] rounded-lg border border-amber-700 bg-amber-700 px-3 py-2 text-sm font-bold text-white' }, d.honeyInvestigation ? 'Resume investigation' : 'Investigate falling stores')),
               h('div', { 'data-beehive-tools-grid': 'true', className: 'bee-toolbox-grid' },
-                h('button', { 'data-beehive-tool': 'sound', type: 'button', onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': __alloT('stem.beehive.a11y_sound_effects', 'Sound effects'), 'aria-pressed': soundOn ? 'true' : 'false', title: soundOn ? 'Mute sound effects' : 'Enable sound effects', className: 'bee-toolbox-button min-h-[44px] min-w-[44px]' },
+                h('button', { 'data-beehive-tool': 'sound', type: 'button', onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': __alloT('stem.beehive.a11y_sound_effects', 'Sound effects'), 'aria-pressed': soundOn ? 'true' : 'false', title: soundOn ? __alloT('stem.beehive.a11y_mute_sound_effects', 'Mute sound effects') : __alloT('stem.beehive.a11y_enable_sound_effects', 'Enable sound effects'), className: 'bee-toolbox-button min-h-[44px] min-w-[44px]' },
                   h('span', { className: 'bee-toolbox-icon', 'aria-hidden': 'true' }, soundOn ? '🔊' : '🔇'),
                   h('span', { className: 'bee-toolbox-label' }, h('span', { 'data-beehive-tool-label': 'true' }, __alloT('stem.beehive.tools_sound_label', 'Sound effects')), h('span', { 'data-beehive-tool-state': 'true', 'aria-hidden': 'true' }, soundOn ? '(On)' : '(Off)'))),
                 h('button', { 'data-beehive-tool': 'quiz', type: 'button', onClick: function() { if (quizOpen) closeAccessibleBeePanel('quiz'); else startQuiz(); }, 'aria-label': __alloT('stem.beehive.a11y_bee_knowledge_quiz', 'Bee knowledge quiz'), 'aria-expanded': quizOpen ? 'true' : 'false', 'aria-controls': 'beehive-quiz-panel', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''), className: 'bee-toolbox-button min-h-[44px] min-w-[44px]' },
@@ -44305,8 +44315,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 type: 'button',
                 onClick: function() { var nextPaused = !beekeeperMotionPaused; upd('motionPaused', nextPaused); announceBee(nextPaused ? 'Beekeeper canvas animation paused.' : 'Beekeeper canvas animation resumed.', false); },
                 'aria-keyshortcuts': 'P',
-                'aria-label': beekeeperMotionPaused ? 'Resume Beekeeper canvas animation' : 'Pause Beekeeper canvas animation',
-                title: beekeeperMotionPaused ? 'Resume animation (P)' : 'Pause animation (P)',
+                'aria-label': beekeeperMotionPaused ? __alloT('stem.beehive.a11y_resume_beekeeper_canvas_animation', 'Resume Beekeeper canvas animation') : __alloT('stem.beehive.a11y_pause_beekeeper_canvas_animation', 'Pause Beekeeper canvas animation'),
+                title: beekeeperMotionPaused ? __alloT('stem.beehive.a11y_resume_animation_p', 'Resume animation (P)') : __alloT('stem.beehive.a11y_pause_animation_p', 'Pause animation (P)'),
                 className: 'inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-lg border px-3 text-sm font-black text-white shadow-lg backdrop-blur-md transition-all ' + (beekeeperMotionPaused ? 'border-emerald-400/50 bg-emerald-700/92 hover:bg-emerald-800' : 'border-amber-400/45 bg-slate-950/78 hover:bg-slate-900')
               }, h('span', { 'aria-hidden': 'true' }, beekeeperMotionPaused ? '\u25B6' : '\u23F8'), h('span', { className: 'hidden sm:inline' }, beekeeperMotionPaused ? 'Resume motion' : 'Pause motion')),
               h('button', {
@@ -44370,7 +44380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               'aria-label': hive3dExploded
                 ? __alloT('stem.beehive.hive3d_close_aria', 'Close hive: stack the boxes back together')
                 : __alloT('stem.beehive.hive3d_open_aria', 'Open hive: lift the boxes apart in inspection order — outer cover, inner cover, honey super, queen excluder, then the brood frames'),
-              title: hive3dExploded ? 'Close hive' : 'Open hive',
+              title: hive3dExploded ? __alloT('stem.beehive.a11y_close_hive', 'Close hive') : __alloT('stem.beehive.a11y_open_hive', 'Open hive'),
               disabled: hive3dStatus !== 'ready',
               className: 'min-h-[44px] rounded-lg border px-3 text-[0.6875rem] font-black ' + (hive3dExploded
                 ? (dk ? 'border-amber-400 bg-amber-500/25 text-amber-100' : 'border-amber-500 bg-amber-100 text-amber-900')
@@ -44483,7 +44493,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Flight controls'), h('p', { className: 'text-[0.625rem] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Hold buttons to steer. Keyboard: arrows/WASD, Space climb, Shift descend, P pause, V camera.'))),
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', { type: 'button', onClick: toggleDronePause, 'aria-keyshortcuts': 'P', className: 'rounded-lg px-3 py-2 text-[0.6875rem] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dronePaused ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, dronePaused ? 'Resume flight' : 'Pause flight'),
-                  h('button', { type: 'button', onClick: toggleDroneCamera, 'aria-pressed': droneCameraMode === 'chase', 'aria-keyshortcuts': 'V', 'data-flight-camera-toggle': 'true', 'aria-label': __alloT('stem.beehive.a11y_chase_camera', 'Chase camera'), title: 'Switch to ' + (droneCameraMode === 'chase' ? 'cockpit' : 'chase') + ' camera (V)', className: 'rounded-lg px-3 py-2 text-[0.6875rem] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ' + (droneCameraMode === 'chase' ? 'bg-sky-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, 'Chase camera')),
+                  h('button', { type: 'button', onClick: toggleDroneCamera, 'aria-pressed': droneCameraMode === 'chase', 'aria-keyshortcuts': 'V', 'data-flight-camera-toggle': 'true', 'aria-label': __alloT('stem.beehive.a11y_chase_camera', 'Chase camera'), title: (droneCameraMode === 'chase' ? __alloT('stem.beehive.a11y_switch_to_cockpit_camera_v', 'Switch to cockpit camera (V)') : __alloT('stem.beehive.a11y_switch_to_chase_camera_v', 'Switch to chase camera (V)')), className: 'rounded-lg px-3 py-2 text-[0.6875rem] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ' + (droneCameraMode === 'chase' ? 'bg-sky-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, 'Chase camera')),
               (function() {
                 var sweet = droneSweetSpotReadout(_droneState.current);
                 return h('div', { 'data-flight-sweetspot-pill': 'true', 'aria-live': 'off', className: 'mt-2 flex flex-wrap items-center gap-1.5 text-[0.6875rem] font-bold' },
@@ -44567,7 +44577,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         type: 'button',
                         'data-flight-spatial-camera-toggle': 'true',
                         onClick: toggleDroneCamera,
-                        'aria-label': 'Switch 3D camera to ' + (instrumentSpatial.camera === 'chase' ? 'cockpit' : 'chase') + ' view',
+                        'aria-label': (instrumentSpatial.camera === 'chase' ? __alloT('stem.beehive.a11y_switch_3d_camera_to_cockpit_view', 'Switch 3D camera to cockpit view') : __alloT('stem.beehive.a11y_switch_3d_camera_to_chase_view', 'Switch 3D camera to chase view')),
                         className: 'min-h-[44px] rounded-lg border px-2.5 py-1.5 text-[0.6875rem] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-sky-600 bg-sky-950/60 text-sky-100 hover:bg-sky-900/70' : 'border-sky-300 bg-white text-sky-900 hover:bg-sky-100')
                       }, instrumentSpatial.camera === 'chase' ? '\uD83C\uDFA5 Cockpit view' : '\uD83C\uDFA5 Chase view'))),
                   h('div', { 'data-beehive-flight-spatial-maneuver-card': 'true', role: 'note', 'aria-label': __alloT('stem.beehive.a11y_recommended_flight_correction', 'Recommended flight correction'), className: 'mt-3 rounded-lg border p-2.5 ' + (instrumentSpatial.state === 'danger' ? (dk ? 'border-rose-700/50 bg-rose-950/25' : 'border-rose-200 bg-rose-50') : instrumentSpatial.state === 'warning' ? (dk ? 'border-amber-700/50 bg-amber-950/25' : 'border-amber-200 bg-amber-50') : (dk ? 'border-sky-700/35 bg-sky-950/25' : 'border-sky-100 bg-white/80')) },
@@ -44980,7 +44990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         var costText = queenCostText(qa.cost);
                         var actionUnavailable = readiness.reason;
                         return h('button', { key: qa.id, type: 'button', onClick: function() { if (!affordable) { explainBeeUnavailable(qa.label, actionUnavailable); return; } queenAction(qa.id); }, 'aria-disabled': affordable ? undefined : 'true', 'data-unavailable-reason': affordable ? undefined : actionUnavailable, title: qa.desc + ' (Cost: ' + costText + ')' + (affordable ? '' : ' — ' + actionUnavailable),
-                          'aria-label': qa.label + ': ' + qa.desc + '. Cost: ' + costText + (affordable ? '. Ready.' : '. Unavailable. ' + actionUnavailable + '.'),
+                          'aria-label': (affordable ? __alloAriaFill(__alloT('stem.beehive.a11y_quick_action_cost_ready', '{label}: {desc}. Cost: {costText}. Ready.'), { label: qa.label, desc: qa.desc, costText: costText }) : __alloAriaFill(__alloT('stem.beehive.a11y_quick_action_cost_unavailable', '{label}: {desc}. Cost: {costText}. Unavailable. {actionUnavailable}.'), { label: qa.label, desc: qa.desc, costText: costText, actionUnavailable: actionUnavailable })),
                           'data-queen-command': qa.id, 'data-command-ready': affordable ? 'true' : 'false', className: 'group min-h-[96px] snap-center text-left p-3 rounded-xl border sm:snap-none transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (affordable ? (dk ? 'bg-slate-800 border-purple-700/30 hover:border-purple-500/50 hover:bg-slate-700' : 'bg-white border-purple-100 hover:border-purple-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-400 text-slate-600 cursor-not-allowed opacity-70')) },
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, qa.icon),
@@ -45245,7 +45255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('button', { type: 'button', onClick: function() {
                   if (tutorialStep + 1 >= TUTORIAL_STEPS.length) { finishBeeTutorial('Tutorial complete. Focus moved to Next Day.'); }
                   else { moveBeeTutorial(tutorialStep + 1); }
-                }, className: 'min-h-[44px] px-4 py-2 rounded-lg text-xs font-bold text-white ' + (dk ? 'transition-colors bg-amber-700 hover:bg-amber-600' : 'transition-colors bg-amber-700 hover:bg-amber-800') },
+                }, className: 'min-h-[44px] px-4 py-2 rounded-lg text-xs font-bold text-white ' + (dk ? 'transition-colors bg-amber-700 hover:bg-amber-800' : 'transition-colors bg-amber-700 hover:bg-amber-800') },
                   tutorialStep + 1 >= TUTORIAL_STEPS.length ? '✓ Start Beekeeping!' : 'Next →')))),
 
           // ═══ YEAR-END REPORT CARD ═══
@@ -45529,11 +45539,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   updAll({ seasonReviewsSeen: seenSeasons.concat([doneSeasons]) });
                   if (awardStemXP) awardStemXP('beehive', 10, srNames[endedSeason] + ' report');
                   playSfx(sfxSuccess);
-                }, className: 'min-h-[44px] w-full rounded-xl px-4 py-2 text-sm font-bold text-white ' + (dk ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-emerald-700 hover:bg-emerald-800') }, __alloT('stem.beehive.report_continue', 'Start') + ' ' + srNames[season] + ' →'));
+                }, className: 'min-h-[44px] w-full rounded-xl px-4 py-2 text-sm font-bold text-white ' + (dk ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-emerald-700 hover:bg-emerald-800') }, __alloT('stem.beehive.report_continue', 'Start') + ' ' + srNames[season] + ' →'));
           })(),
 
           // ═══ EXPORT REPORT FALLBACK MODAL (when clipboard API unavailable) ═══
-          d.exportedReport && h('div', { className: 'rounded-xl border p-3 space-y-2 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), 'data-beehive-focus-panel': 'report', tabIndex: -1, role: 'region', 'aria-label': (d.exportedReportTitle || 'Learning Record') + ' export' },
+          d.exportedReport && h('div', { className: 'rounded-xl border p-3 space-y-2 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), 'data-beehive-focus-panel': 'report', tabIndex: -1, role: 'region', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_report_export', '{title} export'), { title: d.exportedReportTitle || __alloT('stem.beehive.a11y_learning_record', 'Learning Record') }) },
             h('div', { className: 'flex items-center justify-between mb-1' },
               h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '\uD83D\uDCC4 ' + (d.exportedReportTitle || 'Learning Record') + ' \u2014 Copy Manually'),
               h('button', { onClick: function() { updFn(function(b) { b.exportedReport = null; b.exportedReportTitle = null; }); }, className: 'text-[0.6875rem] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_export', 'Close export') }, '✕')),
@@ -46038,7 +46048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     'aria-expanded': isOpen ? 'true' : 'false',
                     'aria-controls': 'beehive-stat-explanation-' + id,
                     'aria-label': label + ' — ' + valueStr + '. ' + explainer.status + (isOpen ? '. Hide explanation' : '. Show explanation'),
-                    title: isOpen ? 'Hide ' + label.toLowerCase() + ' explanation' : 'What is ' + label.toLowerCase() + '?',
+                    title: isOpen ? __alloAriaFill(__alloT('stem.beehive.a11y_hide_term_explanation', 'Hide {label} explanation'), { label: label.toLowerCase() }) : __alloAriaFill(__alloT('stem.beehive.a11y_what_is_term', 'What is {label}?'), { label: label.toLowerCase() }),
                     className: 'bee-colony-meter transition-colors ' + (dk ? 'hover:bg-slate-800/60' : 'hover:bg-slate-100')
                   },
                     h('div', { className: 'bee-colony-meter-line' },
@@ -46335,7 +46345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '📔 Beekeeper\'s Journal · ' + journalEntries.length + ' entries'),
                 h('button', { onClick: function() { upd('journalExpanded', !expanded); },
-                  'aria-label': expanded ? 'Collapse journal' : 'Expand journal',
+                  'aria-label': expanded ? __alloT('stem.beehive.a11y_collapse_journal', 'Collapse journal') : __alloT('stem.beehive.a11y_expand_journal', 'Expand journal'),
                   className: 'text-[0.6875rem] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-amber-400 hover:bg-slate-700' : 'transition-colors text-amber-700 hover:bg-amber-100') },
                   expanded ? 'Show recent' : 'Show all')),
               h('div', { className: 'space-y-1.5' },
@@ -46551,7 +46561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var seasonGoalsList = beeSeasonGoalList();
             var goalsHit = seasonGoalsList.filter(function(g) { return g.met; }).length;
             return h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-indigo-900/20 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200'),
-              role: 'region', 'aria-label': SEASON_GOALS[season].season + ' goals: ' + goalsHit + ' of ' + seasonGoalsList.length + ' complete' },
+              role: 'region', 'aria-label': __alloAriaFill(__alloT('stem.beehive.a11y_season_goals_of_complete', '{season} goals: {goalsHit} of {total} complete'), { season: SEASON_GOALS[season].season, goalsHit: goalsHit, total: seasonGoalsList.length }) },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { 'aria-hidden': 'true' }, SEASON_GOALS[season].emoji),
                 h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, SEASON_GOALS[season].season + ' Goals'),
@@ -46829,7 +46839,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     : (dk ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-slate-50 text-slate-700 border border-slate-400');
                   return h('button', { key: btn.label, type: 'button', onClick: function() { if (!enabled) { explainBeeUnavailable(btn.label, btn.locked); return; } btn.onClick(); }, 'aria-disabled': enabled ? undefined : 'true', title: btn.tip,
                     'data-management-action': btn.label, 'data-management-choice': btn.choiceId || undefined, 'data-action-ready': enabled ? 'true' : 'false', 'data-management-recommended': isPriorityMove ? 'true' : undefined, 'data-unavailable-reason': enabled ? undefined : btn.locked, 'data-management-cost': costLabel,
-                    'aria-label': displayLabel + ': ' + btn.tip + '. Effect: ' + btn.effect + '. Cost: ' + costLabel + '. ' + (enabled ? 'Ready.' : btn.locked + '.'),
+                    'aria-label': (enabled ? __alloAriaFill(__alloT('stem.beehive.a11y_hive_action_ready', '{displayLabel}: {tip}. Effect: {effect}. Cost: {costLabel}. Ready.'), { displayLabel: displayLabel, tip: btn.tip, effect: btn.effect, costLabel: costLabel }) : __alloAriaFill(__alloT('stem.beehive.a11y_hive_action_locked', '{displayLabel}: {tip}. Effect: {effect}. Cost: {costLabel}. {locked}.'), { displayLabel: displayLabel, tip: btn.tip, effect: btn.effect, costLabel: costLabel, locked: btn.locked })),
                     className: 'bee-live-action rounded-xl border transition-all ' + bg + (enabled ? ' hover:shadow-md hover:-translate-y-0.5' : ' cursor-not-allowed'),
                     style: { backgroundColor: enabled ? (dk ? '#172b26' : '#fffef8') : (dk ? '#22392f' : '#eef2e7'), color: dk ? '#edf5e9' : '#233d37', borderColor: isPriorityMove ? (dk ? '#fbbf24' : '#b45309') : (dk ? '#3c554b' : '#d8dfd2'), boxShadow: isPriorityMove ? (dk ? '0 0 0 1px rgba(251,191,36,0.45), 0 2px 6px rgba(0,0,0,0.35)' : '0 0 0 1px rgba(180,83,9,0.35), 0 2px 6px rgba(180,83,9,0.12)') : (enabled ? (dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)') : undefined) }
                   },
@@ -46857,7 +46867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     var conservationReady = actionPoints >= action.cost;
                     var isPriorityEco = conservationReady && action.id === priorityConservationId;
                     var conservationUnavailable = 'Need ' + action.cost + ' action points; have ' + actionPoints + '. Advance to the next day to refresh the budget';
-                    return h('button', { key: action.id, type: 'button', 'aria-disabled': conservationReady ? undefined : 'true', 'aria-label': action.label + ': ' + action.desc + '. Effect: ' + effectText + '. Cost: ' + action.cost + ' action points.' + (conservationReady ? ' Ready.' : ' Unavailable. ' + conservationUnavailable + '.'), 'data-conservation-impact': action.id, 'data-conservation-ready': conservationReady ? 'true' : 'false', 'data-unavailable-reason': conservationReady ? undefined : conservationUnavailable, 'data-conservation-recommended': isPriorityEco ? 'true' : undefined,
+                    return h('button', { key: action.id, type: 'button', 'aria-disabled': conservationReady ? undefined : 'true', 'aria-label': (conservationReady ? __alloAriaFill(__alloT('stem.beehive.a11y_effect_cost_action_points_ready', '{label}: {desc}. Effect: {effectText}. Cost: {cost} action points. Ready.'), { label: action.label, desc: action.desc, effectText: effectText, cost: action.cost }) : __alloAriaFill(__alloT('stem.beehive.a11y_effect_cost_action_points_unavailable', '{label}: {desc}. Effect: {effectText}. Cost: {cost} action points. Unavailable. {conservationUnavailable}.'), { label: action.label, desc: action.desc, effectText: effectText, cost: action.cost, conservationUnavailable: conservationUnavailable })), 'data-conservation-impact': action.id, 'data-conservation-ready': conservationReady ? 'true' : 'false', 'data-unavailable-reason': conservationReady ? undefined : conservationUnavailable, 'data-conservation-recommended': isPriorityEco ? 'true' : undefined,
                       onClick: function() {
                         if (!conservationReady) { explainBeeUnavailable(action.label, conservationUnavailable); return; }
                         // Conservation moves share the committed AP path too.
@@ -46885,7 +46895,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         })) return;
                         triggerBeekeeperAction('plant', action.label + ' applied.', action.emoji);
                       },
-                      title: action.desc + ' (Cost: ' + action.cost + ' AP)',
+                      title: __alloAriaFill(__alloT('stem.beehive.a11y_desc_cost_ap', '{desc} (Cost: {cost} AP)'), { desc: action.desc, cost: action.cost }),
                       className: 'min-h-[44px] text-left p-2 rounded-lg border transition-all ' + (dk ? 'bg-slate-800 border-emerald-700/30 hover:border-emerald-500/50 hover:bg-slate-700' : 'bg-white border-emerald-100 hover:border-emerald-400 hover:shadow-sm') + (actionPoints < action.cost ? ' opacity-40' : '') + (isPriorityEco ? (dk ? ' ring-2 ring-amber-400/80 border-amber-400/70' : ' ring-2 ring-emerald-700 border-emerald-700') : '')
                     },
                       h('div', { className: 'flex items-center gap-1' },

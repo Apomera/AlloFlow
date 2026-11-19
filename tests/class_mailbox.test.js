@@ -730,9 +730,12 @@ describe('ANTI wiring pins', () => {
     });
 
     it('live-session transport chooser, hosted-QR button, and hand-raise are wired', () => {
-        expect(anti).toMatch(/Teach live/);
-        expect(anti).toMatch(/Standard live session/);
-        expect(anti).toMatch(/Class Mailbox QR session/);
+        // 2026-11-17: the Teach live chooser is a lazy view (SessionStartOptionsView, third cold-path wave).
+        const coldPathScreens = fs.readFileSync(path.join(ROOT, 'view_cold_path_screens_source.jsx'), 'utf8');
+        expect(anti).toContain('{showSessionStartOptions && (\n        <SessionStartOptionsView\n');
+        expect(coldPathScreens).toMatch(/Teach live/);
+        expect(coldPathScreens).toMatch(/Standard live session/);
+        expect(coldPathScreens).toMatch(/Class Mailbox QR session/);
         expect(anti).toContain("const ClassMailboxSetupView = _alloCreateFirstWaveCdnView('ClassMailboxSetupView'");
         expect(shareSessionSurfacesSource).toMatch(/Connect & self-test/);
         expect(anti).not.toMatch(/Push current resource to class/);

@@ -88,7 +88,14 @@ const liveCaps = vm.runInNewContext(
 const visual = parseSource('visual_panel_source.jsx');
 const visualPlanNode = visual.ast.program.body.find(node => node.type === 'FunctionDeclaration' && node.id.name === 'generateVisualPlan');
 if (!visualPlanNode) throw new Error('Visual plan implementation missing');
-const generateVisualPlan = vm.runInNewContext('(' + visual.text.slice(visualPlanNode.start, visualPlanNode.end) + ')', {
+// 2026-11-17: since cf1747d6d6 (11-15) the plan prompt fences each input as untrusted data; those two helpers
+// are top-level functions of the same file, so they are lifted with it.
+const fenceHelpers = ['_vpSanitizeUntrusted', '_vpFenceUntrusted'].map(name => {
+  const node = visual.ast.program.body.find(item => item.type === 'FunctionDeclaration' && item.id.name === name);
+  if (!node) throw new Error('Visual plan helper missing: ' + name);
+  return visual.text.slice(node.start, node.end);
+}).join('\n');
+const generateVisualPlan = vm.runInNewContext(fenceHelpers + '\n(' + visual.text.slice(visualPlanNode.start, visualPlanNode.end) + ')', {
   console: { log() {}, warn() {} },
 });
 
@@ -209,7 +216,7 @@ describe.each(HOSTS)('%s host dependency behavior', file => {
     await api.handleRestoreImage();
     expect(plan).toHaveBeenCalledExactlyOnceWith('Water cycle', '5th Grade', savedLanguage);
     expect(callGemini).toHaveBeenCalledTimes(1);
-    expect(callGemini.mock.calls[0][0]).toContain('STUDENT LANGUAGE: ' + expectedLanguage);
+    expect(callGemini.mock.calls[0][0]).toContain('STUDENT LANGUAGE:\n<UNTRUSTED_STUDENT_LANGUAGE>\n' + expectedLanguage + '\n</UNTRUSTED_STUDENT_LANGUAGE>');
     expect(warnLog).not.toHaveBeenCalled();
   });
 });

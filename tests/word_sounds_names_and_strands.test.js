@@ -149,7 +149,8 @@ describe('setup', () => {
       expect(row.querySelector('#ws-activity-label-' + id).textContent, id).toBe(marker(id));
       const skill = row.querySelector('[data-ws-activity-skill]');
       expect(skill.textContent, id).toBe(core.activitySkillLabel(id));
-      expect(row.querySelector('#ws-activity-check-' + id).getAttribute('aria-describedby'), id).toBe(skill.id);
+      // 2026-11-18: the checkbox is also described by the activity's worked example (tests/activity_examples.test.js).
+      expect(row.querySelector('#ws-activity-check-' + id).getAttribute('aria-describedby'), id).toBe(skill.id + ' ws-activity-example-' + id);
       expect(row.querySelector('[aria-label="Move ' + marker(id) + ' up"]'), id).toBeTruthy();
     });
     // each row sits after its own strand heading and before the next one

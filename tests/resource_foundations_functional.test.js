@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 // Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
 // allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
-import { readFileSync } from './helpers/host_source.js';
+import { readFileSync, hostHandlerBody } from './helpers/host_source.js';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -50,7 +50,10 @@ describe('paragraph scaffold handoffs use persisted blank identities', () => {
     const end = source.indexOf('  const submitGradingSession',start);
     let session;
     // The handler (host_handlers_source.jsx) now also reads gradingSession so a relaunch keeps an open draft; none is open here.
-    const run = new Function('window','generatedContent','studentResponses','setGradingSession','gradingSession',source.slice(start,end)+'\nreturn launchGradingSession;')(window,paragraph,{'frame-1':answers},value=>session=value,null);
+    // 2026-11-17: the launcher first asks _canUseScaffoldAi (a teacher always may) and words its notice with _scaffoldTr;
+    // both are module-private helpers of host_handlers_source.jsx, read here in host spelling.
+    const helpers = hostHandlerBody('_canUseScaffoldAi') + '\n' + hostHandlerBody('_scaffoldTr') + '\n';
+    const run = new Function('window','generatedContent','studentResponses','setGradingSession','gradingSession','isTeacherMode','callGemini','t','addToast',helpers+source.slice(start,end)+'\nreturn launchGradingSession;')(window,paragraph,{'frame-1':answers},value=>session=value,null,true,null,k=>k,()=>{});
     run(); expect(session.draftText).toBe('The cause is rain and the effect is flooding.');
   });
   it('reports failed saving truthfully and makes retry available', () => {

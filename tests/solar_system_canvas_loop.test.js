@@ -163,7 +163,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('orbit timeline landmarks');
       expect(source).toContain('scrubTimelineValue');
       expect(source).toContain('role: "status", "aria-live": paused ? "polite" : "off"');
-      expect(source).toContain('"aria-valuetext": scrubBody ? fmt(scrubPhase, scrubPrecision) + " years into " + scrubBody.name + "\'s orbit; "');
+      expect(source).toContain('"aria-valuetext": scrubBody ? __alloFillExact(__alloT(\'stem.solarsystem.a11y_years_into_s_orbit\', \'{value1} years into {name}');
     });
   });
   it('keeps DOM orbit readouts synchronized without remounting the canvas', () => {
@@ -447,7 +447,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('onKeyboardInteract: keyboardSelectNextBody');
       expect(source).toContain('key: "toggle-follow"');
       expect(source).toContain('"aria-pressed": followBodyId === sb.id');
-      expect(source).toContain('"Follow " + sb.name + " with the camera"');
+      expect(source).toContain("__alloT('stem.solarsystem.a11y_follow_with_the_camera', 'Follow {name} with the camera')");
       expect(source).toContain('use the Follow camera toggle in the world navigator');
       expect(source).toContain('use Follow camera to keep it centered');
       expect(source).toContain('select a world, then use Follow camera');
@@ -518,7 +518,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('"data-drone-vehicle-mode":');
       expect(source).toContain('role: "application"');
       expect(source).toContain('tabIndex: 0');
-      expect(source).toContain('"aria-label": ((sel &&');
+      expect(source).toContain('"aria-label": __alloFill(__alloT(\'stem.solarsystem.a11y_vehicle_simulation_on_world_controls\'');
       expect(source).toContain("actionDock.setAttribute('data-drone-action-dock', 'true');");
       expect(source).toContain("actionDock.setAttribute('role', 'group');");
       expect(source).toContain("button.type = 'button';");
@@ -783,9 +783,9 @@ describe('solar system main 3D canvas loop', () => {
 
       expect(source).toContain('function scanMeasurementDirection(startValue, endValue, tolerance)');
       expect(source).toContain('if (!history || history.length < 3) return null;');
-      expect(source).toContain("title: 'Depth pattern'");
-      expect(source).toContain("title: 'Atmosphere pattern'");
-      expect(source).toContain("title: 'Terrain pattern'");
+      expect(source).toContain("title: __alloT('stem.solarsystem.a11y_depth_pattern', 'Depth pattern')");
+      expect(source).toContain("title: __alloT('stem.solarsystem.a11y_atmosphere_pattern', 'Atmosphere pattern')");
+      expect(source).toContain("title: __alloT('stem.solarsystem.a11y_terrain_pattern', 'Terrain pattern')");
       expect(source).toContain('data-scan-pattern="true" role="note" aria-label="Pattern analysis"');
       expect(source).toContain('This describes the sampled readings; it does not by itself prove cause.');
       expect(source).toContain("if (scanPattern) scanEvidence += ' Pattern analysis: ' + scanPattern.summary;");

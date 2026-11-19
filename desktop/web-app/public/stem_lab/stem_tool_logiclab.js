@@ -2673,9 +2673,9 @@ window.StemLab = window.StemLab || {
                       ["Distributive","P\u2227(Q\u2228R) \u2261 (P\u2227Q)\u2228(P\u2227R)"],
                       ["Commutative","P\u2227Q \u2261 Q\u2227P"]
                     ].map(function(law) {
-                      return React.createElement("div", { 
-                        key: law[0],
-                        className: "flex items-center gap-2 p-2 bg-white rounded-lg border border-violet-100 cursor-pointer hover:border-violet-300 hover:shadow-sm transition-all",
+                      return React.createElement("button", {
+                        key: law[0], type: 'button',
+                        className: "w-full text-left flex items-center gap-2 p-2 bg-white rounded-lg border border-violet-100 cursor-pointer hover:border-violet-300 hover:shadow-sm transition-all",
                         onClick: function() { upd({ expression: law[1].split(' \u2261 ')[0].trim(), mode: 'truth' }); if(addToast) addToast('Loaded in Truth Tables!','info'); }
                       },
                         React.createElement("span", { className: "text-[0.6875rem] font-black text-violet-700 w-28 shrink-0" }, law[0]),

@@ -1901,9 +1901,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('div', { className: 'mt-4 flex flex-wrap items-center justify-center gap-2 min-h-[80px] transition-all duration-500' },
                 decomposed
                   ? sel.elements.map(function(el, i) {
-                      return h('div', { 
-                        key: el.sym,
-                        className: 'flex flex-col items-center animate-in zoom-in fade-in cursor-pointer',
+                      return h('button', {
+                        key: el.sym, type: 'button',
+                        'aria-label': __alloT('stem.decomposer.element_tile_aria', '{name}, atomic number {num}, {count} atoms').replace('{name}', el.name).replace('{num}', el.num).replace('{count}', el.count),
+                        className: 'flex flex-col items-center animate-in zoom-in fade-in cursor-pointer rounded-xl',
                         style: { animationDelay: (i * 150) + 'ms', animationFillMode: 'both' },
                         onClick: function() {
                           SOUNDS.elementClick();

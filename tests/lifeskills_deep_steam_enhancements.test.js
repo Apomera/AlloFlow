@@ -1755,8 +1755,8 @@ describe('Wave 8 — 20-Bay 3D Architecture, Interactive 3D Fault Diagnostics & 
       calcCommuteModeAndCarbonTco,
     } = loadPureSteamHelpers();
 
-    // Crossing from 12% to 22% federal bracket ($58k -> $66k single) still yields substantial positive net gain
-    const raiseRes = calcMarginalVsEffectiveTaxShock(58000, 8000, 'single', 4.5);
+    // Crossing from 12% to 22% federal bracket ($62k -> $70k single, 2026 brackets) still yields substantial positive net gain
+    const raiseRes = calcMarginalVsEffectiveTaxShock(62000, 8000, 'single', 4.5);
     expect(raiseRes.oldTopFedBracketPct).toBe(12);
     expect(raiseRes.newTopFedBracketPct).toBe(22);
     expect(raiseRes.crossedFedBracket).toBe(true);
@@ -1916,7 +1916,8 @@ describe('Wave 8 — 20-Bay 3D Architecture, Interactive 3D Fault Diagnostics & 
 
   it('wires Paycheck Raise-Myth, Food Shrinkflation, and Commute TCO simulators directly into Budget & enforces 4-mirror byte parity', () => {
     // 1. Paycheck Raise Myth -> budgetIncome + firstPay + budgeteer
-    activeMount = mountInteractiveLifeSkills({ tab: 'paycheck', payRate: 28, payHours: 40, payRaiseOffer: 8000 });
+    // $30/h = $62,400 -> $70,400: taxable crosses the 2026 22% line ($50,400 after the $16,100 deduction).
+    activeMount = mountInteractiveLifeSkills({ tab: 'paycheck', payRate: 30, payHours: 40, payRaiseOffer: 8000 });
     const raiseCard = activeMount.host.querySelector('[data-lifeskills-raise-myth-sim="true"]');
     expect(raiseCard).toBeTruthy();
     expect(raiseCard.textContent).toContain('Crosses to 22% Bracket');
@@ -3611,7 +3612,7 @@ describe('Life Skills Lab Wave 13 (v5.31) — Verify-Fix 3D Tour, Tornado/ETF/De
     React.act(() => { toggleBtn.click(); });
     const card = activeMount.host.querySelector('[data-lifeskills-learn-flashcard="paycheck"]');
     expect(card).toBeTruthy();
-    const rightOpt = [...card.querySelectorAll('button')].find((b) => b.textContent.includes('$14,600'));
+    const rightOpt = [...card.querySelectorAll('button')].find((b) => b.textContent.includes('$16,100'));
     expect(rightOpt).toBeTruthy();
     React.act(() => { rightOpt.click(); });
     expect(card.textContent).toContain('Correct!');
@@ -5116,7 +5117,7 @@ describe('Life Skills Wave 20 (v5.38) — Learn Sprint Parity, Paycheck/Insuranc
     // 1. Multiple-W2 W-4 Step 4(c) & 1099 Safe Harbor
     const dualUnderwithheld = calcW4WithholdingAndSideGigSafeHarbor(38000, 14000, 4800, 0, 26, 'single');
     expect(dualUnderwithheld.selfEmploymentTax).toBe(678);
-    expect(dualUnderwithheld.totalCombinedFedLiability).toBe(5415);
+    expect(dualUnderwithheld.totalCombinedFedLiability).toBe(5273);
     expect(dualUnderwithheld.aprilBalanceDue).toBe(2893);
     expect(dualUnderwithheld.recommendedW4Step4cPerPay).toBe(112);
     expect(dualUnderwithheld.monthlyTaxReserveNeed).toBe(242);

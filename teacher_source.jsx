@@ -7820,6 +7820,8 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       } catch (_) {}
   }, [teacherComments]);
   const _commentKey = (studentId, resourceId) => `${studentId || 'unknown'}:${resourceId || 'unknown'}`;
+  // Notes follow the student's file ID, which is the same on every import; older files keep the per-import ID.
+  const _notesStudentId = (s) => (s && typeof s.studentFileId === 'string' && /^[A-Za-z0-9-]{8,64}$/.test(s.studentFileId)) ? 'sf:' + s.studentFileId : (s && s.id);
   const getCommentsFor = React.useCallback((studentId, resourceId) => {
       return teacherComments.get(_commentKey(studentId, resourceId)) || [];
   }, [teacherComments]);
@@ -7967,12 +7969,12 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
           const entriesHtml = notebookEntries.map((item) => {
               try {
                   const body = generateResourceHTML ? generateResourceHTML(item, true, student.responses || {}) : '';
-                  const comments = renderCommentsBlock(student.id, item.id);
+                  const comments = renderCommentsBlock(_notesStudentId(student), item.id);
                   return body + comments;
               } catch (_) { return ''; }
           }).filter(Boolean).join('<hr style="margin:30px 0; border:0; border-top:1px dashed #cbd5e1;" />');
           // Count any teacher comments on this student for the header badge
-          const commentCount = notebookEntries.reduce((sum, item) => sum + getCommentsFor(student.id, item.id).length, 0);
+          const commentCount = notebookEntries.reduce((sum, item) => sum + getCommentsFor(_notesStudentId(student), item.id).length, 0);
           return `
               <div style="margin-bottom:40px; ${sidx > 0 ? 'page-break-before:always;' : ''}">
                   <h2 style="font-size:18px; font-weight:bold; color:#4f46e5; border-bottom:2px solid #c7d2fe; padding-bottom:6px; margin-bottom:16px;">
@@ -8910,9 +8912,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                 />
                     </div>
                     <TeacherCommentThread
-                        studentId={selectedStudent.id}
+                        studentId={_notesStudentId(selectedStudent)}
                         resourceId={item.id}
-                        comments={getCommentsFor(selectedStudent.id, item.id)}
+                        comments={getCommentsFor(_notesStudentId(selectedStudent), item.id)}
                         onAdd={addComment}
                         onDelete={deleteComment}
                         t={t}
@@ -9065,7 +9067,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                       })()}
                                                       {(() => {
                                                           // Count teacher comments across all this student's resources
-                                                          const commentCount = Array.from(teacherComments.keys()).filter(k => k.startsWith(`${student.id}:`)).reduce((sum, k) => sum + (teacherComments.get(k) || []).length, 0);
+                                                          const commentCount = Array.from(teacherComments.keys()).filter(k => k.startsWith(`${_notesStudentId(student)}:`)).reduce((sum, k) => sum + (teacherComments.get(k) || []).length, 0);
                                                           return commentCount > 0 ? <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={commentCount + ' private teacher notes on this student\'s work'}>💬</span> : null;
                                                       })()}
                                                   </td>

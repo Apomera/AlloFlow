@@ -73,6 +73,8 @@ function makeGsSandbox() {
     createFile: (name, content) => { driveFiles.set(name, String(content)); return fileObj(name); },
   };
   const services = {
+    // 2026-11-17: owner setup checks who runs it (security change of 274914f9d6, 11-14), as in class_mailbox_survey.
+    Session: { getActiveUser: () => ({ getEmail: () => 'owner@example.test' }), getEffectiveUser: () => ({ getEmail: () => 'owner@example.test' }) },
     CacheService: { getScriptCache: () => cache },
     PropertiesService: { getScriptProperties: () => ({
       getProperty: k => (props.has(k) ? props.get(k) : null),
@@ -94,9 +96,12 @@ function makeGsSandbox() {
     },
   };
   // eslint-disable-next-line no-new-func
-  const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle };');
+  const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, setupMailboxOwner: setupMailboxOwner };');
   const api = factory(...Object.values(services));
-  return { call: payload => JSON.parse(api.handle(payload).getContent()) };
+  const call = payload => JSON.parse(api.handle(payload).getContent());
+  // A mailbox is owned by running setupMailboxOwner in the Apps Script editor; a `claim` request no longer hands out a token.
+  call.setupOwner = () => { api.setupMailboxOwner(); return { ok: true, admin: props.get('admin') }; };
+  return { call };
 }
 
 // The Suite's real parent instrument shape (per-label objects, images allowed).
@@ -145,7 +150,7 @@ describe('ingest: real server summary -> Suite response rows', () => {
 
   function runDelivery(identityMode) {
     const { call } = makeGsSandbox();
-    const admin = call({ a: 'claim' }).admin;
+    const admin = call.setupOwner().admin;
     const wire = internals.suiteQuestionsToWireItems(PARENT_QUESTIONS);
     const expiresAt = new Date(Date.now() + 86400000).toISOString();
     const hosted = call({

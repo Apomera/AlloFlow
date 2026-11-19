@@ -225,8 +225,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   function getFlightLessonCheck(lessonId) {
     var check = Object.prototype.hasOwnProperty.call(LESSON_CHECKS, lessonId) ? LESSON_CHECKS[lessonId] : null;
     if (!check) return null;
-    // A fixed order per lesson, so the key is not always first as authored.
-    return { question: check.question, correct: check.correct, why: check.why, options: shuffleFlightQuizOptions(check.options, 'lesson-check|' + lessonId) };
+    // A fixed order per lesson, so the key is not always first as authored. The
+    // seeded shuffle alone left 4 of 7 keys at B and none at A, so the shuffled
+    // list is then rotated to put the key on the lesson's own slot.
+    var options = shuffleFlightQuizOptions(check.options, 'lesson-check|' + lessonId);
+    var n = options.length, key = options.indexOf(check.correct);
+    if (n > 1 && key >= 0) {
+      var shift = (key - Object.keys(LESSON_CHECKS).indexOf(lessonId) % n + n) % n;
+      options = options.slice(shift).concat(options.slice(0, shift));
+    }
+    return { question: check.question, correct: check.correct, why: check.why, options: options };
   }
 
   // ── WORLD GEOGRAPHY DATABASE ──
@@ -17105,6 +17113,8 @@ function getFlightCityLayout(city) {
       // lost). The flat Canvas view still flies, but it used to appear with no word of
       // explanation and looked broken.
       var [simpleGraphics, setSimpleGraphics] = useState(false);
+      // The failure was a context lost mid-flight, not a device that never started 3D.
+      var [threeLost, setThreeLost] = useState(false);
       var threeRendererReadyRef = useRef(false);
       var threeFailedRef = useRef(false);
       var [pausedUi, setPausedUi] = useState(false);
@@ -17344,6 +17354,18 @@ function getFlightCityLayout(city) {
 
           var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
           threeRendererRef.current = renderer;
+          // The frame loop also polls isContextLost, but a paused or held flight may not
+          // draw. preventDefault is required for any restore. releaseGl force-loses only
+          // canvases already removed (our own teardown), and the renderer check skips a
+          // renderer disposeThree already dropped.
+          canvas.addEventListener('webglcontextlost', function(ev) {
+            if (!canvas.isConnected) return;
+            ev.preventDefault();
+            if (threeRendererRef.current !== renderer) return;
+            setTimeout(function() {
+              if (threeRendererRef.current === renderer) failThree(new Error('WebGL context lost'));
+            }, 0);
+          });
           var rendererDpr = Math.min(2, Math.max(1, Number(window.devicePixelRatio) || 1));
           renderer.setPixelRatio(rendererDpr);
           renderer.setSize(W, H, false);
@@ -17686,12 +17708,16 @@ function getFlightCityLayout(city) {
         setThreeLoaded(false);
         if (window.THREE) setTimeout(function() { setThreeLoaded(true); }, 0);
         else loadFlightThree();
+        // The panel (and the button just pressed) goes away: return keyboard focus to
+        // the flight display, which carries every flight key.
+        if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus();
         skyAnnounce(__alloT('stem.flightsim.simple_graphics_retrying', 'Trying the 3D view again.'));
       };
       var failThree = function(error) {
         if (threeFailedRef.current) return;
         threeFailedRef.current = true;
         setSimpleGraphics(true);
+        setThreeLost(/context lost/i.test(String(error && error.message || error)));
         publishRenderedCitySource(null);
         threeRendererReadyRef.current = false;
         setThreeRendererReady(false);
@@ -17702,6 +17728,7 @@ function getFlightCityLayout(city) {
         publishRenderedCitySource(null);
         if (typeof window !== 'undefined' && window.THREE) setSimpleGraphics(false);
         threeFailedRef.current = false;
+        setThreeLost(false);
         threeRendererReadyRef.current = false;
         setThreeRendererReady(false);
       };
@@ -33293,7 +33320,7 @@ function getFlightCityLayout(city) {
             var copyLogbook = function() {
               var text = title + '\n' + rows.map(function(row) { return row[0] + ': ' + row[1]; }).join('\n');
               var say = function(ok) { skyAnnounce(ok ? __alloT('stem.flightsim.logbook_copied', 'Logbook copied.') : __alloT('stem.flightsim.logbook_copy_failed', 'Copying is not available here. Select the logbook text instead.')); };
-              try { navigator.clipboard.writeText(text).then(function() { say(true); }, function() { say(false); }); } catch (err) { say(false); }
+              try { Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text)).then(function() { say(true); }, function() { say(false); }); } catch (err) { say(false); }
             };
             return h('section', { 'aria-labelledby': 'skyschool-logbook-title', 'data-flight-logbook': 'true',
               style: { minWidth: 0, boxSizing: 'border-box', margin: '0 clamp(12px,4%,24px) 16px', padding: '14px clamp(10px,4%,16px)', borderRadius: '14px', background: 'rgba(15,23,42,0.85)', border: '1px solid rgba(125,211,252,0.35)', color: '#e2e8f0' } },
@@ -34917,7 +34944,10 @@ function getFlightCityLayout(city) {
           simpleGraphics ? h('div', { role: 'status', 'data-flight-simple-graphics': 'true',
             style: { position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)', maxWidth: 'calc(100% - 24px)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px',
               padding: '6px 10px', borderRadius: '10px', background: 'rgba(2,6,23,0.92)', border: '1px solid #fbbf24', color: '#fde68a', fontSize: '12px', lineHeight: 1.4, zIndex: 18 } },
-            h('span', null, __alloT('stem.flightsim.simple_graphics_notice', 'Simplified graphics: the 3D view could not start on this device. Flying and the instruments work the same.')),
+            threeLost
+              ? h('span', { 'data-flight-webgl-lost': 'true' }, h('strong', null, __alloT('stem.flightsim.webgl_lost_title', '3D view paused') + ' '),
+                  __alloT('stem.flightsim.webgl_lost_detail', 'This device ran low on graphics memory, so the 3D view stopped. Your flight is saved, and flying and the instruments work the same.'))
+              : h('span', null, __alloT('stem.flightsim.simple_graphics_notice', 'Simplified graphics: the 3D view could not start on this device. Flying and the instruments work the same.')),
             h('button', { type: 'button', 'data-flight-retry-3d': 'true', onClick: retryFlightThree,
               style: { minHeight: '32px', padding: '4px 10px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'transparent', color: '#fde68a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } },
               __alloT('stem.flightsim.simple_graphics_retry', 'Try 3D again'))) : null,

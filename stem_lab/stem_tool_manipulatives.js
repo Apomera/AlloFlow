@@ -433,6 +433,18 @@ window.StemLab = window.StemLab || {
       state = 'failed';
       if (pending && typeof pending.onFail === 'function') { try { pending.onFail(reason); } catch (e) {} }
     }
+    // A context lost after init (GPU reset, low memory) left a black stage.
+    // Stop drawing and fail('lost'): the host drops to flat blocks, which
+    // unmounts the canvas through unmount(). Nothing here force-loses.
+    function watchLoss(el) {
+      el.addEventListener('webglcontextlost', function (ev) {
+        if (!el.isConnected) return;
+        ev.preventDefault();
+        if (canvasEl !== el) return;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        setTimeout(function () { if (canvasEl === el && state !== 'failed') fail('lost'); }, 0);
+      });
+    }
 
     // One unit cube per unit of value. This is the point of the whole view:
     // the thousand block is not a labelled box, it is 1000 cubes.
@@ -605,6 +617,7 @@ window.StemLab = window.StemLab || {
           try {
             renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
           } catch (e) { fail('no-webgl'); return; }
+          watchLoss(canvasEl);
           renderer.setClearColor(0x000000, 0);
           build();
           resize();
@@ -634,6 +647,9 @@ window.StemLab = window.StemLab || {
   })();
 
   function b10GlRef(el) { if (el) B10GL.mount(el); else B10GL.unmount(); }
+  // Lost-context notice (module scope, not saved): set by onFail('lost'),
+  // cleared by Restart or the view toggle.
+  var b10GlLost = false, b10GlFocusRestart = false;
   try { window.__alloB10GL = B10GL; } catch (e) {}
 
   window.StemLab.registerTool('base10', {
@@ -718,7 +734,8 @@ window.StemLab = window.StemLab || {
           counts: b10,
           rotX: b10Rot.rotX, rotY: b10Rot.rotY, scale: b10Rot.scale || 1,
           onReady: function() { upd({ b10GlReadyAt: Date.now() }); },
-          onFail: function() {
+          onFail: function(reason) {
+            if (reason === 'lost') { b10GlLost = true; b10GlFocusRestart = true; upd({ b10Solid: false }); return; }
             upd({ b10Solid: false });
             addToast && addToast('Solid blocks could not load. Showing flat blocks.', 'info');
           },
@@ -1519,6 +1536,7 @@ window.StemLab = window.StemLab || {
                   'data-b10-view': b10Solid ? 'solid' : 'flat',
                   'aria-pressed': b10Solid,
                   onClick: function() {
+                    b10GlLost = false;
                     upd({ b10Solid: !b10Solid });
                     announceToSR && announceToSR(b10Solid
                       ? 'Switched to flat blocks.'
@@ -1536,6 +1554,19 @@ window.StemLab = window.StemLab || {
                     }, ['◀', '▶', '▲', '▼'][i]);
                   })
               ),
+              b10GlLost && !b10Solid && h('div', { role: 'alert', 'data-b10-gl-lost': 'true', className: 'mx-auto mb-2 max-w-md rounded-xl border-2 border-pink-300 bg-white p-3 text-left text-sm text-slate-800' },
+                h('h3', { className: 'font-bold text-pink-800' }, __alloT('stem.manipulatives.webgl_lost_title', '3D view paused')),
+                h('p', { className: 'mt-1' }, __alloT('stem.manipulatives.webgl_lost_body', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved.')
+                  + ' ' + __alloT('stem.manipulatives.webgl_lost_flat', 'The flat blocks are showing meanwhile.')),
+                h('button', { type: 'button', 'data-b10-gl-restart': 'true',
+                  ref: function (el) { if (el && b10GlFocusRestart) { b10GlFocusRestart = false; el.focus({ preventScroll: true }); } },
+                  onClick: function () {
+                    b10GlLost = false;
+                    upd({ b10Solid: true });
+                    setTimeout(function () { var t = document.querySelector('[data-b10-view]'); if (t) t.focus({ preventScroll: true }); }, 0);
+                  },
+                  className: 'mt-2 px-3 py-2 rounded-lg text-sm font-bold border border-pink-400 bg-pink-600 text-white focus:ring-2 focus:ring-yellow-500 focus:outline-none' },
+                  __alloT('stem.manipulatives.webgl_lost_restart', 'Restart 3D view'))),
               b10Solid && h('div', {
                 'data-allo-fs-stage': 'true',
                 ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },

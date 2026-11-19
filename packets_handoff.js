@@ -176,10 +176,13 @@
       var item = items[cur];
       var realCount = items.filter(function (x) { return !x.sample; }).length;
       var where = (item.sample ? 'Sample: ' : 'Question ' + (cur + 1) + ' of ' + items.length + ': ') + item.label;
+      // Without the word ("Activity — word": in Word Sounds and vocabulary the word is the answer), for "Hide answers".
+      var dash = String(item.label).indexOf(' \u2014 ');
+      var quiet = (item.sample ? 'Sample' : 'Question ' + (cur + 1) + ' of ' + items.length) + (dash > 0 ? ': ' + String(item.label).slice(0, dash) : dash < 0 ? ': ' + item.label : '');
       var buttons = [{ action: 'remove', label: 'Remove question', disabled: !!(item.sample || realCount <= 1) }];
       if (!item.sample && item.canSwap) buttons.push({ action: 'swap', label: 'Change wrong answers', disabled: false });
       if (!item.sample && item.canTogglePicture) buttons.push({ action: 'picture', label: item.noPicture ? 'Include picture' : 'Leave out picture', disabled: false });
-      return { hidden: false, where: where, buttons: buttons, said: state.said, busy: state.busy };
+      return { hidden: false, where: where, whereQuiet: quiet, buttons: buttons, said: state.said, busy: state.busy };
     }
 
     function sendAll(payloadForId) {

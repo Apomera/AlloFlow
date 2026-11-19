@@ -122,12 +122,12 @@ describe('Companion Planting garden gameplay', () => {
     expect(panel.props.children[0].props.children[0].props.children).toBe('How Beans fits here');
     expect(first.map(card=>card.props['data-preview-pair-plot'])).toEqual([1,4]);
     expect(first.every(card=>card.props['data-preview-relationship']==='conflict')).toBe(true);
-    expect(find('data-preview-pairs-net').props.children).toBe('+13% net pair effect');
+    expect(find('data-preview-pairs-net').props.children).toBe('+43% net pair effect');
     const more=find('data-preview-pair-more','simulation');
     expect(more.type).toBe('details');expect(more.props.children[0].props.children).toBe('Show 6 more relationships · 1 more conflict');
     expect(more.props.children[1].props.children.map(card=>card.props['data-preview-pair-plot'])).toEqual([10,0,2,6,9,8]);
     expect(find('data-preview-pair-bonus',0).props.children).toBe('+18%');
-    expect(find('data-preview-pair-bonus',1).props.children).toBe('-15%');
+    expect(find('data-preview-pair-bonus',1).props.children).toBe('-5%');
     expect(find('data-preview-pair-reason',1).props.children).toContain('Onion sulfur compounds');
     expect(first[0].props.children[0].props.children[0].props.children.props['data-botanical-stage']).toBe('seed');
     expect(first[1].props.children[0].props.children[0].props.children.props['data-botanical-condition']).toBe('low');
@@ -137,7 +137,7 @@ describe('Companion Planting garden gameplay', () => {
   it('respects corner neighbors and removes stale pair cards when the preview changes or is cancelled', () => {
     const grid=emptyGrid();for(const [index,plantId] of [[1,'corn'],[4,'squash'],[5,'onion'],[3,'onion'],[15,'corn']])grid[index]={...grid[index],plantId,growthDay:40};
     const app=harness(garden({grid,phase:'plan',plantingTarget:0,selectedPlant:'beans',placementPreview:{plot:0,plantId:'beans'}})),before=structuredClone(app.state());
-    expect(app.find('data-preview-pairs-net').props.children).toBe('+15% net pair effect');
+    expect(app.find('data-preview-pairs-net').props.children).toBe('+25% net pair effect');
     expect(app.find('data-preview-pair-more','simulation').props.children[0].props.children).toBe('Show 1 more relationship');
     expect(()=>app.find('data-preview-pair-plot',3)).toThrow();expect(()=>app.find('data-preview-pair-plot',15)).toThrow();
     app.click('data-preview-try-another');expect(()=>app.find('data-preview-pairs','simulation')).toThrow();
@@ -808,9 +808,9 @@ describe('Companion Planting crop inspection and harvest feedback', () => {
     const grid=emptyGrid();
     grid[5].plantId='beans';grid[0].plantId='corn';grid[6].plantId='onion';grid[9].plantId='squash';grid[15].plantId='corn';
     const app=harness(garden({grid,relationshipFocus:5}));
-    expect(app.find('data-play-neighbor-total',15)).toBeTruthy();
+    expect(app.find('data-play-neighbor-total',25)).toBeTruthy();
     expect(app.find('data-play-neighbor-link',0).props['aria-label']).toMatch(/plus 18/);
-    expect(app.find('data-play-neighbor-link',6).props['aria-label']).toMatch(/Conflicting neighbor, -15/);
+    expect(app.find('data-play-neighbor-link',6).props['aria-label']).toMatch(/Conflicting neighbor, -5/);
     expect(()=>app.find('data-play-neighbor-link',15)).toThrow();
     const before=structuredClone(app.state());
     app.click('data-play-neighbor-link',0);
@@ -825,8 +825,8 @@ describe('Companion Planting crop inspection and harvest feedback', () => {
     for(const [index,plantId] of [[0,'corn'],[1,'onion'],[2,'squash'],[4,'onion'],[5,'beans'],[6,'potato'],[8,'marigold'],[9,'yarrow'],[10,'onion'],[15,'corn']])grid[index]={...grid[index],plantId,growthDay:index===1?0:100,health:index===4?25:95};
     const app=harness(garden({grid,relationshipFocus:5})),before=structuredClone(app.state());
     expect(app.find('data-inspector-pair-contribution','helpful').props.children).toBe('+58%');
-    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-45%');
-    expect(app.find('data-play-neighbor-total',13)).toBeTruthy();
+    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-15%');
+    expect(app.find('data-play-neighbor-total',43)).toBeTruthy();
     expect(app.find('data-inspector-pair-art',1).props.children.props['data-botanical-stage']).toBe('seed');
     expect(app.find('data-inspector-pair-art',4).props.children.props['data-botanical-condition']).toBe('low');
     expect(app.find('data-inspector-pair-art',0).props.children.props['data-botanical-stage']).toBe('mature');
@@ -849,15 +849,15 @@ describe('Companion Planting crop inspection and harvest feedback', () => {
     for(const index of [0,1,2,4,6,8,9,10])grid[index].plantId='onion';
     const app=harness(garden({grid,relationshipFocus:5}));
     expect(app.find('data-inspector-pair-contribution','helpful').props.children).toBe('0%');
-    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-120%');
-    expect(app.find('data-play-neighbor-total',-120)).toBeTruthy();
+    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-40%');
+    expect(app.find('data-play-neighbor-total',-40)).toBeTruthy();
     expect(app.find('data-inspector-pairs-more').props.children[0].props.children).toBe('Show 4 more relationships · 4 more conflicts');
     const corner=emptyGrid();
     for(const [index,plantId] of [[0,'beans'],[1,'corn'],[4,'squash'],[5,'onion'],[3,'onion'],[15,'corn']])corner[index].plantId=plantId;
     app.patch({grid:corner,relationshipFocus:0});
     expect(app.find('data-inspector-pair-contribution','helpful').props.children).toBe('+30%');
-    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-15%');
-    expect(app.find('data-play-neighbor-total',15)).toBeTruthy();
+    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-5%');
+    expect(app.find('data-play-neighbor-total',25)).toBeTruthy();
     expect(()=>app.find('data-inspector-pair-art',3)).toThrow();expect(()=>app.find('data-inspector-pairs-more')).toThrow();
     app.patch({grid:corner.map((cell,index)=>index===5?{...cell,plantId:null}:cell)});
     expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('0%');
@@ -1139,8 +1139,8 @@ describe('Companion Planting visual garden views', () => {
   it('uses net effects from actual adjacent pairs and inspects a net conflict first', () => {
     const grid=emptyGrid();grid[0].plantId='corn';grid[5].plantId='beans';grid[6].plantId='onion';grid[9].plantId='squash';grid[15].plantId='corn';
     const app=harness(garden({grid,playShowPlots:true,playGardenLens:'companions'}));
-    expect(app.find('data-play-plot',5).props['data-play-plot-value']).toBe('+15%');
-    expect(app.find('data-play-plot',6).props['data-play-plot-value']).toBe('-15%');
+    expect(app.find('data-play-plot',5).props['data-play-plot-value']).toBe('+25%');
+    expect(app.find('data-play-plot',6).props['data-play-plot-value']).toBe('-5%');
     expect(app.find('data-play-plot',15).props['data-play-plot-value']).toBe('0%');
     expect(app.find('data-play-plot',5).props['aria-label']).toMatch(/net modeled growth effect/);
     app.click('data-play-lens-inspect',6);
@@ -1553,7 +1553,7 @@ describe('Companion Planting neighborhood explorer', () => {
     expect(app.find('data-companion-crop').props.value).toBe(6);
     const before=structuredClone(app.state());
     app.change('data-companion-crop','5');
-    expect(app.find('data-companion-net',15)).toBeTruthy();
+    expect(app.find('data-companion-net',25)).toBeTruthy();
     expect(app.find('data-companion-pair',0).props['aria-label']).toContain('Plus 18');
     expect(app.find('data-companion-pair',6).props['data-tone']).toBe('conflict');
     expect(app.find('data-companion-pair',9)).toBeTruthy();

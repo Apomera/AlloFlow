@@ -50,8 +50,12 @@ export function VentureForecastNote({board,uncertainVentures=[],pendingVenture,c
 export function TacticalMoveDetails({board,run,target,funding,route,t}){
   const forecast=forecastTabletopMove(board,run,target.id,funding,route);
   if(!forecast)return null;
-  return <div data-tabletop-forecast style={{borderTop:'1px dashed var(--line)',paddingTop:8,fontSize:'.88em'}}>
-    <p><strong>{tr(t,'tactic_after_move','Supplies after this move')}</strong></p><ResourceForecast board={board} forecast={forecast} t={t}/>
+  // A plain exploration or travel move folds its supply table (the Reward line above says
+  // the same); a build, or any move with a note below, keeps it open.
+  const noted=!!target.cost||target.effect?.kind==='yield'||forecast.uncertainVentures?.length>0||!!forecast.pendingVenture||forecast.contracts.length>0||['kitGain','preparationGain','crewGain','commissionGain','leadGain','deliveryGain','relayGain'].some(key=>forecast[key].some(Boolean));
+  const title=<strong>{tr(t,'tactic_after_move','Supplies after this move')}</strong>;
+  return <details data-tabletop-forecast data-forecast-folded={noted?undefined:'true'} open={noted||undefined} style={{borderTop:'1px dashed var(--line)',paddingTop:8,fontSize:'.88em'}}>
+    <summary>{title}</summary><ResourceForecast board={board} forecast={forecast} t={t}/>
     <VentureForecastNote board={board} uncertainVentures={forecast.uncertainVentures} pendingVenture={forecast.pendingVenture} t={t}/>
     {forecast.investigation&&<p className="lb-muted">{board.chance?tr(t,'tactic_success_assumption','Assumes a successful investigation. Fortune bonuses are extra.'):tr(t,'tactic_success_only','Assumes a successful investigation.')}</p>}
     {forecast.kitGain.some(Boolean)&&<p data-forecast-kit>{tr(t,'tactic_kit_included','Includes kit bonus: {reward}',{reward:amount(board,forecast.kitGain)})}</p>}
@@ -63,7 +67,7 @@ export function TacticalMoveDetails({board,run,target,funding,route,t}){
     {forecast.relayGain.some(Boolean)&&<p data-forecast-relay>{tr(t,'tactic_relay_included','Includes this relay handoff when travel ends here: {reward}',{reward:amount(board,forecast.relayGain)})}</p>}
     {forecast.contracts.length>0&&<p data-forecast-contracts>{tr(t,'tactic_contract_included','Completes contracts: {names}. Their bonus supplies are included.',{names:forecast.contracts.map(id=>board.contracts.find(contract=>contract.id===id).title).join(', ')})}</p>}
     {target.effect?.kind==='yield'&&<p>{forecast.remaining>0?tr(t,'tactic_yield_remaining','Build now to earn up to {count} extra {resource} from the remaining investigations.',{count:forecast.remaining,resource:board.resources[target.effect.resource]}):tr(t,'tactic_yield_exhausted','No further investigation bonuses are available after this build.')}</p>}
-  </div>;
+  </details>;
 }
 
 export function TacticsHud({board,run,t}){

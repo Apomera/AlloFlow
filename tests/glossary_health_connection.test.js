@@ -64,7 +64,7 @@ describe('optional glossary AI health check', () => {
       warnLog: vi.fn(), debugLog: vi.fn() });
     await expect(api.callGemini('Review glossary', true)).rejects.toMatchObject({
       code: 'allo/no-api-key', isAuth: false, isConfig: true,
-      classification: { reason: 'missing-api-key', userMessage: expect.stringContaining('AI Backend Settings') }
+      classification: { reason: 'missing-api-key', userMessage: expect.stringContaining('AI setup') }
     });
     expect(fetch).not.toHaveBeenCalled();
   });

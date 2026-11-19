@@ -336,7 +336,7 @@ function quickStartImportSummary(outcome, text) {
     .replace(/\{(saved|replaced|skipped|failed)\}/g, (_, key) => String(counts[key]));
 }
 
-const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode, initialSourceMode, onInitialModeConsumed }) => {
+const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueGuided, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode, initialSourceMode, onInitialModeConsumed }) => {
   const [step, setStep] = useState(1);
   const { t } = useContext(LanguageContext);
   // Guarded fallback for keys newer than the lang packs (raw-key echo counts
@@ -1831,6 +1831,27 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               >
                                 <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
                               </button>
+                              {/* Teachers who can use Guided Mode carry on there by default, or open the full workspace. */}
+                              {canContinueGuided ? (
+                              <div className="flex flex-wrap items-center justify-end gap-3">
+                              <button type="button"
+                                data-help-key="wizard_complete_workspace_btn"
+                                onClick={() => onComplete({ ...localData, continueIn: 'workspace' })}
+                                disabled={wizImporting || (localData.sourceMode === 'generate' && localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError))}
+                                className="min-h-11 px-2 text-sm font-bold text-indigo-700 underline hover:text-indigo-900 disabled:opacity-50"
+                              >
+                                {t('launch_pad.teacher_full_link') || 'Open the full workspace instead'}
+                              </button>
+                              <button type="button"
+                                data-help-key="wizard_complete_btn"
+                                onClick={() => onComplete({ ...localData, continueIn: 'guided' })}
+                                disabled={wizImporting || (localData.sourceMode === 'generate' && localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError))}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 flex items-center gap-2"
+                              >
+                                {t('launch_pad.guided_title') || 'Guided Mode'} <ArrowRight size={18} aria-hidden="true" />
+                              </button>
+                              </div>
+                              ) : (
                               <button type="button"
                                   aria-label={t('common.finish')}
                                 data-help-key="wizard_complete_btn"
@@ -1840,6 +1861,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               >
                                 {t('common.finish')} <CheckCircle2 size={18} />
                               </button>
+                              )}
                           </div>
                       </div>
                   </div>

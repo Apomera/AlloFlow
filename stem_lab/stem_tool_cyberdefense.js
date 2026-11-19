@@ -459,7 +459,135 @@
     };
   }
 
-  try { window.__cyberDefensePure = { caesarCipher: caesarCipher, atbashCipher: atbashCipher, xorCipher: xorCipher, xorEncodeBase64: xorEncodeBase64, xorDecodeBase64: xorDecodeBase64, secureRandomIndex: secureRandomIndex, sanitizeGeneratedPhishEmail: sanitizeGeneratedPhishEmail, CIPHER_CHALLENGES: CIPHER_CHALLENGES }; } catch (_e) {}
+  // ── Password sample scoring (pure) ──
+  // Length alone over-rated predictable choices: twenty 'a's scored Excellent
+  // and "Password1234567!" scored Strong. Each pattern found is costed at the
+  // few guesses an attacker needs for it (a zxcvbn-style estimate); the score
+  // is capped by those bits AND by length, and the crack time uses the same bits.
+  var PW_COMMON_PASSWORDS = ['password','123456','12345678','qwerty','abc123','monkey','letmein','dragon','111111','baseball','iloveyou','trustno1','sunshine','master','welcome','shadow','ashley','football','jesus','michael','ninja','mustang','password1','password123','admin','login','hello','charlie','donald','batman','p@ssw0rd','welcome1','qwerty123'];
+  var PW_COMMON_WORDS = ['password','passwd','letmein','welcome','admin','login','qwerty','dragon','monkey','master','sunshine','football','baseball','basketball','soccer','hockey','iloveyou','love','princess','shadow','superman','batman','spiderman','trustno','hello','secret','summer','winter','spring','autumn','school','student','teacher','pokemon','minecraft','roblox','fortnite','google','apple','computer','internet','cookie','cheese','purple','orange','banana','chicken','flower','tiger','puppy','kitty','family','jesus','michael','ashley','charlie','donald','mustang','freedom','whatever','starwars','pepper','ginger','hunter','killer','jordan','thomas','jennifer','daniel','andrew','joshua','matthew','robert','access','server','default','changeme','guest','test','money','happy','friend','angel','baby','sweet','lucky','blue','green','black','white','ninja','hacker','magic','rainbow','unicorn','king','queen','star','moon','game','gamer','player'];
+  var PW_KEY_ROWS = ['`1234567890-=', '~!@#$%^&*()_+', 'qwertyuiop[]\\', 'asdfghjkl;\'', 'zxcvbnm,./'];
+  function _pwDeleet(lower, oneAs) {
+    var map = { '@': 'a', '4': 'a', '3': 'e', '!': 'i', '0': 'o', '$': 's', '5': 's', '7': 't', '+': 't', '|': 'l' };
+    var out = '';
+    for (var i = 0; i < lower.length; i++) { var c = lower.charAt(i); out += c === '1' ? oneAs : (map[c] || c); }
+    return out;
+  }
+  function analyzePasswordSample(pw) {
+    var s = String(pw || '');
+    var n = s.length;
+    var lower = s.toLowerCase();
+    var pool = 0;
+    if (/[a-z]/.test(s)) pool += 26;
+    if (/[A-Z]/.test(s)) pool += 26;
+    if (/\d/.test(s)) pool += 10;
+    if (/[^a-zA-Z0-9]/.test(s)) pool += 33;
+    var perChar = pool > 0 ? Math.log2(pool) : 0;
+    var rawBits = n * perChar;
+    var covered = [];
+    var found = [];
+    function isFree(a, b) { for (var k = a; k < b; k++) if (covered[k]) return false; return true; }
+    function take(a, b, kind, bits, extra) {
+      for (var k = a; k < b; k++) covered[k] = true;
+      var f = { kind: kind, text: s.slice(a, b), start: a, end: b, bits: bits };
+      if (extra) for (var key in extra) f[key] = extra[key];
+      found.push(f);
+    }
+    // 1. Common words, also through leetspeak (p@ssw0rd), longest first.
+    var sources = [lower, _pwDeleet(lower, 'i'), _pwDeleet(lower, 'l')];
+    PW_COMMON_WORDS.slice().sort(function(a, b) { return b.length - a.length; }).forEach(function(w) {
+      sources.forEach(function(src) {
+        var from = 0, at;
+        while ((at = src.indexOf(w, from)) !== -1) {
+          if (isFree(at, at + w.length)) {
+            var orig = s.slice(at, at + w.length);
+            var leet = orig.toLowerCase() !== w;
+            take(at, at + w.length, leet ? 'leet' : 'word', 13 + (leet ? 2 : 0) + (/[A-Z]/.test(orig) ? 1 : 0), { word: w });
+          }
+          from = at + 1;
+        }
+      });
+    });
+    // 2. Years 1900-2039.
+    var yr = /(?:19\d\d|20[0-3]\d)/g, m;
+    while ((m = yr.exec(s))) if (isFree(m.index, m.index + 4)) take(m.index, m.index + 4, 'year', 7.2);
+    // 3. Keyboard walks: 4+ neighbouring keys along one row (qwer, asdf, !@#$).
+    //    All-digit runs are left to the sequence check (1234 reads as a sequence).
+    function keyPos(ch) { for (var r = 0; r < PW_KEY_ROWS.length; r++) { var p = PW_KEY_ROWS[r].indexOf(ch); if (p !== -1) return { r: r, p: p }; } return null; }
+    var i = 0;
+    while (i < n - 3) {
+      var k0 = keyPos(lower.charAt(i)), k1 = keyPos(lower.charAt(i + 1));
+      if (k0 && k1 && k0.r === k1.r && Math.abs(k1.p - k0.p) === 1) {
+        var dir = k1.p - k0.p, e = i + 1;
+        while (e + 1 < n) { var kn = keyPos(lower.charAt(e + 1)), ke = keyPos(lower.charAt(e)); if (kn && ke && kn.r === ke.r && kn.p - ke.p === dir) e++; else break; }
+        if (e - i + 1 >= 4 && !/^\d+$/.test(s.slice(i, e + 1)) && isFree(i, e + 1)) { take(i, e + 1, 'keyboard', 6 + Math.log2(e - i + 1)); i = e + 1; continue; }
+      }
+      i++;
+    }
+    // 4. Sequences: abc, xyz, 123, 987 (3+ steps of +1 or -1).
+    function cls(ch) { return /[a-z]/.test(ch) ? 'a' : /\d/.test(ch) ? 'd' : ''; }
+    i = 0;
+    while (i < n - 2) {
+      var step = lower.charCodeAt(i + 1) - lower.charCodeAt(i);
+      var c0 = cls(lower.charAt(i));
+      if ((step === 1 || step === -1) && c0 && cls(lower.charAt(i + 1)) === c0) {
+        var j = i + 1;
+        while (j + 1 < n && lower.charCodeAt(j + 1) - lower.charCodeAt(j) === step && cls(lower.charAt(j + 1)) === c0) j++;
+        if (j - i + 1 >= 3 && isFree(i, j + 1)) { take(i, j + 1, 'sequence', 5.2 + Math.log2(j - i + 1)); i = j + 1; continue; }
+      }
+      i++;
+    }
+    // 5. Repeats: aaa, then repeated chunks (abab, lollol).
+    var rep = /(.)\1{2,}/g;
+    while ((m = rep.exec(s))) if (isFree(m.index, m.index + m[0].length)) take(m.index, m.index + m[0].length, 'repeat', perChar + Math.log2(m[0].length));
+    var chunk = /(.{2,8}?)\1+/g;
+    while ((m = chunk.exec(s))) if (isFree(m.index, m.index + m[0].length)) take(m.index, m.index + m[0].length, 'chunk', m[1].length * perChar + Math.log2(m[0].length / m[1].length));
+    // 6. A word with digits/symbols tacked on the end ("Sunshine83!", "Brandon2009!").
+    var suffixFrom = -1;
+    var shape = /^([A-Za-z]{3,})([0-9]*[^A-Za-z0-9]*)$/.exec(s);
+    var wordTok = null;
+    for (var fi = 0; fi < found.length; fi++) if ((found[fi].kind === 'word' || found[fi].kind === 'leet') && (!wordTok || found[fi].end > wordTok.end)) wordTok = found[fi];
+    if (wordTok && wordTok.end < n && /^[0-9]*[^A-Za-z0-9]*$/.test(s.slice(wordTok.end))) suffixFrom = wordTok.end;
+    else if (shape && shape[2] && isFree(0, shape[1].length)) {
+      take(0, shape[1].length, 'nameword', Math.min(shape[1].length * 4.7, 20) + (/[A-Z]/.test(shape[1]) ? 1 : 0));
+      suffixFrom = shape[1].length;
+    }
+    if (suffixFrom !== -1) found.push({ kind: 'suffix', text: s.slice(suffixFrom), start: suffixFrom, end: n, bits: 0 });
+    // Bits: patterns at their cost; other characters at the pool rate, except a
+    // tacked-on suffix, which attackers try first (digit 3.3 bits, symbol 5).
+    var bits = 0;
+    found.forEach(function(f) { bits += f.bits; });
+    for (var ci = 0; ci < n; ci++) {
+      if (covered[ci]) continue;
+      if (suffixFrom !== -1 && ci >= suffixFrom) bits += /\d/.test(s.charAt(ci)) ? 3.3 : 5;
+      else bits += perChar;
+    }
+    bits = Math.min(rawBits, bits);
+    var isCommon = PW_COMMON_PASSWORDS.indexOf(lower) !== -1;
+    // NIST SP 800-63B-4 weighting: length first, then the pattern-adjusted bits.
+    var lengthScore = n >= 20 ? 5 : n >= 15 ? 4 : n >= 12 ? 3 : n >= 8 ? 2 : n > 0 ? 1 : 0;
+    var bitsScore = bits >= 80 ? 5 : bits >= 60 ? 4 : bits >= 45 ? 3 : bits >= 30 ? 2 : bits >= 18 ? 1 : 0;
+    var score = isCommon ? 0 : Math.min(lengthScore, bitsScore);
+    return { score: score, bits: bits, rawBits: rawBits, poolSize: pool, isCommon: isCommon, patterns: found, crackSeconds: isCommon ? 0 : Math.pow(2, bits) / 1e10 };
+  }
+  // One short, student-facing reason per pattern ("pattern found: ...").
+  function describePasswordPattern(f) {
+    var q = '"' + (f.text.length > 24 ? f.text.slice(0, 24) + '…' : f.text) + '"';
+    switch (f.kind) {
+      case 'word': return 'a common word ' + q;
+      case 'leet': return 'a common word in leetspeak ' + q + ' = "' + f.word + '" (swapping @ for a fools nobody)';
+      case 'year': return 'a year ' + q;
+      case 'sequence': return 'a sequence ' + q;
+      case 'keyboard': return 'a keyboard walk ' + q;
+      case 'repeat': return 'repeated characters ' + q;
+      case 'chunk': return 'a repeated chunk ' + q;
+      case 'nameword': return 'a single word or name ' + q;
+      case 'suffix': return 'numbers or symbols tacked onto the end of a word ' + q;
+      default: return q;
+    }
+  }
+
+  try { window.__cyberDefensePure = { caesarCipher: caesarCipher, atbashCipher: atbashCipher, xorCipher: xorCipher, xorEncodeBase64: xorEncodeBase64, xorDecodeBase64: xorDecodeBase64, secureRandomIndex: secureRandomIndex, sanitizeGeneratedPhishEmail: sanitizeGeneratedPhishEmail, analyzePasswordSample: analyzePasswordSample, describePasswordPattern: describePasswordPattern, CIPHER_CHALLENGES: CIPHER_CHALLENGES }; } catch (_e) {}
 
   window.StemLab.registerTool('cyberDefense', {
     name: 'Cyber Defense Lab',
@@ -503,7 +631,8 @@
               // persisted progress state.
               pwSampleVersion: (d.pwSampleVersion || 0) + 1,
               pwSampleTested: !!d.pwSampleTested || !!_cyberPasswordSample,
-              pwSampleStrong: !!d.pwSampleStrong || (_cyberPasswordSample.length >= 15 && !sampleStrength.checks.isCommon)
+              // Strong = 15+ characters AND no predictable pattern pulling the score down.
+              pwSampleStrong: !!d.pwSampleStrong || sampleStrength.score >= 4
             }, extra || {}));
           }
 
@@ -542,7 +671,13 @@
           var cluesFound      = Array.isArray(d.cluesFound) ? d.cluesFound : [];
           var casesClosed     = _cdCount(d.casesClosed);
           var showHeaders     = d.showHeaders || false;
-          var triageTimeLeft  = (typeof d.triageTimeLeft === 'number' && isFinite(d.triageTimeLeft)) ? d.triageTimeLeft : 15;
+          // WCAG 2.2.1 Timing Adjustable: the learner can keep the 15 s clock,
+          // triple it, or turn it off (no countdown, no forced timeout).
+          var triageTimerMode = (d.triageTimerMode === 'extended' || d.triageTimerMode === 'off') ? d.triageTimerMode : 'standard';
+          var TRIAGE_SECONDS  = triageTimerMode === 'extended' ? 45 : 15;
+          var triageTimeLeft  = (typeof d.triageTimeLeft === 'number' && isFinite(d.triageTimeLeft)) ? Math.min(d.triageTimeLeft, TRIAGE_SECONDS) : TRIAGE_SECONDS;
+          // Speed bonus = answered within the first 5 s, whatever the clock length; none with the timer off.
+          var triageSpeedBonus = triageTimerMode !== 'off' && (TRIAGE_SECONDS - triageTimeLeft) <= 5;
           var triageActive    = d.triageActive || false;
           var evidenceExpanded = d.evidenceExpanded || false;
           var aiEmailLoading  = d.aiEmailLoading || false;
@@ -569,7 +704,8 @@
           var netRound        = d.netRound || 0;
           var netShowAnswer   = d.netShowAnswer || false;
           // Social engineering quiz
-          var seQuizIdx       = d.seQuizIdx || 0;
+          // A saved file is input: a non-number index made the scenario undefined and crashed.
+          var seQuizIdx       = (typeof d.seQuizIdx === 'number' && isFinite(d.seQuizIdx) && d.seQuizIdx > 0) ? Math.floor(d.seQuizIdx) : 0;
           var seQuizAnswer    = d.seQuizAnswer || null;
           var seQuizScore     = d.seQuizScore || 0;
           var seQuizStreak    = d.seQuizStreak || 0;
@@ -888,7 +1024,9 @@
 
           // ── Triage Timer (hook-free: state-driven setTimeout) ──
           if (window._cyberTriageTimer) { clearTimeout(window._cyberTriageTimer); window._cyberTriageTimer = null; }
-          if (cyberTab === 'phish' && phishMode === 'triage' && triageActive && !phishAnswer && triageTimeLeft > 0) {
+          if (triageTimerMode === 'off') {
+            // Timer turned off by the learner: no countdown and no timeout.
+          } else if (cyberTab === 'phish' && phishMode === 'triage' && triageActive && !phishAnswer && triageTimeLeft > 0) {
             window._cyberTriageTimeoutKey = null;
             window._cyberTriageTimer = setTimeout(function() {
               var phishTab = document.getElementById('cyber-tab-phish');
@@ -1072,7 +1210,7 @@
             var baseXP = 2;
             var evidenceBonus = cluesFound.length >= (activeEmail.clues || []).length ? 2 : (cluesFound.length >= 2 ? 1 : 0);
             var streakBonus = phishStreak >= 2 ? 1 : 0;
-            var speedBonus = (phishMode === 'triage' && triageTimeLeft >= 10) ? 2 : 0;
+            var speedBonus = (phishMode === 'triage' && triageSpeedBonus) ? 2 : 0;
             upd({
               phishAnswer: verdictResult,
               phishScore: phishScore + (isCorrect ? 1 : 0),
@@ -1090,7 +1228,7 @@
               phishIdx: phishIdx + 1,
               phishAnswer: null,
               cluesFound: [],
-              triageTimeLeft: 15,
+              triageTimeLeft: TRIAGE_SECONDS,
               showHeaders: false,
               aiGeneratedEmail: null,
               triageActive: phishMode === 'triage'
@@ -1107,7 +1245,7 @@
                 phishAnswer: null,
                 cluesFound: [],
                 showHeaders: false,
-                triageTimeLeft: 15,
+                triageTimeLeft: TRIAGE_SECONDS,
                 triageActive: phishMode === 'triage',
                 aiEmailLoading: false
               });
@@ -1153,7 +1291,7 @@
                     phishAnswer: null,
                     cluesFound: [],
                     showHeaders: false,
-                    triageTimeLeft: 15,
+                    triageTimeLeft: TRIAGE_SECONDS,
                     triageActive: phishMode === 'triage',
                     aiEmailHistory: aiEmailHistory.concat([parsed.subject.substring(0, 40)]),
                     aiEmailLoading: false
@@ -1223,21 +1361,19 @@
 
           // ── Password Strength Calculator ──
           function calcPasswordStrength(pw) {
-            if (!pw) return { score: 0, label: t('stem.cyberdefense.empty', 'Empty'), color: 'var(--allo-stem-text-soft, #475569)', entropy: 0, crackTime: 'N/A', checks: {} };
+            if (!pw) return { score: 0, label: t('stem.cyberdefense.empty', 'Empty'), color: 'var(--allo-stem-text-soft, #475569)', entropy: 0, crackTime: 'N/A', patterns: [], checks: {} };
             var len = pw.length;
             var hasLower = /[a-z]/.test(pw);
             var hasUpper = /[A-Z]/.test(pw);
             var hasDigit = /\d/.test(pw);
             var hasSymbol = /[^a-zA-Z0-9]/.test(pw);
-            var poolSize = 0;
-            if (hasLower) poolSize += 26;
-            if (hasUpper) poolSize += 26;
-            if (hasDigit) poolSize += 10;
-            if (hasSymbol) poolSize += 33;
-            var entropy = poolSize > 0 ? len * Math.log2(poolSize) : 0;
-            var commonPasswords = ['password','123456','12345678','qwerty','abc123','monkey','letmein','dragon','111111','baseball','iloveyou','trustno1','sunshine','master','welcome','shadow','ashley','football','jesus','michael','ninja','mustang','password1','password123','admin','login','hello','charlie','donald','batman','p@ssw0rd','welcome1','qwerty123'];
-            var isCommon = commonPasswords.indexOf(pw.toLowerCase()) !== -1;
-            var crackSeconds = Math.pow(2, entropy) / 1e10;
+            // Pattern-aware estimate (module scope, pure): the same bits drive
+            // the score AND the crack time, so the two can never disagree.
+            var analysis = analyzePasswordSample(pw);
+            var poolSize = analysis.poolSize;
+            var entropy = analysis.bits;
+            var isCommon = analysis.isCommon;
+            var crackSeconds = analysis.crackSeconds;
             var crackTime;
             if (isCommon) { crackTime = 'Instantly (common password!)'; }
             else if (crackSeconds < 1) crackTime = 'Less than 1 second';
@@ -1252,11 +1388,13 @@
             // NIST SP 800-63B-4 centers length and blocklists. Character-class
             // mixtures are useful for generated secrets, but are not treated as
             // mandatory composition rules for learner-created passphrases.
-            var score = len >= 20 ? 5 : len >= 15 ? 4 : len >= 12 ? 3 : len >= 8 ? 2 : 1;
-            if (isCommon) score = 0;
+            // Predictable patterns (repeats, sequences, keyboard walks, common
+            // words incl. leetspeak, suffixes on a word) cap the score too.
+            var score = analysis.score;
             var labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
             var colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#8b5cf6'];
-            return { score: score, label: labels[score], color: colors[score], entropy: Math.round(entropy), crackTime: crackTime, checks: { length: len, hasLower: hasLower, hasUpper: hasUpper, hasDigit: hasDigit, hasSymbol: hasSymbol, isCommon: isCommon, poolSize: poolSize } };
+            var patternReasons = analysis.patterns.map(describePasswordPattern);
+            return { score: score, label: labels[score], color: colors[score], entropy: Math.round(entropy), crackTime: crackTime, patterns: patternReasons, checks: { length: len, hasLower: hasLower, hasUpper: hasUpper, hasDigit: hasDigit, hasSymbol: hasSymbol, isCommon: isCommon, poolSize: poolSize, hasPattern: patternReasons.length > 0 } };
           }
 
           // Cipher functions + challenge bank live at module scope (pure,
@@ -1378,38 +1516,38 @@
           var seScenarios = [
             { scenario: 'You get a phone call from someone claiming to be IT support. They say your computer has a virus and need your password to fix it.', correct: 'refuse', options: [
               { id: 'comply', label: t('stem.cyberdefense.give_them_your_password_so_they_can_he', 'Give them your password so they can help'), feedback: t('stem.cyberdefense.never_share_passwords_over_the_phone_r', 'Never share passwords over the phone! Real IT can reset your password without knowing it.') },
-              { id: 'refuse', label: t('stem.cyberdefense.hang_up_and_call_it_directly_using_the', 'Hang up and call IT directly using the official number'), feedback: t('stem.cyberdefense.correct_always_verify_by_calling_the_o', 'Correct! Always verify by calling the official number. This is a classic vishing (voice phishing) attack.') },
-              { id: 'partial', label: t('stem.cyberdefense.give_them_your_old_password_instead', 'Give them your old password instead'), feedback: t('stem.cyberdefense.sharing_any_password_is_risky_old_pass', 'Sharing any password is risky. Old passwords reveal your pattern to attackers.') }
+              { id: 'refuse', label: t('stem.cyberdefense.hang_up_and_call_it_directly_using_the', 'Hang up and call IT on the official number'), feedback: t('stem.cyberdefense.correct_always_verify_by_calling_the_o', 'Correct! Always verify by calling the official number. This is a classic vishing (voice phishing) attack.') },
+              { id: 'partial', label: t('stem.cyberdefense.give_them_your_old_password_instead', 'Give them an old password you no longer use'), feedback: t('stem.cyberdefense.sharing_any_password_is_risky_old_pass', 'Sharing any password is risky. Old passwords reveal your pattern to attackers.') }
             ], type: 'Vishing', lesson: 'Legitimate IT departments never ask for your password. They can reset it from their admin console.' },
             { scenario: 'You find a USB drive in the parking lot labeled “Final Exam Answers 2026”.', correct: 'report', options: [
-              { id: 'plug', label: t('stem.cyberdefense.plug_it_into_your_computer_to_check', 'Plug it into your computer to check'), feedback: t('stem.cyberdefense.usb_baiting_attack_malicious_usb_drive', 'USB baiting attack! Malicious USB drives can auto-run malware the moment they\'re plugged in.') },
-              { id: 'report', label: t('stem.cyberdefense.turn_it_in_to_security_without_pluggin', 'Turn it in to security without plugging it in'), feedback: t('stem.cyberdefense.correct_the_stuxnet_worm_that_damaged_', 'Correct! The Stuxnet worm that damaged Iran\'s nuclear program spread via USB drives.') },
-              { id: 'friend', label: t('stem.cyberdefense.give_it_to_a_friend_to_try', 'Give it to a friend to try'), feedback: t('stem.cyberdefense.this_just_puts_your_friend_at_risk_nev', 'This just puts your friend at risk. Never plug in unknown USB devices.') }
+              { id: 'plug', label: t('stem.cyberdefense.plug_it_into_your_computer_to_check', 'Plug it into your computer to see whose it is'), feedback: t('stem.cyberdefense.usb_baiting_attack_malicious_usb_drive', 'USB baiting attack! Malicious USB drives can auto-run malware the moment they\'re plugged in.') },
+              { id: 'report', label: t('stem.cyberdefense.turn_it_in_to_security_without_pluggin', 'Hand it to security without plugging it in'), feedback: t('stem.cyberdefense.correct_the_stuxnet_worm_that_damaged_', 'Correct! The Stuxnet worm that damaged Iran\'s nuclear program spread via USB drives.') },
+              { id: 'friend', label: t('stem.cyberdefense.give_it_to_a_friend_to_try', 'Give it to a friend to try on their laptop'), feedback: t('stem.cyberdefense.this_just_puts_your_friend_at_risk_nev', 'This just puts your friend at risk. Never plug in unknown USB devices.') }
             ], type: 'USB Baiting', lesson: 'Treat unknown removable media as untrusted. Do not connect it; follow your school or organization\'s reporting process.' },
             { scenario: 'Someone in a delivery uniform asks you to hold the secure office door open because their hands are full.', correct: 'verify', options: [
               { id: 'hold', label: t('stem.cyberdefense.hold_the_door_they_look_legitimate', 'Hold the door \u2014 they look legitimate'), feedback: t('stem.cyberdefense.tailgating_attackers_dress_as_delivery', 'Tailgating! Attackers dress as delivery workers or employees to gain physical access.') },
               { id: 'verify', label: t('stem.cyberdefense.ask_them_to_badge_in_or_contact_recept', 'Ask them to badge in or contact reception'), feedback: t('stem.cyberdefense.correct_everyone_must_authenticate_ind', 'Correct! Everyone must authenticate individually. Physical security matters!') },
-              { id: 'ignore', label: t('stem.cyberdefense.walk_away_without_saying_anything', 'Walk away without saying anything'), feedback: t('stem.cyberdefense.better_than_letting_them_in_but_alerti', 'Better than letting them in, but alerting security is the best practice.') }
+              { id: 'ignore', label: t('stem.cyberdefense.walk_away_without_saying_anything', 'Walk away without saying anything to anyone'), feedback: t('stem.cyberdefense.better_than_letting_them_in_but_alerti', 'Better than letting them in, but alerting security is the best practice.') }
             ], type: 'Tailgating', lesson: 'Unauthorized physical access can bypass technical controls. Use individual badges and report access concerns without confronting someone.' },
             { scenario: 'Your “boss” texts from an unknown number, urgently asking you to buy gift cards and send the codes.', correct: 'verify', options: [
-              { id: 'buy', label: t('stem.cyberdefense.rush_to_buy_the_gift_cards', 'Rush to buy the gift cards'), feedback: t('stem.cyberdefense.gift_card_scam_no_legitimate_boss_asks', 'Gift card scam! No legitimate boss asks for gift card codes via text.') },
-              { id: 'verify', label: t('stem.cyberdefense.contact_your_boss_through_usual_channe', 'Contact your boss through usual channels to verify'), feedback: t('stem.cyberdefense.correct_always_verify_unusual_requests', 'Correct! Always verify unusual requests through established channels.') },
+              { id: 'buy', label: t('stem.cyberdefense.rush_to_buy_the_gift_cards', 'Rush to buy the gift cards before the deadline'), feedback: t('stem.cyberdefense.gift_card_scam_no_legitimate_boss_asks', 'Gift card scam! No legitimate boss asks for gift card codes via text.') },
+              { id: 'verify', label: t('stem.cyberdefense.contact_your_boss_through_usual_channe', 'Check with your boss through a known channel'), feedback: t('stem.cyberdefense.correct_always_verify_unusual_requests', 'Correct! Always verify unusual requests through established channels.') },
               { id: 'reply', label: t('stem.cyberdefense.ask_the_texter_for_proof_they_are_your', 'Ask the texter for proof they are your boss'), feedback: t('stem.cyberdefense.attackers_can_fake_proof_only_trust_co', 'Attackers can fake proof. Only trust communication through verified channels.') }
             ], type: 'Pretexting', lesson: 'Gift-card payment requests are a common impersonation pattern. Urgency plus authority is a cue to pause and verify through a known channel.' },
             { scenario: 'You get an email saying you won a $500 Amazon gift card. Just fill out a survey with your credit card for “shipping.”', correct: 'delete', options: [
               { id: 'fill', label: t('stem.cyberdefense.fill_out_the_survey_to_claim_your_priz', 'Fill out the survey to claim your prize'), feedback: t('stem.cyberdefense.phishing_scam_legitimate_prizes_never_', 'Phishing scam. Legitimate prizes never require credit card info for shipping.') },
               { id: 'delete', label: t('stem.cyberdefense.delete_it_you_never_entered_a_contest', 'Delete it \u2014 you never entered a contest'), feedback: t('stem.cyberdefense.correct_if_you_didn_t_enter_you_can_t_', 'Correct! If you didn\'t enter, you can\'t win. This harvests personal and financial data.') },
-              { id: 'forward', label: t('stem.cyberdefense.forward_it_to_friends', 'Forward it to friends'), feedback: t('stem.cyberdefense.forwarding_phishing_spreads_the_attack', 'Forwarding phishing spreads the attack. You\'d help the scammer reach more victims.') }
+              { id: 'forward', label: t('stem.cyberdefense.forward_it_to_friends', 'Forward it to friends so they can win too'), feedback: t('stem.cyberdefense.forwarding_phishing_spreads_the_attack', 'Forwarding phishing spreads the attack. You\'d help the scammer reach more victims.') }
             ], type: 'Phishing/Baiting', lesson: '”You\'ve won!” emails are almost always scams. Real companies don\'t require credit cards for prizes.' },
             { scenario: 'A friendly “journalist” at a coffee shop asks detailed questions about your school\'s network, software, and server room.', correct: 'decline', options: [
               { id: 'help', label: t('stem.cyberdefense.answer_their_questions_they_seem_nice', 'Answer their questions \u2014 they seem nice'), feedback: t('stem.cyberdefense.reconnaissance_attackers_gather_info_t', 'Reconnaissance! Attackers gather info through casual conversation before launching attacks.') },
-              { id: 'decline', label: t('stem.cyberdefense.suggest_they_contact_the_school_s_pres', 'Suggest they contact the school\'s press office'), feedback: t('stem.cyberdefense.correct_redirect_info_requests_to_offi', 'Correct! Redirect info requests to official channels that can verify the person.') },
+              { id: 'decline', label: t('stem.cyberdefense.suggest_they_contact_the_school_s_pres', 'Point them to the school\'s press office'), feedback: t('stem.cyberdefense.correct_redirect_info_requests_to_offi', 'Correct! Redirect info requests to official channels that can verify the person.') },
               { id: 'some', label: t('stem.cyberdefense.answer_some_but_not_technical_question', 'Answer some but not technical questions'), feedback: t('stem.cyberdefense.even_non_technical_details_help_build_', 'Even non-technical details help build spear-phishing profiles. Names, schedules, software \u2014 all valuable.') }
             ], type: 'Reconnaissance', lesson: 'Information is the currency of social engineering. Every detail shared helps craft a more convincing attack.' },
             { scenario: 'A pop-up screams “YOUR COMPUTER IS INFECTED! Call Microsoft Support at 1-800-555-0199 immediately!”', correct: 'close', options: [
-              { id: 'call', label: t('stem.cyberdefense.call_the_number_for_help', 'Call the number for help'), feedback: t('stem.cyberdefense.tech_support_scam_microsoft_never_show', 'Tech support scam! Do not use a phone number or download link supplied by an unexpected warning.') },
+              { id: 'call', label: t('stem.cyberdefense.call_the_number_for_help', 'Call the number on the screen for help right away'), feedback: t('stem.cyberdefense.tech_support_scam_microsoft_never_show', 'Tech support scam! Do not use a phone number or download link supplied by an unexpected warning.') },
               { id: 'close', label: t('stem.cyberdefense.close_the_tab_and_run_your_actual_anti', 'Close the tab and open your trusted security tool'), feedback: t('stem.cyberdefense.correct_these_are_fake_warnings_real_s', 'Correct! Use a trusted route, such as the security tool already on the device or the official support site, and report the pop-up if required.') },
-              { id: 'pay', label: t('stem.cyberdefense.pay_for_their_removal_service', 'Pay for their removal service'), feedback: t('stem.cyberdefense.you_d_be_paying_scammers_who_may_insta', 'You\'d be paying scammers who may install more malware.') }
+              { id: 'pay', label: t('stem.cyberdefense.pay_for_their_removal_service', 'Pay for their virus removal service to be safe'), feedback: t('stem.cyberdefense.you_d_be_paying_scammers_who_may_insta', 'You\'d be paying scammers who may install more malware.') }
             ], type: 'Tech Support Scam', lesson: 'Do not trust contact instructions in an unexpected pop-up. Close it, then open your device\'s security tools or support site through a known route.' },
             { scenario: 'A classmate borrows your phone “for a second” and walks around a corner with it.', correct: 'watch', options: [
               { id: 'let', label: t('stem.cyberdefense.let_them_go_they_ll_be_right_back', 'Let them go \u2014 they\'ll be right back'), feedback: t('stem.cyberdefense.a_few_seconds_with_your_unlocked_phone', 'A few seconds with your unlocked phone = access to all accounts, messages, and payment apps.') },
@@ -1418,6 +1556,23 @@
             ], type: 'Physical Access', lesson: 'The “evil maid” attack: brief physical access to a device can compromise all data on it.' }
           ];
           var activeSeScenario = seScenarios[seQuizIdx % seScenarios.length];
+          // All 8 scenarios are authored with the right answer in slot 2. Show
+          // them in a fixed per-scenario order that spreads the answer over the
+          // slots (3/3/2) and alternates the distractors. Deterministic, so the
+          // options never move between renders; grading is by option id.
+          var seDisplayOptions = (function() {
+            var idx = Math.abs(Math.floor(Number(seQuizIdx) || 0)) % seScenarios.length;
+            var opts = activeSeScenario.options;
+            var ci = -1;
+            for (var k = 0; k < opts.length; k++) if (opts[k].id === activeSeScenario.correct) ci = k;
+            if (ci === -1) return opts;
+            var target = [0, 2, 1][idx % 3] % opts.length;
+            var others = opts.filter(function(_o, k2) { return k2 !== ci; });
+            if (Math.floor(idx / 3) % 2) others.reverse();
+            var out = [];
+            for (var s2 = 0; s2 < opts.length; s2++) out.push(s2 === target ? opts[ci] : others.shift());
+            return out;
+          })();
 
           // ── Cipher output ──
           var cipherOutput = '';
@@ -1731,7 +1886,7 @@
             }
             if (dd.pwSampleStrong) {
               if (b.freeFirstUse.indexOf('reset_credential') === -1) b.freeFirstUse.push('reset_credential');
-              b.earned.push({ id: 'password_pro', icon: '\uD83D\uDD10', label: t('stem.cyberdefense.password_pro', 'Password Pro'), perk: 'First Reset Credential is free', source: 'Password Forge: tested a 15+ character sample outside the blocklist' });
+              b.earned.push({ id: 'password_pro', icon: '\uD83D\uDD10', label: t('stem.cyberdefense.password_pro', 'Password Pro'), perk: 'First Reset Credential is free', source: 'Password Forge: tested a Strong sample (15+ characters, no predictable pattern)'});
             }
             if ((dd.seQuizScore || 0) >= 5) {
               if (b.freeFirstUse.indexOf('investigate') === -1) b.freeFirstUse.push('investigate');
@@ -3236,7 +3391,7 @@
                 cyberTab === 'phish' && el('div', { role: 'group', 'aria-label': t('stem.cyberdefense.phishing_difficulty', 'Phishing case difficulty'), style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
                   el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Email level:'),
                   ['easy', 'medium', 'hard'].map(function(dl) {
-                    return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null, cluesFound: [], showHeaders: false, aiGeneratedEmail: null, triageTimeLeft: 15, triageActive: phishMode === 'triage' && cyberTab === 'phish' }); }, 'aria-pressed': difficulty === dl,
+                    return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null, cluesFound: [], showHeaders: false, aiGeneratedEmail: null, triageTimeLeft: TRIAGE_SECONDS, triageActive: phishMode === 'triage' && cyberTab === 'phish' }); }, 'aria-pressed': difficulty === dl,
                       style: { padding: '4px 10px', minHeight: 30, borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
                   })),
                 el('div', { 'aria-label': ctx.getXP('cyberDefense') + ' Cyber Defense experience points', className: 'cyberd-xp', style: { marginLeft: cyberTab === 'phish' ? 4 : 'auto', padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b', boxShadow: '0 0 14px rgba(245,158,11,0.4)', whiteSpace: 'nowrap' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
@@ -3330,10 +3485,10 @@
 
                 // Mode Toggle
                 el('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
-                  el('button', { onClick: function() { upd({ phishMode: 'investigate', triageActive: false, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: 15 }); }, 'aria-pressed': phishMode === 'investigate',
+                  el('button', { onClick: function() { upd({ phishMode: 'investigate', triageActive: false, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: TRIAGE_SECONDS }); }, 'aria-pressed': phishMode === 'investigate',
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'investigate' ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'investigate' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'investigate' ? '#a5b4fc' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\uD83D\uDD0D'), 'Investigation Mode'),
-                  el('button', { onClick: function() { upd({ phishMode: 'triage', triageActive: true, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: 15 }); }, 'aria-pressed': phishMode === 'triage',
+                  el('button', { onClick: function() { upd({ phishMode: 'triage', triageActive: true, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: TRIAGE_SECONDS }); }, 'aria-pressed': phishMode === 'triage',
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'triage' ? '2px solid #f59e0b' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'triage' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'triage' ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\u23F1\uFE0F'), 'Inbox Triage'),
                   // AI Case Generator Button (hidden when the host has no usable text AI)
@@ -3342,15 +3497,36 @@
                     el('span', null, aiEmailLoading ? '\u23F3' : '\uD83E\uDD16'), aiEmailLoading ? 'Generating...' : (aiGeneratedEmail ? 'New AI Case' : 'AI Case'))
                 ),
 
+                // Timer options (WCAG 2.2.1 Timing Adjustable), like the War Room's
+                // "No Timer Auto-Resolve": keep, extend or turn off the triage clock.
+                phishMode === 'triage' && el('div', { role: 'group', 'aria-label': t('stem.cyberdefense.triage_timer_options', 'Inbox triage timer'), 'data-cyber-triage-timer-options': triageTimerMode, style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
+                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 700 } }, t('stem.cyberdefense.triage_timer_label', '\u23F1 Timer:')),
+                  [
+                    { id: 'standard', label: t('stem.cyberdefense.triage_timer_standard', '15 seconds') },
+                    { id: 'extended', label: t('stem.cyberdefense.triage_timer_extended', '45 seconds (extended)') },
+                    { id: 'off', label: t('stem.cyberdefense.triage_timer_off', 'Off (no time limit)') }
+                  ].map(function(opt) {
+                    var on = triageTimerMode === opt.id;
+                    return el('button', { key: opt.id, type: 'button', 'aria-pressed': on,
+                      onClick: function() {
+                        if (on) return;
+                        upd({ triageTimerMode: opt.id, triageTimeLeft: opt.id === 'extended' ? 45 : 15 });
+                        if (ctx.announceToSR) ctx.announceToSR(opt.id === 'off' ? 'Triage timer turned off.' : 'Triage timer set to ' + (opt.id === 'extended' ? 45 : 15) + ' seconds.');
+                      },
+                      style: { padding: '6px 12px', minHeight: 32, borderRadius: 8, border: on ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.15)', background: on ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: on ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, opt.label);
+                  })
+                ),
+
                 // Case Counter
                 el('div', { style: { marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                   el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 } },
                     '\uD83D\uDCC1 Case #' + (casesClosed + 1) + (aiGeneratedEmail ? '' : ' \u2022 Email ' + ((phishIdx % filteredEmails.length) + 1) + '/' + filteredEmails.length),
                     aiGeneratedEmail && el('span', { style: { padding: '2px 6px', borderRadius: 6, background: 'rgba(168,85,247,0.2)', color: '#c084fc', fontSize: 11, fontWeight: 800, border: '1px solid rgba(168,85,247,0.3)' } }, '\uD83E\uDD16 AI')
                   ),
-                  phishMode === 'triage' && !phishAnswer && triageActive && el('div', { role: 'timer', 'aria-live': triageTimeLeft <= 5 ? 'assertive' : 'off', 'aria-label': triageTimeLeft + ' seconds remaining', style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                    el('div', { role: 'progressbar', 'aria-label': t('stem.cyberdefense.inbox_triage_time_remaining','Inbox triage time remaining'), 'aria-valuemin': 0, 'aria-valuemax': 15, 'aria-valuenow': triageTimeLeft, 'aria-valuetext': triageTimeLeft + ' seconds remaining', style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' } },
-                      el('div', { style: { width: (triageTimeLeft / 15 * 100) + '%', height: '100%', borderRadius: 3, background: triageTimeLeft > 10 ? '#22c55e' : triageTimeLeft > 5 ? '#f59e0b' : '#ef4444', boxShadow: '0 0 10px ' + (triageTimeLeft > 10 ? 'rgba(34,197,94,0.5)' : triageTimeLeft > 5 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.6)'), transition: 'width 1s linear, background 0.5s, box-shadow 0.5s' } })
+                  phishMode === 'triage' && !phishAnswer && triageActive && triageTimerMode === 'off' && el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 700 } }, t('stem.cyberdefense.triage_timer_off_note', 'Timer off: take the time you need')),
+                  phishMode === 'triage' && !phishAnswer && triageActive && triageTimerMode !== 'off' && el('div', { role: 'timer', 'aria-live': triageTimeLeft <= 5 ? 'assertive' : 'off', 'aria-label': triageTimeLeft + ' seconds remaining', style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                    el('div', { role: 'progressbar', 'aria-label': t('stem.cyberdefense.inbox_triage_time_remaining','Inbox triage time remaining'), 'aria-valuemin': 0, 'aria-valuemax': TRIAGE_SECONDS, 'aria-valuenow': triageTimeLeft, 'aria-valuetext': triageTimeLeft + ' seconds remaining', style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' } },
+                      el('div', { style: { width: (triageTimeLeft / TRIAGE_SECONDS * 100) + '%', height: '100%', borderRadius: 3, background: triageTimeLeft > 10 ? '#22c55e' : triageTimeLeft > 5 ? '#f59e0b' : '#ef4444', boxShadow: '0 0 10px ' + (triageTimeLeft > 10 ? 'rgba(34,197,94,0.5)' : triageTimeLeft > 5 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.6)'), transition: 'width 1s linear, background 0.5s, box-shadow 0.5s' } })
                     ),
                     el('span', { style: { color: triageTimeLeft > 5 ? '#94a3b8' : '#ef4444', fontSize: 12, fontWeight: 900, fontFamily: 'monospace', minWidth: 24, textAlign: 'right' } }, triageTimeLeft + 's')
                   )
@@ -3588,7 +3764,7 @@
                         cluesFound.length >= (activeEmail.clues || []).length && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(168,85,247,0.15)', color: '#c084fc', fontSize: 10, fontWeight: 700 } }, '+2 Perfect Investigation'),
                         cluesFound.length >= 2 && cluesFound.length < (activeEmail.clues || []).length && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, fontWeight: 700 } }, '+1 Evidence Bonus'),
                         phishStreak >= 3 && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(245,158,11,0.15)', color: '#fbbf24', fontSize: 10, fontWeight: 700 } }, '+1 Streak Bonus'),
-                        phishMode === 'triage' && triageTimeLeft >= 10 && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 10, fontWeight: 700 } }, '+2 Speed Bonus')
+                        phishMode === 'triage' && triageSpeedBonus && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 10, fontWeight: 700 } }, '+2 Speed Bonus')
                       )
                     ),
                     // Evidence collected
@@ -3650,15 +3826,20 @@
                     el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 600 } }, pwStrength.checks.length + ' characters'),
                     el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, '\u2022 ' + (pwStrength.checks.isCommon ? 'Classroom blocklist match' : 'No classroom blocklist match'))
                   ),
+                  // Why the score is what it is: every predictable pattern found.
+                  pwInput && pwStrength.patterns.length > 0 && el('ul', { 'data-cyber-pw-patterns': pwStrength.patterns.length, style: { listStyle: 'none', margin: '0 0 8px', padding: 0 } },
+                    pwStrength.patterns.map(function(reason, ri) {
+                      return el('li', { key: ri, style: { color: '#fbbf24', fontSize: 12, lineHeight: 1.5 } }, '\u26a0 ' + t('stem.cyberdefense.pattern_found', 'Pattern found:') + ' ' + reason);
+                    })),
                   // Strength bar
                   el('div', { role: 'meter', 'aria-label': t('stem.cyberdefense.sample_strength', 'Sample strength'), 'aria-valuemin': 0, 'aria-valuemax': 5, 'aria-valuenow': pwStrength.score, 'aria-valuetext': pwInput ? pwStrength.label : t('stem.cyberdefense.empty', 'Empty'), style: { width: '100%', height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                     el('div', { style: { width: (pwStrength.score / 5 * 100) + '%', height: '100%', borderRadius: 5, background: pwStrength.color, transition: 'all 0.5s ease-out', boxShadow: '0 0 10px ' + pwStrength.color + '60' } })
                   ),
                   // Illustrative search-space estimate
                   el('div', { style: { marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Uniform-random search-space estimate (10B guesses/sec):'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Search-space estimate after pattern checks (10B guesses/sec):'),
                     el('div', { style: { color: pwStrength.color, fontSize: 18, fontWeight: 900 } }, pwStrength.crackTime),
-                    el('div', { style: { marginTop: 5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.45 } }, 'Illustration only. Human patterns and leaked passwords can make real guessing much faster; rate limits and salted password hashing also change the result.')
+                    el('div', { style: { marginTop: 5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5 } }, 'Illustration only. This meter catches common patterns, but real attackers also use leaked-password lists and smarter guessing, so real cracking can be much faster; rate limits and salted password hashing also change the result.')
                   ),
                   // Checklist
                   el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 14 } },
@@ -3686,7 +3867,7 @@
                   pwBruteAnim && el('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(239,68,68,0.05))', border: '1px solid rgba(244,63,94,0.2)' } },
                     el('div', { style: { color: '#fb7185', fontSize: 13, fontWeight: 900, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 } }, '\u26A1 Brute Force Attack Simulation'),
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 8 } },
-                      pwBruteAnim.entropy + ' estimated bits under a uniform-random model \u2022 Character sets: ' + pwBruteAnim.charSets.join(', ')),
+                      pwBruteAnim.entropy + ' estimated bits after pattern checks \u2022 Character sets: ' + pwBruteAnim.charSets.join(', ')),
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Attack Speed Comparison:'),
                     pwBruteAnim.speeds.map(function(spd, si) {
                       var secs = pwBruteAnim.totalGuesses / spd.rate;
@@ -3720,9 +3901,9 @@
                       '\uD83D\uDD12 This demo makes no network request. In real systems, services should reject commonly used or compromised choices while protecting the full password.')
                   ),
                   // Challenge
-                  !pwChallengeDone && pwStrength.checks.length >= 15 && !pwStrength.checks.isCommon && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
+                  !pwChallengeDone && pwStrength.score >= 4 && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
                     el('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, '\uD83C\uDFC6 Challenge Complete!'),
-                    el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your made-up sample is 15+ characters and avoids this lesson\'s blocklist.'),
+                    el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your made-up sample is 15+ characters, avoids this lesson\'s blocklist and has no predictable pattern dragging it down.'),
                     el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); if (announceToSR) announceToSR(__alloT('stem.cyberdefense.sr_password_challenge_complete_plus_5_xp', 'Password challenge complete! Plus 5 XP.')); },
                       style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Claim +5 XP \u2B50')
                   ),
@@ -3967,7 +4148,7 @@
                   el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 600, lineHeight: 1.7 } }, activeSeScenario.scenario)
                 ),
                 // Options
-                activeSeScenario.options.map(function(opt, oi) {
+                seDisplayOptions.map(function(opt, oi) {
                   var isSelected = seQuizAnswer === opt.id;
                   var isCorrect = opt.id === activeSeScenario.correct;
                   var showResult = seQuizAnswer !== null;

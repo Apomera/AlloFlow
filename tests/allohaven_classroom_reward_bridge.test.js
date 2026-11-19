@@ -236,9 +236,10 @@ describe('live-session reward transport source contract', () => {
   });
 
   it('renders an accessible teacher-only receipt and expandable recent audit', () => {
+    // 2026-11-17: the group label is translated now (live_dock.group_recognize); the anchor follows it.
     // The Recognize group renders inside the Live Dock view module now (extracted from ANTI).
     const panel = liveDock.slice(
-      liveDock.indexOf('<div style={dockGroupLabel}>Recognize</div>'),
+      liveDock.indexOf("<div style={dockGroupLabel}>{t('live_dock.group_recognize') || 'Recognize'}</div>"),
       liveDock.indexOf('// Students: delivery status'),
     );
     expect(panel).toContain('role="status" aria-live="polite" aria-atomic="true"');
@@ -283,7 +284,7 @@ describe('live-session reward transport source contract', () => {
   it('renders an accessible opt-in switch and cap-aware teacher controls', () => {
     // The Recognize group renders inside the Live Dock view module now (extracted from ANTI).
     const panel = liveDock.slice(
-      liveDock.indexOf('<div style={dockGroupLabel}>Recognize</div>'),
+      liveDock.indexOf("<div style={dockGroupLabel}>{t('live_dock.group_recognize') || 'Recognize'}</div>"),
       liveDock.indexOf('// Students: delivery status'),
     );
     expect(panel).toContain('role="switch"');

@@ -235,18 +235,11 @@ describe('flash cards: dictionary sense provenance', () => {
   });
 });
 
-describe('Word Search: the Aa button and its text', () => {
-  it('only with the bridge; beside Close in the header; opens the panel; Close still closes', () => {
-    expect(aaButtons(mount(wordSearch()).container)).toEqual([]);
+describe('Word Search: text size', () => {
+  // Word Search sits in the page under the header toolbar, so it has no Aa copy.
+  it('has no Aa button of its own even with the bridge', () => {
     installBridge();
-    const closeSearch = vi.fn();
-    const { container } = mount(wordSearch({ handleSetGameModeToNull: closeSearch }));
-    const button = readingButton(container);
-    expect(wordSearchCard(container).contains(button)).toBe(true);
-    expect(button.nextElementSibling.getAttribute('aria-label'), 'next to Close').toBe('common.close');
-    expectPanelInside(button, document.body, closeSearch);
-    click(button.nextElementSibling);
-    expect(closeSearch, 'Close still closes the search').toHaveBeenCalledTimes(1);
+    expect(aaButtons(mount(wordSearch()).container)).toEqual([]);
   });
 
   it('the grid and word list are in rem', () => {

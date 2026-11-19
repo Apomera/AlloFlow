@@ -21,7 +21,8 @@ describe.each(Object.entries(hosts))('%s', (_, source) => {
     expect(source.split('<h1 className="sr-only">AlloFlow</h1>')).toHaveLength(2);
   });
   it('titles the resource with an h2', () => {
-    expect(source).toContain('<h2 className={`text-lg font-bold text-slate-700 flex items-center gap-2 truncate');
+    // 2026-11-17: the heading also became the focus target when a resource opens (id + tabIndex -1).
+    expect(source).toContain('<h2 id="alloflow-resource-heading" tabIndex={-1} className={`text-lg font-bold text-slate-700 flex items-center gap-2 truncate');
     expect(source).not.toContain('<h3 className={`text-lg font-bold text-slate-700 flex items-center gap-2 truncate');
   });
 });

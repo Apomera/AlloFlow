@@ -2077,7 +2077,7 @@ describe('Sourcebook initial feature contract', () => {
       const inspectMv = mvCard.querySelector('[data-sourcebook-inspect="' + mvItem.id + '"]');
       expect(inspectMv.getAttribute('aria-label')).toContain('cultural context');
       await ReactLib.act(async () => { inspectMv.click(); });
-      expect(host.querySelector('.sb-detail [data-sourcebook-cultural-context="detail"]')?.textContent).toContain('Reuse rights are verified');
+      expect(host.querySelector('.sb-detail [data-sourcebook-cultural-context="detail"]')?.textContent).toContain('we read its license data; check the source before publishing');
 
       await ReactLib.act(async () => { resultsToggle().click(); });
       const curatedCard = host.querySelector('[data-sourcebook-result-card="' + curatedItem.id + '"]');
@@ -2192,6 +2192,102 @@ describe('Sourcebook initial feature contract', () => {
       browserWindow.StemLab = previousStemLab;
       browserWindow.SourcebookProviders = previousProviders;
       browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('a new search during AI re-curation does not leave the curation controls stuck busy', async () => {
+    const browserWindow = globalThis.window;
+    const saved = { StemLab: browserWindow.StemLab, SourcebookProviders: browserWindow.SourcebookProviders, fetch: browserWindow.fetch, AbortController: browserWindow.AbortController, matchMedia: browserWindow.matchMedia };
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    const ok = (payload) => ({ ok: true, status: 200, headers: { get: () => '' }, json: async () => payload });
+    const value = (text) => ({ value: text });
+    const commonsPayload = { query: { pages: [1, 2, 3].map((n) => ({
+      pageid: 700 + n,
+      title: 'File:Verified contour map ' + n + '.png',
+      imageinfo: [{
+        mediatype: 'BITMAP',
+        url: 'https://upload.wikimedia.org/verified-contour-map-' + n + '.png',
+        thumburl: 'https://upload.wikimedia.org/verified-contour-map-' + n + '-thumb.png',
+        descriptionurl: 'https://commons.wikimedia.org/wiki/File:Verified_contour_map_' + n + '.png',
+        width: 2400, height: 1800,
+        extmetadata: { LicenseShortName: value('Public domain'), UsageTerms: value('Public domain'), Artist: value('Public collection'), ImageDescription: value('A verified contour map.') }
+      }]
+    })) } };
+    let releaseCuration;
+    let holdCuration = false;
+    const curationReply = new Promise((resolve) => { releaseCuration = resolve; });
+    async function settle() {
+      await ReactLib.act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    }
+    const recurate = () => Array.from(host.querySelectorAll('button')).find((button) => /Re-curat/.test(button.textContent));
+    try {
+      browserWindow.fetch = async (url) => {
+        const href = String(url);
+        if (href.includes('commons.wikimedia.org')) return ok(commonsPayload);
+        if (href.includes('api.smk.dk')) return ok({ items: [] });
+        if (href.includes('lux.collections.yale.edu')) return ok({ orderedItems: [] });
+        if (href.includes('collectionapi.metmuseum.org')) return ok({ objectIDs: [] });
+        if (href.includes('openaccess-api.clevelandart.org')) return ok({ data: [] });
+        if (href.includes('www.loc.gov')) return ok({ results: [] });
+        if (href.includes('api.wellcomecollection.org')) return ok({ results: [] });
+        if (href.includes('data.getty.edu')) return ok({ results: { bindings: [] } });
+        if (href.includes('collections.museumsvictoria.com.au')) return ok({ status: 200, response: [] });
+        if (href.includes('api.openverse.org')) return ok({ results: [] });
+        if (href.includes('api.artic.edu')) return ok({ data: [], config: { iiif_url: 'https://www.artic.edu/iiif/2' } });
+        return { ok: false, status: 404, headers: { get: () => '' } };
+      };
+      browserWindow.AbortController = AbortController;
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = { _registry: {}, _order: [], registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); } };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      function Harness() {
+        const [state, setState] = ReactLib.useState({ query: 'contour map', kind: 'Maps', provider: 'All', rightsScope: 'pd', autoCurate: false });
+        const ctx = {
+          React: ReactLib,
+          toolData: { sourcebook: state },
+          updateMulti(toolId, patch) { if (toolId === 'sourcebook') setState((current) => ({ ...current, ...patch })); },
+          update(toolId, key, v) { if (toolId === 'sourcebook') setState((current) => ({ ...current, [key]: v })); },
+          // Searches curate too; only the explicit Re-curate call is held open.
+          callGemini: () => (holdCuration ? curationReply : Promise.resolve(JSON.stringify({ ids: [], reason: 'metadata' }))),
+          announceToSR() {}, addToast() {}
+        };
+        return tool.render(ctx);
+      }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+      const searchForm = () => host.querySelector('#sourcebook-search').closest('form');
+      await ReactLib.act(async () => { searchForm().dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
+      for (let i = 0; i < 20 && !(recurate() && !recurate().disabled); i += 1) await settle();
+      expect(recurate()?.disabled).toBe(false);
+
+      holdCuration = true;
+      await ReactLib.act(async () => { recurate().click(); });
+      expect(recurate().textContent).toContain('Re-curating');
+      // The student searches again before the AI answers; that reply is now stale.
+      holdCuration = false;
+      await ReactLib.act(async () => { searchForm().dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
+      for (let i = 0; i < 20 && !(recurate() && !recurate().disabled); i += 1) await settle();
+      await ReactLib.act(async () => { releaseCuration(JSON.stringify({ ids: [], reason: 'late' })); await curationReply; });
+      await settle();
+      expect(recurate()?.textContent).toContain('Re-curate matches');
+      expect(recurate()?.disabled).toBe(false);
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      Object.assign(browserWindow, saved);
       globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
     }
   });

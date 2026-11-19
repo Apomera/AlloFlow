@@ -11,6 +11,6 @@ it('recovers the complete prior source after reversing only the recorded diagram
   expect(raw.toString('utf8').replace(/\r\n/g, '\n')).not.toContain('\r');
   const restored = stripWeldlabDiagramFixes(raw.toString('utf8'));
   const previous = Buffer.from(restored.replace(/\n/g, '\r\n'), 'utf8');
-  expect(createHash('sha256').update(previous).digest('hex')).toBe('2ecfb46849d0baee819d4b3fd85d8a5cc1c13b32b09a08a3cc0754e556e2fcd3');
+  expect(createHash('sha256').update(previous).digest('hex')).toBe('56723a561fd88c90cb978809838c0b802489f2bc72f92c0b59626de26e55c9b5');
   expect(stripWeldlabDiagramFixes(restored)).toBe(restored);
 });

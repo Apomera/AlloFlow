@@ -68,7 +68,10 @@ describe('generation describes the drawn pixels', () => {
     for (const prop of ['leveledTextLanguage', 'selectedLanguages', 'setAutoRemoveWords', 'setGlossaryCustomInstructions']) {
       expect(new RegExp('\\b' + prop + '\\b').test(generatorProps), prop + ' reaches GeneratorActionsView').toBe(true);
     }
-    expect(src('help_strings.js')).toContain('They follow the Output Language in Universal Settings');
+    // 2026-11-18: the help said columns follow the Output Language (the legacy rule). Native plans write
+    // definitions in the Output Language and add columns from Translations or the app-and-added list.
+    expect(src('help_strings.js')).toContain('Definitions follow the Output Language in Universal Settings');
+    expect(src('help_strings.js')).toContain('Translation columns come from the Translations setting');
   });
 
   it('fun facts work on local text backends through the web provider with cited, filtered evidence', () => {

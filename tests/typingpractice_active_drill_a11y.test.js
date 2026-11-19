@@ -74,7 +74,7 @@ describe('Typing Practice active drill accessibility', () => {
     expect(source).toContain("'aria-details': 'tp-target-transcript'");
     expect(source).toContain("'aria-keyshortcuts': 'Escape F2'");
     expect(source).toContain("if (key === 'F2')");
-    expect(source).toContain("setAnnounceText(typingPracticeTargetCue(targetStr, typedLength))");
+    expect(source).toContain("setAnnounceText(typingPracticeTargetCue(targetStr, typedLength, state.keyboardLayout, activeDrill && activeDrill.oneHanded))");
     expect(source).toContain("{ keys: ['F2']");
   });
 

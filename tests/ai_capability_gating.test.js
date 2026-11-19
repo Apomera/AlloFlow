@@ -32,6 +32,8 @@ const fenceCode = () => [
   grabFn('function _alloPastedAiKeyFenceActive()'),
   grabLine('const _ALLO_AI_SECRET_FIELD = '),
   grabLine('const _ALLO_KEYLESS_AI_BACKENDS = '),
+  // 2026-11-17: since 274914f9d6 (11-14) a saved key is bound to the server it was saved for; the reader needs it.
+  grabFn('function _alloAiCredentialDestination(config)'),
   grabFn('function _alloStripAiSecrets(config)'),
   grabFn('function _alloStoredAiConfig()'),
 ];

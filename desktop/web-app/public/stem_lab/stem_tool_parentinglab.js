@@ -98,21 +98,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       note: 'A framework with deep applied roots: behavior does a job, and consequences teach. The parent-training skills derived from it carry randomized-trial support (see the RCT core).' },
     functionsHome: { source: 'Functional assessment literature (attention / escape / tangible / sensory)', badge: 'meta',
       note: 'The four common jobs a behavior can be doing. Knowing the job predicts what will and will not work — and a function is a description, never by itself a mandate to intervene.' },
-    burst: { source: 'Extinction literature, laboratory and applied', badge: 'meta',
-      note: 'When a behavior stops paying, it typically gets louder before it fades — which is exactly when most people give in, teaching the louder version.' },
+    burst: { source: 'Extinction literature, laboratory and applied; clinical prevalence reviews (Lerman & Iwata)', badge: 'popular',
+      note: 'The popular version says a behavior ALWAYS gets louder before it fades. Clinical case reviews found bursts in a minority of cases, and less often when extinction was combined with other supports. Common enough to plan for, but not guaranteed — and giving in during a burst does teach the louder version.' },
     coercion: { source: 'Patterson, coercive family process', badge: 'meta',
       note: 'An escalation loop that trains BOTH sides: the child learns that escalating works, the parent learns that giving in ends the noise. The exit is warmth plus boring consistency, not bigger consequences.' },
     // ── M6: discipline ──
     spanking: { source: 'Gershoff & Grogan-Kaylor (2016) meta-analysis; AAP (2018); APA (2019)', badge: 'meta',
-      note: 'Across dozens of studies: associations with worse outcomes in every domain examined, and no evidence of benefits. Causal inference has limits — and the professional consensus does not: every major pediatric and psychological body advises against it.' },
+      note: 'Across dozens of studies: significant associations with 13 of the 17 outcomes examined, every one in the harmful direction, and none with a benefit. Causal inference has limits — and the professional consensus does not: every major pediatric and psychological body advises against it.' },
     discCulture: { source: 'Cross-cultural discipline research (incl. normativeness moderation, e.g., Lansford)', badge: 'cultural',
       note: 'Where physical discipline is culturally normative, some associated harms attenuate — they do not disappear. Outcomes research is about practices, never a judgment of parents or communities.' },
     alternatives: { source: 'Program trial literature (time-out, planned ignoring, response cost)', badge: 'rct',
       note: 'The trial-supported reduction tools: brief boring time-out, planned ignoring for minor behavior, briefly losing a privilege. Calm, small, predictable — teaching without modeling aggression.' },
     tokens: { source: 'Token-economy and reward-chart applied literature', badge: 'rct',
       note: 'Deep applied evidence when rewards are immediate, specific, achievable, and faded over time. One honest caveat: for behaviors a child already loves, added rewards can backfire; use them for behaviors a child avoids.' },
-    ratio: { source: 'Coaching heuristic across parent-training programs', badge: 'meta',
-      note: 'Programs commonly coach several warm interactions for every correction. The specific numbers (4:1, 5:1) are rules of thumb, not laws — the direction is what carries evidence.' },
+    ratio: { source: 'Coaching heuristic across parent-training programs', badge: 'rct',
+      note: 'Programs commonly coach several warm interactions for every correction, and those programs carry randomized-trial support. The badge covers that direction only: the specific numbers (4:1, 5:1) are untested rules of thumb, not laws.' },
     natConsequences: { source: 'Popular framework (Dreikurs tradition); limited direct trials', badge: 'popular',
       note: 'A sensible-sounding framework with thinner direct evidence than its reputation. What demonstrably makes any consequence work: immediacy, consistency, and calm — not size or cleverness.' },
     // ── M7: myths ──
@@ -434,9 +434,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
     },
     {
       id: 'abc-burst',
-      title: 'It gets worse before it gets better',
+      title: 'It may get worse before it gets better',
       evidence: 'burst',
-      body: 'When a behavior that used to pay suddenly stops paying, it does not fade quietly — it gets louder first. The extinction burst is the best-documented trap in this literature, because the burst arrives exactly when a tired parent concludes "this is not working" and gives in — thereby paying out at the new, louder rate. Two practical rules follow: only stop paying a behavior you can outlast, and tell yourself in advance that louder-before-quieter means it IS working. Pick battles you can hold.'
+      body: 'When a behavior that used to pay suddenly stops paying, it sometimes gets louder before it fades. Parents are often told this always happens; clinical studies found the extinction burst in a minority of cases, so it is common but not guaranteed. It is still the trap worth planning for, because a burst arrives exactly when a tired parent concludes "this is not working" and gives in — thereby paying out at the new, louder rate. Two practical rules follow: only stop paying a behavior you can outlast, and decide in advance that a louder stretch does not mean the plan has failed. Pick battles you can hold.'
     },
     {
       id: 'abc-coercion',
@@ -461,7 +461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
   var M5_SCENES = [
     { id: 'f1', text: 'Checkout line. Child whines for candy; last three trips, whining eventually produced candy. A = candy in sight, B = whining, C = ?',
       answer: 'tangible',
-      why: 'The behavior earns a THING. Note what the fix is not: a lecture (that adds attention to a tangible-maintained behavior — paying in a second currency). The fix is the boring one: candy stops following whining, and a burst is expected on trip one.' },
+      why: 'The behavior earns a THING. Note what the fix is not: a lecture (that adds attention to a tangible-maintained behavior — paying in a second currency). The fix is the boring one: candy stops following whining, with a plan to outlast a possible burst on the first few trips.' },
     { id: 'f2', text: 'Every night, twenty minutes into homework, a meltdown — and homework gets shelved "until things calm down."',
       answer: 'escape',
       why: 'The meltdown\'s job is making the hard thing disappear, and it works nightly. Escape-maintained behavior grows every time the demand evaporates — the counter-move is shrinking the demand (five problems, then a real break) so staying beats escaping.' },
@@ -484,7 +484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       id: 'disc-consensus',
       title: 'The consensus on spanking is: don\'t',
       evidence: 'spanking',
-      body: 'Here the honest read and the firm read are the same read. The largest meta-analysis (Gershoff & Grogan-Kaylor, 2016) found spanking associated with worse outcomes in every domain examined — behavior, mental health, the parent-child relationship — and no evidence of benefits, including the compliance it is meant to buy. Causal inference from correlational data has limits, and this literature says so. The professional consensus does not hesitate: the American Academy of Pediatrics (2018) and the American Psychological Association (2019) both advise against physical discipline. This lab\'s one directive sentence: there are better tools, and they are the ones with trial evidence.'
+      body: 'Here the honest read and the firm read are the same read. The largest meta-analysis (Gershoff & Grogan-Kaylor, 2016) found spanking significantly associated with 13 of the 17 outcomes it examined — behavior, mental health, the parent-child relationship among them — every one in the harmful direction, and none with a benefit, including the compliance it is meant to buy. Causal inference from correlational data has limits, and this literature says so. The professional consensus does not hesitate: the American Academy of Pediatrics (2018) and the American Psychological Association (2019) both advise against physical discipline. This lab\'s one directive sentence: there are better tools, and they are the ones with trial evidence.'
     },
     {
       id: 'disc-culture',
@@ -527,7 +527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
   ];
   var M6_CLAIMS = [
     { id: 'c1', text: '"Spanking improves children\'s long-term behavior."', answer: 'popular',
-      why: 'The meta-analytic literature finds no evidence of benefits — not even short-term compliance holds up — and associations with worse outcomes across domains. Professional bodies advise against it.' },
+      why: 'The meta-analytic literature finds no evidence of benefits — not even short-term compliance holds up — and associations with worse outcomes on most measures examined (13 of 17 in the largest meta-analysis). Professional bodies advise against it.' },
     { id: 'c2', text: '"A brief, calm, boring time-out reduces problem behavior in young children."', answer: 'rct',
       why: 'A component of multiple trial-supported programs, endorsed by the AAP. The adjectives are load-bearing: brief, calm, boring, reconnected afterward.' },
     { id: 'c3', text: '"How physical discipline relates to outcomes depends partly on how normative it is in the surrounding culture."', answer: 'cultural',
@@ -783,7 +783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         var b = BADGES[key]; if (!b) return null;
         return h('span', {
           className: 'inline-flex items-center gap-1 rounded-full font-bold',
-          style: { color: isDark ? (b.colorDark || b.color) : b.color, background: b.bg, border: '1px solid ' + b.border, padding: size === 'sm' ? '2px 8px' : '3px 10px', fontSize: size === 'sm' ? '10px' : '11px' },
+          style: { color: isDark ? (b.colorDark || b.color) : b.color, background: b.bg, border: '1px solid ' + b.border, padding: size === 'sm' ? '2px 8px' : '3px 10px', fontSize: '12px' },
           title: b.meaning
         }, b.label);
       }
@@ -877,6 +877,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           ),
           h('p', { className: 'text-sm mb-4', style: { color: pal.muted } },
             __alloT('stem.parentingLab.intro', 'What the parenting literature actually says, with the strength of each claim labeled honestly. Built to be strengths-based: nothing here diagnoses or scores your family — education, not clinical or legal advice.')),
+          h('div', {
+            role: 'note',
+            'data-parentinglab-audience': 'true',
+            className: 'rounded-xl px-4 py-3 mb-4 text-sm',
+            style: { background: pal.card, border: '1px solid ' + pal.border, color: pal.text }
+          },
+            h('p', { className: 'font-bold mb-1' }, __alloT('stem.parentingLab.audience_title', 'For parents, caregivers and students')),
+            h('p', { className: 'mb-1' }, __alloT('stem.parentingLab.audience_parents', 'Parents and caregivers: the modules speak to you directly ("your child").')),
+            h('p', null, __alloT('stem.parentingLab.audience_students', 'Students: read "your child" as "a child". This is the research on how children grow and what helps them, useful for babysitting, helping with siblings, psychology or child-development class, understanding your own family, and someday your own kids. The IEP and 504 module explains rights you have too.'))
+          ),
           reviewBanner,
           badgeLegend(),
           h('button', {
@@ -1059,25 +1069,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       // Generic tag-quiz panel — one mechanic serving M3 (skills), M4 (PRIDE
       // labeler) and M5 (function analyzer): a scene, option chips, reveal, next.
       // cfg: { icon, title, sub, groupLabel, items:[{id, prompt, answer, why}],
-      //        options:[{id,label}], doneKey, curKey, nextText, doneText, xpLabel }
+      //        options:[{id,label}], doneKey, curKey, nextText, doneText, xpLabel,
+      //        cards (the module's card list, cleared by "Reset this module") }
+      // XP is paid once per item (xpGiven), so retries and restarts cannot farm it.
       function tagQuiz(cfg) {
         var doneMap = d[cfg.doneKey] || {};
         var cur = d[cfg.curKey] || 0;
         var it = cfg.items[cur];
         var itDone = it && doneMap[it.id];
+        var xpGiven = d.xpGiven || {};
         function pickOpt(optId) {
           if (!it || itDone) return;
           var correct = it.answer === optId;
           var next = Object.assign({}, doneMap);
           next[it.id] = { pick: optId, correct: correct };
           var patch = {}; patch[cfg.doneKey] = next;
+          var xpKey = cfg.doneKey + ':' + it.id;
+          var payXP = correct && !xpGiven[xpKey];
+          if (payXP) { var xg = Object.assign({}, xpGiven); xg[xpKey] = true; patch.xpGiven = xg; }
           setPL(patch);
-          if (correct) awardXP(5, cfg.xpLabel);
+          if (payXP) awardXP(5, cfg.xpLabel);
           announceToSR(correct
             ? __alloT('stem.parentingLab.tag_hit_sr', 'Correct tag. Explanation shown below.')
             : __alloT('stem.parentingLab.tag_miss_sr', 'Different tag than intended. Explanation shown below.'));
         }
         function nextItem() { var patch = {}; patch[cfg.curKey] = cur + 1; setPL(patch); }
+        function retryItem() {
+          if (!it) return;
+          var next = Object.assign({}, doneMap); delete next[it.id];
+          var patch = {}; patch[cfg.doneKey] = next;
+          setPL(patch);
+          announceToSR(__alloT('stem.parentingLab.tag_retry_sr', 'Answer cleared. Choose again.'));
+        }
+        function restartQuiz() {
+          var patch = {}; patch[cfg.doneKey] = {}; patch[cfg.curKey] = 0;
+          setPL(patch);
+          announceToSR(__alloT('stem.parentingLab.quiz_restart_sr', 'Quiz restarted from the first item.'));
+        }
+        function resetModule() {
+          var rc = Object.assign({}, readCards);
+          (cfg.cards || []).forEach(function(c) { delete rc[c.id]; });
+          var patch = { readCards: rc }; patch[cfg.doneKey] = {}; patch[cfg.curKey] = 0;
+          setPL(patch);
+          announceToSR(__alloT('stem.parentingLab.module_reset_sr', 'Module reset. Cards closed and quiz cleared.'));
+        }
+        var hasProgress = Object.keys(doneMap).length > 0 || cur > 0 || (cfg.cards || []).some(function(c) { return readCards[c.id]; });
+        var secondaryBtn = { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text };
         return h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
           h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
             h('h3', { className: 'text-sm font-black', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, cfg.icon + ' ' + cfg.title),
@@ -1105,9 +1142,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           ),
           it && itDone && h('div', null,
             h('div', { className: 'rounded-xl p-3 text-xs leading-relaxed mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, it.why),
-            cur < cfg.items.length - 1
-              ? h('button', { onClick: nextItem, className: 'rounded-lg px-4 py-2 text-xs font-black text-white', style: { background: pal.btn } }, cfg.nextText)
-              : h('p', { className: 'text-xs font-bold', style: { color: pal.accent } }, cfg.doneText)
+            h('div', { className: 'flex flex-wrap items-center gap-2' },
+              cur < cfg.items.length - 1
+                ? h('button', { onClick: nextItem, className: 'rounded-lg px-4 py-2 text-xs font-black text-white', style: { background: pal.btn } }, cfg.nextText)
+                : h('p', { className: 'text-xs font-bold', style: { color: pal.accent } }, cfg.doneText),
+              !itDone.correct && h('button', { onClick: retryItem, className: 'rounded-lg px-4 py-2 text-xs font-black border', style: secondaryBtn }, '↺ ' + __alloT('stem.parentingLab.try_again', 'Try again')),
+              cur >= cfg.items.length - 1 && h('button', { onClick: restartQuiz, className: 'rounded-lg px-4 py-2 text-xs font-black border', style: secondaryBtn }, '↺ ' + __alloT('stem.parentingLab.restart_quiz', 'Restart quiz'))
+            )
+          ),
+          hasProgress && h('div', { className: 'mt-3 pt-3', style: { borderTop: '1px solid ' + pal.border } },
+            h('button', { onClick: resetModule, className: 'rounded-lg px-3 py-1.5 text-xs font-bold border', style: { background: 'transparent', borderColor: pal.border, color: pal.muted } }, __alloT('stem.parentingLab.reset_module', 'Reset this module (cards and quiz)'))
           )
         );
       }
@@ -1123,7 +1167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             sub: __alloT('stem.parentingLab.moves_sub', 'Each scene shows one concrete parent move from the trial-supported programs. Which shared skill is it?'),
             groupLabel: __alloT('stem.parentingLab.moves_group', 'Choose the skill'),
             items: M3_MOVES.map(function(m) { return { id: m.id, prompt: m.text, answer: m.skill, why: m.why }; }),
-            options: M3_SKILLS, doneKey: 'movesDone', curKey: 'movesCurrent', xpLabel: 'Skill tagged',
+            options: M3_SKILLS, cards: M3_CARDS, doneKey: 'movesDone', curKey: 'movesCurrent', xpLabel: 'Skill tagged',
             nextText: __alloT('stem.parentingLab.moves_next', 'Next move →'),
             doneText: __alloT('stem.parentingLab.moves_done', 'All moves tagged. These five skills are the trial-supported core — small, practicable, and learnable by anyone.')
           })
@@ -1144,7 +1188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
               return { id: u.id, answer: u.answer, why: u.why,
                 prompt: h('span', null, h('em', { style: { color: pal.muted } }, u.child + ' '), h('strong', null, u.parent)) };
             }),
-            options: M4_LABELS, doneKey: 'prideDone', curKey: 'prideCurrent', xpLabel: 'Utterance labeled',
+            options: M4_LABELS, cards: M4_CARDS, doneKey: 'prideDone', curKey: 'prideCurrent', xpLabel: 'Utterance labeled',
             nextText: __alloT('stem.parentingLab.pride_next', 'Next line →'),
             doneText: __alloT('stem.parentingLab.pride_done', 'Transcript labeled. Five minutes of this daily is the opening move of the trial-supported programs — and the deposit the ABC module spends.')
           })
@@ -1162,7 +1206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             sub: __alloT('stem.parentingLab.abc_sub', 'Read each scene as an ABC: what sets the stage, what the child does, what the behavior earns. Then tag the job. Remember the fifth card: a function is a description, not a verdict.'),
             groupLabel: __alloT('stem.parentingLab.abc_group', 'Choose the function'),
             items: M5_SCENES.map(function(s) { return { id: s.id, prompt: s.text, answer: s.answer, why: s.why }; }),
-            options: M5_FUNCTIONS, doneKey: 'abcDone', curKey: 'abcCurrent', xpLabel: 'Function tagged',
+            options: M5_FUNCTIONS, cards: M5_CARDS, doneKey: 'abcDone', curKey: 'abcCurrent', xpLabel: 'Function tagged',
             nextText: __alloT('stem.parentingLab.abc_next', 'Next scene →'),
             doneText: __alloT('stem.parentingLab.abc_done', 'All scenes analyzed. BehaviorLab teaches this science with full rigor; the School Behavior Toolkit shows the school side of the same triangle.')
           })
@@ -1180,7 +1224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             sub: __alloT('stem.parentingLab.claims_sub', 'This module IS the badge system in action. Place each claim on the evidence tier it deserves.'),
             groupLabel: __alloT('stem.parentingLab.claims_group', 'Choose the evidence tier'),
             items: M6_CLAIMS.map(function(c) { return { id: c.id, prompt: c.text, answer: c.answer, why: c.why }; }),
-            options: M6_BADGE_OPTIONS, doneKey: 'claimsDone', curKey: 'claimsCurrent', xpLabel: 'Claim tiered',
+            options: M6_BADGE_OPTIONS, cards: M6_CARDS, doneKey: 'claimsDone', curKey: 'claimsCurrent', xpLabel: 'Claim tiered',
             nextText: __alloT('stem.parentingLab.claims_next', 'Next claim →'),
             doneText: __alloT('stem.parentingLab.claims_done', 'All claims tiered. That skill — asking "which tier is this?" before "should I do this?" — is the one this lab most wants to send home.')
           })
@@ -1198,7 +1242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             sub: __alloT('stem.parentingLab.myths_sub', 'Headlines never carry evidence badges. Practice adding them yourself.'),
             groupLabel: __alloT('stem.parentingLab.myths_group', 'Choose the evidence tier'),
             items: M7_CLAIMS.map(function(c) { return { id: c.id, prompt: c.text, answer: c.answer, why: c.why }; }),
-            options: M6_BADGE_OPTIONS, doneKey: 'mythsDone', curKey: 'mythsCurrent', xpLabel: 'Myth badged',
+            options: M6_BADGE_OPTIONS, cards: M7_CARDS, doneKey: 'mythsDone', curKey: 'mythsCurrent', xpLabel: 'Myth badged',
             nextText: __alloT('stem.parentingLab.myths_next', 'Next claim →'),
             doneText: __alloT('stem.parentingLab.myths_done', 'All claims badged. The pattern to keep: vivid and universal is not the same as true.')
           })
@@ -1216,7 +1260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             sub: __alloT('stem.parentingLab.stance_sub', 'Tag each response with the stance it embodies. Autonomy support keeps both the limit AND the relationship.'),
             groupLabel: __alloT('stem.parentingLab.stance_group', 'Choose the stance'),
             items: M8_SCENES.map(function(s) { return { id: s.id, prompt: s.text, answer: s.answer, why: s.why }; }),
-            options: M8_STANCES, doneKey: 'stanceDone', curKey: 'stanceCurrent', xpLabel: 'Stance tagged',
+            options: M8_STANCES, cards: M8_CARDS, doneKey: 'stanceDone', curKey: 'stanceCurrent', xpLabel: 'Stance tagged',
             nextText: __alloT('stem.parentingLab.stance_next', 'Next scene →'),
             doneText: __alloT('stem.parentingLab.stance_done', 'All scenes tagged. The through-line since Module 2: the relationship is the channel everything else travels on.')
           })

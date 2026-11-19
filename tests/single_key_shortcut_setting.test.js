@@ -95,10 +95,17 @@ describe('Help Mode stays reachable without the shortcut', () => {
   it('keeps the toolbar Help Mode button wired straight to the toggle, not gated by the setting', () => {
     const region = sliceBetween(source, '<div className="relative">\n                        <button type="button"\n                            data-help-ignore="true"', '</button>',
       { file: 'view_header_source.jsx', label: 'toolbar Help Mode button' });
-    expect(region).toContain('onClick={handleToggleIsHelpMode}');
-    expect(region).toContain("aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}");
+    // 2026-11-17: for a teacher the button opens a small Help menu whose Explain row turns Help Mode on; for
+    // everyone else (and to turn it off) it toggles directly. Neither path reads the shortcut setting.
+    expect(region).toContain('onClick={handleHelpButton}');
+    expect(region).toContain('aria-label={helpButtonLabel}');
     expect(region).not.toContain('singleKeyShortcuts');
-    expect(headerModule).toContain('onClick: handleToggleIsHelpMode');
+    const handler = sliceBetween(source, '  const handleHelpButton = (event) => {', '\n  };', { file: 'view_header_source.jsx', label: 'Help button handler' });
+    expect(handler).toContain('if (isHelpMode || !helpMenuAvailable) { setShowHelpMenu(false); handleToggleIsHelpMode(); return; }');
+    expect(handler).not.toContain('singleKeyShortcuts');
+    expect(source).toContain("const helpButtonLabel = isHelpMode ? t('help_mode.deactivate') : (helpMenuAvailable ? helpMenuTitle : t('help_mode.activate'));");
+    expect(source).toContain("<button type=\"button\" data-help-menu-explain=\"\" onClick={() => { setShowHelpMenu(false); handleToggleIsHelpMode(); }}");
+    expect(headerModule).toContain('onClick: handleHelpButton');
   });
 
   it('offers the setting as a named switch in the Text settings dialog', () => {

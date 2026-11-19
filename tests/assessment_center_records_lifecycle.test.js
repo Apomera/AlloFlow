@@ -45,7 +45,9 @@ function extractDecl(src, marker) {
 // ── persistence helpers ──
 
 function loadPersistenceHelpers() {
+  // 2026-11-17: _acPersistableStudent keeps screening records through _acKeptScreening (2026-11-13).
   const src3 = extractDecl(ac, 'function _acTrimStudentData(data)')
+    + extractDecl(ac, 'function _acKeptScreening(list)')
     + extractDecl(ac, 'function _acPersistableStudent(s)')
     + extractDecl(ac, 'function _acRestoreImportedStudents(raw)');
   // eslint-disable-next-line no-new-func

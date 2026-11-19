@@ -147,8 +147,12 @@ describe('STEM prediction semantics', () => {
     expect(physics).toContain('data-physics-estimation-reflection');
     expect(physics).toContain('Closeness earns estimation XP here because numerical calibration is the skill.');
     expect(physics).toContain('Your reflection earns completion credit regardless of the error.');
-    expect(physics).toContain("'Calculate the Landing'");
-    expect(physics).toContain("'Generate range calculation quiz'");
+    // 740290f902 renamed the graded range quiz from 'Predict the Landing' to 'Calculate the Landing';
+    // 274914f9d6 replaced that panel with the grade-banded quiz (it migrates the old quiz state as
+    // legacyItem). The graded quiz must still be named a quiz, never a prediction.
+    expect(physics).toContain("__alloT('stem.physics.physics_quiz_title', 'Physics Mastery Quiz')");
+    expect(physics).toContain("__alloT('stem.physics.aria_generate_quiz', 'Generate grade-banded physics quiz question')");
+    expect(physics).not.toContain("'Predict the Landing'");
 
     const heat = source('stem_tool_heatlab.js');
     expect(heat).toContain('data-heat-estimation-challenge');

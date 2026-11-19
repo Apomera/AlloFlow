@@ -105,7 +105,11 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 
 .cards { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
 .card { position: relative; display: flex; flex-direction: column; gap: 0.6rem; padding: 1.5rem; min-height: 12rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
-.card h2 { font-size: 1.4rem; letter-spacing: -0.015em; }
+.card h2, .card h3 { font-size: 1.4rem; letter-spacing: -0.015em; }
+.student-door { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; margin-bottom: 2rem; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.student-door p { flex: 1 1 22rem; margin: 0; }
+.group-title { font-size: 1.25rem; margin: 0 0 0.25rem; }
+.group-line { color: var(--muted); margin: 0 0 1rem; }
 .card p { color: var(--muted); }
 .card .card-foot { margin-top: auto; padding-top: 0.75rem; font-weight: 600; color: var(--ink); }
 .card a { color: inherit; text-decoration: none; }
@@ -114,7 +118,7 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .card:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
 .card-go:hover { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .card-main { background: var(--accent); border-color: var(--accent); }
-.card-main h2, .card-main p, .card-main .card-foot { color: var(--on-accent); }
+.card-main h2, .card-main h3, .card-main p, .card-main .card-foot { color: var(--on-accent); }
 .card-main:hover { background: var(--accent-dark); border-color: var(--accent-dark); box-shadow: none; }
 .card-later { background: transparent; border-style: dashed; }
 /* A card that names two makers: no stretched link and no hover fill; two plain links, each with its own line. */
@@ -189,6 +193,7 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .choice-name { font-weight: 700; color: var(--ink); }
 .choice-line { grid-column: 2; color: var(--muted); font-size: 0.9375rem; line-height: 1.45; }
 .choice-note { grid-column: 2; font-size: 0.875rem; font-weight: 600; color: var(--ink); }
+.choice-example { grid-column: 2; color: var(--muted); font-size: 0.875rem; line-height: 1.45; font-style: italic; }
 .choice:hover { border-color: var(--accent); }
 .choice.is-on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
 .choice:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
@@ -307,6 +312,7 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .try-edit { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.75rem; padding: 0.5rem clamp(1rem, 4vw, 2rem); background: var(--note); border-bottom: 1px solid var(--line-strong); color: var(--ink); font-size: 0.9375rem; }
 .try-edit[hidden] { display: none; }
 .try-edit-where { font-weight: 600; margin-right: 0.25rem; }
+.try-hide[aria-pressed="true"] { background: var(--accent, #3d3aa8); border-color: var(--accent, #3d3aa8); color: #fff; }
 .try-edit-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; }
 .try-edit-said { color: var(--muted); font-size: 0.875rem; }
 .try-main { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }

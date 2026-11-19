@@ -95,9 +95,20 @@ describe('Arcade modes keep their own hooks', () => {
 });
 
 describe('light theme readability', () => {
-  it('Culture Explorer headings use a class the dark theme remaps, not near-white text', () => {
-    // text-slate-100 sat on a near-white card: 1.05:1 in the light theme.
-    expect(readFileSync('sel_hub/sel_tool_cultureexplorer.js', 'utf8')).not.toMatch(/\btext-slate-(100|300)\b/);
+  it('Culture Explorer headings are light only where they sit on the dark SEL shell, never on a white card', () => {
+    // text-slate-100 once sat on a near-white card: 1.05:1. Since cf1747d6d6 (11-15) the tool's headings are light
+    // on purpose: every SEL tool without `lightBackground: true` draws on the hub's dark shell (#0f172a,
+    // sel_hub_module.js needsDarkShell). 2026-11-17: pinned as that pairing instead of a ban on the class.
+    const source = readFileSync('sel_hub/sel_tool_cultureexplorer.js', 'utf8');
+    const hub = readFileSync('sel_hub/sel_hub_module.js', 'utf8');
+    expect(hub).toContain("var needsDarkShell = tool.lightBackground !== true && hasReact;");
+    expect(hub).toContain("background: shellIsContrast ? '#000000' : '#0f172a',");
+    expect(source).not.toMatch(/lightBackground\s*:\s*true/);
+    // No light text inside an element that paints a light card.
+    const lightCard = /\bbg-(?:white|slate-50|slate-100)\b/;
+    for (const line of source.split('\n')) {
+      if (/\btext-slate-(?:100|300)\b/.test(line)) expect(line, line.trim().slice(0, 120)).not.toMatch(lightCard);
+    }
   });
 
   it('Conflict Theater primary buttons reach 4.5:1 with white text', () => {

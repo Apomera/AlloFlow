@@ -72,7 +72,7 @@ describe('Quick Start wizard accessibility', () => {
     expect(lines.filter((line) => line.includes('animate-') && !line.includes('motion-reduce:animate-none'))).toEqual([]);
     expect(lines.filter((line) => /transition-(?:all|colors|shadow|transform)/.test(line) && !line.includes('motion-reduce:transition-none'))).toEqual([]);
     expect(source.match(/motion-reduce:hover:scale-100/g)).toHaveLength(9);
-    expect(source.match(/motion-reduce:active:scale-100/g)).toHaveLength(11);
+    expect(source.match(/motion-reduce:active:scale-100/g)).toHaveLength(12); // 2026-11-17: + the Guided Mode finish button
   });
   it('preserves runtime dependencies and lazy URL resolution', () => {
     expect(moduleText).toContain('var useFocusTrap = _hooks.useFocusTrap');

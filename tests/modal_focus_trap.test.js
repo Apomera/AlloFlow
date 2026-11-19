@@ -14,13 +14,24 @@ describe('D1: the 5 modals are each bound to useFocusTrap AND attach the ref at 
   const modals = [
     ['visualSupportsModalRef', 'showVisualSupports', 'setShowVisualSupports'],
     ['saveModalRef', 'showSaveModal', 'setShowSaveModal'],
-    ['translateModalRef', 'isTranslateModalOpen', 'setIsTranslateModalOpen'],
     ['cloudWarningModalRef', 'showCloudWarning', 'setShowCloudWarning'],
     ['adventureConfirmModalRef', 'showAdventureConfirmation', 'setShowAdventureConfirmation'],
   ];
   it.each(modals)('%s — hook binding + render-site ref', (ref, show, setter) => {
     expect(anti).toContain(`useFocusTrap(${ref}, ${show}, () => ${setter}(false));`);
     expect(anti).toContain(`ref={${ref}}`);
+  });
+  // 2026-11-17: the Translate dialog is a lazy view now (TranslateModalView in view_cold_path_screens_source.jsx)
+  // and took its trap with it: the view makes the ref and calls the same host hook, for as long as it is mounted;
+  // the host hands it what Escape should do. tests/third_wave_cdn_extraction.test.js runs it with the real hook.
+  it('translateModalRef — the trap lives in the lazy view, with the host hook and the host close', () => {
+    const view = readFileSync(resolve(process.cwd(), 'view_cold_path_screens_source.jsx'), 'utf8');
+    const dialog = view.slice(view.indexOf('function TranslateModalView(props) {'));
+    expect(dialog).toContain('window.__alloHooks.useFocusTrap(translateModalRef, true, props.onTrapEscape);');
+    expect(dialog).toContain('ref={translateModalRef}');
+    expect(anti).toContain('window.__alloHooks = { useFocusTrap };');
+    expect(anti).toContain('onTrapEscape={() => setIsTranslateModalOpen(false)}');
+    expect(anti).not.toContain('translateModalRef');
   });
 });
 

@@ -270,6 +270,43 @@ describe('Titration Lab lifecycle and update atomicity', () => {
     }).toEqual({ busyDuringRequest: 'true', responseRetained: true });
   });
 
+  const AI_STATE = {
+    safetyChecked: true,
+    labTab: 'titrate',
+    presetId: 'sa_sb',
+    indicator: 'phenolphthalein',
+    volumeAdded: 1,
+    aiError: '',
+    aiExplain: '',
+    _firstRun: true,
+  };
+
+  it('re-enables Explain and shows the error when the AI call rejects', async () => {
+    await mountState(Object.assign({}, AI_STATE, { aiLoading: false }), {
+      callGemini: () => Promise.reject(new Error('429 rate limited')),
+    });
+    const explain = host.querySelector('[aria-label="AI titration tutor"] button[aria-label^="Explain at"]');
+    expect(explain).not.toBeNull();
+    await React.act(async () => {
+      explain.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    const panel = host.querySelector('[aria-label="AI titration tutor"]');
+    expect(panel.getAttribute('aria-busy')).not.toBe('true');
+    expect(host.querySelector('[aria-label="AI titration tutor"] button[aria-label^="Explain at"]').disabled).toBe(false);
+    expect(panel.textContent).toContain('Could not reach AI tutor');
+  });
+
+  it('clears a saved aiLoading left by a lab closed mid-request', async () => {
+    await mountState(Object.assign({}, AI_STATE, { aiLoading: true }), {
+      callGemini: () => new Promise(() => {}),
+    });
+    const panel = host.querySelector('[aria-label="AI titration tutor"]');
+    expect(panel.getAttribute('aria-busy')).not.toBe('true');
+    expect(panel.querySelector('button[aria-label^="Explain at"]').disabled).toBe(false);
+  });
+
   it('does not start the safety countdown as a server-render side effect', () => {
     vi.useFakeTimers();
     const now = Date.now();

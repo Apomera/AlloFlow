@@ -149,7 +149,9 @@ function AdventureSettingSection({
   summary,
   children
 }) {
-  return /*#__PURE__*/React.createElement("details", null, /*#__PURE__*/React.createElement("summary", null, /*#__PURE__*/React.createElement("span", null, title), ' ', summary && /*#__PURE__*/React.createElement("span", {
+  return /*#__PURE__*/React.createElement("details", {
+    "data-help-key": "adventure_setting_section"
+  }, /*#__PURE__*/React.createElement("summary", null, /*#__PURE__*/React.createElement("span", null, title), ' ', summary && /*#__PURE__*/React.createElement("span", {
     className: "as-help"
   }, summary)), /*#__PURE__*/React.createElement("div", {
     className: "as-detail"
@@ -376,7 +378,9 @@ function AdventureSetupFields(props) {
     role: "status"
   }, adventureSetupText(props.t, 'setup_busy_hint', 'The adventure is updating. Editing is temporarily paused.')), !props.hideSummary && /*#__PURE__*/React.createElement(AdventureSetupSummary, props), fixed ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "as-notice"
-  }, adventureSetupText(props.t, 'student_locked_hint', 'Your teacher has fixed this setup. You can review the settings and start your adventure.')), /*#__PURE__*/React.createElement("details", null, /*#__PURE__*/React.createElement("summary", null, adventureSetupText(props.t, 'view_teacher_settings', 'View teacher settings')), /*#__PURE__*/React.createElement(AdventureSetupEditor, _extends({}, props, {
+  }, adventureSetupText(props.t, 'student_locked_hint', 'Your teacher has fixed this setup. You can review the settings and start your adventure.')), /*#__PURE__*/React.createElement("details", {
+    "data-help-key": "adventure_setting_view_teacher"
+  }, /*#__PURE__*/React.createElement("summary", null, adventureSetupText(props.t, 'view_teacher_settings', 'View teacher settings')), /*#__PURE__*/React.createElement(AdventureSetupEditor, _extends({}, props, {
     hideNotice: true
   })))) : /*#__PURE__*/React.createElement(AdventureSetupEditor, props));
 }
@@ -407,7 +411,8 @@ function AdventureSetupEditor(props) {
     if (!locked(permission) && typeof props[setter] === 'function') props[setter](value);
   };
   const toggle = (field, setter, title, help, permission, extraDisabled = false) => typeof props[setter] === 'function' && /*#__PURE__*/React.createElement("label", {
-    className: "as-check"
+    className: "as-check",
+    "data-help-key": 'adventure_setting_' + field
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     "aria-label": title,
@@ -421,7 +426,8 @@ function AdventureSetupEditor(props) {
   }, help), fixedHint(permission, field)));
   const field = (key, title, value, setter, options, permission, help) => /*#__PURE__*/React.createElement("label", {
     className: "as-field",
-    htmlFor: id + '-' + key
+    htmlFor: id + '-' + key,
+    "data-help-key": 'adventure_setting_' + key.replace(/-/g, '_')
   }, title, /*#__PURE__*/React.createElement("select", {
     className: "as-control",
     "aria-label": title,
@@ -535,7 +541,8 @@ function AdventureSetupEditor(props) {
   const supports = typeof props.setAdventureAutoRead === 'function' || typeof props.setAdventureTypingPaceEnabled === 'function' || typeof props.setAdventureFluencyEnabled === 'function';
   const hasCloud = typeof props.setIsAdventureCloudEnabled === 'function';
   const permissionToggle = (key, title, help, defaultAllowed = false) => props.isTeacherMode && typeof props.setStudentProjectSettings === 'function' && /*#__PURE__*/React.createElement("label", {
-    className: "as-check"
+    className: "as-check",
+    "data-help-key": 'adventure_permission_' + key
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     "aria-label": title,
@@ -571,7 +578,8 @@ function AdventureSetupEditor(props) {
     className: "as-grid"
   }, field('input-mode', label('adventure.interaction_mode', 'Interaction mode'), props.adventureInputMode || 'choice', 'setAdventureInputMode', modes, 'allowModeSwitch', modeGuide), languageOptions.length > 1 && field('language', label('adventure.language_label', 'Adventure language'), languageSelection, 'setAdventureLanguageMode', languageOptions, 'allowLanguageSwitch', label('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.')), /*#__PURE__*/React.createElement("label", {
     className: "as-field",
-    htmlFor: id + '-response'
+    htmlFor: id + '-response',
+    "data-help-key": "adventure_setting_response"
   }, label('response_format', 'Student responses'), /*#__PURE__*/React.createElement("select", {
     "aria-label": label('response_format', 'Student responses'),
     "aria-describedby": describedBy('freeResponse', 'response'),
@@ -587,6 +595,7 @@ function AdventureSetupEditor(props) {
   }, label('response_written', 'Write or dictate'))), fixedHint('freeResponse', 'response'))), props.isTeacherMode && typeof props.openUniversalSettings === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "as-button",
+    "data-help-key": "adventure_setting_manage_languages",
     style: {
       marginTop: 12
     },
@@ -597,7 +606,8 @@ function AdventureSetupEditor(props) {
   }, languageOptions.length === 1 ? label('add_languages', 'Add languages in Universal Settings') : label('manage_languages', 'Manage languages in Universal Settings')), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 16
-    }
+    },
+    "data-help-key": "adventure_setting_episode"
   }, /*#__PURE__*/React.createElement(AdventureEpisodeSettings, {
     state: state,
     onChange: props.setAdventureState,
@@ -609,7 +619,8 @@ function AdventureSetupEditor(props) {
     includeFinale: true
   })), toggle('isSocialStoryMode', 'setIsSocialStoryMode', label('adventure.social_story_mode_label', 'Social scenario mode'), label('social_mode_hint', 'Show a target social skill in Essential setup.'), 'allowModeSwitch'), props.isSocialStoryMode && /*#__PURE__*/React.createElement("label", {
     className: "as-field",
-    htmlFor: id + '-social-focus'
+    htmlFor: id + '-social-focus',
+    "data-help-key": "adventure_setting_social_focus"
   }, label('social_focus', 'Social skill to practise'), /*#__PURE__*/React.createElement("input", {
     id: id + '-social-focus',
     className: "as-control",
@@ -621,7 +632,8 @@ function AdventureSetupEditor(props) {
     placeholder: label('adventure.social_story_focus_placeholder', 'e.g., Sharing toys, Dealing with frustration')
   }), fixedHint('allowModeSwitch', 'social-focus')), props.adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", null, toggle('enableFactionResources', 'setEnableFactionResources', label('adventure.system_state_label', 'Track resources'), label('adventure.system_state_desc', 'Track how your decisions affect the system.')), props.enableFactionResources && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
     className: "as-field",
-    htmlFor: id + '-resource-mode'
+    htmlFor: id + '-resource-mode',
+    "data-help-key": "adventure_setting_resource_mode"
   }, label('resource_setup', 'Resource setup'), /*#__PURE__*/React.createElement("select", {
     "aria-label": label('resource_setup', 'Resource setup'),
     className: "as-control",
@@ -634,7 +646,8 @@ function AdventureSetupEditor(props) {
   }, label('resources_ai', 'AI-generated resources')), /*#__PURE__*/React.createElement("option", {
     value: "manual"
   }, label('resources_manual', 'Teacher-defined resources')))), resourceMode === 'manual' && /*#__PURE__*/React.createElement("div", {
-    ref: resourceEditorRef
+    ref: resourceEditorRef,
+    "data-help-key": "adventure_setting_resource_rows"
   }, /*#__PURE__*/React.createElement("p", {
     className: "as-help"
   }, label('resources_manual_hint', 'Give each resource a distinct name and unit. Percentages stay between 0 and 100; other values can exceed 100 and include decimals.')), resources.length === 0 && /*#__PURE__*/React.createElement("p", {
@@ -745,7 +758,8 @@ function AdventureSetupEditor(props) {
     title: label('learning_supports', 'Learning supports'),
     summary: [typeof props.setAdventureAutoRead === 'function' && label('auto_read_short', 'Auto-read') + ': ' + onOff(props.adventureAutoRead), label('microphone_practice', 'Microphone practice') + ': ' + onOff(props.adventureFluencyEnabled), props.adventureFreeResponseEnabled && label('adventure.typing_pace_label', 'Typing pace') + ': ' + onOff(props.adventureTypingPaceEnabled)].filter(Boolean).join(' · ')
   }, typeof props.setAdventureAutoRead === 'function' && /*#__PURE__*/React.createElement("label", {
-    className: "as-check"
+    className: "as-check",
+    "data-help-key": "adventure_setting_auto_read"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: !!props.adventureAutoRead,
@@ -785,7 +799,8 @@ function AdventureSetupEditor(props) {
     className: "as-help"
   }, props.universalImageStyle || label('universal_style_empty', 'No Universal style is set; Adventure will use its automatic style.')), props.adventureArtStyle === 'custom' && /*#__PURE__*/React.createElement("label", {
     className: "as-field",
-    htmlFor: id + '-custom-art'
+    htmlFor: id + '-custom-art',
+    "data-help-key": "adventure_setting_custom_art"
   }, label('custom_art', 'Custom art style'), /*#__PURE__*/React.createElement("input", {
     id: id + '-custom-art',
     "aria-label": label('custom_art', 'Custom art style'),
@@ -801,7 +816,8 @@ function AdventureSetupEditor(props) {
     summary: props.adventureCustomInstructions?.trim() ? label('guidance_added', 'Custom instructions added') : label('guidance_empty', 'No custom instructions')
   }, /*#__PURE__*/React.createElement("label", {
     className: "as-field",
-    htmlFor: id + '-custom-instructions'
+    htmlFor: id + '-custom-instructions',
+    "data-help-key": "adventure_setting_custom_instructions"
   }, label('input.custom_instructions', 'Custom instructions'), /*#__PURE__*/React.createElement("textarea", {
     id: id + '-custom-instructions',
     "aria-label": label('input.custom_instructions', 'Custom instructions'),
@@ -815,7 +831,8 @@ function AdventureSetupEditor(props) {
     title: label('saving_permissions', 'Saving & permissions'),
     summary: [label('cloud_images', 'Cloud images') + ': ' + onOff(props.isAdventureCloudEnabled), permissions.lockAllSettings ? label('student_setup_fixed', 'Student setup fixed') : label('student_setup_adjustable', 'Student setup adjustable')].join(' · ')
   }, hasCloud && (props.isTeacherMode || permissions.allowCloudImageStorage === true) && /*#__PURE__*/React.createElement("label", {
-    className: "as-check"
+    className: "as-check",
+    "data-help-key": "adventure_setting_cloud_images"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: !!props.isAdventureCloudEnabled,

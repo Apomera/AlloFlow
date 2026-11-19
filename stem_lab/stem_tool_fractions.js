@@ -1938,6 +1938,7 @@ window.StemLab = window.StemLab || {
     // from the host opens them. The host starts at true and sets false for students, so an unknown role gets the student view.
     var teacherView = ctx.isTeacherMode === true;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
 
     // ── State via labToolData._fractions ──
     var ld = ctx.toolData || {};
@@ -2281,7 +2282,7 @@ window.StemLab = window.StemLab || {
           style: { fontSize: Math.max(9, size / 8) + 'px', fontWeight: 800, fill: '#e11d48' }
         }, num + '/' + den)
       ) : null;
-      return h('svg', { viewBox: '0 0 ' + size + ' ' + size, width: size, height: size, role: unlabeled ? 'img' : undefined, 'aria-label': num + ' out of ' + den + ' parts shaded' },
+      return h('svg', { viewBox: '0 0 ' + size + ' ' + size, width: size, height: size, role: unlabeled ? 'img' : undefined, 'aria-label': __alloAriaFill(__alloT('stem.fractions.a11y_out_of_parts_shaded', '{num} out of {den} parts shaded'), { num: num, den: den }) },
         slices,
         sliceLabels,
         centerBadge || h('circle', { cx: size / 2, cy: size / 2, r: 3, fill: unlabeled ? '#0f172a' : '#e11d48' })
@@ -2302,7 +2303,7 @@ window.StemLab = window.StemLab || {
         }));
       }
       return h('div', {
-        role: 'img', 'aria-label': 'Horizontal fraction bar showing ' + num + ' of ' + den + ' parts shaded',
+        role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.fractions.a11y_horizontal_fraction_bar_showing_of_parts_shaded', 'Horizontal fraction bar showing {num} of {den} parts shaded'), { num: num, den: den }),
         className: 'flex rounded-lg overflow-hidden border-2',
         'data-fraction-model': 'bar',
         style: {
@@ -2524,7 +2525,7 @@ window.StemLab = window.StemLab || {
         width: '100%',
         height: totalH,
         role: 'img',
-        'aria-label': 'Set model showing ' + num + ' out of ' + den + ' items',
+        'aria-label': __alloAriaFill(__alloT('stem.fractions.a11y_set_model_showing_out_of_items', 'Set model showing {num} out of {den} items'), { num: num, den: den }),
         style: { maxWidth: totalW + 'px' }
       }, elements);
     };
@@ -2616,7 +2617,7 @@ window.StemLab = window.StemLab || {
         width: width,
         height: height,
         role: 'img',
-        'aria-label': 'Volume model: container ' + num + ' out of ' + den + ' full'
+        'aria-label': __alloAriaFill(__alloT('stem.fractions.a11y_volume_model_container_out_of_full', 'Volume model: container {num} out of {den} full'), { num: num, den: den })
       }, elements);
     };
 
@@ -3139,7 +3140,7 @@ window.StemLab = window.StemLab || {
                     type: 'button',
                     'aria-pressed': mode === m,
                     onClick: function() { sfxClick(); upd({ mode: m }); },
-                    title: m === 'bar' ? 'Show as a bar model' : 'Show as a pie model'
+                    title: m === 'bar' ? __alloT('stem.fractions.a11y_show_as_a_bar_model', 'Show as a bar model') : __alloT('stem.fractions.a11y_show_as_a_pie_model', 'Show as a pie model')
                   }, m === 'bar' ? 'Bar' : 'Pie');
                 })
               )
@@ -6094,7 +6095,7 @@ window.StemLab = window.StemLab || {
       };
 
       return h('div', { className: 'space-y-2 ' + (g.focusMode ? 'bg-slate-50 rounded-xl p-2' : ''), tabIndex: 0, onKeyDown: onKey,
-        role: 'group', 'aria-label': 'Plate Rush ' + (g.timed ? 'timed service' : 'zen practice') },
+        role: 'group', 'aria-label': (g.timed ? __alloT('stem.fractions.a11y_plate_rush_timed_service', 'Plate Rush timed service') : __alloT('stem.fractions.a11y_plate_rush_zen_practice', 'Plate Rush zen practice')) },
         // status bar
         (!g.hideScore) && h('div', { className: 'flex items-center gap-2 flex-wrap bg-green-50 rounded-xl p-2 border border-green-200 text-sm' },
           h('span', { className: 'font-bold text-green-800' }, '😋 Happy tables: ' + g.served + '/' + SERVICE_TARGET),

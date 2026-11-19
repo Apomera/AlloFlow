@@ -42,6 +42,8 @@ function intake(value,{decode}={}){
     setHistory:vi.fn(next=>changes.history=next),setPendingQrAssignmentResource:vi.fn(next=>changes.pending=next),
     setReceivedDeliveryResources:vi.fn(next=>{changes.receivedResources=typeof next==='function'?next(changes.receivedResources):next;}),
     setShowSharedHostedActivity:vi.fn(next=>changes.show=next),addToast:vi.fn(),warnLog:vi.fn(),
+    // 2026-11-17: the phone fix of 3861f03b38 (11-12) opens the preview pane and records a failed load.
+    setWorkspacePane:vi.fn(),setStudentHomeworkLoadFailed:vi.fn(next=>changes.failed=next),
   };
   new Function('env','with(env){'+effect+'}')(env);
   return {env,changes,cleanup:()=>cleanup?.()};

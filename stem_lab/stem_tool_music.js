@@ -73,20 +73,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
 
   // ═══════════════════════════════════════════
-  // Voice studio + trainers (shared with Rachel Pomeranz's website, where they were built).
-  // Generated from the site repo (Apomera/rachel-pomeranz-site, src/lib) by a converter that
+  // Voice studio + trainers (shared with the website project where they were built).
+  // Generated from that project's src/lib by a converter that
   // wraps each module in its own scope; change the site modules and regenerate, not this copy.
   // ═══════════════════════════════════════════
   var VSR = (function () {
     'use strict';
+    // score-player.js is not part of the Music Lab: its sounds are stubs, so VSR.Tones must not be used there.
+    var mod_score_player = (function () {
+      var missing = function () { throw new Error('VSR: score-player sounds are not included in the Music Lab block'); };
+      return { playSound: missing, playSwell: missing, SOUNDS: {} };
+    })();
   var mod_common = (function () {
     // Shared pieces for the Practice Room trainers: seeded randomness, voice types and a small synth.
-    // Framework-free with no imports, so the trainers can also run inside AlloFlow.
-
+    // Framework-free; its one import is the practice sounds shared with the score player (an AlloFlow
+    // port needs both files).
+    var playSound = mod_score_player.playSound, playSwell = mod_score_player.playSwell, SOUNDS = mod_score_player.SOUNDS;
+    // ---- The practice sound (one choice for the whole Practice Room) ------------------------
+    const SOUND_KEY = 'rp-sound';
+    
+    /** The visitor's chosen practice sound: a key of SOUNDS ('piano' unless they picked another). */
+    function loadSound() {
+      try {
+        const v = localStorage.getItem(SOUND_KEY);
+        return v && SOUNDS[v] ? v : 'piano';
+      } catch {
+        return 'piano';
+      }
+    }
+    
+    /** Remember a new choice and tell every player and trainer on the page (event 'sound:change'). */
+    function saveSound(sound) {
+      if (!SOUNDS[sound]) return;
+      try {
+        localStorage.setItem(SOUND_KEY, sound);
+      } catch {}
+      document.dispatchEvent(new CustomEvent('sound:change', { detail: sound }));
+    }
+    
+    
+    
     // ---- Seeded randomness -------------------------------------------------------------
     // The same seed always gives the same exercise, so a teacher can hand out a code (or a link)
     // and every student gets the identical melody or rhythm.
-
+    
     /** FNV-1a: a string to a 32-bit seed. */
     function hashSeed(str) {
       let h = 0x811c9dc5;
@@ -96,7 +126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       }
       return h >>> 0;
     }
-
+    
     /** mulberry32: a fast, good-enough PRNG returning numbers in [0, 1). */
     function seededRandom(seed) {
       let a = typeof seed === 'number' ? seed >>> 0 : hashSeed(String(seed));
@@ -121,26 +151,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       };
       return rand;
     }
-
+    
     // No 0/O, 1/I/L: codes are read aloud and typed by students.
     const CODE_CHARS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
-
+    
     /** A short, friendly exercise code like "K7QX2". */
     function newCode(length = 5) {
       const buf = new Uint32Array(length);
       crypto.getRandomValues(buf);
       return Array.from(buf, (n) => CODE_CHARS[n % CODE_CHARS.length]).join('');
     }
-
+    
     /** Today's date as YYYYMMDD in the visitor's own time zone (not UTC). */
     function todayStamp(d = new Date()) {
       return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
     }
-
+    
     // ---- Voice types -------------------------------------------------------------------
     // Comfortable practice ranges (MIDI), deliberately inside the full professional ranges.
     // Tenors read treble clef an octave down; baritones and basses read bass clef.
-
+    
     const VOICE_TYPES = {
       soprano: { label: 'Soprano', low: 60, high: 79, clef: 'treble' },
       mezzo: { label: 'Mezzo-soprano', low: 57, high: 76, clef: 'treble' },
@@ -149,9 +179,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       baritone: { label: 'Baritone', low: 45, high: 64, clef: 'bass' },
       bass: { label: 'Bass', low: 40, high: 60, clef: 'bass' },
     };
-
+    
     const VOICE_KEY = 'rp-voice-type';
-
+    
     function loadVoiceType() {
       try {
         const v = localStorage.getItem(VOICE_KEY);
@@ -160,15 +190,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         return 'mezzo';
       }
     }
-
+    
     function saveVoiceType(v) {
       try {
         localStorage.setItem(VOICE_KEY, v);
       } catch {}
     }
-
+    
     // ---- Notes -------------------------------------------------------------------------
-
+    
     const NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
     const SHARP_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
     const FLAT_NAMES = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
@@ -176,9 +206,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     const noteLabel = (midi, spelling) =>
       `${(spelling === 'sharps' ? SHARP_NAMES : spelling === 'flats' ? FLAT_NAMES : NAMES)[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`;
     const midiToHz = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
-
+    
     // ---- A small synth -----------------------------------------------------------------
-
+    
     /**
      * iPhones and iPads mute Web Audio when the side switch is on silent (videos still play), so
      * declare the sound as media playback (Safari 17+) and, on older iOS, start a silent looping
@@ -190,7 +220,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         if (navigator.audioSession && navigator.audioSession.type === 'auto') navigator.audioSession.type = 'playback';
       } catch {}
       const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
-      if (!ios || routeAudioAsMedia.el) return;
+      if (!ios) return;
+      // Already made: play it again if iOS refused the first time (it does when a finger is only going down).
+      if (routeAudioAsMedia.el) {
+        if (routeAudioAsMedia.el.paused) routeAudioAsMedia.el.play().catch(() => {});
+        return;
+      }
       const n = 2000; // a quarter second of silent 8 kHz, 8-bit WAV
       const bytes = new Uint8Array(44 + n);
       const dv = new DataView(bytes.buffer);
@@ -218,21 +253,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       routeAudioAsMedia.el = el;
     }
     // One AudioContext per page; every sound is scheduled on its clock so rhythms stay exact.
-
+    
     class Tones {
       get ctx() {
         if (!this._ctx) {
           this._ctx = new (window.AudioContext || window.webkitAudioContext)();
           this.out = this._ctx.createDynamicsCompressor();
-          this.out.connect(this._ctx.destination);
+          // Everything passes one last gain, so hush() can fade whatever is sounding without a click.
+          this.master = this._ctx.createGain();
+          this.out.connect(this.master);
+          this.master.connect(this._ctx.destination);
+          this._armUnlock();
         }
         return this._ctx;
       }
-
+    
+      // Browsers only let sound start from a real gesture, and on phones a finger going DOWN doesn't count (iPhones
+      // need it to lift: touchend/pointerup/click). A piano key reacts on the way down, so start the audio again on
+      // the next gesture that counts, and keep the iPhone's media routing (silent switch) trying too.
+      _armUnlock() {
+        if (typeof document === 'undefined') return;
+        const unlock = () => {
+          routeAudioAsMedia();
+          const c = this._ctx;
+          if (!c || c.state === 'running') {
+            for (const ev of EVENTS) document.removeEventListener(ev, unlock, true);
+            return;
+          }
+          c.resume().catch(() => {});
+        };
+        const EVENTS = ['pointerup', 'touchend', 'click', 'keydown'];
+        for (const ev of EVENTS) document.addEventListener(ev, unlock, true);
+      }
+    
       async ready() {
         routeAudioAsMedia();
         const c = this.ctx;
-        if (c.state !== 'running') await c.resume();
+        if (c.state !== 'running') {
+          // resume() may be refused (iPhone: a finger going down) or wait for a gesture: either way, carry on once the
+          // audio really runs, which the next lift, click or key press brings (see #armUnlock).
+          const running = new Promise((resolve) => {
+            const on = () => {
+              if (c.state !== 'running') return;
+              c.removeEventListener('statechange', on);
+              resolve();
+            };
+            c.addEventListener('statechange', on);
+          });
+          c.resume().catch(() => {});
+          if (c.state !== 'running') await running;
+        }
         // resume() can resolve before the audio clock starts moving (seconds, on a busy device).
         // Anything scheduled or timed before then drifts, so wait until the clock is really running.
         const t0 = performance.now();
@@ -243,11 +313,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         }
         return c;
       }
-
+    
       now() {
         return this.ctx.currentTime;
       }
-
+    
+      // Until when (audio clock) something this synth scheduled can still be heard, tail included.
+      _busy(end) {
+        this.until = Math.max(this.until || 0, end);
+      }
+    
+      /**
+       * True while one of these sounds can be heard (or is about to start): pass it to
+       * VoiceAnalyzer.setIgnore so a microphone without headphones doesn't take the site's own piano
+       * or chime for the singer. Allows for speaker delay and the analysis window.
+       */
+      sounding() {
+        const c = this._ctx;
+        if (!c || !this.until) return false;
+        const lat = Math.max(0, Math.min(0.5, (c.outputLatency || 0) + (c.baseLatency || 0)));
+        return c.currentTime - lat < this.until + 0.15;
+      }
+    
       /**
        * The audio-clock time the listener was HEARING when an input event happened. People tap along
        * to the speakers, which run behind the clock (Bluetooth by 0.2 s or more), so taps are compared
@@ -260,40 +347,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         if (ts && ts.performanceTime > 0 && typeof timeStamp === 'number') return ts.contextTime + (timeStamp - ts.performanceTime) / 1000;
         return c.currentTime - Math.max(0, Math.min(0.4, (c.outputLatency || 0) + (c.baseLatency || 0)));
       }
-
-      /** A soft practice-piano note. */
-      piano(midi, at = this.now(), dur = 0.9, level = 1) {
-        const c = this.ctx;
-        const f = midiToHz(midi);
-        const env = c.createGain();
-        env.gain.setValueAtTime(0, at);
-        env.gain.linearRampToValueAtTime(0.5 * level, at + 0.006);
-        env.gain.exponentialRampToValueAtTime(0.2 * level, at + 0.25);
-        env.gain.setTargetAtTime(0.0001, at + dur, 0.12);
-        const filter = c.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(Math.min(9000, f * 8), at);
-        filter.frequency.exponentialRampToValueAtTime(Math.min(4000, f * 3), at + 0.4);
-        const o1 = c.createOscillator();
-        o1.type = 'triangle';
-        o1.frequency.value = f;
-        const o2 = c.createOscillator();
-        o2.frequency.value = f * 2.001;
-        const h2 = c.createGain();
-        h2.gain.value = 0.22;
-        o1.connect(filter);
-        o2.connect(h2).connect(filter);
-        filter.connect(env).connect(this.out);
-        for (const o of [o1, o2]) {
-          o.start(at);
-          o.stop(at + dur + 1);
-        }
+    
+      /**
+       * A note in the visitor's chosen practice sound (piano unless they picked another; see loadSound).
+       * Pass `sound` to force one.
+       */
+      piano(midi, at = this.now(), dur = 0.9, level = 1, sound = loadSound()) {
+        const { nodes, stopAt } = playSound(this.ctx, this.out, sound, midi, at, dur, level * 1.6);
+        this._track(nodes, stopAt);
       }
-
+    
+      /** A messa di voce guide: one note swelling from very soft to full and back over `dur` (see playSwell). */
+      swell(midi, at = this.now(), dur = 6, level = 0.75, sound = loadSound()) {
+        const { nodes, stopAt } = playSwell(this.ctx, this.out, sound, midi, at, dur, level * 1.6);
+        this._track(nodes, stopAt);
+      }
+    
+      // Notes that are sounding or scheduled, so hush() can end them early.
+      _live = new Set();
+      _track(nodes, stopAt) {
+        for (const n of nodes) {
+          n.stop(stopAt);
+          this._live.add(n);
+          n.addEventListener?.('ended', () => this._live.delete(n));
+        }
+        this._busy(stopAt);
+      }
+    
+      /**
+       * Silence every note that is sounding or already scheduled (a long guide note would otherwise ring on after
+       * "Stop"): a 40 ms fade, the notes ended, the level restored for whatever plays next (from 60 ms on).
+       */
+      hush() {
+        const c = this._ctx;
+        if (!c || !this._live.size) return;
+        const t = c.currentTime;
+        const g = this.master.gain;
+        g.cancelScheduledValues(t);
+        g.setValueAtTime(g.value, t);
+        g.linearRampToValueAtTime(0, t + 0.04);
+        g.setValueAtTime(1, t + 0.06);
+        for (const n of this._live) {
+          try {
+            n.stop(t + 0.05);
+          } catch {}
+        }
+        this._live.clear();
+        this.until = Math.min(this.until || 0, t + 0.06);
+      }
+    
       chord(midis, at = this.now(), dur = 1.2) {
         midis.forEach((m) => this.piano(m, at, dur, 0.55));
       }
-
+    
       /** Metronome tick, higher on the downbeat. */
       click(at = this.now(), accent = false, level = 1) {
         const c = this.ctx;
@@ -306,8 +412,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         o.connect(env).connect(this.out);
         o.start(at);
         o.stop(at + 0.06);
+        this._busy(at + 0.08);
       }
-
+    
       /** A woodblock-ish knock for rhythm patterns, distinct from the metronome. */
       knock(at = this.now(), level = 1) {
         const c = this.ctx;
@@ -322,21 +429,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         o.connect(env).connect(this.out);
         o.start(at);
         o.stop(at + 0.14);
+        this._busy(at + 0.16);
       }
-
-      /** A gentle two-note chime for success. */
+    
+      /**
+       * A soft, warm "ding" for success: two round bell tones a sixth apart (E5, then C6), a gentle 12 ms swell
+       * instead of a hammer strike, the highest overtones filtered off and a long quiet fade; about 7 dB quieter than
+       * the old piano chime (C6 + G6, bright and sharp), measured offline through the output compressor.
+       */
       chime(at = this.now()) {
-        this.piano(84, at, 0.5, 0.45);
-        this.piano(91, at + 0.12, 0.8, 0.45);
+        const c = this.ctx;
+        const bus = c.createGain();
+        bus.gain.value = 0.14;
+        const soft = c.createBiquadFilter();
+        soft.type = 'lowpass';
+        soft.frequency.value = 2600;
+        bus.connect(soft).connect(this.out);
+        const bell = (midi, t, level) => {
+          const f = 440 * Math.pow(2, (midi - 69) / 12);
+          // A struck bell's fundamental rings longest; its octave and a soft high partial fade sooner.
+          for (const [mult, gain, ring] of [[1, 1, 1.7], [2, 0.16, 0.8], [3, 0.04, 0.35]]) {
+            const o = c.createOscillator();
+            o.type = 'sine';
+            o.frequency.value = f * mult;
+            const env = c.createGain();
+            env.gain.setValueAtTime(0, t);
+            env.gain.linearRampToValueAtTime(level * gain, t + 0.012);
+            env.gain.exponentialRampToValueAtTime(0.0005, t + ring);
+            o.connect(env).connect(bus);
+            o.start(t);
+            o.stop(t + ring + 0.05);
+          }
+        };
+        bell(76, at, 1);
+        bell(84, at + 0.11, 0.8);
+        this._busy(at + 1.85);
       }
     }
 
-    return { hashSeed, seededRandom, newCode, todayStamp, VOICE_TYPES, loadVoiceType, saveVoiceType, noteLabel, midiToHz, routeAudioAsMedia, Tones };
+    return { loadSound, saveSound, hashSeed, seededRandom, newCode, todayStamp, VOICE_TYPES, loadVoiceType, saveVoiceType, noteLabel, midiToHz, routeAudioAsMedia, Tones, SOUNDS };
   })();
   var mod_rhythm = (function () {
     // Rhythm clap-back: seeded rhythm generator, notation (MusicXML) and the tap scorer.
     // scoreRhythm() is ported from AlloFlow's Music Lab (stem_tool_music.js), where it has its own tests.
-
+    
     // Durations are in sixteenths (4 = a quarter note). A cell fills one beat or more; 'r' marks a rest.
     // Simple time: the beat is a quarter (4). Compound time (6/8): the beat is a dotted quarter (6).
     const SIMPLE_CELLS = [
@@ -370,33 +506,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       { d: [2, 1, 1, 2], level: 4 },
       { d: [2, 'r2', 2], level: 4 },
     ];
-
+    
     const METERS = {
       '4/4': { beats: 4, beat: 4, num: 4, den: 4 },
       '3/4': { beats: 3, beat: 4, num: 3, den: 4 },
       '2/4': { beats: 2, beat: 4, num: 2, den: 4 },
       '6/8': { beats: 2, beat: 6, num: 6, den: 8 },
     };
-
+    
     const RHYTHM_LEVELS = [
       { level: 1, name: 'Level 1: quarters and halves', meters: ['4/4', '3/4'], bars: 1 },
       { level: 2, name: 'Level 2: eighth notes and dots', meters: ['4/4', '3/4', '2/4'], bars: 1 },
       { level: 3, name: 'Level 3: sixteenths and rests', meters: ['4/4', '3/4', '6/8'], bars: 2 },
       { level: 4, name: 'Level 4: syncopation', meters: ['4/4', '3/4', '6/8', '2/4'], bars: 2 },
     ];
-
+    
     /**
      * Generate a rhythm. Returns { meter, bars: [[{ dur, rest }]], onsets: [beats...], beats }.
      * Onsets are in beats from the start (the unit the scorer works in).
+     * length: how many bars (1, 2, 4, 8 ...); omitted = the level's own length.
      */
-    function generateRhythm(rand, level, meterName) {
+    function generateRhythm(rand, level, meterName, length) {
       const L = RHYTHM_LEVELS[Math.max(0, Math.min(RHYTHM_LEVELS.length - 1, level - 1))];
       const meter = METERS[meterName || rand.pick(L.meters)] || METERS['4/4'];
       const name = Object.keys(METERS).find((k) => METERS[k] === meter);
       const cells = (meter.beat === 6 ? COMPOUND_CELLS : SIMPLE_CELLS).filter((c) => c.level <= L.level);
       const barLen = meter.beats * meter.beat;
+      // A 2/4 bar is too short to be a rhythm by itself (at level 1 only "two quarter notes" would pass), so 2/4
+      // always gets two bars and a bar there may hold a single note.
+      const short = barLen <= 8;
+      const asked = Number.isInteger(length) && length >= 1 && length <= 16 ? length : L.bars;
+      const barCount = Math.max(asked, short ? 2 : 1);
+      const minNotes = short ? 1 : 2;
       const bars = [];
-      for (let b = 0; b < L.bars; b++) {
+      for (let b = 0; b < barCount; b++) {
         for (let attempt = 0; attempt < 40; attempt++) {
           const bar = [];
           let pos = 0;
@@ -412,13 +555,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             pos += cell.d.reduce((s, x) => s + dur(x), 0);
           }
           const notes = bar.filter((n) => !n.rest).length;
-          // Begin the first bar on a note, keep at least two notes per bar, and not too many rests.
-          if ((b === 0 && bar[0].rest) || notes < 2 || bar.filter((n) => n.rest).length > 2) continue;
+          // Begin the first bar on a note, keep at least two notes per bar (one in a short bar), and not too many rests.
+          if ((b === 0 && bar[0].rest) || notes < minNotes || bar.filter((n) => n.rest).length > 2) continue;
           // Avoid a bar identical to the previous one (boring) unless we're out of tries.
           if (b > 0 && attempt < 30 && JSON.stringify(bar) === JSON.stringify(bars[b - 1])) continue;
           bars.push(bar);
           break;
         }
+        // Out of tries (rare): a plain bar of beats, never a missing bar.
+        if (bars.length === b) bars.push(Array.from({ length: meter.beats }, () => ({ dur: meter.beat, rest: false })));
       }
       const onsets = [];
       let pos = 0;
@@ -429,13 +574,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         }
       return { meter: name, num: meter.num, den: meter.den, beatsPerBar: meter.beats, beatUnit: meter.beat, bars, onsets, beats: pos / meter.beat };
     }
-
+    
     function dur(x) {
       return typeof x === 'string' ? Number(x.slice(1)) : x;
     }
-
+    
     const TYPES = { 1: ['16th', 0], 2: ['eighth', 0], 3: ['eighth', 1], 4: ['quarter', 0], 6: ['quarter', 1], 8: ['half', 0], 12: ['half', 1], 16: ['whole', 0] };
-
+    
     /** MusicXML for a one-line rhythm staff (percussion clef). */
     function rhythmToMusicXML(r, bpm) {
       const measures = r.bars
@@ -460,7 +605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         .join('');
       return xmlDoc('Rhythm', measures);
     }
-
+    
     /**
      * Beam elements for one bar: notes shorter than a quarter are beamed within each beat,
      * with a second beam (or hook) for sixteenths. Shared with the melody writer.
@@ -501,20 +646,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       }
       return out;
     }
-
+    
     function xmlDoc(partName, measures) {
       return `<?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
     <score-partwise version="4.0"><part-list><score-part id="P1"><part-name print-object="no">${partName}</part-name></score-part></part-list><part id="P1">${measures}</part></score-partwise>`;
     }
-
+    
     // ---- Scoring (ported from AlloFlow) -------------------------------------------------
-
+    
     // Grading bands as a fraction of one beat, so they scale with tempo.
     const TIGHT_FRACTION = 0.06; // on the money
     const CLOSE_FRACTION = 0.14; // recognisably the right rhythm
     const MATCH_FRACTION = 0.5; // beyond half a beat a tap belongs to another onset
-
+    
     /**
      * Score taps against expected onsets (both in ms from the same origin). Matching is greedy over
      * the closest pairs first, so one early tap doesn't push every later tap onto the wrong onset.
@@ -527,7 +672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       const matchWindow = beat * MATCH_FRACTION;
       const tightMs = beat * TIGHT_FRACTION;
       const closeMs = beat * CLOSE_FRACTION;
-
+    
       const pairs = [];
       expected.forEach((ex, e) =>
         taps.forEach((tap, t) => {
@@ -536,7 +681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         }),
       );
       pairs.sort((a, b) => a.abs - b.abs);
-
+    
       const usedE = new Set();
       const usedT = new Set();
       const onsets = expected.map((ms) => ({ expectedMs: ms, tapMs: null, deltaMs: null, grade: 'missed' }));
@@ -574,22 +719,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
   // Generated rhythms for Clap-Back: real notation (OpenSheetMusicDisplay, loaded on first use like
   // three.js elsewhere) and a timeline of taps against the written notes.
+  // Gemini Canvas refuses third-party CDNs, so the copy beside this script's own host (vendor/) is tried first,
+  // then jsdelivr (as the Singing Lab does). A missing file on the CDN is an HTML page with status 200: judge a
+  // source by the global it should define.
   var VSR_OSMD_URL = 'https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@2.2.1/build/opensheetmusicdisplay.min.js';
+  var VSR_SCRIPT_SRC = (function () {
+    try { return (document.currentScript && document.currentScript.src) || ''; } catch (e) { return ''; }
+  })();
   var _vsrOsmdPromise = null;
   function vsrLoadOSMD() {
-    if (window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay) return Promise.resolve(window.opensheetmusicdisplay);
+    var have = function () { return window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay; };
+    if (have()) return Promise.resolve(window.opensheetmusicdisplay);
     if (_vsrOsmdPromise) return _vsrOsmdPromise;
-    _vsrOsmdPromise = new Promise(function (resolve, reject) {
-      var s = document.createElement('script');
-      s.src = VSR_OSMD_URL;
-      s.async = true;
-      s.onload = function () {
-        if (window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay) resolve(window.opensheetmusicdisplay);
-        else { _vsrOsmdPromise = null; reject(new Error('notation library missing')); }
-      };
-      s.onerror = function () { _vsrOsmdPromise = null; reject(new Error('notation library failed to load')); };
-      document.head.appendChild(s);
-    });
+    var sources = [];
+    try { if (VSR_SCRIPT_SRC) sources.push(new URL('../vendor/opensheetmusicdisplay-2.2.1/opensheetmusicdisplay.min.js', VSR_SCRIPT_SRC).href); } catch (e) { /* jsdelivr only */ }
+    sources.push(VSR_OSMD_URL);
+    _vsrOsmdPromise = (function next(i) {
+      if (i >= sources.length) return Promise.reject(new Error('notation library failed to load'));
+      return new Promise(function (resolve) {
+        var s = document.createElement('script');
+        s.src = sources[i];
+        s.async = true;
+        s.onload = function () { resolve(!!have()); };
+        s.onerror = function () { resolve(false); };
+        document.head.appendChild(s);
+      }).then(function (ok) { return ok ? window.opensheetmusicdisplay : next(i + 1); });
+    })(0);
+    _vsrOsmdPromise.catch(function () { _vsrOsmdPromise = null; });
     return _vsrOsmdPromise;
   }
 
@@ -616,10 +772,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
   // arrive as clicks with detail 0, so only those clicks are kept.
   function vsrTapIgnored(e) { return !!(e && e.type === 'click' && e.detail !== 0); }
 
-  function vsrMakeGen(level, meter) {
-    var r = VSR.generateRhythm(VSR.seededRandom(VSR.newCode()), level, meter || undefined);
+  function vsrFmt(s, vars) {
+    return String(s).replace(/\{(\w+)\}/g, function (whole, name) { return vars && Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : whole; });
+  }
+  function vsrEsc(s) {
+    return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; });
+  }
+  var VSR_METERS = ['4/4', '3/4', '2/4', '6/8'];
+  var VSR_BARS = [1, 2, 4, 8];
+  // A generated rhythm. Every rhythm has an exercise code: the same code with the same level, time signature and
+  // length gives the same rhythm (as on the website), so a teacher can hand one out or print it.
+  function vsrMakeGen(level, meter, length, code) {
+    code = String(code || '').toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 12) || VSR.newCode();
+    meter = VSR_METERS.indexOf(meter) >= 0 ? meter : '';
+    length = VSR_BARS.indexOf(Number(length)) >= 0 ? Number(length) : 0;
+    var r = VSR.generateRhythm(VSR.seededRandom(code), level, meter || undefined, length || undefined);
     return { id: 'gen' + level, level: level, name: 'Generated', beats: r.beats, onsets: r.onsets, beatsPerBar: r.beatsPerBar,
-      bars: r.bars, num: r.num, den: r.den, beatUnit: r.beatUnit, meter: r.meter };
+      bars: r.bars, num: r.num, den: r.den, beatUnit: r.beatUnit, meter: r.meter, code: code, pickMeter: meter, pickLength: length };
   }
 
   var VSR_GRADE_COLORS = { tight: '#16a34a', close: '#65a30d', loose: '#d97706', missed: '#dc2626' };
@@ -659,6 +828,133 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     return h('div', null,
       h('div', { ref: boxRef, role: 'img', 'aria-label': p.label, className: 'rounded-lg border border-rose-200 overflow-x-auto', style: { background: '#fff', minHeight: 70 } }),
       state === 'error' && h('p', { className: 'text-[0.6875rem] text-rose-800 mt-1' }, p.errorText));
+  }
+
+  // Printing: each rhythm drawn off screen at paper width and kept as its SVG, then a page of them opened in a new
+  // window that prints itself (Canvas ignores print() on the app page); a downloaded page if pop-ups are blocked.
+  function vsrDrawForPaper(OSMD, holder, r) {
+    var box = document.createElement('div');
+    holder.appendChild(box);
+    var o = new OSMD.OpenSheetMusicDisplay(box, { autoResize: false, backend: 'svg', drawTitle: false, drawPartNames: false, drawMetronomeMarks: false });
+    var rules = o.EngravingRules;
+    if (rules) Object.assign(rules, { PageTopMargin: 1.5, PageBottomMargin: 1, PageLeftMargin: 1, PageRightMargin: 1 });
+    return o.load(VSR.rhythmToMusicXML(r, 80)).then(function () {
+      o.Zoom = 0.9;
+      o.render();
+      var svg = box.querySelector('svg');
+      if (svg && !svg.getAttribute('viewBox') && svg.getAttribute('width')) svg.setAttribute('viewBox', '0 0 ' + parseFloat(svg.getAttribute('width')) + ' ' + parseFloat(svg.getAttribute('height')));
+      return svg ? new XMLSerializer().serializeToString(svg) : '';
+    });
+  }
+  function vsrPrintSheet(opts) {
+    // opts: { t, gen, count, levelName, meterText, lengthText, lang }
+    var t = opts.t;
+    var g = opts.gen;
+    var count = Math.min(12, Math.max(1, Number(opts.count) || 1));
+    var w = null;
+    try { w = window.open('', '_blank'); } catch (e) { w = null; }
+    try { if (w && w.document) w.document.write('<p style="font-family:system-ui,sans-serif;margin:2em">' + vsrEsc(t('stem.music.rg_print_preparing', 'Getting the page ready…')) + '</p>'); } catch (e) { w = null; }
+    var codes = [g.code];
+    while (codes.length < count) { var c = VSR.newCode(); if (codes.indexOf(c) < 0) codes.push(c); }
+    var holder = document.createElement('div');
+    holder.setAttribute('aria-hidden', 'true');
+    holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:690px;background:#fff';
+    document.body.appendChild(holder);
+    var items = [];
+    return vsrLoadOSMD().then(function (OSMD) {
+      var chain = Promise.resolve();
+      codes.forEach(function (code, i) {
+        chain = chain.then(function () {
+          var r = i === 0 ? g : vsrMakeGen(g.level, g.pickMeter, g.pickLength, code);
+          return vsrDrawForPaper(OSMD, holder, r).then(function (svg) {
+            items.push({ cap: (count > 1 ? (i + 1) + '.  ' : '') + r.meter + ' · ' + vsrFmt(t('stem.music.rg_print_exercise', 'exercise {code}'), { code: code }), svg: svg });
+          });
+        });
+      });
+      return chain;
+    }).then(function () {
+      holder.remove();
+      var title = count > 1 ? t('stem.music.rg_print_title_many', 'Rhythm Reading') : t('stem.music.rg_print_title_one', 'Rhythm');
+      var spec = [opts.levelName, opts.meterText, opts.lengthText].filter(Boolean).join(' · ');
+      var html = '<!doctype html><html lang="' + vsrEsc(opts.lang || 'en') + '"><head><meta charset="utf-8"><title>' + vsrEsc(title + ' · ' + codes[0]) + '</title><style>' +
+        '@page{margin:0}html,body{margin:0;background:#fff;color:#111}body{font-family:Georgia,"Times New Roman",serif}' +
+        '.sheet{padding:0.5in;-webkit-box-decoration-break:clone;box-decoration-break:clone}h1{font-size:20pt;margin:0 0 6pt}' +
+        '.name{font-size:12pt;margin:0 0 6pt}.spec{font-size:9.5pt;color:#333;margin:0 0 10pt}.item{break-inside:avoid;page-break-inside:avoid;margin:0 0 4pt}' +
+        '.cap{font-size:10pt;font-weight:bold;margin:6pt 0 0}svg{display:block;max-width:100%;height:auto}.foot{font-size:9pt;color:#444;margin-top:10pt}' +
+        '@media screen{body{background:#e5e7eb}.sheet{max-width:7.5in;margin:16px auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.2)}}' +
+        '</style></head><body><div class="sheet"><h1>' + vsrEsc(title) + '</h1><p class="name">' + vsrEsc(t('stem.music.rg_print_name', 'Name ______________________   Date ____________')) + '</p><p class="spec">' + vsrEsc(spec) + '</p>' +
+        items.map(function (it) { return '<div class="item"><p class="cap">' + vsrEsc(it.cap) + '</p>' + it.svg + '</div>'; }).join('') +
+        '<p class="foot">' + vsrEsc(t('stem.music.rg_print_foot', 'To hear one: open Rhythm Clap-Back in the AlloFlow Music Lab, choose the same level, time signature and length, and type its exercise code.')) + '</p>' +
+        '</div><script>window.onload=function(){setTimeout(function(){window.print();},250);};<\/script></body></html>';
+      if (w && !w.closed) {
+        w.document.open(); w.document.write(html); w.document.close();
+        return 'opened';
+      }
+      var url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+      var a = document.createElement('a');
+      a.href = url; a.download = 'rhythm-' + codes[0] + '.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      return 'downloaded';
+    }, function (e) {
+      holder.remove();
+      try { if (w && !w.closed) w.close(); } catch (x) { /* gone */ }
+      throw e;
+    });
+  }
+
+  // The row under a generated rhythm: time signature, length, its exercise code (and a box for one), and Print.
+  // p: { React, t, gen, busy, meter, bars, printCount, set(key, value), make(meter, bars, code), announce }
+  function VsrGenTools(p) {
+    var React = p.React;
+    var h = React.createElement;
+    var t = p.t;
+    var inS = React.useState(''); var codeIn = inS[0]; var setCodeIn = inS[1];
+    var noteS = React.useState(''); var note = noteS[0]; var setNote = noteS[1];
+    var prS = React.useState(false); var printing = prS[0]; var setPrinting = prS[1];
+    var g = p.gen;
+    var sel = 'px-1.5 py-0.5 rounded text-[0.6875rem] font-bold bg-white border border-rose-500 text-slate-800 max-w-full';
+    var lab = 'inline-flex flex-wrap items-center gap-1 text-[0.6875rem] font-bold text-rose-900 max-w-full';
+    var btn = 'px-2 py-1 rounded-lg text-xs font-bold bg-white border border-rose-500 text-rose-800 disabled:opacity-50';
+    var levelName = vsrFmt(t('stem.music.rg_print_level', 'Level {n}'), { n: g ? g.level : '' });
+    var lengthText = function (n) { return n === 1 ? t('stem.music.rg_len_1', '1 bar (2 in 2/4)') : vsrFmt(t('stem.music.rg_len_n', '{n} bars'), { n: n }); };
+    function print() {
+      if (!g || printing) return;
+      setPrinting(true);
+      setNote('');
+      vsrPrintSheet({ t: t, gen: g, count: p.printCount, levelName: levelName, meterText: g.meter, lengthText: lengthText(g.bars.length), lang: (document.documentElement && document.documentElement.lang) || 'en' })
+        .then(function (how) {
+          setNote(how === 'opened' ? t('stem.music.rg_print_opened', 'The page to print opened in a new window.') : t('stem.music.rg_print_downloaded', 'This browser blocked the print window, so the page was downloaded instead: open the file and it prints.'));
+        }, function () { setNote(t('stem.music.rg_print_failed', 'The page to print could not be made. Try again.')); })
+        .then(function () { setPrinting(false); });
+    }
+    return h('div', { 'data-rg-tools': '', className: 'flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2' },
+      h('label', { className: lab }, t('stem.music.rg_time', 'Time'),
+        h('select', { 'data-rg-meter': '', className: sel, value: p.meter || '', disabled: p.busy, onChange: function (e) { p.set('rhythmGenMeter', e.target.value); p.make(e.target.value, p.bars); } },
+          h('option', { value: '' }, t('stem.music.rg_any', 'Any')),
+          VSR_METERS.map(function (m) { return h('option', { key: m, value: m }, m); }))),
+      h('label', { className: lab }, t('stem.music.rg_length', 'Length'),
+        h('select', { 'data-rg-bars': '', className: sel, value: p.bars ? String(p.bars) : '', disabled: p.busy, onChange: function (e) { var b = Number(e.target.value) || 0; p.set('rhythmGenBars', b); p.make(p.meter, b); } },
+          h('option', { value: '' }, t('stem.music.rg_len_level', 'As the level sets')),
+          VSR_BARS.map(function (b) { return h('option', { key: b, value: String(b) }, lengthText(b)); }))),
+      g && h('span', { 'data-rg-code': g.code, className: 'text-[0.6875rem] font-bold text-slate-800' }, vsrFmt(t('stem.music.rg_exercise', 'Exercise {code}'), { code: g.code })),
+      h('form', { className: 'inline-flex items-center gap-1', onSubmit: function (e) {
+        e.preventDefault();
+        var v = codeIn.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 12);
+        if (!v) return;
+        setCodeIn('');
+        p.make(p.meter, p.bars, v);
+        if (p.announce) p.announce(vsrFmt(t('stem.music.rg_code_loaded', 'Exercise {code} loaded.'), { code: v }));
+      } },
+        h('input', { type: 'text', 'data-rg-code-input': '', value: codeIn, maxLength: 12, placeholder: t('stem.music.rg_have_code', 'Have a code?'), 'aria-label': t('stem.music.rg_code_label', 'Exercise code'),
+          onChange: function (e) { setCodeIn(e.target.value); }, className: sel + ' w-28 uppercase' }),
+        h('button', { type: 'submit', className: btn, disabled: p.busy }, t('stem.music.rg_go', 'Go'))),
+      h('span', { className: 'inline-flex flex-wrap items-center gap-1' },
+        h('select', { 'data-rg-print-count': '', className: sel, 'aria-label': t('stem.music.rg_print_what', 'What to print'), value: String(p.printCount || 1), onChange: function (e) { p.set('rhythmPrintCount', Number(e.target.value)); } },
+          h('option', { value: '1' }, t('stem.music.rg_print_1', 'This rhythm')),
+          [4, 6, 8, 12].map(function (n) { return h('option', { key: n, value: String(n) }, vsrFmt(t('stem.music.rg_print_n', 'A sheet of {n} rhythms'), { n: n })); })),
+        h('button', { type: 'button', 'data-rg-print': '', className: btn, disabled: !g || printing || p.busy, onClick: print }, printing ? t('stem.music.rg_print_busy', 'Getting ready…') : '🖨 ' + t('stem.music.rg_print', 'Print'))),
+      note && h('p', { role: 'status', className: 'w-full text-[0.6875rem] text-slate-800 m-0' }, note));
   }
 
   // Written notes (gold) above, the student's taps below, joined when they matched.
@@ -860,6 +1156,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           return Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : whole;
         }));
       };
+      // Enter/Space route for a non-button control; ignores keys from controls nested inside it.
+      var musKeyAct = function (fn) { return function (e) { if (e.target !== e.currentTarget) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(e); } }; };
       var setStemLabTool = function(v) { if (ctx.setStemLabTool) ctx.setStemLabTool(v); };
       var setToolSnapshots = ctx.setToolSnapshots || function() {};
       // Student AI-off: null unless text AI is usable, so the AI theory tutor hides.
@@ -2030,6 +2328,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           var METRO_LOOKAHEAD_SEC = 0.15;
           var METRO_POLL_MS = 25;
           var _metroState = React.useRef({ nextBeatSec: 0, beat: 0, uiTimers: [] });
+          // Beat-pad grids are roving: one tab stop each. Arrows/Home/End move it and
+          // focus; Enter/Space stay with the native button. Cursor is view state, not saved.
+          var _bpCurS = React.useState({ mel: 0, drum: 0, roll: 0 });
+          var bpCur = _bpCurS[0], setBpCur = _bpCurS[1];
+          var bpCell = function (gridName, idx, total) { return idx === ((bpCur[gridName] >= 0 && bpCur[gridName] < total) ? bpCur[gridName] : 0); };
+          var bpGridKey = function (e, gridName, idx, cols, rows) {
+            if (e.altKey || e.ctrlKey || e.metaKey) return;
+            var k = e.key, x = idx % cols, y = Math.floor(idx / cols), n;
+            if (k === 'ArrowRight') n = y * cols + Math.min(cols - 1, x + 1);
+            else if (k === 'ArrowLeft') n = y * cols + Math.max(0, x - 1);
+            else if (k === 'ArrowDown') n = Math.min(rows - 1, y + 1) * cols + x;
+            else if (k === 'ArrowUp') n = Math.max(0, y - 1) * cols + x;
+            else if (k === 'Home') n = y * cols;
+            else if (k === 'End') n = y * cols + cols - 1;
+            else return;
+            e.preventDefault();
+            if (n === idx) return;
+            setBpCur(function (p) { var o = Object.assign({}, p); o[gridName] = n; return o; });
+            var grid = e.currentTarget.closest ? e.currentTarget.closest('[data-bp-grid="' + gridName + '"]') : null;
+            var next = grid && grid.querySelector('[data-bp-cell="' + n + '"]');
+            if (next && next.focus) next.focus();
+          };
+          var bpCellFocus = function (gridName, idx) { if (bpCur[gridName] !== idx) setBpCur(function (p) { var o = Object.assign({}, p); o[gridName] = idx; return o; }); };
 
           function startMetronome() {
             stopMetronome();
@@ -3621,7 +3942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     disabled: d.rhythmPhase === 'listen' || d.rhythmPhase === 'record',
                     onChange: function (e) {
                       var v = e.target.value;
-                      if (/^gen[1-4]$/.test(v)) upd('rhythmGen', vsrMakeGen(Number(v.slice(3))));
+                      if (/^gen[1-4]$/.test(v)) upd('rhythmGen', vsrMakeGen(Number(v.slice(3)), d.rhythmGenMeter, d.rhythmGenBars));
                       upd('rhythmPatternId', v); upd('rhythmResult', null);
                     },
                     className: "ml-auto px-1.5 py-0.5 rounded text-[0.6875rem] font-bold bg-white border border-rose-500"
@@ -3634,7 +3955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   }))),
                   /^gen[1-4]$/.test(d.rhythmPatternId || '') && React.createElement("button", {
                     disabled: d.rhythmPhase === 'listen' || d.rhythmPhase === 'record',
-                    onClick: function () { upd('rhythmGen', vsrMakeGen(Number(d.rhythmPatternId.slice(3)))); upd('rhythmResult', null); },
+                    onClick: function () { upd('rhythmGen', vsrMakeGen(Number(d.rhythmPatternId.slice(3)), d.rhythmGenMeter, d.rhythmGenBars)); upd('rhythmResult', null); },
                     className: "px-2 py-1 rounded-lg text-xs font-bold bg-white border border-rose-500 text-rose-800"
                   }, t('stem.music.rg_new', 'New rhythm')),
                   React.createElement("button", {
@@ -3646,6 +3967,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     : d.rhythmPhase === 'record' ? '\uD83D\uDD34 ' + __alloT('stem.music.rhythm_recording', 'Tap now!')
                     : '\u25B6 ' + __alloT('stem.music.rhythm_start', 'Start'))
                 ),
+
+                // A generated rhythm: time signature, length, its exercise code, Print.
+                /^gen[1-4]$/.test(d.rhythmPatternId || '') && React.createElement(VsrGenTools, {
+                  React: React, t: t, gen: rhythmPatternById(d.rhythmPatternId).bars ? rhythmPatternById(d.rhythmPatternId) : null,
+                  busy: d.rhythmPhase === 'listen' || d.rhythmPhase === 'record',
+                  meter: d.rhythmGenMeter || '', bars: d.rhythmGenBars || 0, printCount: d.rhythmPrintCount || 1, set: upd, announce: announceToSR,
+                  make: function (m, b, code) { upd('rhythmGen', vsrMakeGen(Number(d.rhythmPatternId.slice(3)), m, b, code)); upd('rhythmResult', null); }
+                }),
 
                 // Generated rhythms are written out as notation, coloured by result after a round.
                 (function () {
@@ -4124,8 +4453,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         }, gapLabel);
                       }
                       return [
-                        React.createElement("div", {
-                          key: i,
+                        React.createElement("button", {
+                          key: i, type: 'button',
                           onClick: function () { playNoteFor(noteFreq(NOTE_NAMES[nIdx], d.octave || 4), 'scale_note_' + i, 500); },
                           className: "flex-1 py-2 rounded-lg text-center cursor-pointer transition-all bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100"
                         },
@@ -4155,10 +4484,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   Object.keys(WAVE_INFO).map(function (wType) {
                     var wi = WAVE_INFO[wType];
                     var isActive = (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine') === wType;
-                    return React.createElement("div", { 
-                      key: wType,
-                      onClick: function () { upd('waveType', wType); playNoteFor(noteFreq(selectedRoot, d.octave || 4), 'demo_' + wType, 800); },
-                      className: "p-3 rounded-xl border-2 cursor-pointer transition-all " + (isActive ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-slate-50 hover:border-purple-200')
+                    var pickWave = function () { upd('waveType', wType); playNoteFor(noteFreq(selectedRoot, d.octave || 4), 'demo_' + wType, 800); };
+                    return React.createElement("div", {
+                      key: wType, role: 'button', tabIndex: 0, 'aria-pressed': isActive ? 'true' : 'false',
+                      onClick: pickWave, onKeyDown: musKeyAct(pickWave),
+                      className: "p-3 rounded-xl border-2 cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 " + (isActive ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-slate-50 hover:border-purple-200')
                     },
                       React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                         React.createElement("span", { className: "text-lg" }, wi.emoji),
@@ -4222,8 +4552,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("div", { className: "flex gap-1 mb-2" },
                     CHORDS[selectedChord].intervals.map(function (intv, i) {
                       var nIdx = (NOTE_NAMES.indexOf(selectedRoot) + intv) % 12;
-                      return React.createElement("div", { 
-                        key: i,
+                      return React.createElement("button", {
+                        key: i, type: 'button',
                         onClick: function () { playNoteFor(noteFreq(NOTE_NAMES[nIdx], d.octave || 4), 'chord_note_' + i, 500); },
                         className: "flex-1 py-2 rounded-lg text-center cursor-pointer bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-all"
                       },
@@ -4259,7 +4589,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, __alloT('stem.music.circle_of_fifths', "\u2B55 Circle of Fifths")),
                   React.createElement("span", { className: "text-[0.6875rem] text-slate-600 cursor-help", title: EFFECT_TIPS.circleOfFifths.text }, "\u2753")
                 ),
-                React.createElement("svg", { role: 'img', 'aria-label': __alloT('stem.music.fifths_img_label', 'Circle of fifths'), viewBox: "0 0 300 300", className: "w-full mx-auto", style: { maxWidth: '300px', maxHeight: '300px' } },
+                React.createElement("svg", { role: 'group', 'aria-label': __alloT('stem.music.fifths_img_label', 'Circle of fifths'), viewBox: "0 0 300 300", className: "w-full mx-auto", style: { maxWidth: '300px', maxHeight: '300px' } },
+                  React.createElement("style", null, ".music-cof-key:focus{outline:none}.music-cof-key:focus-visible .music-cof-ring{stroke:#7c3aed;stroke-width:3}"),
                   // Background
                   React.createElement("circle", { cx: 150, cy: 150, r: 140, fill: "none", stroke: "#e2e8f0", strokeWidth: 2 }),
                   React.createElement("circle", { cx: 150, cy: 150, r: 100, fill: "none", stroke: "#e2e8f0", strokeWidth: 1, strokeDasharray: "4 4" }),
@@ -4272,7 +4603,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     var innerY = 150 + 85 * Math.sin(angle);
                     var circleKey = entry.key.indexOf('/') !== -1 ? entry.key.split('/')[0] : entry.key;
                     var isSelected = circleKey === selectedRoot || entry.key === selectedRoot;
-                    return React.createElement("g", { key: entry.key, className: "cursor-pointer", onClick: function () { upd('selectedRoot', circleKey); playChord(circleKey, 'Major', 0); } },
+                    var pickKey = function () { upd('selectedRoot', circleKey); playChord(circleKey, 'Major', 0); };
+                    return React.createElement("g", { key: entry.key, className: "cursor-pointer music-cof-key", role: 'button', tabIndex: 0, 'aria-pressed': isSelected ? 'true' : 'false',
+                      'aria-label': __alloFmt('stem.music.aria_fifths_key', '{key} major (relative minor {minor}): select and play', { key: entry.key, minor: entry.minor }),
+                      onClick: pickKey, onKeyDown: musKeyAct(pickKey) },
+                      React.createElement("circle", { className: 'music-cof-ring', cx: outerX, cy: outerY, r: 22, fill: 'none', stroke: 'transparent' }),
                       React.createElement("circle", { cx: outerX, cy: outerY, r: isSelected ? 18 : 15, fill: isSelected ? '#7c3aed' : '#f8fafc', stroke: isSelected ? '#5b21b6' : '#cbd5e1', strokeWidth: isSelected ? 2 : 1 }),
                       React.createElement("text", { x: outerX, y: outerY + 4, textAnchor: "middle", fill: isSelected ? '#fff' : '#334155', style: { fontSize: '11px', fontWeight: 'bold' } }, entry.key),
                       React.createElement("text", { x: innerX, y: innerY + 3, textAnchor: "middle", fill: '#94a3b8', style: { fontSize: '8px' } }, entry.minor)
@@ -4537,19 +4872,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // Melody row (scale-locked)
                 (function () {
                   var scNotes = getScaleNotes();
-                  return React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                  return React.createElement("div", { className: "flex items-center gap-1 mb-1", role: 'group', 'data-bp-grid': 'mel',
+                    'aria-label': __alloT('stem.music.aria_melody_grid', 'Melody steps. Left and right arrows move between steps; Enter or Space changes the note.') },
                     React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-700 w-16 text-right pr-1 truncate" }, __alloT('stem.music.melody', "\uD83C\uDFB9 Melody")),
                     Array.from({ length: 16 }, function (_, i) {
                       var ni = melodySeqBP[i] || 0;
                       var isCur = d.seqPlaying && d.seqCurrentStep === i;
                       var isRec = d.bpStepRec && (d.bpStepRecPos || 0) === i;
-                      return React.createElement("div", { 
-                        key: 'mel_' + i,
+                      return React.createElement("button", {
+                        key: 'mel_' + i, type: 'button', 'data-bp-cell': i, tabIndex: bpCell('mel', i, 16) ? 0 : -1,
+                        onKeyDown: function (e) { bpGridKey(e, 'mel', i, 16, 1); }, onFocus: function () { bpCellFocus('mel', i); },
+                        'aria-label': __alloFmt('stem.music.aria_melody_step', 'Melody step {n}: {note}. Press to change the note.', { n: i + 1, note: ni > 0 && ni <= scNotes.notes.length ? scNotes.notes[ni - 1] : __alloT('stem.music.melody_rest', 'rest') }),
                         onClick: function () { pushBpUndo(); var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = (nm[i] + 1) % (scNotes.notes.length + 1); upd('beatMelody', nm); },
                         onContextMenu: function (e) { e.preventDefault(); pushBpUndo(); var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = nm[i] <= 0 ? scNotes.notes.length : nm[i] - 1; upd('beatMelody', nm); },
                         className: "flex-1 h-7 rounded-sm cursor-pointer transition-all flex items-center justify-center text-[0.6875rem] font-bold select-none " +
                           (ni > 0 ? 'bg-gradient-to-b from-purple-600 to-purple-600 text-white shadow-sm' : isCur ? 'bg-purple-100 ring-1 ring-purple-300' : isRec ? 'bg-red-100 ring-1 ring-red-300' : i % 4 === 0 ? 'bg-purple-50/80' : 'bg-slate-50 border border-slate-100') + ' hover:brightness-110',
-                        style: { minWidth: '22px' },
+                        style: { minWidth: '22px', padding: 0 },
                         title: ni > 0 ? scNotes.notes[ni - 1] : 'Click to add'
                       }, ni > 0 && ni <= scNotes.notes.length ? scNotes.notes[ni - 1].replace('4', '').replace('5', '\u2019') : '');
                     })
@@ -4557,23 +4895,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 })(),
                 React.createElement("div", { className: "border-b border-dashed border-slate-200 mb-1 ml-16" }),
                 // Drum rows
-                BEAT_PAD_SOUNDS.slice(0, 8).map(function (sound, row) {
+                React.createElement("div", { role: 'group', 'data-bp-grid': 'drum',
+                  'aria-label': __alloT('stem.music.aria_drum_grid', 'Drum steps. Arrow keys move between steps and drums; Enter or Space turns a step on or off.') },
+                BEAT_PAD_SOUNDS.slice(0, 8).map(function (sound, row, drumRows) {
                   return React.createElement("div", { key: sound.type, className: "flex items-center gap-1 mb-0.5" },
                     React.createElement("span", { className: "text-[0.6875rem] font-bold w-16 text-right pr-1 truncate", style: { color: isDark ? (({ '#ef4444': '#f87171', '#3b82f6': '#60a5fa', '#8b5cf6': '#a78bfa' })[sound.color] || sound.color) : ({ '#ef4444': '#b91c1c', '#f97316': '#c2410c', '#eab308': '#a16207', '#84cc16': '#4d7c0f', '#22c55e': '#15803d', '#06b6d4': '#0e7490', '#3b82f6': '#1d4ed8', '#8b5cf6': '#6d28d9' })[sound.color] || sound.color } }, sound.label),
                     Array.from({ length: 16 }, function (_, col) {
                       var gKey = row + '_' + col; var grid = d.seqGrid || {}; var isOn = grid[gKey];
                       var isCur = d.seqPlaying && d.seqCurrentStep === col;
                       var isRec = d.bpStepRec && (d.bpStepRecPos || 0) === col;
-                      return React.createElement("div", { 
-                        key: gKey,
+                      var dIdx = row * 16 + col;
+                      return React.createElement("button", {
+                        key: gKey, type: 'button', 'aria-pressed': isOn ? 'true' : 'false',
+                        'data-bp-cell': dIdx, tabIndex: bpCell('drum', dIdx, drumRows.length * 16) ? 0 : -1,
+                        onKeyDown: function (e) { bpGridKey(e, 'drum', dIdx, 16, drumRows.length); }, onFocus: function () { bpCellFocus('drum', dIdx); },
+                        'aria-label': __alloFmt('stem.music.aria_drum_step', '{sound}, step {n}', { sound: sound.label, n: col + 1 }),
                         onClick: function () { pushBpUndo(); var g = Object.assign({}, d.seqGrid || {}); g[gKey] = g[gKey] ? 0 : 1; upd('seqGrid', g); if (g[gKey] && !d.beatBuilt) upd('beatBuilt', true); },
                         className: "flex-1 h-5 rounded-sm cursor-pointer transition-all " +
                           (isOn ? 'shadow-sm' : isCur ? 'bg-slate-200 ring-1 ring-purple-200' : isRec ? 'bg-red-50 ring-1 ring-red-200' : col % 4 === 0 ? 'bg-slate-100' : 'bg-slate-50 border border-slate-100') + ' hover:opacity-80',
-                        style: isOn ? { background: sound.color, opacity: isCur ? 1 : 0.85 } : { minWidth: '22px' }
+                        style: isOn ? { background: sound.color, opacity: isCur ? 1 : 0.85, padding: 0 } : { minWidth: '22px', padding: 0 }
                       });
                     })
                   );
-                }),
+                })),
                 // Step position indicator
                 React.createElement("div", { className: "flex mt-1", style: { marginLeft: '68px' } },
                   Array.from({ length: 16 }, function (_, i) {
@@ -4597,7 +4941,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   var melody = d.beatMelody || new Array(patLen).fill(0);
                   var rows = scNotes.notes.slice().reverse(); // high notes at top
                   return React.createElement("div", { className: "overflow-x-auto" },
-                    React.createElement("div", { style: { minWidth: Math.max(400, patLen * 28) + 'px' } },
+                    React.createElement("div", { style: { minWidth: Math.max(400, patLen * 28) + 'px' }, role: 'group', 'data-bp-grid': 'roll',
+                      'aria-label': __alloT('stem.music.aria_roll_grid', 'Piano roll. Arrow keys move between steps and notes; Enter or Space places or removes a note.') },
                       // Note rows
                       rows.map(function(noteName, rowIdx) {
                         var noteIdx = rows.length - rowIdx; // 1-indexed from bottom
@@ -4612,7 +4957,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                             var isActive = melody[col] === noteIdx;
                             var isBeat = col % 4 === 0;
                             var isCurrent = d.seqPlaying && d.seqCurrentStep === col;
-                            return React.createElement("div", { key: col,
+                            var rIdx = rowIdx * patLen + col;
+                            return React.createElement("button", { key: col, type: 'button', 'aria-pressed': isActive ? 'true' : 'false',
+                              'data-bp-cell': rIdx, tabIndex: bpCell('roll', rIdx, rows.length * patLen) ? 0 : -1,
+                              onKeyDown: function (e) { bpGridKey(e, 'roll', rIdx, patLen, rows.length); }, onFocus: function () { bpCellFocus('roll', rIdx); },
+                              'aria-label': __alloFmt('stem.music.aria_roll_cell', '{note}, step {n}', { note: noteName, n: col + 1 }),
                               onClick: function() {
                                 pushBpUndo();
                                 var newMel = melody.slice();
@@ -4624,7 +4973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                               },
                               className: "flex-1 border-r border-b cursor-pointer transition-all " + (isCurrent ? 'brightness-125' : ''),
                               style: {
-                                minWidth: '20px',
+                                minWidth: '20px', padding: 0,
                                 background: isActive ? (NOTE_COLORS[scNotes.notes.indexOf(noteName) % 12] || '#6366f1') :
                                   isCurrent ? 'rgba(99,102,241,0.15)' :
                                   isBlack ? (isBeat ? '#1e293b' : '#0f172a') : (isBeat ? '#f1f5f9' : '#fff'),
@@ -4930,7 +5279,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       var section = (d.songSections || []).find(function(s) { return s.id === sectionId; });
                       if (!section) return null;
                       var isPlaying = d.songPlaying && d.songCurrentSection === idx;
-                      return React.createElement("div", { key: idx + '_' + sectionId,
+                      return React.createElement("button", { key: idx + '_' + sectionId, type: 'button',
+                        'aria-label': __alloFmt('stem.music.aria_load_section', 'Load section {name} ({bpm} BPM) into the grid', { name: section.name, bpm: section.bpm || 120 }),
                         className: "flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg text-center cursor-pointer transition-all border-2 min-w-[50px] " + (isPlaying ? 'scale-105 shadow-lg' : 'hover:scale-102'),
                         style: { background: section.color + '20', borderColor: isPlaying ? section.color : section.color + '40' },
                         onClick: function () {
@@ -5162,13 +5512,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       });
                       return strings.slice(0, 24).map(function (s, si) {
                         var isPlaying = (d.omniStrumActive || []).indexOf(si) !== -1;
+                        var pluckString = function () {
+                          playHarmonyTone(s.freq, 'omniStr_' + si, 900, d.omniVoice || 'harp');
+                          upd('omniStrumActive', (d.omniStrumActive || []).concat([si]));
+                          setTimeout(function () { upd('omniStrumActive', (d.omniStrumActive || []).filter(function (x) { return x !== si; })); }, 400);
+                        };
                         return React.createElement("div", {
-                          key: si,
-                          onMouseDown: function () {
-                            playHarmonyTone(s.freq, 'omniStr_' + si, 900, d.omniVoice || 'harp');
-                            upd('omniStrumActive', (d.omniStrumActive || []).concat([si]));
-                            setTimeout(function () { upd('omniStrumActive', (d.omniStrumActive || []).filter(function (x) { return x !== si; })); }, 400);
-                          },
+                          key: si, role: 'button', tabIndex: 0,
+                          'aria-label': __alloFmt('stem.music.aria_pluck_string', 'Pluck string {note}', { note: s.note + s.oct }),
+                          onMouseDown: pluckString,
+                          // stopPropagation keeps Space from also reaching the pad's strum shortcut
+                          onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); pluckString(); } },
                           onMouseEnter: function (e) {
                             if (e.buttons === 1) {
                               playHarmonyTone(s.freq, 'omniStr_' + si, 900, d.omniVoice || 'harp');
@@ -5176,7 +5530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                               setTimeout(function () { upd('omniStrumActive', (d.omniStrumActive || []).filter(function (x) { return x !== si; })); }, 400);
                             }
                           },
-                          className: "flex-1 rounded-lg cursor-pointer transition-all select-none " + (isPlaying ? 'bg-amber-500 shadow-lg scale-y-105' : 'bg-gradient-to-b from-amber-300 to-amber-400 hover:from-amber-400 hover:to-amber-500'),
+                          className: "flex-1 rounded-lg cursor-pointer transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 " + (isPlaying ? 'bg-amber-500 shadow-lg scale-y-105' : 'bg-gradient-to-b from-amber-300 to-amber-400 hover:from-amber-400 hover:to-amber-500'),
                           style: { height: '80px', minWidth: '14px' }
                         },
                           // fixed amber-950 ink (no class, so the dark remap cannot lighten it on the amber key)
@@ -5331,7 +5685,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         },
                           // Header (always visible)
                           React.createElement("div", {
-                            className: "p-3 cursor-pointer flex items-center gap-3",
+                            className: "p-3 cursor-pointer flex items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600",
+                            role: 'button', tabIndex: 0, 'aria-expanded': isExpanded ? 'true' : 'false',
+                            onKeyDown: musKeyAct(function() { upd('expandedInst', isExpanded ? null : inst.name); }),
                             onClick: function() { upd('expandedInst', isExpanded ? null : inst.name); }
                           },
                             React.createElement("span", { className: "text-2xl" }, inst.icon),

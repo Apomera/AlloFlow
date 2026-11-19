@@ -446,6 +446,8 @@ describe('cost and honesty', () => {
   it('the generate button no longer promises a few seconds for an image build', () => {
     const help = src('help_strings.js');
     expect(help).not.toContain('Builds the Memory Aid Studio from the current source text or analysis in a few seconds.');
-    expect(help).toContain('with Include visual cues on (the default) expect around a minute');
+    // 2026-11-18: the checkbox became "Visual support" (Auto / Add pictures when needed / Text only), and the
+    // minute estimate was not measured; the help now says which choice is quicker.
+    expect(help).toContain('Text only is quickest; with Visual support on Auto (the default) it takes longer');
   });
 });

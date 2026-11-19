@@ -475,6 +475,7 @@ Use this only when considering qualitative knowledge and language demands; do no
             -5 = Much too simple for target
             0  = Perfect alignment
             +5 = Much too complex for target
+            Score how far each dimension departs from the target, not how much of it the text has. A vocabulary-heavy passage that suits the target scores 0.
             Return ONLY JSON:
             {
                 "confirmedLevel": "Verified Grade Level",

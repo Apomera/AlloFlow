@@ -13,7 +13,8 @@ describe('protected recovery app workflow', () => {
     const plainNormalize = anti.indexOf('ALLO_WORKSPACE_RECOVERY.isSupportedPayload(rawStore)', vaultCheck);
     expect(vaultCheck).toBeGreaterThan(0);
     expect(plainNormalize).toBeGreaterThan(vaultCheck);
-    expect(anti).toContain("canvasRecoveryDialogMode === 'vault-locked' ? 'Unlock protected saved work'");
+    // 2026-11-17: the dialog's title is translatable now (_crCopy); the host helper appends the dialog's source.
+    expect(anti).toContain("canvasRecoveryDialogMode === 'vault-locked' ? _crCopy('canvas_recovery.title_vault_locked', 'Unlock protected saved work')");
     expect(anti).toContain("canvasRecoveryDialogMode === 'vault-locked' ? (\n              renderCanvasRecoveryLockedScreen()");
     expect(anti).toContain("canvasRecoveryVaultState.enabled && canvasRecoveryVaultState.locked");
   });

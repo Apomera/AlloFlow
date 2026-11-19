@@ -75,7 +75,8 @@ describe('module readiness loader', () => {
 
     it('renders the still-loading pill with a failed-retry affordance after splash only', () => {
         // A comment explaining why the count is aria-hidden now sits between the label and the count.
-        expect(anti).toMatch(/t\('mailbox\.loading_tools'\)[\s\S]{0,400}moduleLoadInfo\.pending\.length/);
+        // 2026-11-17: the count also includes queued modules and sits in an aria-hidden span after a longer comment.
+        expect(anti).toMatch(/t\('mailbox\.loading_tools'\)[\s\S]{0,800}moduleLoadInfo\.pending\.length \+ \(moduleLoadInfo\.queued \|\| \[\]\)\.length/);
         expect(anti).toMatch(/moduleLoadInfo\.failed\.length[\s\S]{0,80}t\('mailbox\.failed_retry'\)/);
         // 8a233bfc6 (09-07) counts modules still QUEUED for load as pending too.
         expect(anti).toMatch(/isAppReady && \(moduleLoadInfo\.pending\.length(?: \+ \(moduleLoadInfo\.queued \|\| \[\]\)\.length)? > 0 \|\| moduleLoadInfo\.failed\.length > 0\)/);

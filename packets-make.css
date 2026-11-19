@@ -55,6 +55,8 @@ details.strand[open] > summary.strand-head { border-bottom: 1px solid var(--line
 details.strand > :not(summary) { margin-left: 1rem; margin-right: 1rem; }
 details.strand > :last-child { margin-bottom: 0.75rem; }
 .strand-count { color: var(--muted); font-size: 0.9375rem; font-weight: 400; }
+.strand-area { font-weight: 400; color: var(--muted); }
+.strand-line { flex-basis: 100%; color: var(--muted); font-size: 0.9375rem; font-weight: 400; }
 .strand-usual { margin-top: 0.5rem; padding-left: 0; }
 
 .pick-bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.75rem 2rem; margin: 0.75rem 0; }
@@ -88,3 +90,13 @@ details.strand > :last-child { margin-bottom: 0.75rem; }
 .group-said { margin: 0.6rem 0 0.3rem; overflow-wrap: anywhere; }
 .groups-row { margin-top: 0.75rem; align-items: center; }
 @media (min-width: 44rem) { .group-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* 2026-11-17: groups of words live in More options; the first group is one field, each further group one compact row. */
+.more-2-words { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+.group-first { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; }
+.group-first select { width: auto; min-width: 9rem; }
+.group-row { padding: 0.5rem 0.75rem 0.4rem; }
+.group-row legend { font-size: 0.95rem; }
+.group-row .group-fields { gap: 0.5rem 0.75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 44rem) { .group-row .group-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 4.5rem; } }
+.group-foot { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 0.75rem; }
+.group-foot .group-said { margin: 0.4rem 0 0; }

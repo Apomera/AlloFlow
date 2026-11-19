@@ -1648,13 +1648,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             if (dragState.didDrag) { dragState.didDrag = false; return; }
             if (!mapData || !canvasRef.current) return;
             var rect = canvasRef.current.getBoundingClientRect();
-            var w2 = canvasRef.current.width;
             var ts2 = Math.max(4, Math.round(24 * colonyZoom));
             var tileX = Math.floor((e.clientX - rect.left) / ts2) + camX;
             var tileY = Math.floor((e.clientY - rect.top - 30) / ts2) + camY;
+            selectMapTile(tileX, tileY);
+          }
+          // Enter/Space selects the tile at the middle of the view; Shift+arrow moves
+          // the selection one tile. Plain arrows still pan (window handler below).
+          function handleMapKeyDown(e) {
+            if (!mapData || !canvasRef.current || e.ctrlKey || e.metaKey || e.altKey) return;
+            var dirs = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+            var isPick = e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar';
+            if (!isPick && !(e.shiftKey && dirs[e.key])) return;
+            e.preventDefault(); e.stopPropagation();
+            var tsK = Math.max(4, Math.round(24 * colonyZoom));
+            var cx = Math.min(mapSize - 1, camX + Math.floor(Math.ceil(canvasRef.current.width / tsK) / 2));
+            var cy = Math.min(mapSize - 1, camY + Math.floor(Math.ceil((canvasRef.current.height - 60) / tsK) / 2));
+            var base = selectedTile ? { x: selectedTile.x, y: selectedTile.y } : { x: cx, y: cy };
+            if (isPick) { selectMapTile(base.x, base.y, true); return; }
+            var step = selectedTile ? dirs[e.key] : [0, 0];
+            selectMapTile(Math.max(0, Math.min(mapSize - 1, base.x + step[0])), Math.max(0, Math.min(mapSize - 1, base.y + step[1])), true);
+          }
+          // Shared by the pointer and the keyboard (WCAG 2.1.1): selecting a tile
+          // unlocks Explore, Build and anomaly scans for it.
+          function selectMapTile(tileX, tileY, announceIt) {
+            if (!mapData || !canvasRef.current) return;
+            var w2 = canvasRef.current.width;
+            var ts2 = Math.max(4, Math.round(24 * colonyZoom));
             if (tileX >= 0 && tileX < mapSize && tileY >= 0 && tileY < mapSize) {
               var tile = mapData.tiles[tileY * mapSize + tileX];
               upd('colonySelTile', { x: tileX, y: tileY, tile: tile });
+              if (announceIt && tile) scAnnounce(t('stem.spacecolony.sr_tile_selected', 'Selected {name} at {x}, {y}.').split('{name}').join(tile.name).split('{x}').join(String(tileX)).split('{y}').join(String(tileY)) + (tile.explored ? '' : ' ' + t('stem.spacecolony.sr_tile_unexplored', 'Not explored yet.')));
               // Auto-center on selected tile if it's near the edge of the viewport
               var vW2 = Math.ceil(w2 / ts2);
               var h2 = canvasRef.current.height;
@@ -2530,7 +2554,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   tabIndex: 0,
                   role: 'application',
                   'aria-label': t('stem.spacecolony.colony_map_keyboard_w_a_s_d_or_arrow_k', 'Colony map. Keyboard: W A S D or arrow keys to pan, plus and minus to zoom, H to home (return to colony), Escape to clear selection. Mouse: click to select tile, drag to pan, scroll to zoom.'),
+                  'aria-describedby': 'spacecolony-map-tile-keys',
                   onClick: handleMapClick,
+                  onKeyDown: handleMapKeyDown,
                   onMouseDown: handleMapMouseDown,
                   onMouseMove: handleMapMouseMove,
                   onMouseUp: handleMapMouseUp,
@@ -2540,6 +2566,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   className: 'w-full rounded-xl border border-slate-700 mb-3',
                   style: { maxHeight: '520px', cursor: dragState.dragging ? 'grabbing' : 'grab' }
                 }),
+                React.createElement('p', { id: 'spacecolony-map-tile-keys', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } },
+                  t('stem.spacecolony.map_tile_keys', 'Enter selects the tile in the middle of the view. Shift plus an arrow key moves the selection one tile.')),
                 React.createElement('button', {
                   'aria-label': t('stem.spacecolony.toggle_fullscreen_for_the_colony_map', 'Toggle fullscreen for the colony map and navigation controls'),
                   title: t('stem.spacecolony.fullscreen', 'Fullscreen'),
@@ -3068,7 +3096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         var nl29 = gameLog.slice(); nl29.push('\uD83D\uDCDC Colony Charter drafted!'); upd('colonyLog', nl29);
                         if (addToast) addToast('\uD83D\uDCDC Colony Charter drafted from your values!', 'success');
                         if (typeof addXP === 'function') addXP(30, 'Colony Charter');
-                      });
+                      }).catch(function (err) { console.warn('[SpaceColony] charter generation failed:', err && err.message); });
                     }
 
                     // Alien first contact (turn 10+, once)
@@ -3183,7 +3211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       callGemini('You are the radio host for a space colony called "' + colonyName + '" on planet ' + colonyWorldName + '. Give a brief radio news broadcast (3-4 sentences) reporting on recent colony events. Turn: ' + nt + '. Population: ' + settlers.length + '. Buildings: ' + buildings.length + '. Terraform: ' + terraform + '%. Era: ' + era + '. Season: ' + ((seasonDefs[(seasonCycle || {}).index] || {}).name || 'Calm') + '. Recent events from log: ' + gameLog.slice(-5).join('; ') + '. Make it feel like a real news broadcast — upbeat, informative, with a sign-off. Grade level: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (broadcast) {
                         upd('colonyRadio', broadcast);
                         if (d.colonyTTS) colonySpeak(broadcast, 'narrator');
-                      });
+                      }).catch(function (err) { console.warn('[SpaceColony] radio broadcast failed:', err && err.message); });
                     }
 
                     // Settler celebrations (happiness > 85) or protests (happiness < 25)

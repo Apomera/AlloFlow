@@ -388,6 +388,7 @@ POST_MODULES=(
   video_studio_host_bridge_module.js
   view_assignment_center_module.js
   view_canvas_recovery_dialog_module.js
+  view_cold_path_screens_module.js
   view_cold_path_surfaces_module.js
   view_directions_composer_module.js
   view_directions_result_module.js
@@ -402,7 +403,8 @@ POST_MODULES=(
   view_video_ref_player_module.js
   word_practice_module.js
 )
-GENERATED_ROOTS=(desktop/web-app/public app "${POST_MODULES[@]}")
+# ui_strings_core.js / ui_strings_stem.js are derived from ui_strings.js by build.js.
+GENERATED_ROOTS=(desktop/web-app/public app ui_strings_core.js ui_strings_stem.js "${POST_MODULES[@]}")
 _af_generated_dirty() {
   git status --porcelain=v1 -z -uall --no-renames -- "${GENERATED_ROOTS[@]}" |
   while IFS= read -r -d '' entry; do

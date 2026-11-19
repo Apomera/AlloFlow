@@ -211,7 +211,11 @@
       sensoryRegulation: { mode: 'Understand needs', note: 'Build a sensory profile and accommodations; not a diagnosis.', boundary: 'Choose supports that feel safe; share accommodations only when you want to.' }
     };
 
-    if (!window.SelHub) {
+    // A SEL tool or the safety layer that loads before the hub creates a small placeholder
+    // window.SelHub (a registry, plus the safety layer's functions). Install the real hub
+    // over it and keep everything already attached, so the hub can load on demand.
+    var __alloSelHubShim = (window.SelHub && !window.SelHub._standardShellTools) ? window.SelHub : null;
+    if (!window.SelHub || __alloSelHubShim) {
       window.SelHub = {
         _registry: {},
         _order: [],
@@ -738,6 +742,19 @@
           return body;
         }
       };
+    }
+    if (__alloSelHubShim && window.SelHub !== __alloSelHubShim) {
+      Object.keys(__alloSelHubShim).forEach(function (key) {
+        if (key === '_registry' || key === '_order' || window.SelHub[key] !== undefined) return;
+        window.SelHub[key] = __alloSelHubShim[key];
+      });
+      var __alloSelShimRegistry = __alloSelHubShim._registry || {};
+      var __alloSelShimOrder = Array.isArray(__alloSelHubShim._order) && __alloSelHubShim._order.length
+        ? __alloSelHubShim._order.slice() : Object.keys(__alloSelShimRegistry);
+      __alloSelShimOrder.forEach(function (id) {
+        var cfg = __alloSelShimRegistry[id];
+        if (cfg && !window.SelHub._registry[id]) { try { window.SelHub.registerTool(id, cfg); } catch (e) {} }
+      });
     }
 
     // ── SelToolDataManager ──

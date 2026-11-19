@@ -156,7 +156,9 @@ describe('Daily check-in cards in the Teacher roster panel', () => {
     await mount();
     await click(button('Daily check-in cards'));
     await click([...container.querySelectorAll('button')].find(b => b.textContent.includes('MTSS Triage rows')));
-    expect(blobs[0]).toBe('"student_code","cico_avg_pct"\r\n"Calm Otter","75"');
+    // 2026-11-17: since cf1747d6d6 (11-15) CSV downloads start with a byte-order mark so Excel reads names as UTF-8.
+    // MTSS Triage skips that header row (its score is not a number), so the mark never reaches a student code.
+    expect(blobs[0]).toBe('﻿"student_code","cico_avg_pct"\r\n"Calm Otter","75"');
   });
 
   it('removes a card and its ratings only after confirmation', async () => {

@@ -297,7 +297,9 @@ for m in FUNC_RE.finditer(compiled):
     # one of `=({,!&|;?:` or `return ` starts a regex; bracket-balanced.
     # Simpler heuristic that works for most cases: any /...../ with no
     # newline and trailing flags.
-    clean = re.sub(r'(?<![/\w])/(?:\\.|\[[^\]]*\]|[^/\n\\])+/[gimsuy]*', '/X/', clean)
+    # 2026-11-18 (code scanning: inefficient regular expression): "[" only opens a bracket group, which stops at a line
+    # end, so the alternatives no longer overlap. Same results on the samples checked.
+    clean = re.sub(r'(?<![/\w])/(?:\\.|\[[^\]\n]*\]|[^/\n\\\[])+/[gimsuy]*', '/X/', clean)
     BACKSLASH = chr(92)
 
     def strip_with_nesting(text):

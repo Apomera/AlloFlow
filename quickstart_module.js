@@ -481,6 +481,7 @@ const QuickStartWizard = React.memo(({
   isOpen,
   onClose,
   onComplete,
+  canContinueGuided,
   onUpload,
   onLookupStandards,
   onCallGemini,
@@ -2378,7 +2379,30 @@ const QuickStartWizard = React.memo(({
   }, /*#__PURE__*/React.createElement(ArrowDown, {
     className: "rotate-90",
     size: 16
-  }), " ", t('common.back')), /*#__PURE__*/React.createElement("button", {
+  }), " ", t('common.back')), canContinueGuided ? /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-end gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "wizard_complete_workspace_btn",
+    onClick: () => onComplete({
+      ...localData,
+      continueIn: 'workspace'
+    }),
+    disabled: wizImporting || localData.sourceMode === 'generate' && localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError),
+    className: "min-h-11 px-2 text-sm font-bold text-indigo-700 underline hover:text-indigo-900 disabled:opacity-50"
+  }, t('launch_pad.teacher_full_link') || 'Open the full workspace instead'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "wizard_complete_btn",
+    onClick: () => onComplete({
+      ...localData,
+      continueIn: 'guided'
+    }),
+    disabled: wizImporting || localData.sourceMode === 'generate' && localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError),
+    className: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 flex items-center gap-2"
+  }, t('launch_pad.guided_title') || 'Guided Mode', " ", /*#__PURE__*/React.createElement(ArrowRight, {
+    size: 18,
+    "aria-hidden": "true"
+  }))) : /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.finish'),
     "data-help-key": "wizard_complete_btn",

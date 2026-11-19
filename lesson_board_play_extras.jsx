@@ -4,6 +4,8 @@ import {TacticsReward} from './lesson_board_tactical_preview.jsx';
 import {PuzzleReview} from './lesson_board_puzzles_ui.jsx';
 import {ContractRewards} from './lesson_board_contracts_ui.jsx';
 import {ChallengeReview} from './lesson_board_challenges_ui.jsx';
+import {isSpatialChallenge, challengeFeedback} from './lesson_board_challenges.js';
+import {isPuzzle, puzzleFeedback} from './lesson_board_puzzles.js';
 import {AdaptiveReplay} from './lesson_board_replay_ui.jsx';
 import {practiceVisualSupport} from './lesson_board_visual.js';
 import { VocabularyCards } from './lesson_board_support_ui.jsx';
@@ -78,9 +80,14 @@ export function MoveRecap({ board, run, role, uid, onReveal, t }) {
     {result.success && <div className="lb-move-rewards" data-board-rewards><h4>{project ? tr(t, 'spent_this_move', 'Spent on this construction') : tr(t, 'earned_this_move', 'Earned this move')}</h4><Amounts board={board} values={project ? fundingCost(board,project,step.funding||'standard')||project.cost : reward} prefix={project ? '' : '+'}/>{newlyReady.length > 0 && <p>{tr(t, 'new_routes', 'New locations open: {names}', { names: newlyReady.map(item => item.name).join(', ') })}</p>}</div>}
     {node && (() => {
       // While a retry is open the key stays behind a disclosure, so another try is real practice.
-      const own = step.answers?.[uid]?.value, keyHidden = engine.turnLimit(board, run).canRetry, quote = String(node.sourceQuote || '').trim() !== String(node.explanation || '').trim() ? <blockquote>{lbMd().inline(node.sourceQuote)}</blockquote> : null;
+      const own = step.answers?.[uid]?.value, keyHidden = engine.turnLimit(board, run).canRetry, quoteText = String(node.sourceQuote || '').trim() !== String(node.explanation || '').trim() ? <blockquote>{lbMd().inline(node.sourceQuote)}</blockquote> : null;
+      // A success shows one explanation; the lesson quote stays one click away.
+      const quote = quoteText && result.success ? <details data-board-source-quote><summary>{tr(t, 'source', 'Lesson source')}</summary>{quoteText}</details> : quoteText;
+      // Skip lines that repeat what is already on screen: the per-part review lists the
+      // whole response, and a solution equal to the learner's own response adds nothing.
+      const itemized = role !== 'teacher' && !!own && (() => { try { return !!((isSpatialChallenge(node) && challengeFeedback(node, own)) || (isPuzzle(node) && puzzleFeedback(node, own))); } catch (_) { return false; } })(), matched = role !== 'teacher' && !!own && own === engine.solution(node);
       const solution = <p data-board-solution><strong>{tr(t, 'solution', 'Solution')}: </strong>{lbMd().inline(responseText(node, engine.solution(node)))}</p>, explained = <><div>{lbMd().block(node.explanation)}</div>{quote}</>, keyPuzzle = role === 'teacher' && <PuzzleReview node={node} value={engine.solution(node)} t={t}/>;
-      return <>{role!=='teacher'&&<ChallengeReview node={node} value={own} t={t}/>}{role!=='teacher'&&<PuzzleReview node={node} value={own} hideKey={keyHidden} t={t}/>}{!keyHidden&&keyPuzzle}<div className="lb-answer-review" data-board-answer-review>{role !== 'teacher' && own && <p><strong>{tr(t, 'response', 'Your response')}: </strong>{lbMd().inline(responseText(node, own))}</p>}{!keyHidden && solution}</div>
+      return <>{role!=='teacher'&&<ChallengeReview node={node} value={own} t={t}/>}{role!=='teacher'&&<PuzzleReview node={node} value={own} hideKey={keyHidden} t={t}/>}{!keyHidden&&keyPuzzle}<div className="lb-answer-review" data-board-answer-review>{role !== 'teacher' && own && !itemized && <p><strong>{tr(t, 'response', 'Your response')}: </strong>{lbMd().inline(responseText(node, own))}</p>}{!keyHidden && !matched && solution}</div>
         {keyHidden ? <>{Array.isArray(node.hints) && node.hints.length > 0 && <div data-board-retry-hints><h4>{tr(t, 'retry_hints', 'Hints for another try')}</h4><ul>{node.hints.map((hint, index) => <li key={index}>{lbMd().inline(hint)}</li>)}</ul></div>}<details data-board-reveal onToggle={event => { if (event.currentTarget.open) onReveal?.(node.id); }}><summary>{tr(t, 'reveal_answer', 'Show the answer and explanation')}</summary>{keyPuzzle}{solution}{explained}</details></> : explained}
         {typeof personal === 'boolean' && <p>{personal ? tr(t, 'your_correct', 'Your response demonstrated this idea.') : keyHidden ? tr(t, 'your_retry', 'Use the hints and the lesson evidence, then try again. Open the answer only if you are stuck.') : tr(t, 'your_revisit', 'Revisit your response using this explanation.')}</p>}{role === 'teacher' && <p>{tr(t, 'round_learning', '{correct}/{total} submitted responses were correct.', { correct: Object.values(result.marks || {}).filter(Boolean).length, total: Object.keys(result.marks || {}).length })}</p>}{role === 'teacher' && <ResponseSpread node={node} answers={step.answers} showKey={!keyHidden} t={t}/>}</>;
     })()}

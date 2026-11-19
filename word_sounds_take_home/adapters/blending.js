@@ -96,7 +96,8 @@ module.exports = {
     };
     var halt = function () { token++; mark(-1); };
     var soundSteps = function () {
-      return item.sounds.map(function (id) { return { id: id, gap: 500 }; }).concat([{ id: item.question, gap: 100 }]);
+      var gap = ctx.soundGap ? ctx.soundGap() : 500;
+      return item.sounds.map(function (id) { return { id: id, gap: gap }; }).concat([{ id: item.question, gap: 100 }]);
     };
     var optionSteps = function (gap) {
       return item.choices.map(function (c, i) { return { id: c.audio, gap: gap, hi: i }; });

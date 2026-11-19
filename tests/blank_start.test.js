@@ -335,13 +335,14 @@ describe('sidebar: "Other ways to start"', () => {
     expect(q(host, 'sidebar_start_blank')).not.toBe(null);
   });
 
-  it('wires Blank only for the five tools, only when the host lists them, with or without a source', () => {
+  // 2026-11-17 (owner): once a source exists, panels no longer show 'Other ways to start'.
+  it('wires Blank only for the five tools, only when the host lists them, and only before a source exists', () => {
     const noticeBlank = [...SIDEBAR.matchAll(/expandedTools\.includes\("([\w-]+)"\) && !hasSourceOrAnalysis && \/\* @__PURE__ \*\/ React\.createElement\(SourceNeededNotice, \{[^\n]*onStartBlank: canStartBlank\("([\w-]+)"\) \? \(\) => startBlank\("([\w-]+)"\) : void 0/g)];
     expect(noticeBlank.map(m => m[1]).sort()).toEqual([...BLANK_TYPES].sort());
     for (const m of noticeBlank) expect(m[2] === m[1] && m[3] === m[1], m[1]).toBe(true);
     const strips = [...SIDEBAR.matchAll(/expandedTools\.includes\("([\w-]+)"\) && hasSourceOrAnalysis && canStartBlank\("([\w-]+)"\) && \/\* @__PURE__ \*\/ React\.createElement\(OtherWaysToStart, \{ t, framed: true, busy: isProcessing, onStartBlank: \(\) => startBlank\("([\w-]+)"\) \}\)/g)];
-    expect(strips.map(m => m[1]).sort()).toEqual([...BLANK_TYPES].sort());
-    for (const m of strips) expect(m[2] === m[1] && m[3] === m[1], m[1]).toBe(true);
+    expect(strips).toEqual([]);
+    expect(SIDEBAR).not.toMatch(/hasSourceOrAnalysis && canStartBlank\(/);
     expect(SIDEBAR).toContain('const canStartBlank = (id) => Array.isArray(window.__alloBlankStartTypes) && window.__alloBlankStartTypes.includes(id);');
     expect(SIDEBAR).toContain('const startBlank = (id) => handleGenerate(id, null, false, null, { seed: { kind: "blank" } });');
   });

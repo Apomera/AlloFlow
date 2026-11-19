@@ -335,7 +335,11 @@ describe('Raptor Hunt owl hearing lab interaction', () => {
     expect(end).toBeGreaterThan(start);
     return rap.slice(start, end);
   }).join('\n');
-  const Study = new Function(studySource + '\nreturn RaptorSoundArrivalStudy;')();
+  // The studies compose accessible names with the module-scope {placeholder} filler.
+  const fillStart = rap.indexOf('function __alloFill(template, values)');
+  expect(fillStart).toBeGreaterThan(-1);
+  const fillSource = rap.slice(fillStart, parseExpressionAt(rap, fillStart, { ecmaVersion: 'latest' }).end);
+  const Study = new Function(fillSource + '\n' + studySource + '\nreturn RaptorSoundArrivalStudy;')();
   const mounted = [];
   afterEach(async () => {
     for (const { host, root, previousAct } of mounted.splice(0).reverse()) {

@@ -14,7 +14,7 @@ const HOST_FILES = Object.freeze(['AlloFlowANTI.txt', 'desktop/web-app/src/AlloF
 const MAX_ASSET_BYTES = 64 * 1024 * 1024;
 const MAX_ASSETS = 10000;
 const EXTRA_BOOT_ASSETS = Object.freeze([
-  'concept_quest_engine.js', 'qrcode.js', 'ui_strings.js',
+  'concept_quest_engine.js', 'qrcode.js', 'ui_strings.js', 'ui_strings_core.js', 'ui_strings_stem.js',
   'vendor/lz-string-1.4.4.min.js', 'vendor/idb-keyval-6.2.0.umd.min.js'
 ]);
 

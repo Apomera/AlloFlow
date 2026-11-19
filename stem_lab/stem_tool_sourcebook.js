@@ -580,7 +580,10 @@
   var MEDIUM_CATEGORY_RULES = [
     { category: 'Photograph', pattern: /\b(photograph|photo|gelatin silver|albumen|daguerreotype|cyanotype|negative|print,? photographic|photomechanical)\b/i },
     { category: 'Print', pattern: /\b(print|engraving|etching|woodcut|lithograph|linocut|aquatint|mezzotint|screenprint|serigraph|intaglio|drypoint|poster|chromolithograph)\b/i },
-    { category: 'Drawing', pattern: /\b(drawing|graphite|charcoal|chalk|pastel|pen and ink|pen,? ink|ink on|crayon|silverpoint|sketch|study on paper)\b/i },
+    // East Asian painting formats/supports, ahead of Drawing ("ink on") and Textile ("silk").
+    // Plain "ink on paper" stays Drawing; "color on paper" with chalk/graphite/pen etc. too.
+    { category: 'Painting', pattern: /\b(hanging scrolls?|hand ?scrolls?|folding screens?|fan paintings?|album leaf|album leaves)\b|\b(ink|colou?rs?)\b[^;]{0,40}\bon silk\b|^(?!.*\b(chalk|graphite|charcoal|pastel|crayon|pen|pencil|silverpoint)\b).*\bcolou?rs?\b[^;]{0,30}\bon paper\b/i },
+    { category: 'Drawing', pattern: /\b(drawing|graphite|charcoal|chalk|pastel|pen and (\w+ )?ink|pen,? ink|ink on|crayon|silverpoint|sketch|study on paper)\b/i },
     { category: 'Painting', pattern: /\b(painting|oil on|tempera|acrylic|gouache|watercolou?r|fresco|panel painting|canvas)\b/i },
     { category: 'Textile', pattern: /\b(textile|tapestry|embroider|weav|silk|wool|linen|cotton|lace|quilt|carpet|costume|garment)\b/i },
     { category: 'Book or manuscript', pattern: /\b(manuscript|book|codex|folio|illuminat|vellum|parchment|printed book|bookplate|album)\b/i },
@@ -5047,6 +5050,20 @@
     return provider ? 'Visual asset from ' + provider : 'Visual asset';
   }
 
+  // On-screen alt for views where the image IS the content (detail, comparison):
+  // title, creator, date and medium from catalog metadata, when present.
+  function viewerImageAltText(item) {
+    var asset = item && typeof item === 'object' ? item : {};
+    var title = normalizedAltText(asset.title) || suggestedAltText(asset);
+    var creator = normalizedAltText(asset.creator);
+    if (/^(unknown|anonymous|n\/?a|none|-+)$/i.test(creator)) creator = '';
+    var year = normalizedAltText(asset.year);
+    if (/^(unknown|undated|n\.?d\.?|n\/?a|-+)$/i.test(year)) year = '';
+    var medium = normalizedAltText(asset.medium);
+    var text = title + (creator ? ', by ' + creator : '') + (year ? ' (' + year + ')' : '') + (medium ? '. ' + medium : '');
+    return text.slice(0, 300);
+  }
+
   function normalizedUsageIntent(value) {
     var candidate = String(value || '').trim().toLowerCase();
     return USAGE_INTENTS[candidate] ? candidate : 'auto';
@@ -8086,6 +8103,9 @@
         var previous = liveAbortRef.current;
         if (previous && previous.controller && typeof previous.controller.abort === 'function') previous.controller.abort();
         setRetryingProvider('');
+        // A superseded curation ignores its own reply, so release its busy flag here
+        // (refreshCuration sets it again after this call).
+        setCurationBusy(false);
         var requestId = ++liveRequestRef.current;
         var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
         liveAbortRef.current = { id: requestId, controller: controller };
@@ -10024,7 +10044,8 @@
             backgroundSize: isTile ? tileBackgroundSize : 'cover'
           }
         }, sourcebookImage(item, {
-          src: item.imageUrl, alt: '', loading: 'lazy',
+          // Detail view (showOutputAspect) shows the image as content; cards sit inside a labelled button.
+          src: item.imageUrl, alt: showOutputAspect ? viewerImageAltText(item) : '', loading: 'lazy',
           onLoad: function (event) {
             var image = event && event.currentTarget;
             var width = normalizedPixelDimension(image && (image.naturalWidth || image.width));
@@ -10286,8 +10307,8 @@
                 derivativeUseGuidance(item.rightsType)
               ),
               item.rightsMetadataSource && h('details', { className: 'mt-3 rounded-xl border border-[#d3dfda] bg-[#f6faf8] px-3 py-2' },
-                h('summary', { className: 'cursor-pointer text-[0.6875rem] font-black text-[#315c50]' }, __alloT('stem.sourcebook.how_reuse_rights_were_checked', 'How reuse rights were checked')),
-                h('p', { className: 'mt-2 break-words text-[0.625rem] leading-relaxed text-[#5a6f67]', 'data-sourcebook-rights-evidence': 'true' }, item.rightsMetadataSource)
+                h('summary', { className: 'cursor-pointer text-[0.75rem] font-black text-[#315c50]' }, __alloT('stem.sourcebook.how_reuse_rights_were_checked', 'How reuse rights were checked')),
+                h('p', { className: 'mt-2 break-words text-[0.75rem] leading-relaxed text-[#5a6f67]', 'data-sourcebook-rights-evidence': 'true' }, item.rightsMetadataSource)
               ),
               item.licenseUrl && h('a', { href: item.licenseUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': __alloTf('stem.sourcebook.aria_open_license_terms', 'Open license terms for {title} in a new tab', { title: item.title }), className: 'inline-block mt-2 mr-3 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, __alloT('stem.sourcebook.license_terms', 'License terms ↗')),
               h('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': __alloTf('stem.sourcebook.aria_verify_on_source_record', 'Verify {title} on its source record in a new tab', { title: item.title }), className: 'inline-block mt-2 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, __alloT('stem.sourcebook.verify_on_source_record', 'Verify on source record ↗'))
@@ -10298,7 +10319,7 @@
               'aria-label': __alloT('stem.sourcebook.museums_victoria_context_check', 'Museums Victoria context check')
             },
               h('h3', { className: 'text-sm font-black' }, __alloT('stem.sourcebook.review_context', 'Review context')),
-              h('p', { className: 'mt-2 text-[0.6875rem] font-bold leading-relaxed' }, __alloT('stem.sourcebook.reuse_rights_are_verified_for_this_ima', 'Reuse rights are verified for this image. Review the source record for cultural context and appropriateness before use.')),
+              h('p', { className: 'mt-2 text-[0.6875rem] font-bold leading-relaxed' }, __alloTf('stem.sourcebook.museum_labels_image_license_check_source', 'The museum labels this image {license} (we read its license data; check the source before publishing). Review the source record for cultural context and appropriateness before use.', { license: item.license || item.rightsShort || '' })),
               h('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'mt-2 inline-block text-xs font-black underline underline-offset-2' }, __alloT('stem.sourcebook.review_source_record', 'Review source record ↗'))
             ),
             h('section', { className: 'space-y-3', 'aria-labelledby': 'sourcebook-prepare-title' },
@@ -11669,7 +11690,7 @@
                   'data-sourcebook-comparison-rights': item.rightsType
                 },
                   h('div', { className: 'relative h-44 overflow-hidden bg-[#e8ece7]' },
-                    sourcebookImage(item, { alt: '', loading: 'lazy', className: 'h-full w-full object-contain', style: { filter: COMPARISON_VIEW_FILTERS[comparisonView] } }),
+                    sourcebookImage(item, { alt: viewerImageAltText(item), loading: 'lazy', className: 'h-full w-full object-contain', style: { filter: COMPARISON_VIEW_FILTERS[comparisonView] } }),
                     h('span', { className: 'absolute left-3 top-3 rounded-full bg-[#183b32] px-2.5 py-1 text-[0.625rem] font-black text-white' }, __alloTf('stem.sourcebook.label_candidate_n', 'Candidate {n}', { n: index + 1 })),
                     h('span', { className: 'absolute right-3 top-3 rounded-full bg-emerald-100 px-2.5 py-1 text-[0.625rem] font-black text-emerald-950' }, rightsShortLabel(item))
                   ),

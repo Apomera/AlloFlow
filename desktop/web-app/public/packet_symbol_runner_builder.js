@@ -65,13 +65,13 @@
     },
     {
       id: 'sight_words_g1',
-      title: 'Grade 1 sight words (after, again, every)',
+      title: 'Sight words: after, again, every',
       category: 'word',
       items: ['after', 'again', 'ask', 'could', 'every', 'fly', 'from', 'give', 'going', 'had', 'has', 'her', 'him', 'his'],
     },
     {
       id: 'sight_words_g2_3',
-      title: 'Grades 2 and 3 sight words (always, because)',
+      title: 'Sight words: always, because, together',
       category: 'word',
       items: ['always', 'around', 'because', 'before', 'best', 'both', 'carry', 'clean', 'laugh', 'light', 'myself', 'never', 'only', 'together'],
     },
@@ -213,7 +213,7 @@
     },
     {
       id: 'flanker_letters',
-      title: 'Middle letter (flanker): b, d, p, q',
+      title: 'Middle letter: b, d, p, q',
       category: 'flanker',
       items: [
         { word: 'bbbbb', answer: 'b', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
@@ -274,7 +274,7 @@
     },
     {
       id: 'color_word_stroop',
-      title: 'Color or word (Stroop): name the ink color',
+      title: 'Name the ink color, not the word',
       category: 'color_stroop',
       items: [
         { word: 'RED', answer: 'red', congruent: true, stroopInk: INK.red, promptRule: 'Name the ink color' },

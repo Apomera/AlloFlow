@@ -22,6 +22,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
   var __alloSpaceCtx = null;
   var __alloT = function (k, fb) { var v; try { v = (__alloSpaceCtx && typeof __alloSpaceCtx.t === 'function') ? __alloSpaceCtx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+  var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
 
   // ── ISS module database (positions are schematic scene coordinates) ──
   // Axis convention for the 3-D scene: X = truss (port/starboard),
@@ -4176,9 +4177,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       h('div', { className: 'iss-ams-controls' },
         h('div', { className: 'iss-ams-charge', role: 'group', 'aria-label': __alloT('stem.iss.particleChargeSign', 'Particle charge sign') }, [1, -1].map(function (value) { return h('button', { key: value, type: 'button', 'data-iss-ams-charge': value, 'aria-pressed': value === charge, onClick: function () { setCharge(value); } }, value === 1 ? 'Positive charge (+e)' : 'Negative charge (−e)'); })),
         h('div', { className: 'iss-ams-momentum' }, h('label', { htmlFor: inputId.current }, 'Transverse momentum · ' + momentum.toFixed(1) + ' × reference'),
-          h('input', { id: inputId.current, type: 'range', min: 1, max: 5, step: .5, value: momentum, 'data-iss-ams-momentum': '', 'aria-label': __alloT('stem.iss.relativeTransverseMomentum', 'Relative transverse momentum'), 'aria-valuetext': momentum.toFixed(1) + ' times reference momentum', onChange: function (event) { setMomentum(Number(event.target.value)); } }),
+          h('input', { id: inputId.current, type: 'range', min: 1, max: 5, step: .5, value: momentum, 'data-iss-ams-momentum': '', 'aria-label': __alloT('stem.iss.relativeTransverseMomentum', 'Relative transverse momentum'), 'aria-valuetext': __alloT('stem.spacestation.a11y_times_reference_momentum', '{momentum} times reference momentum').replace('{momentum}', function () { return momentum.toFixed(1); }), onChange: function (event) { setMomentum(Number(event.target.value)); } }),
           h('span', null, 'Field strength and |q| = e stay fixed.'))),
-      h('svg', { viewBox: '0 0 640 260', role: 'img', 'aria-label': 'Uniform magnetic field points out of the page. Particles enter downward. The selected ' + (charge === 1 ? 'positive' : 'negative') + ' charge bends ' + track.bend + '; the dashed opposite charge bends the other way at equal momentum. Nine schematic tracking planes are shown.' },
+      h('svg', { viewBox: '0 0 640 260', role: 'img', 'aria-label': __alloT('stem.iss.amsFieldDiagramAria', 'Uniform magnetic field points out of the page. Particles enter downward. The selected {charge} charge bends {direction}; the dashed opposite charge bends the other way at equal momentum. Nine schematic tracking planes are shown.').replace('{charge}', charge === 1 ? __alloT('stem.iss.chargePositive', 'positive') : __alloT('stem.iss.chargeNegative', 'negative')).replace('{direction}', track.bend === 'left' ? __alloT('stem.iss.bendLeft', 'left') : __alloT('stem.iss.bendRight', 'right')) },
         h('text', { x: 20, y: 24, fill: '#9fc2d8', fontSize: 11, fontFamily: 'monospace' }, 'CONCEPTUAL FIELD · NOT AMS DATA'),
         [0,1,2,3,4,5,6,7,8].map(function (layer) { return h('line', { key: layer, x1: 180, x2: 460, y1: 45 + layer * 20, y2: 45 + layer * 20, stroke: '#536e85', strokeWidth: 2, opacity: .65 }); }),
         [180,460].map(function (x) { return h('g', { key: x }, [75,135,195].map(function (y) { return h('g', { key: y }, h('circle', { cx: x + (x === 180 ? -28 : 28), cy: y, r: 8, fill: 'none', stroke: '#a7bfce', strokeWidth: 1.5 }), h('circle', { cx: x + (x === 180 ? -28 : 28), cy: y, r: 2, fill: '#a7bfce' })); })); }),
@@ -4258,7 +4259,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       h('div', { className: 'iss-reflector-modes', role: 'group', 'aria-label': __alloT('stem.iss.radioEnergyDirection', 'Radio energy direction') }, ['receive', 'transmit'].map(function (value) {
         return h('button', { key: value, type: 'button', 'data-iss-reflector-direction': value, 'aria-pressed': mode === value, onClick: function () { setMode(value); } }, value === 'receive' ? 'Receive · toward the feed' : 'Transmit · away from the dish');
       })),
-      h('svg', { viewBox: '0 0 360 270', role: 'img', 'aria-label': explanation + ' Side view: the pale curved line is the reflector, the gold ring is the feed at the focus, and the dashed horizontal line is the dish axis. This is a ray model, not a coverage map.' },
+      h('svg', { viewBox: '0 0 360 270', role: 'img', 'aria-label': __alloT('stem.spacestation.a11y_side_view_the_pale_curved_line_is_the_reflector', '{explanation} Side view: the pale curved line is the reflector, the gold ring is the feed at the focus, and the dashed horizontal line is the dish axis. This is a ray model, not a coverage map.').replace('{explanation}', function () { return explanation; }) },
         h('path', { d: 'M34 135H333', fill: 'none', stroke: '#708a9d', strokeWidth: 1.5, strokeDasharray: '5 6' }),
         diagram.rays.map(function (ray, index) { return h('g', { key: index, 'data-iss-reflector-ray': index }, ray.segments.map(function (segment) {
           var color = segment.kind === 'parallel' ? '#7dd3fc' : '#fbbf24';
@@ -4289,7 +4290,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       h('div',{className:'iss-comms-heading'},h('h4',null,'How does a signal get home?'),h('button',{type:'button','data-iss-comms-inspect':'',onClick:inspect},'Inspect Z1 antenna ↗')),
       h('p',null,'Follow one example route between the station and Earth. Radio waves cross vacuum without air or a physical cable. Select a node to examine its job; the arrows represent traffic in both directions.'),
       h('div',{className:'iss-comms-hops',role:'group','aria-label':__alloT('stem.iss.radioRelayRoute','Radio relay route')},hops.map(function(hop){return h('button',{key:hop.id,type:'button','data-iss-comms-hop':hop.id,'aria-pressed':selected===hop.id,onClick:function(){select(hop.id);}},hop.title);})),
-      h('svg',{viewBox:'0 0 600 245',role:'img','aria-label':'Schematic two-way radio path: station to a higher relay satellite, then to an Earth terminal. Highlighted: '+active.title+'. Distances, positions and antennas are not to scale.'},
+      h('svg',{viewBox:'0 0 600 245',role:'img','aria-label':__alloT('stem.iss.relayPathDiagramAria','Schematic two-way radio path: station to a higher relay satellite, then to an Earth terminal. Highlighted: {part}. Distances, positions and antennas are not to scale.').replace('{part}',active.title)},
         h('path',{d:'M25 213Q300 164 575 213',fill:'none',stroke:'#517e9d',strokeWidth:5}),
         h('path',{d:'M139 130L269 72M331 72L461 130',fill:'none',stroke:'#e5c474',strokeWidth:3,strokeDasharray:'7 5'}),
         h('path',{d:'M211 93l-12 2 7 8M393 103l8-8-12-2M228 90l12-2-7-8M372 80l-12 8 13 2',fill:'none',stroke:'#e5c474',strokeWidth:3}),
@@ -4322,7 +4323,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       h('div',{className:'iss-quest-heading'},h('h4',null,'Why two chambers?'),h('button',{type:'button','data-iss-quest-inspect':'',onClick:inspect},'Inspect Quest exterior ↗')),
       h('p',null,'Quest combines a larger equipment lock with a smaller crew lock. An internal hatch and bulkhead provide a pressure boundary between them. Select a region to examine its role.'),
       h('div',{className:'iss-quest-zones',role:'group','aria-label':__alloT('stem.iss.questAirlockRegion','Quest airlock region')},zones.map(function(zone){return h('button',{key:zone.id,type:'button','data-iss-quest-chamber':zone.id,'aria-pressed':selected===zone.id,onClick:function(){select(zone.id);}},zone.title);})),
-      h('svg',{viewBox:'0 0 600 245',role:'img','aria-label':'Schematic Quest cross-section: Unity connects to the larger equipment lock; an internal hatch separates the smaller crew lock, with its exterior hatch on the Earth-facing side. Highlighted: '+active.title+'. Chambers and openings are not to scale.'},
+      h('svg',{viewBox:'0 0 600 245',role:'img','aria-label':__alloT('stem.iss.questAirlockDiagramAria','Schematic Quest cross-section: Unity connects to the larger equipment lock; an internal hatch separates the smaller crew lock, with its exterior hatch on the Earth-facing side. Highlighted: {part}. Chambers and openings are not to scale.').replace('{part}',active.title)},
         h('text',{x:26,y:39,fill:'#c5dce9',fontSize:14},'Unity side'),h('text',{x:574,y:39,textAnchor:'end',fill:'#c5dce9',fontSize:14},'Crew exit side'),
         h('path',{d:'M10 115H35M10 145H35M265 88L340 108M265 172L340 152',stroke:'#7796ac',strokeWidth:5,fill:'none'}),
         zones.map(function(zone,i){var on=selected===zone.id;return h('g',{key:zone.id,'data-iss-quest-zone':zone.id,'data-selected':String(on)},
@@ -4366,7 +4367,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       h('div', { className: 'iss-kibo-heading' }, h('h4', null, 'One laboratory, two environments'), h('button', { type: 'button', 'data-iss-kibo-inspect': '', onClick: inspect }, 'Inspect Kibo platform ↗')),
       h('p', null, 'Kibo combines a pressurized laboratory and an external experiment platform. An equipment airlock and a separate robotic system help suitable small payloads cross that boundary. Select a zone to compare the working environments.'),
       h('div', { className: 'iss-kibo-zones', role: 'group', 'aria-label': __alloT('stem.iss.kiboWorkingEnvironment', 'Kibo working environment') }, zones.map(function (zone) { return h('button', { key: zone.id, type: 'button', 'data-iss-kibo-environment': zone.id, 'aria-pressed': selected === zone.id, onClick: function () { select(zone.id); } }, zone.title); })),
-      h('svg', { viewBox: '0 0 600 245', role: 'img', 'aria-label': 'Schematic equipment route from the pressurized laboratory through its equipment airlock to the exposed platform. Highlighted: ' + active.title + '. Kibo’s robotic arm handles suitable equipment outside. Separate service connections carry power, data and coolant. Not to scale.' },
+      h('svg', { viewBox: '0 0 600 245', role: 'img', 'aria-label': __alloT('stem.iss.kiboRouteDiagramAria', 'Schematic equipment route from the pressurized laboratory through its equipment airlock to the exposed platform. Highlighted: {part}. Kibo’s robotic arm handles suitable equipment outside. Separate service connections carry power, data and coolant. Not to scale.').replace('{part}', active.title) },
         zones.map(function (zone, i) { var x = [24,236,382][i], width = [190,124,194][i], on = zone.id === selected; return h('g', { key: zone.id, 'data-iss-kibo-zone': zone.id, 'data-selected': String(on) },
           h('rect', { x: x, y: 66, width: width, height: 104, rx: i === 0 ? 18 : 5, fill: on ? '#24465a' : '#15283a', stroke: on ? '#f6cf76' : '#7796ac', strokeWidth: on ? 4 : 2 }),
           h('text', { x: x + width / 2, y: 47, textAnchor: 'middle', fill: '#c5dce9', fontSize: 14 }, ['Cabin air','Equipment airlock','Exposed platform'][i]),
@@ -4420,7 +4421,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       h('div', { className: 'iss-cupola-heading' }, h('h4', null, 'Seven views, layered protection'), h('button', { type: 'button', 'data-iss-cupola-inspect': '', onClick: inspect }, 'Inspect Cupola windows ↗')),
       h('p', null, 'Six trapezoidal side windows surround an 80 cm circular nadir window. Nadir means toward Earth. Each real window has four glass panes with different jobs, plus a separate shutter outside. Select a layer to follow the protection from cabin to space.'),
       h('div', { className: 'iss-cupola-layers', role: 'group', 'aria-label': __alloT('stem.iss.windowProtectionLayer', 'Window protection layer') }, layers.map(function (entry) { return h('button', { key: entry.id, type: 'button', 'data-iss-cupola-layer': entry.id, 'aria-pressed': selected === entry.id, onClick: function () { select(entry.id); } }, entry.label); })),
-      h('svg', { viewBox: '0 0 520 225', role: 'img', 'aria-label': 'Schematic window cross-section, cabin on the left and space on the right: scratch pane, two pressure panes, debris pane and exterior shutter. Highlighted: ' + active.label + '. Thicknesses and gaps are exaggerated.' },
+      h('svg', { viewBox: '0 0 520 225', role: 'img', 'aria-label': __alloT('stem.iss.windowLayersDiagramAria', 'Schematic window cross-section, cabin on the left and space on the right: scratch pane, two pressure panes, debris pane and exterior shutter. Highlighted: {part}. Thicknesses and gaps are exaggerated.').replace('{part}', active.label) },
         h('text', { x: 20, y: 28, fill: '#c4dce9', fontSize: 14 }, 'CABIN'), h('text', { x: 500, y: 28, fill: '#c4dce9', fontSize: 14, textAnchor: 'end' }, 'SPACE'),
         h('path', { d: 'M25 55H495', fill: 'none', stroke: '#6f8ea5', strokeWidth: 2 }), h('path', { d: 'M487 50L496 55L487 60', fill: 'none', stroke: '#a6c4d8', strokeWidth: 2 }),
         h('path', { d: 'M92 78H391M92 186H391', stroke: '#647e92', strokeWidth: 10, fill: 'none' }),
@@ -4461,7 +4462,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       h('div', { className: 'iss-grapple-heading' }, h('h4', null, 'Three cables, then a rigid connection'), h('button', { type: 'button', 'data-iss-grapple-inspect': '', onClick: inspect }, 'Inspect grapple hand ↗')),
       h('p', null, 'Canadarm2’s Latching End Effector is a mechanical hand. Three internal snare cables capture a purpose-built grapple shaft; seating and latching complete the connection. Select a step to examine the sequence.'),
       h('div', { className: 'iss-grapple-stages', role: 'group', 'aria-label': __alloT('stem.iss.conceptualCaptureStep', 'Conceptual capture step') }, stages.map(function (entry, index) { return h('button', { key: index, type: 'button', 'data-iss-capture-stage': index, 'aria-pressed': index === stage, onClick: function () { setStage(index); } }, (index + 1) + ' · ' + entry[0]); })),
-      h('svg', { viewBox: '0 0 640 250', role: 'img', 'aria-label': stages[stage][0] + ' conceptual capture. Front view shows three cables ' + (stage === 0 ? 'open around the intended shaft position' : 'closed around the shaft with clearance') + '. Side view shows ' + (stage === 2 ? 'the fixture seated against the hand' : stage === 1 ? 'the head inside the hand before seating' : 'the probe approaching the opening') + '. Not to scale.' },
+      h('svg', { viewBox: '0 0 640 250', role: 'img', 'aria-label': __alloT('stem.iss.captureStageDiagramAria', '{stage} conceptual capture. Front view shows three cables {cables}. Side view shows {side}. Not to scale.').replace('{stage}', stages[stage][0]).replace('{cables}', stage === 0 ? __alloT('stem.iss.captureCablesOpen', 'open around the intended shaft position') : __alloT('stem.iss.captureCablesClosed', 'closed around the shaft with clearance')).replace('{side}', stage === 2 ? __alloT('stem.iss.captureSideSeated', 'the fixture seated against the hand') : stage === 1 ? __alloT('stem.iss.captureSideInside', 'the head inside the hand before seating') : __alloT('stem.iss.captureSideApproach', 'the probe approaching the opening')) },
         h('text', { x: 18, y: 24, fill: '#a8c9dc', fontSize: 11, fontFamily: 'monospace' }, 'CAPTURE CONCEPT · NOT FLIGHT GEOMETRY'),
         h('circle', { cx: 145, cy: 135, r: 78, fill: '#192b3a', stroke: '#a6b9c8', strokeWidth: 9 }),
         h('circle', { cx: 145, cy: 135, r: 70, fill: '#07111d', stroke: '#607a90', strokeWidth: 2 }),
@@ -4601,7 +4602,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     else if (topic.id === 'cmgs') art = h('g', null, [230, 410].map(function (x, i) { return h('g', { key: i }, h('ellipse', { cx: x, cy: 99, rx: 61, ry: 48, fill: 'none', stroke: ink, strokeWidth: 4, transform: 'rotate(' + (i ? -28 : 28) + ' ' + x + ' 99)' }), h('circle', { cx: x, cy: 99, r: 32, fill: '#233d5d', stroke: blue, strokeWidth: 3 }), h('path', { d: 'M' + (x - 18) + ' 99H' + (x + 18), stroke: gold, strokeWidth: 3 })); }));
     else if (topic.id === 'docking') art = h('g', null, [242, 398].map(function (x, i) { return h('g', { key: i }, h('rect', { x: x - 68, y: 60, width: 65, height: 78, rx: 7, fill: '#243c57', stroke: ink, transform: i ? 'translate(72 0)' : '' }), h('ellipse', { cx: x, cy: 99, rx: 17, ry: 46, fill: '#13273e', stroke: '#d6e3ed', strokeWidth: 5 })); }), h('path', { d: 'M274 99H365M353 89L365 99L353 109', fill: 'none', stroke: gold, strokeWidth: 3 }));
     else art = h('g', null, [0, 1, 2, 3].map(function (layer) { return h('path', { key: layer, d: 'M' + (190 + layer * 28) + ' ' + (50 + layer * 10) + 'L' + (375 + layer * 12) + ' ' + (32 + layer * 10) + 'V' + (130 + layer * 10) + 'L' + (190 + layer * 28) + ' ' + (150 + layer * 10) + 'Z', fill: ['#607c95','#334e68','#a5b6c3','#20364d'][layer], stroke: '#b9cddd', strokeWidth: 1.5 }); }));
-    return h('figure', { className: 'iss-guide-sketch' }, h('svg', { viewBox: '0 0 640 196', role: 'img', 'aria-label': topic.name + ' functional sketch; not to scale' },
+    return h('figure', { className: 'iss-guide-sketch' }, h('svg', { viewBox: '0 0 640 196', role: 'img', 'aria-label': __alloT('stem.spacestation.a11y_functional_sketch_not_to_scale', '{name} functional sketch; not to scale').replace('{name}', function () { return topic.name; }) },
       h('text', { x: 18, y: 22, fill: '#7dd3fc', fontSize: 10, fontFamily: 'monospace', letterSpacing: 1.3 }, 'HARDWARE STUDY // ' + topic.id.toUpperCase()), art),
       h('figcaption', null, 'Functional sketch · not to scale; details omitted'));
   }
@@ -4791,6 +4792,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   // adding a question silently lowered the bar in three of the four and left
   // the label lying about it.
   var QUIZ_PASS = Math.ceil(QUIZ.length * 0.7);
+
+  // Rotate a choice list so its key lands on `target` (mod length). Used where an
+  // authored bank put every key in one slot (all four orbit challenges at B).
+  function issPlaceAnswer(options, key, target) {
+    var n = Array.isArray(options) ? options.length : 0;
+    if (n < 2 || typeof key !== 'number' || key < 0 || key >= n) return { options: options, key: key };
+    var to = ((target % n) + n) % n, shift = (key - to + n) % n;
+    return { options: options.slice(shift).concat(options.slice(0, shift)), key: to };
+  }
 
   // ── Orbit Lab challenges ────────────────────────────────────────────────
   // Four questions that cannot be answered by reading a slider, because each
@@ -14098,7 +14108,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       }
 
       // ── Orbit Lab challenge state ──────────────────────────────────────
-      var ORBIT_CHALLENGES = issChallengeBank();
+      // Every authored key sits in the middle; options are keyed by id, so a
+      // fixed per-challenge rotation changes only what is shown where.
+      var ORBIT_CHALLENGES = issChallengeBank().map(function (c, i) {
+        var key = c.options.map(function (o) { return !!o.correct; }).indexOf(true);
+        return Object.assign({}, c, { options: issPlaceAnswer(c.options, key, i).options });
+      });
       var orbitChallengeId = ORBIT_CHALLENGES.some(function (c) { return c.id === d.orbitChallenge; }) ? d.orbitChallenge : null;
       var orbitChallenge = orbitChallengeId ? ORBIT_CHALLENGES.filter(function (c) { return c.id === orbitChallengeId; })[0] : null;
       // The pick is only meaningful for the challenge it was made on, so it is
@@ -15403,7 +15418,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('label', { htmlFor: 'iss-eva-torque', className: 'iss-experiment-control' }, h('span', null, __alloT('stem.spacestation.eva_tool_torque', 'Tool torque'), h('strong', null, torque + ' N·m')),
                 h('input', { id: 'iss-eva-torque', type: 'range', min: 6, max: 30, step: 1, value: torque, 'aria-valuetext': torque + ' N·m', onChange: function (e) { setup({ toolTorque: Number(e.target.value) }); } })),
               h('label', { htmlFor: 'iss-eva-inertia', className: 'iss-experiment-control', style: { marginTop: 12 } }, h('span', null, __alloT('stem.spacestation.eva_initial_inertia', 'Starting rotational inertia'), h('strong', null, response.initialInertia + ' kg·m²')),
-                h('input', { id: 'iss-eva-inertia', type: 'range', min: 16, max: 64, step: 4, value: response.initialInertia, 'aria-valuetext': response.initialInertia + ' kg·m²', onChange: function (e) { setup({ bodyInertia: Number(e.target.value) }); } })),
+                h('input', { id: 'iss-eva-inertia', type: 'range', min: 16, max: 64, step: 4, value: response.initialInertia, 'aria-valuetext': __alloAriaFill(__alloT('stem.spacestation.a11y_value_kg_m2', '{value} kg·m²'), { value: response.initialInertia }), onChange: function (e) { setup({ bodyInertia: Number(e.target.value) }); } })),
               h('p', { style: { margin: '5px 0', color: SOFT, fontSize: 11, lineHeight: 1.6 } }, __alloT('stem.spacestation.eva_initial_inertia_hint', 'A spread-out body has greater rotational inertia. Set the starting shape, then try a posture change during free coast.')),
               h('button', { type: 'button', 'aria-pressed': braced, onClick: function () { setup({ footRestraint: !braced }); }, style: { marginTop: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + color, background: 'rgba(2,6,23,.4)', color: color, fontSize: 12, fontWeight: 750, cursor: 'pointer' } }, braced ? __alloT('stem.spacestation.eva_restraint_locked', '✓ Foot restraint locked') : __alloT('stem.spacestation.eva_restraint_free', '○ Astronaut unrestrained')), renderEvaClock())),
           h('div', { className: 'iss-eva-counter iss-eva-posture', 'data-eva-posture-controls': 'true' },
@@ -15414,7 +15429,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               })),
             h('p', null, __alloT('stem.spacestation.eva_posture_hint', 'Presets release the model restraint and reset time. With no external torque, tucking inward speeds up rotation; extending slows it. Angular momentum stays the same.')),
             h('label', { htmlFor: 'iss-eva-posture-inertia', className: 'iss-experiment-control' }, h('span', null, __alloT('stem.spacestation.eva_final_inertia', 'Inertia after the posture change'), h('strong', null, response.targetInertia + ' kg·m²')),
-              h('input', { id: 'iss-eva-posture-inertia', type: 'range', min: 16, max: 64, step: 4, value: response.targetInertia, disabled: !postureEnabled, 'aria-valuetext': response.targetInertia + ' kg·m²', onChange: function (e) { setup({ postureInertia: Number(e.target.value) }); } }))),
+              h('input', { id: 'iss-eva-posture-inertia', type: 'range', min: 16, max: 64, step: 4, value: response.targetInertia, disabled: !postureEnabled, 'aria-valuetext': __alloAriaFill(__alloT('stem.spacestation.a11y_value_kg_m2', '{value} kg·m²'), { value: response.targetInertia }), onChange: function (e) { setup({ postureInertia: Number(e.target.value) }); } }))),
           h('div', { className: 'iss-eva-counter' },
             h('div', { className: 'iss-eva-counter-heading' }, h('h4', null, __alloT('stem.spacestation.eva_counter_title', 'Can you stop the spin?')),
               h('span', null, __alloT('stem.spacestation.eva_counter_window', 'Counterpulse: 1.50–2.00 s'))),
@@ -16112,7 +16127,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             onAdvance: function (seconds) { upd({ momentumTime: seconds }); } }),
           h('label', { className: 'iss-experiment-control iss-experiment-timeline', htmlFor: 'iss-momentum-time' },
             h('span', null, __alloT('stem.spacestation.momentum_time', 'Scrub experiment time'), h('strong', null, trial.time.toFixed(1) + ' s')),
-            h('input', { id: 'iss-momentum-time', type: 'range', min: 0, max: trial.duration, step: 0.1, value: trial.time, 'aria-valuetext': trial.time.toFixed(1) + ' seconds', onChange: function (event) { seek(Number(event.target.value)); } })),
+            h('input', { id: 'iss-momentum-time', type: 'range', min: 0, max: trial.duration, step: 0.1, value: trial.time, 'aria-valuetext': __alloAriaFill(__alloT('stem.spacestation.a11y_value_seconds', '{value} seconds'), { value: trial.time.toFixed(1) }), onChange: function (event) { seek(Number(event.target.value)); } })),
           h('div', { className: 'iss-experiment-actions' },
             h('button', { type: 'button', onClick: function () { seek(0); } }, __alloT('stem.spacestation.momentum_reset', 'Reset time')),
             h('button', { type: 'button', disabled: !contactInWindow, 'data-iss-momentum-before': 'true', onClick: function () { seek(Math.max(0, trial.contactTime - 0.1)); } }, __alloT('stem.spacestation.momentum_before', 'Just before contact')),
@@ -16955,7 +16970,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
           return h('div', { 'data-iss-lowg-sim': 'true', style: { padding: 10, borderRadius: 10, background: 'rgba(2,6,23,0.42)', border: '1px solid #334155' } },
             h('label', { htmlFor: 'iss-lowg-impulse', style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: TEXT, fontSize: 11.5, fontWeight: 800 } }, h('span', null, 'Push impulse'), h('span', { style: { color: room.color }, 'aria-hidden': 'true' }, impulse.toFixed(0) + ' N·s')),
-            h('input', { id: 'iss-lowg-impulse', type: 'range', min: 2, max: 22, step: 1, value: impulse, onChange: function (e) { upd({ lowGImpulse: Number(e.target.value), lowGResult: null }); }, 'aria-valuetext': impulse.toFixed(0) + ' newton seconds', 'aria-describedby': 'iss-lowg-explain', style: { width: '100%', accentColor: room.color, margin: '8px 0 5px' } }),
+            h('input', { id: 'iss-lowg-impulse', type: 'range', min: 2, max: 22, step: 1, value: impulse, onChange: function (e) { upd({ lowGImpulse: Number(e.target.value), lowGResult: null }); }, 'aria-valuetext': __alloAriaFill(__alloT('stem.spacestation.a11y_value_newton_seconds', '{value} newton seconds'), { value: impulse.toFixed(0) }), 'aria-describedby': 'iss-lowg-explain', style: { width: '100%', accentColor: room.color, margin: '8px 0 5px' } }),
             h('div', { className: 'iss-learning-visual', 'data-iss-lowg-trajectory': arrivalStatus.toLowerCase().replace(' ', '-'), tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.spacestation.lowg_trajectory_scroll', 'Freefall trajectory diagram. Use arrow keys to scroll when needed.'), style: { marginBottom: 8 } },
               h('svg', { viewBox: '0 0 640 150', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_microgravity_translation_preview_push_impulse_n', 'Microgravity translation preview. Push impulse {value1} newton seconds gives a constant coast speed of {value2} meters per second, travel time {value3} seconds, predicted arrival {value4}.'), { value1: impulse.toFixed(0), value2: speed.toFixed(2), value3: travelTime.toFixed(1), value4: arrivalStatus.toLowerCase() })},
                 h('defs', null, h('marker', { id: 'iss-lowg-vector-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: arrivalColor })), h('linearGradient', { id: 'iss-lowg-tunnel', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#101b2d' }), h('stop', { offset: '50%', stopColor: '#07101f' }), h('stop', { offset: '100%', stopColor: '#111827' }))),
@@ -18205,7 +18220,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             h('div', { className: 'iss-power-workbench' },
               h('div', { className: 'iss-power-scene', 'data-power-phase': current.lit ? 'sunlight' : 'eclipse' },
                 h('div', { className: 'iss-power-scene-heading' }, h('strong', null, current.lit ? 'SUNLIGHT' : 'ECLIPSE'), h('span', { 'data-power-state': true }, stateLabel)),
-                h('svg', { viewBox: '0 0 500 260', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.power_scene_label', 'Station in {phase}. Array angle {angle} degrees; solar generation {power} kilowatts. Battery {battery} percent.'), { phase: current.lit ? 'sunlight' : 'eclipse', angle: arrayAngle.toFixed(0), power: current.solarKW.toFixed(1), battery: current.percent.toFixed(1) }) },
+                h('svg', { viewBox: '0 0 500 260', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.power_scene_label', 'Station in {phase}. Array angle {angle} degrees; solar generation {power} kilowatts. Battery {battery} percent.'), { phase: current.lit ? __alloT('stem.spacestation.power_sunlight', 'sunlight') : __alloT('stem.spacestation.power_eclipse', 'eclipse'), angle: arrayAngle.toFixed(0), power: current.solarKW.toFixed(1), battery: current.percent.toFixed(1) }) },
                   h('defs', null,
                     h('linearGradient', { id: 'iss-power-earth', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0', stopColor: '#2588b1' }), h('stop', { offset: '1', stopColor: '#041324' })),
                     h('linearGradient', { id: 'iss-power-hull', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0', stopColor: '#567084' }), h('stop', { offset: '.45', stopColor: '#d2e6ec' }), h('stop', { offset: '1', stopColor: '#536e84' })),
@@ -18375,7 +18390,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             h('div',{className:'iss-water-flows'},reading('use','Crew supplied',current.useRate.toFixed(1)+' L/day',current.demand.toFixed(1)+' L/day requested',current.unmetRate>1e-8?'#fda4af':'#c4b5fd'),reading('process','Wastewater treated',current.processRate.toFixed(1)+' L/day',current.offline?'Processor is in its outage window':config.throughput.toFixed(0)+' L/day maximum input','#fcd34d'),reading('return','Clean water returned',current.returnRate.toFixed(1)+' L/day',current.lossRate.toFixed(2)+' L/day lost during treatment','#6ee7b7')),
             h('div',{className:'iss-water-clock'},h('div',{className:'iss-water-clock-heading'},h('strong',null,'Day '+day.toFixed(1)+' / 30'),h('span',null,current.side==='before'?'BEFORE CARGO UNLOAD':phase)),
               h(issExperimentPlayback,{React:React,id:'water',t:__alloT,value:day*86400,max:30*86400,speeds:[86400,432000,864000],speedLabels:['1 day/s','5 days/s','10 days/s'],resetKey:JSON.stringify(config)+':'+!!d.opsWaterSeekToken,onAdvance:function(seconds){upd({opsWaterDay:seconds/86400,opsWaterSide:'after'});}}),
-              h('label',{className:'iss-experiment-control',htmlFor:'iss-water-time'},h('span',null,'Inspect mission day',h('strong',null,day.toFixed(1)+' days')),h('input',{id:'iss-water-time',type:'range',min:0,max:30,step:.1,value:day,'aria-describedby':'iss-water-graph-help','aria-valuetext':__alloFill(__alloT('stem.spacestation.water_time_value','Day {day}, clean water {clean} litres, wastewater {waste} litres, {side} cargo unload'),{day:day.toFixed(1),clean:current.clean.toFixed(1),waste:current.waste.toFixed(1),side:current.side==='before'?'before':'after or without'}),onChange:function(event){seek(Number(event.target.value));}}))),
+              h('label',{className:'iss-experiment-control',htmlFor:'iss-water-time'},h('span',null,'Inspect mission day',h('strong',null,day.toFixed(1)+' days')),h('input',{id:'iss-water-time',type:'range',min:0,max:30,step:.1,value:day,'aria-describedby':'iss-water-graph-help','aria-valuetext':__alloFill(__alloT('stem.spacestation.water_time_value','Day {day}, clean water {clean} litres, wastewater {waste} litres, {side} cargo unload'),{day:day.toFixed(1),clean:current.clean.toFixed(1),waste:current.waste.toFixed(1),side:current.side==='before'?__alloT('stem.spacestation.a11y_before', 'before'):__alloT('stem.spacestation.a11y_after_or_without', 'after or without')}),onChange:function(event){seek(Number(event.target.value));}}))),
             h('div',{className:'iss-water-chart-heading'},h('h4',null,'Stored water · litres'),h('button',{type:'button','data-water-reference':true,disabled:!config.delivery,'aria-pressed':showReference,onClick:function(){upd({opsWaterReference:!showReference});}},'Compare no delivery')),
             h('div',{className:'iss-water-plot-grid'},h('div',{className:'iss-water-y-axis','aria-hidden':true},h('span',null,'300 L'),h('span',null,'150 L'),h('span',null,'0 L')),
               h('svg',{viewBox:'0 -4 1000 108',preserveAspectRatio:'none',role:'img','data-water-plot':true,'aria-describedby':'iss-water-graph-help','aria-label':__alloFill(__alloT('stem.spacestation.water_plot_label','Clean and wastewater reserves over 30 days. At day {day}: clean water {clean} litres, wastewater {waste} litres.'),{day:day.toFixed(1),clean:current.clean.toFixed(1),waste:current.waste.toFixed(1)}),onPointerDown:function(event){if(event.button!==0||event.isPrimary===false)return;event.preventDefault();if(event.currentTarget.setPointerCapture)event.currentTarget.setPointerCapture(event.pointerId);plotSeek(event);},onPointerMove:function(event){if(event.currentTarget.hasPointerCapture&&event.currentTarget.hasPointerCapture(event.pointerId))plotSeek(event);},onPointerUp:release,onPointerCancel:release},
@@ -18773,7 +18788,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 h('div', { className: 'iss-attitude-instruments' },
                   reading('angle','Pointing change',current.angleDeg.toFixed(2) + '°','Clockwise from the starting reference','#fdba74'),
                   reading('rate','Angular velocity',current.rateDeg.toFixed(4) + ' °/s',current.rateDeg > 1e-7 ? 'The station is drifting' : 'No angular drift','#7dd3fc')),
-                h('svg', { viewBox: '0 0 720 330', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.attitude_scene_label', 'Station rotated {angle} degrees from its starting orientation. Gyro momentum {percent} percent. Thruster pair {state}.'), { angle: current.angleDeg.toFixed(2), percent: current.percent.toFixed(1), state: current.burning ? 'firing' : 'off' }) },
+                h('svg', { viewBox: '0 0 720 330', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.attitude_scene_label', 'Station rotated {angle} degrees from its starting orientation. Gyro momentum {percent} percent. Thruster pair {state}.'), { angle: current.angleDeg.toFixed(2), percent: current.percent.toFixed(1), state: current.burning ? __alloT('stem.spacestation.a11y_firing', 'firing') : __alloT('stem.spacestation.a11y_off', 'off') }) },
                   h('defs', null,
                     h('linearGradient', { id: 'iss-attitude-module', x1: '0', x2: '1', y1: '0', y2: '0' }, h('stop', { offset: '0', stopColor: '#48677e' }), h('stop', { offset: '.35', stopColor: '#e4edf1' }), h('stop', { offset: '.65', stopColor: '#b8cbd7' }), h('stop', { offset: '1', stopColor: '#456278' })),
                     h('linearGradient', { id: 'iss-attitude-array', x1: '0', x2: '1', y1: '0', y2: '1' }, h('stop', { offset: '0', stopColor: '#16375c' }), h('stop', { offset: '.5', stopColor: '#294e7e' }), h('stop', { offset: '1', stopColor: '#101f3a' })),
@@ -19687,6 +19702,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             co2: { name: 'CO₂ pocket warning', telemetry: 'Crew headache · local airflow low · scrubber current normal', title: 'CABIN AIRFLOW PATH', cueA: 'LOCAL FLOW LOW', cueB: 'SCRUBBER CURRENT NORMAL', choices: [['Add oxygen','Oxygen does not remove CO₂.'],['Restore airflow and clear the inlet','Correct: the scrubber works only if cabin air reaches it.'],['Reduce water recovery','The water loop is not the cause.']], correct: 1 }
           };
           var sid = d.opsEmergency || 'leak', scenario = scenarios[sid] || scenarios.leak;
+          // Authored keys: 3 of 4 at B, none at C. Grading is by index and each
+          // feedback string rides inside its choice tuple, so rotate both together.
+          var _emPlaced = issPlaceAnswer(scenario.choices, scenario.correct, Math.max(0, Object.keys(scenarios).indexOf(scenarios[sid] ? sid : 'leak')));
+          scenario = Object.assign({}, scenario, { choices: _emPlaced.options, correct: _emPlaced.key });
           var incidentState = !d.opsEmergencyResult ? 'active' : d.opsEmergencyCorrect ? 'contained' : 'hold';
           var stateLabel = incidentState === 'contained' ? 'CONTAINED' : incidentState === 'hold' ? 'HOLD // HAZARD ACTIVE' : 'ACTIVE INCIDENT';
           var stateColor = incidentState === 'contained' ? '#4ade80' : incidentState === 'hold' ? '#fbbf24' : '#f87171';
@@ -20398,7 +20417,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function rateGauge(axis, label) {
           return h('div', { className: 'iss-drive-rate-card' },
             h('div', { className: 'iss-drive-rate-heading' }, h('span', null, label), h('strong', { 'data-iss-drive-reading': axis + '-rate' }, '0.000°/s')),
-            h('svg', { viewBox: '0 0 240 44', role: 'img', 'data-iss-drive-rate-gauge': axis, 'data-iss-drive-rate-scale': '.08', 'aria-label': label + ': 0 degrees per second.' },
+            h('svg', { viewBox: '0 0 240 44', role: 'img', 'data-iss-drive-rate-gauge': axis, 'data-iss-drive-rate-scale': '.08', 'aria-label': __alloAriaFill(__alloT('stem.spacestation.a11y_0_degrees_per_second', '{label}: 0 degrees per second.'), { label: label }) },
               h('line', { x1: 16, y1: 15, x2: 224, y2: 15, className: 'iss-drive-rate-track' }),
               h('rect', { x: 120, y: 10, width: 0, height: 10, rx: 2, 'data-iss-drive-rate-bar': '' }),
               h('line', { x1: 120, y1: 6, x2: 120, y2: 24, className: 'iss-drive-rate-zero' }),
@@ -21124,7 +21143,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var tangentLength = Math.sqrt(tangentX * tangentX + tangentY * tangentY);
         tangentX = tangentX / tangentLength * 65; tangentY = tangentY / tangentLength * 65;
         return h('div', { className: 'iss-learning-visual iss-orbit-visual', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.spacestation.orbit_profile_scroll', 'Orbital profile diagram. Use arrow keys to scroll when needed.') },
-          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_orbit_diagram_at_kilometers_altitude_moving_kil', 'Orbit diagram at {value1} kilometers altitude, moving {value2} kilometers per second with a period of {value3} minutes. {value4}.'), { value1: orbitAlt, value2: orbitAnswerVisible ? orbitV.toFixed(2) : 'an amount hidden until you predict', value3: orbitAnswerVisible ? orbitT.toFixed(1) : 'a hidden number of', value4: comparisonText.toLowerCase() })},
+          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_orbit_diagram_at_kilometers_altitude_moving_kil', 'Orbit diagram at {value1} kilometers altitude, moving {value2} kilometers per second with a period of {value3} minutes. {value4}.'), { value1: orbitAlt, value2: orbitAnswerVisible ? orbitV.toFixed(2) : __alloT('stem.spacestation.a11y_an_amount_hidden_until_you_predict', 'an amount hidden until you predict'), value3: orbitAnswerVisible ? orbitT.toFixed(1) : __alloT('stem.spacestation.a11y_a_hidden_number_of', 'a hidden number of'), value4: comparisonText.toLowerCase() })},
             h('defs', null,
               h('radialGradient', { id: 'iss-orbit-earth', cx: '35%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '52%', stopColor: '#1863a0' }), h('stop', { offset: '100%', stopColor: '#071c3b' })),
               h('filter', { id: 'iss-orbit-cloud', x: '-60%', y: '-180%', width: '220%', height: '460%' }, h('feGaussianBlur', { stdDeviation: 3 })),
@@ -21261,7 +21280,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           h('p', { style: { color: SOFT, fontSize: 12.5, lineHeight: 1.6, marginTop: 0 } }, 'Fly a two-burn transfer from your designed orbit. Fire along the velocity vector to raise an orbit, or against it to lower one. Between burns, gravity alone changes the flight path.'),
           !orbitAnswerVisible ? h('p', { className: 'iss-network-detail' }, 'Commit your speed prediction above to unlock the flight deck.') : h('div', null,
             h('label', { htmlFor: 'iss-transfer-target', style: { display: 'flex', justifyContent: 'space-between', gap: 10, color: SOFT, fontSize: 12 } }, h('span', null, 'Target circular orbit'), h('strong', { style: { color: '#c4b5fd' } }, target + ' km')),
-            h('input', { id: 'iss-transfer-target', type: 'range', min: 200, max: 2000, step: 10, value: target, 'aria-valuetext': target + ' kilometers', style: { width: '100%', accentColor: '#a78bfa' }, onChange: function (event) { upd({ orbitTransferTarget: Number(event.target.value), orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: orbitAlt }); } }),
+            h('input', { id: 'iss-transfer-target', type: 'range', min: 200, max: 2000, step: 10, value: target, 'aria-valuetext': __alloAriaFill(__alloT('stem.spacestation.a11y_value_kilometers', '{value} kilometers'), { value: target }), style: { width: '100%', accentColor: '#a78bfa' }, onChange: function (event) { upd({ orbitTransferTarget: Number(event.target.value), orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: orbitAlt }); } }),
             h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.transfer_flight_presets', 'Transfer flight presets') },
               [{ label: 'Raise 20 km', altitude: Math.min(2000, orbitAlt + 20) }, { label: 'Lower 100 km', altitude: Math.max(200, orbitAlt - 100) }, { label: 'Target 800 km', altitude: 800 }].map(function (preset) { return h('button', { key: preset.label, type: 'button', onClick: function () { upd({ orbitTransferTarget: preset.altitude, orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: orbitAlt }); } }, preset.label); })),
             h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.transfer_overlay_controls', 'Orbital diagram overlays') },
@@ -21324,7 +21343,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               resetKey: [orbitAlt, target, stage, !!d.orbitTransferSeekToken].join(':'), onAdvance: function (seconds) { setFlight(seconds / plan.coastSeconds, 1, true); } }),
             h('div', { className: 'iss-transfer-controls' },
               h('label', { htmlFor: 'iss-transfer-time', style: { display: 'flex', justifyContent: 'space-between', color: SOFT, fontSize: 12, gap: 10 } }, h('span', null, 'Scrub coast time'), h('span', null, '0 – ' + (plan.coastSeconds / 60).toFixed(1) + ' minutes')),
-              h('input', { id: 'iss-transfer-time', type: 'range', min: 0, max: 1000, step: 1, value: Math.round(progress * 1000), disabled: stage !== 1 || noTransfer, 'aria-describedby': 'iss-transfer-profile-help', 'aria-valuetext': (flight.elapsedSeconds / 60).toFixed(1) + ' elapsed minutes', style: { width: '100%', accentColor: '#fbbf24' }, onChange: function (event) { setFlight(Number(event.target.value) / 1000, 1); } }),
+              h('input', { id: 'iss-transfer-time', type: 'range', min: 0, max: 1000, step: 1, value: Math.round(progress * 1000), disabled: stage !== 1 || noTransfer, 'aria-describedby': 'iss-transfer-profile-help', 'aria-valuetext': __alloAriaFill(__alloT('stem.spacestation.a11y_value_elapsed_minutes', '{value} elapsed minutes'), { value: (flight.elapsedSeconds / 60).toFixed(1) }), style: { width: '100%', accentColor: '#fbbf24' }, onChange: function (event) { setFlight(Number(event.target.value) / 1000, 1); } }),
               h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.transfer_flight_controls', 'Transfer flight controls') },
                 h('button', { type: 'button', 'data-iss-transfer-action': 'inject', disabled: stage !== 0 || noTransfer, onClick: function () { setFlight(0, 1); } }, '1 · Inject ' + signedBurn(plan.burn1)),
                 h('button', { type: 'button', 'data-iss-transfer-action': 'coast', disabled: stage !== 1 || ready || noTransfer, onClick: function () { setFlight(Math.min(1, progress + 300 / plan.coastSeconds), 1); } }, 'Coast +5 min'),
@@ -21612,7 +21631,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var westShift = 360 * (orbitT * 60) / SIDEREAL_DAY_S;
         var blockedPads = LAUNCH_SITES.filter(function (s) { return inc < s.lat - 0.05; });
         return h('div', { className: 'iss-learning-visual', 'data-iss-ground-track': inc.toFixed(1), tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.spacestation.ground_track_scroll', 'Ground track diagram. Use arrow keys to scroll when needed.') },
-          h('svg', { viewBox: '0 0 640 372', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_ground_track', 'World map with the station ground track at {value1} degrees inclination. The track reaches {value1} degrees north and south, crossing {value2} percent of Earth’s land area. Each orbit shifts {value3} degrees west.'), { value1: inc.toFixed(1), value2: Math.round(landShare * 100), value3: westShift.toFixed(1) }) + ' ' + (blockedPads.length ? __alloFill(__alloT('stem.spacestation.a11y_ground_track_blocked', '{value1} cannot reach this orbit directly; the other launch sites can.'), { value1: blockedPads.map(function (s) { return s.name; }).join(' and ') }) : // ★Derived, not "five". The readout below this map already computes
+          h('svg', { viewBox: '0 0 640 372', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_ground_track', 'World map with the station ground track at {value1} degrees inclination. The track reaches {value1} degrees north and south, crossing {value2} percent of Earth’s land area. Each orbit shifts {value3} degrees west.'), { value1: inc.toFixed(1), value2: Math.round(landShare * 100), value3: westShift.toFixed(1) }) + ' ' + (blockedPads.length ? __alloFill(__alloT('stem.spacestation.a11y_ground_track_blocked', '{value1} cannot reach this orbit directly; the other launch sites can.'), { value1: blockedPads.map(function (s) { return s.name; }).join(__alloT('stem.spacestation.a11y_list_join_and', ' and ')) }) : // ★Derived, not "five". The readout below this map already computes
 // `(LAUNCH_SITES.length - blocked.length) + ' of ' + LAUNCH_SITES.length`,
 // so the count had two derivations and one of them was a literal. It happens
 // to be right today; adding a sixth pad would have made this line lie. Worst
@@ -21672,7 +21691,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
             h('input', {
               id: 'iss-orbit-inc', type: 'range', min: 0, max: 90, step: 0.1, value: inc,
               onChange: function (e) { upd({ orbitInc: Number(e.target.value), orbitTouched: true }); },
-              'aria-valuetext': inc.toFixed(1) + ' degrees, reaching ' + inc.toFixed(1) + ' degrees north and south',
+              'aria-valuetext': __alloAriaFill(__alloT('stem.spacestation.a11y_degrees_reaching_degrees_north_and_south', '{inc} degrees, reaching {inc} degrees north and south'), { inc: inc.toFixed(1) }),
               'aria-describedby': 'iss-inc-note',
               style: { width: '100%', accentColor: '#38bdf8' }
             }),
@@ -21882,7 +21901,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
               h('input', {
                 id: 'iss-orbit-alt', type: 'range', min: 200, max: 2000, step: 10, value: orbitAlt,
                 onChange: function (e) { upd({ orbitAlt: parseInt(e.target.value, 10), orbitTouched: true, orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: null, orbitDragTime: 0, orbitDragSide: 'after', orbitDragSeekToken: !d.orbitDragSeekToken }); },
-                'aria-valuetext': orbitAlt + ' kilometers', 'aria-describedby': 'iss-orbit-tradeoff',
+                'aria-valuetext': __alloAriaFill(__alloT('stem.spacestation.a11y_value_kilometers', '{value} kilometers'), { value: orbitAlt }), 'aria-describedby': 'iss-orbit-tradeoff',
                 style: { width: '100%', accentColor: '#38bdf8' }
               }),
               renderDragReboostVisual(),
@@ -22103,7 +22122,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
           h('div', { className: 'iss-visual-caption', 'data-iss-assembly-install': step }, h('span', null, installLabel), h('span', null, visible.length + ' MAJOR ELEMENTS ON ORBIT')),
           h('div', { className: 'iss-assembly-controls' },
             h('label', { htmlFor: 'iss-assembly-step' }, h('span', null, 'Assembly milestone'), h('strong', { 'aria-hidden': 'true' }, TIMELINE[step].y)),
-            h('input', { id: 'iss-assembly-step', type: 'range', min: 0, max: TIMELINE.length - 1, step: 1, value: step, 'aria-valuetext': 'Milestone ' + (step + 1) + ' of ' + TIMELINE.length + ', ' + TIMELINE[step].y + '. ' + TIMELINE[step].e, onChange: function (e) { upd({ assemblyIdx: Number(e.target.value) }); } }),
+            h('input', { id: 'iss-assembly-step', type: 'range', min: 0, max: TIMELINE.length - 1, step: 1, value: step, 'aria-valuetext': __alloAriaFill(__alloT('stem.spacestation.a11y_milestone_of', 'Milestone {step} of {total}, {year}. {event}'), { step: step + 1, total: TIMELINE.length, year: TIMELINE[step].y, event: TIMELINE[step].e }), onChange: function (e) { upd({ assemblyIdx: Number(e.target.value) }); } }),
             h('div', { className: 'iss-assembly-stepper' }, h('button', { type: 'button', disabled: step === 0, onClick: function () { upd({ assemblyIdx: Math.max(0, step - 1) }); } }, '← Previous'), h('span', { role: 'status' }, (step + 1) + ' / ' + TIMELINE.length), h('button', { type: 'button', disabled: step === TIMELINE.length - 1, onClick: function () { upd({ assemblyIdx: Math.min(TIMELINE.length - 1, step + 1) }); } }, 'Next →'))));
       }
       function renderHistory() {

@@ -1203,6 +1203,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     };
   }
 
+  // AI events are untrusted: keep only allowed qualities, finite clamped effects
+  // (same range as the prompt and local deck), and fall back to local-deck text.
+  var EVENT_QUALITIES = ['optimal', 'adequate', 'poor'];
+  var EVENT_EFFECT_MIN = -15, EVENT_EFFECT_MAX = 20;
+  function cleanEventText(v, max, fallback) {
+    var s = typeof v === 'string' ? v.trim() : (typeof v === 'number' && isFinite(v) ? String(v) : '');
+    return s ? s.slice(0, max) : (fallback || '');
+  }
+  function cleanEventEffects(raw) {
+    var out = {};
+    if (!raw || typeof raw !== 'object') return out;
+    Object.keys(raw).forEach(function(k) {
+      if (!RESOURCES[k]) return;
+      var n = Number(raw[k]);
+      if (raw[k] === null || raw[k] === '' || typeof raw[k] === 'boolean' || !isFinite(n)) return;
+      out[k] = Math.max(EVENT_EFFECT_MIN, Math.min(EVENT_EFFECT_MAX, Math.round(n)));
+    });
+    return out;
+  }
+  function cleanEventChoice(raw, localChoice) {
+    if (!raw || typeof raw !== 'object') return null;
+    var label = cleanEventText(raw.label, 160, '');
+    if (!label) return null;
+    var quality = EVENT_QUALITIES.indexOf(raw.quality) >= 0 ? raw.quality : 'adequate';
+    var lc = localChoice || {};
+    return {
+      label: label,
+      icon: cleanEventText(raw.icon, 16, lc.icon || '\u2699\uFE0F'),
+      effects: cleanEventEffects(raw.effects),
+      quality: quality,
+      outcome: cleanEventText(raw.outcome, 400, lc.outcome || 'The crew carries out the plan.'),
+      scienceReward: cleanEventText(raw.scienceReward, 400, lc.scienceReward || '')
+    };
+  }
+  function cleanStringList(raw, max, fallback) {
+    var list = Array.isArray(raw) ? raw.map(function(s) { return cleanEventText(s, 60, ''); }).filter(Boolean).slice(0, max) : [];
+    return list.length ? list : (fallback || []);
+  }
+  // Returns a sanitized event, or null when there are not at least 2 usable choices.
+  function sanitizeAiMissionEvent(raw, localEvent) {
+    if (!raw || typeof raw !== 'object' || !Array.isArray(raw.choices)) return null;
+    var local = localEvent || {};
+    var localByQuality = {};
+    (local.choices || []).forEach(function(c) { localByQuality[c.quality] = c; });
+    var choices = raw.choices.slice(0, 4).map(function(c) {
+      var q = c && EVENT_QUALITIES.indexOf(c.quality) >= 0 ? c.quality : 'adequate';
+      return cleanEventChoice(c, localByQuality[q]);
+    }).filter(Boolean);
+    if (choices.length < 2) return null;
+    var categories = ['systems', 'science', 'crew', 'environment', 'navigation'];
+    var event = {
+      emoji: cleanEventText(raw.emoji, 16, local.emoji || '\u2699\uFE0F'),
+      title: cleanEventText(raw.title, 120, local.title || 'Mission Event'),
+      category: categories.indexOf(raw.category) >= 0 ? raw.category : (local.category || 'science'),
+      description: cleanEventText(raw.description, 600, local.description || ''),
+      stemConcepts: cleanStringList(raw.stemConcepts, 4, local.stemConcepts),
+      relevantSpecialties: cleanStringList(raw.relevantSpecialties, 3, local.relevantSpecialties),
+      choices: choices
+    };
+    if (local.protocolLens) event.protocolLens = local.protocolLens;
+    var hidden = raw.hiddenOption && cleanEventChoice(raw.hiddenOption, local.hiddenOption);
+    if (hidden) {
+      hidden.requiresSpecialty = cleanEventText(raw.hiddenOption.requiresSpecialty, 40, '');
+      hidden.consultLine = cleanEventText(raw.hiddenOption.consultLine, 300, '');
+      if (hidden.requiresSpecialty) event.hiddenOption = hidden;
+    }
+    return event;
+  }
+  // Deterministic per-event shuffle so the optimal choice is not always first.
+  function shuffleEventChoices(event, seedText) {
+    if (!event || !Array.isArray(event.choices) || event.choices.length < 2) return event;
+    var seed = 2166136261;
+    var str = String(seedText || '') + '|' + (event.title || '');
+    for (var i = 0; i < str.length; i++) { seed ^= str.charCodeAt(i); seed = Math.imul(seed, 16777619) >>> 0; }
+    var list = event.choices.slice();
+    for (var j = list.length - 1; j > 0; j--) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      var k = seed % (j + 1);
+      var tmp = list[j]; list[j] = list[k]; list[k] = tmp;
+    }
+    return Object.assign({}, event, { choices: list });
+  }
+
   function assessMissionIntent(intent, evidence, dossier) {
     var clean = (intent || '').trim();
     var goals = dossier && dossier.evidenceGoals ? dossier.evidenceGoals : [];
@@ -1547,6 +1630,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   window.StemLab.spaceExplorerPure = {
     buildMissionDossier: buildMissionDossier,
     buildLocalMissionEvent: buildLocalMissionEvent,
+    sanitizeAiMissionEvent: sanitizeAiMissionEvent,
+    shuffleEventChoices: shuffleEventChoices,
     assessMissionIntent: assessMissionIntent,
     buildMissionProtocol: buildMissionProtocol,
     reviseMissionProtocol: reviseMissionProtocol,
@@ -3154,40 +3239,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         if (!destination || isGenerating) return;
         upd('isGenerating', true);
 
-        // Apply per-turn resource drain BEFORE generating the event
+        // Compute this turn's drain now (the prompt needs it) but commit it only
+        // when an event is shown, so a failed or retried AI call never drains twice.
         var readinessResult = applyInteriorReadinessBonus(resources, interiorOrientation, !!d.interiorReadinessApplied);
         var drainedRes = applyTurnDrain(readinessResult.resources, destination, unlockedTech, powerAllocation);
-        var drainPatch = { resources: drainedRes };
-        if (readinessResult.applied) {
-          drainPatch.interiorReadinessApplied = true;
-          drainPatch.interiorReadinessBonus = readinessResult.moraleBonus;
-        }
-        updAll(drainPatch);
-        if (readinessResult.applied) {
-          log('Cabin readiness applied: +' + readinessResult.moraleBonus + ' morale before routine turn drain.');
-          if (addToast) addToast('Cabin practice applied: +' + readinessResult.moraleBonus + ' morale', 'success');
-        }
 
         // Check for critical resource warnings
         var warnings = [];
         Object.keys(drainedRes).forEach(function(k) {
           if (RESOURCES[k].max !== 999 && drainedRes[k] <= 15) warnings.push(RESOURCES[k].emoji + ' ' + RESOURCES[k].label + ' critical (' + drainedRes[k] + '%)');
         });
-        if (warnings.length > 0 && addToast) addToast('\u26A0\uFE0F ' + warnings.join(' | '), 'warning');
+        var localEvent = buildLocalMissionEvent(destination, drainedRes, turn, maxTurns, decisionLog, missionProtocol, missionDossier);
+        var eventShown = false;
 
-        // WCAG: Announce resource changes to screen readers
-        var srResMsg = 'Resources updated. ' + Object.keys(drainedRes).map(function(k) {
-          return RESOURCES[k].max !== 999 ? RESOURCES[k].label + ' ' + drainedRes[k] + '%' : '';
-        }).filter(Boolean).join(', ') + '.';
-        if (warnings.length > 0) srResMsg += ' Warning: ' + warnings.join('. ') + '.';
-        if (readinessResult.applied) srResMsg += ' Cabin practice added ' + readinessResult.moraleBonus + ' morale before routine turn drain.';
-        announceToSR(srResMsg);
+        function showEvent(event, isLocal, minigame, note) {
+          if (eventShown) return;
+          eventShown = true;
+          event = shuffleEventChoices(event, destination.id + ':' + turn);
+          var patch = { resources: drainedRes, activeEvent: event, missionPhase: 'event', isGenerating: false, minigamePending: minigame || null, minigameResult: null, currentDecisionReason: '' };
+          if (readinessResult.applied) {
+            patch.interiorReadinessApplied = true;
+            patch.interiorReadinessBonus = readinessResult.moraleBonus;
+          }
+          updAll(patch);
+          if (readinessResult.applied) {
+            log('Cabin readiness applied: +' + readinessResult.moraleBonus + ' morale before routine turn drain.');
+            if (addToast) addToast('Cabin practice applied: +' + readinessResult.moraleBonus + ' morale', 'success');
+          }
+          if (warnings.length > 0 && addToast) addToast('\u26A0\uFE0F ' + warnings.join(' | '), 'warning');
+          if (note) {
+            log(note);
+            if (addToast) addToast(note, 'info');
+          }
+          log(event.emoji + ' ' + event.title + (isLocal ? ' (local mission deck)' : ''));
+          // WCAG: Announce resource changes to screen readers
+          var srResMsg = 'Resources updated. ' + Object.keys(drainedRes).map(function(k) {
+            return RESOURCES[k].max !== 999 ? RESOURCES[k].label + ' ' + drainedRes[k] + '%' : '';
+          }).filter(Boolean).join(', ') + '.';
+          if (warnings.length > 0) srResMsg += ' Warning: ' + warnings.join('. ') + '.';
+          if (readinessResult.applied) srResMsg += ' Cabin practice added ' + readinessResult.moraleBonus + ' morale before routine turn drain.';
+          announceToSR((note ? note + ' ' : '') + srResMsg + ' ' + (isLocal ? 'Local mission event: ' : 'Mission event: ') + event.title + '. ' + event.description + (minigame ? ' Spectral analysis required before choosing a response.' : ''));
+        }
 
         if (!callGemini) {
-          var localEvent = buildLocalMissionEvent(destination, drainedRes, turn, maxTurns, decisionLog, missionProtocol, missionDossier);
-          updAll({ activeEvent: localEvent, missionPhase: 'event', isGenerating: false, minigamePending: null, minigameResult: null, currentDecisionReason: '' });
-          log(localEvent.emoji + ' ' + localEvent.title + ' (local mission deck)');
-          announceToSR('Local mission event: ' + localEvent.title + '. ' + localEvent.description);
+          showEvent(localEvent, true, null, null);
           return;
         }
 
@@ -3253,15 +3348,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           '"quality":"optimal|adequate|poor","outcome":"result","scienceReward":"science explanation"}],' +
           '"hiddenOption":{"label":"specialist action","icon":"emoji","effects":{"science":20},"quality":"optimal","requiresSpecialty":"chemistry","outcome":"result","scienceReward":"science explanation","consultLine":"what the specialist says when consulted"}}';
 
-        callGemini(prompt, true).then(function(result) {
-          try {
-            var cleaned = (typeof result === 'string' ? result : (result && result.text ? result.text : String(result || '{}')));
-            cleaned = cleaned.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            var jsonStart = cleaned.indexOf('{');
-            var jsonEnd = cleaned.lastIndexOf('}');
-            if (jsonStart >= 0 && jsonEnd > jsonStart) cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
-            var event = JSON.parse(cleaned);
-            if (event && event.title && event.choices && event.choices.length > 0) {
+        // At most one retry on an unreadable reply; a network error, or a second
+        // bad reply, falls back to the offline mission deck at once.
+        function requestAiEvent(attempt) {
+          callGemini(prompt, true).then(function(result) {
+            var event = null;
+            try {
+              var cleaned = (typeof result === 'string' ? result : (result && result.text ? result.text : String(result || '{}')));
+              cleaned = cleaned.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+              var jsonStart = cleaned.indexOf('{');
+              var jsonEnd = cleaned.lastIndexOf('}');
+              if (jsonStart >= 0 && jsonEnd > jsonStart) cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+              event = sanitizeAiMissionEvent(JSON.parse(cleaned), localEvent);
+            } catch (e) {
+              console.warn('[SpaceExplorer] Event parse failed:', e);
+              event = null;
+            }
+            if (event) {
               // Roll Spectral Match: 30% chance at destinations whose science
               // focus includes chemistry/atmospheric keywords. Choice buttons
               // lock until the mini-game resolves. Compound weighted by dest.
@@ -3271,23 +3374,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               if (chemDest && Math.random() < 0.3) {
                 minigame = pickSpectraCompound(destination, destination.difficulty || 1);
               }
-              updAll({ activeEvent: event, missionPhase: 'event', isGenerating: false, minigamePending: minigame, minigameResult: null, currentDecisionReason: '' });
-              log(event.emoji + ' ' + event.title);
-              announceToSR('Mission event: ' + event.title + '. ' + event.description + (minigame ? ' Spectral analysis required before choosing a response.' : ''));
+              showEvent(event, false, minigame, null);
+            } else if (attempt < 1) {
+              if (addToast) addToast('Generating scenario... (retrying)', 'info');
+              setTimeout(function() { requestAiEvent(attempt + 1); }, 1500);
             } else {
-              throw new Error('Invalid event format');
+              showEvent(localEvent, true, null, 'The AI scenario could not be read, so this turn uses the offline mission deck.');
             }
-          } catch (e) {
-            console.warn('[SpaceExplorer] Event parse failed, retrying:', e);
-            upd('isGenerating', false);
-            if (addToast) addToast('Generating scenario... (retrying)', 'info');
-            setTimeout(function() { generateEvent(); }, 1500);
-          }
-        }).catch(function(err) {
-          console.warn('[SpaceExplorer] Gemini error:', err);
-          upd('isGenerating', false);
-          if (addToast) addToast('AI connection issue. Please try again.', 'error');
-        });
+          }).catch(function(err) {
+            console.warn('[SpaceExplorer] Gemini error:', err);
+            showEvent(localEvent, true, null, 'AI connection issue, so this turn uses the offline mission deck.');
+          });
+        }
+        requestAiEvent(0);
       }
 
       // ── Ask Specialist: consult a crew member about the active event ──
@@ -3366,8 +3465,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         var shieldsBlocked = 0;
         if (choice.effects) {
           Object.keys(choice.effects).forEach(function(k) {
-            if (newRes[k] === undefined) return;
-            var delta = choice.effects[k];
+            if (newRes[k] === undefined || !RESOURCES[k]) return;
+            var delta = Number(choice.effects[k]);
+            if (!isFinite(delta)) return;
             if (k === 'hull' && delta < 0 && (alloc.shields || 0) > 0) {
               var absorb = Math.min(alloc.shields, -delta);
               shieldsBlocked = absorb;

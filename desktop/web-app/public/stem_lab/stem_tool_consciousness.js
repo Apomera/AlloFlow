@@ -889,6 +889,10 @@
   // Each stage tracks its driver with an instant attack and a slow decay, so a brief stimulus
   // propagates visibly instead of being smoothed away. The workspace stage adds a self-feeding
   // term inside a sigmoid, which is what produces the all-or-none ignition step.
+  // Stages are driven by earlier ticks of the stage before them (feedforward sweep first,
+  // recurrence 2 ticks later, then workspace, readout and output 1 tick apart), so late
+  // ignition is visible. The mask only acts from its onset tick (maskPulse).
+  var SIM_RECURRENCE_LAG = 2;
   function runWorkspaceSim(config) {
     var cfg = normalizeSimConfig(config);
     var drive = cfg.strength / 100;
@@ -899,16 +903,21 @@
     var rest = simSigmoid(-0.55 * 9);
     var sensory = 0, recurrent = 0, workspace = 0, monitor = 0, output = 0;
     var ticks = [];
+    var sensoryHistory = [];
     for (var t = 0; t < SIM_TICKS; t++) {
       var pulse = t < 3 ? drive : 0;
       var maskPulse = (t >= 2 && t < 7) ? mask : 0;
+      // Inputs come from previous ticks, read before any stage updates this tick.
+      var laggedSensory = t >= SIM_RECURRENCE_LAG ? sensoryHistory[t - SIM_RECURRENCE_LAG] : 0;
+      var prevRecurrent = recurrent, prevWorkspace = workspace, prevMonitor = monitor;
       sensory = simClamp01(Math.max(sensory * 0.55, pulse * (1 - maskPulse * 0.45)));
-      recurrent = simClamp01(Math.max(recurrent * 0.7, sensory * 0.95 * (1 - mask * 0.85)));
-      var wsInput = recurrent * (0.7 + gain * 0.6) * coupling + workspace * 0.5;
+      sensoryHistory.push(sensory);
+      recurrent = simClamp01(Math.max(recurrent * 0.7, laggedSensory * 0.95 * (1 - maskPulse * 0.85)));
+      var wsInput = prevRecurrent * (0.7 + gain * 0.6) * coupling + prevWorkspace * 0.5;
       var wsTarget = simClamp01((simSigmoid((wsInput - 0.55) * 9) - rest) / (1 - rest));
       workspace = simClamp01(Math.max(workspace * 0.75, wsTarget));
-      monitor = simClamp01(Math.max(monitor * 0.6, workspace * (lensOpen ? 0.9 : 0.12) * (0.62 + gain * 0.38)));
-      output = simClamp01(Math.max(output * 0.5, monitor * (cfg.reportRequired ? 0.92 : 0.18)));
+      monitor = simClamp01(Math.max(monitor * 0.6, prevWorkspace * (lensOpen ? 0.9 : 0.12) * (0.62 + gain * 0.38)));
+      output = simClamp01(Math.max(output * 0.5, prevMonitor * (cfg.reportRequired ? 0.92 : 0.18)));
       ticks.push({ t: t, sensory: sensory, recurrent: recurrent, workspace: workspace, monitor: monitor, output: output });
     }
     return { config: cfg, ticks: ticks, markers: simMarkers(ticks) };
@@ -1003,7 +1012,7 @@
       id: 'clear', icon: '👁️', label: 'Clearly seen trial', plainLabel: 'Easy to see', minLevel: 'early',
       config: { substrate: 'human', strength: 85, interference: 10, topDown: 60, reportRequired: true, bypass: false },
       asks: 'What does an ordinary, unobstructed run look like?',
-      note: 'A strong, unmasked target: every marker rises together. This is the easy case every theory explains — which is exactly why it cannot separate them.',
+      note: 'A strong, unmasked target: every marker rises in turn, from the feedforward sweep to recurrence, ignition and report. This is the easy case every theory explains — which is exactly why it cannot separate them.',
       plainNote: 'A clear picture. Every step lights up.'
     },
     {

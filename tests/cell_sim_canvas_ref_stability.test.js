@@ -194,7 +194,7 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain("var effectiveCellPaused = !!d.paused || (cellRenderPrefersReducedMotion && typeof d.paused === 'undefined');");
       expect(source).toContain("effectiveCellPaused ? 'Simulation paused.' : 'Simulation running.'");
       expect(source).toContain('effectiveCellPaused ? "Paused" : "Running"');
-      expect(source).toContain('"aria-label": effectiveCellPaused ? "Play simulation" : "Pause simulation"');
+      expect(source).toContain("\"aria-label\": effectiveCellPaused ? __alloT('stem.cell.a11y_play_simulation', 'Play simulation') : __alloT('stem.cell.a11y_pause_simulation', 'Pause simulation')");
       expect(source).toContain('var p = !effectiveCellPaused;');
       expect(source).not.toContain('var p = !d.paused;');
       expect(source).toContain('id: "cell-sim-status", role: "status", "aria-live": "polite"');

@@ -179,7 +179,8 @@ const hostCache = new Map();
 // JSX the host now mounts as CDN view components: wave 2 (74cbea9c9, 09-13) moved four cold-path
 // surfaces, and the sidebar tool panels (incl. the Generator/Source shells) live in the sidebar
 // bundle. Appended, not inlined, since the host renders them through <CDNModuleGate>/lazy views.
-export const MOVED_VIEW_FILES = ['view_canvas_recovery_dialog_source.jsx', 'view_cold_path_surfaces_source.jsx', 'view_sidebar_panels_source.jsx'];
+// Wave 3 (2026-11-17) moved four more screens into view_cold_path_screens_source.jsx.
+export const MOVED_VIEW_FILES = ['view_canvas_recovery_dialog_source.jsx', 'view_cold_path_surfaces_source.jsx', 'view_cold_path_screens_source.jsx', 'view_sidebar_panels_source.jsx'];
 export const VIEWS_MARKER = '\n// ---- host views now in CDN view modules (appended) ----\n';
 
 /**

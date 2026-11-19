@@ -157,6 +157,7 @@ describe('Typing Practice analytics integrity', () => {
     expect(source).toContain('var performanceSessions = typingPracticeComparableSessions(sessions)');
     expect(source).toContain('var recent3 = performanceSessions.filter');
     expect(source).toContain('Comparable sessions only; pasted practice excluded.');
-    expect(source).toContain('all completed practice, including assisted sessions');
+    expect(source).toContain('keyboard and touch practice; pasted or dictated sessions excluded');
+    expect(source).not.toContain('all completed practice, including assisted sessions');
   });
 });

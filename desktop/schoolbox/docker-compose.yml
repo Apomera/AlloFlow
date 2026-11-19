@@ -1,3 +1,5 @@
+# The web page (WEB_PORT) is on the network for classroom devices; its nginx reaches the services below inside Docker.
+# Their own ports default to this computer only. Set ALLOFLOW_BACKEND_BIND_ADDRESS to open them on a trusted network.
 version: "3.8"
 
 services:
@@ -22,7 +24,7 @@ services:
     image: ghcr.io/muchobien/pocketbase:latest
     container_name: alloflow-schoolbox-pocketbase
     ports:
-      - "${PB_PORT:-8090}:8090"
+      - "${ALLOFLOW_BACKEND_BIND_ADDRESS:-127.0.0.1}:${PB_PORT:-8090}:8090"
     volumes:
       - pocketbase_data:/pb/pb_data
       - ./pocketbase/pb_schema.json:/pb/pb_migrations/schema.json:ro
@@ -38,7 +40,7 @@ services:
     image: ollama/ollama:latest
     container_name: alloflow-schoolbox-ollama
     ports:
-      - "${OLLAMA_PORT:-11434}:11434"
+      - "${ALLOFLOW_BACKEND_BIND_ADDRESS:-127.0.0.1}:${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
@@ -47,7 +49,7 @@ services:
     image: rhasspy/wyoming-piper:latest
     container_name: alloflow-schoolbox-piper
     ports:
-      - "${PIPER_PORT:-10200}:10200"
+      - "${ALLOFLOW_BACKEND_BIND_ADDRESS:-127.0.0.1}:${PIPER_PORT:-10200}:10200"
     volumes:
       - piper_data:/data
     command: --voice en_US-amy-medium --data-dir /data --download-dir /data
@@ -57,7 +59,7 @@ services:
     image: searxng/searxng:latest
     container_name: alloflow-schoolbox-searxng
     ports:
-      - "${SEARCH_PORT:-8888}:8080"
+      - "${ALLOFLOW_BACKEND_BIND_ADDRESS:-127.0.0.1}:${SEARCH_PORT:-8888}:8080"
     environment:
       - SEARXNG_BASE_URL=http://localhost:${SEARCH_PORT:-8888}
     volumes:

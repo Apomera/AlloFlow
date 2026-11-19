@@ -371,7 +371,7 @@ const createGeminiAPI = (deps) => {
       // No connection was attempted when setup is missing. Keep this distinct
       // from an invalid key rejected by the service (401/403).
       if (!status && (err?.code === 'allo/no-api-key' || lower.includes('no ai api key is configured'))) {
-        return { kind: 'config', reason: 'missing-api-key', userMessage: 'Connect an AI backend in AI Backend Settings to use AI generation. Prepared lesson resources remain available without an AI connection.', model: null };
+        return { kind: 'config', reason: 'missing-api-key', userMessage: 'Connect an AI service in AI setup to use AI generation. Prepared lesson resources remain available without an AI connection.', model: null };
       }
       // Genuine quota: HTTP 429 or the structured Gemini code.
       // 429 means EITHER per-minute rate-limit (transient, retries in seconds)
@@ -409,7 +409,7 @@ const createGeminiAPI = (deps) => {
         // the key; direct users can review their configured connection.
         const _authMsg = _isCanvasEnv
           ? 'The AI service rejected the connection or permission. Canvas manages the AI key for you. Retry once; if it persists, reload Canvas or ask the deployment owner to check access.'
-          : 'The Gemini connection was rejected. Check the configured API key and model permissions in AI Backend Settings, then retry.';
+          : 'The Gemini connection was rejected. Check the configured API key and model permissions in AI setup, then retry.';
         return { kind: 'auth', userMessage: _authMsg, model: null, httpStatus: status || null };
       }
       // Config: model not found / unsupported / 404 / INVALID_ARGUMENT.
@@ -832,7 +832,7 @@ const createGeminiAPI = (deps) => {
       await _authorizeRequest(_request, hasVideoInput ? 'media' : 'text', useSearch);
       if (!_request.apiKey && !_isCanvasEnv) {
         if (hasVideoInput) {
-          const missingKey = new Error('No Gemini API key is configured. Open AI Backend Settings and check the approved connection, then retry reading the video.');
+          const missingKey = new Error('No Gemini API key is configured. Open AI setup and check the approved connection, then retry reading the video.');
           missingKey.code = 'allo/no-api-key';
           throw missingKey;
         }
@@ -1150,7 +1150,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       try {
         if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
         if (!_request.apiKey && !_isCanvasEnv) {
-          const missingKey = new Error('No AI API key is configured. Open AI Backend Settings and check the approved connection, then retry.');
+          const missingKey = new Error('No AI API key is configured. Open AI setup and check the approved connection, then retry.');
           missingKey.code = 'allo/no-api-key';
           _throwClassified(missingKey);
         }
@@ -1300,7 +1300,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       // hint. Fail fast with an actionable message instead (mirrors the
       // callGemini no-key guard, but audits need a thrown error, not '').
       if (!_request.apiKey && !_isCanvasEnv) {
-        const noKeyError = new Error('No AI API key is configured. Open AI Backend Settings and add your provider key, then run the audit again.');
+        const noKeyError = new Error('No AI API key is configured. Open AI setup and add your provider key, then run the audit again.');
         noKeyError.code = 'allo/no-api-key';
         throw noKeyError;
       }

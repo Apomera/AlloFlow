@@ -13655,6 +13655,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var _webglErrState = React.useState(false);
       var webglError = _webglErrState[0];
       var setWebglError = _webglErrState[1];
+      // 'lost' = the context died mid-drive (GPU reset, low memory): the same
+      // panel, worded as a pause, with focus on its Restart button.
+      var rrGlRetryRef = React.useRef(null);
+      React.useEffect(function() {
+        if (webglError !== 'lost') return;
+        try { if (rrGlRetryRef.current) rrGlRetryRef.current.focus({ preventScroll: true }); } catch (eGlFocus) {}
+      }, [webglError]);
 
       // Mirror persistent state to window slot for executeSaveFile pickup.
       // Includes both permitStats (per-category running tally — already
@@ -14739,6 +14746,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         aiCoachRequestRef.current.inFlight = false;
         if (dataRef.current && dataRef.current.coachLoading) upd('coachLoading', false);
       }, [view]);
+      // Reopened on the AI coach screen after closing mid-request: the saved
+      // coachLoading has no request behind it and would hide the button forever.
+      useEffect(function() {
+        if (dataRef.current && dataRef.current.coachLoading) upd('coachLoading', false);
+      }, []);
       // One-shot guard so the new-user tour auto-route only fires once per session.
       var tourAutoRoutedRef = useRef(false);
       // Guard for the reactionTest waiting→react transition: stores the rtWaitUntil
@@ -24054,6 +24066,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var gfxStartLevel = rrGfxStartLevel(dataRef.current && dataRef.current.gfxQuality, rrGfxReadDevice());
           var renderer = new T.WebGLRenderer({ canvas: cnv, antialias: !!RR_GFX_LEVELS[gfxStartLevel].antialias, preserveDrawingBuffer: false });
           renderer._rrGfxAntialias = !!RR_GFX_LEVELS[gfxStartLevel].antialias;
+          // A context lost mid-drive left a black road with no way back. Stop the
+          // loop and raise the paused panel; the effect cleanup (webglError is a
+          // dep) tears down and its Restart mounts a fresh canvas.
+          cnv.addEventListener('webglcontextlost', function(ev) {
+            if (!cnv.isConnected) return;
+            ev.preventDefault();
+            if (cnv._rrTearingDown || loopDisposed) return;
+            if (animRef.current) cancelAnimationFrame(animRef.current);
+            animRef.current = null;
+            setTimeout(function() { if (!loopDisposed) setWebglError('lost'); }, 0);
+          });
           // Keep layout ownership in React/CSS. Three's default updateStyle=true
           // writes fixed pixel dimensions onto the canvas, so a phone rotation or
           // modal resize leaves the WebGL scene stranded at its old width.
@@ -36018,7 +36041,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   setWebglError(false);
                 } else {
                   rrBuildCardSet(driveShellRef.current, false);
-                  setWebglError(true);
+                  // Keep 'lost': the paused panel has no canvas, so init lands here.
+                  setWebglError(function(prev) { return prev || true; });
                 }
               } catch (err) {
                 if (loopDisposed) return;
@@ -36174,12 +36198,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               });
               if (threeRef.current._gfxMirrorBlit) threeRef.current._gfxMirrorBlit.mesh.geometry.dispose();
             } catch (eGfx) {}
+            // Our own loss below must not raise the paused panel.
+            try { threeRef.current.renderer.domElement._rrTearingDown = true; } catch (eFlag) {}
             threeRef.current.renderer.dispose();
             // dispose() alone doesn't reliably release the WebGL context, and this
             // effect re-runs on every scenario/vehicle switch. Browsers cap live
             // contexts (~16); a classroom session of switching scenarios could hit
             // "oldest context lost" and blank the canvas.
-            try { threeRef.current.renderer.forceContextLoss(); } catch (eCtx) {}
+            try { var rrGlCtx = threeRef.current.renderer.getContext(); if (!(rrGlCtx && rrGlCtx.isContextLost && rrGlCtx.isContextLost())) threeRef.current.renderer.forceContextLoss(); } catch (eCtx) {}
           }
           threeRef.current = null;
           scn3d = null;
@@ -36295,7 +36321,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // FIRST-TIME ONBOARDING TOUR
       // ══════════════════════════════════════════════════════════
       if (view === 'tour') {
-        var tourStep = d.tourStep || 0;
+        var tourStep = Number.isInteger(d.tourStep) && d.tourStep > 0 ? d.tourStep : 0;
         var tourSteps = [
           {
             icon: '🚗', title: __alloT('stem.roadready.welcome_to_roadready', 'Welcome to RoadReady'),
@@ -37381,6 +37407,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h(RoadReadyControlSettings,{React:React,floating:true,onOpen:function(){if(!pausedRef.current)togglePause();}, t: __alloT}),
           webglError
             ? h('div', {
+                role: 'alert',
+                'data-rr-gl-panel': webglError === 'lost' ? 'lost' : 'error',
                 style: {
                   position: 'absolute',
                   top: 0,
@@ -37399,11 +37427,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   zIndex: 3
                 }
               },
-                h('span', { style: { fontSize: '40px' } }, '⚠️'),
-                h('span', { style: { fontSize: '16px', fontWeight: 'bold', color: '#f87171' } }, __alloT('stem.roadready.webgl_is_disabled_or_unsupported', 'WebGL is disabled or unsupported')),
-                h('span', { style: { fontSize: '13px', color: '#94a3b8', maxWidth: '400px', lineHeight: '1.5' } }, __alloT('stem.roadready.alloflow_requires_hardware_acceleratio', 'AlloFlow requires hardware acceleration to display 3D graphics. Please enable WebGL in your browser settings to interact with this lab.')),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '40px' } }, '⚠️'),
+                webglError === 'lost'
+                  ? h('h2', { style: { margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#fbbf24' } }, __alloT('stem.roadready.webgl_lost_title', '3D view paused'))
+                  : h('span', { style: { fontSize: '16px', fontWeight: 'bold', color: '#f87171' } }, __alloT('stem.roadready.webgl_is_disabled_or_unsupported', 'WebGL is disabled or unsupported')),
+                webglError === 'lost'
+                  ? h('span', { style: { fontSize: '13px', color: '#cbd5e1', maxWidth: '400px', lineHeight: '1.5' } }, __alloT('stem.roadready.webgl_lost_body', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved.'))
+                  : h('span', { style: { fontSize: '13px', color: '#94a3b8', maxWidth: '400px', lineHeight: '1.5' } }, __alloT('stem.roadready.alloflow_requires_hardware_acceleratio', 'AlloFlow requires hardware acceleration to display 3D graphics. Please enable WebGL in your browser settings to interact with this lab.')),
                 h('button', {
-                  onClick: function() { setWebglError(false); },
+                  ref: rrGlRetryRef,
+                  'data-rr-gl-retry': 'true',
+                  // Rebuilds through the effect (webglError is a dep) on a fresh
+                  // canvas, then hands the keys back to the drive surface.
+                  onClick: function() { setWebglError(false); setTimeout(function() { focusDriveSurface(true); }, 0); },
                   style: {
                     padding: '8px 16px',
                     fontSize: '12px',
@@ -37414,7 +37450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     borderRadius: '8px',
                     cursor: 'pointer'
                   }
-                }, __alloT('stem.roadready.retry', 'Retry'))
+                }, webglError === 'lost' ? __alloT('stem.roadready.webgl_lost_restart', 'Restart 3D view') : __alloT('stem.roadready.retry', 'Retry'))
               )
             : h('canvas', {
                 ref: canvas3dRef,

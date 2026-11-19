@@ -8,6 +8,6 @@ it('restores the exact turn-start source after reversing only the repair, reader
  expect(raw.equals(readFileSync(resolve('desktop/web-app/public/stem_lab/stem_tool_weldlab.js')))).toBe(true);
  expect([...raw.subarray(0,3)]).toEqual([239,187,191]);expect(raw.toString('utf8')).not.toContain('\r');
  const before=stripWeldlabRepairFixes(raw.toString('utf8'));
- expect(createHash('sha256').update(before).digest('hex')).toBe('7e57f9560470babc54a211697f790dea133124f25c455994f5aa3b504ea82cbe');
+ expect(createHash('sha256').update(before).digest('hex')).toBe('cde54cf52bbeb8d561ec8f8e0f4d95070584f5185f2faa8271ef2af821775af2');
  expect(stripWeldlabRepairFixes(before)).toBe(before);
 });

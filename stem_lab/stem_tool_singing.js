@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════
 // stem_tool_singing.js — Singing & Vocal Lab
 // Pitch training, vocal range finder, vibrato analysis, interval singing,
-// vocal warm-ups & health. Ported from Rachel Pomeranz's vocal studio tools.
+// vocal warm-ups & health.
 // Web Audio API + Canvas rendering.
 // ═══════════════════════════════════════════
 
@@ -243,7 +243,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   }
 
   // ═══════════════════════════════════════════
-  // Vibrato analysis — ported from Rachel's biofeedback tools
+  // Vibrato analysis
   // ═══════════════════════════════════════════
 
   // Vibrato extent is conventionally the peak-to-peak pitch excursion. Estimating it
@@ -386,7 +386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   }
 
   // ═══════════════════════════════════════════
-  // Staff notation drawing — ported from Rachel's tools-advanced.js
+  // Staff notation drawing
   // ═══════════════════════════════════════════
 
   /**
@@ -2086,8 +2086,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   // ═══════════════════════════════════════════
 
   // ═══════════════════════════════════════════
-  // Voice studio + trainers (shared with Rachel Pomeranz's website, where they were built).
-  // Generated from the site repo (Apomera/rachel-pomeranz-site, src/lib) by a converter that
+  // Voice studio + trainers (shared with the website project where they were built).
+  // Generated from that project's src/lib by a converter that
   // wraps each module in its own scope; change the site modules and regenerate, not this copy.
   // ═══════════════════════════════════════════
   var VS = (function () {
@@ -2498,7 +2498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         '<?xml version="1.0" encoding="UTF-8"?>\n' +
         '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n' +
         `<score-partwise version="4.0"><work><work-title>${esc(title)}</work-title></work>` +
-        '<identification><encoding><software>Rachel Pomeranz Practice Room</software></encoding></identification>' +
+        '<identification><encoding><software>AlloFlow Singing Lab</software></encoding></identification>' +
         '<part-list><score-part id="P1"><part-name>Voice</part-name></score-part></part-list>' +
         `<part id="P1">${measures.join('')}</part></score-partwise>\n`
       );
@@ -2593,7 +2593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     // OpenSheetMusicDisplay and plays the voice line and piano with the Web Audio API.
     //
     // Self-contained on purpose: no framework and no imports. The caller passes in the
-    // OpenSheetMusicDisplay module, so the same file can run on Rachel's site and inside
+    // OpenSheetMusicDisplay module, so the same file can run on the website and inside
     // AlloFlow (Singing Lab / Open Groove).
     //
     //   const player = new ScorePlayer({ OSMD, container, onChange });
@@ -3791,7 +3791,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         if (was) for (const vi of was.keys()) this._paintHead(vi, '');
       }
     
-      _paintHead(vi, color) {
+      // The drawn note for each written note, and the melody's notes by their index (looked up again after a redraw).
+      _noteGraphics() {
         if (!this.noteGfx) {
           this.noteGfx = new Map();
           for (const staves of this.osmd.GraphicSheet?.MeasureList || [])
@@ -3800,6 +3801,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 for (const gve of se.graphicalVoiceEntries || []) for (const gn of gve.notes || []) this.noteGfx.set(gn.sourceNote, gn);
         }
         this.voiceByVi = this.voiceByVi ?? new Map(this.timeline.events.filter((e) => e.part === 'voice').map((e) => [e.vi, e]));
+      }
+    
+      _paintHead(vi, color) {
+        this._noteGraphics();
         const e = this.voiceByVi.get(vi);
         const heads = e && this.noteGfx.get(e.note)?.getNoteheadSVGs?.();
         for (const head of heads || []) {
@@ -4369,7 +4374,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         if (!this._ctx) {
           this._ctx = new (window.AudioContext || window.webkitAudioContext)();
           this.out = this._ctx.createDynamicsCompressor();
-          this.out.connect(this._ctx.destination);
+          // Everything passes one last gain, so hush() can fade whatever is sounding without a click.
+          this.master = this._ctx.createGain();
+          this.out.connect(this.master);
+          this.master.connect(this._ctx.destination);
           this._armUnlock();
         }
         return this._ctx;
@@ -4461,15 +4469,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
        */
       piano(midi, at = this.now(), dur = 0.9, level = 1, sound = loadSound()) {
         const { nodes, stopAt } = playSound(this.ctx, this.out, sound, midi, at, dur, level * 1.6);
-        for (const n of nodes) n.stop(stopAt);
-        this._busy(stopAt);
+        this._track(nodes, stopAt);
       }
     
       /** A messa di voce guide: one note swelling from very soft to full and back over `dur` (see playSwell). */
       swell(midi, at = this.now(), dur = 6, level = 0.75, sound = loadSound()) {
         const { nodes, stopAt } = playSwell(this.ctx, this.out, sound, midi, at, dur, level * 1.6);
-        for (const n of nodes) n.stop(stopAt);
+        this._track(nodes, stopAt);
+      }
+    
+      // Notes that are sounding or scheduled, so hush() can end them early.
+      _live = new Set();
+      _track(nodes, stopAt) {
+        for (const n of nodes) {
+          n.stop(stopAt);
+          this._live.add(n);
+          n.addEventListener?.('ended', () => this._live.delete(n));
+        }
         this._busy(stopAt);
+      }
+    
+      /**
+       * Silence every note that is sounding or already scheduled (a long guide note would otherwise ring on after
+       * "Stop"): a 40 ms fade, the notes ended, the level restored for whatever plays next (from 60 ms on).
+       */
+      hush() {
+        const c = this._ctx;
+        if (!c || !this._live.size) return;
+        const t = c.currentTime;
+        const g = this.master.gain;
+        g.cancelScheduledValues(t);
+        g.setValueAtTime(g.value, t);
+        g.linearRampToValueAtTime(0, t + 0.04);
+        g.setValueAtTime(1, t + 0.06);
+        for (const n of this._live) {
+          try {
+            n.stop(t + 0.05);
+          } catch {}
+        }
+        this._live.clear();
+        this.until = Math.min(this.until || 0, t + 0.06);
       }
     
       chord(midis, at = this.now(), dur = 1.2) {
@@ -4548,7 +4587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   var mod_rhythm = (function () {
     // Rhythm clap-back: seeded rhythm generator, notation (MusicXML) and the tap scorer.
     // scoreRhythm() is ported from AlloFlow's Music Lab (stem_tool_music.js), where it has its own tests.
-
+    
     // Durations are in sixteenths (4 = a quarter note). A cell fills one beat or more; 'r' marks a rest.
     // Simple time: the beat is a quarter (4). Compound time (6/8): the beat is a dotted quarter (6).
     const SIMPLE_CELLS = [
@@ -4582,33 +4621,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       { d: [2, 1, 1, 2], level: 4 },
       { d: [2, 'r2', 2], level: 4 },
     ];
-
+    
     const METERS = {
       '4/4': { beats: 4, beat: 4, num: 4, den: 4 },
       '3/4': { beats: 3, beat: 4, num: 3, den: 4 },
       '2/4': { beats: 2, beat: 4, num: 2, den: 4 },
       '6/8': { beats: 2, beat: 6, num: 6, den: 8 },
     };
-
+    
     const RHYTHM_LEVELS = [
       { level: 1, name: 'Level 1: quarters and halves', meters: ['4/4', '3/4'], bars: 1 },
       { level: 2, name: 'Level 2: eighth notes and dots', meters: ['4/4', '3/4', '2/4'], bars: 1 },
       { level: 3, name: 'Level 3: sixteenths and rests', meters: ['4/4', '3/4', '6/8'], bars: 2 },
       { level: 4, name: 'Level 4: syncopation', meters: ['4/4', '3/4', '6/8', '2/4'], bars: 2 },
     ];
-
+    
     /**
      * Generate a rhythm. Returns { meter, bars: [[{ dur, rest }]], onsets: [beats...], beats }.
      * Onsets are in beats from the start (the unit the scorer works in).
+     * length: how many bars (1, 2, 4, 8 ...); omitted = the level's own length.
      */
-    function generateRhythm(rand, level, meterName) {
+    function generateRhythm(rand, level, meterName, length) {
       const L = RHYTHM_LEVELS[Math.max(0, Math.min(RHYTHM_LEVELS.length - 1, level - 1))];
       const meter = METERS[meterName || rand.pick(L.meters)] || METERS['4/4'];
       const name = Object.keys(METERS).find((k) => METERS[k] === meter);
       const cells = (meter.beat === 6 ? COMPOUND_CELLS : SIMPLE_CELLS).filter((c) => c.level <= L.level);
       const barLen = meter.beats * meter.beat;
+      // A 2/4 bar is too short to be a rhythm by itself (at level 1 only "two quarter notes" would pass), so 2/4
+      // always gets two bars and a bar there may hold a single note.
+      const short = barLen <= 8;
+      const asked = Number.isInteger(length) && length >= 1 && length <= 16 ? length : L.bars;
+      const barCount = Math.max(asked, short ? 2 : 1);
+      const minNotes = short ? 1 : 2;
       const bars = [];
-      for (let b = 0; b < L.bars; b++) {
+      for (let b = 0; b < barCount; b++) {
         for (let attempt = 0; attempt < 40; attempt++) {
           const bar = [];
           let pos = 0;
@@ -4624,13 +4670,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             pos += cell.d.reduce((s, x) => s + dur(x), 0);
           }
           const notes = bar.filter((n) => !n.rest).length;
-          // Begin the first bar on a note, keep at least two notes per bar, and not too many rests.
-          if ((b === 0 && bar[0].rest) || notes < 2 || bar.filter((n) => n.rest).length > 2) continue;
+          // Begin the first bar on a note, keep at least two notes per bar (one in a short bar), and not too many rests.
+          if ((b === 0 && bar[0].rest) || notes < minNotes || bar.filter((n) => n.rest).length > 2) continue;
           // Avoid a bar identical to the previous one (boring) unless we're out of tries.
           if (b > 0 && attempt < 30 && JSON.stringify(bar) === JSON.stringify(bars[b - 1])) continue;
           bars.push(bar);
           break;
         }
+        // Out of tries (rare): a plain bar of beats, never a missing bar.
+        if (bars.length === b) bars.push(Array.from({ length: meter.beats }, () => ({ dur: meter.beat, rest: false })));
       }
       const onsets = [];
       let pos = 0;
@@ -4641,13 +4689,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         }
       return { meter: name, num: meter.num, den: meter.den, beatsPerBar: meter.beats, beatUnit: meter.beat, bars, onsets, beats: pos / meter.beat };
     }
-
+    
     function dur(x) {
       return typeof x === 'string' ? Number(x.slice(1)) : x;
     }
-
+    
     const TYPES = { 1: ['16th', 0], 2: ['eighth', 0], 3: ['eighth', 1], 4: ['quarter', 0], 6: ['quarter', 1], 8: ['half', 0], 12: ['half', 1], 16: ['whole', 0] };
-
+    
     /** MusicXML for a one-line rhythm staff (percussion clef). */
     function rhythmToMusicXML(r, bpm) {
       const measures = r.bars
@@ -4672,7 +4720,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         .join('');
       return xmlDoc('Rhythm', measures);
     }
-
+    
     /**
      * Beam elements for one bar: notes shorter than a quarter are beamed within each beat,
      * with a second beam (or hook) for sixteenths. Shared with the melody writer.
@@ -4713,20 +4761,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }
       return out;
     }
-
+    
     function xmlDoc(partName, measures) {
       return `<?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
     <score-partwise version="4.0"><part-list><score-part id="P1"><part-name print-object="no">${partName}</part-name></score-part></part-list><part id="P1">${measures}</part></score-partwise>`;
     }
-
+    
     // ---- Scoring (ported from AlloFlow) -------------------------------------------------
-
+    
     // Grading bands as a fraction of one beat, so they scale with tempo.
     const TIGHT_FRACTION = 0.06; // on the money
     const CLOSE_FRACTION = 0.14; // recognisably the right rhythm
     const MATCH_FRACTION = 0.5; // beyond half a beat a tap belongs to another onset
-
+    
     /**
      * Score taps against expected onsets (both in ms from the same origin). Matching is greedy over
      * the closest pairs first, so one early tap doesn't push every later tap onto the wrong onset.
@@ -4739,7 +4787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       const matchWindow = beat * MATCH_FRACTION;
       const tightMs = beat * TIGHT_FRACTION;
       const closeMs = beat * CLOSE_FRACTION;
-
+    
       const pairs = [];
       expected.forEach((ex, e) =>
         taps.forEach((tap, t) => {
@@ -4748,7 +4796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         }),
       );
       pairs.sort((a, b) => a.abs - b.abs);
-
+    
       const usedE = new Set();
       const usedT = new Set();
       const onsets = expected.map((ms) => ({ expectedMs: ms, tapMs: null, deltaMs: null, grade: 'missed' }));
@@ -4788,9 +4836,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     //
     //   const m = generateMelody({ seed: 'K7QX2', level: 3, voice: VOICE_TYPES.mezzo });
     //   m.xml  -> MusicXML for the score player;  m.notes -> [{ midi, dur }] for grading
+    //
+    // A level is a bundle of choices (keys, meters, rhythms, leaps, range, chromatic notes). Any of them
+    // can be fixed by hand instead: generateMelody({ ..., key: 2, mode: 'minor', meter: '6/8', leap: 1 }).
     
     var seededRandom = mod_common.seededRandom;
     var METERS = mod_rhythm.METERS, beamsFor = mod_rhythm.beamsFor, xmlDoc = mod_rhythm.xmlDoc;
+    // Time signatures a melody can be written in. Durations are in sixteenths: `beat` is the unit the
+    // rhythm cells fill (4 = simple time, 6 = compound time) and `beats` how many make a bar.
+    // `mark` is the note the tempo mark counts, `speed` scales the level's tempo for it:
+    //   2/2 is written like 4/4 and counted in two (half = 3/4 of the level's tempo);
+    //   3/8 is one compound beat a bar, counted in three quick eighths.
+    const SIGHT_METERS = {
+      '4/4': { ...METERS['4/4'], mark: 'quarter', speed: 1 },
+      '3/4': { ...METERS['3/4'], mark: 'quarter', speed: 1 },
+      '2/4': { ...METERS['2/4'], mark: 'quarter', speed: 1 },
+      '2/2': { beats: 4, beat: 4, num: 2, den: 2, mark: 'half', speed: 0.75 },
+      '3/8': { beats: 1, beat: 6, num: 3, den: 8, mark: 'eighth', speed: 1.6 },
+      '6/8': { ...METERS['6/8'], mark: 'dotted', speed: 0.8 },
+      '9/8': { beats: 3, beat: 6, num: 9, den: 8, mark: 'dotted', speed: 0.8 },
+      '12/8': { beats: 4, beat: 6, num: 12, den: 8, mark: 'dotted', speed: 0.8 },
+    };
+    // Quarter notes per marked note, and how the mark is written.
+    const MARKS = { quarter: [1, 'quarter', false], half: [2, 'half', false], eighth: [0.5, 'eighth', false], dotted: [1.5, 'quarter', true] };
+    
+    /** The choices a visitor may fix by hand (the values the page offers). */
+    const SIGHT_OPTIONS = {
+      key: [-7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7], // sharps (+) or flats (-) in the key signature
+      mode: ['major', 'minor'],
+      meter: Object.keys(SIGHT_METERS),
+      rhythm: [1, 2, 3, 4, 5, 6], // which level's rhythms
+      leap: [1, 2, 4, 5, 7], // largest interval in scale steps: steps only, a third, a fifth, a sixth, an octave
+      range: [4, 5, 7, 8, 9, 11], // the melody's span in scale steps: a fifth, a sixth, an octave, a ninth, a tenth, a twelfth
+      chroma: { none: 0, some: 0.12, many: 0.3 }, // share of chromatic notes
+      shortest: [4, 2, 1], // nothing shorter than a quarter, an eighth, a sixteenth (in sixteenths)
+      rests: ['no', 'yes'], // no rests at all, or at least one
+      start: ['tonic', 'other'], // the first note: the key note, or another note of the tonic chord
+      dynamics: [true], // dynamic marks and hairpins (they change no note)
+      names: ['solfege', 'solfege-la', 'numbers', 'letters'], // printed under the notes
+    };
+    
     // Melody rhythms, in sixteenths ('r' = rest), with the level they appear at and how often.
     // Singers find rhythm hard enough while reading pitch, so the simple cells stay most common.
     const MELODY_CELLS = {
@@ -4842,7 +4927,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     const ROMAN = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii'];
     // Where each chord tends to go next (by scale-degree root).
     const NEXT = { 0: [3, 4, 5, 1], 1: [4, 4, 3], 2: [5, 3], 3: [4, 0, 1], 4: [0, 5, 0], 5: [1, 3, 4] };
-    const TYPES = { 1: ['16th', 0], 2: ['eighth', 0], 3: ['eighth', 1], 4: ['quarter', 0], 6: ['quarter', 1], 8: ['half', 0], 12: ['half', 1], 16: ['whole', 0] };
+    const TYPES = { 1: ['16th', 0], 2: ['eighth', 0], 3: ['eighth', 1], 4: ['quarter', 0], 6: ['quarter', 1], 8: ['half', 0], 12: ['half', 1], 16: ['whole', 0], 24: ['whole', 1] };
     
     const mod = (n, m) => ((n % m) + m) % m;
     const keyAlter = (letter, fifths) =>
@@ -4857,32 +4942,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       return `${LETTERS[letter]}${accName(keyAlter(letter, fifths))} ${minor ? 'minor' : 'major'}`;
     }
     
+    // ---- A teacher's own changes to a melody ----
+    // An edit is one change; edits are applied in order to the melody the generator wrote. `i` is a place among
+    // all the notes AND rests, counted as the melody stands when the edit is made (0 = the first).
+    //   { t: 'p', i, s, a? }  pitch: the note moves s scale steps (+ up, - down); a = its accidental against the key's
+    //                         own scale (-1 lowered, 0 as the key has it, +1 raised). Without `a`, a moved note is a
+    //                         plain scale note and an unmoved one keeps what it had.
+    //   { t: 'r', i }         a note becomes a rest, or a rest a note
+    //   { t: 's', i }         the note or rest is split in two
+    //   { t: 'j', i }         it is joined with the next one in its bar
+    //   { t: 'n', i, s, a? }  as 'p', but i counts sung notes only (the form of the first links, kept so they still open)
+    // In a link: "p4:1,r6,s2,j9,p3:0:1"; the first form was "4:1,5:0:1".
+    
+    /** Edits from a link, or from an array of edits: only whole, sensible ones are kept, in order. */
+    function parseEdits(value) {
+      const out = [];
+      for (let e of typeof value === 'string' ? value.split(',') : Array.isArray(value) ? value : []) {
+        if (typeof e === 'string') {
+          const pitch = /^(p?)(\d+):(-?\d+)(?::(-?\d+))?$/.exec(e);
+          const shape = /^([rsj])(\d+)$/.exec(e);
+          if (pitch) e = { t: pitch[1] ? 'p' : 'n', i: Number(pitch[2]), s: Number(pitch[3]), a: pitch[4] === undefined ? undefined : Number(pitch[4]) };
+          else if (shape) e = { t: shape[1], i: Number(shape[2]) };
+          else continue;
+        } else if (Array.isArray(e)) e = { t: 'n', i: e[0], s: e[1], a: e[2] ?? undefined };
+        if (!e || typeof e !== 'object' || !Number.isInteger(e.i) || e.i < 0 || e.i > 999) continue;
+        if (e.t === 'p' || e.t === 'n') {
+          const a = e.a === undefined || e.a === null ? undefined : e.a;
+          if (!Number.isInteger(e.s) || Math.abs(e.s) > 14 || (a !== undefined && ![-1, 0, 1].includes(a))) continue;
+          if (e.s === 0 && a === undefined) continue; // changes nothing
+          out.push(a === undefined ? { t: e.t, i: e.i, s: e.s } : { t: e.t, i: e.i, s: e.s, a });
+        } else if (e.t === 'r' || e.t === 's' || e.t === 'j') out.push({ t: e.t, i: e.i });
+        if (out.length >= 300) break;
+      }
+      return out;
+    }
+    
+    /** Edits as they go in a link ("" when there are none). */
+    const formatEdits = (edits) =>
+      parseEdits(edits)
+        .map((e) => (e.t === 'p' || e.t === 'n' ? `${e.t === 'p' ? 'p' : ''}${e.i}:${e.s}${e.a === undefined ? '' : `:${e.a}`}` : `${e.t}${e.i}`))
+        .join(',');
+    
+    // How a note value splits in two (in sixteenths). A sixteenth doesn't.
+    const SPLITS = { 2: [1, 1], 3: [2, 1], 4: [2, 2], 6: [4, 2], 8: [4, 4], 12: [8, 4], 16: [8, 8], 24: [12, 12] };
+    /** The two values a note of `dur` sixteenths splits into (null when it can't); a dotted half in compound time is two beats. */
+    const splitOf = (dur, compound) => (compound && dur === 12 ? [6, 6] : SPLITS[dur] || null);
+    /** Can two neighbours in a bar be written as one note? (Their lengths in sixteenths.) */
+    const canJoin = (a, b) => !!TYPES[a + b];
+    
+    /** "2 sharps: D major / B minor": a key signature as a singer would look it up. */
+    function keySignatureLabel(fifths) {
+      const n = Math.abs(fifths);
+      const count = n === 0 ? 'No sharps or flats' : `${n} ${fifths > 0 ? 'sharp' : 'flat'}${n > 1 ? 's' : ''}`;
+      return `${count}: ${keyName(fifths, false)} / ${keyName(fifths, true)}`;
+    }
+    
     /**
-     * @param {{ seed: string, level: number, voice: { low: number, high: number, clef: string }, meter?: string, bars?: number }} opts
+     * @param {{ seed: string, level: number, voice: { low: number, high: number, clef: string }, bars?: number,
+     *   key?: number, mode?: 'major'|'minor', meter?: string, rhythm?: number, leap?: number, range?: number,
+     *   chroma?: number, shortest?: number, rests?: 'no'|'yes', start?: 'tonic'|'other', dynamics?: boolean,
+     *   names?: string, edits?: string | number[][] }} opts
      *   bars: the length (4, 8, 16, 32 ...); omitted = the level's own length. Longer melodies are built from
      *   four-bar phrases in eight-bar periods (a half cadence, then an answer that closes on the tonic).
+     *   key ... chroma: fix one of the level's choices (see SIGHT_OPTIONS); omitted = as the level sets.
+     *   shortest / rests / start: the specifications auditions use ("nothing shorter than an eighth note", "no rests",
+     *   "begins on the tonic"). dynamics: add dynamic marks and hairpins; like names, they change no note.
+     *   names: what to print under each note (see noteName); it never changes the melody.
+     *   edits: a teacher's own changes to single notes, made after the melody is written (see parseEdits).
+     *   The same seed with the same choices always gives the same melody.
      */
-    function generateMelody({ seed, level, voice, meter: forceMeter, bars }) {
+    function generateMelody({ seed, level, voice, bars, key, mode, meter, rhythm, leap, range, chroma, shortest, rests, start, dynamics, names, edits }) {
       const L0 = SIGHT_LEVELS[Math.max(0, Math.min(SIGHT_LEVELS.length - 1, level - 1))];
       const L = bars ? { ...L0, bars } : L0;
+      const given = (v) => v !== undefined && v !== null && v !== '';
+      const set = {
+        key: given(key) && SIGHT_OPTIONS.key.includes(Number(key)) ? Number(key) : null,
+        mode: SIGHT_OPTIONS.mode.includes(mode) ? mode : null,
+        meter: SIGHT_METERS[meter] ? meter : null,
+        rhythm: given(rhythm) && SIGHT_OPTIONS.rhythm.includes(Number(rhythm)) ? Number(rhythm) : null,
+        leap: given(leap) && Number(leap) >= 1 && Number(leap) <= 7 ? Math.round(Number(leap)) : null,
+        range: given(range) && Number(range) >= 4 && Number(range) <= 11 ? Math.round(Number(range)) : null,
+        chroma: given(chroma) && Number(chroma) >= 0 && Number(chroma) <= 0.5 ? Number(chroma) : null,
+        shortest: given(shortest) && SIGHT_OPTIONS.shortest.includes(Number(shortest)) ? Number(shortest) : null,
+        rests: SIGHT_OPTIONS.rests.includes(rests) ? rests : null,
+        start: SIGHT_OPTIONS.start.includes(start) ? start : null,
+        dynamics: dynamics === true || dynamics === 'yes',
+        names: SIGHT_OPTIONS.names.includes(names) ? names : null,
+        edits: parseEdits(edits),
+        seed,
+      };
       // The level's own length keeps its old seed, so codes shared before lengths existed still work.
+      // Hand-set choices are not part of the seed: the level's own pick is still drawn, then replaced, so
+      // fixing a choice to what the level happened to pick usually leaves the melody as it was.
       const rand = seededRandom(`${seed}|L${L.level}|${voice.low}-${voice.high}${bars && bars !== L0.bars ? `|B${bars}` : ''}`);
-      for (let attempt = 0; attempt < 400; attempt++) {
-        const m = tryMelody(rand, L, voice, forceMeter);
+      for (let attempt = 0; attempt < 600; attempt++) {
+        const m = tryMelody(rand, L, voice, set);
         if (m) return { ...m, seed, level: L.level };
       }
       throw new Error('Could not generate a melody for these settings.');
     }
     
-    function tryMelody(rand, L, voice, forceMeter) {
+    function tryMelody(rand, L0, voice, set) {
+      // ---- The level's choices, with any the visitor fixed by hand ----
+      const L = { ...L0 };
+      if (set.leap !== null) L.leap = set.leap;
+      if (set.range !== null) L.span = set.range;
+      if (set.chroma !== null) L.chroma = set.chroma;
+    
       // ---- Key, mode, meter, range ----
-      const fifths = rand.pick(L.fifths);
-      const minor = rand() < L.minor;
+      const levelFifths = rand.pick(L.fifths);
+      const levelMinor = rand() < L.minor;
+      const levelMeter = rand.pick(L.meters);
+      const fifths = set.key !== null ? set.key : levelFifths;
+      const minor = set.mode ? set.mode === 'minor' : levelMinor;
       const scale = minor ? MINOR : MAJOR;
       const tonicPc = mod(fifths * 7 + (minor ? 9 : 0), 12);
       const tonicLetter = mod(4 * fifths + (minor ? 5 : 0), 7);
-      const meterName = forceMeter || rand.pick(L.meters);
-      const meter = METERS[meterName];
+      const meterName = set.meter || levelMeter;
+      const meter = SIGHT_METERS[meterName];
+      const compound = meter.beat === 6;
       const semis = (d) => 12 * Math.floor(d / 7) + scale[mod(d, 7)];
     
       // A window of `span` scale steps that contains the tonic, placed inside the voice's range.
@@ -4918,7 +5096,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     
       // ---- Rhythm ----
       const barLen = meter.beats * meter.beat;
-      const cells = MELODY_CELLS[meter.beat === 6 ? 'compound' : 'simple'].filter((c) => c.level <= L.level);
+      // Compound rhythms begin at level 4, so a compound meter chosen at an easier level gets the plainest of them.
+      const ownLevel = Math.max(set.rhythm !== null ? set.rhythm : L.level, compound ? 4 : 1);
+      // A shortest note value is a limit ("nothing shorter than an eighth") and also brings in the rhythms that use
+      // that value, so eighths asked for at level 1 do turn up. It never brings in rests the level wouldn't have.
+      const rhythmLevel = set.shortest !== null ? Math.max(ownLevel, { 4: 1, 2: 2, 1: 4 }[set.shortest]) : ownLevel;
+      const hasRest = (c) => c.d.some((x) => typeof x === 'string');
+      let cells = MELODY_CELLS[compound ? 'compound' : 'simple'].filter((c) => {
+        if (set.shortest !== null && Math.min(...c.d.map(dur)) < set.shortest) return false;
+        if (hasRest(c)) return set.rests === 'no' ? false : set.rests === 'yes' ? true : c.level <= ownLevel;
+        return c.level <= rhythmLevel;
+      });
+      if (set.rests === 'yes') {
+        // Rests were asked for: make them likelier, and give compound time a whole-beat rest (its only other rest
+        // needs eighth notes).
+        cells = cells.map((c) => (hasRest(c) ? { ...c, w: c.w * 3 } : c));
+        if (compound) cells.push({ d: ['r6'], w: 0.6 });
+      }
       const fill = (len, startPos, avoidRestAtStart) => {
         const out = [];
         let pos = 0;
@@ -4928,6 +5122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             const cl = c.d.reduce((s, x) => s + dur(x), 0);
             if (pos + cl > len) return false;
             if (avoidRestAtStart && pos === 0 && typeof c.d[0] === 'string') return false;
+            if (set.rests === 'yes' && typeof c.d[0] === 'string' && out.length && out[out.length - 1].rest) return false; // one rest at a time
             return cl <= meter.beat || (startPos + pos) % cl === 0;
           });
           if (!fits.length) return null;
@@ -4942,7 +5137,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       const rhythm = [];
       for (let b = 0; b < n; b++) {
         let bar;
-        if (b === n - 1) bar = [{ dur: barLen === 16 ? 16 : 12 <= barLen ? 12 : barLen, rest: false, pos: 0 }];
+        if (b === n - 1) {
+          // The last note fills the bar where one note value can (12/8: a dotted whole); in 9/8 it is a dotted half,
+          // followed by a rest or, when no rests were asked for, led into by a dotted quarter.
+          const last = barLen === 16 ? 16 : barLen === 24 ? 24 : 12 <= barLen ? 12 : barLen;
+          bar = barLen === 18 && set.rests === 'no' ? [{ dur: 6, rest: false, pos: 0 }, { dur: 12, rest: false, pos: 6 }] : [{ dur: last, rest: false, pos: 0 }];
+        }
         else if (n >= 8 && (b % 8 === 3 || (n > 8 && b % 8 === 7))) {
           // Phrase ends (a half cadence, or a period's close in a longer piece) land on a long note.
           const long = meter.beat === 6 ? 6 : barLen === 12 ? 8 : barLen === 8 ? 4 : 8;
@@ -4951,12 +5151,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         } else if (n >= 8 && (b % 8 === 4 || b % 8 === 5) && b < n - 2) bar = rhythm[b - 4].map((x) => ({ ...x })); // the answering phrase echoes the opening
         else bar = fill(barLen, 0, b === 0);
         if (!bar) return null;
-        if (b === n - 1 && barLen !== bar[0].dur) bar.push({ dur: barLen - bar[0].dur, rest: true, pos: bar[0].dur });
+        if (b === n - 1 && bar.length === 1 && barLen !== bar[0].dur) bar.push({ dur: barLen - bar[0].dur, rest: true, pos: bar[0].dur });
         rhythm.push(bar);
       }
+      // "Include rests" means at least one inside the melody (the rest that may end the last bar doesn't count).
+      if (set.rests === 'yes' && !rhythm.slice(0, n - 1).some((bar) => bar.some((x) => x.rest))) return null;
     
       // ---- Pitches ----
-      const leapCost = [1, 1.0, 0.85, 0.7, 0.6, 0.5][L.level - 1];
+      // How willingly the melody leaps: by level, or by the leap chosen by hand (a wide leap asked for at an
+      // easy level should actually turn up).
+      const leapCost = set.leap !== null ? (L.leap >= 7 ? 0.6 : L.leap >= 5 ? 0.85 : 1) : [1, 1.0, 0.85, 0.7, 0.6, 0.5][L.level - 1];
       const IV_COST = [1.4, 0, 0.9, 1.6, 2.0, 2.6, 3.4, 2.6]; // by scale steps: repeat, step, third ... octave
       const notes = [];
       let prev = null;
@@ -4974,12 +5178,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             notes.push({ rest: true, dur: slot.dur, bar: b });
             continue;
           }
-          const strong = slot.pos === 0 || (barLen === 16 && slot.pos === 8) || (meter.beat === 6 && slot.pos === 6);
+          const strong = slot.pos === 0 || (barLen === 16 && slot.pos === 8) || (compound && slot.pos % 6 === 0);
           const isLast = index === total - 1;
           const isPenult = index === total - 2;
           let cands = [];
           for (let d = lo; d <= hi; d++) cands.push(d);
-          if (prev === null) cands = cands.filter((d) => [0, 2, 4].includes(mod(d, 7)) && Math.abs(d - center) <= 3);
+          // The first note: a note of the tonic chord near the middle of the range; the key note itself, or not, when asked.
+          const firsts = set.start === 'tonic' ? [0] : set.start === 'other' ? [2, 4] : [0, 2, 4];
+          if (prev === null) cands = cands.filter((d) => firsts.includes(mod(d, 7)) && Math.abs(d - center) <= (set.start ? 4 : 3));
           if (!cands.length) return null;
           if (isLast) cands = [finalTonic];
           if (isPenult) {
@@ -5064,24 +5270,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         const semi = Math.abs(midiOf(b) - midiOf(a));
         const steps = Math.abs(b.d - a.d);
         if (semi === 6 && L.level < 5) return null;
-        if (steps === 1 && semi === 3 && L.level < 5) return null; // augmented 2nd
-        if (steps === 2 && (semi === 2 || semi === 5) && L.level < 6) return null; // diminished/augmented 3rd
+        // Intervals that sound a size bigger or smaller than they are written: never when the biggest leap was
+        // chosen by hand (an augmented 2nd sounds like a skip, an augmented 3rd like a fourth).
+        if (steps === 1 && semi === 3 && (L.level < 5 || set.leap !== null)) return null; // augmented 2nd
+        if (steps === 2 && (semi === 2 || semi === 5) && (L.level < 6 || set.leap !== null)) return null; // diminished/augmented 3rd
         if (semi > 12) return null;
       }
       const midis = sung.map(midiOf);
       if (Math.min(...midis) < voice.low || Math.max(...midis) > voice.high) return null;
     
+      // ---- A teacher's own changes (after the generator's rules: the teacher has the last word) ----
+      // Applied in order; `applied` says which took effect. Not made: a pitch that would leave the staff's reach
+      // (below C2, above C7), a rest that would leave fewer than two notes, a split of a sixteenth, a join across a
+      // bar line or into a length no single note has.
+      const applied = [];
+      for (const e of set.edits) {
+        let done = false;
+        const x = e.t === 'n' ? notes.filter((n) => !n.rest)[e.i] : notes[e.i];
+        if (!x) {
+          applied.push(false);
+          continue;
+        }
+        if (e.t === 'p' || e.t === 'n') {
+          if (!x.rest) {
+            const was = { d: x.d, alt: x.alt };
+            x.d += e.s;
+            x.alt = e.a !== undefined ? e.a : e.s ? 0 : x.alt;
+            if (midiOf(x) < 36 || midiOf(x) > 96) Object.assign(x, was);
+            else done = x.d !== was.d || x.alt !== was.alt;
+          }
+        } else if (e.t === 'r') {
+          if (!x.rest) {
+            if (notes.filter((n) => !n.rest).length > 2) {
+              notes[e.i] = { rest: true, dur: x.dur, bar: x.bar, was: { d: x.d, alt: x.alt } }; // remembers its pitch
+              done = true;
+            }
+          } else {
+            // A rest becomes a note: the pitch it had, else the note before it (or after it), as a plain scale note.
+            const near = x.was || notes.slice(0, e.i).reverse().find((n) => !n.rest) || notes.slice(e.i + 1).find((n) => !n.rest);
+            notes[e.i] = { d: near.d, alt: x.was ? near.alt : 0, dur: x.dur, bar: x.bar, strong: false, chord: 0 };
+            done = true;
+          }
+        } else if (e.t === 's') {
+          const halves = splitOf(x.dur, compound);
+          if (halves) {
+            notes.splice(e.i, 1, { ...x, dur: halves[0] }, { ...x, dur: halves[1] });
+            done = true;
+          }
+        } else if (e.t === 'j') {
+          const y = notes[e.i + 1];
+          if (y && y.bar === x.bar && canJoin(x.dur, y.dur)) {
+            notes.splice(e.i, 2, { ...(x.rest && !y.rest ? y : x), dur: x.dur + y.dur }); // a note joined to a rest stays a note
+            done = true;
+          }
+        }
+        applied.push(done);
+      }
+      const final = notes.filter((x) => !x.rest); // the sung notes as they now stand
+    
       // ---- Spell and write MusicXML ----
       const out = notes.map((x) => {
         if (x.rest) return { rest: true, dur: x.dur, bar: x.bar };
         const midi = midiOf(x);
-        const letter = mod(tonicLetter + x.d, 7);
+        // A chromatic note on the way DOWN is written as the upper note lowered (ti - te - la). In minor, three of
+        // those would land on a doubly lowered or unusual letter (in C minor: C-flat, B-double-flat, F-flat); they
+        // are written the usual way instead, as the raised 7th, 6th or 3rd (B natural, A natural, E natural).
+        // Only where the next note is the half step below (B natural, B-flat), and not where it would make the
+        // interval FROM the note before read as the wrong size: after D-flat, C-flat stays (D-flat to B natural
+        // would be a third on paper for a whole step); after A-flat, C-flat stays too (a minor third either way
+        // in sound, an augmented 2nd on paper if raised).
+        const at = final.indexOf(x);
+        const before = final[at - 1];
+        const after = final[at + 1];
+        let respell = false;
+        if (minor && x.alt === -1 && [0, 3, 6].includes(mod(x.d, 7)) && before && after && midi - midiOf(after) === 1) {
+          const semi = Math.abs(midiOf(before) - midi);
+          const asLowered = readsTrue(Math.abs(before.d - x.d), semi);
+          const asRaised = readsTrue(Math.abs(before.d - (x.d - 1)), semi);
+          respell = asRaised || !asLowered;
+        }
+        const d = respell ? x.d - 1 : x.d;
+        const letter = mod(tonicLetter + d, 7);
         const octave = Math.round((midi - LETTER_PC[letter]) / 12) - 1;
         const alter = midi - (LETTER_PC[letter] + 12 * (octave + 1));
-        return { midi, dur: x.dur, bar: x.bar, letter, octave, alter };
+        const degree = mod(d, 7);
+        const shift = midi - (tonic + semis(d)); // against the key's own scale: +1 raised, -1 lowered
+        const note = { midi, dur: x.dur, bar: x.bar, letter, octave, alter, degree, shift };
+        if (set.names) note.name = noteName(note, minor, set.names);
+        return note;
       });
-      const quarterBpm = meter.beat === 6 ? Math.round(L.tempo * 0.8) * 1.5 : L.tempo;
-      const xml = toMusicXML(out, { fifths, minor, meter, meterName, clef: voice.clef, quarterBpm, beatBpm: meter.beat === 6 ? Math.round(L.tempo * 0.8) : L.tempo });
+      const [quartersPerMark] = MARKS[meter.mark];
+      const beatBpm = Math.round(L.tempo * meter.speed);
+      const quarterBpm = beatBpm * quartersPerMark;
+      // Dynamics have their own random stream, so asking for them changes no note.
+      const dynamics = set.dynamics ? planDynamics(seededRandom(`${set.seed}|dynamics`), n) : null;
+      const xml = toMusicXML(out, { fifths, minor, meter, meterName, clef: voice.clef, quarterBpm, beatBpm, dynamics });
       const firstSung = out.find((x) => !x.rest);
       return {
         xml,
@@ -5091,6 +5374,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         bpm: quarterBpm,
         tonicMidi: tonic,
         firstMidi: firstSung.midi,
+        dynamics,
+        applied, // for each of the teacher's edits, whether it took effect
+        compound, // the beat is a dotted quarter (decides how a dotted half splits)
         chords: chords.map((c) => (minor && c === 4 ? 'V' : ROMAN[c])),
       };
     }
@@ -5099,7 +5385,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       return typeof x === 'string' ? Number(x.slice(1)) : x;
     }
     
-    function toMusicXML(notes, { fifths, minor, meter, clef, quarterBpm, beatBpm }) {
+    // Dynamics for a melody of n bars: a mark at the start, a new one at each phrase (four bars; half the melody when
+    // it is shorter), and usually a crescendo or diminuendo hairpin through the bar that leads to it.
+    // Returns [{ bar, mark: 'p'|'mp'|'mf'|'f' } | { bar, wedge: 'crescendo'|'diminuendo' }].
+    const DYNAMIC_MARKS = ['p', 'mp', 'mf', 'f'];
+    function planDynamics(rand, n) {
+      const phrase = n >= 8 ? 4 : n >= 6 ? 3 : Math.max(1, Math.floor(n / 2));
+      let now = rand.int(0, DYNAMIC_MARKS.length - 1);
+      const plan = [{ bar: 0, mark: DYNAMIC_MARKS[now] }];
+      for (let b = phrase; b < n; b += phrase) {
+        const next = rand.pick(DYNAMIC_MARKS.map((_, i) => i).filter((i) => i !== now));
+        if (rand() < 0.7) plan.push({ bar: b - 1, wedge: next > now ? 'crescendo' : 'diminuendo' });
+        plan.push({ bar: b, mark: DYNAMIC_MARKS[next] });
+        now = next;
+      }
+      return plan;
+    }
+    
+    // Half steps an interval of so many scale steps may span and still read as its own size (a unison, 2nd,
+    // 3rd ... octave that is perfect, major or minor; the tritone counts as a 4th or a 5th).
+    const TRUE_SIZES = [[0], [1, 2], [3, 4], [5, 6], [6, 7], [8, 9], [10, 11], [12]];
+    const readsTrue = (steps, semi) => steps < TRUE_SIZES.length && TRUE_SIZES[steps].includes(semi);
+    
+    // Movable-do syllables for each degree of the major scale: as it is, raised and lowered a half step.
+    // (Mi and ti have no raised form and do and fa no lowered one: those notes are a half step from a neighbour.)
+    const SOLFEGE = [
+      { 0: 'do', 1: 'di' },
+      { 0: 're', 1: 'ri', '-1': 'ra' },
+      { 0: 'mi', '-1': 'me' },
+      { 0: 'fa', 1: 'fi' },
+      { 0: 'sol', 1: 'si', '-1': 'se' },
+      { 0: 'la', 1: 'li', '-1': 'le' },
+      { 0: 'ti', '-1': 'te' },
+    ];
+    
+    /**
+     * What to print under a note. note: { letter, alter, degree (0-6 in the key), shift (half steps against the
+     * key's own scale) }.
+     *   'solfege'     movable do, the tonic is do in major AND minor (minor: do re me fa sol le te)
+     *   'solfege-la'  movable do, a minor key's tonic is la (la ti do re mi fa sol; raised 6th and 7th: fi, si)
+     *   'numbers'     scale degrees 1-7 in the key, with a sharp or flat for a raised or lowered note
+     *   'letters'     letter names as written
+     * Returns '' when a system has no name for the note.
+     */
+    function noteName(note, minor, system) {
+      if (system === 'letters') return `${LETTERS[note.letter]}${accName(note.alter)}`;
+      if (system === 'numbers') return `${accName(note.shift)}${note.degree + 1}`;
+      if (system !== 'solfege' && system !== 'solfege-la') return '';
+      // Half steps above the tonic, then the same note seen from "do".
+      const above = (minor ? MINOR : MAJOR)[note.degree] + note.shift;
+      const laBased = minor && system === 'solfege-la';
+      const degree = laBased ? mod(note.degree + 5, 7) : note.degree; // a minor tonic is la, the 6th degree from do
+      const fromDo = laBased ? above + 9 : above;
+      const alter = mod(fromDo - MAJOR[degree] + 6, 12) - 6;
+      // A rare spelling with no syllable of its own (a lowered do, a doubly lowered ti) takes the name of the
+      // scale note it sounds as (ti, la).
+      return SOLFEGE[degree][alter] || SOLFEGE[MAJOR.indexOf(mod(fromDo, 12))]?.[0] || '';
+    }
+    
+    function toMusicXML(notes, { fifths, minor, meter, clef, quarterBpm, beatBpm, dynamics }) {
+      const direction = (inner) => `<direction placement="below"><direction-type>${inner}</direction-type></direction>`;
       const clefXml =
         clef === 'bass'
           ? '<clef><sign>F</sign><line>4</line></clef>'
@@ -5113,15 +5458,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           const attrs =
             i === 0
               ? `<attributes><divisions>4</divisions><key><fifths>${fifths}</fifths><mode>${minor ? 'minor' : 'major'}</mode></key><time><beats>${meter.num}</beats><beat-type>${meter.den}</beat-type></time>${clefXml}</attributes>` +
-                `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit>${meter.beat === 6 ? '<beat-unit-dot/>' : ''}<per-minute>${beatBpm}</per-minute></metronome></direction-type><sound tempo="${quarterBpm}"/></direction>`
+                `<direction placement="above"><direction-type><metronome><beat-unit>${MARKS[meter.mark][1]}</beat-unit>${MARKS[meter.mark][2] ? '<beat-unit-dot/>' : ''}<per-minute>${beatBpm}</per-minute></metronome></direction-type><sound tempo="${quarterBpm}"/></direction>`
               : '';
           const beams = beamsFor(bar, meter.beat);
+          // Dynamics sit under the bar's first sung note; a hairpin runs from there to the end of the bar.
+          const mark = dynamics?.find((x) => x.bar === i && x.mark);
+          const wedge = dynamics?.find((x) => x.bar === i && x.wedge);
+          const firstSung = bar.findIndex((x) => !x.rest);
+          const before = (mark ? direction(`<dynamics><${mark.mark}/></dynamics>`) : '') + (wedge ? direction(`<wedge type="${wedge.wedge}" number="1"/>`) : '');
           const state = new Map(); // accidentals carry through the bar
           const body = bar
             .map((x, k) => {
               const [type, dots] = TYPES[x.dur];
               const dot = dots ? '<dot/>' : '';
-              if (x.rest) return `<note><rest/><duration>${x.dur}</duration><type>${type}</type>${dot}</note>`;
+              if (x.rest) return `${firstSung < 0 && k === 0 ? before : ''}<note><rest/><duration>${x.dur}</duration><type>${type}</type>${dot}</note>`;
+              const lead = k === Math.max(0, firstSung) ? before : '';
               const id = `${x.letter}${x.octave}`;
               const current = state.has(id) ? state.get(id) : keyAlter(x.letter, fifths);
               let acc = '';
@@ -5130,17 +5481,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 state.set(id, x.alter);
               }
               const alter = x.alter ? `<alter>${x.alter}</alter>` : '';
-              return `<note><pitch><step>${LETTERS[x.letter]}</step>${alter}<octave>${x.octave}</octave></pitch><duration>${x.dur}</duration><type>${type}</type>${dot}${acc}${beams[k] || ''}</note>`;
+              const name = x.name ? `<lyric number="1"><syllabic>single</syllabic><text>${x.name}</text></lyric>` : '';
+              return `${lead}<note><pitch><step>${LETTERS[x.letter]}</step>${alter}<octave>${x.octave}</octave></pitch><duration>${x.dur}</duration><type>${type}</type>${dot}${acc}${beams[k] || ''}${name}</note>`;
             })
             .join('');
           const end = i === bars.length - 1 ? '<barline location="right"><bar-style>light-heavy</bar-style></barline>' : '';
-          return `<measure number="${i + 1}">${attrs}${body}${end}</measure>`;
+          const wedgeEnd = wedge ? direction('<wedge type="stop" number="1"/>') : '';
+          return `<measure number="${i + 1}">${attrs}${body}${wedgeEnd}${end}</measure>`;
         })
         .join('');
       return xmlDoc('Voice', measures);
     }
 
-    return { SIGHT_LEVELS, spelledName, keyName, generateMelody };
+    return { SIGHT_METERS, SIGHT_OPTIONS, SIGHT_LEVELS, spelledName, keyName, parseEdits, formatEdits, splitOf, canJoin, keySignatureLabel, generateMelody, noteName };
   })();
   var mod_intervals = (function () {
     // Intervals for the ear trainer: names, levels and a familiar tune that starts with each one.
@@ -5161,26 +5514,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       { semis: 12, name: 'Octave', short: 'P8', up: 'Somewhere Over the Rainbow', down: null },
     ];
 
+    // Each name says exactly what the level drills (the list in `semis`).
     const INTERVAL_LEVELS = [
-      { level: 1, name: 'Level 1: steps, thirds, fifths', semis: [2, 4, 7, 12], down: false },
-      { level: 2, name: 'Level 2: add minor and the fourth', semis: [1, 2, 3, 4, 5, 7, 9, 12], down: false },
-      { level: 3, name: 'Level 3: up and down', semis: [1, 2, 3, 4, 5, 7, 8, 9, 12], down: true },
-      { level: 4, name: 'Level 4: every interval', semis: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], down: true },
+      { level: 1, name: 'Level 1: major 2nd and 3rd, fifth, octave', semis: [2, 4, 7, 12], down: false },
+      { level: 2, name: 'Level 2: add minor 2nd and 3rd, fourth, major 6th', semis: [1, 2, 3, 4, 5, 7, 9, 12], down: false },
+      { level: 3, name: 'Level 3: add the minor 6th, up and down', semis: [1, 2, 3, 4, 5, 7, 8, 9, 12], down: true },
+      { level: 4, name: 'Level 4: every interval, up and down', semis: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], down: true },
     ];
 
     const intervalBySemis = (s) => INTERVALS.find((i) => i.semis === s);
 
     /**
+     * What a practice session drills: the level's intervals and directions, or the visitor's own.
+     * @param {number} level
+     * @param {{ semis?: number[], dir?: 'up'|'down'|'both' }} [own]  semis: only these intervals (half steps, 1-12);
+     *   dir: only up, only down, or both. Anything left out (or empty, or nonsense) is as the level sets.
+     * @returns {{ semis: number[], up: boolean, down: boolean }}
+     */
+    function intervalPlan(level, own = {}) {
+      const L = INTERVAL_LEVELS[Math.max(0, Math.min(INTERVAL_LEVELS.length - 1, level - 1))];
+      const chosen = [...new Set((Array.isArray(own.semis) ? own.semis : []).map(Number))].filter((s) => intervalBySemis(s)).sort((a, b) => a - b);
+      const dir = ['up', 'down', 'both'].includes(own.dir) ? own.dir : L.down ? 'both' : 'up';
+      return { semis: chosen.length ? chosen : L.semis, up: dir !== 'down', down: dir !== 'up' };
+    }
+
+    /**
      * A question: a reference note and a target note an interval away, both inside the voice range.
      * @param {() => number} rand  random function (Math.random or seeded)
-     * @param {{ level: number, low: number, high: number, avoid?: number }} opts  avoid: last interval, for variety
+     * @param {{ level: number, low: number, high: number, avoid?: number, semis?: number[], dir?: string }} opts
+     *   avoid: last interval, for variety. semis / dir: the visitor's own choice (see intervalPlan).
      */
-    function makeIntervalQuestion(rand, { level, low, high, avoid }) {
-      const L = INTERVAL_LEVELS[Math.max(0, Math.min(INTERVAL_LEVELS.length - 1, level - 1))];
-      let pool = L.semis.filter((s) => s !== avoid);
-      if (!pool.length) pool = L.semis;
+    function makeIntervalQuestion(rand, { level, low, high, avoid, semis: ownSemis, dir: ownDir }) {
+      const plan = intervalPlan(level, { semis: ownSemis, dir: ownDir });
+      let pool = plan.semis.filter((s) => s !== avoid);
+      if (!pool.length) pool = plan.semis;
       const semis = pool[Math.floor(rand() * pool.length)];
-      const dir = L.down && rand() < 0.5 ? -1 : 1;
+      const dir = !plan.up ? -1 : plan.down && rand() < 0.5 ? -1 : 1;
       // Keep both notes a little inside the range so nothing strains.
       const lo = low + 1;
       const hi = high - 1;
@@ -5222,12 +5591,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       return `${q.interval.name} ${q.dir > 0 ? 'up' : 'down'}`;
     }
 
+    /** "a major 3rd", "an octave": an interval's name in lower case with its article, for a sentence. */
+    const withArticle = (name) => `${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name.toLowerCase()}`;
+
     function songCue(q) {
       const cue = q.dir > 0 ? q.interval.up : q.interval.down;
-      return cue ? `“${cue}” starts with ${q.semis === 12 ? "an" : "a"} ${q.interval.name.toLowerCase()} ${q.dir > 0 ? 'up' : 'down'}.` : null;
+      return cue ? `“${cue}” starts with ${withArticle(q.interval.name)} ${q.dir > 0 ? 'up' : 'down'}.` : null;
     }
 
-    return { INTERVALS, INTERVAL_LEVELS, intervalBySemis, makeIntervalQuestion, spellInterval, describeInterval, songCue };
+    return { INTERVALS, INTERVAL_LEVELS, intervalBySemis, intervalPlan, makeIntervalQuestion, spellInterval, describeInterval, withArticle, songCue };
   })();
   var mod_grade = (function () {
     // Grade a sung melody, note by note, from timed pitch readings.
@@ -8641,7 +9013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   var mod_warmups = (function () {
     // Warm-up patterns and the plan for playing one through a singer's range.
     // notes: [semitones above the round's starting note, beats, sounding fraction (1 = legato, 0.4 = staccato)]
-    // A starter set of standard exercises; Rachel can swap in her own.
+    // A starter set of standard exercises; a teacher can swap in their own.
 
     const WARMUPS = [
       {
@@ -8732,11 +9104,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
      * down) a half step per round, staying inside [low, high] (MIDI).
      * @returns {{ events: {kind:'chord'|'note', t:number, dur:number, midi?:number, midis?:number[], index?:number}[], rounds:number[], total:number }}
      */
-    function planWarmup(w, { low, high, bpm, dir = 'updown' }) {
+    function planWarmup(w, { low, high, bpm, dir = 'updown', floor, ceil }) {
       const beat = 60 / bpm;
       const top = Math.max(...w.notes.map((n) => n[0]));
-      const first = low + 1;
-      const last = Math.max(first, high - 1 - top);
+      const bottom = Math.min(...w.notes.map((n) => n[0]));
+      // floor / ceil (MIDI): the lowest and highest notes to be SUNG, chosen by hand (a teacher keeping a young voice
+      // in a safe range). Otherwise the rounds stay a half step inside [low, high].
+      const first = Number.isFinite(floor) ? floor - bottom : low + 1;
+      const last = Math.max(first, (Number.isFinite(ceil) ? ceil : high - 1) - top);
       const upRounds = [];
       for (let r = first; r <= last; r++) upRounds.push(r);
       const rounds = dir === 'up' ? upRounds : dir === 'down' ? [...upRounds].reverse() : upRounds.concat(upRounds.slice(0, -1).reverse());
@@ -9947,7 +10322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         '<?xml version="1.0" encoding="UTF-8"?>\n' +
         '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n' +
         `<score-partwise version="4.0"><work><work-title>${esc(title)}</work-title></work>` +
-        '<identification><encoding><software>Rachel Pomeranz Practice Room (from MIDI)</software></encoding></identification>' +
+        '<identification><encoding><software>AlloFlow Singing Lab (from MIDI)</software></encoding></identification>' +
         `<part-list>${parts.map((p, i) => `<score-part id="P${i + 1}"><part-name>${esc(p.name)}</part-name></score-part>`).join('')}</part-list>` +
         `${partXml.join('')}</score-partwise>\n`;
       return { xml, key, warnings, notes: parts[0].staves[0].voices[0].length, lyrics: lyricAt.size };
@@ -10300,31 +10675,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   }
 
   // ───────────────────────── Sight Reading: Levels ─────────────────────────
+  // A generated melody (seeded: the same code gives the same melody), sung after a count-in and graded note by note.
+  // Built for teachers preparing auditions (what audition sheets specify): every choice a level makes can be fixed by hand
+  // (key signature, major/minor, time signature, range, shortest note, rests, first note, biggest leap, chromatic
+  // notes, dynamics, names under the notes), a length, single notes and rests can be edited, and a melody or a sheet of
+  // melodies prints (with an optional answer key) through a new window, since Canvas ignores print() on the app page.
   var VS_GRADE_COLORS = { tune: '#15803d', near: '#b45309', wrong: '#be123c', missed: '#6b7280' };
+  var VS_SIGHT_OPTS = ['key', 'mode', 'time', 'range', 'shortest', 'rests', 'start', 'leap', 'chroma', 'dynamics', 'names'];
+  var VS_SIGHT_BARS = [4, 8, 16, 32];
+  var VS_GOLD = '#b0791a';
+
+  // The values each choice can take ('' = the level decides), as strings the way a select holds them.
+  function vsSightValues(k) {
+    var o = VS.SIGHT_OPTIONS;
+    if (k === 'key') return [0, 1, 2, 3, 4, 5, 6, 7, -1, -2, -3, -4, -5, -6, -7].map(String);
+    if (k === 'mode') return ['major', 'minor'];
+    if (k === 'time') return o.meter.map(function (m) { return m.replace('/', '-'); });
+    if (k === 'range' || k === 'shortest' || k === 'leap') return o[k].map(String);
+    if (k === 'rests') return ['no', 'yes'];
+    if (k === 'start') return ['tonic', 'other'];
+    if (k === 'chroma') return Object.keys(o.chroma);
+    if (k === 'dynamics') return ['yes'];
+    if (k === 'names') return o.names.slice();
+    return [];
+  }
+  function vsSightClean(custom) {
+    var out = {};
+    VS_SIGHT_OPTS.forEach(function (k) {
+      var v = custom && custom[k] !== undefined && custom[k] !== null ? String(custom[k]) : '';
+      if (v && vsSightValues(k).indexOf(v) >= 0) out[k] = v;
+    });
+    return out;
+  }
+  // The melody's own specification (what is printed under the notes is a way of reading it, not part of it).
+  function vsSightSpecKey(custom) {
+    return VS_SIGHT_OPTS.filter(function (k) { return k !== 'names' && custom[k]; }).map(function (k) { return k + '=' + custom[k]; }).join(',');
+  }
+
+  // A link to an exercise: ?tool=singing&tab=sightread&level=2&voice=alto&code=K7QX2&len=8&key=-2&time=6-8&edit=p1:1,r2
+  // Read once per page load; anything that makes no sense is ignored.
+  var _vsSightLinkUsed = false;
+  function vsReadSightLink() {
+    if (_vsSightLinkUsed) return null;
+    _vsSightLinkUsed = true;
+    try {
+      var q = new URLSearchParams(window.location.search);
+      if (!/^sightread$/i.test(q.get('tab') || '')) return null;
+      var code = (q.get('code') || '').toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 12);
+      if (!code) return null;
+      var custom = {};
+      VS_SIGHT_OPTS.forEach(function (k) { if (q.get(k) !== null) custom[k] = q.get(k); });
+      var len = Number(q.get('len'));
+      var voice = q.get('voice');
+      return {
+        level: Math.min(6, Math.max(1, Math.round(Number(q.get('level'))) || 1)),
+        code: code,
+        bars: VS_SIGHT_BARS.indexOf(len) >= 0 ? len : 0,
+        voice: voice && VS.VOICE_TYPES[voice] ? voice : '',
+        custom: vsSightClean(custom),
+        edits: VS.parseEdits(q.get('edit') || '')
+      };
+    } catch (e) { return null; }
+  }
+
+  // A melody for a code with the given settings. names: what to print under the notes (undefined = the settings').
+  function vsSightWrite(seed, s, names, edits) {
+    var c = s.custom || {};
+    return VS.generateMelody({
+      seed: seed,
+      level: s.level,
+      voice: s.voice,
+      bars: s.bars || undefined,
+      key: c.key ? Number(c.key) : (c.key === '0' ? 0 : undefined),
+      mode: c.mode || undefined,
+      meter: c.time ? c.time.replace('-', '/') : undefined,
+      range: Number(c.range) || undefined,
+      shortest: Number(c.shortest) || undefined,
+      rests: c.rests || undefined,
+      start: c.start || undefined,
+      leap: Number(c.leap) || undefined,
+      chroma: c.chroma ? VS.SIGHT_OPTIONS.chroma[c.chroma] : undefined,
+      dynamics: c.dynamics === 'yes',
+      names: (names === undefined ? c.names : names) || undefined,
+      edits: edits && edits.length ? edits : undefined
+    });
+  }
+
+  function vsEsc(s) {
+    return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; });
+  }
 
   function VsSightLevels(p) {
     var React = p.React;
     var h = React.createElement;
     var t = p.t;
     var c = p.classes;
-    var prefs = Object.assign({ level: 1, speed: 100, click: true, showNote: true, best: {} }, p.prefs || {});
+    var linkRef = React.useRef(undefined);
+    if (linkRef.current === undefined) linkRef.current = vsReadSightLink();
+    var link = linkRef.current;
+    var prefs = Object.assign({ level: 1, speed: 100, click: true, showNote: true, best: {}, bars: 0, custom: {}, printCount: 1, printKey: '' }, p.prefs || {});
+    var linkSavedRef = React.useRef(false);
+    if (link && !linkSavedRef.current) {
+      // Until the shared settings are saved (an effect below), use them as they are in the link.
+      var keepNames = (p.prefs && p.prefs.custom && p.prefs.custom.names) || '';
+      prefs = Object.assign({}, prefs, { level: link.level, bars: link.bars, custom: Object.assign(keepNames ? { names: keepNames } : {}, link.custom) });
+    }
+    var custom = vsSightClean(prefs.custom);
     var prefsRef = React.useRef(prefs);
     prefsRef.current = prefs;
-    var voiceRef = React.useRef(p.voice); // the shared voice profile: melodies are written inside its comfortable range
-    voiceRef.current = p.voice;
     var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
-    var codeS = React.useState(function () { return (p.prefs && p.prefs.code) || VS.newCode(); });
+    // A link may name the voice a melody was written for: it is used for that melody only (the shared "My voice" stays).
+    var ovS = React.useState(link ? link.voice : ''); var voiceFromLink = ovS[0]; var setVoiceFromLink = ovS[1];
+    var voice = voiceFromLink && voiceFromLink !== p.voice.type ? VS.makeProfile({ type: voiceFromLink }) : p.voice;
+    var voiceRef = React.useRef(voice);
+    voiceRef.current = voice;
+    var codeS = React.useState(function () { return (link && link.code) || (p.prefs && p.prefs.code) || VS.newCode(); });
     var code = codeS[0]; var setCode = codeS[1];
     var codeRef = React.useRef(code);
     codeRef.current = code;
+    // A teacher's changes to the melody on screen, in order (VS.parseEdits). They belong to this one melody, so they come
+    // from a link only and are dropped whenever another melody is written.
+    var opsS = React.useState(function () { return link ? link.edits : []; }); var ops = opsS[0]; var setOpsState = opsS[1];
+    var opsRef = React.useRef(ops);
+    function setOps(next) { opsRef.current = next; setOpsState(next); }
     var scoreRef = React.useRef(null);
     var playerRef = React.useRef(null);
+    var osmdRef = React.useRef(null);
     var melRef = React.useRef(null);
     var anRef = React.useRef(null);
     var framesRef = React.useRef([]);
     var modeRef = React.useRef(null);
     var tonesRef = React.useRef(null);
     var liveAtRef = React.useRef(0);
+    var lastSigRef = React.useRef(null);
+    var pendRef = React.useRef(null);
+    var paintRef = React.useRef(function () {});
     var loadS = React.useState('loading'); var load = loadS[0]; var setLoad = loadS[1];
     var metaS = React.useState(null); var meta = metaS[0]; var setMeta = metaS[1];
     var modeS = React.useState(null); var mode = modeS[0]; var setMode = modeS[1];
@@ -10332,6 +10817,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var resS = React.useState(null); var result = resS[0]; var setResult = resS[1];
     var inS = React.useState(''); var codeInput = inS[0]; var setCodeInput = inS[1];
     var errS = React.useState(''); var err = errS[0]; var setErr = errS[1];
+    var noteS = React.useState(''); var note = noteS[0]; var setNote = noteS[1];
+    var linkS = React.useState(''); var shareLink = linkS[0]; var setShareLink = linkS[1];
+    var editS = React.useState(false); var editing = editS[0]; var setEditingState = editS[1];
+    var editingRef = React.useRef(false);
+    var chS = React.useState(0); var chosen = chS[0]; var setChosenState = chS[1];
+    var chosenRef = React.useRef(0);
+    function setChosen(i) { chosenRef.current = i; setChosenState(i); }
+    var prS = React.useState(false); var printing = prS[0]; var setPrinting = prS[1];
+    var openS = React.useState(function () { return !!vsSightSpecKey(custom); }); var customOpen = openS[0]; var setCustomOpen = openS[1];
     var voiceLabels = vsVoiceLabels(t);
     var levelNames = {
       1: t('stem.singing.vs_lvl1', 'Level 1: Steps'),
@@ -10348,11 +10842,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     };
     var textsRef = React.useRef(texts);
     textsRef.current = texts;
+    var VALUES = {
+      1: t('stem.singing.vs_val_16th', 'a sixteenth'), 2: t('stem.singing.vs_val_8th', 'an eighth'), 3: t('stem.singing.vs_val_8th_dot', 'a dotted eighth'),
+      4: t('stem.singing.vs_val_quarter', 'a quarter'), 6: t('stem.singing.vs_val_quarter_dot', 'a dotted quarter'), 8: t('stem.singing.vs_val_half', 'a half'),
+      12: t('stem.singing.vs_val_half_dot', 'a dotted half'), 16: t('stem.singing.vs_val_whole', 'a whole'), 24: t('stem.singing.vs_val_whole_dot', 'a dotted whole')
+    };
+
+    // The "Customize the melody" choices: label + the text of every value (shared by the selects and the printed sheet).
+    function ksLabel(f) {
+      var n = Math.abs(f);
+      var count = n === 0 ? t('stem.singing.vs_ks_none', 'No sharps or flats')
+        : f > 0 ? vsFmt(n > 1 ? t('stem.singing.vs_ks_sharps', '{n} sharps') : t('stem.singing.vs_ks_sharp', '1 sharp'), { n: n })
+          : vsFmt(n > 1 ? t('stem.singing.vs_ks_flats', '{n} flats') : t('stem.singing.vs_ks_flat', '1 flat'), { n: n });
+      return count + ': ' + vsKeyLabel(t, { fifths: f, minor: false }) + ' / ' + vsKeyLabel(t, { fifths: f, minor: true });
+    }
+    var LEVEL = t('stem.singing.vs_opt_level', 'As the level sets');
+    var OPTS = [
+      { k: 'key', label: t('stem.singing.vs_opt_key', 'Key signature'), text: function (v) { return ksLabel(Number(v)); } },
+      { k: 'mode', label: t('stem.singing.vs_opt_mode', 'Major or minor'), text: function (v) { return v === 'major' ? t('stem.singing.vs_opt_major', 'Major') : t('stem.singing.vs_opt_minor', 'Minor'); } },
+      { k: 'time', label: t('stem.singing.vs_opt_time', 'Time signature'), text: function (v) { return v === '2-2' ? t('stem.singing.vs_opt_cut', '2/2 (cut time)') : v.replace('-', '/'); } },
+      { k: 'range', label: t('stem.singing.vs_opt_range', 'Range'), text: function (v) { return { 4: t('stem.singing.vs_rng_5', 'A fifth'), 5: t('stem.singing.vs_rng_6', 'A sixth'), 7: t('stem.singing.vs_rng_8', 'An octave'), 8: t('stem.singing.vs_rng_9', 'A ninth'), 9: t('stem.singing.vs_rng_10', 'A tenth'), 11: t('stem.singing.vs_rng_12', 'A twelfth') }[v]; } },
+      { k: 'shortest', label: t('stem.singing.vs_opt_shortest', 'Nothing shorter than'), text: function (v) { return { 4: t('stem.singing.vs_short_4', 'Quarter notes'), 2: t('stem.singing.vs_short_8', 'Eighth notes'), 1: t('stem.singing.vs_short_16', 'Sixteenth notes') }[v]; } },
+      { k: 'rests', label: t('stem.singing.vs_opt_rests', 'Rests'), text: function (v) { return v === 'no' ? t('stem.singing.vs_rests_no', 'No rests') : t('stem.singing.vs_rests_yes', 'Include rests'); } },
+      { k: 'start', label: t('stem.singing.vs_opt_start', 'First note'), text: function (v) { return v === 'tonic' ? t('stem.singing.vs_start_tonic', 'The tonic (key note)') : t('stem.singing.vs_start_other', 'Not the tonic'); } },
+      { k: 'leap', label: t('stem.singing.vs_opt_leap', 'Biggest leap'), text: function (v) { return { 1: t('stem.singing.vs_leap_1', 'Steps only'), 2: t('stem.singing.vs_leap_3', 'Up to a third'), 4: t('stem.singing.vs_leap_5', 'Up to a fifth'), 5: t('stem.singing.vs_leap_6', 'Up to a sixth'), 7: t('stem.singing.vs_leap_8', 'Up to an octave') }[v]; } },
+      { k: 'chroma', label: t('stem.singing.vs_opt_chroma', 'Chromatic notes'), text: function (v) { return { none: t('stem.singing.vs_chroma_none', 'None'), some: t('stem.singing.vs_chroma_some', 'A few'), many: t('stem.singing.vs_chroma_many', 'Many') }[v]; } },
+      { k: 'dynamics', label: t('stem.singing.vs_opt_dynamics', 'Dynamics'), none: t('stem.singing.vs_dyn_none', 'None'), text: function () { return t('stem.singing.vs_dyn_yes', 'Include dynamics'); } },
+      { k: 'names', label: t('stem.singing.vs_opt_names', 'Under the notes'), none: t('stem.singing.vs_names_none', 'Nothing'), text: function (v) { return { solfege: t('stem.singing.vs_names_solfege', 'Solfège (the key note is do)'), 'solfege-la': t('stem.singing.vs_names_solfege_la', 'Solfège (minor keys start on la)'), numbers: t('stem.singing.vs_names_numbers', 'Scale numbers (1 to 7)'), letters: t('stem.singing.vs_names_letters', 'Letter names') }[v]; } }
+    ];
+    var KEY_SYSTEMS = [
+      ['', t('stem.singing.vs_akey_none', 'No answer key')],
+      ['solfege', t('stem.singing.vs_akey_solfege', 'Answer key: solfège')],
+      ['solfege-la', t('stem.singing.vs_akey_solfege_la', 'Answer key: solfège, minor on la')],
+      ['numbers', t('stem.singing.vs_akey_numbers', 'Answer key: scale numbers')],
+      ['letters', t('stem.singing.vs_akey_letters', 'Answer key: letter names')]
+    ];
+    var settings = { level: prefs.level, voice: voice, bars: prefs.bars, custom: custom };
+    var settingsRef = React.useRef(settings);
+    settingsRef.current = settings;
+
+    // Save what a link set up (level, length, choices): a link opened in a new page load always wins.
+    React.useEffect(function () {
+      if (link) { set({ level: link.level, bars: link.bars, custom: prefs.custom, code: link.code }); linkSavedRef.current = true; }
+    }, []);
 
     React.useEffect(function () {
       var alive = true;
       vsLoadOSMD().then(function (OSMD) {
         if (!alive || !scoreRef.current) return;
+        osmdRef.current = OSMD;
         var narrow = window.matchMedia && window.matchMedia('(max-width: 700px)').matches;
         playerRef.current = new VS.ScorePlayer({
           OSMD: OSMD,
@@ -10363,43 +10901,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         });
         setLoad('ready');
       }).catch(function () { if (alive) setLoad('error'); });
+      // The music is drawn again on a resize or when it plays: put the chosen note's mark back.
+      var timer = 0;
+      var mo = typeof MutationObserver === 'function' && scoreRef.current ? new MutationObserver(function () {
+        if (!editingRef.current) return;
+        clearTimeout(timer);
+        timer = setTimeout(function () { paintRef.current(); }, 30);
+      }) : null;
+      if (mo) mo.observe(scoreRef.current, { childList: true, subtree: true });
       return function () {
         alive = false;
         modeRef.current = null;
+        if (mo) mo.disconnect();
+        clearTimeout(timer);
         if (anRef.current) anRef.current.stop();
         if (playerRef.current) playerRef.current.destroy();
+        if (tonesRef.current && tonesRef.current.hush) tonesRef.current.hush();
       };
     }, []);
 
+    // Escape stops whatever is playing.
+    React.useEffect(function () {
+      if (!mode) return;
+      var onKey = function (e) { if (e.key === 'Escape') stopAll(); };
+      document.addEventListener('keydown', onKey);
+      return function () { document.removeEventListener('keydown', onKey); };
+    }, [mode]);
+
+    // Write the melody whenever what it depends on changes. Anything that makes it another melody drops the edits.
+    var sig = [prefs.level, voice.type, voice.low, voice.high, prefs.bars, code, VS_SIGHT_OPTS.filter(function (k) { return k !== 'names' && k !== 'dynamics'; }).map(function (k) { return custom[k] || ''; }).join('|')].join('/');
+    var opsKey = VS.formatEdits(ops);
     React.useEffect(function () {
       if (load !== 'ready') return;
-      var player = playerRef.current;
-      stopAll();
-      var m;
-      try {
-        m = VS.generateMelody({ seed: code, level: prefs.level, voice: p.voice });
-      } catch (e) {
-        setErr(t('stem.singing.vs_write_failed', 'That melody could not be written. Try a new melody.'));
+      if (lastSigRef.current !== null && lastSigRef.current !== sig && opsRef.current.length) {
+        lastSigRef.current = sig;
+        pendRef.current = null;
+        setOps([]);
         return;
       }
+      lastSigRef.current = sig;
+      var player = playerRef.current;
+      stopAll();
+      var edits = VS.parseEdits(opsRef.current);
+      var m;
+      try {
+        m = vsSightWrite(code, settingsRef.current, undefined, edits);
+      } catch (e) {
+        setErr(vsSightSpecKey(custom)
+          ? t('stem.singing.vs_write_failed_custom', 'A melody could not be written with these choices. Change one of them, or press “Back to the level’s own choices”.')
+          : t('stem.singing.vs_write_failed', 'That melody could not be written. Try a new melody.'));
+        return;
+      }
+      // Changes that did nothing (a note that isn't there, a move off the staff) are forgotten.
+      var kept = edits.filter(function (x, k) { return m.applied && m.applied[k]; });
+      if (kept.length !== edits.length) opsRef.current = kept;
+      var pend = pendRef.current;
+      pendRef.current = null;
       melRef.current = m;
       if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.melody = m; // test seam (harness only)
       setErr('');
       setResult(null);
+      setShareLink('');
+      var all = m.notes;
+      if (chosenRef.current > all.length - 1) setChosen(all.length - 1);
       player.load(m.xml).then(function () {
         player.setTempo(prefsRef.current.speed / 100);
-        setMeta({ key: m.key, meter: m.meter, notes: m.notes.filter(function (n) { return !n.rest; }).length, first: VS.spelledName(m.notes.find(function (n) { return !n.rest; })) });
+        var bars = {};
+        all.forEach(function (n) { bars[n.bar] = 1; });
+        setMeta({ key: m.key, meter: m.meter, notes: all.filter(function (n) { return !n.rest; }).length, first: VS.spelledName(all.find(function (n) { return !n.rest; })), bars: Object.keys(bars).length, edited: kept.length > 0, count: all.length, rev: Math.random() });
+        if (kept.length !== edits.length) setOpsState(kept);
+        if (pend) {
+          if (kept.length < pend.want) { if (p.announce) p.announce(t('stem.singing.vs_edit_cant', 'That can’t be done here.')); }
+          else { var n = all[chosenRef.current]; sound(n); if (p.announce && pend.done) p.announce(pend.done(n)); }
+        }
       });
       if ((p.prefs || {}).code !== code) set({ code: code });
-    }, [load, code, prefs.level, p.voice.type, p.voice.low, p.voice.high]);
+    }, [load, sig, opsKey, custom.names || '', custom.dynamics || '']);
+
+    // The chosen note or rest is gold while editing.
+    function drawn() { return scoreRef.current ? Array.prototype.slice.call(scoreRef.current.querySelectorAll('svg .vf-stavenote')) : []; }
+    function paintChosen() {
+      drawn().forEach(function (g, i) {
+        var fill = editingRef.current && i === chosenRef.current ? VS_GOLD : '';
+        Array.prototype.forEach.call(g.querySelectorAll('.vf-notehead, .vf-notehead *'), function (k) { k.style.fill = fill; });
+      });
+    }
+    paintRef.current = paintChosen;
+    React.useEffect(function () { paintChosen(); }, [editing, chosen, meta]);
 
     function ensureMic() {
       if (anRef.current) return Promise.resolve(anRef.current);
       var a = new VS.VoiceAnalyzer({ mode: 'voice' });
+      if (a.setIgnore) a.setIgnore(function () { return !!(tonesRef.current && tonesRef.current.sounding && tonesRef.current.sounding()); });
       a.onFrame(function (f) {
         if (modeRef.current !== 'sing' || !playerRef.current) return;
         var player = playerRef.current;
-        var tm = player.scoreTime() - 0.06 * player.tempo; // frames arrive a little after the sound
+        var tm = player.scoreTime() - (0.06 + Math.max(0, (f.lag || 0) - 0.02)) * player.tempo; // frames arrive a little after the sound
         var now = performance.now();
         var showText = now - liveAtRef.current > 150;
         if (tm < 0) { if (showText) { liveAtRef.current = now; setLive(textsRef.current.countIn); } return; }
@@ -10432,6 +11029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (modeRef.current === 'sing') { stopAll(); return; }
       stopAll();
       setErr('');
+      if (editingRef.current) setEditing(false);
       ensureMic().then(function () {
         var player = playerRef.current;
         framesRef.current = [];
@@ -10448,6 +11046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }).catch(function (e) { setErr(vsMicError(t, e)); });
     }
     function hear() {
+      if (modeRef.current === 'hear') { stopAll(); return; }
       stopAll();
       var player = playerRef.current;
       player.markVoiceNotes();
@@ -10458,25 +11057,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       setMode('hear');
       player.play();
     }
+    function tones() {
+      if (!tonesRef.current) tonesRef.current = new VS.Tones();
+      return tonesRef.current;
+    }
     function keyAndNote() {
       stopAll();
       var m = melRef.current;
       if (!m) return;
-      if (!tonesRef.current) tonesRef.current = new VS.Tones();
-      var tones = tonesRef.current;
-      tones.ready().then(function (ctx) {
+      var tn = tones();
+      tn.ready().then(function (ctx) {
         var t0 = ctx.currentTime + 0.05;
         var third = m.key.minor ? 3 : 4;
         var root = m.tonicMidi;
         while (root - m.firstMidi > 7) root -= 12;
         while (m.firstMidi - root > 12) root += 12;
-        [0, third, 7, 12].forEach(function (s, i) { tones.piano(root + s, t0 + i * 0.32, 0.5, 0.8); });
-        tones.chord([root, root + third, root + 7], t0 + 1.4, 1.2);
-        tones.piano(m.firstMidi, t0 + 2.9, 1.4, 1);
+        [0, third, 7, 12].forEach(function (s, i) { tn.piano(root + s, t0 + i * 0.32, 0.5, 0.8); });
+        tn.chord([root, root + third, root + 7], t0 + 1.4, 1.2);
+        tn.piano(m.firstMidi, t0 + 2.9, 1.4, 1);
       });
       if (p.announce && meta) p.announce(vsKeyLabel(t, m.key) + '. ' + vsFmt(t('stem.singing.vs_first_note', 'First note {note}.'), { note: meta.first }));
     }
+    function sound(n) {
+      if (!n || n.rest) return;
+      var tn = tones();
+      tn.ready().then(function (ctx) { tn.piano(n.midi, ctx.currentTime + 0.03, 0.7, 0.9); });
+    }
 
+    function bestKey() {
+      var s = settingsRef.current;
+      var own = vsSightSpecKey(s.custom);
+      return s.level + ':' + s.voice.type + ':' + codeRef.current + (s.bars ? ':len=' + s.bars : '') + (own ? ':' + own : '') + (opsRef.current.length ? ':edit=' + VS.formatEdits(opsRef.current) : '');
+    }
     function grade() {
       var player = playerRef.current;
       var m = melRef.current;
@@ -10505,14 +11117,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       });
       player.markVoiceNotes(grades.map(function (g) { return VS_GRADE_COLORS[g.grade]; }));
       var pct = Math.round((100 * (count.tune + count.near * 0.75)) / notes.length);
-      var bestKey = prefsRef.current.level + ':' + voiceRef.current.type + ':' + codeRef.current;
-      var best = Math.max(pct, (prefsRef.current.best || {})[bestKey] || 0);
-      if (pct >= ((prefsRef.current.best || {})[bestKey] || 0)) {
+      var bk = bestKey();
+      var before = (prefsRef.current.best || {})[bk] || 0;
+      var best = Math.max(pct, before);
+      if (pct > before) {
         var nb = Object.assign({}, prefsRef.current.best || {});
-        nb[bestKey] = pct;
+        nb[bk] = pct;
         var keys = Object.keys(nb);
         if (keys.length > 60) delete nb[keys[0]];
-        p.savePrefs(Object.assign({}, prefsRef.current, { best: nb }));
+        p.savePrefs(Object.assign({}, p.prefs || {}, { best: nb }));
       }
       var r = { counted: notes.length, right: count.tune + count.near, pct: pct, best: best, count: count, problems: problems };
       setResult(r);
@@ -10520,47 +11133,335 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (pct >= 80 && p.awardXP) p.awardXP('singing_sight_levels', 10, 'Singing: sight-singing level ' + prefsRef.current.level);
     }
 
+    // ---- Choosing another melody ----
+    function newMelody(next) {
+      setVoiceFromLink('');
+      setCode(next);
+    }
+    function setOpt(k, v) {
+      var nc = Object.assign({}, custom);
+      if (v) nc[k] = v; else delete nc[k];
+      set({ custom: nc });
+      if (p.announce) {
+        p.announce(k === 'names' ? (v ? t('stem.singing.vs_same_names_on', 'The same melody, with note names under the notes.') : t('stem.singing.vs_same_names_off', 'The same melody, without note names.'))
+          : k === 'dynamics' ? (v ? t('stem.singing.vs_same_dyn_on', 'The same melody, with dynamics.') : t('stem.singing.vs_same_dyn_off', 'The same melody, without dynamics.'))
+            : t('stem.singing.vs_written_again', 'Melody written again with your choice.'));
+      }
+    }
+    function resetOpts() {
+      set({ custom: custom.names ? { names: custom.names } : {} }); // note names are a way of reading, not a choice about the melody
+      if (p.announce) p.announce(t('stem.singing.vs_back_to_level', 'Back to the level’s own choices.'));
+    }
+
+    // ---- A link to this exercise ----
+    function copyLink() {
+      var s = settingsRef.current;
+      var q = new URLSearchParams();
+      q.set('tool', 'singing'); q.set('tab', 'sightread');
+      q.set('level', String(s.level)); q.set('voice', s.voice.type); q.set('code', codeRef.current);
+      if (s.bars) q.set('len', String(s.bars));
+      VS_SIGHT_OPTS.forEach(function (k) { if (s.custom[k]) q.set(k, s.custom[k]); });
+      if (opsRef.current.length) q.set('edit', VS.formatEdits(opsRef.current));
+      var url = window.location.origin + window.location.pathname + '?' + q.toString().replace(/%3A/gi, ':').replace(/%2C/gi, ',');
+      setShareLink(url);
+      try { Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(url)).then(function () { if (p.announce) p.announce(t('stem.singing.vs_lib_link_copied', 'Link copied.')); }, function () { /* the box shows it */ }); } catch (e) { /* the box shows it */ }
+    }
+
+    // ---- Edit notes ----
+    function setEditing(on) {
+      editingRef.current = on;
+      setEditingState(on);
+      if (on) {
+        stopAll();
+        setResult(null);
+        if (playerRef.current) playerRef.current.markVoiceNotes(); // no grade colours while editing
+      }
+    }
+    function choose(i) {
+      var m = melRef.current;
+      if (!m) return;
+      i = Math.max(0, Math.min(m.notes.length - 1, i));
+      setChosen(i);
+      sound(m.notes[i]);
+    }
+    // One change to the chosen note or rest; the melody is written again and what happened is said.
+    function change(op, done) {
+      var list = opsRef.current.slice();
+      var last = list[list.length - 1];
+      if (op.t === 'p' && last && last.t === 'p' && last.i === op.i) {
+        // Several moves of the same note are one change (and a move there and back is none).
+        var merged = { t: 'p', i: op.i, s: last.s + op.s };
+        var a = op.a !== undefined ? op.a : op.s ? undefined : last.a;
+        if (a !== undefined) merged.a = a;
+        list.pop();
+        if (merged.s !== 0 || merged.a !== undefined) list.push(merged);
+      } else list.push(op);
+      pendRef.current = { want: list.length, done: done };
+      setOps(list);
+    }
+    function here() { var m = melRef.current; return m && m.notes[chosenRef.current]; }
+    function pitch(steps, accidental) {
+      var n = here();
+      if (!n || n.rest) return;
+      var op = accidental === undefined ? { t: 'p', i: chosenRef.current, s: steps } : { t: 'p', i: chosenRef.current, s: 0, a: Math.max(-1, Math.min(1, (n.shift || 0) + accidental)) };
+      change(op, function (x) { return vsFmt(t('stem.singing.vs_edit_now', 'Now {note}.'), { note: VS.spelledName(x) }); });
+    }
+    function undo() {
+      var list = opsRef.current.slice(0, -1);
+      pendRef.current = { want: list.length, done: function () { return list.length ? vsFmt(t('stem.singing.vs_edit_undone_n', 'Undone. Changes left: {n}.'), { n: list.length }) : t('stem.singing.vs_edit_undone_all', 'Undone. The melody is as written.'); } };
+      setOps(list);
+    }
+    function clearEdits() {
+      pendRef.current = { want: 0, done: function () { return t('stem.singing.vs_edit_cleared', 'The melody is as written again.'); } };
+      setOps([]);
+    }
+    function onScoreClick(e) {
+      if (!editingRef.current) return;
+      var best = -1;
+      var near = Infinity;
+      drawn().forEach(function (g, i) {
+        var r = (g.querySelector('.vf-notehead') || g).getBoundingClientRect();
+        // A tap above or below counts for that note (its stem, the space over the staff).
+        var d = Math.hypot(e.clientX - (r.left + r.width / 2), (e.clientY - (r.top + r.height / 2)) * 0.3);
+        if (d < near) { near = d; best = i; }
+      });
+      if (best >= 0 && near <= 28) choose(best);
+    }
+    function onEditKey(e) {
+      var m = melRef.current;
+      if (!m || e.target.tagName === 'SELECT') return;
+      if (e.key === 'ArrowLeft' && chosenRef.current > 0) choose(chosenRef.current - 1);
+      else if (e.key === 'ArrowRight' && chosenRef.current < m.notes.length - 1) choose(chosenRef.current + 1);
+      else if (e.key === 'ArrowUp') pitch(1);
+      else if (e.key === 'ArrowDown') pitch(-1);
+      else return;
+      e.preventDefault();
+    }
+
+    // ---- Printing: a new window holding the sheet (or a downloaded page when pop-ups are blocked) ----
+    function specLine() {
+      var s = settingsRef.current;
+      var m = melRef.current;
+      var spec = [vsFmt(t('stem.singing.vs_level_n', 'Level {n}'), { n: s.level }), voiceLabels[s.voice.type]];
+      var keyed = s.custom.key && s.custom.mode;
+      if (keyed && m) spec.push(vsFmt(t('stem.singing.vs_print_key', 'Key: {key}'), { key: vsKeyLabel(t, m.key) }));
+      OPTS.forEach(function (o) {
+        var v = s.custom[o.k];
+        if (!v || o.k === 'names' || (keyed && (o.k === 'key' || o.k === 'mode'))) return;
+        spec.push(o.k === 'dynamics' ? t('stem.singing.vs_print_with_dyn', 'With dynamics') : o.label + ': ' + o.text(v));
+      });
+      if (s.bars) spec.push(vsFmt(t('stem.singing.vs_print_bars', '{n} bars'), { n: s.bars }));
+      return spec.join(' · ');
+    }
+    // Each melody drawn off screen at paper width, kept as its SVG.
+    function drawForPaper(holder, m) {
+      var box = document.createElement('div');
+      holder.appendChild(box);
+      var pl = new VS.ScorePlayer({ OSMD: osmdRef.current, container: box, zoom: 0.9, osmdOptions: { autoResize: false, followCursor: false, drawPartNames: false, drawMetronomeMarks: true } });
+      var rules = pl.osmd && pl.osmd.EngravingRules;
+      if (rules) Object.assign(rules, { PageTopMargin: 1.5, PageBottomMargin: 1, PageLeftMargin: 1, PageRightMargin: 1 });
+      return pl.load(m.xml).then(function () {
+        var svg = box.querySelector('svg');
+        if (svg && !svg.getAttribute('viewBox') && svg.getAttribute('width')) svg.setAttribute('viewBox', '0 0 ' + parseFloat(svg.getAttribute('width')) + ' ' + parseFloat(svg.getAttribute('height')));
+        var out = svg ? new XMLSerializer().serializeToString(svg) : '';
+        pl.destroy();
+        return out;
+      }, function (e) { pl.destroy(); throw e; });
+    }
+    function makeSheet(count, system) {
+      var s = settingsRef.current;
+      var m0 = melRef.current;
+      var edits = opsRef.current;
+      var codes = [codeRef.current];
+      while (codes.length < count) { var nc = VS.newCode(); if (codes.indexOf(nc) < 0) codes.push(nc); }
+      var spec = specLine();
+      var num = function (i) { return count > 1 ? (i + 1) + '.  ' : ''; };
+      var holder = document.createElement('div');
+      holder.setAttribute('aria-hidden', 'true');
+      holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:690px;background:#fff';
+      document.body.appendChild(holder);
+      var items = [];
+      var keyItems = [];
+      var chain = Promise.resolve();
+      codes.forEach(function (cd, i) {
+        chain = chain.then(function () {
+          var m = i === 0 ? m0 : vsSightWrite(cd, s);
+          var cap = num(i) + vsKeyLabel(t, m.key) + ' · ' + m.meter + ' · ' + vsFmt(t('stem.singing.vs_print_exercise', 'exercise {code}'), { code: cd }) + (i === 0 && edits.length ? ' ' + t('stem.singing.vs_print_edited', '(edited: share its link)') : '');
+          return drawForPaper(holder, m).then(function (svg) { items.push({ cap: cap, svg: svg }); });
+        });
+      });
+      if (system) codes.forEach(function (cd, i) {
+        chain = chain.then(function () {
+          var m = vsSightWrite(cd, s, system, i === 0 ? edits : undefined);
+          var first = m.notes.find(function (n) { return !n.rest; });
+          var cap = num(i) + vsKeyLabel(t, m.key) + ' · ' + m.meter + ' · ' + vsFmt(t('stem.singing.vs_print_exercise', 'exercise {code}'), { code: cd }) + ' · ' + vsFmt(t('stem.singing.vs_print_starts', 'starts on {note}'), { note: VS.spelledName(first) });
+          return drawForPaper(holder, m).then(function (svg) { keyItems.push({ cap: cap, svg: svg }); });
+        });
+      });
+      return chain.then(function () {
+        holder.remove();
+        var block = function (list) { return list.map(function (it) { return '<div class="item"><p class="cap">' + vsEsc(it.cap) + '</p>' + it.svg + '</div>'; }).join(''); };
+        var sysName = '';
+        KEY_SYSTEMS.forEach(function (k) { if (k[0] === system) sysName = k[1]; });
+        var title = count > 1 ? t('stem.singing.vs_print_title_many', 'Sight-Singing') : t('stem.singing.vs_print_title_one', 'Sight-Singing Melody');
+        return '<!doctype html><html lang="' + vsEsc((document.documentElement && document.documentElement.lang) || 'en') + '"><head><meta charset="utf-8"><title>' + vsEsc(title + ' · ' + codes[0]) + '</title><style>' +
+          '@page{margin:0}html,body{margin:0;background:#fff;color:#111}body{font-family:Georgia,"Times New Roman",serif}' +
+          '.sheet{padding:0.5in;-webkit-box-decoration-break:clone;box-decoration-break:clone}h1{font-size:20pt;margin:0 0 6pt}' +
+          '.name{font-size:12pt;margin:0 0 6pt}.spec{font-size:9.5pt;color:#333;margin:0 0 10pt}.item{break-inside:avoid;page-break-inside:avoid;margin:0 0 4pt}' +
+          '.cap{font-size:10pt;font-weight:bold;margin:6pt 0 0}svg{display:block;max-width:100%;height:auto}.foot{font-size:9pt;color:#444;margin-top:10pt}' +
+          '.key{break-before:page;page-break-before:always}@media screen{body{background:#e5e7eb}.sheet{max-width:7.5in;margin:16px auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.2)}}' +
+          '</style></head><body><div class="sheet"><h1>' + vsEsc(title) + '</h1><p class="name">' + vsEsc(t('stem.singing.vs_print_name', 'Name ______________________   Date ____________')) + '</p><p class="spec">' + vsEsc(spec) + '</p>' +
+          block(items) +
+          '<p class="foot">' + vsEsc(count > 1 ? t('stem.singing.vs_print_foot_many', 'To hear one of these: open the Singing Lab in AlloFlow, Sight Reading, choose the same settings and type its exercise code.') : t('stem.singing.vs_print_foot_one', 'To hear it: open the Singing Lab in AlloFlow, Sight Reading, choose the same settings and type the exercise code.')) + '</p>' +
+          (system ? '<div class="key"><h1>' + vsEsc(t('stem.singing.vs_print_answer_key', 'Answer key')) + '</h1><p class="spec">' + vsEsc(sysName.replace(/^[^:]*:\s*/, '').replace(/^./, function (ch) { return ch.toUpperCase(); }) + ' · ' + spec) + '</p>' + block(keyItems) + '</div>' : '') +
+          '</div><script>window.onload=function(){setTimeout(function(){window.print();},250);};<\/script></body></html>';
+      }, function (e) { holder.remove(); throw e; });
+    }
+    function printSheet() {
+      if (!melRef.current || !osmdRef.current || printing) return;
+      stopAll();
+      var count = Math.min(12, Math.max(1, Number(prefs.printCount) || 1));
+      var system = prefs.printKey || '';
+      setNote('');
+      setPrinting(true);
+      // The window is opened inside the click: one opened after the music is drawn would count as a pop-up.
+      var w = null;
+      try { w = window.open('', '_blank'); } catch (e) { w = null; }
+      try { if (w && w.document) w.document.write('<p style="font-family:system-ui,sans-serif;margin:2em">' + vsEsc(t('stem.singing.vs_print_preparing', 'Getting the page ready…')) + '</p>'); } catch (e) { w = null; }
+      makeSheet(count, system).then(function (html) {
+        if (w && !w.closed) {
+          w.document.open();
+          w.document.write(html);
+          w.document.close();
+          setNote(t('stem.singing.vs_print_opened', 'The page to print opened in a new window.'));
+        } else {
+          var url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+          var a = document.createElement('a');
+          a.href = url; a.download = 'sight-singing-' + codeRef.current + '.html';
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+          setNote(t('stem.singing.vs_print_downloaded', 'This browser blocked the print window, so the page was downloaded instead: open the file and it prints.'));
+        }
+        if (p.announce) p.announce(t('stem.singing.vs_print_ready', 'Ready to print.'));
+      }).catch(function () {
+        try { if (w && !w.closed) w.close(); } catch (e) { /* gone */ }
+        setErr(t('stem.singing.vs_print_failed', 'The page to print could not be made. Try again.'));
+      }).then(function () { setPrinting(false); });
+    }
+
     var dark = p.isDark || p.isContrast;
-    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
-    var lab = 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700');
+    // (max-w-full + wrapping labels: the longest choices, "7 sharps: C♯ major / A♯ minor", are wider than a phone at the host's 16 px)
+    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border max-w-full min-w-0 ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var lab = 'inline-flex flex-wrap items-center gap-1.5 text-xs font-bold max-w-full ' + (dark ? 'text-slate-200' : 'text-slate-700');
+    var linkBtn = 'text-xs font-bold underline underline-offset-2 disabled:opacity-50 ' + (dark ? 'text-rose-300' : 'text-rose-800');
+    var editBtn = 'px-2 py-1 rounded-lg text-xs font-bold border disabled:opacity-40 ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var alertCls = 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700');
     var ready = load === 'ready' && meta;
+    var nOwn = VS_SIGHT_OPTS.filter(function (k) { return k !== 'names' && custom[k]; }).length;
+    var mel = melRef.current;
+    var cur = ready && mel && editing ? mel.notes[Math.min(chosen, mel.notes.length - 1)] : null;
+    var nxt = cur ? mel.notes[Math.min(chosen, mel.notes.length - 1) + 1] : null;
+    var editNow = cur ? vsFmt(t('stem.singing.vs_edit_place', '{i} of {n}: {what}.'), {
+      i: chosen + 1, n: mel.notes.length,
+      what: cur.rest ? vsFmt(t('stem.singing.vs_edit_rest', '{value} rest'), { value: VALUES[cur.dur] || '' }) : vsFmt(t('stem.singing.vs_edit_note', '{note}, {value} note'), { note: VS.spelledName(cur), value: VALUES[cur.dur] || '' })
+    }) + ' ' + (ops.length ? vsFmt(t('stem.singing.vs_edit_count', 'Changes so far: {n}.'), { n: ops.length }) : t('stem.singing.vs_edit_none', 'Nothing changed yet.')) : '';
+
     return h('div', { className: 'space-y-3' },
       h('div', { className: c.cardClass + ' space-y-3' },
         h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
           h('label', { className: lab }, t('stem.singing.vs_level', 'Level'),
-            h('select', { className: selCls, value: String(prefs.level), onChange: function (e) { set({ level: Number(e.target.value) }); } },
+            h('select', { className: selCls, value: String(prefs.level), onChange: function (e) { setVoiceFromLink(''); set({ level: Number(e.target.value) }); } },
               [1, 2, 3, 4, 5, 6].map(function (l) { return h('option', { key: l, value: String(l) }, levelNames[l]); }))),
+          h('label', { className: lab }, t('stem.singing.vs_length', 'Length'),
+            h('select', { 'data-sight-bars': '', className: selCls, value: prefs.bars ? String(prefs.bars) : '', onChange: function (e) { set({ bars: Number(e.target.value) || 0 }); } },
+              h('option', { value: '' }, LEVEL),
+              h('option', { value: '4' }, t('stem.singing.vs_len_4', 'One line (4 bars)')),
+              h('option', { value: '8' }, t('stem.singing.vs_len_8', 'Two lines (8 bars)')),
+              h('option', { value: '16' }, t('stem.singing.vs_len_16', 'Half a page (16 bars)')),
+              h('option', { value: '32' }, t('stem.singing.vs_len_32', 'A full page (32 bars)')))),
           h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
-            h('select', { className: selCls, value: p.voice.type, onChange: function (e) { p.setVoice({ type: e.target.value, source: 'type' }); } },
+            h('select', { className: selCls, value: voice.type, onChange: function (e) { setVoiceFromLink(''); p.setVoice({ type: e.target.value, source: 'type' }); } },
               Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
           h('label', { className: lab }, vsFmt(t('stem.singing.vs_speed', 'Speed {n}%'), { n: prefs.speed }),
             h('input', { type: 'range', min: 50, max: 130, step: 5, value: prefs.speed, className: 'accent-rose-600',
               onChange: function (e) { var v = Number(e.target.value); set({ speed: v }); if (playerRef.current) playerRef.current.setTempo(v / 100); } })),
           h('label', { className: lab }, h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!prefs.click, onChange: function (e) { set({ click: e.target.checked }); } }), t('stem.singing.vs_click', 'Click while I sing')),
           h('label', { className: lab }, h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!prefs.showNote, onChange: function (e) { set({ showNote: e.target.checked }); } }), t('stem.singing.vs_show_note', 'Show my note'))),
+        h('details', { 'data-sight-custom': '', open: customOpen, onToggle: function (e) { setCustomOpen(e.target.open); }, className: 'rounded-lg border p-2 ' + (dark ? 'border-slate-600' : 'border-slate-300') },
+          h('summary', { className: 'cursor-pointer text-sm font-bold ' + (dark ? 'text-slate-100' : 'text-slate-800') },
+            t('stem.singing.vs_customize', 'Customize the melody'), ' ',
+            h('span', { className: 'font-normal text-xs ' + (dark ? 'text-slate-300' : 'text-slate-600') }, nOwn
+              ? vsFmt(nOwn > 1 ? t('stem.singing.vs_custom_n', '{n} of your own choices') : t('stem.singing.vs_custom_1', '1 of your own choices'), { n: nOwn })
+              : t('stem.singing.vs_custom_hint', 'key, time signature, range, note values, rests, dynamics'))),
+          h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2 pt-2' },
+            OPTS.map(function (o) {
+              return h('label', { key: o.k, className: lab }, o.label,
+                h('select', { 'data-sight-opt': o.k, className: selCls, value: custom[o.k] || '', onChange: function (e) { setOpt(o.k, e.target.value); } },
+                  h('option', { value: '' }, o.none || LEVEL),
+                  vsSightValues(o.k).map(function (v) { return h('option', { key: v, value: v }, o.text(v)); })));
+            }),
+            nOwn > 0 && h('button', { type: 'button', className: c.btnSecondary, onClick: resetOpts }, t('stem.singing.vs_custom_reset', 'Back to the level’s own choices')))),
         h('div', { className: 'flex flex-wrap gap-2' },
-          h('button', { type: 'button', className: c.btnPrimary, disabled: !ready, onClick: sing }, mode === 'sing' ? t('stem.singing.vs_stop', 'Stop') : '🎤 ' + t('stem.singing.vs_sing_it', 'Sing it')),
+          h('button', { type: 'button', 'data-sight-sing': '', className: c.btnPrimary, disabled: !ready, onClick: sing }, mode === 'sing' ? t('stem.singing.vs_stop', 'Stop') : '🎤 ' + t('stem.singing.vs_sing_it', 'Sing it')),
           h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: keyAndNote }, t('stem.singing.vs_key_first', 'Key + first note')),
-          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { mode === 'hear' ? stopAll() : hear(); } }, mode === 'hear' ? t('stem.singing.vs_stop', 'Stop') : t('stem.singing.vs_hear_it', 'Hear it')),
-          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { setCode(VS.newCode()); } }, t('stem.singing.vs_new_melody', 'New melody')),
-          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { setCode('D' + VS.todayStamp()); } }, t('stem.singing.vs_today', 'Today’s melody')))),
+          h('button', { type: 'button', 'data-sight-hear': '', className: c.btnSecondary, disabled: !ready, onClick: hear }, mode === 'hear' ? t('stem.singing.vs_stop', 'Stop') : t('stem.singing.vs_hear_it', 'Hear it')),
+          h('button', { type: 'button', 'data-sight-new': '', className: c.btnSecondary, disabled: !ready, onClick: function () { newMelody(VS.newCode()); } }, t('stem.singing.vs_new_melody', 'New melody')),
+          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { newMelody('D' + VS.todayStamp()); } }, t('stem.singing.vs_today', 'Today’s melody')))),
       h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' },
-        h('p', { className: c.headingClass + ' text-sm m-0' }, meta
-          ? [vsFmt(t('stem.singing.vs_level_n', 'Level {n}'), { n: prefs.level }), vsKeyLabel(t, meta.key), meta.meter, voiceLabels[p.voice.type]].join(' · ')
+        h('p', { 'data-sight-title': '', className: c.headingClass + ' text-sm m-0' }, meta
+          ? [vsFmt(t('stem.singing.vs_level_n', 'Level {n}'), { n: prefs.level }), vsKeyLabel(t, meta.key), meta.meter, vsFmt(t('stem.singing.vs_print_bars', '{n} bars'), { n: meta.bars }), voiceLabels[voice.type]].join(' · ') + (meta.edited ? ' · ' + t('stem.singing.vs_edited', 'edited') : '')
           : (load === 'error' ? '' : t('stem.singing.vs_loading_music', 'Loading the music display…'))),
         h('form', { className: 'flex items-center gap-2', onSubmit: function (e) {
           e.preventDefault();
           var v = codeInput.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 12);
-          if (v) { setCode(v); setCodeInput(''); }
+          if (v) { newMelody(v); setCodeInput(''); }
         } },
           h('span', { className: c.subTextClass }, vsFmt(t('stem.singing.vs_exercise_code', 'Exercise {code}'), { code: code })),
           h('input', { type: 'text', value: codeInput, maxLength: 12, placeholder: t('stem.singing.vs_have_code', 'Have a code?'), 'aria-label': t('stem.singing.vs_code_label', 'Exercise code'),
             onChange: function (e) { setCodeInput(e.target.value); }, className: selCls + ' w-40 uppercase' }),
           h('button', { type: 'submit', className: c.btnSecondary }, t('stem.singing.vs_go', 'Go')))),
-      live && h('p', { className: 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700'), role: 'status' }, '● ' + live),
-      err && h('p', { role: 'alert', className: 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700') }, err),
-      load === 'error' && h('p', { role: 'alert', className: 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700') }, t('stem.singing.vs_osmd_failed', 'The music display could not load. Check the internet connection, then reopen this tab.')),
-      h('div', { ref: scoreRef, role: 'img', className: 'rounded-xl border overflow-x-auto', style: { background: '#fff', minHeight: 140, borderColor: '#cbd5e1' },
+      h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+        h('button', { type: 'button', 'data-sight-link': '', className: linkBtn, disabled: !ready, onClick: copyLink }, t('stem.singing.vs_copy_link', 'Copy a link to this melody')),
+        h('button', { type: 'button', 'data-sight-edit': '', className: linkBtn, disabled: !ready, 'aria-expanded': editing ? 'true' : 'false', onClick: function () { setEditing(!editingRef.current); } },
+          editing ? t('stem.singing.vs_edit_close', 'Done editing') : t('stem.singing.vs_edit_open', 'Edit notes')),
+        h('span', { className: 'inline-flex flex-wrap items-center gap-2' },
+          h('select', { 'data-sight-print-count': '', className: selCls, 'aria-label': t('stem.singing.vs_print_what', 'What to print'), value: String(prefs.printCount || 1), onChange: function (e) { set({ printCount: Number(e.target.value) }); } },
+            h('option', { value: '1' }, t('stem.singing.vs_print_1', 'This melody')),
+            [4, 6, 8, 12].map(function (n) { return h('option', { key: n, value: String(n) }, vsFmt(t('stem.singing.vs_print_n', 'A sheet of {n} melodies'), { n: n })); })),
+          h('select', { 'data-sight-print-key': '', className: selCls, 'aria-label': t('stem.singing.vs_print_key_label', 'Answer key'), value: prefs.printKey || '', onChange: function (e) { set({ printKey: e.target.value }); } },
+            KEY_SYSTEMS.map(function (k) { return h('option', { key: k[0], value: k[0] }, k[1]); })),
+          h('button', { type: 'button', 'data-sight-print': '', className: c.btnSecondary, disabled: !ready || printing, onClick: printSheet }, printing ? t('stem.singing.vs_print_busy', 'Getting ready…') : '🖨 ' + t('stem.singing.vs_print', 'Print')))),
+      shareLink && h('label', { className: lab + ' w-full' }, t('stem.singing.vs_link_label', 'Link'),
+        h('input', { type: 'text', readOnly: true, value: shareLink, 'data-sight-link-box': '', className: selCls + ' flex-1 min-w-0', onFocus: function (e) { e.target.select(); } })),
+      note && h('p', { role: 'status', className: c.subTextClass + ' m-0' }, note),
+      editing && h('div', { 'data-sight-editbar': '', className: 'rounded-lg border p-2 space-y-2 ' + (dark ? 'border-amber-400 bg-slate-900' : 'border-amber-500 bg-amber-50'), onKeyDown: onEditKey },
+        h('p', { 'data-sight-edit-now': '', className: 'text-sm font-bold m-0 ' + (dark ? 'text-amber-200' : 'text-amber-900') }, editNow || t('stem.singing.vs_edit_tap', 'Tap a note or a rest in the music, then change it.')),
+        h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.singing.vs_edit_group', 'Change the chosen note or rest') },
+          h('button', { type: 'button', 'data-e': 'prev', className: editBtn, disabled: !cur || chosen === 0, onClick: function () { choose(chosen - 1); } }, '◀ ' + t('stem.singing.vs_edit_prev', 'Before')),
+          h('button', { type: 'button', 'data-e': 'next', className: editBtn, disabled: !cur || chosen >= mel.notes.length - 1, onClick: function () { choose(chosen + 1); } }, t('stem.singing.vs_edit_next', 'Next') + ' ▶'),
+          h('span', { className: 'inline-flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.singing.vs_edit_pitch', 'Pitch') },
+            h('button', { type: 'button', 'data-e': 'up', className: editBtn, disabled: !cur || cur.rest, onClick: function () { pitch(1); } }, t('stem.singing.vs_edit_up', 'Up a step')),
+            h('button', { type: 'button', 'data-e': 'down', className: editBtn, disabled: !cur || cur.rest, onClick: function () { pitch(-1); } }, t('stem.singing.vs_edit_down', 'Down a step')),
+            h('button', { type: 'button', 'data-e': 'sharp', className: editBtn, disabled: !cur || cur.rest, onClick: function () { pitch(0, 1); } }, t('stem.singing.vs_edit_sharp', 'Raise (♯)')),
+            h('button', { type: 'button', 'data-e': 'flat', className: editBtn, disabled: !cur || cur.rest, onClick: function () { pitch(0, -1); } }, t('stem.singing.vs_edit_flat', 'Lower (♭)'))),
+          h('span', { className: 'inline-flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.singing.vs_edit_rhythm', 'Rhythm') },
+            h('button', { type: 'button', 'data-e': 'rest', className: editBtn, disabled: !cur || (!cur.rest && mel.notes.filter(function (x) { return !x.rest; }).length <= 2),
+              onClick: function () { change({ t: 'r', i: chosen }, function (n) { return n.rest ? vsFmt(t('stem.singing.vs_edit_now_rest', 'Now {value} rest.'), { value: VALUES[n.dur] || '' }) : vsFmt(t('stem.singing.vs_edit_now_note', 'Now a note: {note}.'), { note: VS.spelledName(n) }); }); } },
+              cur && cur.rest ? t('stem.singing.vs_edit_to_note', 'Make it a note') : t('stem.singing.vs_edit_to_rest', 'Make it a rest')),
+            h('button', { type: 'button', 'data-e': 'split', className: editBtn, disabled: !cur || !VS.splitOf(cur.dur, mel.compound),
+              onClick: function () { change({ t: 's', i: chosen }, function (n) { return vsFmt(n.rest ? t('stem.singing.vs_edit_split_rests', 'Split: two rests, this one {value}.') : t('stem.singing.vs_edit_split_notes', 'Split: two notes, this one {value}.'), { value: VALUES[n.dur] || '' }); }); } },
+              t('stem.singing.vs_edit_split', 'Split in two')),
+            h('button', { type: 'button', 'data-e': 'join', className: editBtn, disabled: !cur || !nxt || nxt.bar !== cur.bar || !VS.canJoin(cur.dur, nxt.dur),
+              onClick: function () { change({ t: 'j', i: chosen }, function (n) { return vsFmt(n.rest ? t('stem.singing.vs_edit_joined_rest', 'Joined: {value} rest.') : t('stem.singing.vs_edit_joined_note', 'Joined: {value} note.'), { value: VALUES[n.dur] || '' }); }); } },
+              t('stem.singing.vs_edit_join', 'Join with the next'))),
+          h('button', { type: 'button', 'data-e': 'undo', className: editBtn, disabled: !ops.length, onClick: undo }, t('stem.singing.vs_edit_undo', 'Undo')),
+          h('button', { type: 'button', 'data-e': 'clear', className: editBtn, disabled: !ops.length, onClick: clearEdits }, t('stem.singing.vs_edit_clear', 'Start over')),
+          h('button', { type: 'button', 'data-e': 'done', className: editBtn, onClick: function () { setEditing(false); } }, t('stem.singing.vs_edit_done', 'Done'))),
+        h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_edit_tip', 'Your changes are part of the link and the printed page. Bars always keep their length: to make a longer note, join two; for shorter ones, split. A new melody starts fresh.'))),
+      live && h('p', { className: alertCls, role: 'status' }, '● ' + live),
+      err && h('p', { role: 'alert', className: alertCls }, err),
+      load === 'error' && h('p', { role: 'alert', className: alertCls }, t('stem.singing.vs_osmd_failed', 'The music display could not load. Check the internet connection, then reopen this tab.')),
+      h('div', { ref: scoreRef, role: 'img', 'data-sight-score': '', onClick: onScoreClick, className: 'rounded-xl border overflow-x-auto' + (editing ? ' cursor-pointer' : ''), style: { background: '#fff', minHeight: 140, borderColor: editing ? VS_GOLD : '#cbd5e1' },
         'aria-label': meta ? vsFmt(t('stem.singing.vs_score_label', 'Melody in {key}, {meter} time, {n} notes, starting on {first}'), { key: vsKeyLabel(t, meta.key), meter: meta.meter, n: meta.notes, first: meta.first }) : t('stem.singing.vs_score_loading', 'Sight-singing melody') }),
       result && h('div', { className: c.cardClass + ' space-y-2', role: 'status' },
         h('p', { className: c.headingClass + ' text-base m-0' }, vsFmt(t('stem.singing.vs_score_line', '{right} of {total} notes right · {pct}%'), { right: result.right, total: result.counted, pct: result.pct }) +
@@ -10577,7 +11478,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           : result.pct >= 60
             ? t('stem.singing.vs_tip_good', 'Good work. Press “Hear it” to check the tricky spots, then sing it again.')
             : t('stem.singing.vs_tip_slow', 'Take it slower: lower the speed, play “Key + first note”, and hum through it once before you sing.'))),
-      h('p', { className: c.subTextClass }, t('stem.singing.vs_sight_help', 'Every melody has a code: share it and everyone gets the same melody. “Today’s melody” is the same for everyone all day. Singing in another octave still counts.'))
+      h('p', { className: c.subTextClass }, t('stem.singing.vs_sight_help', 'Every melody has a code: share it and everyone gets the same melody. “Today’s melody” is the same for everyone all day. Singing in another octave still counts.')),
+      // Stays on screen while music plays: the score follows the notes, which can carry the buttons above out of view.
+      mode && h('button', { type: 'button', 'data-sight-stop-float': '', onClick: stopAll,
+        className: 'fixed z-[9999] px-5 py-3 rounded-full font-bold shadow-lg bg-rose-700 text-white border-2 border-white',
+        style: { left: '50%', bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))', transform: 'translateX(-50%)' } },
+        '■ ' + (mode === 'sing' ? t('stem.singing.vs_stop_singing', 'Stop singing') : t('stem.singing.vs_stop', 'Stop')))
     );
   }
 
@@ -10587,21 +11493,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var h = React.createElement;
     var t = p.t;
     var c = p.classes;
-    var prefs = Object.assign({ level: 1, harmonic: false }, p.prefs || {});
+    var prefs = Object.assign({ level: 1, harmonic: false, semis: [], dir: '' }, p.prefs || {});
     var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
     var tonesRef = React.useRef(null);
     var qS = React.useState(null); var q = qS[0]; var setQ = qS[1];
+    var ownSemis = (Array.isArray(prefs.semis) ? prefs.semis : []).filter(function (x) { return x >= 1 && x <= 12; });
+    var plan = VS.intervalPlan(prefs.level, { semis: ownSemis, dir: prefs.dir }); // the level's set, or the visitor's own
+    var openS = React.useState(function () { return ownSemis.length > 0 || !!prefs.dir; }); var chooserOpen = openS[0]; var setChooserOpen = openS[1];
     var ansS = React.useState(null); var answer = ansS[0]; var setAnswer = ansS[1];
     var tallyS = React.useState({ right: 0, asked: 0, streak: 0 }); var tally = tallyS[0]; var setTally = tallyS[1];
     var names = vsIntervalNames(t);
     var voiceLabels = vsVoiceLabels(t);
-    var L = VS.INTERVAL_LEVELS[Math.max(0, Math.min(VS.INTERVAL_LEVELS.length - 1, prefs.level - 1))];
+    // (names say exactly what each level adds; the older vs_ilvl1-4 keys were vaguer)
     var levelNames = {
-      1: t('stem.singing.vs_ilvl1', 'Level 1: steps, thirds, fifths'),
-      2: t('stem.singing.vs_ilvl2', 'Level 2: add minor and the fourth'),
-      3: t('stem.singing.vs_ilvl3', 'Level 3: up and down'),
-      4: t('stem.singing.vs_ilvl4', 'Level 4: every interval')
+      1: t('stem.singing.vs_ilevel_1', 'Level 1: major 2nd and 3rd, fifth, octave'),
+      2: t('stem.singing.vs_ilevel_2', 'Level 2: add minor 2nd and 3rd, fourth, major 6th'),
+      3: t('stem.singing.vs_ilevel_3', 'Level 3: add the minor 6th, up and down'),
+      4: t('stem.singing.vs_ilevel_4', 'Level 4: every interval, up and down')
     };
+    function setChoice(patch) { set(patch); setQ(null); setAnswer(null); }
 
     function play(question) {
       if (!tonesRef.current) tonesRef.current = new VS.Tones();
@@ -10614,7 +11524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     }
     function next() {
       var v = p.voice; // both notes are chosen inside the shared voice's comfortable range
-      var nq = VS.makeIntervalQuestion(Math.random, { level: prefs.level, low: v.low, high: v.high, avoid: q && q.semis });
+      var nq = VS.makeIntervalQuestion(Math.random, { level: prefs.level, low: v.low, high: v.high, avoid: q && q.semis, semis: ownSemis, dir: prefs.dir });
       if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.question = nq; // test seam (harness only)
       setQ(nq);
       setAnswer(null);
@@ -10628,8 +11538,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       setTally(function (x) { return { right: x.right + (ok ? 1 : 0), asked: x.asked, streak: ok ? x.streak + 1 : 0 }; });
       if (ok && tonesRef.current) tonesRef.current.chime(tonesRef.current.now() + 0.05);
       var sp = vsSpell(q.semis, q.dir, q.ref);
-      var desc = vsFmt(q.dir > 0 ? t('stem.singing.vs_iv_up', '{name} up') : t('stem.singing.vs_iv_down', '{name} down'), { name: names[q.semis] });
-      var msg = (ok ? t('stem.singing.vs_yes', 'Yes!') : t('stem.singing.vs_not_quite', 'Not quite.')) + ' ' + desc + ' (' + sp.from + ' → ' + sp.to + '). ' + vsSongCue(t, q.semis, q.dir);
+      var desc = prefs.harmonic ? names[q.semis] : vsFmt(q.dir > 0 ? t('stem.singing.vs_iv_up', '{name} up') : t('stem.singing.vs_iv_down', '{name} down'), { name: names[q.semis] });
+      var msg = (ok ? t('stem.singing.vs_yes', 'Yes!') : t('stem.singing.vs_not_quite', 'Not quite.')) + ' ' + desc + ' (' + (prefs.harmonic ? sp.from + ' + ' + sp.to : sp.from + ' → ' + sp.to) + '). ' + (prefs.harmonic ? '' : vsSongCue(t, q.semis, q.dir));
       if (p.announce) p.announce(msg);
       if (ok && p.awardXP && (tally.streak + 1) % 5 === 0) p.awardXP('singing_interval_ear', 5, 'Singing: interval ear training streak');
     }
@@ -10640,18 +11550,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var feedback = '';
     if (q && answer) {
       var sp = vsSpell(q.semis, q.dir, q.ref);
-      var desc = vsFmt(q.dir > 0 ? t('stem.singing.vs_iv_up', '{name} up') : t('stem.singing.vs_iv_down', '{name} down'), { name: names[q.semis] });
+      var desc = prefs.harmonic ? names[q.semis] : vsFmt(q.dir > 0 ? t('stem.singing.vs_iv_up', '{name} up') : t('stem.singing.vs_iv_down', '{name} down'), { name: names[q.semis] });
       feedback = (answer.ok
         ? t('stem.singing.vs_yes', 'Yes!') + ' ' + desc
         : vsFmt(t('stem.singing.vs_it_was', 'Not quite. It was: {answer}. You chose: {guess}.'), { answer: desc, guess: names[answer.semis] })) +
-        ' (' + sp.from + ' → ' + sp.to + ') ' + vsSongCue(t, q.semis, q.dir);
+        ' (' + (prefs.harmonic ? sp.from + ' + ' + sp.to : sp.from + ' → ' + sp.to) + ') ' + (prefs.harmonic ? '' : vsSongCue(t, q.semis, q.dir));
     }
     return h('div', { className: 'space-y-3' },
       h('div', { className: c.cardClass + ' space-y-3' },
         h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_name_intro', 'Listen to two notes and name the interval between them. Use a song you know to find it in your head.')),
         h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
           h('label', { className: lab }, t('stem.singing.vs_level', 'Level'),
-            h('select', { className: selCls, value: String(prefs.level), onChange: function (e) { set({ level: Number(e.target.value) }); setQ(null); setAnswer(null); } },
+            h('select', { className: selCls + ' max-w-full', value: String(prefs.level), onChange: function (e) { setChoice({ level: Number(e.target.value) }); } },
               [1, 2, 3, 4].map(function (l) { return h('option', { key: l, value: String(l) }, levelNames[l]); }))),
           h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
             h('select', { className: selCls, value: p.voice.type, onChange: function (e) { p.setVoice({ type: e.target.value, source: 'type' }); setQ(null); setAnswer(null); } },
@@ -10661,9 +11571,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             !q ? '▶ ' + t('stem.singing.vs_play', 'Play') : answer ? t('stem.singing.vs_next', 'Next') + ' →' : '🔁 ' + t('stem.singing.vs_play_again', 'Play again')),
           tally.asked > 0 && h('span', { className: c.subTextClass + ' ml-auto tabular-nums' },
             vsFmt(t('stem.singing.vs_tally', '{right} of {asked} right · streak {streak}'), tally))),
-        q && L.down && !answer && h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_up_or_down', 'It may go up or down.'))),
+        // Choose the intervals: none ticked = the level's set.
+        h('details', { 'data-int-custom': '', open: chooserOpen, onToggle: function (e) { setChooserOpen(e.target.open); }, className: 'rounded-lg border p-2 ' + (dark ? 'border-slate-600' : 'border-slate-300') },
+          h('summary', { className: 'cursor-pointer text-sm font-bold ' + (dark ? 'text-slate-100' : 'text-slate-800') },
+            t('stem.singing.vs_int_choose', 'Choose the intervals'), ' ',
+            h('span', { className: 'font-normal text-xs ' + (dark ? 'text-slate-300' : 'text-slate-600') }, ownSemis.length
+              ? vsFmt(t('stem.singing.vs_int_chosen', '{n} chosen'), { n: ownSemis.length })
+              : t('stem.singing.vs_int_level_set', 'the level’s intervals'))),
+          h('fieldset', { className: 'pt-2 m-0 border-0 p-0' },
+            h('legend', { className: 'sr-only' }, t('stem.singing.vs_int_choose', 'Choose the intervals')),
+            h('div', { className: 'grid gap-1', style: { gridTemplateColumns: 'repeat(auto-fill, minmax(9rem, 1fr))' } },
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (s) {
+                var on = ownSemis.indexOf(s) >= 0;
+                return h('label', { key: s, className: lab },
+                  h('input', { type: 'checkbox', 'data-int': String(s), className: 'w-4 h-4 accent-rose-600', checked: on, onChange: function () {
+                    var next = on ? ownSemis.filter(function (x) { return x !== s; }) : ownSemis.concat([s]).sort(function (a, b) { return a - b; });
+                    setChoice({ semis: next });
+                  } }), names[s]);
+              }))),
+          h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2 pt-2' },
+            h('label', { className: lab }, t('stem.singing.vs_int_dir', 'Direction'),
+              h('select', { 'data-int-dir': '', className: selCls, value: prefs.dir || '', onChange: function (e) { setChoice({ dir: e.target.value }); } },
+                h('option', { value: '' }, t('stem.singing.vs_int_dir_level', 'As the level sets')),
+                h('option', { value: 'up' }, t('stem.singing.vs_int_dir_up', 'Up only')),
+                h('option', { value: 'down' }, t('stem.singing.vs_int_dir_down', 'Down only')),
+                h('option', { value: 'both' }, t('stem.singing.vs_int_dir_both', 'Up and down')))),
+            (ownSemis.length > 0 || prefs.dir) && h('button', { type: 'button', className: c.btnSecondary, onClick: function () { setChoice({ semis: [], dir: '' }); } }, t('stem.singing.vs_int_reset', 'Back to the level’s intervals')))),
+        q && !answer && !prefs.harmonic && h('p', { className: c.subTextClass + ' m-0' }, plan.up && plan.down ? t('stem.singing.vs_up_or_down', 'It may go up or down.') : plan.down ? t('stem.singing.vs_goes_down', 'It goes down.') : t('stem.singing.vs_goes_up', 'It goes up.'))),
       h('div', { role: 'group', 'aria-label': t('stem.singing.vs_your_answer', 'Your answer'), className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fill, minmax(8.5rem, 1fr))' } },
-        L.semis.map(function (s) {
+        plan.semis.map(function (s) {
           var isAnswer = answer && s === q.semis;
           var isWrong = answer && !answer.ok && s === answer.semis;
           return h('button', { key: s, type: 'button', disabled: !q || !!answer, onClick: function () { choose(s); },
@@ -10740,57 +11676,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
   // ───────────────────────── Guided warm-ups ─────────────────────────
   // The piano plays the key's chord, then the pattern, moving a half step per round through the voice's range.
+  // As on the site (2026-11-17): a lowest and highest note can be set by hand, a setting changed mid-exercise acts at
+  // once (a new speed carries on from the round being sung; anything that changes the rounds starts again), Stop
+  // silences notes already sounding, and each button names its exercise for screen readers.
+  var VS_WU_LIMITS = (function () { var a = []; for (var m = 36; m <= 84; m++) a.push(m); return a; })();
   function VsWarmups(p) {
     var React = p.React;
     var h = React.createElement;
     var t = p.t;
     var c = p.classes;
-    var prefs = Object.assign({ speed: 100, dir: 'updown', stretch: 0 }, p.prefs || {});
+    var prefs = Object.assign({ speed: 100, dir: 'updown', stretch: 0, floor: '', ceil: '' }, p.prefs || {});
     var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
     var texts = vsWarmupText(t);
     var voiceLabels = vsVoiceLabels(t);
     var tonesRef = React.useRef(null);
     var runRef = React.useRef(null);
+    var startingRef = React.useRef(0); // a newer Start retires one still waiting for the audio
     var activeS = React.useState(null); var active = activeS[0]; var setActive = activeS[1];
     var dotS = React.useState(-1); var dot = dotS[0]; var setDot = dotS[1];
     var nowS = React.useState(''); var nowText = nowS[0]; var setNowText = nowS[1];
+    var limit = function (v) { return v === '' || v === null || v === undefined || !isFinite(Number(v)) ? undefined : Number(v); };
 
-    function stop() {
+    // silence: also end the notes already sounding (a messa di voce guide lasts eight beats). Not when an exercise
+    // finishes by itself: its last note should ring out.
+    function stop(silence) {
       var r = runRef.current;
       if (!r) return;
       clearInterval(r.timer);
       cancelAnimationFrame(r.raf);
+      if (silence !== false && tonesRef.current && tonesRef.current.hush) tonesRef.current.hush();
       runRef.current = null;
       setActive(null);
       setDot(-1);
     }
-    React.useEffect(function () { return stop; }, []);
+    React.useEffect(function () { return function () { startingRef.current++; stop(); }; }, []);
 
-    function start(w) {
+    // again: the exercise that is running, started over because a setting changed. again.round = carry on from that
+    // round (a new speed); without it, from the top with the new plan.
+    function start(w, again, s) {
+      s = s || prefs;
       var was = runRef.current && runRef.current.id;
+      var mine = ++startingRef.current;
       stop();
-      if (was === w.id) { setNowText(''); return; }
+      if (was === w.id && !again) { setNowText(''); return; } // the button toggles
       if (!tonesRef.current) tonesRef.current = new VS.Tones();
       var tones = tonesRef.current;
       var voice = p.voice; // the shared voice's comfortable range (plus any "stretch" the singer asks for)
-      var plan = VS.planWarmup(w, { low: voice.low - prefs.stretch, high: voice.high + prefs.stretch, bpm: w.bpm * (prefs.speed / 100), dir: prefs.dir });
+      var floor = limit(s.floor);
+      var ceil = limit(s.ceil);
+      var plan = VS.planWarmup(w, { low: voice.low - s.stretch, high: voice.high + s.stretch, bpm: w.bpm * (s.speed / 100), dir: s.dir, floor: floor, ceil: ceil });
       if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.plan = plan; // test seam (harness only)
       var name = (texts[w.id] || {}).name || w.name;
+      // A pattern wider than the room between the two limits is sung once from the lowest note, and says so.
+      var top = Math.max.apply(null, w.notes.map(function (n) { return n[0]; }));
+      var reach = plan.rounds[0] + top;
+      var over = ceil !== undefined && reach > ceil ? ' ' + vsFmt(t('stem.singing.vs_wu_over', 'This pattern is wider than your limits: it goes up to {note}.'), { note: VS.noteLabel(reach) }) : '';
+      // Carrying on from a round: everything from that round's chord on, timed from now.
+      var chords = plan.events.filter(function (e) { return e.kind === 'chord'; });
+      var first = Math.max(0, Math.min(chords.length - 1, again && typeof again.round === 'number' ? again.round : 0));
+      var skip = chords[first].t;
+      var events = plan.events.filter(function (e) { return e.t >= skip - 1e-9; }).map(function (e) { return Object.assign({}, e, { t: e.t - skip }); });
+      var total = plan.total - skip;
+      var changed = again && typeof again.round !== 'number' ? ' ' + t('stem.singing.vs_wu_restarted', 'Started again with your new settings.') : '';
       tones.ready().then(function (ctx) {
+        if (mine !== startingRef.current) return; // another Start (or a setting) came in while the audio was waking up
         var t0 = ctx.currentTime + 0.15;
-        var run = { id: w.id, timer: 0, raf: 0, next: 0 };
+        var run = { id: w.id, timer: 0, raf: 0, next: 0, round: first, plan: plan };
         runRef.current = run;
         setActive(w.id);
         var schedule = function () {
           if (runRef.current !== run) return;
           var horizon = ctx.currentTime + 0.3;
-          while (run.next < plan.events.length && t0 + plan.events[run.next].t <= horizon) {
-            var e = plan.events[run.next++];
+          while (run.next < events.length && t0 + events[run.next].t <= horizon) {
+            var e = events[run.next++];
             if (e.kind === 'chord') tones.chord(e.midis, t0 + e.t, e.dur);
-            else tones.piano(e.midi, t0 + e.t, e.dur, 0.9);
+            // A messa di voce: the guide swells and fades with the singer over the whole note, softly.
+            else if (w.id === 'messa' && tones.swell) tones.swell(e.midi, t0 + e.t, e.dur, 0.7);
+            // Otherwise the guide gives each note; the singer does the holding.
+            else tones.piano(e.midi, t0 + e.t, Math.min(e.dur, 1.4), 0.9);
           }
-          if (run.next >= plan.events.length && ctx.currentTime > t0 + plan.total + 0.5) {
-            stop();
+          if (run.next >= events.length && ctx.currentTime > t0 + total + 0.5) {
+            stop(false);
             setNowText(t('stem.singing.vs_wu_done', 'Done. Nicely warmed up!'));
           }
         };
@@ -10801,27 +11767,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           if (runRef.current !== run) return;
           var tt = tones.heardTime(performance.now()) - t0;
           var cur = null;
-          var round = -1;
-          for (var i = 0; i < plan.events.length; i++) {
-            var ev = plan.events[i];
+          var round = first - 1;
+          for (var i = 0; i < events.length; i++) {
+            var ev = events[i];
             if (ev.t > tt) break;
             if (ev.kind === 'chord') round++;
             else if (tt < ev.t + ev.dur) cur = ev;
           }
           setDot(cur ? cur.index : -1);
-          if (round !== lastRound && round >= 0) {
+          if (round !== lastRound && round >= first) {
+            var opening = lastRound < 0;
             lastRound = round;
-            setNowText(vsFmt(t('stem.singing.vs_wu_round', '{name}: round {n} of {total}, starting on {note}'), { name: name, n: round + 1, total: plan.rounds.length, note: VS.noteLabel(plan.rounds[round]) }));
+            run.round = round;
+            // The note the singer starts on, which isn't the key note when a pattern begins at the top.
+            setNowText(vsFmt(t('stem.singing.vs_wu_round', '{name}: round {n} of {total}, starting on {note}'), { name: name, n: round + 1, total: plan.rounds.length, note: VS.noteLabel(plan.rounds[round] + w.notes[0][0]) }) + '.' + over + (opening ? changed : ''));
           }
           run.raf = requestAnimationFrame(frame);
         };
         run.raf = requestAnimationFrame(frame);
       });
     }
+    // A setting changed while an exercise runs takes effect at once.
+    function change(patch) {
+      var next = Object.assign({}, prefs, patch);
+      // The highest note can't sit below the lowest: moving one past the other brings the other along.
+      if (limit(next.floor) !== undefined && limit(next.ceil) !== undefined && limit(next.ceil) < limit(next.floor)) {
+        if ('floor' in patch) next.ceil = next.floor; else next.floor = next.ceil;
+        patch = Object.assign({}, patch, { floor: next.floor, ceil: next.ceil });
+      }
+      set(patch);
+      var r = runRef.current;
+      if (!r) return;
+      var w = VS.WARMUPS.find(function (x) { return x.id === r.id; });
+      if (Object.keys(patch).length === 1 && 'speed' in patch) start(w, { round: r.round }, next);
+      else start(w, {}, next);
+    }
+    // The shared voice changed (here or in the "My voice" bar): a running exercise starts again in the new range.
+    var voiceKey = p.voice.type + ':' + p.voice.low + ':' + p.voice.high;
+    var voiceKeyRef = React.useRef(voiceKey);
+    React.useEffect(function () {
+      if (voiceKeyRef.current === voiceKey) return;
+      voiceKeyRef.current = voiceKey;
+      var r = runRef.current;
+      if (r) start(VS.WARMUPS.find(function (x) { return x.id === r.id; }), {});
+    }, [voiceKey]);
 
     var dark = p.isDark || p.isContrast;
-    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
-    var lab = 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700');
+    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border max-w-full ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var lab = 'inline-flex flex-wrap items-center gap-1.5 text-xs font-bold max-w-full ' + (dark ? 'text-slate-200' : 'text-slate-700');
+    var limitName = function (m) { return VS.noteLabel(m) + (m === 60 ? ' ' + t('stem.singing.vs_wu_middle_c', '(middle C)') : ''); };
+    var limitSelect = function (key, label) {
+      return h('label', { className: lab }, label,
+        h('select', { 'data-wu-limit': key, className: selCls, value: prefs[key] === '' || prefs[key] === undefined ? '' : String(prefs[key]), onChange: function (e) { var patch = {}; patch[key] = e.target.value === '' ? '' : Number(e.target.value); change(patch); } },
+          h('option', { value: '' }, t('stem.singing.vs_wu_as_voice', 'As my voice sets')),
+          VS_WU_LIMITS.map(function (m) { return h('option', { key: m, value: String(m) }, limitName(m)); })));
+    };
     return h('div', { className: c.cardClass + ' space-y-3' },
       h('h3', { className: c.headingClass + ' text-sm' }, '🎹 ' + t('stem.singing.vs_wu_title', 'Guided warm-ups with piano')),
       h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_wu_intro', 'Pick your voice and press Start: the piano plays each pattern, moving up a half step at a time and back down again.')),
@@ -10830,18 +11830,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           h('select', { className: selCls, value: p.voice.type, onChange: function (e) { p.setVoice({ type: e.target.value, source: 'type' }); } },
             Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
         h('label', { className: lab }, vsFmt(t('stem.singing.vs_speed', 'Speed {n}%'), { n: prefs.speed }),
-          h('input', { type: 'range', min: 60, max: 140, step: 5, value: prefs.speed, className: 'accent-rose-600', onChange: function (e) { set({ speed: Number(e.target.value) }); } })),
+          h('input', { type: 'range', 'data-wu-speed': '', min: 60, max: 140, step: 5, value: prefs.speed, className: 'accent-rose-600', onChange: function (e) { change({ speed: Number(e.target.value) }); } })),
         h('label', { className: lab }, t('stem.singing.vs_wu_direction', 'Direction'),
-          h('select', { className: selCls, value: prefs.dir, onChange: function (e) { set({ dir: e.target.value }); } },
+          h('select', { 'data-wu-dir': '', className: selCls, value: prefs.dir, onChange: function (e) { change({ dir: e.target.value }); } },
             h('option', { value: 'updown' }, t('stem.singing.vs_wu_updown', 'Up, then back down')),
             h('option', { value: 'up' }, t('stem.singing.vs_wu_up', 'Up only')),
             h('option', { value: 'down' }, t('stem.singing.vs_wu_down', 'Down only (from the top)')))),
         h('label', { className: lab }, t('stem.singing.vs_wu_range', 'Range'),
-          h('select', { className: selCls, value: String(prefs.stretch), onChange: function (e) { set({ stretch: Number(e.target.value) }); } },
+          h('select', { className: selCls, value: String(prefs.stretch), onChange: function (e) { change({ stretch: Number(e.target.value) }); } },
             h('option', { value: '-2' }, t('stem.singing.vs_wu_gentle', 'Gentle (stay in the middle)')),
             h('option', { value: '0' }, t('stem.singing.vs_wu_comfortable', 'Comfortable')),
-            h('option', { value: '2' }, t('stem.singing.vs_wu_stretch', 'Stretch (a little higher and lower)'))))),
-      nowText && h('p', { role: 'status', className: 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700') }, nowText),
+            h('option', { value: '2' }, t('stem.singing.vs_wu_stretch', 'Stretch (a little higher and lower)')))),
+        limitSelect('floor', t('stem.singing.vs_wu_lowest', 'Lowest note')),
+        limitSelect('ceil', t('stem.singing.vs_wu_highest', 'Highest note'))),
+      h('p', { role: 'status', 'aria-live': 'polite', 'data-wu-now': '', className: 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700') + (nowText ? '' : ' sr-only') }, nowText),
       h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fill, minmax(17rem, 1fr))' } },
         VS.WARMUPS.map(function (w) {
           var tx = texts[w.id] || w;
@@ -10850,7 +11852,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           return h('div', { key: w.id, className: 'rounded-lg p-3 space-y-1 border ' + (on ? 'border-rose-600 ring-2 ring-rose-300' : (dark ? 'border-slate-600' : 'border-slate-300')) },
             h('div', { className: 'flex items-center justify-between gap-2' },
               h('h4', { className: c.headingClass + ' text-sm m-0' }, tx.name),
-              h('button', { type: 'button', className: on ? c.btnSecondary : c.btnPrimary, onClick: function () { start(w); } },
+              h('button', { type: 'button', 'data-wu-start': w.id, className: on ? c.btnSecondary : c.btnPrimary, onClick: function () { start(w); },
+                'aria-label': (on ? t('stem.singing.vs_stop', 'Stop') : t('stem.singing.vs_wu_start', 'Start')) + ': ' + tx.name },
                 on ? t('stem.singing.vs_stop', 'Stop') : t('stem.singing.vs_wu_start', 'Start'))),
             h('p', { className: 'text-xs m-0 ' + (dark ? 'text-rose-300' : 'text-rose-800') }, vsFmt(t('stem.singing.vs_wu_sing_on', 'Sing on: {sound}'), { sound: tx.sound })),
             h('p', { className: c.subTextClass + ' m-0' }, tx.how),
@@ -11498,7 +12501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (info && info.voiceParts && info.voiceParts.length > 1 && ps && ps.myPart) q.set('part', ps.myPart);
       var url = window.location.origin + window.location.pathname + '?' + q.toString();
       setLink(url);
-      try { navigator.clipboard.writeText(url).then(function () { if (p.announce) p.announce(t('stem.singing.vs_lib_link_copied', 'Link copied.')); }, function () { /* the box shows it */ }); } catch (e) { /* the box shows it */ }
+      try { Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(url)).then(function () { if (p.announce) p.announce(t('stem.singing.vs_lib_link_copied', 'Link copied.')); }, function () { /* the box shows it */ }); } catch (e) { /* the box shows it */ }
     }
 
     // An optional spoken cue for people who cannot see the lane (a setting, off by default): the verdict on what you are singing,
@@ -14995,7 +15998,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               'This singing lab uses real-time pitch detection via the Web Audio API. ' +
               'All processing happens locally in your browser \u2014 no audio is recorded or transmitted.'),
             h('p', { className: subTextClass + ' mt-1' },
-              'Ported from Rachel Pomeranz\'s vocal studio tools. ' +
               'For professional vocal training, please consult a qualified voice teacher.'))
         );
       })();

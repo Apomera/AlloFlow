@@ -14704,6 +14704,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var t = ctx.t;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -22809,7 +22810,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               React.createElement("div", { hidden: !tutorialNotebookOpen, 'data-aquarium-notebook': 'true',
                 id: tutorialId + '-notebook',
                 role: "group",
-                'aria-label': currentTutorialLesson.title + " lab notebook",
+                'aria-label': __alloAriaFill(__alloT('stem.aquarium.a11y_lab_notebook', '{title} lab notebook'), { title: currentTutorialLesson.title }),
                 className: "mt-2 space-y-2 rounded-xl border border-indigo-200 bg-white p-3"
               },
                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
@@ -23122,7 +23123,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   var isSalt = tank.salinity > 0;
                   var diffLabel = tank.diff <= 1 ? __alloT('stem.aquarium.beginner', 'Beginner') : tank.diff === 2 ? __alloT('stem.aquarium.intermediate', 'Intermediate') : __alloT('stem.aquarium.advanced', 'Advanced');
                   var waterTone = isSalt ? 'from-blue-600 via-cyan-500 to-teal-300' : 'from-cyan-500 via-sky-400 to-emerald-300';
-                  return React.createElement("button", { "aria-label": "Select tank: " + tank.name,
+                  return React.createElement("button", { "aria-label": __alloAriaFill(__alloT('stem.aquarium.a11y_select_tank', 'Select tank: {name}'), { name: tank.name }),
 
                     key: tank.id,
 
@@ -24029,7 +24030,7 @@ React.createElement("div", { id: workspaceA11yId + '-aquarium-tank-clock', 'data
 
                     ].map(function (s) {
 
-                      return React.createElement("button", { "aria-label": "Set simulation speed: " + s.tip,
+                      return React.createElement("button", { "aria-label": __alloAriaFill(__alloT('stem.aquarium.a11y_set_simulation_speed', 'Set simulation speed: {tip}'), { tip: s.tip }),
 
                         key: s.spd,
 
@@ -24229,7 +24230,7 @@ React.createElement(AquariumLiveDisplay, {
                       key: 'main-tank-' + item.id,
                       type: "button",
                       onClick: function() { updMulti({ habitatStudioOpen: true, selectedHabitatItemId: item.id }); },
-                      'aria-label': "Open habitat studio with " + habitatType.label + " selected",
+                      'aria-label': __alloAriaFill(__alloT('stem.aquarium.a11y_open_habitat_studio_with_selected', 'Open habitat studio with {label} selected'), { label: habitatType.label }),
                       title: habitatType.label + " \u2014 shelter " + habitatType.shelter + ", territory " + habitatType.territory,
                       className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-200",
                       style: {
@@ -24252,7 +24253,7 @@ React.createElement(AquariumLiveDisplay, {
                       key: 'tank-plant-' + plantId + '-' + plantIndex,
                       type: "button",
                       onClick: function () { selectPlant(plantId); },
-                      'aria-label': "Select planted " + plantedSpecies.name + ". Health " + Math.round(specimenHealth) + " percent, biomass " + specimenBiomass.toFixed(1) + ".",
+                      'aria-label': __alloAriaFill(__alloT('stem.aquarium.a11y_select_planted_health_percent_biomass', 'Select planted {name}. Health {specimenHealth} percent, biomass {specimenBiomass}.'), { name: plantedSpecies.name, specimenHealth: Math.round(specimenHealth), specimenBiomass: specimenBiomass.toFixed(1) }),
                       'aria-pressed': selectedPlantId === plantId,
                       title: plantedSpecies.name + " \u2014 select for care profile",
                       className: "focus:outline-none focus:ring-2 focus:ring-emerald-300",
@@ -24672,7 +24673,7 @@ React.createElement('section', { id: workspaceA11yId + '-panel-observe', 'data-a
                         var latest = values[values.length - 1];
                         return React.createElement("div", { key: series.key, className: "rounded-lg bg-slate-50 border border-slate-200 p-2" },
                           React.createElement("div", { className: "text-[0.625rem] font-bold text-slate-700 mb-1" }, series.label + ": " + latest.toFixed(series.key === "nitrate" ? 1 : 2) + " " + series.unit),
-                          React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: 42, role: "img", 'aria-label': series.label + " trend across " + values.length + " readings; latest " + latest.toFixed(2) + " " + series.unit },
+                          React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: 42, role: "img", 'aria-label': __alloAriaFill(__alloT('stem.aquarium.a11y_trend_across_readings_latest', '{label} trend across {value1} readings; latest {latest} {unit}'), { label: series.label, value1: values.length, latest: latest.toFixed(2), unit: series.unit }) },
                             React.createElement("line", { x1: 0, y1: thresholdY, x2: W, y2: thresholdY, stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "3 2" }),
                             React.createElement("polyline", { points: pts, fill: "none", stroke: series.color, strokeWidth: 2, vectorEffect: "non-scaling-stroke" })
                           )
@@ -24893,7 +24894,7 @@ React.createElement('section', { id: workspaceA11yId + '-panel-decide', 'data-aq
 
                     }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
 
-                    React.createElement("button", { type: "button", 'data-aquarium-water-change-action': 'true', "aria-label": "Perform " + waterChangePercent + " percent water change",
+                    React.createElement("button", { type: "button", 'data-aquarium-water-change-action': 'true', "aria-label": __alloAriaFill(__alloT('stem.aquarium.a11y_perform_percent_water_change', 'Perform {waterChangePercent} percent water change'), { waterChangePercent: waterChangePercent }),
 
                       onClick: function() { doWaterChange(waterChangePercent); },
 
@@ -24904,7 +24905,7 @@ React.createElement('section', { id: workspaceA11yId + '-panel-decide', 'data-aq
                     React.createElement("button", {
                       type: "button",
                       'data-aquarium-sound-toggle': 'true',
-                      'aria-label': soundEnabled ? "Sound: Mute aquarium sounds" : "Muted: Enable aquarium sounds",
+                      'aria-label': soundEnabled ? __alloT('stem.aquarium.a11y_sound_mute_aquarium_sounds', 'Sound: Mute aquarium sounds') : __alloT('stem.aquarium.a11y_muted_enable_aquarium_sounds', 'Muted: Enable aquarium sounds'),
                       'aria-pressed': soundEnabled,
                       onClick: function () {
                         if (soundEnabled) stopAquaAmbient(true);
@@ -24915,7 +24916,7 @@ React.createElement('section', { id: workspaceA11yId + '-panel-decide', 'data-aq
 
                     React.createElement("label", { className: "flex min-h-[44px] items-center gap-2 rounded-xl border border-cyan-500 bg-cyan-50 px-2 py-1 text-xs font-bold text-cyan-900" },
                       React.createElement("span", null, "Volume"), React.createElement("span", { 'aria-hidden': true }, soundVolume + "%"),
-                      React.createElement("input", { type: "range", 'data-aquarium-sound-volume': 'true', min: 0, max: 100, step: 5, value: soundVolume, 'aria-valuetext': soundVolume + " percent", onChange: function (event) { upd('soundVolume', Number(event.target.value)); }, 'aria-label': __alloT('stem.aquarium.a11y_aquarium_sound_volume', 'Aquarium sound volume'), className: "min-h-[44px] w-20 accent-cyan-700 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-slate-900" })
+                      React.createElement("input", { type: "range", 'data-aquarium-sound-volume': 'true', min: 0, max: 100, step: 5, value: soundVolume, 'aria-valuetext': __alloAriaFill(__alloT('stem.aquarium.a11y_value_percent', '{value} percent'), { value: soundVolume }), onChange: function (event) { upd('soundVolume', Number(event.target.value)); }, 'aria-label': __alloT('stem.aquarium.a11y_aquarium_sound_volume', 'Aquarium sound volume'), className: "min-h-[44px] w-20 accent-cyan-700 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-slate-900" })
                     ),
 
                     React.createElement("button", { type: "button", 'aria-label': __alloT('stem.aquarium.flake', 'Flake'), 'data-aquarium-feed-food': 'flake', ref: function (el) { feedingOpeners.current.flake = el; },
@@ -25152,7 +25153,7 @@ React.createElement("details", { id: workspaceA11yId + '-aquarium-life-support',
                       React.createElement("div", { className: "flex items-center gap-1" },
                         equipmentFaultCount > 0 && React.createElement("span", { role: "alert", 'aria-live': "assertive", className: "rounded-full bg-red-600 px-2 py-0.5 text-[0.625rem] font-bold text-white" }, "\u26D4 " + equipmentFaultCount + " offline"),
                         equipmentNeedsServiceCount > 0 && React.createElement("span", { role: "status", 'aria-live': "polite", className: "rounded-full bg-amber-100 px-2 py-0.5 text-[0.625rem] font-bold text-amber-800" }, "\u26A0\uFE0F " + equipmentNeedsServiceCount + " need service"),
-                        React.createElement("span", { className: "rounded-full bg-amber-100 px-2 py-0.5 text-[0.625rem] font-bold text-amber-800", 'aria-label': coins + " coins available" }, "\uD83E\uDE99 " + coins)
+                        React.createElement("span", { className: "rounded-full bg-amber-100 px-2 py-0.5 text-[0.625rem] font-bold text-amber-800", 'aria-label': __alloAriaFill(__alloT('stem.aquarium.a11y_coins_available', '{coins} coins available'), { coins: coins }) }, "\uD83E\uDE99 " + coins)
                       )
                     ),
                     React.createElement("div", { className: "grid grid-cols-1 gap-1.5 sm:grid-cols-2" },
@@ -25191,11 +25192,11 @@ React.createElement("details", { id: workspaceA11yId + '-aquarium-life-support',
                           React.createElement("p", { className: "my-1 text-[0.5625rem] leading-snug text-slate-600" }, impact),
                           React.createElement("div", {
                             role: "progressbar",
-                            'aria-label': catalog.name + " condition",
+                            'aria-label': __alloAriaFill(__alloT('stem.aquarium.a11y_condition', '{name} condition'), { name: catalog.name }),
                             'aria-valuemin': 0,
                             'aria-valuemax': 100,
                             'aria-valuenow': Math.round(condition),
-                            'aria-valuetext': fault ? 'Offline. Repair required.' : Math.round(condition) + ' percent output',
+                            'aria-valuetext': fault ? __alloT('stem.aquarium.a11y_offline_repair_required', 'Offline. Repair required.') : __alloAriaFill(__alloT('stem.aquarium.a11y_percent_output', '{condition} percent output'), { condition: Math.round(condition) }),
                             className: "mb-1 h-1.5 overflow-hidden rounded-full bg-slate-200"
                           }, React.createElement("div", { className: "h-full rounded-full " + conditionColor, style: { width: condition + "%" } })),
                           React.createElement("button", {
@@ -25237,7 +25238,7 @@ React.createElement("details", { id: workspaceA11yId + '-aquarium-life-support',
                         React.createElement("button", {
                           type: "button", 'data-aquarium-water-change-recommended': 'true',
                           onClick: function () { doWaterChange(recommendedWaterChangePercent, true); },
-                          'aria-label': "Do recommended " + recommendedWaterChangePercent + "% water change",
+                          'aria-label': __alloAriaFill(__alloT('stem.aquarium.a11y_do_recommended_water_change', 'Do recommended {value1}% water change'), { value1: recommendedWaterChangePercent }),
                           className: "min-h-[44px] rounded-lg border border-blue-700 bg-blue-700 px-2 py-2 text-xs font-bold text-white hover:bg-blue-800 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-slate-900"
                         }, "\uD83D\uDCA7 Do recommended " + recommendedWaterChangePercent + "%"),
                         React.createElement("button", {
@@ -25366,13 +25367,13 @@ tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded
                             React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1 mb-1" },
                               React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 truncate" }, displayName),
                               React.createElement("div", { className: "flex flex-wrap items-center gap-1" },
-                                isQuarantined && React.createElement("span", { className: "rounded bg-violet-100 px-1 text-[0.5625rem] font-bold text-violet-700", title: "In hospital tank for " + quarantineHours + " hours" }, "\uD83C\uDFE5 Hospital"),
+                                isQuarantined && React.createElement("span", { className: "rounded bg-violet-100 px-1 text-[0.5625rem] font-bold text-violet-700", title: __alloAriaFill(__alloT('stem.aquarium.a11y_in_hospital_tank_for_hours', 'In hospital tank for {quarantineHours} hours'), { quarantineHours: quarantineHours }) }, "\uD83C\uDFE5 Hospital"),
                                 React.createElement("span", { className: "text-[0.6875rem] font-bold " + hungerTextColor }, hungerText),
                                 React.createElement("button", {
                                   type: "button",
                                   onClick: function () { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fishKey }); },
                                   'aria-pressed': ecosystemFocusType === 'fish' && ecosystemFocusId === fishKey,
-                                  'aria-label': "Trace " + displayName + " through the ecosystem exchange network",
+                                  'aria-label': __alloAriaFill(__alloT('stem.aquarium.a11y_trace_through_the_ecosystem_exchange_network', 'Trace {displayName} through the ecosystem exchange network'), { displayName: displayName }),
                                   className: "rounded border px-1 py-0.5 text-[0.5rem] font-black " + (ecosystemFocusType === 'fish' && ecosystemFocusId === fishKey ? "border-fuchsia-500 bg-fuchsia-100 text-fuchsia-800" : "border-cyan-400 bg-cyan-50 text-cyan-700")
                                 }, "\uD83D\uDD0E Trace")
                               )

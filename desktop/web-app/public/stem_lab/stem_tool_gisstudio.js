@@ -46,7 +46,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     { name: 'Cumberland', lat: 43.66, lon: -70.26, density: 350, access: 93, coastal: true },
     { name: 'Franklin', lat: 44.67, lon: -70.15, density: 18, access: 76, coastal: false },
     { name: 'Hancock', lat: 44.54, lon: -68.42, density: 35, access: 84, coastal: true },
-    { name: 'Kennebec', lat: 44.31, lon: -69.78, density: 59, access: 86, coastal: false },
+    { name: 'Kennebec', lat: 44.31, lon: -69.78, density: 142, access: 86, coastal: false },
     { name: 'Knox', lat: 44.10, lon: -69.11, density: 117, access: 88, coastal: true },
     { name: 'Lincoln', lat: 44.00, lon: -69.67, density: 80, access: 86, coastal: true },
     { name: 'Oxford', lat: 44.26, lon: -70.50, density: 28, access: 78, coastal: false },
@@ -59,13 +59,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     { name: 'York', lat: 43.48, lon: -70.72, density: 208, access: 91, coastal: true }
   ];
 
+  // City densities: U.S. Census Bureau QuickFacts, 2020 population per square mile of land (rounded).
   var NEW_ENGLAND = [
-    { name: 'Portland, ME', lat: 43.66, lon: -70.26, density: 350, access: 93, coastal: true },
-    { name: 'Burlington, VT', lat: 44.48, lon: -73.21, density: 190, access: 91, coastal: false },
-    { name: 'Boston, MA', lat: 42.36, lon: -71.06, density: 5300, access: 96, coastal: true },
-    { name: 'Providence, RI', lat: 41.82, lon: -71.41, density: 3800, access: 94, coastal: true },
-    { name: 'Hartford, CT', lat: 41.76, lon: -72.67, density: 2800, access: 95, coastal: false },
-    { name: 'Manchester, NH', lat: 42.99, lon: -71.45, density: 950, access: 94, coastal: false },
+    { name: 'Portland, ME', lat: 43.66, lon: -70.26, density: 3175, access: 93, coastal: true },
+    { name: 'Burlington, VT', lat: 44.48, lon: -73.21, density: 4339, access: 91, coastal: false },
+    { name: 'Boston, MA', lat: 42.36, lon: -71.06, density: 13977, access: 96, coastal: true },
+    { name: 'Providence, RI', lat: 41.82, lon: -71.41, density: 10374, access: 94, coastal: true },
+    { name: 'Hartford, CT', lat: 41.76, lon: -72.67, density: 6966, access: 95, coastal: false },
+    { name: 'Manchester, NH', lat: 42.99, lon: -71.45, density: 3496, access: 94, coastal: false },
     { name: 'Northern Vermont', lat: 44.90, lon: -72.80, density: 30, access: 86, coastal: false },
     { name: 'Cape Cod, MA', lat: 41.70, lon: -70.30, density: 550, access: 92, coastal: true }
   ];
@@ -149,8 +150,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         gaps: ['Most rural, Tribal, island, and neighborhood-scale contexts'],
         note: 'All six New England states are represented, but eight points cannot describe the full region.'
       },
-      description: 'Eight illustrative reference points across all six New England states.',
-      sourceNote: 'Illustrative classroom values; points support comparison across states but are not official state estimates.',
+      description: 'Eight reference points across all six New England states: six cities and two wider areas.',
+      sourceNote: 'City densities are U.S. Census Bureau QuickFacts 2020 values (people per square mile of land, rounded); the Northern Vermont and Cape Cod densities and every access index are illustrative classroom values. Points are not official state estimates.',
       records: NEW_ENGLAND
     },
     {
@@ -172,7 +173,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         note: 'The points support broad comparisons; they are not a complete roster of U.S. regions or communities.'
       },
       description: 'Eleven illustrative reference points for major U.S. macro-regions, including Alaska and Hawaii.',
-      sourceNote: 'Illustrative classroom values; macro-region points are not national statistical estimates.',
+      sourceNote: 'Illustrative classroom values, not measured data: macro-region densities and access indexes are rough teaching prompts, not national statistical estimates.',
       records: US_REGIONS
     },
     {
@@ -194,7 +195,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         note: 'The pack spans both hemispheres and many world regions, but it is a comparison prompt rather than comprehensive global coverage.'
       },
       description: 'Eleven illustrative reference points spanning major world regions and climate contexts.',
-      sourceNote: 'Illustrative classroom values; global points are prompts for comparison, not a complete world dataset.',
+      sourceNote: 'Illustrative classroom values, not measured data: global densities and access indexes are prompts for comparison, not official statistics or a complete world dataset.',
       records: GLOBAL_REGIONS
     }
   ];
@@ -4307,6 +4308,31 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var timeLeftMoveHandler = React.useRef(null);
         var timeRightMoveHandler = React.useRef(null);
         var studioMounted = React.useRef(true);
+        // One lazily created AudioContext per studio: browsers cap live contexts,
+        // so a new one per click eventually leaves sonification silent.
+        var gisAudioContext = React.useRef(null);
+        function getGISAudioContext() {
+          var Ctx = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
+          if (!Ctx) return null;
+          var ac = gisAudioContext.current;
+          if (!ac || ac.state === 'closed') {
+            try { ac = new Ctx(); } catch (ignoreAudio) { gisAudioContext.current = null; return null; }
+            gisAudioContext.current = ac;
+          }
+          if (ac.state === 'suspended' && typeof ac.resume === 'function') {
+            try { var resumed = ac.resume(); if (resumed && typeof resumed.catch === 'function') resumed.catch(function () {}); } catch (ignoreResume) {}
+          }
+          return ac;
+        }
+        function announceAudioUnavailable() {
+          announce(__alloT('stem.gisstudio.sr_audio_is_unavailable_use_the_value_column_in_the', 'Audio is unavailable. Use the value column in the table.'));
+        }
+        // Reduced motion: the app setting (ctx.reduceMotion) or the OS preference.
+        var gisReducedMotion = !!ctx.reduceMotion;
+        if (!gisReducedMotion && typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+          try { gisReducedMotion = !!window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (ignoreMotionQuery) {}
+        }
+        var gisMapMotionOptions = gisReducedMotion ? { zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false } : {};
 
         function disposeLeafletMap(mapRef, tileRef, basemapRef) {
           if (tileRef && tileRef.current) detachGISBasemapLayer(tileRef.current);
@@ -4333,6 +4359,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             disposeLeafletMap(compareRightMapInstance, compareRightTileLayer, compareRightTileBasemap);
             disposeLeafletMap(timeLeftMapInstance, timeLeftTileLayer);
             disposeLeafletMap(timeRightMapInstance, timeRightTileLayer);
+            if (gisAudioContext.current && typeof gisAudioContext.current.close === 'function') {
+              try { var closing = gisAudioContext.current.close(); if (closing && typeof closing.catch === 'function') closing.catch(function () {}); } catch (ignoreAudioClose) {}
+            }
+            gisAudioContext.current = null;
           };
         }, []);
 
@@ -4746,7 +4776,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var mapArc = minimalLongitudeArc(viewportPoints.map(function (row) { return row.lon; }));
             var center = leafletCenterForViewport(viewport, mapArc);
             var storedView = mapViewState.current;
-            map = canReuse ? mapInstance.current : L.map(mapNode.current, { keyboard: true, scrollWheelZoom: false }).setView(
+            map = canReuse ? mapInstance.current : L.map(mapNode.current, Object.assign({ keyboard: true, scrollWheelZoom: false }, gisMapMotionOptions)).setView(
               storedView ? storedView.center : center,
               storedView ? storedView.zoom : viewport.zoom
             );
@@ -4964,8 +4994,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             if (!rightCanReuse && compareRightMapInstance.current) disposeLeafletMap(compareRightMapInstance, compareRightTileLayer, compareRightTileBasemap);
             if (!leftCanReuse) compareLeftNode.current.innerHTML = '';
             if (!rightCanReuse) compareRightNode.current.innerHTML = '';
-            leftMap = leftCanReuse ? compareLeftMapInstance.current : L.map(compareLeftNode.current, { keyboard: true, scrollWheelZoom: false }).setView(initialCenter, initialZoom);
-            rightMap = rightCanReuse ? compareRightMapInstance.current : L.map(compareRightNode.current, { keyboard: true, scrollWheelZoom: false }).setView(initialCenter, initialZoom);
+            leftMap = leftCanReuse ? compareLeftMapInstance.current : L.map(compareLeftNode.current, Object.assign({ keyboard: true, scrollWheelZoom: false }, gisMapMotionOptions)).setView(initialCenter, initialZoom);
+            rightMap = rightCanReuse ? compareRightMapInstance.current : L.map(compareRightNode.current, Object.assign({ keyboard: true, scrollWheelZoom: false }, gisMapMotionOptions)).setView(initialCenter, initialZoom);
             if (leftCanReuse && !stored) leftMap.setView(initialCenter, initialZoom);
             if (rightCanReuse && !stored) rightMap.setView(initialCenter, initialZoom);
             if (leftCanReuse) {
@@ -5110,8 +5140,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var timelineArc = minimalLongitudeArc(all.map(function (row) { return row.lon; }));
             var center = leafletCenterForViewport(timelineViewport, timelineArc);
             var stored = timeViewState.current;
-            leftMap = leftCanReuse ? timeLeftMapInstance.current : L.map(timeLeftNode.current, { keyboard: true, scrollWheelZoom: false }).setView(stored ? stored.center : center, stored ? stored.zoom : timelineViewport.zoom);
-            rightMap = rightCanReuse ? timeRightMapInstance.current : L.map(timeRightNode.current, { keyboard: true, scrollWheelZoom: false }).setView(stored ? stored.center : center, stored ? stored.zoom : timelineViewport.zoom);
+            leftMap = leftCanReuse ? timeLeftMapInstance.current : L.map(timeLeftNode.current, Object.assign({ keyboard: true, scrollWheelZoom: false }, gisMapMotionOptions)).setView(stored ? stored.center : center, stored ? stored.zoom : timelineViewport.zoom);
+            rightMap = rightCanReuse ? timeRightMapInstance.current : L.map(timeRightNode.current, Object.assign({ keyboard: true, scrollWheelZoom: false }, gisMapMotionOptions)).setView(stored ? stored.center : center, stored ? stored.zoom : timelineViewport.zoom);
             if (leftCanReuse) {
               clearMapOverlays(leftMap, timeLeftTileLayer.current);
               if (timeLeftMoveHandler.current) leftMap.off('moveend', timeLeftMoveHandler.current);
@@ -5758,10 +5788,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         }
 
         function sonifySelection() {
-          var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (!Ctx || !selectedRecords.length) { announce(__alloT('stem.gisstudio.sr_no_selected_records_are_available_to_sonify', 'No selected records are available to sonify.')); return; }
-          var ac;
-          try { ac = new Ctx(); } catch (ignore) { return; }
+          if (!selectedRecords.length) { announce(__alloT('stem.gisstudio.sr_no_selected_records_are_available_to_sonify', 'No selected records are available to sonify.')); return; }
+          var ac = getGISAudioContext();
+          if (!ac) { announceAudioUnavailable(); return; }
           selectedRecords.forEach(function (record, index) {
             var p = max === min ? 0.5 : (valueOf(record, metric, imported) - min) / (max - min);
             var oscillator = ac.createOscillator(), gain = ac.createGain(), start = ac.currentTime + index * 0.16;
@@ -5795,10 +5824,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         }
 
         function sonify() {
-          var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (!Ctx || !records.length) { announce(__alloT('stem.gisstudio.sr_audio_is_unavailable_use_the_value_column_in_the', 'Audio is unavailable. Use the value column in the table.')); return; }
-          var ac;
-          try { ac = new Ctx(); } catch (ignore) { return; }
+          var ac = records.length ? getGISAudioContext() : null;
+          if (!ac) { announce(__alloT('stem.gisstudio.sr_audio_is_unavailable_use_the_value_column_in_the', 'Audio is unavailable. Use the value column in the table.')); return; }
           records.slice().sort(function (a, b) { return valueOf(a, metric, imported) - valueOf(b, metric, imported); }).forEach(function (record, index) {
             var p = max === min ? 0.5 : (valueOf(record, metric, imported) - min) / (max - min);
             var oscillator = ac.createOscillator(), gain = ac.createGain(), start = ac.currentTime + index * 0.12;
@@ -6892,10 +6919,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         }
 
         function sonifyTemporalChange() {
-          var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (!Ctx || !temporalComplete.length) { announce(__alloT('stem.gisstudio.sr_no_complete_changes_are_available_to_sonify', 'No complete changes are available to sonify.')); return; }
-          var ac;
-          try { ac = new Ctx(); } catch (ignore) { return; }
+          if (!temporalComplete.length) { announce(__alloT('stem.gisstudio.sr_no_complete_changes_are_available_to_sonify', 'No complete changes are available to sonify.')); return; }
+          var ac = getGISAudioContext();
+          if (!ac) { announceAudioUnavailable(); return; }
           var maxAbs = Math.max.apply(Math, temporalComplete.map(function (row) { return Math.abs(row.change); })) || 1;
           temporalComplete.slice().sort(function (a, b) { return a.change - b.change; }).forEach(function (row, index) {
             var oscillator = ac.createOscillator(), gain = ac.createGain(), start = ac.currentTime + index * 0.18;
@@ -7223,10 +7249,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         }
 
         function sonifyRemoteChange() {
-          var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (!Ctx) { announce(__alloT('stem.gisstudio.sr_audio_is_unavailable_use_the_accessible_pixel_tab', 'Audio is unavailable. Use the accessible pixel table.')); return; }
-          var context;
-          try { context = new Ctx(); } catch (ignore) { return; }
+          var context = getGISAudioContext();
+          if (!context) { announce(__alloT('stem.gisstudio.sr_audio_is_unavailable_use_the_accessible_pixel_tab', 'Audio is unavailable. Use the accessible pixel table.')); return; }
           var changes = remoteScene.cells.map(function (cell) {
             var before = remoteIndexValue(cell, 'before', remoteSensing.analysisIndex, true);
             var after = remoteIndexValue(cell, 'after', remoteSensing.analysisIndex, true);

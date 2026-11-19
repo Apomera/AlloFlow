@@ -57,3 +57,23 @@ it('handles malformed storage and reports unavailable persistence without losing
   render('Changed.'); expect(warning()).toBe(true);
   expect(host.textContent).toContain('Source-change reminders could not be saved');
 });
+it('ignores an analysis and a catalog book: neither is made from the source text', () => {
+  const history = [{id:'an-1',type:'analysis',data:{originalText:'Plants need water.'}}, {id:'book-1',type:'readingBook',data:{slug:'bed-time'}}];
+  const belongs = item => item.type === 'analysis' && item.data.originalText === 'Plants need water.';
+  render('Plants need water.', ['an-1','book-1'], {history, guidedItemBelongs: belongs});
+  render('Plants need water and sun.', ['an-1','book-1'], {history, guidedItemBelongs: belongs, hasEarlierGuidedResources: true});
+  expect(warning()).toBe(false);
+});
+it('still warns when a resource made from the source is out of date after an edit', () => {
+  const history = [{id:'gl-1',type:'glossary',sourceSnapshot:{text:'Plants need water.'}}];
+  render('Plants need water.', ['gl-1'], {history});
+  render('Plants need water and sun.', ['gl-1'], {history});
+  expect(warning()).toBe(true);
+});
+it('remembers Keep working across a reopen', () => {
+  render('Plants need water.'); render('Plants need water and sun.'); expect(warning()).toBe(true);
+  const keep = [...host.querySelectorAll('[role="alert"] button')].pop();
+  act(() => keep.click()); expect(warning()).toBe(false);
+  close(); render('Plants need water and sun.'); expect(warning()).toBe(false);
+  render('Plants need water, sun and air.'); expect(warning()).toBe(true);
+});

@@ -56,10 +56,14 @@ describe('companion live theme synchronization', () => {
     const source = read('stem_lab/stem_tool_' + name + '.js');
     expect(source).toContain("type: 'alloflow-theme-change'");
     // The post runs in an effect keyed on the host theme: ctx.theme itself, or (Zoom
-    // Gallery v2) a value normalized directly from ctx.theme.
-    const effect = source.match(/postMessage\(\{ type: 'alloflow-theme-change', theme: \w+ \}, '\*'\); \} catch \(_\) \{\}\r?\n\s*\}, \[([\w.]+)\]\);/);
+    // Gallery v2) a value normalized directly from ctx.theme. 2026-11-07 (b3cdbac0a1) targets the
+    // companion's own origin instead of '*' (bridge trust); '*' remains for Data Lab.
+    const effect = source.match(/postMessage\(\{ type: 'alloflow-theme-change', theme: \w+ \}, ('\*'|[A-Z_]+_ORIGIN)\); \} catch \(_\) \{\}\r?\n\s*\}, \[([\w.]+)\]\);/);
     expect(effect, 'theme post must live in an effect keyed on the theme').not.toBeNull();
-    expect(effect[1] === 'ctx.theme' || new RegExp('var ' + effect[1] + ' = ctx\\.theme ').test(source), effect[1] + ' must derive from ctx.theme').toBe(true);
+    if (effect[1] !== "'*'") {
+      expect(source, effect[1] + ' must be the companion URL origin, falling back to * only for opaque origins').toMatch(new RegExp('var ' + effect[1] + " = \\(function \\(\\) \\{\\s*try \\{ var o = new URL\\([A-Z_]+_URL, [^\\n]*return \\(o && o !== 'null'\\) \\? o : '\\*'; \\}"));
+    }
+    expect(effect[2] === 'ctx.theme' || new RegExp('var ' + effect[2] + ' = ctx\\.theme ').test(source), effect[2] + ' must derive from ctx.theme').toBe(true);
   });
 
   it.each(pages)('%s validates the opener and applies live theme messages', (file) => {
@@ -93,9 +97,22 @@ describe('companion live theme behavior', () => {
     Object.defineProperty(dom.window, 'opener', { configurable: true, value: opener });
     dom.window.eval(match[1]);
     expect(dom.window.document.documentElement.dataset.theme).toBe('light');
+    // 11-14 (4e4a4bf41b) and 274914f9d6 added isTrustedThemeOrigin to some pages: an unknown or
+    // empty origin is ignored even from the opener, so this message comes from a hosted AlloFlow origin.
+    if (html.includes('function isTrustedThemeOrigin(origin)')) {
+      for (const origin of ['', 'https://evil.example']) {
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', {
+          data: { type: 'alloflow-theme-change', theme: 'contrast' },
+          source: opener,
+          origin,
+        }));
+        expect(dom.window.document.documentElement.dataset.theme, 'origin "' + origin + '" must be ignored').toBe('light');
+      }
+    }
     dom.window.dispatchEvent(new dom.window.MessageEvent('message', {
       data: { type: 'alloflow-theme-change', theme: 'contrast' },
       source: opener,
+      origin: 'https://alloflow-cdn.pages.dev',
     }));
     expect(dom.window.document.documentElement.dataset.theme).toBe('contrast');
     expect(dom.window.document.documentElement.style.colorScheme).toBe('dark');

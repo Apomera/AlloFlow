@@ -39,7 +39,9 @@ describe('Live Dashboard dock (teacher)', () => {
 
   it('passes the composer preset into the polling HostPanel and clears it on close', () => {
     expect(anti).toContain('initialPoll: livePollPreset');
-    expect(anti).toContain('setShowLivePollingPanel(false); setLivePollPreset(null);');
+    // 2026-11-17: close still clears the preset, except one started from an Adventure free-response question,
+    // which the peer showcase reads after the panel closes.
+    expect(anti).toContain("setShowLivePollingPanel(false); setLivePollPreset(prev => (prev && prev.source === 'adventure-free-response') ? prev : null);");
   });
 
   it('quick check seeds a 1-3 confused→ready rating poll', () => {

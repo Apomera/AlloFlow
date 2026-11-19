@@ -51,7 +51,8 @@ describe('Life Skills Lab — quiz answer keys', () => {
     const q = load(read(SOURCE), 'CHALLENGE_QS')
       .find((x) => x.q.includes('what is tax on $40,000'));
     expect(q).toBeTruthy();
-    expect(parseFloat(q.a)).toBe(11600 * 0.10 + (40000 - 11600) * 0.12);
+    // 2026 single brackets: 10% to $12,400, 12% to $50,400.
+    expect(parseFloat(q.a)).toBe(12400 * 0.10 + (40000 - 12400) * 0.12);
   });
 
   it('does not ask for a payoff time that does not exist', () => {

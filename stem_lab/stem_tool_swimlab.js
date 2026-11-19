@@ -199,7 +199,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       var modulesVisited = d.modulesVisited || {};
       var quizResults = d.quizResults || {};
       var badges = d.badges || {};
-      var bigQuizState = d.bigQuizState || { idx: 0, score: 0, answered: false, lastChoice: null, picks: {} };
+      // A saved file is input: a non-object or a bad idx crashed the cumulative quiz.
+      var bigQuizState = (d.bigQuizState && typeof d.bigQuizState === 'object' && Number.isInteger(d.bigQuizState.idx) && d.bigQuizState.idx >= 0)
+        ? d.bigQuizState : { idx: 0, score: 0, answered: false, lastChoice: null, picks: {} };
 
       // ── Hydration: window slot → localStorage → host state ──
       var _wsHydrated = useRef(false);

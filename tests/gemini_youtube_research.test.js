@@ -113,9 +113,9 @@ describe('Gemini research video transport', () => {
 
   it('throws actionable errors without a key, including the single-attempt transport', async () => {
     const { api, fetchRequest } = makeApi({ apiKey: '' });
-    await expect(readVideo(api)).rejects.toMatchObject({ originalMessage: expect.stringContaining('AI Backend Settings') });
+    await expect(readVideo(api)).rejects.toMatchObject({ originalMessage: expect.stringContaining('AI setup') });
     await expect(api.callGeminiSingleAttempt('Read video.', true, false, null, null, null, false, null, { videoUrl }))
-      .rejects.toMatchObject({ code: 'allo/no-api-key', message: expect.stringContaining('AI Backend Settings') });
+      .rejects.toMatchObject({ code: 'allo/no-api-key', message: expect.stringContaining('AI setup') });
     await expect(api.callGeminiSingleAttempt('Legacy text.', true)).resolves.toBe('{}');
     expect(fetchRequest).not.toHaveBeenCalled();
   });

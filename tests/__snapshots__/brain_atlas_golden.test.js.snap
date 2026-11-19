@@ -6,7 +6,7 @@ exports[`brainAtlas render goldens > detail panel: cerebellum (ACCURACY LOCK —
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 200,
-  "sha": "281890eca8a5acdc",
+  "sha": "cc08cc59cbb22f7d",
   "svgs": 1,
 }
 `;
@@ -28,7 +28,7 @@ exports[`brainAtlas render goldens > quiz mode renders a question + options 1`] 
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 172,
-  "sha": "be1bc314042bd502",
+  "sha": "91b065e2264a0157",
   "svgs": 1,
 }
 `;
@@ -126,8 +126,8 @@ exports[`brainAtlas render goldens > view: inferior renders + pins a digest 1`] 
   "buttons": 73,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 210,
-  "sha": "55ad4f30d986d050",
+  "lengthBucket": 211,
+  "sha": "305dc81ef8e458b7",
   "svgs": 1,
 }
 `;
@@ -149,7 +149,7 @@ exports[`brainAtlas render goldens > view: lateral renders + pins a digest 1`] =
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 226,
-  "sha": "3e7e04baff398854",
+  "sha": "4397d6c59799c083",
   "svgs": 1,
 }
 `;
@@ -171,7 +171,7 @@ exports[`brainAtlas render goldens > view: medial renders + pins a digest 1`] = 
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 222,
-  "sha": "3fb5b9497ed88102",
+  "sha": "cc20aabb12c2af2b",
   "svgs": 1,
 }
 `;
@@ -258,8 +258,8 @@ exports[`brainAtlas render goldens > view: superior renders + pins a digest 1`] 
   "buttons": 69,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 192,
-  "sha": "b55110012439ae6f",
+  "lengthBucket": 193,
+  "sha": "9c103a4fcc197c2f",
   "svgs": 1,
 }
 `;

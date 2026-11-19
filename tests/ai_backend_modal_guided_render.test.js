@@ -178,17 +178,30 @@ describe('advanced surface', () => {
     await render();
     await click(byHelpKey('ai_backend_advanced_toggle'));
     for (const id of ['ai-backend-provider', 'ai-backend-url', 'ai-backend-apikey',
-      'ai-backend-wolfram', 'ai-backend-test', 'ai-backend-status',
+      'ai-backend-test', 'ai-backend-status',
       'ai-backend-model-default', 'ai-backend-model-fallback',
       'ai-backend-tts-provider', 'ai-backend-image-provider',
       'ai-backend-device-storage-section', 'ai-backend-diagnostics-section', 'ai-platform-diagnostics-section']) {
       expect(container.querySelector('#' + id), id).toBeTruthy();
     }
+    // 2026-11-18: no tool reads the Wolfram App ID, so the field shows only when one is already saved (to see and clear it).
+    expect(container.querySelector('#ai-backend-wolfram')).toBeNull();
     // provider select still offers the full catalog incl. cloud + custom
     const options = Array.from(container.querySelectorAll('#ai-backend-provider option')).map((o) => o.value);
     for (const backend of ['gemini', 'alloflow-local', 'lmstudio', 'localai', 'ollama', 'openai', 'claude', 'custom']) {
       expect(options).toContain(backend);
     }
+  });
+
+  it('shows a saved Wolfram App ID with a note that no tool uses it, so it can be cleared', async () => {
+    window.localStorage.setItem('alloflow_ai_config', JSON.stringify({ wolframAppId: 'ABCDE-1234567890' }));
+    await render();
+    await click(byHelpKey('ai_backend_advanced_toggle'));
+    const field = container.querySelector('#ai-backend-wolfram');
+    expect(field).toBeTruthy();
+    expect(field.defaultValue).toBe('ABCDE-1234567890');
+    expect(container.textContent).toContain('No tool uses this yet.');
+    expect(container.textContent).not.toContain('Adds exact math solving');
   });
 
   it('configures Gemini voice access without changing a local text backend', async () => {

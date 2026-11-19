@@ -136,7 +136,7 @@ Clinical assessment read-aloud selects an explicitly local browser voice and doe
 If you discover a vulnerability—especially one that could bypass `TeacherGate`, expose local-storage JSON payloads across origins, or leak PII via an improperly handled AI inference prompt—please report it immediately.
 
 ### How to Report:
-1. Contact the primary maintainer directly.
+1. Report it privately through GitHub: open this repository's **Security** tab and choose **Report a vulnerability**. Only the maintainers can see the report.
 2. Please include a clear description of the vulnerability and exactly how to reproduce it (e.g., "The STEM Lab module loader allows arbitrary XSS injection via the CDN hash parameterization").
 3. DO NOT open a public GitHub Issue for critical security flaws until the patch has been tested and merged.
 

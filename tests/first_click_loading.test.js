@@ -264,7 +264,7 @@ describe('ui_strings cache in IndexedDB', () => {
     await s.api.cacheRead;
     await s.api.refresh();
     expect(s.api.strings.common.save).toBe('Save');
-    expect(idb.data.ui_strings, 'the network copy was not cached').toBe(V1);
+    expect(idb.data.ui_strings_core, 'the network copy was not cached').toBe(V1);
     expect(s.store.has('alloflow_ui_strings_cache'), 'the stale localStorage copy still eats quota').toBe(false);
     expect(s.events).toContain(UPDATED);
   });
@@ -292,7 +292,7 @@ describe('ui_strings cache in IndexedDB', () => {
     await s.api.cacheRead;
     await s.api.refresh();
     expect(s.api.strings.common.save).toBe('Save work');
-    expect(idb.data.ui_strings).toBe(V2);
+    expect(idb.data.ui_strings_core).toBe(V2);
     expect(s.api.revision).toBe(2);
   });
 
@@ -303,7 +303,7 @@ describe('ui_strings cache in IndexedDB', () => {
     expect(s.api.revision).toBe(0);
     await s.api.refresh();
     expect(s.api.strings.common.save).toBe('Save');
-    expect(idb.data.ui_strings).toBe(V1);
+    expect(idb.data.ui_strings_core).toBe(V1);
   });
 
   it('without IndexedDB (sandboxed frame) it still loads and falls back to localStorage', async () => {

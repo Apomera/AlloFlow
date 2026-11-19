@@ -129,7 +129,11 @@ describe('3 to 5. the panel', () => {
     expect(p.host.querySelector('[data-testid="symbol-runner-best"]')).toBe(null);
     await p.finish({ total: 20, firstTryCorrect: 17, meanMs: 1240 });
     expect(p.scores).toEqual([[17, 'Symbol Runner round', 'symbol-runner:confusable_letters']]);
-    expect(JSON.parse(p.w.localStorage.getItem('symbol_runner_bests'))).toEqual({ 'confusable_letters|direct': { firstTry: 17, total: 20, meanMs: 1240 } });
+    // 2026-11-17 (round 3): the round before is kept too ('|last'), for the "Last time" line.
+    // 2026-11-17 (round 4): and the last 8 rounds ('|hist'), for the student's own row of bars.
+    // 2026-11-17 (round 5): and the set's tricky symbols from that round ('<set>|tricky'; none here).
+    expect(JSON.parse(p.w.localStorage.getItem('symbol_runner_bests'))).toEqual({ 'confusable_letters|direct': { firstTry: 17, total: 20, meanMs: 1240 }, 'confusable_letters|direct|last': { firstTry: 17, total: 20 },
+      'confusable_letters|direct|hist': [{ f: 17, t: 20 }], 'confusable_letters|tricky': [] });
     expect(p.host.querySelector('[data-testid="symbol-runner-best"]').textContent)
       .toBe('Round done: 17 of 20 right on the first try. That is your best on this set. Best on this set: 17 of 20 on the first try, about 1.2 s each.');
     // A weaker round: the points still go to the app (it gives only what beats the earlier rounds), the best stays.
@@ -137,7 +141,7 @@ describe('3 to 5. the panel', () => {
     expect(p.scores[1]).toEqual([12, 'Symbol Runner round', 'symbol-runner:confusable_letters']);
     expect(JSON.parse(p.w.localStorage.getItem('symbol_runner_bests'))['confusable_letters|direct']).toEqual({ firstTry: 17, total: 20, meanMs: 1240 });
     expect(p.host.querySelector('[data-testid="symbol-runner-best"]').textContent)
-      .toBe('Round done: 12 of 20 right on the first try. Best on this set: 17 of 20 on the first try, about 1.2 s each.');
+      .toBe('Round done: 12 of 20 right on the first try. Last time: 17 of 20. Best on this set: 17 of 20 on the first try, about 1.2 s each.');
     // As many right, but faster: a new best. Nothing right: no points asked for. An empty round: nothing at all.
     await p.finish({ total: 20, firstTryCorrect: 17, meanMs: 1000 });
     expect(JSON.parse(p.w.localStorage.getItem('symbol_runner_bests'))['confusable_letters|direct'].meanMs).toBe(1000);
@@ -167,8 +171,11 @@ describe('3 to 5. the panel', () => {
     for (const said of ['Quick naming practice: letters, sounds, sight words, numbers and dots. Say each one aloud as you tap or type it.', 'How to answer', 'Naming grid (5 by 8)',
       'Rehearsal: new symbols mixed in among known ones', 'Printable naming grid (.html)', 'Printable cover, copy, compare sheet (.html)']) expect(text, said).toContain(said);
     expect(text).not.toMatch(/Star-Rail Symbol Runner|RAN Grid|Incremental Rehearsal|CCC Sheet|Aiming mode|Corridor view/);
-    const top = [...p.host.querySelectorAll('[data-testid="symbol-runner-panel"] > div:nth-of-type(2) > label')];
-    expect(top).toHaveLength(4);
+    const top = [...p.host.querySelectorAll('[data-testid="symbol-runner-settings"] > div:first-of-type > label')];
+    // 2026-11-18 (owner): grouped set cards. The Symbol set dropdown left the top row for its own fieldset of cards
+    // (tests/symbol_runner_set_cards_2026_11_18.test.js); the other three boxes still must not push past their cells.
+    expect(top).toHaveLength(3);
+    expect(p.host.querySelector('[data-testid="symbol-runner-settings"] > fieldset[data-testid="symbol-runner-sets"]')).not.toBe(null);
     for (const label of top) {
       expect(label.style.minWidth).toBe('0px');
       const box = label.querySelector('select, input');
@@ -176,13 +183,25 @@ describe('3 to 5. the panel', () => {
     }
     const fold = p.host.querySelector('[data-testid="symbol-runner-tools"]');
     expect([fold.tagName, fold.open, fold.querySelector('summary').textContent]).toEqual(['DETAILS', false, 'For teachers: pictures and printables']);
-    expect([...fold.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Auto-fill cue pictures', 'Import image…', 'Export individual slides (.pptx)', 'Printable naming grid (.html)',
-      'Printable Flashcards (.html)', 'Printable cover, copy, compare sheet (.html)']);
-    // New round stays outside it, beside the choices a student may change.
-    const outside = [...p.host.querySelectorAll('[data-testid="symbol-runner-panel"] button')].filter((b) => !b.closest('details')).map((b) => b.textContent);
+    expect([...fold.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Add pictures from the library', 'Add a picture…', 'Export individual slides (.pptx)', 'Printable naming grid (.html)',
+      'Printable flashcards (.html)', 'Printable cover, copy, compare sheet (.html)']); // plainer words 2026-11-17 (round 3)
+    // New round stays outside it, beside the choices a student may change (all of them in the Settings fold since round 3, 2026-11-17).
+    expect(p.host.querySelector('[data-testid="symbol-runner-settings"]').open).toBe(true);
+    const outside = [...p.host.querySelectorAll('[data-testid="symbol-runner-panel"] button')].filter((b) => !b.closest('[data-testid="symbol-runner-tools"]')).map((b) => b.textContent);
     expect(outside).toEqual(['Back to Math Maze', 'New round']);
     // The door from Fluency Maze.
     expect(read('math_fluency_module.js')).toContain("tt('math_fluency.symbol_runner_tab', 'Symbol Runner: quick naming')");
+    await p.unmount();
+  });
+
+  it('a round has 10, 20 or 30 cards, kept on this device; the game gets the number', async () => {
+    const p = await mount();
+    expect(p.given[p.given.length - 1].count).toBe(20);
+    const sel = p.host.querySelector('[data-testid="symbol-runner-count"]');
+    expect([...sel.options].map((o) => o.value)).toEqual(['10', '20', '30']);
+    await p.act(async () => { sel.value = '10'; sel.dispatchEvent(new p.w.Event('change', { bubbles: true })); });
+    expect(p.given[p.given.length - 1].count).toBe(10);
+    expect(p.w.localStorage.getItem('symbol_runner_count')).toBe('10');
     await p.unmount();
   });
 });

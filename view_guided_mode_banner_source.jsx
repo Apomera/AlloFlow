@@ -849,7 +849,13 @@ function GuidedModeBanner({
   const _busyTimingRef = React.useRef(null);
   const _skipUiPersistRef = React.useRef(false);
   const guidedBusy = !!isGuidedRetrying;
-  const sourceWarningIds = (Array.isArray(guidedSourceResourceIds) ? guidedSourceResourceIds : (guidedCreatedHistoryIds || [])).filter(id => typeof id === 'string' && id).slice(0, 200).sort();
+  // Only resources made from the source text can go out of date when it is edited.
+  // An analysis follows its own text, and a catalog book carries no source snapshot.
+  const _historyById = new Map((Array.isArray(history) ? history : []).filter(item => item && item.id).map(item => [item.id, item]));
+  const _madeFromSource = item => item.type !== 'analysis' && !!(item.sourceSnapshot || item.config?.sourceSnapshot || item.sourceArtifactId || item.config?.sourceArtifactId || item.sourceFamilyId || item.config?.sourceFamilyId);
+  const sourceWarningIds = (Array.isArray(guidedSourceResourceIds) ? guidedSourceResourceIds : (guidedCreatedHistoryIds || [])).filter(id => typeof id === 'string' && id && (!_historyById.has(id) || _madeFromSource(_historyById.get(id)))).slice(0, 200).sort();
+  const _knownWarningItems = sourceWarningIds.map(id => _historyById.get(id)).filter(Boolean);
+  const sourceWarningHasEarlier = !!hasEarlierGuidedResources && (_knownWarningItems.length < sourceWarningIds.length || typeof guidedItemBelongs !== 'function' || _knownWarningItems.some(item => !guidedItemBelongs(item)));
   const sourceWarningIdsKey = JSON.stringify(sourceWarningIds);
   const sourceWarningFingerprint = text => {
     const value = String(text || '').trim(); let first = 2166136261, second = 2246822519;
@@ -907,14 +913,15 @@ function GuidedModeBanner({
   }, [showAiPlanner, plannerDirty, aiPlannerGoal, aiPlannerPlan, aiPlannerAnswers, aiPlannerMessages, aiPlannerRefinement, savedAiPlanName, activeSavedAiPlanId, classroomContext]);
   React.useEffect(() => {
     const fingerprint = sourceWarningFingerprint(inputText), ids = JSON.parse(sourceWarningIdsKey);
-    const hasResources = hasEarlierGuidedResources || ids.length > 0;
+    const hasEarlier = sourceWarningHasEarlier;
+    const hasResources = hasEarlier || ids.length > 0;
     if (!hasResources) {
       _sourceBaselineRef.current = { fingerprint, ids: [] }; setSourceStale(false);
       setSourceWarningSaveFailed(false);
       return;
     }
     const matches = record => record && typeof record.fingerprint === 'string' && /^\d+:[0-9a-f]+:[0-9a-f]+$/.test(record.fingerprint)
-      && Array.isArray(record.ids) && (ids.length ? record.ids.some(id => ids.includes(id)) : hasEarlierGuidedResources && record.ids.length > 0);
+      && Array.isArray(record.ids) && (ids.length ? record.ids.some(id => ids.includes(id)) : hasEarlier && record.ids.length > 0);
     let baseline = _sourceBaselineRef.current;
     if (!matches(baseline)) {
       let saved; try { const data = JSON.parse(localStorage.getItem('allo_guided_source_baseline') || 'null'); saved = data?.version === 1 && Array.isArray(data.records) ? data.records.find(matches) : null; } catch (_) {}
@@ -928,7 +935,18 @@ function GuidedModeBanner({
       localStorage.setItem('allo_guided_source_baseline', JSON.stringify({ version: 1, records: [baseline, ...records] })); setSourceWarningSaveFailed(false);
     }
     catch (_) { setSourceWarningSaveFailed(true); }
-  }, [inputText, hasEarlierGuidedResources, sourceWarningIdsKey]);
+  }, [inputText, sourceWarningHasEarlier, sourceWarningIdsKey]);
+  // "Keep working" accepts the current text as the new reference, and remembers that.
+  const acceptCurrentSource = () => {
+    const kept = _sourceBaselineRef.current;
+    const baseline = { fingerprint: sourceWarningFingerprint(inputText), ids: sourceWarningIds.length ? sourceWarningIds : (Array.isArray(kept?.ids) ? kept.ids : []) };
+    _sourceBaselineRef.current = baseline; setSourceStale(false);
+    try {
+      let data; try { data = JSON.parse(localStorage.getItem('allo_guided_source_baseline') || 'null'); } catch (_) {}
+      const records = data?.version === 1 && Array.isArray(data.records) ? data.records.filter(record => record && typeof record.fingerprint === 'string' && Array.isArray(record.ids) && !record.ids.some(id => baseline.ids.includes(id))).slice(0, 19) : [];
+      localStorage.setItem('allo_guided_source_baseline', JSON.stringify({ version: 1, records: [baseline, ...records] })); setSourceWarningSaveFailed(false);
+    } catch (_) { setSourceWarningSaveFailed(true); }
+  };
   // SR announce on detail-panel open and on the full-lesson modal opening — the visual
   // change is otherwise silent to screen-reader users.
   React.useEffect(() => {
@@ -2105,7 +2123,7 @@ function GuidedModeBanner({
         )}
         {sourceWarningSaveFailed && <p role="status" style={{ color: '#fde68a', fontSize: '12px' }}>{t('guided.source_warning_not_saved') || 'Source-change reminders could not be saved on this device. Review the source when reopening this lesson.'}</p>}
         {sourceStale && (
-          <div role="alert" style={{ marginBottom: '10px', padding: '11px 12px', background: 'rgba(120,53,15,.3)', border: '1px solid rgba(251,191,36,.55)', borderRadius: '12px', color: '#fef3c7', fontSize: '12px' }}><strong style={{ display: 'block', color: 'white', marginBottom: '4px', fontSize: '13px' }}>{t('guided.source_changed_title') || 'Source changed after resources were created'}</strong>{t('guided.source_changed_text') || 'Earlier resources may no longer match this source.'}<div style={{ display: 'flex', gap: '7px', marginTop: '8px', flexWrap: 'wrap' }}><button type="button" disabled={guidedBusy} onClick={() => setGuidedStep(0)} style={{ minHeight: '40px', padding: '7px 10px', borderRadius: '7px', border: 0, fontWeight: 800, opacity: guidedBusy ? .65 : 1 }}>{t('guided.review_source') || 'Review source'}</button><button type="button" disabled={guidedBusy} onClick={() => { _sourceBaselineRef.current = { fingerprint: sourceWarningFingerprint(inputText), ids: [] }; setSourceWarningSaveFailed(false); setSourceStale(false); }} style={{ minHeight: '40px', padding: '7px 10px', borderRadius: '7px', border: '1px solid rgba(255,255,255,.25)', background: 'transparent', color: 'white', opacity: guidedBusy ? .65 : 1 }}>{t('guided.keep_working') || 'Keep working'}</button></div></div>
+          <div role="alert" style={{ marginBottom: '10px', padding: '11px 12px', background: 'rgba(120,53,15,.3)', border: '1px solid rgba(251,191,36,.55)', borderRadius: '12px', color: '#fef3c7', fontSize: '12px' }}><strong style={{ display: 'block', color: 'white', marginBottom: '4px', fontSize: '13px' }}>{t('guided.source_changed_title') || 'Source changed after resources were created'}</strong>{t('guided.source_changed_text') || 'Earlier resources may no longer match this source.'}<div style={{ display: 'flex', gap: '7px', marginTop: '8px', flexWrap: 'wrap' }}><button type="button" disabled={guidedBusy} onClick={() => setGuidedStep(0)} style={{ minHeight: '40px', padding: '7px 10px', borderRadius: '7px', border: 0, fontWeight: 800, opacity: guidedBusy ? .65 : 1 }}>{t('guided.review_source') || 'Review source'}</button><button type="button" disabled={guidedBusy} onClick={acceptCurrentSource} style={{ minHeight: '40px', padding: '7px 10px', borderRadius: '7px', border: '1px solid rgba(255,255,255,.25)', background: 'transparent', color: 'white', opacity: guidedBusy ? .65 : 1 }}>{t('guided.keep_working') || 'Keep working'}</button></div></div>
         )}
         {step.id === 'source-input' && !String(inputText || '').trim() && typeof setInputText === 'function' && (
           <button type="button" disabled={guidedBusy} data-help-key="guided_example_source" onClick={() => { if (!guidedBusy && !String(inputText || '').trim()) setInputText(GUIDED_SAMPLE_TEXT); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '8px 12px', marginBottom: '10px', fontSize: '12px', fontWeight: 700, color: '#e0e7ff', background: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(165,180,252,0.5)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>

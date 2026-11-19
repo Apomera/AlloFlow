@@ -5040,10 +5040,12 @@ function __alloAST(k, fb) {
       }, 0);
     };
     var renderFeatureTools = function (actions) {
-      var catalog = getArchToolboxEntries();
-      var filtered = filterArchToolbox(catalog, toolBrowserQuery, toolBrowserGroup);
       var nodes = {};
       actions.forEach(function (action) { nodes[action.id] = action.node; });
+      // List and count only actions this session renders: with AI off the AI Architect
+      // node is null, and counting it showed "29 tools" over 28 cards.
+      var catalog = getArchToolboxEntries().filter(function (item) { return !!nodes[item.id]; });
+      var filtered = filterArchToolbox(catalog, toolBrowserQuery, toolBrowserGroup);
       var wrapAction = function (node, id, expanded) {
         var originalClick = node.props.onClick;
         return React.cloneElement(node, {

@@ -296,7 +296,7 @@ describe('quiz answer positions and the parts illustration', () => {
 // "too high" state drew it down at the eyebrows. The drawing and the checks now share one set of values.
 describe('helmet fit and the quiz ending', () => {
   const helmet = src.slice(src.indexOf('function helmetChecks(v)'), src.indexOf('function HelmetFit()'));
-  const H = () => new Function('h', helmet + '\nreturn { helmetChecks, helmetSideSvg, HELMET_PROBLEMS, HELMET_CASES, HELMET_SPOT_PASS };')((tag, props, ...kids) => ({ tag, props: props || {}, kids: kids.flat(Infinity).filter(Boolean) }));
+  const H = () => new Function('h', '__alloT', helmet + '\nreturn { helmetChecks, helmetSideSvg, HELMET_PROBLEMS, HELMET_CASES, HELMET_SPOT_PASS };')((tag, props, ...kids) => ({ tag, props: props || {}, kids: kids.flat(Infinity).filter(Boolean) }), (key, fallback) => fallback);
   const find = (node, pred, out = []) => { if (node && node.tag) { if (pred(node)) out.push(node); node.kids.forEach((k) => find(k, pred, out)); } return out; };
   // The lowest point of the helmet's front edge on screen (a larger y is lower down).
   const frontEdgeY = (v) => {
@@ -417,7 +417,7 @@ describe('3D parts model', () => {
   it('3D is optional: the diagram is the default, the model is disposed on leaving, and a failed start says so', () => {
     expect(view).toContain('var view3dState = useState(false)');
     expect(view).toContain("window.StemLab.ensureThree({ orbit: false })");
-    expect(view).toContain('renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}');
+    expect(view).toContain('renderer.dispose(); try { var gl = renderer.getContext(); if (!gl.isContextLost()) renderer.forceContextLoss(); } catch (e) {}');
     expect(view).toContain("try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); } catch (e) { setThreeStatus('error'); return; }");
     expect(view).toContain('The 3D model could not start on this device. The diagram shows the same parts.');
     expect(view).toContain("camBtn('◀ Turn', 'Turn the bike left'");                // every camera move has a button, so no dragging is required

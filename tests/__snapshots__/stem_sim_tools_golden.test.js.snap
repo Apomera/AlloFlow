@@ -210,13 +210,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for galax
 
 exports[`science-sim + studio render goldens > renders + pins a digest for gameStudio [ssr] 1`] = `
 {
-  "buttons": 34,
+  "buttons": 226,
   "canvases": 0,
   "inputs": 1,
-  "lengthBucket": 237,
+  "lengthBucket": 300,
   "paths": 0,
   "selects": 2,
-  "sha": "564c4f6da19a8851",
+  "sha": "caab9b4ecd68591a",
   "svgs": 0,
 }
 `;

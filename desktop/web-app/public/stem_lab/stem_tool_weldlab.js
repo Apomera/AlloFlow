@@ -9429,6 +9429,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var status = statusState[0], setStatus = statusState[1];
         var retryState = useState(0);
         var retryCount = retryState[0], setRetryCount = retryState[1];
+        // True when the error panel is up because a LIVE context was lost (GPU reset,
+        // low-memory eviction), not because three.js failed to load. Same panel and
+        // the same Retry; only the explanation differs.
+        var ctxLostState = useState(false);
+        var ctxLost = ctxLostState[0], setCtxLost = ctxLostState[1];
+        var retryBtnRef = useRef(null);
+        useEffect(function () {
+          if (status === 'error' && ctxLost && retryBtnRef.current) { try { retryBtnRef.current.focus(); } catch (e) {} }
+        }, [status, ctxLost]);
         var liveRef = props.liveRef;
         var scenePropsRef = useRef(props);
         scenePropsRef.current = props;
@@ -9506,6 +9515,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               setStatus('error');
               return;
             }
+
+            // A context lost AFTER init (GPU reset, low-memory eviction) used to leave
+            // this canvas black for the rest of the session. Route it into the same
+            // error panel and Retry the creation failure already uses.
+            canvas.addEventListener('webglcontextlost', function (ev) {
+              // A teardown that already removed the canvas can still fire this.
+              if (!canvas.isConnected) return;
+              ev.preventDefault();
+              // Our own dispose force-loses the context; that is not a failure.
+              if (canvas._weldLabTearingDown) return;
+              if (cancelled) return;
+              teardown3D();
+              setTimeout(function () {
+                if (!canvas.isConnected) return;
+                setCtxLost(true);
+                setStatus('error');
+              }, 0);
+            });
 
             var scene = new THREE.Scene();
             scene.background = new THREE.Color(0x0f172a);
@@ -10632,7 +10659,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 defectMatSpatter.dispose(); defectMatPorosity.dispose();
                 try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
                 renderer.dispose();
-                renderer.forceContextLoss();
+                // Flag first: forcing the loss fires webglcontextlost on this canvas.
+                canvas._weldLabTearingDown = true;
+                var _gl = renderer.getContext && renderer.getContext();
+                if (!(_gl && _gl.isContextLost && _gl.isContextLost())) renderer.forceContextLoss();
               } catch (e) { /* best-effort cleanup */ }
             };
           }
@@ -10649,20 +10679,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             });
           }
 
-          return function () {
+          // One teardown for unmount, Retry and a lost context.
+          function teardown3D() {
             cancelled = true;
             try { if (_weldVRBtnOff) _weldVRBtnOff(); } catch (e) {}
             try { if (_weldVR && _weldVR.destroy) _weldVR.destroy(); _weldVR = null; } catch (e) {}
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
             if (sceneRef.current && sceneRef.current.dispose) sceneRef.current.dispose();
             sceneRef.current = null;
-          };
+          }
+          return teardown3D;
         }, [retryCount]);
 
         return h('div', {
           className: 'bg-slate-900 rounded-2xl shadow border-2 border-slate-700 p-3 relative'
         },
           h('canvas', {
+            // A fresh canvas per attempt: a canvas whose context was lost hands the
+            // same dead context to the next renderer, so Retry could never recover.
+            key: 'weld3d-' + retryCount,
             ref: canvasRef,
             tabIndex: 0,
             role: 'img',
@@ -10692,11 +10728,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             className: 'absolute inset-0 flex items-center justify-center bg-slate-900/95 rounded-lg p-4 text-center'
           },
             h('div', null,
-              h('div', { className: 'text-rose-300 text-sm font-bold mb-2' }, __alloT('stem.weldlab.3d_view_unavailable', '3D view unavailable')),
-              h('div', { className: 'text-slate-300 text-xs leading-relaxed max-w-xs mb-3' },
-                __alloT('stem.weldlab.three_js_failed_to_load_cdn_blocked_of', 'Three.js failed to load (CDN blocked, offline, or WebGL not supported on this device). Switch back to top-down view above.')),
+              h('div', { className: 'text-rose-300 text-sm font-bold mb-2' }, ctxLost
+                ? __alloT('stem.weldlab.webgl_lost_title', '3D view paused')
+                : __alloT('stem.weldlab.3d_view_unavailable', '3D view unavailable')),
+              h('div', { className: 'text-slate-300 text-xs leading-relaxed max-w-xs mb-3' }, ctxLost
+                ? __alloT('stem.weldlab.webgl_lost_body', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved. The top-down view above still works.')
+                : __alloT('stem.weldlab.three_js_failed_to_load_cdn_blocked_of', 'Three.js failed to load (CDN blocked, offline, or WebGL not supported on this device). Switch back to top-down view above.')),
               h('button', {
+                ref: retryBtnRef,
+                type: 'button',
                 onClick: function() {
+                  setCtxLost(false);
                   setStatus('loading');
                   setRetryCount(function(c) { return c + 1; });
                 },

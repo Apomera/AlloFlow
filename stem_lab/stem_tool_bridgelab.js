@@ -2642,6 +2642,7 @@
     category: 'science',
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -3467,11 +3468,11 @@
                   trial.prediction ? h('p', { style: { fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.5 } }, h('strong', null, 'Prediction: '), String(trial.prediction)) : null,
                   trial.observation ? h('p', { style: { fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.5 } }, h('strong', null, 'Observation: '), String(trial.observation)) : null,
                   h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                    h('button', { type: 'button', style: bridgeActionStyle, 'aria-label': 'Restore ' + String(trial.name || 'trial ' + (index + 1)),
+                    h('button', { type: 'button', style: bridgeActionStyle, 'aria-label': __alloAriaFill(__alloT('stem.bridgelab.a11y_restore', 'Restore {value1}'), { value1: String(trial.name || __alloAriaFill(__alloT('stem.bridgelab.a11y_trial', 'trial {value1}'), { value1: index + 1 })) }),
                       onClick: function() { upd(Object.assign({}, bridgeDesignInputs(inputs), { designName: String(trial.name || ''), designNotes: String(trial.notes || ''),
                         designPrediction: String(trial.prediction || ''), designObservation: String(trial.observation || ''), autoDriving: false, vehicleSweep: null })); announceStatus(__alloT('stem.bridgelab.trial_restored', 'Saved design restored.')); }
                     }, __alloT('stem.bridgelab.restore_trial', 'Restore')),
-                    h('button', { type: 'button', style: bridgeActionStyle, 'aria-label': 'Remove ' + String(trial.name || 'trial ' + (index + 1)),
+                    h('button', { type: 'button', style: bridgeActionStyle, 'aria-label': __alloAriaFill(__alloT('stem.bridgelab.a11y_remove', 'Remove {value1}'), { value1: String(trial.name || __alloAriaFill(__alloT('stem.bridgelab.a11y_trial', 'trial {value1}'), { value1: index + 1 })) }),
                       onClick: function() { upd({ designTrials: trials.filter(function(_, i) { return i !== index; }) }); announceStatus(__alloT('stem.bridgelab.trial_removed', 'Trial removed.')); }
                     }, __alloT('stem.bridgelab.remove_trial', 'Remove'))
                   )
@@ -3598,7 +3599,7 @@
               h('label', { htmlFor: 'bridge-crossing-position', style: { display: 'block', fontSize: 12, marginTop: 10, lineHeight: 1.6 } },
                 __alloT('stem.bridgelab.inspect_crossing_position', 'Inspect vehicle position (%)') + ': ' + (d.vehiclePos * 100).toFixed(1) + '% · SF ' + bridgeFactor(gov.governingSF)),
               h('input', { id: 'bridge-crossing-position', type: 'range', min: 0, max: 100, step: 1, value: d.vehiclePos * 100,
-                'aria-valuetext': (d.vehiclePos * 100).toFixed(1) + '%; SF ' + bridgeFactor(gov.governingSF),
+                'aria-valuetext': __alloAriaFill(__alloT('stem.bridgelab.a11y_sf', '{value1}%; SF {value2}'), { value1: (d.vehiclePos * 100).toFixed(1), value2: bridgeFactor(gov.governingSF) }),
                 onChange: function(event) { upd({ vehiclePos: Number(event.target.value) / 100, autoDriving: false }); }, style: { width: '100%', accentColor: AMBER } }),
               sweep.worst ? h('button', { type: 'button', style: Object.assign({}, bridgeActionStyle, { marginTop: 10 }), onClick: function() { bridgeInspectPosition(sweep.worst.position, sweep.worst.member); } },
                 __alloT('stem.bridgelab.inspect_worst', 'Inspect worst position')) : null,
@@ -6417,7 +6418,7 @@
                 h('span', null, '0 … ' + (chart.scale < 0.01 ? chart.scale.toExponential(2) : chart.scale.toFixed(2)))),
               h('div', { role: 'slider', tabIndex: 0, 'aria-label': __alloT('stem.bridgelab.seismic_scan_select', 'Select scanned frequency (Hz)'),
                 'aria-describedby': 'bridge-seismic-scan-help', 'aria-orientation': 'horizontal', 'aria-valuemin': 0.2, 'aria-valuemax': 3,
-                'aria-valuenow': selected.frequencyHz, 'aria-valuetext': selected.frequencyHz.toFixed(2) + ' Hz · ' + bridgeRecordedNumberText(selected[chart.field]) + ' ' + chart.unit,
+                'aria-valuenow': selected.frequencyHz, 'aria-valuetext': __alloAriaFill(__alloT('stem.bridgelab.a11y_hz', '{frequencyHz} Hz · {value1} {unit}'), { frequencyHz: selected.frequencyHz.toFixed(2), value1: bridgeRecordedNumberText(selected[chart.field]), unit: chart.unit }),
                 style: { position: 'relative', outlineOffset: 4, cursor: 'crosshair', touchAction: 'pan-y' },
                 onKeyDown: function(event) {
                   var steps = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 5, PageDown: -5 };
@@ -7698,7 +7699,7 @@
                     h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, __alloT('stem.bridgelab.target_safety_factor', 'Target safety factor')),
                     h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, targetSF.toFixed(1))
                   ),
-                  h('input', { type: 'range', 'aria-valuetext': targetSF.toFixed(1) + ' safety factor', min: 1.5, max: 6, step: 0.5, value: targetSF,
+                  h('input', { type: 'range', 'aria-valuetext': __alloAriaFill(__alloT('stem.bridgelab.a11y_safety_factor', '{targetSF} safety factor'), { targetSF: targetSF.toFixed(1) }), min: 1.5, max: 6, step: 0.5, value: targetSF,
                     onChange: function(e) { upd({ optTargetSF: parseFloat(e.target.value) }); },
                     'aria-label': __alloT('stem.bridgelab.target_safety_factor_2', 'Target safety factor'),
                     style: { width: '100%', accentColor: AMBER }
@@ -10760,12 +10761,12 @@
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 14 } },
               h('div', null,
                 h('label', { htmlFor: 'iq-span', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, __alloT('stem.bridgelab.span_length', 'Span length: '), h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.spanM + ' m')),
-                h('input', { id: 'iq-span', type: 'range', 'aria-valuetext': iq.spanM + ' meters', min: 10, max: 80, step: 1, value: iq.spanM,
+                h('input', { id: 'iq-span', type: 'range', 'aria-valuetext': __alloAriaFill(__alloT('stem.bridgelab.a11y_meters', '{spanM} meters'), { spanM: iq.spanM }), min: 10, max: 80, step: 1, value: iq.spanM,
                   onChange: function(e) { setIQ({ spanM: parseInt(e.target.value, 10) }); },
                   style: { width: '100%' }, 'aria-label': __alloT('stem.bridgelab.span_length_in_meters', 'Span length in meters') })),
               h('div', null,
                 h('label', { htmlFor: 'iq-area', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, __alloT('stem.bridgelab.cross_section_area', 'Cross-section area: '), h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.areaMm2 + ' mm²')),
-                h('input', { id: 'iq-area', type: 'range', 'aria-valuetext': iq.areaMm2 + ' square millimeters', min: 1000, max: 30000, step: 100, value: iq.areaMm2,
+                h('input', { id: 'iq-area', type: 'range', 'aria-valuetext': __alloAriaFill(__alloT('stem.bridgelab.a11y_square_millimeters', '{areaMm2} square millimeters'), { areaMm2: iq.areaMm2 }), min: 1000, max: 30000, step: 100, value: iq.areaMm2,
                   onChange: function(e) { setIQ({ areaMm2: parseInt(e.target.value, 10) }); },
                   style: { width: '100%' }, 'aria-label': __alloT('stem.bridgelab.cross_section_area_in_square_millimete', 'Cross-section area in square millimeters') }))
             ),

@@ -18,7 +18,7 @@ describe('Accessible Diagnose practice transitions', () => {
     const restored=stripWeldlabPracticeFixes(source);
     expect(stripWeldlabPracticeFixes(restored)).toBe(restored);
     const bytes=Buffer.from(restored.replace(/\n/g,'\r\n'),'utf8');
-    expect(createHash('sha256').update(bytes).digest('hex')).toBe('9f283a107274dd66498dbf31117c9128f8187eca44aa95d035ecb2077190b3e8');
+    expect(createHash('sha256').update(bytes).digest('hex')).toBe('ddbd949d0322502b6bb61cd0637636dccf0aebade1e50b848c5f5f6c2aaf14f2');
     expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_weldlab.js').equals(Buffer.from(source)), 'public mirror is byte-identical').toBe(true);
   });
   it('focuses the new prompt on Start and Next, then leaves repair exploration focus alone', async () => {

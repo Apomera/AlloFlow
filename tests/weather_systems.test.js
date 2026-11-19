@@ -2532,8 +2532,15 @@ describe('Weather Systems meteogram chart', () => {
 
   it('exposes a focusable hit column per hour that announces the full reading', () => {
     const html = renderTool('weatherSystems', MAP_STATE, { gradeLevel: '8th Grade' });
-    const hits = html.match(/T plus \d+ hours: temperature/g) || [];
+    // __alloFill runs every filled label through __alloOneWord (b3cdbac0a1), so hour 1
+    // reads "T plus 1 hour", not "1 hours". Pin each hour's exact wording.
+    const hits = html.match(/T plus \d+ hours?: temperature/g) || [];
     expect(hits).toHaveLength(13);
+    for (let hour = 0; hour <= 12; hour += 1) {
+      const label = 'T plus ' + hour + (hour === 1 ? ' hour' : ' hours') + ': temperature';
+      expect(html.includes(label), label).toBe(true);
+    }
+    expect(html.includes('T plus 1 hours')).toBe(false);
     expect(html).toContain('precipitation potential');
     expect(html).toContain('tabindex="0"');
   });

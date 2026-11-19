@@ -11,6 +11,6 @@ it('restores every previous lesson byte after reversing only the recorded reader
   expect(raw.toString('utf8').replace(/\r\n/g, '\n')).not.toContain('\r');
   const restored = stripWeldlabReaderContrastFixes(raw.toString('utf8'));
   const previous = Buffer.from(restored.replace(/\n/g, '\r\n'), 'utf8');
-  expect(createHash('sha256').update(previous).digest('hex')).toBe('4677b82f2d25dc7a183a332d3adac7e735f712b0019da75add63bfa5688aced0');
+  expect(createHash('sha256').update(previous).digest('hex')).toBe('c2d95b974ca511718cd606401dc94e999311a809dfa5eba18bc74da9f1fc5154');
   expect(stripWeldlabReaderContrastFixes(restored)).toBe(restored);
 });

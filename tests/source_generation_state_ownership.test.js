@@ -155,6 +155,7 @@ describe('Guided source generation progress', () => {
 
     expect(output).toMatch(new RegExp(`\\$\\{\\s*\\(${busy}\\)\\s*\\?\\s*'hidden md:flex'`));
     expect(output).toMatch(new RegExp(`\\{\\s*\\(${busy}\\)\\s*\\?\\s*<>\\s*<RefreshCw`));
-    expect(output).toMatch(new RegExp(`\\{\\s*\\(${busy}\\)\\s*&&\\s*\\(!generatedContent`));
+    // 2026-11-17: the overlay also stays out of the way while the source check text is shown on the input view.
+    expect(output).toMatch(new RegExp(`\\{\\s*\\(${busy}\\)\\s*&&\\s*!\\(sourceCheckText !== null && activeView === 'input'\\)\\s*&&\\s*\\(!generatedContent`));
   });
 });

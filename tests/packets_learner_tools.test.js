@@ -125,7 +125,9 @@ describe('every file carries the reading tools', () => {
     // and the measure that hides Rounded where the device has no such font).
     // The same day, +0.3 KB: the reading focus follows the sentence a read-along is reading aloud.
     // And +0.2 KB: Lexend and Atkinson in the Letters group (the fonts themselves are not counted here: 42.5 KB, in FONT_CSS).
-    expect(bytes).toBeLessThan(18500);
+    // Re-pinned 2026-11-17 from 18500: "Space between sounds" (its group, its three names, soundGap and its words; +0.3 KB,
+    // 18.8 KB; tests/packets_sound_space_2026_11_17.test.js).
+    expect(bytes).toBeLessThan(19000);
     // The copy in the file is the loader's own function, without its indentation.
     expect(fn.slice('\ntools:'.length, -1)).toBe(TH._tools.toString().replace(/\n +/g, '\n'));
   });
@@ -179,7 +181,11 @@ describe('the button and the panel', () => {
       // 2026-11-15, deliberately: "Spoken directions" (directionsOnce). Default "Every question" unless set in maker;
       // shown in practice packets with spoken directions and hidden in checks/facts without them.
       ['directions', 'Spoken directions', ['Every question=true', 'First question only=false']],
+      // 2026-11-17, deliberately: "Space between sounds" (the pause between a word's sounds in Blend Sounds). Shown only in a
+      // practice file with Blend Sounds, so hidden in this Find Sounds file (tests/packets_sound_space_2026_11_17.test.js).
+      ['sounds', 'Space between sounds', ['Some=true', 'More=false', 'Less=false']],
     ]);
+    expect(t.q('[data-tool-group="sounds"]').hidden).toBe(true);
     expect(groups[6].hidden).toBe(false);
     expect(groups[7].hidden).toBe(false);
     // No running text on the start screen: the reading focus is not offered.

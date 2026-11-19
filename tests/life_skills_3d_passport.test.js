@@ -38,7 +38,7 @@ describe('Life Skills 3D passport', () => {
     expect(source).toContain("role: 'progressbar'");
     expect(source).toContain('Open the scene and practice safely.');
     expect(source).toContain('openLifeSkills3dById(lab.id)');
-    expect(source).toContain("'aria-label': 'Open suggested next lab: ' + lifeSkills3dNextLab.title");
+    expect(source).toContain("'aria-label': __alloAriaFill(__alloT('stem.lifeskills.a11y_open_suggested_next_lab', 'Open suggested next lab: {title}'), { title: lifeSkills3dNextLab.title })");
     expect(source).toContain("'data-lifeskills-transfer-evidence': 'true'");
     expect(source).toContain("'/5 context shifts'");
     expect(source).toContain("'/5 action sequences'");

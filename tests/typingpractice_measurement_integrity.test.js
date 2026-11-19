@@ -82,7 +82,9 @@ describe('Typing Practice measurement integrity', () => {
   });
 
   it('classifies keyboard, paste, touch or assistive input, and IME events', () => {
-    expect(source).toContain("commitTypingText(key, 'keyboard')");
+    // Physical keys commit on keydown, or on keyup when Slow keys is on; both are keyboard input.
+    expect(source).toContain("commitTypingText(committedKey, 'keyboard')");
+    expect(source).toContain("commitTypingText(slowKey, 'keyboard')");
     expect(source).toContain("commitTypingText(value, 'ime')");
     expect(source).toContain("pendingInputKindRef.current = 'paste'");
     expect(source).toContain("pendingInputKindRef.current = 'text-input'");
@@ -105,7 +107,9 @@ describe('Typing Practice measurement integrity', () => {
     expect(source).toContain('Assisted practice saved.');
     expect(source).toContain('Measurement context: ');
     expect(source).toContain('retained in history and excluded from comparative performance metrics');
-    expect(source).toContain('CURRENT PERFORMANCE (last 5 comparable sessions)');
+    // Current performance comes from benchmark checks; practice stays labelled as practice.
+    expect(source).toContain("lines.push('CURRENT PERFORMANCE (benchmark checks, band ' + probeBand + ')');");
+    expect(source).toContain('PRACTICE SESSIONS (last 5 comparable sessions, all drills; not used for growth)');
     expect(source).toContain('Comparable sessions used for performance calculations: ');
     expect(source).toContain("'input_methods', 'primary_input_method', 'measurement_comparable', 'metric_comparable', 'measurement_note'");
   });

@@ -884,13 +884,13 @@ describe('the page, run in jsdom with the scripts it names', () => {
 });
 
 describe('the front door', () => {
-  it('gives math fact practice its own entry on the math card, beside the math check, and names its builder', () => {
+  it('gives math fact practice its own card under Practice, the math check its own under Check progress, and names its builder', () => {
     const doc = parse('packets.html');
-    const card = doc.querySelector('.card-pair');
-    expect(card.querySelector('h2').textContent).toBe('Make math fact practice or a math check');
-    expect([...card.querySelectorAll('a')].map((a) => [a.getAttribute('href'), a.textContent])).toEqual([[PAGE, 'Math fact practice'], ['packets-check.html', 'A math check']]);
-    // Eight cards on the front door (Word Sounds, Math, Vocabulary, Symbol Runner, Present & Export, Add up results, Open a file, Check).
-    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(8);
+    // 2026-11-18 (owner): the front door is grouped by what a teacher wants to do; the math card is two cards now.
+    const link = (href) => [...doc.querySelectorAll('.card h3 > a')].find((a) => a.getAttribute('href') === href);
+    expect(link(PAGE).textContent).toBe('Make math fact practice');
+    expect(link('packets-check.html').textContent).toBe('Make a math check');
+    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(10);
     expect(existsSync(PAGE)).toBe(true);
     // Listed with the other builders on the front door and in the guide for school IT.
     for (const file of ['packets.html', 'packets-it.html']) expect(read(file), file).toContain('<code>packet_math_practice_builder.js</code>');

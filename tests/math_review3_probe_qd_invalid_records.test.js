@@ -68,7 +68,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function mount(saved) {
+function mount(saved, theme) {
   vi.useFakeTimers();
   localStorage.setItem(STORE, JSON.stringify([{ name: 'Ana', stats: {}, safetyFlags: [], screeningHistory: HISTORY }]));
   window.MISSING_NUMBER_PROBES = banks.MISSING_NUMBER_PROBES;
@@ -82,7 +82,7 @@ function mount(saved) {
   try {
     React.act(() => root.render(React.createElement(Panel, {
       isOpen: true, onClose() {}, students: [], dashboardData: null, t: (k) => k, addToast() {}, loadProbeBanks() {},
-      latestProbeResult: null, setLatestProbeResult: (record) => saved.push(record)
+      latestProbeResult: null, setLatestProbeResult: (record) => saved.push(record), ...(theme ? { theme } : {})
     })));
     React.act(() => { vi.advanceTimersByTime(100); });
   } finally { console.error = err; }
@@ -160,6 +160,18 @@ describe('Quantity Discrimination records from before the runner fix', () => {
 });
 
 describe('new Missing Number and QD records carry the form version', () => {
+  // 2026-11-17: the sheet is portalled outside the app's theme wrapper, so it carries the teacher's theme itself.
+  it.each(['light', 'dark', 'contrast'])('the probe sheet a student sees keeps the %s theme', (theme) => {
+    mount([], theme === 'light' ? undefined : theme);
+    choose(document.querySelector('select[aria-label="Assign probe to student"]'), 'Ana');
+    click(buttons().find((b) => /Start QD Probe/.test(b.textContent)));
+    const sheet = document.body.querySelector('[data-probe-fullscreen="quantity_discrimination"]');
+    expect(sheet.parentElement).toBe(document.body);
+    expect(sheet.classList.contains('theme-' + theme)).toBe(true);
+    expect(sheet.classList.contains('bg-slate-50')).toBe(true);
+    expect(sheet.style.background).toBe('');
+  });
+
   it('a Quantity Discrimination run saves formVersion 2 for the form given, and shows it next to the letter', () => {
     const saved = [];
     mount(saved);

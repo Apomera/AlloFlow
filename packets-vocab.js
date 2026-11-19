@@ -21,6 +21,21 @@
   var MAX_KEPT = 2000;     // words whose changes are kept; the oldest go first
   var LARGE_FILE_BYTES = 10e6;
   var LARGE_FILE_SAID = 'This file is over 10 MB. Some email and school platforms block large files, and older phones open them slowly. Choose fewer words, turn off Recordings of the words, or leave out picture questions to make it smaller.';
+  // BEGIN TYPE EXAMPLES (2026-11-18): one worked example under each kind of question, so a teacher sees what the student
+  // is asked. q holds the question as the file asks it (word_sounds_take_home/check_adapters/vocab_*.js) and the items are
+  // the builder's own sample questions (packet_vocab_builder.js SAMPLES); tests/packets_maker_examples.test.js checks both.
+  var TYPE_EXAMPLES = {
+    meaning: { shown: 'The word is apple.', q: 'What does this word mean?', a: 'a round fruit that grows on trees' },
+    word: { shown: 'The meaning is "a seat for one person, with a back and four legs."', q: 'Which word has this meaning?', a: 'chair' },
+    blank: { shown: 'The ___ barked at the cat.', q: 'Which word fits in the blank?', a: 'dog' },
+    picture: { shown: 'The word is dog.', q: 'Which picture shows this word?', a: 'the picture of a dog' },
+    picword: { shown: 'A picture of a dog is shown.', q: 'Which word goes with this picture?', a: 'dog' }
+  };
+  var typeExampleText = function (id) {
+    var row = TYPE_EXAMPLES[id];
+    return row ? 'Example: ' + row.shown + ' ' + row.q + ' Answer: ' + row.a + '.' : '';
+  };
+  // END TYPE EXAMPLES
 
   var doc = document;
   var $ = function (id) { return doc.getElementById(id); };
@@ -404,7 +419,8 @@
         // 2026-11-13 (teacher-journey pass): "None of the 12 words" rather than "Only 0 of 12 words"; "1 word has".
         : closed ? (pics.withPicture ? 'Only ' + pics.withPicture + ' of ' + count(rows.length, 'word') + ' have a picture.' : 'None of the ' + rows.length + ' words has a picture.') + ' Picture questions need at least ' + pics.need + ', so that the other pictures are mostly words from your list.'
         : usable + ' of ' + count(rows.length, 'word') + ' can be asked this way. ' + capital(count(pics.withPicture, 'word')) + (pics.withPicture === 1 ? ' has' : ' have') + ' a picture.';
-      add(label, box, el('span', 'choice-name', t.name), el('span', 'choice-line', t.line + (t.on ? '' : ' Off unless you choose it.') + (t.pictures ? ' Cannot be answered with a screen reader.' : '')), el('span', 'choice-note', note));
+      add(label, box, el('span', 'choice-name', t.name), el('span', 'choice-line', t.line + (t.on ? '' : ' Off unless you choose it.') + (t.pictures ? ' Cannot be answered with a screen reader.' : '')),
+        typeExampleText(t.id) ? el('span', 'choice-example', typeExampleText(t.id)) : null, el('span', 'choice-note', note));
       label.classList.toggle('is-on', box.checked);
       host.appendChild(label);
     });
@@ -1256,6 +1272,12 @@
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_work) setText('csv-label', loader.DEFAULT_LABELS.save_work);
     wire();
     applyRehearseHash();
+    // "#check-mode" / "#practice-mode" (the front door's cards) start on that kind of file, whatever was remembered.
+    var kindHash = /^#(check|practice)-mode$/i.exec(String(window.location && window.location.hash || ''));
+    if (kindHash) {
+      state.mode = kindHash[1].toLowerCase(); syncMode(); remember();
+      try { window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (_) {}
+    }
     show('reopen', !!(window.AlloPacketVerify && typeof window.AlloPacketVerify.readParts === 'function' && typeof FileReader === 'function'));
     show('loading', false);
     startBank();

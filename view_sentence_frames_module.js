@@ -102,7 +102,7 @@ function SentenceFramesView(props) {
   const usableItems = Array.isArray(scaffoldData?.items) ? scaffoldData.items : [];
   const isUsableItem = item => Boolean(item && typeof item.text === 'string' && item.text.trim() && (isTeacherMode || isEditingScaffolds || item.isSelected !== false && item.selected !== false));
   const isAssessmentLockdown = !isTeacherMode && !isIndependentMode && Boolean(props.assessmentMode || props.isAssessmentMode || generatedContent?.config?.assessmentMode || generatedContent?.data?.assessmentMode || typeof window !== 'undefined' && window.__alloAssessmentMode === true);
-  const canViewRubric = Boolean(isTeacherMode || generatedContent?.data.rubric && !isAssessmentLockdown);
+  const canViewRubric = Boolean(isTeacherMode || generatedContent?.data?.rubric && !isAssessmentLockdown);
   const textAiDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
   const textAiUsable = (() => {
     try {
@@ -329,7 +329,7 @@ function SentenceFramesView(props) {
       } : prev);
       restoreDraftOpenerFocus();
     }
-  })) : generatedContent?.data.mode === 'list' ? /*#__PURE__*/React.createElement("div", {
+  })) : generatedContent?.data?.mode === 'list' ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-4"
   }, usableItems.map((item, idx) => isUsableItem(item) ? /*#__PURE__*/React.createElement("div", {
     key: idx,
@@ -388,13 +388,13 @@ function SentenceFramesView(props) {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4"
   }, t('scaffolds.paragraph_frame') || 'Paragraph Frame'), isEditingScaffolds ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('scaffolds.edit_paragraph_frame') || 'Edit paragraph frame text',
-    value: generatedContent?.data.text,
+    value: generatedContent?.data?.text,
     onChange: e => handleScaffoldTextChange('text', e.target.value),
     className: "w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none",
-    rows: getRows(generatedContent?.data.text)
+    rows: getRows(generatedContent?.data?.text)
   }) : /*#__PURE__*/React.createElement("div", {
     className: "text-lg leading-loose text-slate-800 font-serif px-2 py-1"
-  }, scaffoldParagraphParts(generatedContent?.data.text).map(({
+  }, scaffoldParagraphParts(generatedContent?.data?.text).map(({
     text: part,
     responseKey
   }, i) => responseKey ? /*#__PURE__*/React.createElement("input", {
@@ -415,20 +415,20 @@ function SentenceFramesView(props) {
     placeholder: part.replace(/[\[\]]/g, '')
   }) : /*#__PURE__*/React.createElement("span", {
     key: i
-  }, part))), (isEditingScaffolds && leveledTextLanguage !== 'English' || generatedContent?.data.text_en) && /*#__PURE__*/React.createElement("div", {
+  }, part))), (isEditingScaffolds && leveledTextLanguage !== 'English' || generatedContent?.data?.text_en) && /*#__PURE__*/React.createElement("div", {
     className: "mt-8 pt-6 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2"
   }, t('common.english_translation')), isEditingScaffolds ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('scaffolds.edit_paragraph_translation') || 'Edit paragraph frame translation',
-    value: generatedContent?.data.text_en || '',
+    value: generatedContent?.data?.text_en || '',
     onChange: e => handleScaffoldTextChange('text_en', e.target.value),
     className: "w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none",
-    rows: getRows(generatedContent?.data.text_en || ''),
+    rows: getRows(generatedContent?.data?.text_en || ''),
     placeholder: t('common.placeholder_translation')
-  }) : generatedContent?.data.text_en && /*#__PURE__*/React.createElement("p", {
+  }) : generatedContent?.data?.text_en && /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 italic leading-relaxed px-2 py-1"
-  }, generatedContent?.data.text_en))), canViewRubric && /*#__PURE__*/React.createElement("div", {
+  }, generatedContent?.data?.text_en))), canViewRubric && /*#__PURE__*/React.createElement("div", {
     className: "mt-1 pt-4 border-t border-rose-100 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap justify-between items-center gap-2 mb-3"
@@ -454,7 +454,7 @@ function SentenceFramesView(props) {
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 12,
     "aria-hidden": "true"
-  }), generatedContent?.data.rubric ? isIndependentMode ? label('scaffolds.regenerate_self_checklist', 'Regenerate Self-Checklist') : label('scaffolds.regenerate_rubric', 'Regenerate Rubric') : isIndependentMode ? label('scaffolds.generate_self_checklist', 'Generate Self-Checklist') : label('scaffolds.generate_rubric', 'Generate Rubric')), generatedContent?.data.rubric && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+  }), generatedContent?.data?.rubric ? isIndependentMode ? label('scaffolds.regenerate_self_checklist', 'Regenerate Self-Checklist') : label('scaffolds.regenerate_rubric', 'Regenerate Rubric') : isIndependentMode ? label('scaffolds.generate_self_checklist', 'Generate Self-Checklist') : label('scaffolds.generate_rubric', 'Generate Rubric')), generatedContent?.data?.rubric && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleToggleRubricZoom,
     "aria-pressed": !!rubricZoom,
@@ -469,13 +469,13 @@ function SentenceFramesView(props) {
   }), rubricZoom ? t('scaffolds.rubric_normal') : t('scaffolds.rubric_fit')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.copy'),
-    onClick: () => copyToClipboard(generatedContent?.data.rubric),
+    onClick: () => copyToClipboard(generatedContent?.data?.rubric),
     className: "min-h-11 text-xs flex items-center gap-1 bg-white text-slate-700 hover:text-indigo-700 border border-slate-400 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     title: t('scaffolds.rubric_copy_tooltip')
   }, /*#__PURE__*/React.createElement(Copy, {
     size: 12,
     "aria-hidden": "true"
-  }), " ", t('scaffolds.rubric_copy'))))), generatedContent?.data.rubric && /*#__PURE__*/React.createElement("div", {
+  }), " ", t('scaffolds.rubric_copy'))))), generatedContent?.data?.rubric && /*#__PURE__*/React.createElement("div", {
     className: `bg-white p-4 rounded-xl border border-slate-400 relative shadow-sm transition-all motion-reduce:transition-none ${rubricZoom ? 'text-[11px]' : ''}`
   }, /*#__PURE__*/React.createElement("style", null, rubricZoom ? `
                                     .rubric-container table th, .rubric-container table td { padding: 4px !important; line-height: 1.2 !important; }
@@ -483,14 +483,14 @@ function SentenceFramesView(props) {
                                     .rubric-container p { margin-bottom: 0.5em !important; }
                                 ` : ''), isEditingScaffolds ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('scaffolds.edit_rubric') || 'Edit rubric',
-    value: generatedContent?.data.rubric,
+    value: generatedContent?.data?.rubric,
     onChange: e => handleScaffoldTextChange('rubric', e.target.value),
     className: "w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600 focus:bg-slate-50 rounded p-2 focus:outline-none resize-y font-medium text-slate-700 transition-all motion-reduce:transition-none font-mono",
-    rows: getRows(generatedContent?.data.rubric),
+    rows: getRows(generatedContent?.data?.rubric),
     placeholder: t('scaffolds.rubric_placeholder')
   }) : /*#__PURE__*/React.createElement("div", {
     className: "rubric-container prose prose-sm max-w-none text-slate-700 leading-relaxed overflow-x-auto"
-  }, renderFormattedText(generatedContent?.data.rubric))), isTeacherMode && generatedContent?.data.rubric && /*#__PURE__*/React.createElement("div", {
+  }, renderFormattedText(generatedContent?.data?.rubric))), isTeacherMode && generatedContent?.data?.rubric && /*#__PURE__*/React.createElement("div", {
     className: "mt-6 bg-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "font-bold text-indigo-900 mb-3 flex items-center gap-2"

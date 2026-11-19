@@ -19230,7 +19230,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               );
             })(),
             // Bilingual translation line (click to hear)
-            homeLang !== 'en' && translation && el('div', {
+            homeLang !== 'en' && translation && el('button', {
+              type: 'button', className: 'gw-focusable', 'data-gw-npc-translation': 'true',
               onClick: function() {
                 // Through the app's current voice, in the home language; the player
                 // falls back to the browser voice itself when that is allowed.
@@ -19238,7 +19239,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 speakNpcLine(translation.dialogue, data, { language: LANG_NAMES[homeLang] || homeLang, force: true });
               },
               title: __alloT('stem.geometryworld.click_to_hear_translation_spoken_aloud', 'Click to hear translation spoken aloud'),
-              style: { fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic', borderLeft: '3px solid #fbbf24', paddingLeft: '8px', cursor: 'pointer' }
+              style: { display: 'block', width: '100%', textAlign: 'start', background: 'transparent', border: 'none', fontFamily: 'inherit', margin: '0 0 10px', padding: '0 0 0 8px', fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, fontStyle: 'italic', borderLeft: '3px solid #fbbf24', cursor: 'pointer' }
             }, '\uD83D\uDD0A ' + translation.dialogue),
             homeLang !== 'en' && !translation && npcIsTranslating && el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, '\u23F3 Translating...'),
             homeLang !== 'en' && !translation && !npcIsTranslating && ctx && ctx.aiHintsEnabled && callGemini && el('button', {
@@ -19577,10 +19578,17 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   + (lastWrong ? 'They just got this geometry question wrong: "' + (lastWrong.data.question || '') + '". ' : '')
                   + 'In 2-3 sentences: (1) validate their effort, (2) give a concrete GENERAL strategy for solving volume problems using blocks \u2014 do NOT solve this specific problem or state any numeric answer, (3) end with encouragement. '
                   + 'Use language a child would understand. Reference counting blocks, layers, or L\u00d7W\u00d7H.';
-                callGemini(coachPrompt, true).then(function(response) {
-                  if (addToast) addToast('\uD83C\uDF31 Coach: ' + response, 'info');
-                  if (eng && eng.logEvent) eng.logEvent('growth_nudge_coach', { response: response.substring(0, 100) });
-                });
+                // The dialog has already closed, so a failed or empty reply must
+                // still say something, or the student's request for help vanishes.
+                var coachFailed = function() {
+                  if (addToast) addToast(__alloT('stem.geometryworld.coach_unavailable', 'The coach could not answer right now. Try counting one layer of blocks, then multiply by the number of layers.'), 'info');
+                };
+                Promise.resolve().then(function() { return callGemini(coachPrompt, true); }).then(function(response) {
+                  var text = typeof response === 'string' ? response.trim() : '';
+                  if (!text) { coachFailed(); return; }
+                  if (addToast) addToast('\uD83C\uDF31 Coach: ' + text, 'info');
+                  if (eng && eng.logEvent) eng.logEvent('growth_nudge_coach', { response: text.substring(0, 100) });
+                }).catch(coachFailed);
               },
               style: { background: 'var(--allo-stem-panel, #1e293b)', color: '#a78bfa', border: '1px solid #7c3aed', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, 'Help me think \uD83E\uDDE0')
@@ -19609,7 +19617,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 peerWorldsList.map(function(world, wi) {
                   return el('div', {
                     key: wi,
+                    role: 'button', tabIndex: 0, className: 'gw-focusable', 'data-gw-peer-world': String(wi),
                     style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', cursor: 'pointer', transition: 'border-color 0.2s' },
+                    onKeyDown: function(ev) { if (ev.target !== ev.currentTarget || (ev.key !== 'Enter' && ev.key !== ' ')) return; ev.preventDefault(); ev.currentTarget.click(); },
                     onClick: function() {
                       var eng = window[engineKey];
                       if (!eng) return;

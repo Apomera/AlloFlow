@@ -695,6 +695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
 
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // The hub screen paints no ground, so its title, subtitle, section label
@@ -922,7 +923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           return h('button', {
             key: c.id, 'data-bikelab-card': c.id,
             onClick: function() { goto(c.id); },
-            'aria-label': c.title + (mastered[c.id] ? ' (mastered)' : visited ? ' (explored)' : ''),
+            'aria-label': (mastered[c.id] ? __alloAriaFill(__alloT('stem.bikelab.a11y_mastered', '{title} (mastered)'), { title: c.title }) : (visited ? __alloAriaFill(__alloT('stem.bikelab.a11y_explored', '{title} (explored)'), { title: c.title }) : c.title + '')),
             className: 'relative text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 ' + (visited ? 'border-emerald-600' : 'border-slate-200') + ' hover:border-slate-400 overflow-hidden group focus:outline-none focus:ring-4 ' + c.ring
           },
             visited && h('span', {
@@ -993,7 +994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     var done = mastered[id], seen = !!badges[id];
                     return h('button', { key: id, type: 'button', 'data-bikelab-path-step': id,
                       onClick: function() { goto(id); },
-                      'aria-label': c.title + (done ? ' (mastered)' : seen ? ' (explored)' : ''),
+                      'aria-label': (done ? __alloAriaFill(__alloT('stem.bikelab.a11y_mastered', '{title} (mastered)'), { title: c.title }) : (seen ? __alloAriaFill(__alloT('stem.bikelab.a11y_explored', '{title} (explored)'), { title: c.title }) : c.title + '')),
                       className: 'px-3 py-2 rounded-lg border-2 text-sm font-bold ' + (done ? 'border-amber-500 bg-amber-50 text-amber-900' : seen ? 'border-emerald-600 bg-emerald-50 text-emerald-900' : 'border-slate-300 bg-white text-slate-800 hover:border-slate-500')
                     }, h('span', { 'aria-hidden': 'true' }, c.icon + ' '), c.title, done ? ' ★' : seen ? ' ✓' : '');
                   }));
@@ -2331,7 +2332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   )
                 ),
                 h('div', { 'data-gear-drivetrain': chainringT + 'x' + cogT, className: 'mt-4 pt-3 border-t border-white/30' },
-                  h('svg', { viewBox: '0 0 440 222', className: 'w-full h-auto', role: 'img', 'aria-label': 'Drivetrain picture. A ' + chainringT + '-tooth chainring at the pedals drives a ' + cogT + '-tooth cog on the back wheel. One turn of the pedals turns the wheel ' + ratio.toFixed(2) + ' times.' },
+                  h('svg', { viewBox: '0 0 440 222', className: 'w-full h-auto', role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_drivetrain_picture_a_tooth_chainring_at_the_pedals_drives', 'Drivetrain picture. A {chainringT}-tooth chainring at the pedals drives a {cogT}-tooth cog on the back wheel. One turn of the pedals turns the wheel {ratio} times.'), { chainringT: chainringT, cogT: cogT, ratio: ratio.toFixed(2) }) },
                     // back wheel and its cog turn together
                     h('g', { ref: wheelRef },
                       h('circle', { cx: DT.wx, cy: DT.y, r: 88, fill: 'none', stroke: '#1e1b4b', strokeWidth: 10 }),
@@ -2402,7 +2403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         h('span', { 'aria-hidden': 'true', className: 'flex-1 min-w-24 h-4 bg-slate-100 rounded overflow-hidden border border-slate-300' },
                           h('span', { className: 'block h-full ' + (isBest ? 'bg-emerald-600' : 'bg-slate-500'), style: { width: Math.round(100 * g.mph / gcTopMph) + '%' } })),
                         h('span', { className: 'text-sm font-mono text-slate-800' }, g.v > 0 ? g.mph.toFixed(1) + ' mph · ' + g.rpm + ' rpm · ' + g.feel : 'stalls · ' + g.feel),
-                        h('button', { type: 'button', onClick: function() { showGearOnPicture(g); }, 'aria-label': 'Show the ' + g.label.toLowerCase() + ' on the drivetrain picture', className: 'px-2 rounded border border-slate-400 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100' }, 'Show it'));
+                        h('button', { type: 'button', onClick: function() { showGearOnPicture(g); }, 'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_show_the_on_the_drivetrain_picture', 'Show the {label} on the drivetrain picture'), { label: g.label.toLowerCase() }), className: 'px-2 rounded border border-slate-400 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100' }, 'Show it'));
                     })),
                   h('p', { className: 'mt-2' }, gearCh.why)) : null)),
             // Full gearing MATRIX — every chainring × cog at once, as gear inches (the classic
@@ -2436,7 +2437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                             return h('td', { key: j, className: 'p-0 text-center font-mono' },
                               h('button', {
                                 type: 'button',
-                                'aria-label': 'Select ' + ct + '-tooth chainring and ' + cg + '-tooth cog, ' + Math.round(gi) + ' gear inches',
+                                'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_select_tooth_chainring_and_tooth_cog_gear_inches', 'Select {ct}-tooth chainring and {cg}-tooth cog, {gi} gear inches'), { ct: ct, cg: cg, gi: Math.round(gi) }),
                                 'aria-pressed': isCur ? 'true' : 'false',
                                 onClick: function() { setRingIdx(i); setCogIdx(j); },
                                 className: 'w-full min-h-6 p-1 text-center font-mono cursor-pointer focus:outline-none focus:ring-2 focus:ring-inset focus:ring-violet-600 ' + (isCur ? 'ring-2 ring-violet-600 font-black text-slate-900' : 'text-slate-700 hover:opacity-80'),
@@ -2643,7 +2644,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('section', { 'data-bikelab-repair-check': job.id, 'aria-labelledby': 'bikelab-repair-check-q', className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800' }, 'Last step: one question'),
                 h('h3', { id: 'bikelab-repair-check-q', className: 'text-lg font-black text-slate-800 mt-1' }, chk.q),
-                h('div', { role: 'group', 'aria-label': 'Answers', className: 'mt-3 space-y-2' },
+                h('div', { role: 'group', 'aria-label': __alloT('stem.bikelab.a11y_answers', 'Answers'), className: 'mt-3 space-y-2' },
                   shown.map(function(opt, i) {
                     var on = checkPick === i;
                     return h('button', { key: i, type: 'button', 'aria-pressed': on, disabled: !!(picked && picked.right),
@@ -2723,7 +2724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     draggable: true,
                     role: 'button',
                     tabIndex: 0,
-                    'aria-label': 'Use ' + t.replace(/-/g, ' ') + ' tool',
+                    'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_use_tool', 'Use {value1} tool'), { value1: t.replace(/-/g, ' ') }),
                     onDragStart: function() { setDragged(t); },
                     onDragEnd: function() { setDragged(null); },
                     onClick: function() { handleDrop(t); },
@@ -2879,7 +2880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('circle', { cx: X(c), cy: Y(c), r: 4, fill: '#e0f2fe' }));
           };
           var kneeColor = M.verdict === 'ok' ? '#86efac' : M.verdict === 'unreachable' ? '#fda4af' : '#fde047';
-          return h('svg', { role: 'img', 'aria-label': 'Bike fit diagram showing saddle height ' + (saddleHeight + saddleOffset).toFixed(1) + ' centimeters, reach ' + reachCm.toFixed(1) + ' centimeters, saddle setback ' + setback + ' centimeters, and handlebar drop ' + drop + ' centimeters. A rider sits on the bike with one foot at the bottom of the pedal stroke. ' + verdictText, viewBox: '0 0 420 260', className: 'w-full h-auto', 'data-fit-verdict': M.verdict },
+          return h('svg', { role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_bike_fit_diagram_showing_saddle_height_centimeters_reach', 'Bike fit diagram showing saddle height {value1} centimeters, reach {reachCm} centimeters, saddle setback {setback} centimeters, and handlebar drop {drop} centimeters. A rider sits on the bike with one foot at the bottom of the pedal stroke. {verdictText}'), { value1: (saddleHeight + saddleOffset).toFixed(1), reachCm: reachCm.toFixed(1), setback: setback, drop: drop, verdictText: verdictText }), viewBox: '0 0 420 260', className: 'w-full h-auto', 'data-fit-verdict': M.verdict },
             h('line', { x1: 14, y1: 247, x2: 406, y2: 247, stroke: '#bae6fd', strokeWidth: 2, strokeLinecap: 'round' }),
             wheel(rear, 'rw'), wheel(front, 'fw'),
             // frame
@@ -3412,7 +3413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
 
         function signalSvg(kind) {
           var signalLabels = { left_straight: 'Left arm straight out to the side', left_up: 'Left arm out and bent up at the elbow', left_down: 'Left arm out and bent down at the elbow', right_straight: 'Right arm straight out to the side', both_out: 'Both arms straight out to the sides' };
-          return h('div', { role: 'img', 'aria-label': signalLabels[kind] || 'Rider seen from behind' }, armPoseSvg(kind));
+          return h('div', { role: 'img', 'aria-label': signalLabels[kind] || __alloT('stem.bikelab.a11y_rider_seen_from_behind', 'Rider seen from behind') }, armPoseSvg(kind));
         }
 
         if (showResults) {
@@ -3898,7 +3899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3 flex flex-col' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.brake_space', 'Brake (Space)')),
                 h('button', {
-                  'aria-label': braking ? 'Brake engaged. Release Space to stop braking.' : 'Brake. Hold Space or click to brake.',
+                  'aria-label': braking ? __alloT('stem.bikelab.a11y_brake_engaged_release_space_to_stop_braking', 'Brake engaged. Release Space to stop braking.') : __alloT('stem.bikelab.a11y_brake_hold_space_or_click_to_brake', 'Brake. Hold Space or click to brake.'),
                   'aria-pressed': braking,
                   onMouseDown: function() { setBraking(true); },
                   onMouseUp: function() { setBraking(false); },
@@ -4061,6 +4062,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         // ── 3D model. Optional: the 2D diagram is the default, and the part buttons work in both views.
         var view3dState = useState(false), view3d = view3dState[0], setView3d = view3dState[1];
         var threeStatusState = useState('idle'), threeStatus = threeStatusState[0], setThreeStatus = threeStatusState[1];
+        // 'lost' = the context died after start; Restart bumps glGen to rebuild on a fresh canvas.
+        var glGenState = useState(0), glGen = glGenState[0], setGlGen = glGenState[1];
+        var glRestartRef = useRef(null);
+        useEffect(function() { if (threeStatus === 'lost' && glRestartRef.current) glRestartRef.current.focus({ preventScroll: true }); }, [threeStatus]);
         var explodeState = useState(0), explode = explodeState[0], setExplode = explodeState[1];
         var mountRef = useRef(null), hoverRef = useRef(null), sceneRef = useRef(null), pickRef = useRef(null);
         pickRef.current = {
@@ -4124,6 +4129,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               drag = null; canvas.style.cursor = 'grab';
             };
             var onLeave = function() { if (!drag) showHover(null); };
+            // A lost context (GPU reset, low memory) left a black box: stop, run the
+            // cleanup below once, and show the paused panel.
+            canvas.addEventListener('webglcontextlost', function(ev) {
+              if (!canvas.isConnected) return;
+              ev.preventDefault();
+              if (canvas._bikelabTearingDown || dead) return;
+              if (S.raf) { cancelAnimationFrame(S.raf); S.raf = 0; }
+              setTimeout(function() {
+                if (dead) return;
+                var c = cleanup; cleanup = null; sceneRef.current = null;
+                if (c) c();
+                setThreeStatus('lost');
+              }, 0);
+            });
             canvas.addEventListener('pointerdown', onDown); canvas.addEventListener('pointermove', onMove);
             canvas.addEventListener('pointerup', onUp); canvas.addEventListener('pointercancel', onUp); canvas.addEventListener('pointerleave', onLeave);
             var ro = null;
@@ -4149,13 +4168,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               canvas.removeEventListener('pointerdown', onDown); canvas.removeEventListener('pointermove', onMove);
               canvas.removeEventListener('pointerup', onUp); canvas.removeEventListener('pointercancel', onUp); canvas.removeEventListener('pointerleave', onLeave);
               scene.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-              renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
+              canvas._bikelabTearingDown = true; // our own loss must not raise the paused panel
+              renderer.dispose(); try { var gl = renderer.getContext(); if (!gl.isContextLost()) renderer.forceContextLoss(); } catch (e) {}
               if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
             };
             setThreeStatus('ready');
           }).catch(function() { if (!dead) setThreeStatus('error'); });
           return function() { dead = true; if (cleanup) cleanup(); sceneRef.current = null; };
-        }, [view3d]);
+        }, [view3d, glGen]);
         useEffect(function() { if (threeStatus === 'ready' && sceneRef.current) sceneRef.current.select(selectedId); }, [selectedId, threeStatus]);
         useEffect(function() { if (threeStatus === 'ready' && sceneRef.current) sceneRef.current.explode(explode / 100); }, [explode, threeStatus]);
         var cam = function(fn) { return function() { if (sceneRef.current) fn(sceneRef.current); }; };
@@ -4186,7 +4206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     })
                   )
                 ),
-                h('svg', { role: 'img', 'aria-label': 'Bicycle parts diagram. Selected part: ' + selected.name + '. Use the Parts by category buttons to select a part.', viewBox: '0 0 500 300', className: 'w-full h-auto', style: { maxHeight: '420px', display: view3d ? 'none' : 'block' } },
+                h('svg', { role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_bicycle_parts_diagram_selected_part_use_the_parts_by', 'Bicycle parts diagram. Selected part: {name}. Use the Parts by category buttons to select a part.'), { name: selected.name }), viewBox: '0 0 500 300', className: 'w-full h-auto', style: { maxHeight: '420px', display: view3d ? 'none' : 'block' } },
                  // Mirrored, so the bike faces right and the chain is on its right-hand side, as on a real bike.
                  h('g', { transform: 'matrix(-1 0 0 1 500 0)' },
                   // ground
@@ -4247,13 +4267,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                  )
                 ),
                 view3d && h('div', { 'data-bikelab-3d': threeStatus },
-                  h('div', { ref: mountRef, role: 'img', 'aria-label': '3D model of a bicycle. Selected part: ' + selected.name + '. Use the Parts by category buttons to select a part, and the buttons under the model to turn it.', className: 'relative w-full rounded-lg overflow-hidden', style: { background: 'linear-gradient(#f8fafc, #e2e8f0)', minHeight: '160px' } },
+                  h('div', { ref: mountRef, role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.bikelab.a11y_3d_model_of_a_bicycle_selected_part_use_the', '3D model of a bicycle. Selected part: {name}. Use the Parts by category buttons to select a part, and the buttons under the model to turn it.'), { name: selected.name }), className: 'relative w-full rounded-lg overflow-hidden', style: { background: 'linear-gradient(#f8fafc, #e2e8f0)', minHeight: '160px' } },
                     h('div', { ref: hoverRef, 'aria-hidden': 'true', className: 'absolute top-2 left-2 px-2 py-1 rounded bg-slate-900 text-white text-xs font-bold', style: { display: 'none', pointerEvents: 'none', zIndex: 2 } })
                   ),
                   threeStatus === 'loading' && h('p', { role: 'status', className: 'text-sm text-slate-700 mt-2' }, 'Loading the 3D model…'),
                   threeStatus === 'error' && h('div', { role: 'alert', className: 'text-sm text-slate-800 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-300' },
                     'The 3D model could not start on this device. The diagram shows the same parts. ',
                     h('button', { type: 'button', onClick: function() { setView3d(false); }, className: 'underline font-bold text-indigo-800' }, 'Back to the diagram')),
+                  threeStatus === 'lost' && h('div', { role: 'alert', 'data-bikelab-gl-lost': 'true', className: 'text-sm text-slate-800 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-300' },
+                    h('h3', { className: 'font-bold' }, __alloT('stem.bikelab.webgl_lost_title', '3D view paused')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.bikelab.webgl_lost_body', 'This device ran low on graphics memory, so the 3D view stopped. Your work is saved.')
+                      + ' ' + __alloT('stem.bikelab.webgl_lost_diagram', 'The diagram shows the same parts.')),
+                    h('div', { className: 'flex flex-wrap gap-2 mt-2' },
+                      h('button', { type: 'button', ref: glRestartRef, 'data-bikelab-gl-restart': 'true',
+                        onClick: function() {
+                          setGlGen(function(n) { return n + 1; });
+                          setTimeout(function() { var b = document.querySelector('[data-bikelab-parts-view="3d"]'); if (b) b.focus({ preventScroll: true }); }, 0);
+                        },
+                        className: 'px-3 py-2 rounded-lg border-2 border-indigo-700 bg-indigo-600 text-white text-sm font-bold' }, __alloT('stem.bikelab.webgl_lost_restart', 'Restart 3D view')),
+                      h('button', { type: 'button', onClick: function() { setView3d(false); }, className: 'px-3 py-2 underline font-bold text-indigo-800' }, __alloT('stem.bikelab.webgl_lost_back', 'Back to the diagram')))),
                   threeStatus === 'ready' && h('div', { className: 'mt-3 space-y-2' },
                     h('p', { className: 'text-sm text-slate-700' }, 'Drag the bike to turn it. Click a part to read about it.'),
                     h('div', { className: 'flex flex-wrap gap-2' },
@@ -4366,7 +4398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var dark = '#1e293b', bad = '#dc2626', skin = '#fed7aa', skinLine = '#9a6c4a';
         var sideColor = plain || ok.strap ? dark : bad, chinColor = plain || ok.chin ? dark : bad;
         var shellColor = plain || (ok.tilt && ok.snug) ? '#ec4899' : '#f59e0b';
-        return h('svg', { viewBox: '0 0 240 260', className: o.className || 'w-full h-64 mx-auto', role: 'img', 'aria-label': o.label || 'Rider with a helmet, seen from the side' },
+        return h('svg', { viewBox: '0 0 240 260', className: o.className || 'w-full h-64 mx-auto', role: 'img', 'aria-label': o.label || __alloT('stem.bikelab.a11y_rider_with_a_helmet_seen_from_the_side', 'Rider with a helmet, seen from the side') },
           h('rect', { x: 0, y: 0, width: 240, height: 260, fill: '#f8fafc' }),
           h('path', { d: 'M 34 260 Q 52 224 110 218 Q 172 222 198 260 Z', fill: '#cbd5e1' }),
           h('rect', { x: 94, y: 180, width: 38, height: 46, fill: skin }),

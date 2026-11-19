@@ -63,43 +63,11 @@ function bridge() {
 }
 
 describe('discoverable glossary reading settings', () => {
-  it('opens the existing localized settings panel from the visible word-list toolbar and restores focus', () => {
-    const api = bridge();
-    const { container } = mount([row], { t: key => key === 'reading_settings.title' ? 'Ajustes de lectura' : key });
-    const button = container.querySelector('[data-glossary-compact-toolbar] [data-reading-settings-button]');
-    expect(button.textContent).toBe('AaAjustes de lectura');
-    expect(button.getAttribute('aria-label')).toBe('Ajustes de lectura');
-    expect(button.closest('[hidden]')).toBeNull();
-    click(button);
-    let panel = document.querySelector('[data-allo-reading-settings]');
-    expect(panel.textContent).toContain('Ajustes de lectura');
-    const font = panel.querySelector('select');
-    act(() => { font.value = 'opendyslexic'; font.dispatchEvent(new Event('change', { bubbles: true })); });
-    expect(api.set).toHaveBeenLastCalledWith(expect.objectContaining({ fontId: 'opendyslexic' }));
-    act(() => font.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
-    expect(document.querySelector('[data-allo-reading-settings]')).toBeNull();
-    expect(document.activeElement).toBe(button);
-    click(button);
-    panel = document.querySelector('[data-allo-reading-settings]');
-    expect(panel.querySelector('select').value).toBe('opendyslexic');
-  });
-
-  it('uses the same settings in student mode and remains absent without the host bridge', () => {
+  // The header toolbar stays visible above the word list, so the list carries no copy of it.
+  it('the word-list page has no Aa button of its own, in teacher or student mode', () => {
+    bridge();
     expect(mount([row]).container.querySelector('[data-reading-settings-button]')).toBeNull();
-    bridge();
-    const { container } = mount([row], { isTeacherMode: false });
-    expect(container.querySelector('[data-glossary-compact-toolbar] [data-reading-settings-button]')).toBeTruthy();
-  });
-
-  it('reveals the settings entry when the host publishes its bridge after the glossary mounts', () => {
-    const { container } = mount([row]);
-    expect(container.querySelector('[data-reading-settings-button]')).toBeNull();
-    bridge();
-    act(() => window.dispatchEvent(new CustomEvent('alloflow:reading-settings-changed')));
-    const button = container.querySelector('[data-glossary-compact-toolbar] [data-reading-settings-button]');
-    expect(button).toBeTruthy();
-    click(button);
-    expect(document.querySelector('[data-allo-reading-settings]')).toBeTruthy();
+    expect(mount([row], { isTeacherMode: false }).container.querySelector('[data-reading-settings-button]')).toBeNull();
   });
 
   it('handles a late bridge inside an already-open card deck and removes its event listener on unmount', () => {
@@ -301,10 +269,7 @@ describe('localized language display names preserve saved identities', () => {
   it('keeps selected reading styles when entering cards and changing deck and interface languages', () => {
     const api = bridge();
     const { container, render } = mount([taggedRow], { displayLanguages: languages });
-    click(container.querySelector('[data-glossary-compact-toolbar] [data-reading-settings-button]'));
-    const font = document.querySelector('[data-allo-reading-settings] select');
-    act(() => { font.value = 'opendyslexic'; font.dispatchEvent(new Event('change', { bubbles: true })); });
-    act(() => font.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    act(() => api.set({ fontId: 'opendyslexic' })); // chosen in the header toolbar
     render({ isInteractiveFlashcards: true, flashcardMode: 'language', flashcardLang: 'zh-Hant-TW', currentUiLanguage: 'French' });
     click(container.querySelector('[data-flashcard-header] [data-reading-settings-button]'));
     expect(document.querySelector('[data-allo-reading-settings] select').value).toBe('opendyslexic');

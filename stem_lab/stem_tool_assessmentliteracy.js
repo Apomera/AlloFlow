@@ -6894,12 +6894,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // ═══════════════════════════════════════════════════════════════
   // SECTION 1D: HIRING METHODS BEYOND PERSONALITY/COGNITIVE TESTS
   // ═══════════════════════════════════════════════════════════════
-  // Meta-analytic validity coefficients primarily from Schmidt & Hunter 1998
-  // (and subsequent updates) — predicting supervisor-rated job performance.
+  // Validity (r with supervisor-rated job performance). rSource '2022' = Sackett,
+  // Zhang, Berry & Lievens (2022) revision; 'older' = pre-2022 figure kept unrevised.
   var HIRING_METHODS = [
     {
       name: 'Structured Behavioral Interview',
-      r: 0.51,
+      r: 0.42, rSource: '2022',
       how: 'Same questions in same order across candidates, scored against pre-defined rubric. Most use STAR format: Situation → Task → Action → Result. Strong variant: competency-based interview where questions map to named job competencies, scored by trained raters.',
       strategy: 'Prepare 5-7 STAR stories spanning leadership, conflict, failure, ambiguity, initiative, teamwork. Always quantify the Result with a concrete metric ("reduced ticket backlog 30%", "led team of 4 through migration in 6 weeks"). Don\'t rush Situation — 20% of your time setting context lets Action and Result land. If asked a hypothetical ("how would you..."), pivot to a behavioral example ("here\'s a time when I did...") when you have one.',
       ethics: 'Structured > unstructured reduces bias and disparate impact. Same questions means disabled/neurodivergent candidates aren\'t penalized for a social-cue mismatch that wouldn\'t affect job performance.',
@@ -6907,7 +6907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     },
     {
       name: 'Work Sample Test',
-      r: 0.54,
+      r: 0.33, rSource: '2022',
       how: 'Candidate performs a job-relevant task under conditions similar to actual work. Coding test for devs, written case for consultants, teaching demo for teachers, portfolio review for designers, in-basket exercise for managers. Can be timed or take-home.',
       strategy: 'Treat as actual work, not a test. Ask clarifying questions (real work has ambiguity — showing you ask the right ones IS the signal). Show your work and narrate trade-offs: "I considered X and Y, chose X because of Z, the weakness of X is W." Partial-correct with visible reasoning usually beats a complete black-box submission. Time management matters — better to submit 70% done with quality than rush to 100% with bugs.',
       ethics: 'Most directly measures the thing you\'re hiring for. Unpaid long take-homes are increasingly contested — candidates spending 10+ unpaid hours on a work sample is borderline exploitative. If the take-home is reasonable (2-4 hours), fair; beyond that, push back or decline.',
@@ -6915,23 +6915,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     },
     {
       name: 'Situational Judgment Test (SJT)',
-      r: 0.34,
+      r: 0.34, rSource: 'older',
       how: 'Text or video scenario depicting a workplace situation; candidate picks the best (and sometimes worst) response from 3-5 options. Usually measures interpersonal judgment, team dynamics, customer service, ethical decision-making. Online, fast, cheap — growing in use.',
       strategy: 'Ask yourself: what does the EMPLOYER want me to do in this role? Not what you\'d personally do. Read carefully — often multiple answers are "not wrong," but only one is "best fit for this organization\'s culture and priorities." If the job description emphasizes customer service, lean toward customer-first answers. If emphasized teamwork, lean toward collaborative.',
       ethics: 'Can encode cultural bias — "best response" may reflect majority-culture workplace norms. Some SJTs ask candidates to identify "problem" behaviors that are actually neurodivergent communication styles.',
       legal: 'Generally defensible if content-validated. Disparate impact analyses should be run during development.'
     },
     {
-      name: 'AI-Scored Video Interview (HireVue, Pymetrics, others)',
+      name: 'AI-Scored Video Interview (e.g., HireVue)',
       r: 'Contested — vendor claims r=0.30-0.45; independent replication limited',
-      how: 'Candidate records video responses to standardized prompts on their own device. AI scores facial expression, voice tonality, word choice, speech pace. Output: ranking vs. other candidates or pass/fail threshold. Pre-screens hundreds of applicants before human review.',
-      strategy: 'Technical: bright even lighting (face the window), still neutral background, professional attire head-to-toe (stand up for some questions — AI may note it), look at CAMERA not screen, speak clearly at moderate pace. Content: repeat question in your answer (helps transcription), use full time allotted (don\'t end at 30s if given 2 min), smile appropriately but don\'t over-perform. Practice with your phone camera beforehand — the first time you record yourself should not be the real attempt.',
-      ethics: 'Major concerns. (1) Facial expression analysis has known bias against autistic candidates (flagged "less engaged"), candidates of color (differential error rates), candidates with facial differences or visible disabilities. (2) Voice analysis disadvantages non-native English speakers, stutterers, deaf candidates with cochlear implants. (3) Algorithmic opacity — candidates often can\'t know why they were rejected. Electronic Privacy Information Center (EPIC) filed an FTC complaint against HireVue in 2019.',
-      legal: 'Fast-moving regulation. Illinois AI Video Interview Act (2020): notice + consent + deletion rights. NYC Local Law 144 (2023): bias audits required for automated employment decision tools. Maryland HB 1202 (2020): consent required for facial recognition in hiring. EEOC May 2022 guidance: employer liable for disparate impact of algorithmic tools. If you\'re screened by one of these and rejected, you may have discovery rights depending on jurisdiction.'
+      how: 'As of 2025 (vendors and rules change, so check the specific tool): the candidate records video responses to standardized prompts on their own device, and software scores the answers, mainly from the transcribed words. Some earlier systems also scored facial expression and voice; HireVue, a major vendor, said it stopped using facial analysis in early 2021. Pymetrics, often mentioned alongside these, is a set of online games, not a video interview. Output: ranking vs. other candidates or a pass/fail threshold, often before any human review. You can ask the employer what the tool scores.',
+      strategy: 'Technical: bright even lighting (face the window), still neutral background, look at CAMERA not screen, speak clearly at moderate pace. Content: repeat question in your answer (helps transcription), use full time allotted (don\'t end at 30s if given 2 min), smile appropriately but don\'t over-perform. Practice with your phone camera beforehand — the first time you record yourself should not be the real attempt.',
+      ethics: 'Major concerns. (1) Where facial expression analysis is used, it raises serious bias concerns for autistic candidates (who may be flagged "less engaged"), candidates of color (differential error rates), and candidates with facial differences or visible disabilities. (2) Voice and speech analysis can disadvantage non-native English speakers, stutterers, deaf candidates with cochlear implants. (3) Algorithmic opacity — candidates often can\'t know why they were rejected. Electronic Privacy Information Center (EPIC) filed an FTC complaint against HireVue in 2019.',
+      legal: 'Fast-moving regulation. Illinois AI Video Interview Act (2020): notice + consent + deletion rights. NYC Local Law 144 (2023): bias audits required for automated employment decision tools. Maryland HB 1202 (2020): consent required for facial recognition in hiring. The EEOC issued guidance on algorithmic hiring tools in 2022, but federal AI hiring guidance has changed since, so check the current federal, state and local rules. Under long-standing disparate-impact law, employers can still be responsible for tools that screen out protected groups. If you\'re screened by one of these and rejected, you may have discovery rights depending on jurisdiction.'
     },
     {
       name: 'Reference Checks',
-      r: 0.26,
+      r: 0.26, rSource: 'older',
       how: 'Employer contacts listed references (typically 2-3 former managers or colleagues) for behavioral/performance info. Sometimes structured questionnaire, often unstructured conversation. Newer services (Checkster, SkillSurvey) use standardized online rating forms.',
       strategy: 'Pick references who will speak specifically and positively. Prep them in advance: share the job description, remind them of relevant projects/accomplishments, tell them what themes to emphasize. A great reference says "they led X project and delivered Y specific outcome" — not "they\'re great to work with." Three prepped references beats five unprepped. Know your rights under FCRA for formal third-party background checks: notification, consent, copy of report on request, dispute process for inaccuracies.',
       ethics: 'Reference-caller bias is real — same behavior described in racialized or gendered language gets different ratings. Structured online ratings reduce this somewhat.',
@@ -6939,7 +6939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     },
     {
       name: 'Assessment Center',
-      r: 0.37,
+      r: 0.37, rSource: 'older',
       how: 'Multi-method, multi-day evaluation combining in-basket exercises, group discussions, role plays, presentations, interviews — usually for mid-to-senior hires and high-potential development. Candidates scored on dimensions (leadership, strategic thinking, influence) by trained assessors across exercises.',
       strategy: 'Longer engagement means they\'re watching everything, including how you handle downtime, meals, and the waiting room. Treat every interaction as part of the eval. Don\'t try to be a different person for 1-3 days — assessors compare notes and will catch the inconsistency. Work visibly in group exercises: contribute ideas, ask others their view, summarize where the group is. Don\'t dominate; don\'t disappear.',
       ethics: 'Higher-quality method than most single tools but expensive — so tends to be used for roles with higher stakes. When done well, reduces demographic disparate impact vs. single cognitive tests.',
@@ -6947,10 +6947,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     },
     {
       name: 'General Cognitive Ability (GCA) Tests',
-      r: 0.51,
+      r: 0.31, rSource: '2022',
       how: 'Wonderlic, CCAT, PI Cognitive, CogniFit, Berke — fast timed measures of general reasoning ability. See the employer test primers in the main Test Primers section for specifics.',
       strategy: 'Practice. Cognitive tests are speeded, so familiarity with item types (logical series, vocabulary, arithmetic, spatial, verbal analogies) directly lowers test anxiety and raises score. Free practice versions exist for Wonderlic, CCAT, and PI. Spend 2-3 practice sessions before test day. Request accommodations (extended time) if you have a qualifying disability — legal under ADA with proper documentation.',
-      ethics: 'GCA tests are genuinely validity-high for job performance but produce adverse impact against some demographic groups — employers who use them need validation evidence for the specific role. Don\'t use them for roles that don\'t require the cognitive load.',
+      ethics: 'GCA tests do predict job performance, though more modestly than the older estimate (.51) suggested, and they produce adverse impact against some demographic groups — employers who use them need validation evidence for the specific role. Don\'t use them for roles that don\'t require the cognitive load.',
       legal: 'Well-litigated. Griggs v. Duke Power (1971) established disparate-impact standard. Uniform Guidelines (1978) require validation evidence.'
     }
   ];
@@ -7131,7 +7131,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       { cite: 'Schwartz, S. H. (2012). An overview of the Schwartz theory of basic values. Online Readings in Psychology and Culture, 2(1).', note: 'Open-access overview of Schwartz values theory with the 10-value circumplex.' }
     ],
     employer: [
-      { cite: 'Schmidt, F. L., & Hunter, J. E. (1998). The validity and utility of selection methods in personnel psychology: Practical and theoretical implications of 85 years of research findings. Psychological Bulletin, 124(2), 262-274.', note: 'The meta-analysis that anchors the hiring-methods validity rankings in this tool.' },
+      { cite: 'Schmidt, F. L., & Hunter, J. E. (1998). The validity and utility of selection methods in personnel psychology: Practical and theoretical implications of 85 years of research findings. Psychological Bulletin, 124(2), 262-274.', note: 'The classic meta-analysis behind the older validity figures; several were revised downward in 2022 (next entry).' },
+      { cite: 'Sackett, P. R., Zhang, C., Berry, C. M., & Lievens, F. (2022). Revisiting meta-analytic estimates of validity in personnel selection: Addressing systematic overcorrection for restriction of range. Journal of Applied Psychology, 107(11), 2040-2068.', note: 'The current best estimates used for the updated rows of the hiring-methods ranking in this tool.' },
       { cite: 'Barrick, M. R., & Mount, M. K. (1991). The Big Five personality dimensions and job performance: A meta-analysis. Personnel Psychology, 44(1), 1-26.', note: 'Classic meta-analysis showing Conscientiousness as the trait predictor of performance.' },
       { cite: 'Uniform Guidelines on Employee Selection Procedures, 29 C.F.R. § 1607 (1978).', note: 'EEOC regulations on selection validity and disparate impact.' },
       { cite: 'Karraker v. Rent-A-Center, Inc., 411 F.3d 831 (7th Cir. 2005).', note: 'Ruling that MMPI use in employment decisions constituted ADA "medical examination."' },
@@ -7154,7 +7155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       { cite: 'O*NET Online — onetonline.org', note: 'Free occupation database with interest profiles, work values, skills, education requirements.' },
       { cite: 'Council of Parent Attorneys and Advocates (COPAA) — copaa.org', note: 'Directory of special ed advocates and attorneys.' },
       { cite: 'National Association for Gifted Children (NAGC) — nagc.org', note: '2E position paper and resources for families and teachers.' },
-      { cite: 'EEOC Guidance on Algorithmic Hiring Tools (May 2022) — eeoc.gov', note: 'Current federal guidance on automated decision tools in employment.' },
+      { cite: 'EEOC Guidance on Algorithmic Hiring Tools (May 2022) — eeoc.gov', note: 'Federal guidance as of 2022; federal AI hiring guidance has changed since, so check eeoc.gov and your state for current rules.' },
       { cite: 'U.S. Department of Education Office for Civil Rights (OCR) — ed.gov/ocr', note: 'Complaint filing and enforcement for disability discrimination in education.' },
       { cite: 'National Center on Intensive Intervention (NCII) — intensiveintervention.org', note: 'Evidence-based Tier 3 intervention resources for MTSS/RTI.' }
     ]
@@ -7167,11 +7168,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     {
       id: 'video',
       name: 'AI-Scored Video Interviews',
-      examples: 'HireVue, Pymetrics (game-based), Harver, Modern Hire, Sonru',
-      what: 'Candidate records responses on own device. AI scores facial expression, voice tone, word choice, speech pace. Outputs ranking or pass/fail before human review.',
-      concerns: 'Facial analysis bias against autistic candidates, candidates of color, candidates with facial differences. Voice analysis bias against non-native speakers, stutterers, deaf candidates. Algorithmic opacity — candidates often don\'t know why they were rejected.',
+      examples: 'HireVue, Harver, Modern Hire, Sonru (Pymetrics, often listed with these, is game-based rather than video). As of 2025; vendors and rules change.',
+      what: 'Candidate records responses on own device. Software scores the answers, mainly from the transcribed words; some earlier systems also scored facial expression and voice (HireVue said it dropped facial analysis in early 2021). Outputs ranking or pass/fail before human review.',
+      concerns: 'Where facial analysis is used: bias concerns for autistic candidates, candidates of color, candidates with facial differences. Voice and speech analysis: bias against non-native speakers, stutterers, deaf candidates. Algorithmic opacity — candidates often don\'t know why they were rejected.',
       strategy: 'Know when it\'s being used (ask recruiter). Technical: bright lighting, still background, look at camera. Content: repeat question, use full time, speak clearly. Request human review or alternative format if disability-based concern. See the "Beyond Personality: Hiring Methods" sub-view for full strategy.',
-      legal: 'Illinois AI Video Interview Act 2020 (notice + consent + deletion); NYC Local Law 144 (2023) mandatory bias audits; Maryland HB 1202 facial recognition consent; EEOC May 2022 guidance on disparate impact.'
+      legal: 'Illinois AI Video Interview Act 2020 (notice + consent + deletion); NYC Local Law 144 (2023) mandatory bias audits; Maryland HB 1202 facial recognition consent; EEOC 2022 guidance on disparate impact (federal AI hiring guidance has changed since; check current rules).'
     },
     {
       id: 'ats',
@@ -7180,7 +7181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       what: 'Applicant Tracking Systems parse resume, extract skills/experience, score against job description, rank candidates. Modern systems use AI (including LLMs) for semantic matching beyond keyword counting. Most widely used AI in hiring by volume.',
       concerns: 'Non-traditional career paths get penalized (career breaks, freelance, military transition). Word-choice bias (resumes of women use more qualifiers that some AIs penalize). Names can signal demographic info even when redacted elsewhere. Overfitting to incumbents — AIs trained on "successful hire" data reproduce existing demographic patterns.',
       strategy: 'ATS-friendly formatting: single column, standard headings (Experience, Education, Skills), no tables or graphics, submit .docx or text-layer PDF not image. Include job-description keywords naturally throughout (not stuffed). Action verbs + quantified results. DO NOT use invisible white text or keyword stuffing — modern AIs flag this. Tailor each application.',
-      legal: 'Falls under the same Uniform Guidelines (1978) disparate impact framework as any selection tool, but enforcement is hard because employer claims of "we just rank, humans decide" muddy legal liability. EEOC 2022 guidance: employer remains liable for algorithmic tools\' disparate impact.'
+      legal: 'Falls under the same Uniform Guidelines (1978) disparate impact framework as any selection tool, but enforcement is hard because employer claims of "we just rank, humans decide" muddy legal liability. EEOC 2022 guidance said employers remain liable for algorithmic tools\' disparate impact; federal AI hiring guidance has changed since, so check current rules.'
     },
     {
       id: 'essays',
@@ -7270,7 +7271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       'Distinguish between what interest inventories measure (satisfaction potential) and what they don\'t (ability, skill, feasibility).'
     ],
     employer: [
-      'Rank-order common selection methods by meta-analytic validity (Schmidt & Hunter 1998 and updates).',
+      'Rank-order common selection methods by meta-analytic validity (Schmidt & Hunter 1998, as revised by Sackett et al. 2022), and explain why the estimates were revised.',
       'Analyze the legal and ethical dimensions of employer personality and cognitive testing (ADA, EEOC Uniform Guidelines, key case law).',
       'Identify the key dimensions measured by major commercial employer assessments (Hogan, PI, Caliper, DISC, Wonderlic, CCAT).',
       'Explain the concerns with AI-driven selection tools (video interviewing, ATS screening, algorithmic proctoring) for disabled and minoritized candidates.',
@@ -7893,7 +7894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     { term: 'SEM (Standard Error of Measurement)', def: 'Score range attributable to measurement error. SEM = SD × √(1 − reliability). WISC-V FSIQ SEM ≈ 3 points. Drives confidence interval calculation.', module: 'School Psych' },
     { term: 'SLD (Specific Learning Disability)', def: 'IDEA eligibility category for disorders in basic psychological processes affecting learning (dyslexia, dysgraphia, dyscalculia). Most common SLD: reading-based.', module: 'School Psych' },
     { term: 'STAR method', def: 'Interview answer framework: Situation, Task, Action, Result. Standard for behavioral interview responses. Covered in Interview Prep sub-view.', module: 'Employer' },
-    { term: 'Structured interview', def: 'Interview format where same questions are asked of every candidate in same order with responses scored against rubric. Higher validity than unstructured (r=0.51 vs r=0.19).', module: 'Employer' },
+    { term: 'Structured interview', def: 'Interview format where same questions are asked of every candidate in same order with responses scored against rubric. Higher validity than unstructured (r=0.42 vs r=0.19, Sackett et al. 2022).', module: 'Employer' },
     { term: 'Test-retest reliability', def: 'Correlation between scores when the same person takes the test twice. MBTI retest ~0.50 (poor); Big 5 retest ~0.70-0.90 (good); WISC-V FSIQ ~0.96 (excellent).', module: 'Personality (Validity Primer)' },
     { term: 'Twice-exceptional (2E)', def: 'A student who is both gifted AND has a disability. Commonly G+SLD, G+ADHD, G+ASD. Masking in both directions leads to under-identification.', module: 'School Psych' },
     { term: 'Uniform Guidelines', def: '1978 federal selection guidelines requiring validation of employment selection procedures that produce disparate impact. Cornerstone of hiring assessment law.', module: 'Employer' },
@@ -8211,9 +8212,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       reasoning: 'Multiple red flags at once: (1) "true authentic self" is pseudoprofound language, not a measurable construct; (2) "94% of users say" is a popularity claim, not a validity claim; (3) "Fortune 500 companies use it" is an appeal to commercial adoption, not evidence of validity; (4) No mention of reliability, factor structure, test-retest, or predictive validity. If those numbers existed and were good, they would be advertised.'
     },
     {
-      claim: '"The Big Five Inventory-2 (BFI-2) shows internal consistency α=0.83-0.89 across its 5 facets, 2-month test-retest stability r=0.80-0.88, convergent validity with the NEO-PI-R r=0.73-0.87, and predicts undergraduate GPA (Conscientiousness r=0.26) in a sample of N=2,408 across three universities."',
+      claim: '"The Big Five Inventory-2 (BFI-2) measures 5 broad personality domains and 15 narrower facets. Its scores stay fairly stable over time and agree well with other established personality tests."',
       verdict: 'legit',
-      reasoning: 'Textbook validation evidence: internal consistency across facets, test-retest over meaningful interval, convergent validity with the field-standard instrument, and predictive validity with an effect size that\'s modest but real (r=0.26 for Conscientiousness-GPA is consistent with meta-analytic estimates). A psychologist reading this gets enough to decide whether to use it.'
+      reasoning: 'Short and nearly number-free, but legit. It names a specific, published instrument and edition, and it makes modest, checkable claims (stable scores, agreement with established tests) instead of life-changing promises. The evidence is public: the BFI-2 and its validation studies were published in a peer-reviewed journal (Soto & John, 2017), so anyone can check the reliability and validity numbers. Lesson: length and numbers are not the test. Ask whether the claim is modest and whether outsiders can check it.'
     },
     {
       claim: '"Our color-personality test reveals which of the 4 colors — Red, Blue, Yellow, or Green — represents your core self. No two people are exactly alike, but your color explains your leadership style, communication preferences, and ideal career. Get your results in 5 minutes!"',
@@ -8223,7 +8224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     {
       claim: '"Our AI-powered video interview reads your facial micro-expressions, voice tonality, and word choice during a 30-second clip and predicts job performance with 92% accuracy, saving hiring managers 80% of their time."',
       verdict: 'junk',
-      reasoning: 'HireVue-style claim. Three independent reasons to reject: (1) "92% accuracy" without defining the criterion is meaningless — accuracy at what, compared to what baseline? (2) Facial expression analysis has known bias against neurodivergent candidates (autistic applicants flagged as "less engaged") and candidates of color (differential error rates). EEOC has opened inquiries; some states (Illinois, Maryland) now regulate. (3) Time savings is about employer convenience, not candidate fairness or selection validity. Electronic Privacy Information Center and others have filed FTC complaints.'
+      reasoning: 'A claim in the style of early AI video-interview marketing (HireVue, a major vendor, said it dropped facial analysis in early 2021). Three independent reasons to reject: (1) "92% accuracy" without defining the criterion is meaningless — accuracy at what, compared to what baseline? (2) Facial expression analysis raises serious bias concerns for neurodivergent candidates (autistic applicants flagged as "less engaged") and candidates of color (differential error rates). Some states (Illinois, Maryland) now regulate AI video interviews. (3) Time savings is about employer convenience, not candidate fairness or selection validity. Electronic Privacy Information Center and others have filed FTC complaints.'
     },
     {
       claim: '"The Myers-Briggs Type Indicator classifies individuals into one of 16 types based on 4 dichotomies (E/I, S/N, T/F, J/P). Widely used by approximately 2 million people annually in corporate team-building, career counseling, and personal development contexts."',
@@ -8251,9 +8252,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       reasoning: 'Commercial longevity and absence of lawsuits are not evidence of validity. Many weak instruments survive commercially because: (a) HR buyers can\'t evaluate psychometric claims, (b) lawsuits are expensive and rarely filed even when warranted, (c) "not successfully challenged" often means "never formally challenged" — survivorship bias. "Cultural fit" in particular is legally risky — often used to rationalize decisions that would otherwise constitute disparate impact (EEOC has explicitly flagged this). Ask for reliability, factor structure, predictive validity evidence — if they can\'t produce it, walk away.'
     },
     {
-      claim: '"This test was developed by a team of licensed clinical psychologists with a combined 150+ years of experience. Our methodology is proprietary."',
+      claim: '"Developed by licensed clinical psychologists with a combined 150+ years of experience, the TalentPrism Index measures 37 workplace traits with internal consistency α=0.97, predicts supervisor-rated job performance at r=0.68 (p<0.0001) across N=48,212 employees in 312 organizations, and cut first-year turnover by 41.3% for client companies. Our scoring methodology and validation data are proprietary."',
       verdict: 'junk',
-      reasoning: 'Two red flags that ride together. (1) "Licensed clinical psychologists" and "years of experience" are appeals to authority, not evidence. Plenty of licensed clinicians have published weak instruments (or endorsed ones like MBTI). Credential ≠ validity. (2) "Proprietary methodology" is the anti-signal of legitimate psychometrics — real validity evidence is peer-reviewed and replicable precisely because the items, scoring, and norms are transparent. Proprietary scoring in a behavioral science is a structural bar to validation. Run.'
+      reasoning: 'Fake precision: the numbers are dressed like the WISC-V or Vineland-3 claims, but none of them can be checked. (1) Too good to be true: r=0.68 is far above what independent meta-analyses find for ANY hiring method (the best current estimate, structured interviews, is about .42), and "41.3%" less turnover has no comparison group. Decimal places are not evidence. (2) "Licensed clinical psychologists" and "years of experience" are appeals to authority, not evidence. Plenty of licensed clinicians have published weak instruments (or endorsed ones like MBTI). Credential ≠ validity. (3) "Proprietary methodology and validation data" is the anti-signal of legitimate psychometrics — real validity evidence is peer-reviewed and replicable precisely because the items, scoring, and norms are transparent. Proprietary scoring in a behavioral science is a structural bar to validation. Run.'
     },
     {
       claim: '"The Gallup CliftonStrengths assessment identifies your top 5 strengths from a list of 34 themes. Meta-analytic evidence from Gallup\'s internal research across 1.9 million employees suggests strengths-based development correlates with workgroup engagement (d=0.35) and profitability."',
@@ -17280,10 +17281,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
         backBtn('employer', null, 'Employer menu'),
         h('h2', { className: 'text-2xl font-black text-amber-200' }, '\uD83D\uDD27 Beyond Personality: The Real Selection Methods'),
-        h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Meta-analyses (Schmidt & Hunter 1998 and updates) rank selection methods by their validity — how well they predict actual job performance. Surprise: personality tests are middle-of-the-pack. The highest-validity methods are work samples, GCA tests, and structured interviews. Here\'s the full picture of what modern employers use and how to handle each.'),
+        h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Meta-analyses rank selection methods by their validity — how well they predict actual job performance. Surprise: personality tests are middle-of-the-pack. In the current best estimates (Sackett, Zhang, Berry & Lievens, 2022), structured interviews rank first. Here\'s the full picture of what modern employers use and how to handle each.'),
         h('div', { className: 'p-3 rounded-lg bg-gradient-to-r from-sky-900/30 to-indigo-900/30 border border-sky-500/30 text-xs text-sky-100' },
-          h('strong', null, 'Ranked meta-analytic validity (r with supervisor-rated performance): '),
-          'Work Sample Test (.54) > Structured Interview (.51) = GCA Test (.51) > Assessment Center (.37) > SJT (.34) > Reference Check (.26) > Personality measure for Conscientiousness (.31) > Unstructured Interview (.19) > Years of experience (.18).'
+          h('strong', null, 'Ranked meta-analytic validity (r with supervisor-rated performance), Sackett et al. 2022: '),
+          'Structured Interview (.42) > Job Knowledge Test (.40) > Empirically Keyed Biodata (.38) > Work Sample Test (.33) > GCA Test (.31) > Unstructured Interview (.19).',
+          h('div', { className: 'mt-2' },
+            h('strong', null, 'Older estimates not revised in this table: '),
+            'Assessment Center (.37), SJT (.34), Personality measure for Conscientiousness (.31), Reference Check (.26), Years of experience (.18). These come from the pre-2022 literature (mostly Schmidt & Hunter, 1998) and may be too high for the same reason as the revised ones.'
+          ),
+          h('div', { className: 'mt-2' },
+            h('strong', null, 'Science revises itself: '),
+            'For 25 years, the standard figures came from Schmidt & Hunter (1998), which ranked work samples (.54), structured interviews (.51) and cognitive ability tests (.51) at the top. In 2022, Sackett and colleagues showed that earlier meta-analyses had over-corrected for range restriction (performance ratings exist only for people who were hired, which shrinks correlations; the correction for that had been applied too heavily). Corrected properly, most estimates dropped by roughly .10 to .20, and structured interviews moved to first place.'
+          )
         ),
         // Validity scale bar — visualizes predictive r across the 7 methods.
         // Lifts the BirdLab Featured Migrators distance-bar pattern.
@@ -17311,7 +17320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 var r = parseR(m.r);
                 var pct = Math.min(100, (r / SCALE_MAX) * 100);
                 var col = categoryColor(m.name);
-                var displayR = (typeof m.r === 'number') ? m.r.toFixed(2) : (r ? '~' + r.toFixed(2) + '*' : '?');
+                var displayR = (typeof m.r === 'number') ? m.r.toFixed(2) + (m.rSource === 'older' ? '†' : '') : (r ? '~' + r.toFixed(2) + '*' : '?');
                 return h('div', { key: m.name, className: 'flex items-center gap-2 text-xs' },
                   h('div', {
                     style: { width: 180, flexShrink: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, paddingRight: 4, textAlign: 'right' }
@@ -17341,14 +17350,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('span', null, '0.4 medium'),
               h('span', null, '0.6 large')
             ),
-            h('div', { className: 'mt-1 text-xs italic text-slate-300' }, '* AI-Scored video validity is contested — vendor claims 0.30–0.45, independent replication limited. Bar shows midpoint estimate.')
+            h('div', { className: 'mt-1 text-xs italic text-slate-300' }, 'Unmarked values: Sackett et al. (2022). † Older pre-2022 estimate, not revised here. * AI-Scored video validity is contested — vendor claims 0.30–0.45, independent replication limited. Bar shows midpoint estimate.')
           );
         })(),
         HIRING_METHODS.map(function(m, i) {
           return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-amber-500/30' },
             h('div', { className: 'flex items-baseline justify-between mb-2' },
               h('h3', { className: 'text-base font-black text-amber-200' }, m.name),
-              h('span', { className: 'text-xs font-bold text-sky-300' }, 'r = ' + m.r)
+              h('span', { className: 'text-xs font-bold text-sky-300' }, 'r = ' + m.r + (m.rSource === '2022' ? ' (Sackett et al. 2022)' : m.rSource === 'older' ? ' (older pre-2022 estimate)' : ''))
             ),
             h('div', { className: 'text-xs text-slate-200 mb-2' }, h('strong', { className: 'text-amber-300' }, 'How it works: '), m.how),
             h('div', { className: 'text-xs text-slate-200 mb-2 p-2 rounded bg-emerald-900/30 border border-emerald-500/30' }, h('strong', { className: 'text-emerald-300' }, 'Your strategy: '), m.strategy),
@@ -18561,7 +18570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
       var genHandout = function() {
         if (!callGemini) { addToast({ message: 'AI unavailable', type: 'error' }); return; }
-        if (!hStudent || !hFindings) { addToast({ message: 'Please provide at least student name and key findings.', type: 'warning' }); return; }
+        if (!hStudent || !hFindings) { addToast({ message: 'Please provide at least a student pseudonym and key findings.', type: 'warning' }); return; }
         upd({ handoutLoading: true, handoutOutput: '' });
         Promise.resolve(callGemini(buildParentHandoutPrompt(hStudent, hGrade || 'grade level not specified', hFindings, hEligibility, hRecs, toneDesc), false, false, 0.5, null))
           .then(function(resp) {
@@ -18570,7 +18579,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             announceSR(__alloALT('stem.assessmentliteracy.sr_parent_handout_generated', 'Parent handout generated'));
           })
           .catch(function(e) {
-            upd({ handoutLoading: false, handoutOutput: 'Error: ' + (e && e.message ? e.message : 'unknown') });
+            try { console.warn('[assessmentLiteracy] parent handout generation failed', e); } catch (_) {}
+            upd({ handoutLoading: false, handoutOutput: 'Sorry, the handout could not be made right now. Your inputs are still here: check your connection and try again in a moment.' });
           });
       };
 
@@ -18579,20 +18589,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('h2', { className: 'text-2xl font-black text-sky-200' }, '\uD83D\uDCDD Parent Handout Generator'),
         h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Parents often receive a dense eval report and a 90-minute team meeting. Many walk out unsure what it means for their child. This tool generates a warm, plain-language handout translating the findings into practical information, strengths-first framing, and questions parents can bring back to the team. Output is a draft for you to review and personalize, not an unedited final product.'),
 
-        h('div', { className: 'p-3 rounded bg-amber-900/30 border border-amber-500/40 text-xs text-amber-100' },
-          h('strong', null, 'Privacy note: '), 'Do NOT include identifying information (real names, birth dates, exact scores tied to identity) if you\'re concerned about transmission to the AI provider. Use pseudonyms and generalized findings. This is educational draft output, not the final handout you\'d send home.'
+        h('div', { id: 'al-handout-privacy', className: 'p-3 rounded bg-amber-900/30 border border-amber-500/40 text-xs text-amber-100' },
+          h('strong', null, 'Privacy note: '), 'What you type here is sent to an AI provider. Do not enter real names or identifying details (birth dates, school names, exact scores tied to a child). Use a pseudonym such as "Student A" and generalized findings. This is educational draft output, not the final handout you\'d send home.'
         ),
 
         h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-sky-500/30 space-y-3' },
           h('h3', { className: 'text-sm font-black text-sky-300' }, 'Inputs'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
             h('div', null,
-              h('label', { htmlFor: 'al-handout-student', className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Student first name / pseudonym'),
+              h('label', { htmlFor: 'al-handout-student', className: 'text-xs font-bold text-sky-300 mb-1 block' }, 'Student pseudonym (not a real name)'),
               h('input', {
                 id: 'al-handout-student',
                 type: 'text', value: hStudent,
+                'aria-describedby': 'al-handout-privacy',
                 onChange: function(e) { upd({ handoutStudent: e.target.value }); },
-                placeholder: t('stem.assessmentliteracy.e_g_malia_or_student_m','e.g., Malia or "Student M"'),
+                placeholder: t('stem.assessmentliteracy.e_g_student_a_pseudonym','e.g., Student A'),
                 className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100'
               })
             ),

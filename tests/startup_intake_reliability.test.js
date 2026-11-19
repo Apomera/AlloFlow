@@ -100,7 +100,9 @@ describe('first-use file intake readiness', () => {
     const names = { MiscHandlersModule: queued };
     const loadNow = vi.fn();
     const window = { AlloModules: {} };
-    const context = { window, __alloBootstrappingModules: false, __alloDeferredModuleNames: names, __alloLoadModuleNow: loadNow };
+    // 2026-11-17: loadModule also asks for the on-demand modules a module reads (helpers defined above the slice).
+    const context = { window, __alloBootstrappingModules: false, __alloDeferredModuleNames: names, __alloLoadModuleNow: loadNow,
+      __alloPromoteModuleDeps: () => {}, __alloOnDemandModules: new Set(), __alloParkedModules: {} };
     vm.runInNewContext(loader + lazy + ';window.__alloLazyFileIntake();', context);
     expect(names.MiscHandlersModule).toBeUndefined();
     expect(loadNow).toHaveBeenCalledWith('MiscHandlersModule', expect.stringContaining('misc_handlers_module.js'));

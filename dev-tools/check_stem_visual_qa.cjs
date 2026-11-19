@@ -87,7 +87,8 @@ const EXPECTED_MARKERS = [
   { id: 'waterCycle', file: 'stem_tool_watercycle.js', marker: 'data-watercycle-focus', label: 'Water Cycle focus panel' },
   { id: 'playlab', file: 'stem_tool_playlab.js', marker: 'data-playlab-gameplan', label: 'PlayLab game plan' },
   { id: 'plateTectonics', file: 'stem_tool_platetectonics.js', marker: 'data-pt-sim-focus', label: 'Plate Tectonics sim focus' },
-  { id: 'astronomy', file: 'stem_tool_astronomy.js', marker: 'data-astronomy-command', label: 'Astronomy observation command' },
+  // 775f99c43e replaced the command strip with per-section guides; Tonight leads with its observing plan.
+  { id: 'astronomy', file: 'stem_tool_astronomy.js', marker: 'data-astronomy-tonight=', label: 'Astronomy tonight observing plan' },
   { id: 'geologyExplorer', file: 'stem_tool_geologyexplorer.js', marker: 'data-geology-command', label: 'Geology field investigation command' },
   { id: 'rockCycle', file: 'stem_tool_rocks.js', marker: 'data-rockcycle-command', label: 'Rock Cycle Earth systems command' },
   { id: 'aquarium', file: 'stem_tool_aquarium.js', marker: 'data-aquarium-focus-panel', label: 'Aquarium mission panel' },
@@ -175,7 +176,8 @@ const STARTER_DATA = {
   playlab: { playlab: { sport: 'basketball' } },
   atcTower: { atcTower: { view: 'menu', atcMenuPanel: 'airports', atcSelectedAirport: 'simple' } },
   echoTrainer: { echoTrainer: { disclaimerDismissed: true, tutStep: 4, envType: 'simple_room', viewMode: 'echo' } },
-  plateTectonics: { plateTectonics: { simTab: 'sim' } },
+  // Since 1bf4346b83 the tool opens on a Start-here hub until a topic is picked.
+  plateTectonics: { plateTectonics: { simTab: 'sim', _ptPicked: true, _ptCategory: 'sim_quiz' } },
   aquarium: { _aquarium: { mode: 'tank', selectedTank: null, tutorialDismissed: true } },
   moonMission: { moonMission: { missionPhase: 0, difficulty: 'pilot' } },
   solarSystem: { solarSystem: { tutorialDismissed: true, orreryMode: false, simSpeed: 1, paused: false } },

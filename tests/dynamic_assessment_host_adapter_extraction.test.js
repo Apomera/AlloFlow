@@ -169,8 +169,10 @@ describe('Dynamic Assessment host-adapter extraction', () => {
     document.documentElement.classList.add('theme-light');
     const decision = Promise.resolve({ status: 'accepted' });
     const delivered = Promise.resolve();
+    // 2026-11-17: Dynamic Assessment transfers only to a bridge that speaks transfer control version 1, as allo_sheet/host_bridge.js does.
     window.AlloSheetHostBridge = {
       open: vi.fn(),
+      transferControlVersion: 1,
       openTransfer: vi.fn(() => ({ decision, delivered }))
     };
     const { host, assessment } = mountContract();
@@ -178,7 +180,9 @@ describe('Dynamic Assessment host-adapter extraction', () => {
 
     await expect(assessment.props.onOpenAlloSheet(artifact)).resolves.toBe(true);
     await decision;
-    expect(window.AlloSheetHostBridge.openTransfer).toHaveBeenCalledWith({ theme: 'light', artifact });
+    // The transfer also carries a guard that re-checks the open workspace just before AlloSheet takes the tables.
+    expect(window.AlloSheetHostBridge.openTransfer).toHaveBeenCalledWith({ theme: 'light', artifact, transferControls: { beforeTransfer: expect.any(Function) } });
+    expect(window.AlloSheetHostBridge.openTransfer.mock.calls[0][0].transferControls.beforeTransfer()).toBe(true);
     expect(host.addToast).toHaveBeenCalledWith('Dynamic Assessment tables opened in AlloSheet for review.', 'success');
   });
 

@@ -102,8 +102,11 @@ describe('Companion Planting soil chemistry explanations', () => {
   it('keeps diagram trends tied to the simulation formulas and documents the model boundary', () => {
     const source = readFileSync(resolve(process.cwd(), FILE), 'utf8');
 
-    expect(source).toContain("soilNitrogenDailyDelta += (chemistryPlant.nEffect || 0) * 0.3");
-    expect(source).toContain("if (p && !p.isStructure) nDelta += (p.nEffect || 0) * 0.3");
+    // Legume N is mostly released at harvest / year end (cgLegumeResidueNitrogen); the
+    // daily figure shown in diagrams and used by the sim comes from one helper.
+    expect(source).toContain("soilNitrogenDailyDelta += cgDailyNitrogen(chemistryPlant)");
+    expect(source).toContain("if (p && !p.isStructure) nDelta += cgDailyNitrogen(p)");
+    expect(source).toContain("var full = (plant.nEffect || 0) * 0.3;");
     expect(source).toContain("var nextSoilHistory = cgSoilHistory.concat");
     expect(source).toContain("soilHistory: nextSoilHistory");
     expect(source).toContain("soilPhosphorusDailyDelta += chemistryProfile.p * 0.3");
@@ -330,7 +333,7 @@ describe('Companion Planting soil chemistry explanations', () => {
     expect(html).toContain('crop nitrogen demand');
     expect(html).toContain('nitrogen fixer or builder');
     expect(html).toContain('steady decomposition input');
-    expect(html).toContain('+0.5 pts net next day');
+    expect(html).toContain('+0.02 pts net next day');
     expect(html).toContain('Drawdown / demand');
     expect(html).toContain('Addition / rebuilding');
   });
@@ -371,17 +374,17 @@ describe('Companion Planting soil chemistry explanations', () => {
     expect(html.match(/data-overlay-direction="adds"/g)).toHaveLength(2);
     expect(html.match(/data-overlay-direction="draws-down"/g)).toHaveLength(1);
     expect(html).toContain('-0.3 N next day');
-    expect(html).toContain('+0.6 N next day');
+    expect(html).toContain('+0.12 N next day');
     expect(html).toContain('+0.5 N next day');
     expect(html).toContain('Soil contribution direction legend');
     expect(html).toContain('data-soil-show-on-map="nitrogen"');
     expect(html).toContain('href="#community-garden-map"');
     expect(html).toContain('data-soil-map-balance="nitrogen"');
     expect(html).toContain('data-soil-map-forecast-kind="pool-balance"');
-    expect(html).toContain('+0.8 pts net');
+    expect(html).toContain('+0.32 pts net');
     expect(html).toContain('42.0 pts');
-    expect(html).toContain('42.8 pts');
-    expect(html).toContain('+1.1 pts');
+    expect(html).toContain('42.3 pts');
+    expect(html).toContain('+0.62 pts');
   });
 
   it('turns the spatial soil lens into crop-specific pH fit when pH is selected', () => {

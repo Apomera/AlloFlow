@@ -279,6 +279,8 @@ describe('current module-loading and concealed-workspace interaction', () => {
     const env = {
       window, __alloBootstrappingModules: false, __alloDeferredModuleNames: { ReadingLibrary: queued }, __alloDeferredModuleQueue: [queued],
       __alloLoadModuleNow: (...args) => calls.push(args), __alloModuleRegistered: () => false, __alloModuleRegistry: {},
+      // 2026-11-17: on-demand modules (parked at boot) and their dependencies; defined above the slices.
+      __alloParkedModules: {}, __alloPromoteModuleDeps: () => {}, __alloOnDemandModules: new Set(), __alloModuleOwners: new Map(),
     };
     const source = section(hostSource, '    const loadModule = (name, url) => {', '    window.__alloRetryModule')
       + section(hostSource, '    window.__alloPromoteModule = function(name) {', '    // A #sel-hub');

@@ -153,7 +153,13 @@ function AiBackendSettingsView(props) {
     className: "space-y-4"
   }, /*#__PURE__*/React.createElement(AllobotSearchSettings, {
     t: t
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  }), (() => {
+    try {
+      return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || '';
+    } catch {
+      return '';
+    }
+  })() ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5"
   }, t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID', " ", /*#__PURE__*/React.createElement("span", {
     className: "normal-case font-normal text-slate-600"
@@ -179,7 +185,7 @@ function AiBackendSettingsView(props) {
     className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mt-1"
-  }, t('canvas_settings.wolfram_hint') || 'Free: 2,000 queries/month. Adds exact math solving and step-by-step verification')), window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
+  }, t('canvas_settings.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.')) : null, window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
     t,
     _isCanvasEnv,
     GEMINI_MODELS

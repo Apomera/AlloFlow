@@ -21,7 +21,7 @@ beforeAll(async () => {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let mounted = [];
-async function mount(roadReady) {
+async function mount(roadReady, ctxExtra) {
   window.__testHooks = {};
   window.__RR_TEST_EXPORTS__ = {};
   resetStemLab();
@@ -35,6 +35,7 @@ async function mount(roadReady) {
       toolData,
       update: (tool, key, value) => setToolData((p) => ({ ...p, [tool]: { ...(p[tool] || {}), [key]: value } })),
       updateMulti: (tool, values) => setToolData((p) => ({ ...p, [tool]: { ...(p[tool] || {}), ...(values || {}) } })),
+      ...(ctxExtra || {}),
     });
     return config.render(ctx);
   }
@@ -259,5 +260,24 @@ describe('in30 item 4: focus after a screen change stays inside the tool (real h
       expect(shell.contains(document.activeElement)).toBe(true);
       expect(document.activeElement).not.toBe(shell.querySelector(':scope > h1'));
     } finally { appTitle.remove(); }
+  });
+});
+
+describe('AI coach recovers when its request cannot finish', () => {
+  const STATS = { scenario: 'city', vehicle: 'sedan', safetyScore: 88, efficiencyScore: 82, avgMPG: 30, maxSpeed: 40, hardBrakes: 1, crashes: 0, unsignaledLaneChanges: 0 };
+  const analyze = (host) => buttonByText(host, '🤖 Analyze My Drive');
+  it('a rejected call clears the spinner, explains, and the coach can be asked again', async () => {
+    const m = await mount({ view: 'aiCoach', drivingStats: STATS }, { callGemini: () => Promise.reject(new Error('429')) });
+    await React.act(async () => { analyze(m.host).click(); await sleep(0); });
+    expect(m.state.toolData.roadReady.coachLoading).toBe(false);
+    expect(m.host.textContent).toContain('Unable to connect to AI coach');
+    await React.act(async () => { buttonByText(m.host, '🔄 Re-analyze').click(); });
+    expect(analyze(m.host)).toBeTruthy();
+  });
+  it('reopening on the coach screen after closing mid-request shows the button, not a stuck spinner', async () => {
+    const m = await mount({ view: 'aiCoach', drivingStats: STATS, coachLoading: true }, { callGemini: () => new Promise(() => {}) });
+    expect(m.state.toolData.roadReady.coachLoading).toBe(false);
+    expect(m.host.textContent).not.toContain('AI coach is analyzing your driving...');
+    expect(analyze(m.host)).toBeTruthy();
   });
 });

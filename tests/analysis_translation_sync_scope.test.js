@@ -149,7 +149,8 @@ describe('translation modal scope is captured from the clicked button', () => {
     const quiz = { id: 'quiz', type: 'quiz', unitId: 'current-unit', data: 'Question' };
     const unrelated = { id: 'other-quiz', type: 'quiz', unitId: 'other-unit', data: 'Other question' };
     const h = harness([current, quiz, unrelated], scope === 'single' ? 'pack' : 'single');
-    const app = readFileSync('AlloFlowANTI.txt', 'utf8');
+    // 2026-11-17: the Translate dialog's buttons live in the cold-path screens source (TranslateModalView).
+    const app = readFileSync('view_cold_path_screens_source.jsx', 'utf8');
     const body = app.match(new RegExp("onClick=\\{\\(\\) => \\{ (setTranslateScope\\('" + scope + "'\\);.*?) \\}\\}"))[1];
     let pending;
     new Function('setTranslateScope', 'handleTranslateAction', 'companionPolicy', body)(vi.fn(), (requested, options) => {

@@ -4405,7 +4405,9 @@ function VolumeBuilderView(props) {
                             // rules, so a fix to one would silently miss the other.
                             const checkCubeAnswer = () => {
                                 if (!cubeChallenge) return;
-                                const ans = parseInt(cubeAnswer);
+                                // The exact number typed: parseInt read "24.9" or "24abc" as 24.
+                                const typed = String(cubeAnswer == null ? '' : cubeAnswer).trim();
+                                const ans = /^-?\d+(\.\d+)?$/.test(typed) ? Number(typed) : NaN;
                                 const isLB = cubeChallenge.shape === 'lblock';
                                 const correctMsg = '✅ ' + (isLB
                                     ? vbText('feedback_correct_lblock', 'Correct! ({l}×{w}×{h}) − ({nl}×{nw}×{nh}) = {answer} cubic units', {
@@ -4419,6 +4421,8 @@ function VolumeBuilderView(props) {
                                     : vbText('feedback_wrong_rect', 'Not quite. Try V = L × W × H'));
                                 setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg });
                             };
+                            // While a challenge is open, the readout keeps the answer back until it is found.
+                            const vbHideAnswer = !!cubeChallenge && !(cubeFeedback && cubeFeedback.correct);
                             return (
                             <div className="space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" data-help-key="volume_builder_panel">
                                 <div className="flex items-center justify-between">
@@ -4545,12 +4549,12 @@ function VolumeBuilderView(props) {
                                             <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('stem.volume_label')}</div>
                                             <div className="text-lg font-bold text-emerald-800">
                                                 {isLBlock ? (
-                                                    <>V = ({cubeDims.l}×{cubeDims.w}×{cubeDims.h}) − ({safeNotch.l}×{safeNotch.w}×{safeNotch.h}) = {rectVolume} − {notchVolume} = <span className="text-2xl text-emerald-600">{volume}</span></>
+                                                    <>V = ({cubeDims.l}×{cubeDims.w}×{cubeDims.h}) − ({safeNotch.l}×{safeNotch.w}×{safeNotch.h}) = {vbHideAnswer ? <span className="text-2xl text-emerald-600" aria-label={vbText('answer_hidden', 'hidden until you answer')}>?</span> : <>{rectVolume} − {notchVolume} = <span className="text-2xl text-emerald-600">{volume}</span></>}</>
                                                 ) : (
-                                                    <>V = {cubeDims.l} × {cubeDims.w} × {cubeDims.h} = <span className="text-2xl text-emerald-600">{volume}</span></>
+                                                    <>V = {cubeDims.l} × {cubeDims.w} × {cubeDims.h} = {vbHideAnswer ? <span className="text-2xl text-emerald-600" aria-label={vbText('answer_hidden', 'hidden until you answer')}>?</span> : <span className="text-2xl text-emerald-600">{volume}</span>}</>
                                                 )}
                                             </div>
-                                            <div className="text-xs text-slate-600">{vbText(volume === 1 ? 'unit_cubes_one' : 'unit_cubes_other', volume === 1 ? '{count} unit cube' : '{count} unit cubes', { count: volume })}</div>
+                                            <div className="text-xs text-slate-600">{vbHideAnswer ? vbText('unit_cubes_hidden', 'How many unit cubes?') : vbText(volume === 1 ? 'unit_cubes_one' : 'unit_cubes_other', volume === 1 ? '{count} unit cube' : '{count} unit cubes', { count: volume })}</div>
                                         </div>
                                         <div className="text-center">
                                             <div className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">{t('stem.surface_area')}{isLBlock && <span className="ml-1 text-[10px] font-normal text-teal-500/70">{t('volume_builder.surface_area_approx') || '(approx — full prism)'}</span>}</div>

@@ -531,12 +531,26 @@ function AnalysisView(props) {
     "data-source-level-rubric": true
   }, /*#__PURE__*/React.createElement("p", null, asText(checkedLevel.nuanceSummary || checkedLevel.feedback)), /*#__PURE__*/React.createElement("dl", null, [['vocabulary', 'Vocabulary'], ['sentenceStructure', 'Sentence structure'], ['conceptDensity', 'Concept density']].map(([key, label]) => {
     const row = checkedLevel.rubric?.[key];
-    return row && /*#__PURE__*/React.createElement(React.Fragment, {
+    if (!row) return null;
+    // Scores are relative to the target grade (-5..+5). 0 means "fits", never "none".
+    const raw = typeof row.score === 'string' && /^\s*[+-]?\d+(\.\d+)?\s*$/.test(row.score) ? Number(row.score) : row.score;
+    const score = typeof raw === 'number' && Number.isFinite(raw) && raw >= -5 && raw <= 5 ? raw : null;
+    const signed = score === null ? '' : (score > 0 ? '+' : '') + score;
+    const verdict = score === null ? analysisLabel('analysis.rubric_not_reported', 'score not reported') : fillLabel(score > 1 ? analysisLabel('analysis.rubric_above', 'harder than your target grade ({score})') : score < -1 ? analysisLabel('analysis.rubric_below', 'easier than your target grade ({score})') : analysisLabel('analysis.rubric_fits', 'fits your target grade ({score})'), {
+      score: signed
+    });
+    return /*#__PURE__*/React.createElement(React.Fragment, {
       key: key
     }, /*#__PURE__*/React.createElement("dt", {
-      className: "mt-2 font-semibold"
-    }, analysisLabel('analysis.rubric_' + key, label), Number.isFinite(row.score) ? ' (' + (row.score > 0 ? '+' : '') + row.score + ')' : ''), /*#__PURE__*/React.createElement("dd", null, asText(row.reason)));
-  })), checkedLevel.checkedChars < checkedLevel.totalChars && /*#__PURE__*/React.createElement("p", null, fillLabel(analysisLabel('analysis.checked_excerpt', 'Based on the first {count} characters.'), {
+      className: "mt-2 font-semibold",
+      "data-rubric-score": score === null ? 'none' : score
+    }, analysisLabel('analysis.rubric_' + key, label), ": ", /*#__PURE__*/React.createElement("span", {
+      className: "font-normal"
+    }, verdict)), /*#__PURE__*/React.createElement("dd", null, asText(row.reason)));
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs text-slate-600",
+    "data-rubric-scale": true
+  }, analysisLabel('analysis.rubric_scale', 'Each score compares the passage with your target grade, from -5 (much easier) to +5 (much harder). 0 means it fits your target, not that the passage has none of it.')), checkedLevel.checkedChars < checkedLevel.totalChars && /*#__PURE__*/React.createElement("p", null, fillLabel(analysisLabel('analysis.checked_excerpt', 'Based on the first {count} characters.'), {
     count: checkedLevel.checkedChars
   }))), /*#__PURE__*/React.createElement("p", {
     className: "my-2"

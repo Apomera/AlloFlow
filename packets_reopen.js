@@ -312,7 +312,8 @@
       var baseTitle = editedForm ? title.replace(/\s+\(edited\)$/i, '') : title;
       // The title the builder gives this form, now or before 2026-11-13 ("Missing Number check (KA)"), is not the teacher's.
       var name = measures[id].name, made = typeof e.builder.formTitle === 'function' ? e.builder.formTitle(name, grade, version, untimed) : '';
-      out.title = baseTitle === made || baseTitle === name + ' check (' + grade + version + (untimed ? ', untimed' : '') + ')' ? '' : baseTitle;
+      var madeBefore = typeof e.builder.formTitle === 'function' ? e.builder.formTitle(name, grade, version, untimed, true) : '';
+      out.title = baseTitle === made || baseTitle === madeBefore || baseTitle === name + ' check (' + grade + version + (untimed ? ', untimed' : '') + ')' ? '' : baseTitle;
       if (editedForm) out.notes.push('Questions were removed from version ' + version + ' in Try it. Step 2 opens the full version ' + version + '.');
       if (untimed) out.notes.push('It is untimed, an accommodation for one student. Untimed is turned on in step 2.');
     }

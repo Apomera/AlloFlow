@@ -259,6 +259,17 @@ function OtherWaysToStart({ t, onStartFromTopic, onStartFromWordList, onStartBla
   );
 }
 
+// A number box that can be cleared while typing: it keeps the typed text, saves only
+// whole numbers (clamped to min/max), and shows the saved number again on blur.
+function CountInput({ value, onValue, min, max, ...rest }) {
+  const [draft, setDraft] = React.useState(null);
+  const lo = Number(min), hi = Number(max);
+  const clamp = (n) => Math.min(Number.isFinite(hi) ? hi : n, Math.max(Number.isFinite(lo) ? lo : n, n));
+  return <input {...rest} min={min} max={max} value={draft !== null ? draft : String(value ?? '')}
+    onChange={(e) => { const text = e.target.value; setDraft(text); if (/^\s*\d+\s*$/.test(text)) onValue(clamp(parseInt(text, 10))); }}
+    onBlur={(e) => { setDraft(null); if (typeof rest.onBlur === 'function') rest.onBlur(e); }} />;
+}
+
 // AI word ideas ({"terms": [...]}, an array, or one per line) become new, short entries
 // appended to the teacher's list; existing entries are never reordered or replaced.
 function mergeSuggestedTerms(existing, raw, limit) {
@@ -452,7 +463,8 @@ Return only JSON: {"terms": ["term"]}`;
   const helpIds = [id + '-help', showValidation && id + '-validation'].filter(Boolean).join(' ');
   return <section data-source-start-chooser aria-labelledby={id + '-title'} className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-slate-900">
     <h3 id={id + '-title'} className="m-0 text-sm font-bold">{hasSource ? say(t('source_start.separate_title'), 'Make something separate from this passage') : say(t('source_start.title'), 'Start without a passage')}</h3>
-    <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-700">{hasSource ? say(t('source_start.separate_note'), 'Create a resource from a topic, a word list, or a blank draft. Your passage is not used for these, and it stays as it is.') : say(t('source_start.preserve_source'), 'Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.')}</p>
+    {/* With no passage yet, the three buttons say it all; the note only matters beside a passage. */}
+    {hasSource ? <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-700">{say(t('source_start.separate_note'), 'Create a resource from a topic, a word list, or a blank draft. Your passage is not used for these, and it stays as it is.')}</p> : <div className="mt-2" />}
     {hasSource && !mode && <button type="button" data-source-start-toggle aria-expanded={showWithSource} aria-controls={id + '-choices'} onClick={() => setShowWithSource(open => !open)} className={actionClass + ' border-sky-300 bg-white text-sky-900 hover:bg-sky-100'}>{showWithSource ? say(t('source_start.hide_options'), 'Hide these options') : say(t('source_start.show_options'), 'Show these options')}</button>}
     {(!hasSource || showWithSource || mode) && <div id={id + '-choices'} className={hasSource ? 'mt-3' : undefined}>
     <div role="group" aria-label={say(t('source_start.choose_start'), 'Choose a starting point')} className="flex flex-wrap gap-2">
@@ -1791,7 +1803,7 @@ function AdventurePanel(props) {
                     ) : (
                         <>
                             {!aiTextAvailable && <AiSetupNotice t={t} />}
-                            <button type="button" aria-label={adventureState.currentScene ? t('adventure.restart') : t('adventure.start')}
+                            <button data-guided-primary type="button" aria-label={adventureState.currentScene ? t('adventure.restart') : t('adventure.start')}
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure}
                                 disabled={!hasSourceOrAnalysis || adventureState.isLoading || isProcessing || !aiTextAvailable} aria-busy={adventureState.isLoading || isProcessing}
                                 className={SIDEBAR_PANEL_UI.primaryAction}
@@ -1948,14 +1960,14 @@ function SimplifiedPanel(props) {
                 </div>
                 <div data-reading-options className="space-y-2.5 bg-white p-3.5">
                     {!hasSourceOrAnalysis && <p className="text-xs leading-5 text-slate-600">{readingOptionText('sidebar.reading_options_add_source', 'Add source text to enable these options.')}</p>}
-                    <button type="button" data-read-original onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing}
+                    <button type="button" data-read-original data-help-key="simplified_read_original" onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing}
                         className={`${readingActionClass} border-indigo-200 bg-indigo-50 text-indigo-900 enabled:hover:border-indigo-300 enabled:hover:bg-indigo-100`}>
                         <BookOpen size={18} aria-hidden="true" className="shrink-0" />
                         <span className="min-w-0 flex-1">{readingOptionText('sidebar.read_original_with_supports', 'Read original with supports')}</span>
                         <ArrowRight size={16} aria-hidden="true" className="shrink-0" />
                     </button>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button" data-create-adapted
+                    <button data-guided-primary type="button" data-create-adapted data-help-key="simplified_create_companion"
                         onClick={() => handleGenerate('simplified')}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className={`${readingActionClass} border-slate-200 bg-white text-slate-700 enabled:hover:border-indigo-300 enabled:hover:bg-indigo-50 enabled:hover:text-indigo-900`}>
@@ -1963,7 +1975,7 @@ function SimplifiedPanel(props) {
                         <span className="min-w-0 flex-1">{readingOptionText('sidebar.create_adapted_companion', 'Create adapted companion')}</span>
                         <ArrowRight size={16} aria-hidden="true" className="shrink-0" />
                     </button>
-                    <details data-reading-options-guidance className="text-xs text-slate-600">
+                    <details data-reading-options-guidance data-help-key="simplified_reading_options_about" className="text-xs text-slate-600">
                         <summary className="min-h-11 cursor-pointer rounded-lg px-1 py-3 leading-5 marker:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{readingOptionText('sidebar.reading_options_about', 'About these reading options')}</summary>
                         <p className="px-1 pb-2 leading-relaxed">{readingOptionText('sidebar.read_original_guidance', 'Keep the original as the main reading. An adapted companion can build background knowledge and help students understand it.')}</p>
                     </details>
@@ -2188,13 +2200,13 @@ function MathPanel(props) {
                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                         <ListOrdered size={12} className="text-slate-600" />
                                     </div>
-                                    <input aria-label={t('common.text_field')}
+                                    <CountInput aria-label={t('common.text_field')}
                                         data-help-key="math_quantity"
                                         type="number"
                                         min="1"
                                         max="10"
                                         value={mathQuantity}
-                                        onChange={(e) => setMathQuantity(parseInt(e.target.value) || 5)}
+                                        onValue={setMathQuantity}
                                         className={`${SIDEBAR_PANEL_UI.control} pl-8 focus-visible:border-blue-500 focus-visible:ring-blue-500/20`}
                                     />
                                 </div>
@@ -2270,7 +2282,7 @@ function MathPanel(props) {
                         </div>
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button data-guided-primary type="button"
                         data-help-key="math_generate_button"
                         onClick={handleGenerateMath}
                         disabled={!mathInput.trim() || isProcessing || mathMode === 'Fluency Probe' || !aiTextAvailable}
@@ -2311,7 +2323,7 @@ function DbqPanel(props) {
                                   ['links', t('dbq.mode_links_label') || '🔗 Teacher Links', t('dbq.mode_links_desc') || 'Paste URLs to articles — AI builds DBQ around them'],
                                   ['custom', t('dbq.mode_custom_label') || '✏️ Teacher Docs', t('dbq.mode_custom_desc') || 'Paste your own document text directly']
                                 ].map(([mode, label, desc]) => (
-                                    <button type="button" key={mode} aria-pressed={(window._dbqMode || 'standard') === mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
+                                    <button type="button" key={mode} data-help-key={'dbq_mode_' + mode} aria-pressed={(window._dbqMode || 'standard') === mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
                                         className={`flex-1 text-left p-2 rounded-lg text-[11px] font-bold transition-all motion-reduce:transition-none border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-rose-50'}`}>
                                         <div>{label}</div>
                                         <div className="font-normal mt-0.5 opacity-70">{desc}</div>
@@ -2475,7 +2487,7 @@ function DbqPanel(props) {
                         </div>
                     )}
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button data-guided-primary type="button"
                         data-help-key="dbq_generate_button"
                         onClick={() => handleGenerate('dbq')}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
@@ -2739,27 +2751,30 @@ function SourceView(props) {
         <p id="source-view-status" data-source-status-line role="status" className="text-sm text-slate-700">{statusLine}</p>
         <div className="flex flex-wrap items-center gap-3">
           {status === 'draft' && <button type="button" data-source-use data-help-key="source_view_use" onClick={useSource} className="min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800">{inUse ? say('source_view.use_version', 'Use this version') : say('source_view.use', 'Use this source')}</button>}
-          {status === 'draft' && aiReady && <label className="inline-flex min-h-11 items-center gap-2 text-sm text-slate-700"><input type="checkbox" data-source-skip-check checked={skipCheck} onChange={(event) => setSkipCheck(event.target.checked)} />{say('source_view.skip_check', 'Skip the source check')}</label>}
+          {status === 'draft' && aiReady && <label data-help-key="source_view_skip_check" className="inline-flex min-h-11 items-center gap-2 text-sm text-slate-700"><input type="checkbox" data-source-skip-check checked={skipCheck} onChange={(event) => setSkipCheck(event.target.checked)} />{say('source_view.skip_check', 'Skip the source check')}</label>}
           {status === 'draft' && inUse && !(replacement && replacement.status === 'replaced' && replacement.previous === inUse.text) && <button type="button" data-source-discard disabled={checkBusy} onClick={discardChanges} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60">{fill(say('source_view.discard', 'Discard changes (back to version {version})'), { version: inUse.version })}</button>}
-          {status === 'in-use' && <button type="button" data-source-make-resources onClick={() => { if (typeof onShowResources === 'function') onShowResources(); }} className="min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800">{say('source_view.make_resources', 'Make resources')}</button>}
-          {typeof handleSpeak === 'function' && !!text.trim() && <button type="button" data-source-read-aloud aria-pressed={reading} onClick={readAloud} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50">{reading ? say('source_view.stop_reading', 'Stop reading') : say('source_view.read_aloud', 'Read aloud')}</button>}
+          {status === 'in-use' && <button type="button" data-source-make-resources data-help-key="source_view_make_resources" onClick={() => { if (typeof onShowResources === 'function') onShowResources(); }} className="min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800">{say('source_view.make_resources', 'Make resources')}</button>}
+          {typeof handleSpeak === 'function' && !!text.trim() && <button type="button" data-source-read-aloud data-help-key="source_view_read_aloud" aria-pressed={reading} onClick={readAloud} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50">{reading ? say('source_view.stop_reading', 'Stop reading') : say('source_view.read_aloud', 'Read aloud')}</button>}
         </div>
       </header>
       {readOnly ? (
-        <div className="space-y-2">
-          <div data-source-readonly aria-describedby="source-view-status" className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-900">{text}</div>
-          <button type="button" data-source-edit disabled={checkBusy} onClick={() => setEditing(true)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60">{say('source_view.edit', 'Edit source')}</button>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div data-source-readonly aria-describedby="source-view-status" className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap p-4 text-sm leading-relaxed text-slate-900">{text}</div>
+          <div className="flex justify-end border-t border-slate-100 bg-slate-50 px-3 py-2">
+            <button type="button" data-source-edit data-help-key="source_view_edit" disabled={checkBusy} onClick={() => setEditing(true)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60">{say('source_view.edit', 'Edit source')}</button>
+          </div>
         </div>
       ) : (
-        <div className="space-y-2">
-          <div role="toolbar" aria-label={say('source_view.format_toolbar', 'Formatting')} className="flex flex-wrap gap-1">
-            <button type="button" data-source-format="bold" onClick={() => format('bold')} className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50">{say('formatting.bold', 'Bold')}</button>
-            <button type="button" data-source-format="italic" onClick={() => format('italic')} className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50">{say('formatting.italic', 'Italic')}</button>
-            <button type="button" data-source-format="highlight" onClick={() => format('highlight')} className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50">{say('formatting.highlight', 'Highlight')}</button>
-            <button type="button" data-source-format="h2" onClick={() => format('h2')} className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50">{say('source_view.heading', 'Heading')}</button>
-            <button type="button" data-source-format="list" onClick={() => format('list')} className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50">{say('formatting.list', 'List')}</button>
+        // One editor card: the formatting bar, the text and its save status, with one focus ring.
+        <div className="overflow-hidden rounded-xl border border-slate-400 bg-white shadow-sm focus-within:ring-2 focus-within:ring-indigo-600">
+          <div role="toolbar" data-help-key="source_view_format" aria-label={say('source_view.format_toolbar', 'Formatting')} className="flex flex-wrap gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1">
+            <button type="button" data-source-format="bold" onClick={() => format('bold')} className="min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm">{say('formatting.bold', 'Bold')}</button>
+            <button type="button" data-source-format="italic" onClick={() => format('italic')} className="min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm">{say('formatting.italic', 'Italic')}</button>
+            <button type="button" data-source-format="highlight" onClick={() => format('highlight')} className="min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm">{say('formatting.highlight', 'Highlight')}</button>
+            <button type="button" data-source-format="h2" onClick={() => format('h2')} className="min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm">{say('source_view.heading', 'Heading')}</button>
+            <button type="button" data-source-format="list" onClick={() => format('list')} className="min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm">{say('formatting.list', 'List')}</button>
           </div>
-          <div className="relative">
+          <div>
             <textarea
               data-allo-textundo="input"
               ref={editorRef}
@@ -2773,9 +2788,9 @@ function SourceView(props) {
               aria-label={say('common.source_material_aria', 'Source material')}
               aria-describedby="source-view-status"
               data-help-key="input_area"
-              className="h-[50vh] min-h-[240px] w-full resize-y rounded-xl border border-slate-400 p-4 text-sm leading-relaxed focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30"
+              className="block h-[50vh] min-h-[240px] w-full resize-y border-0 bg-white p-4 text-sm leading-relaxed focus:outline-none focus:ring-0"
             />
-            <div className="pointer-events-none absolute bottom-2 right-4 text-[11px] font-medium text-slate-600">{isDraftSaving ? say('status.saving_draft', 'Saving draft…') : text && !isCanvas ? say('status.saved_device', 'Saved on this device') : null}</div>
+            {(isDraftSaving || (text && !isCanvas)) && <div className="flex justify-end border-t border-slate-100 px-4 py-1.5 text-[11px] font-medium text-slate-600">{isDraftSaving ? say('status.saving_draft', 'Saving draft…') : say('status.saved_device', 'Saved on this device')}</div>}
           </div>
         </div>
       )}
@@ -2803,20 +2818,20 @@ function SourceView(props) {
         </div>
       )}
       {replacement && replacement.status === 'restored' && <p data-source-restored-notice role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">{say('sidebar.source_restored', 'Your previous source text is back.')}</p>}
-      <section id="source-check-panel" data-source-check data-help-key="source_view_check" aria-labelledby="source-check-title" className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+      <section id="source-check-panel" data-source-check data-help-key="source_view_check" aria-labelledby="source-check-title" className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 text-sm shadow-sm">
         <h3 id="source-check-title" className="font-bold text-slate-900">{say('source_view.check_title', 'Source check')}</h3>
         <p className="mt-1 text-xs text-slate-600">{say('source_view.check_desc', 'Reading level, key concepts and accuracy for this text. It runs when you use the source.')}</p>
-        <p ref={checkLineRef} tabIndex={-1} data-source-check-state={checkState} role="status" className="mt-2 rounded text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{checkLine}</p>
+        <p ref={checkLineRef} tabIndex={-1} data-source-check-state={checkState} role="status" className={'mt-3 rounded-lg px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (checkState === 'done' ? 'bg-white font-semibold text-slate-900 ring-1 ring-indigo-100' : 'bg-white/80 text-slate-800')}>{checkLine}</p>
         {checkBusy && !!isProcessing && !!generationStep && <p data-source-check-step className="mt-1 text-xs text-slate-600">{generationStep}</p>}
         {!checkBusy && runForText && !!checkRun.failure && <p data-source-check-failure role="alert" className="mt-1 text-red-800">{checkRun.failure}</p>}
         {typeof setCheckAccuracyWithSearch === 'function' && <label className="mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700"><input type="checkbox" data-source-web-check checked={!!checkAccuracyWithSearch} onChange={(event) => setCheckAccuracyWithSearch(event.target.checked)} />{say('source_view.web_check', 'Check accuracy with a web search')}</label>}
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          {(check || partial) && typeof openAnalysis === 'function' && <button type="button" data-source-check-details onClick={() => openAnalysis(check || incomplete)} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-bold text-white hover:bg-indigo-800">{partial ? say('analysis.view_partial', 'View partial analysis') : say('source_view.check_details', 'View analyzed source material')}</button>}
-          {aiReady && checkState !== 'running' && !!text.trim() && <button type="button" data-source-run-check disabled={!!isProcessing} onClick={() => runCheck(text, true)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60">{checkState === 'done' ? say('source_view.check_again', 'Analyze again') : checkState === 'partial' ? (partial.legacy ? say('analysis.check_all_sections', 'Check all sections') : say('analysis.check_remaining', 'Check remaining sections')) : checkState === 'failed' ? say('source_view.check_retry', 'Retry') : checkState === 'changed' ? say('analysis.recheck_action', 'Recheck edited source') : say('source_view.check_run', 'Analyze source material')}</button>}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {(check || partial) && typeof openAnalysis === 'function' && <button type="button" data-source-check-details onClick={() => openAnalysis(check || incomplete)} className="min-h-11 rounded-lg bg-indigo-700 px-4 font-bold text-white shadow-sm hover:bg-indigo-800">{partial ? say('analysis.view_partial', 'View partial analysis') : say('source_view.check_details', 'View analyzed source material')}</button>}
+          {aiReady && checkState !== 'running' && !!text.trim() && <button type="button" data-source-run-check disabled={!!isProcessing} onClick={() => runCheck(text, true)} className={'min-h-11 rounded-lg px-4 font-bold disabled:opacity-60 ' + (status === 'draft' || ((check || partial) && typeof openAnalysis === 'function') ? 'border border-slate-400 bg-white text-slate-800 hover:bg-slate-100' : 'bg-indigo-700 text-white shadow-sm hover:bg-indigo-800')}>{checkState === 'done' ? say('source_view.check_again', 'Analyze again') : checkState === 'partial' ? (partial.legacy ? say('analysis.check_all_sections', 'Check all sections') : say('analysis.check_remaining', 'Check remaining sections')) : checkState === 'failed' ? say('source_view.check_retry', 'Retry') : checkState === 'changed' ? say('analysis.recheck_action', 'Recheck edited source') : say('source_view.check_run', 'Analyze source material')}</button>}
         </div>
       </section>
       {!readOnly && aiReady && typeof refineSourceSuggestion === 'function' && !!text.trim() && (
-        <section data-source-refine aria-labelledby="source-refine-title" className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
+        <section data-source-refine data-help-key="source_view_refine" aria-labelledby="source-refine-title" className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
           <h3 id="source-refine-title" className="font-bold text-slate-900">{say('source_view.refine_title', 'Ask AI to adjust this text')}</h3>
           <p className="mt-1 text-xs text-slate-600">{say('source_view.refine_desc', 'You get a suggested rewrite to review. Your text changes only if you use it.')}</p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -2977,9 +2992,8 @@ function SourceInputPanel(props) {
           setUniversalGrade: props.setUniversalGrade
                 })}
                 {sourceStatus === 'empty' ? (
-                  <div data-source-ways-in id="tour-source-check" className="p-4">
+                  <div data-source-ways-in id="tour-source-check" hidden={!!(showSourceGen || showUrlInput)} className="p-4">
                     <button type="button" data-source-paste onClick={() => openSource(true)} className="w-full min-h-11 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-800">{panelText('sidebar.source_paste_or_type', 'Paste or type your own text')}</button>
-                    <p className="m-0 mt-2 text-xs text-slate-600">{panelText('sidebar.source_ways_in_hint_named', 'Or start from Upload, Find online, Reading catalog or Write with AI above. Your text opens in the source view.')}</p>
                   </div>
                 ) : (
                   <div data-source-summary data-help-key="source_summary_card" data-source-status={sourceStatus} className="m-4 rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800">
@@ -3020,12 +3034,12 @@ function GlossaryPanel(props) {
                                 {t('glossary.tier2')}
                                 <InfoTooltip text={t('glossary.tier2_tooltip')} />
                             </label>
-                            <input aria-label={t('common.enter_glossary_tier2_count')}
+                            <CountInput aria-label={t('common.enter_glossary_tier2_count')}
                                 type="number"
                                 min="0"
                                 max="20"
                                 value={glossaryTier2Count}
-                                onChange={(e) => setGlossaryTier2Count(parseInt(e.target.value) || 0)}
+                                onValue={setGlossaryTier2Count}
                                 className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-sky-500 focus-visible:ring-sky-500/20`}
                             />
                         </div>
@@ -3034,12 +3048,12 @@ function GlossaryPanel(props) {
                                 {t('glossary.tier3')}
                                 <InfoTooltip text={t('glossary.tier3_tooltip')} />
                             </label>
-                            <input aria-label={t('common.enter_glossary_tier3_count')}
+                            <CountInput aria-label={t('common.enter_glossary_tier3_count')}
                                 type="number"
                                 min="0"
                                 max="20"
                                 value={glossaryTier3Count}
-                                onChange={(e) => setGlossaryTier3Count(parseInt(e.target.value) || 0)}
+                                onValue={setGlossaryTier3Count}
                                 className={`${SIDEBAR_PANEL_UI.control} focus-visible:border-sky-500 focus-visible:ring-sky-500/20`}
                             />
                         </div>
@@ -3150,7 +3164,7 @@ function GlossaryPanel(props) {
                     </div>
                 </div>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
-                <button type="button"
+                <button data-guided-primary type="button"
                     onClick={() => handleGenerate('glossary')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -3412,7 +3426,7 @@ function QuizPanel(props) {
           </select>
           {_modeStrategy && <p className="text-[11px] leading-snug text-slate-600 mt-1.5">{_modeStrategy.description} {qzText('recipe_hint', 'This loads a recommended recipe that you can customize.')}</p>}
           <label htmlFor="quiz-duration-preset" className="block text-xs font-semibold text-slate-700 mt-3 mb-1">{qzText('duration_label', 'Time and depth')}</label>
-          <select id="quiz-duration-preset" value={durationPreset} onChange={event => applyDuration(event.target.value)} disabled={isProcessing} className="w-full rounded-lg border-slate-300 text-sm">
+          <select id="quiz-duration-preset" data-help-key="quiz_duration_preset" value={durationPreset} onChange={event => applyDuration(event.target.value)} disabled={isProcessing} className="w-full rounded-lg border-slate-300 text-sm">
             <option value="recommended">{qzText('duration_recommended', 'Recommended recipe')}</option>
             <option value="two">{qzText('duration_two', 'About 2 minutes — quick recall')}</option>
             <option value="five">{qzText('duration_five', 'About 5 minutes — explain briefly')}</option>
@@ -3449,7 +3463,7 @@ function QuizPanel(props) {
                     reflectionTotal === 1 ? ' + {count} unscored reflection' : ' + {count} unscored reflections', { count: reflectionTotal })
                   : '')}
             </span>
-            {isCustomized && <button type="button" onClick={handleResetMix} className="ml-auto text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold">{t('common.reset') || 'Reset'}</button>}
+            {isCustomized && <button type="button" data-help-key="quiz_reset_mix" onClick={handleResetMix} className="ml-auto text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold">{t('common.reset') || 'Reset'}</button>}
           </div>
           <div className="mt-2 flex items-center gap-2 flex-wrap text-[11px]">
             <span className="rounded bg-slate-100 px-2 py-1 font-semibold text-slate-700">{qzText('estimate_minutes', 'About {low}–{high} minutes', { low: estimatedLow, high: estimatedHigh })}</span>
@@ -3537,6 +3551,7 @@ function QuizPanel(props) {
             </div>
             <input
               id="quiz-reflection-count"
+              data-help-key="quiz_reflection_count"
               aria-label={qzText('reflection_count_aria', 'Closing reflection count')}
               type="number"
               min="0"
@@ -3549,7 +3564,7 @@ function QuizPanel(props) {
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-          <button type="button" onClick={() => setScoringOpen(!scoringOpen)} aria-expanded={scoringOpen} className="w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50">
+          <button type="button" data-help-key="quiz_scoring_section" onClick={() => setScoringOpen(!scoringOpen)} aria-expanded={scoringOpen} className="w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50">
             <span>{qzText('section_scoring', '4. Scoring and feedback')}</span>
             <ChevronDown size={14} className={'transition-transform motion-reduce:transition-none ' + (scoringOpen ? 'rotate-180' : '')} />
           </button>
@@ -3590,7 +3605,7 @@ function QuizPanel(props) {
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-          <button type="button" onClick={() => setPresetsOpen(!presetsOpen)} aria-expanded={presetsOpen} className="w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50">
+          <button type="button" data-help-key="quiz_presets_section" onClick={() => setPresetsOpen(!presetsOpen)} aria-expanded={presetsOpen} className="w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50">
             <span>{qzText('presets_title', 'Save or reuse this setup')}</span>
             <ChevronDown size={14} className={'transition-transform motion-reduce:transition-none ' + (presetsOpen ? 'rotate-180' : '')} />
           </button>
@@ -3629,7 +3644,7 @@ function QuizPanel(props) {
         </select>
       </div>
       {!aiTextAvailable && <AiSetupNotice t={t} />}
-      <button
+      <button data-guided-primary
         type="button"
         onClick={() => handleGenerate('quiz', null, false, null, {
           quizMode,
@@ -3741,7 +3756,7 @@ function TimelinePanel(props) {
                         </div>
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button data-guided-primary type="button"
                         onClick={() => handleGenerate('timeline')}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
@@ -3842,7 +3857,7 @@ function ConceptSortPanel(props) {
                             placeholderKey="common.custom_instructions_placeholder" />
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button data-guided-primary type="button"
                         data-help-key="concept_sort_generate_button"
                         onClick={() => handleGenerate('concept-sort')}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
@@ -3953,7 +3968,7 @@ function BrainstormPanel(props) {
                     )}
                     {activityMode !== 'simulation' && !aiTextAvailable && <AiSetupNotice t={t} />}
                     {activityMode !== 'simulation' && (
-                    <button type="button"
+                    <button data-guided-primary type="button"
                     onClick={() => handleGenerate('brainstorm', null, false, null, { activityMode, activityConfig: { protocol: discussionProtocol, groupSize: jigsawGroupSize } })}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -4009,7 +4024,7 @@ function BrainstormPanel(props) {
                                 </p>
                              </div>
                         </div>
-                        <button type="button"
+                        <button data-guided-primary type="button"
                             data-help-key="brainstorm_generate_button"
                             onClick={() => handleGenerate('gemini-bridge')}
                             disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
@@ -4146,7 +4161,7 @@ function ImagePanel(props) {
                         </div>
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button data-guided-primary type="button"
                     onClick={() => handleGenerate('image')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -4268,7 +4283,7 @@ function OutlinePanel(props) {
                         placeholderKey="outline.placeholder_instructions" />
                 </div>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
-                <button type="button"
+                <button data-guided-primary type="button"
                     data-help-key="outline_generate_button"
                     onClick={() => handleGenerate('outline')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
@@ -4321,7 +4336,7 @@ function NoteTakingPanel(props) {
         </p>
       </div>
       {!aiTextAvailable && <AiSetupNotice t={t} />}
-      <button type="button"
+      <button data-guided-primary type="button"
         data-help-key="note_taking_generate_button"
         onClick={() => handleGenerate('note-taking')}
         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable}
@@ -4382,7 +4397,7 @@ function AnchorChartPanel(props) {
         </p>
       </div>
       {!aiTextAvailable && <AiSetupNotice t={t} />}
-      <button type="button"
+      <button data-guided-primary type="button"
         data-help-key="anchor_chart_generate_button"
         onClick={() => handleGenerate('anchor-chart')}
         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable}
@@ -4428,7 +4443,7 @@ function FaqPanel(props) {
                             placeholderKey="faq.placeholder_instructions" />
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button data-guided-primary type="button"
                     onClick={() => handleGenerate('faq')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -4472,7 +4487,7 @@ function SentenceFramesPanel(props) {
                             placeholderKey="scaffolds.placeholder_instructions" />
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button data-guided-primary type="button"
                     onClick={() => handleGenerate('sentence-frames')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -4505,7 +4520,7 @@ function LessonPlanPanel(props) {
                              placeholderKey="lesson_plan.placeholder_additions" />
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button data-guided-primary type="button"
                         aria-label={isParentMode ? lessonPlanActionLabel : t('common.generate_lesson_plan')}
                         onClick={handleGenerateLessonPlan}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
@@ -4546,7 +4561,7 @@ function AnalysisPanel(props) {
                         <p className={`${SIDEBAR_PANEL_UI.help} ml-6`}>{t('analysis.grounding_desc')}</p>
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button data-guided-primary type="button"
                         data-help-key="analysis_generate_button"
                         onClick={() => handleGenerate('analysis', null, false, inputText, { selectedReadingSourceId: '__input__' })}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
@@ -4562,8 +4577,25 @@ function AnalysisPanel(props) {
 // ── UiToolWordsoundsPanel: expandedTools.includes('ui-tool-wordsounds') panel from L22888-L22902 ──
 function UiToolWordsoundsPanel(props) {
   const {
-    expandedTools, handleOpenWordSounds, t
+    expandedTools, handleOpenWordSounds, t,
+    setHistory, setGeneratedContent, setActiveView, gradeLevel, addToast
   } = props;
+  // 2026-11-17: Symbol Runner (quick naming practice) lives in the math fluency module, as the second tab of Fluency Maze.
+  // This door opens that same full view on its Symbol Runner tab, as a history entry (config.startTab), like Fluency Maze.
+  const canOpenRunner = typeof setHistory === 'function' && typeof setGeneratedContent === 'function' && typeof setActiveView === 'function';
+  const openSymbolRunner = () => {
+    const newItem = {
+      id: 'symbol-runner-' + Date.now(),
+      type: 'math-fluency-maze',
+      title: (t('fluency_maze.runner_history_title') || 'Symbol Runner') + (gradeLevel ? ' \u00b7 ' + gradeLevel : ''),
+      timestamp: new Date(),
+      data: { gradeLevel, launchedAt: Date.now() },
+      config: { grade: gradeLevel, startTab: 'runner' }
+    };
+    setHistory(prev => [...prev, newItem]);
+    setGeneratedContent({ type: 'math-fluency-maze', data: newItem.data, id: newItem.id, config: newItem.config });
+    setActiveView('math-fluency-maze');
+  };
   if (!expandedTools || !expandedTools.includes('ui-tool-wordsounds')) return null;
   return (
                     <div className="p-4 bg-white animate-in motion-reduce:animate-none slide-in-from-top-2" data-help-key="tour-wordsounds-panel">
@@ -4577,6 +4609,21 @@ function UiToolWordsoundsPanel(props) {
                         >
                             <Sparkles size={14} className="text-yellow-700"/> Open Generator
                         </button>
+                        {canOpenRunner && (
+                            <div className="mt-4 pt-3 border-t border-slate-200" data-help-key="wordsounds_symbol_runner">
+                                <p className="text-xs text-slate-600 mb-2 leading-relaxed">
+                                    {t('fluency_maze.runner_description') || 'Quick naming practice: letters, sounds, sight words and numbers, against the clock. Students say each one aloud as they tap it.'}
+                                </p>
+                                <button type="button"
+                                    data-testid="wordsounds-open-symbol-runner"
+                                    onClick={openSymbolRunner}
+                                    aria-label={t('fluency_maze.runner_open_aria') || 'Open Symbol Runner, quick naming practice, in the main view'}
+                                    className="w-full py-2 bg-white text-pink-800 border-2 border-pink-300 rounded-lg font-bold text-sm hover:bg-pink-50 active:scale-95 transition-all motion-reduce:transition-none"
+                                >
+                                    {t('fluency_maze.runner_open') || 'Quick naming practice (Symbol Runner)'}
+                                </button>
+                            </div>
+                        )}
                     </div>
   );
 }
@@ -4866,7 +4913,6 @@ function GeneratorActionsView(props) {
                 {expandedTools.includes('glossary') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
                 {expandedTools.includes('glossary') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartBlank={canStartBlank('glossary') ? () => startBlank('glossary') : undefined} onStartFromWordList={isTeacherMode ? openWordListStart : undefined} />}
-                {expandedTools.includes('glossary') && hasSourceOrAnalysis && canStartBlank('glossary') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('glossary')} />}
                 {/* ── GlossaryPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('glossary') && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
           expandedTools, InfoTooltip, autoRemoveWords, glossaryCustomInstructions,
@@ -4919,7 +4965,7 @@ function GeneratorActionsView(props) {
                 </button>
                  {/* ── UiToolWordsoundsPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                  {expandedTools.includes('ui-tool-wordsounds') && window.AlloModules && window.AlloModules.UiToolWordsoundsPanel && React.createElement(window.AlloModules.UiToolWordsoundsPanel, {
-          expandedTools, handleOpenWordSounds, t
+          expandedTools, handleOpenWordSounds, t, setHistory, setGeneratedContent, setActiveView, gradeLevel, addToast
                  })}
             </div>
             <div style={{display: isGuidedToolVisible('outline') ? undefined : 'none'}} id="tour-tool-outline" data-help-key="tool_outline" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
@@ -4971,7 +5017,6 @@ function GeneratorActionsView(props) {
                   {expandedTools.includes('anchor-chart') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                   {expandedTools.includes('anchor-chart') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartFromTopic={(topic) => handleGenerate('anchor-chart', null, false, null, { seed: { kind: 'topic', text: topic } })} onStartBlank={canStartBlank('anchor-chart') ? () => startBlank('anchor-chart') : undefined} />}
-                  {expandedTools.includes('anchor-chart') && hasSourceOrAnalysis && canStartBlank('anchor-chart') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('anchor-chart')} />}
                 {/* ── AnchorChartPanel lives in view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('anchor-chart') && window.AlloModules && window.AlloModules.AnchorChartPanel && React.createElement(window.AlloModules.AnchorChartPanel, {
           anchorChartCustomInstructions, anchorChartType, expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, setAnchorChartCustomInstructions, setAnchorChartType, t
@@ -5138,7 +5183,6 @@ function GeneratorActionsView(props) {
                   {expandedTools.includes('timeline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                   {expandedTools.includes('timeline') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartFromTopic={(topic) => handleGenerate('timeline', null, false, null, { seed: { kind: 'topic', text: topic } })} onStartBlank={canStartBlank('timeline') ? () => startBlank('timeline') : undefined} />}
-                  {expandedTools.includes('timeline') && hasSourceOrAnalysis && canStartBlank('timeline') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('timeline')} />}
                 {/* ── TimelinePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('timeline') && window.AlloModules && window.AlloModules.TimelinePanel && React.createElement(window.AlloModules.TimelinePanel, {
           expandedTools, TIMELINE_MODE_DEFINITIONS, handleGenerate, hasSourceOrAnalysis, includeTimelineVisuals,
@@ -5159,7 +5203,6 @@ function GeneratorActionsView(props) {
                   {expandedTools.includes('concept-sort') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                   {expandedTools.includes('concept-sort') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartFromTopic={(topic) => handleGenerate('concept-sort', null, false, null, { seed: { kind: 'topic', text: topic } })} onStartBlank={canStartBlank('concept-sort') ? () => startBlank('concept-sort') : undefined} />}
-                  {expandedTools.includes('concept-sort') && hasSourceOrAnalysis && canStartBlank('concept-sort') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('concept-sort')} />}
                 {/* ── ConceptSortPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('concept-sort') && window.AlloModules && window.AlloModules.ConceptSortPanel && React.createElement(window.AlloModules.ConceptSortPanel, {
           expandedTools, addConcept, conceptImageMode, conceptInput, conceptItemCount,
@@ -5283,7 +5326,6 @@ function GeneratorActionsView(props) {
                   {expandedTools.includes('quiz') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
                   {expandedTools.includes('quiz') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartBlank={canStartBlank('quiz') ? () => startBlank('quiz') : undefined} />}
-                  {expandedTools.includes('quiz') && hasSourceOrAnalysis && canStartBlank('quiz') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('quiz')} />}
                  {/* ── QuizPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                  {expandedTools.includes('quiz') && window.AlloModules && window.AlloModules.QuizPanel && React.createElement(window.AlloModules.QuizPanel, {
           expandedTools, InfoTooltip, dokLevel, generatedContent, handleGenerate,
@@ -5658,6 +5700,7 @@ function SourceInputShellView(props) {
                      ) : <>
                      <button type="button"
                          id="tour-upload-source"
+                         data-help-key="source_upload_btn"
                          aria-label={t('common.upload_file') || 'Upload file'}
                         onClick={() => fileInputRef.current.click()}
                         disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
@@ -5667,15 +5710,6 @@ function SourceInputShellView(props) {
                         {isExtracting ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Upload size={12} />}
                         {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}
                      </button>
-                     {/* Opens only PDF Accessibility work; lesson projects open from Class & Materials. */}
-                     <label data-source-open-pdf-project="true" className={sourcePillClass + ' cursor-pointer'} title={t('input.open_pdf_project_tooltip') || 'Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials.'}>
-                        <FileDown size={12} /> {t('input.open_pdf_project') || 'Open PDF project'}
-                        <input type="file" accept=".json" className="hidden" onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          e.target.value = '';
-                          openPdfProjectFile(file);
-                        }} />
-                     </label>
                      <button type="button"
                         data-help-key="source_link_btn" onClick={() => {
                             if (!showUrlInput && !expandedTools.includes('source-input')) {
@@ -5716,11 +5750,19 @@ function SourceInputShellView(props) {
                         <BookOpen size={12} aria-hidden="true" />
                         {t('input.reading_catalog') || 'Reading catalog'}
                      </button>
+                     {/* Opens only PDF Accessibility work; lesson projects open from Class & Materials. */}
+                     <label data-source-open-pdf-project="true" data-help-key="source_open_pdf_project_btn" className={sourcePillClass + ' cursor-pointer'} title={t('input.open_pdf_project_tooltip') || 'Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials.'}>
+                        <FileDown size={12} /> {t('input.open_pdf_project') || 'Open PDF project'}
+                        <input type="file" accept=".json" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = '';
+                          openPdfProjectFile(file);
+                        }} />
+                     </label>
                      {changeOpen && <button type="button" data-source-change-cancel onClick={cancelChange} className="text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium">{headerText('sidebar.source_change_cancel', 'Keep my source')}</button>}
                      </>}
                  </div>
             </div>
-            {expandedTools.includes('source-input') && isTeacherMode && <div className="m-3"><SourceStartingPointChooser t={t} hasSource={!!(inputText && String(inputText).trim())} handleGenerate={handleGenerate} gradeLevel={gradeLevel} busy={isProcessing || isExtracting || isGeneratingSource} /></div>}
             <SourceShellWatch inputText={inputText} sourceStatus={sourceStatus} sourceReplacement={sourceReplacement} setSourceReplacement={setSourceReplacement} openSourceView={openSourceView} />
             {/* ── SourceInputPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
             {expandedTools.includes('source-input') && videoTranscriptSourceContext && (
@@ -5791,6 +5833,8 @@ function SourceInputShellView(props) {
           history, handleGenerate, isProcessing, sourceReplacement, setSourceReplacement, sourceRecord, openSourceView,
           setUniversalGrade: props.setUniversalGrade
             })}
+            {/* Starting points without a passage come after the main way in (paste, or the source card). */}
+            {expandedTools.includes('source-input') && isTeacherMode && <div className="m-3"><SourceStartingPointChooser t={t} hasSource={!!(inputText && String(inputText).trim())} handleGenerate={handleGenerate} gradeLevel={gradeLevel} busy={isProcessing || isExtracting || isGeneratingSource} /></div>}
             {expandedTools.includes('source-input') && isParentMode && isTeacherMode && String(inputText || '').trim().length > 20 && typeof onFamilyAction === 'function' && (
               <div data-help-key="family_source_actions" role="group" aria-label={t('family_start.actions_label') || 'Adapt this reading'} className="flex flex-wrap gap-2 border-t border-slate-200 p-3">
                 {[

@@ -257,10 +257,14 @@ describe('3. Plain names', () => {
     for (const jargon of [/\bRAS\b/, /Subitiz/i, /Incremental rehearsal \(/i, /lock-on/i, /Aim and lock/i, /5x8/i, /Phoneme sounds/i, /serial grid/i, /rimes\b/i, /Find more pictures/i]) {
       expect(text, String(jargon)).not.toMatch(jargon);
     }
-    expect(text.match(/Stroop/g)).toHaveLength(1);
-    expect(text).toContain('Color or word (Stroop)');
+    // 2026-11-18 (owner): 'Stroop' and 'flanker' left the set names for the line under them, where a specialist still finds them.
+    expect(text.match(/Stroop/g)).toHaveLength(3);
+    expect(text).toContain('Name the ink color, not the word');
+    expect(text).toContain('(A Stroop task.)');
     expect(text.match(/flanker/gi)).toHaveLength(1);
-    expect(text).toContain('Middle letter (flanker)');
+    for (const opt of p.d.querySelectorAll('#sr-mode option')) expect(opt.textContent).not.toMatch(/Stroop|flanker/i);
+    expect(text).toContain('Middle letter: b, d, p, q');
+    expect(text).toContain('(A flanker task.)');
     for (const plain of ['Quick naming: letters and numbers in turn', 'Quick dot counting (1 to 9)', 'Rehearsal with known facts', 'A sheet of 40 (5 by 8)', 'Letter sounds (/a/, /b/, /sh/)', 'Point at the card first']) {
       expect(text, plain).toContain(plain);
     }

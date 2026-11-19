@@ -108,7 +108,9 @@ describe('report follow-up: focused reading uses the existing original-support a
     expect(progress.selectedIds).toEqual(expect.arrayContaining(choices));
     expect(progress.completedSteps).toEqual(['analysis', 'glossary', 'simplified', 'outline']);
     expect(progress.createdHistoryIds).toEqual(['saved-original', 'saved-companion']);
-    expect(progress.deliveryEvidence).toEqual({ exportCreated: true, studentPreviewed: true });
+    // 2026-11-17: since cf1747d6d6 (11-15) "student previewed" counts only with a verified learner link, so older
+    // progress without one keeps the export and drops the preview claim (the teacher tests the link again).
+    expect(progress.deliveryEvidence).toEqual({ exportCreated: true });
   });
 });
 

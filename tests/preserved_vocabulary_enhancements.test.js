@@ -11,7 +11,8 @@ beforeAll(() => {
   pipeline = window.AlloModules.TextPipelineHelpers;
   const source = readFileSync('AlloFlowANTI.txt', 'utf8');
   const start = source.indexOf('const generateBilingualText = async');
-  const end = source.indexOf('const extractSourceTextForProcessing', start);
+  // 2026-11-17: the wrapper moved inside the app component; the host-handler cache declaration follows it now.
+  const end = source.indexOf('  let __alloHostHandlersCache = null;', start);
   if (start < 0 || end < 0) throw new Error('Host bilingual wrapper was not found');
   hostBilingual = new Function('window', source.slice(start, end) + '\nreturn generateBilingualText;')(window);
 });

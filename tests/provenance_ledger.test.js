@@ -510,7 +510,11 @@ describe('constraints in the module text itself', () => {
     expect(cp).toContain("name: 'allo-cp-choice-' + (q.id || 'cp')");                    // never a memory test
     // Accommodations are named on screen, and speech stays on-device.
     expect(cp).toContain('Only the answer helper is paused');
-    expect(cp).toContain('it becomes text on this device');
+    // 2026-11-17: "it becomes text on this device" was removed in b3cdbac0a1 (11-07) because it was not true:
+    // Chrome's built-in speech recognition sends audio to Google. The Speak button now promises nothing about where.
+    expect(cp).not.toContain('on this device');
+    expect(cp).toContain("modeBtn('audio', t('checkpoint.mode_audio', '🎤 Speak'))");
+    expect(cp).toContain("Chrome's built-in one sends audio to Google, so the label promises nothing.");
   });
   it('P3: recognition choices come from the student’s own writing, deterministically', () => {
     const artifact = 'I picked the Colorado River because I saw it. Erosion cuts rock slowly over time. My cousin took the photo we used.';
@@ -1004,7 +1008,13 @@ describe('P3 wiring — checkpoints finally have a producer', () => {
       const src = anti(p);
       expect(src, p).toContain('window.AlloModules.CheckpointPanel');
       // If submission consulted checkpoint state at all, it could block.
-      const save = src.slice(src.indexOf('submissionData.checkpoints'), src.indexOf('const safeName = submissionData.studentName'));
+      // 2026-11-17: the filename line changed (String(...).normalize), so the old end anchor was missing and the
+      // slice ran to the end of the file. Anchor on the line as it is now, and require both ends to exist.
+      const from = src.indexOf('submissionData.checkpoints');
+      const to = src.indexOf("const safeName = String(submissionData.studentName || 'student')", from);
+      expect(from, p).toBeGreaterThan(-1);
+      expect(to, p).toBeGreaterThan(from);
+      const save = src.slice(from, to);
       expect(save, p).not.toContain('checkpointState.status');
       expect(save, p).not.toContain('return;');
     }

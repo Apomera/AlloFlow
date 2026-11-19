@@ -1016,6 +1016,7 @@ function HeaderBar(props) {
                 <button
                   type="button"
                   onClick={toggleHeaderCollapsed}
+                  data-help-key="header_settings_toggle"
                   aria-expanded={!headerCollapsed}
                   className="inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-white/90 hover:bg-white/20"
                 >
@@ -1097,7 +1098,7 @@ function HeaderBar(props) {
                       }}
                       data-help-key="header_educator_hub"
                       className="hidden xl:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-white/85 hover:bg-white/10 hover:text-white transition-colors"
-                      title={t('header.educator_tools_tooltip') || 'Educator Tools (Symbol Studio, BehaviorLens, Report Writer)'}
+                      title={t('header.educator_tools_aria') || 'Educator Tools'}
                       aria-label={t('header.educator_tools_aria') || 'Educator Tools'}
                     >
                       <GraduationCap size={18} aria-hidden="true" />
@@ -1120,7 +1121,7 @@ function HeaderBar(props) {
                 {isTeacherMode && !isIndependentMode && !isParentMode && (
                   <button type="button"
                     onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
-                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? 'bg-emerald-700 text-white border-emerald-300 hover:bg-emerald-600' : 'bg-white/10 text-white border-white/60 hover:bg-white/20'}`}
+                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? 'bg-emerald-700 text-white border-emerald-300 hover:bg-emerald-800' : 'bg-white/10 text-white border-white/60 hover:bg-white/20'}`}
                     data-help-key="header_session_start"
                     title={t('session.start_tooltip')}
                     aria-label={activeSessionCode ? (t('header.live_session_code', { code: activeSessionCode }) || `Live: ${activeSessionCode}`) : (t('session.start') || t('common.connect'))}
@@ -1259,6 +1260,7 @@ function HeaderBar(props) {
                 <button
                   type="button"
                   onClick={toggleHeaderCollapsed}
+                  data-help-key="header_settings_toggle"
                   aria-expanded={!headerCollapsed}
                   className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
                 >
@@ -2166,8 +2168,8 @@ function HeaderBar(props) {
                               ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/50'
                               : 'hover:bg-white/10 text-white/80 hover:text-white border border-white/10'
                           }`}
-                          title={_isCanvasEnv ? (t('header.ai_diagnostics_canvas') || 'AI Settings & Model Diagnostics') : (t('header.ai_backend_config') || 'AI Backend Configuration')}
-                          aria-label={_isCanvasEnv ? (t('header.ai_diagnostics_canvas') || 'AI Settings & Model Diagnostics') : (t('header.ai_backend_config') || 'AI Backend Configuration')}
+                          title={_isCanvasEnv ? (t('header.ai_diagnostics_canvas') || 'AI Settings & Model Diagnostics') : (t('sidebar.ai_setup_name') || 'AI setup')}
+                          aria-label={_isCanvasEnv ? (t('header.ai_diagnostics_canvas') || 'AI Settings & Model Diagnostics') : (t('sidebar.ai_setup_name') || 'AI setup')}
                         >
                           <Unplug size={14} aria-hidden="true" />
                           <span className="hidden lg:inline">{t('header.nav_ai') || 'AI'}</span>
@@ -2197,7 +2199,7 @@ function HeaderBar(props) {
                           }}
                           data-help-key="header_educator_hub"
                           className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
-                          title={t('header.educator_tools_tooltip') || 'Educator Tools (Symbol Studio, BehaviorLens, Report Writer)'}
+                          title={t('header.educator_tools_aria') || 'Educator Tools'}
                           aria-label={t('header.educator_tools_aria') || 'Educator Tools'}
                         >
                           <GraduationCap size={14} aria-hidden="true" />
@@ -2251,7 +2253,8 @@ function HeaderBar(props) {
                                             {sessionData ? <Wifi size={14} className="animate-pulse"/> : <RefreshCw size={14} className="animate-spin"/>}
                                             <span>{sessionData ? (t('header.synced_session_code', { code: activeSessionCode }) || `Synced: ${activeSessionCode}`) : (t('header.connecting_session_code', { code: activeSessionCode }) || `Connecting: ${activeSessionCode}`)}</span>
                                             <button type="button"
-                                                aria-label={t('common.close')}
+                                                aria-label={t('common.disconnect') || 'Disconnect'}
+                                                title={t('common.disconnect') || 'Disconnect'}
                                                 data-help-key="header_session_status"
                                                 onClick={() => {
                                                     if(sessionUnsubscribeRef.current) sessionUnsubscribeRef.current();

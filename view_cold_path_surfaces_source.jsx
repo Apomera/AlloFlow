@@ -18,7 +18,7 @@ function AiBackendSettingsView(props) {
                     its only consumer (testCSE) called a helper that never existed.
                     Serper.dev IS the transport the search chain uses. */}
                 <AllobotSearchSettings t={t} />
-                <div>
+                {((() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()) ? (<div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('common.optional_parenthetical') || '(optional)'}</span></label>
                     <input
                         id="ai-canvas-wolfram" aria-label={t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID'}
@@ -31,8 +31,8 @@ function AiBackendSettingsView(props) {
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-600 mt-1">{t('canvas_settings.wolfram_hint') || 'Free: 2,000 queries/month. Adds exact math solving and step-by-step verification'}</p>
-                </div>
+                    <p className="text-[11px] text-slate-600 mt-1">{t('canvas_settings.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.'}</p>
+                </div>) : null}
                 {/* AI Model Diagnostics (shared component — same one used in the deploy modal) */}
                 {window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
                     t, _isCanvasEnv, GEMINI_MODELS

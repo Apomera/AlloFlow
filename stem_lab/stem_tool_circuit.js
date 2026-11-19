@@ -9534,7 +9534,7 @@ function CircuitActiveLessonLab(props) {
                     h('span', { className: 'text-[0.625rem] text-cyan-300 leading-normal' }, physics.analogy)
                   ),
                   typeof callTTS === 'function' ? h('button', { 'aria-label': __alloT('stem.circuit.aria_read_aloud', 'Read aloud'),
-                    onClick: function() { callTTS(physics.name + '. ' + physics.how + ' ' + physics.analogy); },
+                    onClick: function() { callTTS(physics.name + '. ' + physics.how + ' ' + physics.analogy, undefined, undefined, { force: true }); },
                     className: 'transition-colors mt-2 text-[0.625rem] text-yellow-500 hover:text-yellow-400 font-bold'
                   }, '\uD83D\uDD0A ' + __alloT('stem.circuit.read_aloud', 'Read aloud')) : null
                 ) : h('p', { className: 'text-[0.625rem] text-slate-300 italic' }, __alloT('stem.circuit.tap_component_hint', 'Tap a component above to learn how it works inside!'))
@@ -9609,7 +9609,8 @@ function CircuitActiveLessonLab(props) {
                     'Current ' + current.toFixed(3) + ' amps. Power ' + power.toFixed(2) + ' watts.';
                   if (isShort) summary += ' Warning: short circuit detected!';
                   if (isOpen) summary += ' Circuit is open, no current flowing.';
-                  callTTS(summary);
+                  // A speak button: force past the header narration switch (it gates automatic narration).
+                  callTTS(summary, undefined, undefined, { force: true });
                 },
                 className: 'px-4 py-2 text-xs font-bold text-slate-300 bg-slate-900/60 rounded-full hover:bg-slate-800 transition-all border border-slate-800 active:scale-[0.97]'
               }, '\uD83D\uDD0A ' + __alloT('stem.circuit.read_aloud_btn', 'Read Aloud'))
@@ -10464,7 +10465,7 @@ function CircuitActiveLessonLab(props) {
                     return h('button', {
                       key: opt.id, type: 'button', 'aria-disabled': no ? 'true' : undefined,
                       onClick: function() { handlePick(opt.id); },
-                      className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold border ' + (no ? 'bg-slate-100 text-slate-500 border-dashed border-rose-300 cursor-default' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-50 hover:border-amber-300') + ' focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
+                      className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold border ' + (no ? 'bg-slate-100 text-slate-600 border-dashed border-rose-300 cursor-default' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-50 hover:border-amber-300') + ' focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
                     }, opt.label, no ? ' (not this one)' : '');
                   })
                 )

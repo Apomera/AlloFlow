@@ -478,9 +478,10 @@ const scored = (lesson) => lesson.blocks[0].items.filter((p) => !p.practice);
 describe('step 1: the four cards, held against the problem sets', () => {
   // The text of each card, as decided. The facts in it are worked out again below from psychometric_math_probes.json.
   // 2026-11-14 (T1/makers2): the Missing Number example uses non-breaking spaces (\u00A0) so "__ + 8 = 14" never wraps mid-equation.
+  // 2026-11-18: that example moved from the card's line to its worked example (.choice-example; tests/packets_maker_examples.test.js).
   const CARDS = [
     ['quantity_discrimination', 'Quantity Discrimination', 'Tap the bigger of two numbers.', '1 minute. Kindergarten and grade 1.'],
-    ['missing_number', 'Missing Number', 'Type the number that is missing from a number sentence, like __\u00a0+\u00a08\u00a0=\u00a014.', '2 minutes. Kindergarten to grade 2.'],
+    ['missing_number', 'Missing Number', 'Type the number that is missing from a number sentence.', '2 minutes. Kindergarten to grade 2.'],
     ['math_computation', 'Math Fluency', 'Add, subtract, multiply or divide, a different mix for each grade.', '2 minutes. Kindergarten to grade 5. Scored by digits correct per minute.'],
     ['own', 'My own problems', 'Type the problems. Every student gets the same ones.', ''],
   ];
@@ -524,7 +525,10 @@ describe('step 1: the four cards, held against the problem sets', () => {
     expect([PC.MEASURES.quantity_discrimination.unit, PC.MEASURES.missing_number.unit]).toEqual(['items_correct', 'items_correct']);
     // The example on the Missing Number card is a real problem: the first one of grade 1, version A (with non-breaking spaces).
     expect(BANK.MISSING_NUMBER_PROBES['1'].A.problems[0].display).toBe('__ + 8 = 14');
-    expect(shown.missing_number.line).toContain('like ' + BANK.MISSING_NUMBER_PROBES['1'].A.problems[0].display.replace(/ /g, '\u00a0') + '.');
+    // 2026-11-18: it is the card's worked example now, not part of its line.
+    const example = page.d.querySelector('#checks input[value="missing_number"]').closest('label').querySelector('.choice-example').textContent;
+    expect(example).toContain('Example: ' + BANK.MISSING_NUMBER_PROBES['1'].A.problems[0].display.replace(/ /g, '\u00a0') + '.');
+    expect(shown.missing_number.line).not.toContain('__');
     // Quantity Discrimination is two numbers and the bigger one is the answer.
     for (const row of formsOf('quantity_discrimination')) for (const p of row.data.problems) expect(p.answer).toBe(Math.max(p.left, p.right));
     // Math Fluency: all four operations across the grades, and no two grades with the same mix.

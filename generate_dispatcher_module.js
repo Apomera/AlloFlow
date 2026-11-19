@@ -5687,9 +5687,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   "feedback": "one or two sentences on sentence structure and vocabulary load",
                   "confirmedLevel": "same as estimatedLevel",
                   "rubric": {
-                    "vocabulary": { "score": 0, "reason": "..." },
-                    "sentenceStructure": { "score": 0, "reason": "..." },
-                    "conceptDensity": { "score": 0, "reason": "..." }
+                    "vocabulary": { "score": <integer -5 to 5>, "reason": "..." },
+                    "sentenceStructure": { "score": <integer -5 to 5>, "reason": "..." },
+                    "conceptDensity": { "score": <integer -5 to 5>, "reason": "..." }
                   },
                   "nuanceSummary": "one sentence on the degree of complexity"
                 }
@@ -5704,7 +5704,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               if (_judge && typeof _judge === 'object') {
                   const _rubric = _judge.rubric && typeof _judge.rubric === 'object' ? _judge.rubric : {};
                   const _dimKeys = ['vocabulary', 'sentenceStructure', 'conceptDensity'];
-                  const _scores = _dimKeys.map(k => Number(_rubric[k] && _rubric[k].score)).filter(Number.isFinite);
+                  const _scoreOf = k => { const v = _rubric[k] && _rubric[k].score; const n = typeof v === 'number' ? v : (typeof v === 'string' && /^\s*[+-]?\d+(\.\d+)?\s*$/.test(v) ? Number(v) : NaN); return Number.isFinite(n) ? n : NaN; };
+                  const _scores = _dimKeys.map(_scoreOf).filter(Number.isFinite);
                   const _mean = _scores.length ? _scores.reduce((a, b) => a + b, 0) / _scores.length : NaN;
                   const _alignment = String(_judge.alignment || '').toLowerCase();
                   const _judgeStatus = Number.isFinite(_mean)
@@ -5745,7 +5746,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   const _shouldRelevel = _agree && !configOverride.relevelPass && Number.isFinite(_fkGrade) && _autoPref('alloflow_auto_relevel');
                   if (_shouldRelevel) {
                       const _simpler = _triangulation.action === 'relevel-simpler';
-                      const _dims = _dimKeys.map(k => `${k} ${Number(_rubric[k] && _rubric[k].score) || 0}`).join(', ');
+                      const _dims = _dimKeys.map(k => Number.isFinite(_scoreOf(k)) ? `${k} ${_scoreOf(k)}` : `${k} not reported`).join(', ');
                       const _directive = `RE-LEVEL PASS (automatic): a previous adaptation of this text measured Flesch-Kincaid grade ${_fkGrade.toFixed(1)} against a target of ${effectiveGrade}${_target ? ` (target range ${_target.fkLabel})` : ''}, and an independent review scored it ${_dims} on a -5..+5 scale where 0 is aligned. ${_simpler
                           ? `Make it clearly SIMPLER: shorter sentences${_target && _target.averageSentenceLengthMax ? ` (average at most ${_target.averageSentenceLengthMax} words)` : ''}, common everyday words, one idea per sentence, and a plain-words definition for any unavoidable technical term. Keep every key idea.`
                           : 'Make it clearly MORE DEMANDING: longer and more varied sentences, precise academic vocabulary, and denser ideas, without inventing new content.'} Keep the same structure, headings, and citations.`;

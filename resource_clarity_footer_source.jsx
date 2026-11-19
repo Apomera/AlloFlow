@@ -40,19 +40,42 @@ function ResourceClarityFooter({ resource, history, index, teacher, sync, hasPre
     if (unchecked) issues.push(text(unchecked===1?'resource_check.timeline_one_unchecked':'resource_check.timeline_unchecked',unchecked===1?'1 timeline item has no saved AI review.':'{count} timeline items have no saved AI review.', { count: unchecked }));
     if (flagged) issues.push(text('resource_check.timeline_flagged', 'AI flagged {count} timeline items for review.', { count: flagged }));
   }
-  const button = 'min-h-11 min-w-0 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-start text-sm font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-indigo-600';
-  return <div key={resource?.id} data-resource-clarity-footer className="shrink-0 border-t border-slate-300 bg-slate-50 p-3 no-print">
-    {teacher && <details data-resource-sharing-check className="mb-3 rounded-lg border border-slate-300 bg-white p-3 text-sm text-slate-900">
-      <summary className="cursor-pointer font-bold">{text('resource_check.title', 'Before sharing')}{issues.length ? ' · ' + text(issues.length===1?'resource_check.one_attention':'resource_check.attention',issues.length===1?'1 check needs attention':'{count} checks need attention', { count: issues.length }) : ''}</summary>
-      <p className="mt-2 text-xs text-slate-700">{text('resource_check.scope', 'Checks cover detected image descriptions and saved Notes/Timeline review states. This is not a complete accessibility or accuracy review.')}</p>
-      {issues.length ? <ul data-resource-check-issues className="mt-2 list-disc space-y-1 ps-5">{issues.map((issue, i) => <li key={i}>{issue}</li>)}</ul> : <p className="mt-2">{text('resource_check.no_flags', 'No concerns were found by these limited checks.')}</p>}
-      <p className="mt-2 text-xs text-slate-700">{text('resource_check.manual', 'Preview the student view. Confirm that instructions, linked activities, audio, and sharing settings work for your learners.')}</p>
-    </details>}
-    <nav aria-label={text('resource_nav.label', 'Resource navigation')} className="items-stretch" style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:'0.5rem'}}>
-      <button type="button" disabled={!hasPrev || !!sync} onClick={() => navigate('prev')} className={button} aria-label={previous ? text('resource_nav.previous_named', 'Previous resource: {title}', { title: title(previous) }) : text('resource_nav.previous', 'Previous resource')}><span className="block">{text('resource_nav.previous', 'Previous resource')}</span>{previous && <span className="block truncate text-xs font-normal" aria-hidden="true">{title(previous)}</span>}</button>
-      <span className="self-center text-center text-xs font-semibold text-slate-700" style={{gridColumn:'1 / -1',gridRow:2}}>{text('resource_nav.counter', 'Resource {current} of {total}', { current: index >= 0 ? index + 1 : '—', total: history.length })}</span>
-      <button type="button" disabled={!hasNext || !!sync} onClick={() => navigate('next')} className={button} style={{gridColumn:2,gridRow:1}} aria-label={next ? text('resource_nav.next_named', 'Next resource: {title}', { title: title(next) }) : text('resource_nav.next', 'Next resource')}><span className="block">{text('resource_nav.next', 'Next resource')}</span>{next && <span className="block truncate text-xs font-normal" aria-hidden="true">{title(next)}</span>}</button>
+  // Slim: one row of navigation; checks open above it. Hide is remembered on this device.
+  // Called inline (not as a component), so no hooks: the toggle flips `hidden` on the DOM.
+  const attention = teacher && issues.length ? text(issues.length===1?'resource_check.one_attention':'resource_check.attention',issues.length===1?'1 check needs attention':'{count} checks need attention', { count: issues.length }) : '';
+  let navHidden = false;
+  try { navHidden = !sync && localStorage.getItem('alloflow_resource_nav_hidden') === '1'; } catch (_) {}
+  const setNavHidden = (event, value) => {
+    const footer = event.currentTarget.closest('[data-resource-clarity-footer]');
+    try { localStorage.setItem('alloflow_resource_nav_hidden', value ? '1' : '0'); } catch (_) {}
+    if (!footer) return;
+    footer.querySelector('[data-resource-nav-full]').hidden = value;
+    footer.querySelector('[data-resource-nav-mini]').hidden = !value;
+    footer.querySelector(value ? '[data-resource-nav-show]' : '[data-resource-nav-hide]')?.focus();
+  };
+  const button = 'min-h-11 min-w-0 rounded-lg px-2 py-1 text-sm font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-indigo-600';
+  return <div key={resource?.id} data-resource-clarity-footer className="relative shrink-0 border-t border-slate-300 bg-slate-50 px-2 py-1 no-print">
+    <div data-resource-nav-full hidden={navHidden}>
+    <nav aria-label={text('resource_nav.label', 'Resource navigation')} className="items-center" style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) auto minmax(0,1fr)',gap:'0.5rem'}}>
+      <button type="button" disabled={!hasPrev || !!sync} onClick={() => navigate('prev')} className={button + ' text-start truncate'} aria-label={previous ? text('resource_nav.previous_named', 'Previous resource: {title}', { title: title(previous) }) : text('resource_nav.previous', 'Previous resource')}><span aria-hidden="true">‹ </span>{previous ? <span aria-hidden="true">{title(previous)}</span> : text('resource_nav.previous', 'Previous resource')}</button>
+      <div className="flex flex-col items-center text-center">
+        <span className="text-xs font-semibold text-slate-700">{text('resource_nav.counter', 'Resource {current} of {total}', { current: index >= 0 ? index + 1 : '—', total: history.length })}</span>
+        {teacher && <details data-resource-sharing-check className="text-xs text-slate-900">
+          <summary className={'min-h-6 cursor-pointer rounded px-1 font-semibold focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (attention ? 'text-amber-900' : 'text-slate-700')}>{text('resource_check.title', 'Before sharing')}{attention ? ' · ' + attention : ''}</summary>
+          <div className="absolute inset-x-2 bottom-full z-20 mb-1 max-h-[50vh] overflow-auto rounded-lg border border-slate-300 bg-white p-3 text-start text-sm shadow-lg">
+            <p className="text-xs text-slate-700">{text('resource_check.scope', 'Checks cover detected image descriptions and saved Notes/Timeline review states. This is not a complete accessibility or accuracy review.')}</p>
+            {issues.length ? <ul data-resource-check-issues className="mt-2 list-disc space-y-1 ps-5">{issues.map((issue, i) => <li key={i}>{issue}</li>)}</ul> : <p className="mt-2">{text('resource_check.no_flags', 'No concerns were found by these limited checks.')}</p>}
+            <p className="mt-2 text-xs text-slate-700">{text('resource_check.manual', 'Preview the student view. Confirm that instructions, linked activities, audio, and sharing settings work for your learners.')}</p>
+          </div>
+        </details>}
+      </div>
+      <div className="flex min-w-0 items-center justify-end gap-1">
+        <button type="button" disabled={!hasNext || !!sync} onClick={() => navigate('next')} className={button + ' text-end truncate'} aria-label={next ? text('resource_nav.next_named', 'Next resource: {title}', { title: title(next) }) : text('resource_nav.next', 'Next resource')}>{next ? <span aria-hidden="true">{title(next)}</span> : text('resource_nav.next', 'Next resource')}<span aria-hidden="true"> ›</span></button>
+        {!sync && <button type="button" data-resource-nav-hide onClick={e => setNavHidden(e, true)} aria-label={text('resource_nav.hide', 'Hide resource navigation')} title={text('resource_nav.hide', 'Hide resource navigation')} className="min-h-11 min-w-11 shrink-0 rounded-lg text-slate-600 hover:bg-slate-200 focus-visible:ring-2 focus-visible:ring-indigo-600"><span aria-hidden="true">⌄</span></button>}
+      </div>
     </nav>
-    {sync && <p role="status" className="mt-2 text-center text-xs text-slate-700">{text('resource_nav.following', 'Following your teacher’s resource. Your teacher controls navigation during this live lesson.')}</p>}
+    {sync && <p role="status" className="mt-1 text-center text-xs text-slate-700">{text('resource_nav.following', 'Following your teacher’s resource. Your teacher controls navigation during this live lesson.')}</p>}
+    </div>
+    {!sync && <div data-resource-nav-mini hidden={!navHidden} className="text-center"><button type="button" data-resource-nav-show onClick={e => setNavHidden(e, false)} className="min-h-6 rounded px-2 text-xs font-semibold text-indigo-800 hover:underline focus-visible:ring-2 focus-visible:ring-indigo-600">{text('resource_nav.show', 'Show resource navigation')}{attention ? ' · ' + attention : ''}</button></div>}
   </div>;
 }

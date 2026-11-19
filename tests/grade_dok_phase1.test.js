@@ -321,7 +321,10 @@ describe('Analysis view: fit to your targets', () => {
         readingLevel: { range: '5th Grade', explanation: 'x' }, concepts: [], accuracy: { rating: 'High', reason: 'r', discrepancies: [], verifiedFacts: [] }, grammar: [], ...data } },
       isTeacherMode: true, isProcessing: false, isEditingAnalysis: false, sourceRefineInstruction: '', downloadingContentId: null, selectedDiscrepancies: new Set(), selectedGrammarErrors: new Set(), analysisEditorRef: { current: null },
       t: key => (data.__t && key === 'input.level_options.g5' ? '5.º grado' : key), formatInlineText: x => x, renderFormattedText: x => x, splitReferencesFromBody: x => ({ body: x, references: '' }),
-      BilingualFieldRenderer: p => React.createElement('span', null, p.text), SourceReferencesPanel: () => null, ...extra,
+      BilingualFieldRenderer: p => React.createElement('span', null, p.text), SourceReferencesPanel: () => null,
+      // 2026-11-17: React copies own props only, so the proxy default never reaches the view. Idea drafts are saved
+      // into the resource since cf1747d6d6 (11-15) through onUpdateResource, which the app passes.
+      onUpdateResource: vi.fn(() => true), ...extra,
     }, { get: (target, key) => key in target ? target[key] : noop });
     act(() => root.render(React.createElement(AnalysisView, props)));
     return container.querySelector('[data-analysis-target-fit]');

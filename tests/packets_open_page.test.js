@@ -427,7 +427,8 @@ describe('where people are pointed to it', () => {
     }
     const door = parse('packets.html');
     // 2026-11-16: also a card of its own, so a student finds it on the first screens (it was only a link 3,215 px down a phone page).
-    expect([...door.querySelectorAll('a[href="packets-open.html"]')].map((a) => [a.textContent, !!a.closest('.card')])).toEqual([['Open a practice file or check', true], ['Open a practice file or check', false]]);
+    // 2026-11-18 (owner): the student's way in now leads the section, a button in its own box above the cards.
+    expect([...door.querySelectorAll('a[href="packets-open.html"]')].map((a) => [a.textContent, !!a.closest('.student-door')])).toEqual([['Open a practice file or check', true], ['Open a practice file or check', false]]);
     expect(door.getElementById('what').textContent).toContain('On a phone or tablet, the student opens it on Open a practice file or check.');
     // All four makers can open a file again and take the handed file.
     for (const file of ['packets-make.html', 'packets-vocab.html', 'packets-check.html', 'packets-math-practice.html']) {

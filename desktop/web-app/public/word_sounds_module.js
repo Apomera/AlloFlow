@@ -2,6 +2,18 @@
   if (window.AlloModules && window.AlloModules.WordSoundsModal) {
     console.log("[CDN] WordSoundsModal already loaded, skipping duplicate");
   } else {
+  // Find Sounds names a position by its place: first and last always, middle in a three-sound word, and
+  // second, third... between in longer words. clip is the isolation bank key, word the written form.
+  const __wsIsoPosition = (index, count) => {
+    const i = typeof index === "number" && index > 0 ? Math.floor(index) : 0;
+    const n = Math.floor(Number(count)) || 0;
+    const clips = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"];
+    const words = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth"];
+    if (i === 0) return { clip: "1st", word: "first" };
+    if (n > 1 && i === n - 1) return { clip: "last", word: "last" };
+    if (n === 3 && i === 1) return { clip: "middle", word: "middle" };
+    return { clip: clips[i] || (i + 1) + "th", word: words[i] || (i + 1) + "th" };
+  };
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-word-sounds')) return;
@@ -8181,6 +8193,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       // Sound activities project no word: seeing it gives readers the answer. Play says it.
       isolation_first_heard: ["word_sounds.present_prompt_isolation_first_heard", "What is the first sound you hear?"],
       isolation_last_heard: ["word_sounds.present_prompt_isolation_last_heard", "What is the last sound you hear?"],
+      isolation_middle_heard: ["word_sounds.present_prompt_isolation_middle_heard", "What is the middle sound you hear?"],
       isolation_n_heard: ["word_sounds.present_prompt_isolation_n_heard", "What is sound number {n}?"],
       segmentation_heard: ["word_sounds.present_prompt_segmentation_heard", "Say each sound you hear."],
       counting_heard: ["word_sounds.present_prompt_counting_heard", "How many sounds do you hear?"],
@@ -8463,7 +8476,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             if (!wsPresentHas(options, sound)) options = [];
             const last = phonemes.length > 1 && position === phonemes.length - 1;
             item = {
-              prompt: position === 0 ? prompt("isolation_first_heard") : last ? prompt("isolation_last_heard") : prompt("isolation_n_heard", { n: position + 1 }),
+              prompt: position === 0 ? prompt("isolation_first_heard") : last ? prompt("isolation_last_heard") : (phonemes.length === 3 && position === 1) ? prompt("isolation_middle_heard") : prompt("isolation_n_heard", { n: position + 1 }),
               audio: [{ text: word }],
               choices: options.map((o) => ({ value: o, label: slash(o), hear: { text: slash(o) } })),
               correct: [sound],
@@ -10715,6 +10728,15 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const incomingTtsSpeed = validTtsSpeed(runtimeSessionConfig.wordSoundsTtsSpeed)
         ?? validTtsSpeed(runtimeSessionConfig.ttsSpeed) ?? validTtsSpeed(wordSoundsTtsSpeed) ?? 1;
       const [ttsSpeed, setTtsSpeed] = React.useState(incomingTtsSpeed);
+      // 2026-11-17: space between a word's sounds in blending (Some 500 ms, More 800, Less 250).
+      const [soundSpace, setSoundSpace] = React.useState(() => { try { const v = localStorage.getItem('allo_ws_sound_space'); return v === 'more' || v === 'less' ? v : 'some'; } catch (_) { return 'some'; } });
+      const soundGapRef = React.useRef(500);
+      soundGapRef.current = isFixedForm ? 500 : soundSpace === 'more' ? 800 : soundSpace === 'less' ? 250 : 500;
+      const changeSoundSpace = value => {
+        const v = value === 'more' || value === 'less' ? value : 'some';
+        setSoundSpace(v);
+        try { localStorage.setItem('allo_ws_sound_space', v); } catch (_) {}
+      };
       React.useEffect(() => {
         setTtsSpeed(incomingTtsSpeed);
       }, [incomingTtsSpeed, configuredSessionId, historyResourceId]);
@@ -12824,15 +12846,13 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         setPlayingOptionIndex(null);
         return handleAudio(input);
       }, [beginIsolationPlayback, handleAudio]);
-      const playIsolationInstruction = React.useCallback(async (position) => {
+      const playIsolationInstruction = React.useCallback(async (position, soundCount) => {
         const run = beginIsolationPlayback();
         if (run === null) return;
         const stale = () => !isMountedRef.current || audioCancelledRef.current || audioRunIdRef.current !== run;
-        const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
-        const index = typeof position === "number" ? position : 0;
-        const ordinal = ordinals[index] || (index + 1) + "th";
-        const instruction = "What is the " + ordinal + " sound?";
-        const bankAudio = window.__ALLO_ISOLATION_AUDIO?.[ordinal];
+        const named = __wsIsoPosition(position, soundCount);
+        const instruction = "What is the " + named.word + " sound?";
+        const bankAudio = window.__ALLO_ISOLATION_AUDIO?.[named.clip];
         try {
           if (bankAudio) {
             const outcome = await handleAudio({ audioSrc: bankAudio, playbackRate: 0.9 });
@@ -12944,7 +12964,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             if (audioRunIdRef.current !== myRun || audioCancelledRef.current) return;
             const phoneme = wordSoundsPhonemes?.phonemes?.[i];
             await handleAudio(phoneme);
-            await new Promise((r) => setTimeout(r, 500));
+            await new Promise((r) => setTimeout(r, soundGapRef.current));
           }
           await new Promise((r) => setTimeout(r, 200));
           if (audioRunIdRef.current !== myRun || audioCancelledRef.current) return;
@@ -13124,23 +13144,13 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                     (() => {
                       const pos =
                         typeof data.position === "number" ? data.position : 0;
-                      const ordinals = [
-                        "1st",
-                        "2nd",
-                        "3rd",
-                        "4th",
-                        "5th",
-                        "6th",
-                        "7th",
-                        "8th",
-                      ];
-                      return `What is the ${ordinals[pos] || pos + 1 + "th"} sound?`;
+                      return `What is the ${__wsIsoPosition(pos, data.soundCount).word} sound?`;
                     })(),
                   ),
                   /*#__PURE__*/ React.createElement(
                     "button",
                     {
-                      onClick: () => { stopSequence(); return onPlayInstruction(data.position); },
+                      onClick: () => { stopSequence(); return onPlayInstruction(data.position, data.soundCount); },
                       className:
                         "p-2 rounded-full bg-slate-100 hover:bg-violet-100 text-slate-600 hover:text-violet-600 transition-colors",
                       title: t("common.repeat_instruction"),
@@ -18826,6 +18836,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const preparedState = {
             word: currentWordSoundsWord || currentWord,
             currentPosition: preparedIsolation.position || 0,
+            soundCount: wordSoundsPhonemes?.phonemes?.length || 0,
             correctSound: preparedIsolation.correctSound,
             correctAnswer: preparedIsolation.correctSound,
             isoOptions: trimSoundChoices("isolation", [...preparedIsolation.options], preparedIsolation.correctSound),
@@ -19077,6 +19088,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setIsolationState({
             word: currentWordSoundsWord,
             currentPosition,
+            soundCount: phonemes.length,
             correctSound: effectiveCorrect,
             correctAnswer: effectiveCorrect,
             isoOptions,
@@ -19133,6 +19145,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setIsolationState({
             word: currentWordSoundsWord,
             currentPosition: pos,
+            soundCount: phonemes.length,
             correctSound: correct,
             correctAnswer: correct,
             isoOptions: trimSoundChoices("isolation", fisherYatesShuffle([correct, ...dists.slice(0, 5)]), correct),
@@ -20039,7 +20052,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ];
               const posKey =
                 typeof posRaw === "number"
-                  ? ordinals[posRaw]
+                  ? __wsIsoPosition(posRaw, isoWaitState.soundCount).clip
                   : posKeyMap[posRaw] || posRaw;
               const isolationBank = window.__ALLO_ISOLATION_AUDIO;
               const readIsolationClip = () => (isolationBank ? isolationBank[posKey] : null);
@@ -20070,7 +20083,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   "twelfth",
                 ];
                 const posStr =
-                  typeof posRaw === "number" ? ordinalNames[posRaw] : posRaw;
+                  typeof posRaw === "number" ? __wsIsoPosition(posRaw, isoWaitState.soundCount).word : posRaw;
                 const longPrompt = `What is the ${posStr || "target"} sound in ${currentWordSoundsWord}?`;
                 // A prepared clip of the shorter wording beats depending on speech
                 // that may not be ready; Repeat uses that same wording.
@@ -22370,7 +22383,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "10th",
                   ];
                   const posKey =
-                    ordinals[isolationState?.currentPosition || 0] ||
+                    __wsIsoPosition(isolationState?.currentPosition || 0, isolationState?.soundCount).clip ||
                     "fallback";
                   if (window.__ALLO_ISOLATION_AUDIO[posKey]) {
                     handleAudio(window.__ALLO_ISOLATION_AUDIO[posKey]);
@@ -22838,6 +22851,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 data: {
                   word: currentWordSoundsWord,
                   position: currentPosition,
+                  soundCount: isolationState?.soundCount || wordSoundsPhonemes?.phonemes?.length || 0,
                   options: isoOptions,
                   correctSound: correctSound,
                   image:
@@ -24406,7 +24420,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                   "label",
                   { htmlFor: "ws-tracing-cases", className: "font-semibold" },
-                  "Letters to trace:",
+                  ts("word_sounds.tracing_cases_label") || "Letters to trace:",
                 ),
                 /*#__PURE__*/ React.createElement(
                   "select",
@@ -24422,9 +24436,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     },
                     className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600",
                   },
-                  /*#__PURE__*/ React.createElement("option", { value: "both" }, "Capital and lowercase"),
-                  /*#__PURE__*/ React.createElement("option", { value: "capital" }, "Capital only"),
-                  /*#__PURE__*/ React.createElement("option", { value: "lowercase" }, "Lowercase only"),
+                  /*#__PURE__*/ React.createElement("option", { value: "both" }, ts("word_sounds.tracing_cases_both") || "Capital and lowercase"),
+                  /*#__PURE__*/ React.createElement("option", { value: "capital" }, ts("word_sounds.tracing_cases_capital") || "Capital only"),
+                  /*#__PURE__*/ React.createElement("option", { value: "lowercase" }, ts("word_sounds.tracing_cases_lowercase") || "Lowercase only"),
                 ),
               ),
               isLowercaseBonus &&
@@ -27580,6 +27594,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     },
                     ttsSpeed,
                     "x",
+                  ),
+                ),
+                !isFixedForm &&
+                /*#__PURE__*/ React.createElement(
+                  "label",
+                  { className: "flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs", "data-testid": "ws-sound-space" },
+                  /*#__PURE__*/ React.createElement("span", null, ts("word_sounds.take_home_player_tools_sounds") || "Space between sounds"),
+                  /*#__PURE__*/ React.createElement(
+                    "select",
+                    {
+                      value: soundSpace,
+                      onChange: (e) => changeSoundSpace(e.target.value),
+                      title: ts("word_sounds.take_home_player_tools_sounds_hint") || "The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together.",
+                      className: "bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold",
+                    },
+                    /*#__PURE__*/ React.createElement("option", { value: "more" }, ts("word_sounds.take_home_player_tools_sounds_1") || "More"),
+                    /*#__PURE__*/ React.createElement("option", { value: "some" }, ts("word_sounds.take_home_player_tools_sounds_0") || "Some"),
+                    /*#__PURE__*/ React.createElement("option", { value: "less" }, ts("word_sounds.take_home_player_tools_sounds_2") || "Less"),
                   ),
                 ),
               );

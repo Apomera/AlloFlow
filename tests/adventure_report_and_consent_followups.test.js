@@ -21,9 +21,14 @@ describe('mission report follow-ups (2026-08-23)', () => {
 
 describe('portrait consent back-fill (2026-08-23)', () => {
   it('accepted uploads are stamped with explicit consent going forward', () => {
+    // 2026-11-17: the cast lobby call (with its upload handler) left the host for the cold-path screens module
+    // (tests/third_wave_cdn_extraction.test.js). The stamp is pinned where it lives now, source and built file.
     for (const [name, src] of [['ANTI', anti], ['App.jsx', app]]) {
-      expect(src, name).toContain('portrait: dataUrl, isUserUploaded: true, uploadConsent: true, isGenerating: false');
+      expect(src, name).not.toContain('portrait: dataUrl, isUserUploaded: true');
+      expect(src, name).toContain('<AdventureCastLobbyView\n');
     }
+    expect(fs.readFileSync('view_cold_path_screens_source.jsx', 'utf8')).toContain('portrait: dataUrl, isUserUploaded: true, uploadConsent: true, isGenerating: false');
+    expect(fs.readFileSync('view_cold_path_screens_module.js', 'utf8')).toMatch(/portrait: dataUrl,\s+isUserUploaded: true,\s+uploadConsent: true,\s+isGenerating: false/);
   });
 
   it('resuming a pre-guard save shows the disclosure once and stamps it distinctly', () => {

@@ -999,7 +999,9 @@ describe('Document Builder export recommendations', () => {
         { question: 'Too many', options: ['A', 'B', 'C', 'D', 'E'], correctAnswer: 'A' },
       ] },
     });
-    expect(quiz).toMatchObject({ library: 'Single Choice Set 1.11', total: 2, valid: 1, omitted: 1, ready: true });
+    // 2026-11-17: every quiz now exports as Question Set 1.21 (the same package export_source.jsx builds), which has no
+    // four-answer limit, so the five-option question is kept instead of omitted.
+    expect(quiz).toMatchObject({ library: 'Question Set 1.21', total: 2, valid: 2, omitted: 0, ready: true });
 
     const mixed = helpers._builderH5PCompatibility({
       type: 'quiz',
@@ -1054,7 +1056,8 @@ describe('Document Builder export recommendations', () => {
     expect(source).toContain("add('warning', 'epub-media'");
     // 585a61ba2 (2026-10-10) localized the name; the English fallback is unchanged.
     expect(source).toContain('aria-label={t("export_preview.accessibility.quiz_to_export_as_qti") || "Quiz to export as QTI"}');
-    expect(source).toContain('await handler({ generatedContent: selected.item })');
+    // 2026-11-17: the chosen activity now travels with the preview's export settings and builder selection.
+    expect(source).toContain('await handler({ generatedContent: selected.item, exportConfig, builderResourceIds })');
     // 2026-11-11: the IMS package keeps the page runtime (keepScripts), like Download HTML.
     expect(source).toContain('await handler({ liveHtml: packageHtml, liveTitle: built.title })');
     expect(source).toContain('getCleanBuilderDocument({ forExport: true, keepScripts: true })');

@@ -68,6 +68,44 @@
   var TRIAL_WORDS = 16;
   var HELD_BACK_REASON = 'not enough recorded sounds yet';
   var CARD_NOTES = { letter_tracing: 'Practice only. It is not scored.' };
+  // BEGIN ACTIVITY EXAMPLES (same in packets-make.js and word_sounds_setup_source.jsx; tests/activity_examples.test.js)
+  var WS_ACTIVITY_EXAMPLES = {
+    rhyming: { q: 'Which word rhymes with cat: hat, dog or sun?', a: 'hat' },
+    syllable_counting: { q: 'How many syllables do you hear in rabbit?', a: '2' },
+    syllable_blending: { q: 'Listen to the parts rab and bit. What word do they make?', a: 'rabbit' },
+    word_families: { q: 'Which words belong to the -at family: hat, mat or sun?', a: 'hat and mat' },
+    isolation: { q: 'What is the first sound in sun?', a: '/s/' },
+    sound_sort: { q: 'Which words start with /m/: map, moon or cat?', a: 'map and moon' },
+    blending: { q: 'Listen to the sounds /k/ /a/ /t/. What word do they make?', a: 'cat' },
+    segmentation: { q: 'Say each sound in ship.', a: '/sh/ /i/ /p/' },
+    counting: { q: 'How many sounds do you hear in ship?', a: '3' },
+    manipulation: { q: 'Say cat. Now change /k/ to /h/.', a: 'hat' },
+    mapping: { q: 'Which letters spell each sound in ship?', a: 'sh, i, p' },
+    letter_tracing: { q: 'Trace the first letter of sun.', a: '' },
+    missing_letter: { q: 'c _ t: which letter is missing?', a: 'a' },
+    orthography: { q: 'Hear dog, then spell it with letter tiles.', a: 'd, o, g' },
+    word_scramble: { q: 'Unscramble the letters t, a, c to make a word.', a: 'cat' },
+    spelling_bee: { q: 'Hear jump, then type it.', a: 'jump' },
+    decoding: { q: 'Read fish, then choose its picture.', a: '' },
+    read_sentence: { q: 'Finish the sentence: The cat sat on the ___ (mat or run).', a: 'mat' },
+    sentence_match: { q: 'Read "The dog is in the box." Which pictures match it?', a: '' },
+    read_passage: { q: 'Read a short story, then choose the word that finishes a sentence about it.', a: '' }
+  };
+  var wsActivityExampleText = function (id) {
+    var row = WS_ACTIVITY_EXAMPLES[id];
+    return row ? 'Example: ' + row.q + (row.a ? ' Answer: ' + row.a + '.' : '') : '';
+  };
+  // END ACTIVITY EXAMPLES
+  // What students do in each activity, for the one line under a group's name (from each activity's skill line).
+  var ACTIVITY_DOING = {
+    rhyming: 'hear which words rhyme', syllable_counting: 'clap the syllables in a word', syllable_blending: 'blend syllables into a word',
+    word_families: 'hear which words share an ending', isolation: 'find a sound in a word', sound_sort: 'sort words by their first or last sound',
+    blending: 'blend sounds into a word', segmentation: 'break a word into its sounds', counting: 'count the sounds in a word',
+    manipulation: 'change one sound to make a new word', mapping: 'match each sound to the letters that spell it',
+    letter_tracing: 'trace the first letter of a word', missing_letter: 'choose the missing letter', orthography: 'spell a word they hear with letter tiles',
+    word_scramble: 'put mixed-up letters in order', spelling_bee: 'type a word they hear', decoding: 'read a word and match it to its picture',
+    read_sentence: 'finish a sentence they read', sentence_match: 'match a sentence to pictures', read_passage: 'read a short story'
+  };
   // Letter Trace: which letters a file traces (word_sounds_packet_builder.js, tracingCases).
   var TRACE_CASES = ['both', 'capital', 'lowercase'];
   // Choices: how many answers a board shows (word_sounds_packet_builder.js, opts.choices), and the activities it changes.
@@ -217,8 +255,13 @@
       var head = el('summary', 'strand-head');
       var title = el('h3', '', strand.name);
       title.id = 'strand-' + strand.key;
+      var area = typeof core.strandBig5Label === 'function' ? core.strandBig5Label(strand.key) : '';
+      if (area) title.appendChild(el('span', 'strand-area', ' · ' + area));
       head.appendChild(title);
       head.appendChild(el('span', 'strand-count'));
+      // Every offered activity has a phrase, or the line is left out rather than naming only some of them.
+      var doing = strand.ids.map(function (id) { return ACTIVITY_DOING[id]; });
+      if (doing.length && doing.every(Boolean)) head.appendChild(el('span', 'strand-line', 'Students ' + listed(doing) + '.'));
       group.appendChild(head);
       var usual = (USUAL[strand.key] || []).filter(function (id) { return strand.ids.indexOf(id) >= 0; });
       if (usual.length && usual.length < strand.ids.length) {
@@ -244,6 +287,7 @@
         label.appendChild(box);
         label.appendChild(el('span', 'choice-name', core.activityLabel(id)));
         label.appendChild(el('span', 'choice-line', core.activitySkillLabel(id) + '.'));
+        if (wsActivityExampleText(id)) label.appendChild(el('span', 'choice-example', wsActivityExampleText(id)));
         if (CARD_NOTES[id]) label.appendChild(el('span', 'choice-note', CARD_NOTES[id]));
         list.appendChild(label);
       });
@@ -572,11 +616,26 @@
     var add = $('group-add');
     if (add) { add.disabled = state.groups.length >= MAX_GROUPS; add.textContent = state.groups.length ? 'Add a third group of words' : 'Add another group of words'; }
     if (groupFocus) { var to = $(groupFocus) || add; groupFocus = ''; if (to && typeof to.focus === 'function') to.focus(); }
+    drawMore2();
   }
   function groupFields(index) {
     var first = index < 0, group = first ? null : state.groups[index], id = first ? 'g0' : 'g' + (index + 1);
+    // 2026-11-17: the words chosen at the top have one field here, their label; each further group is one compact row.
+    if (first) {
+      var mine = el('div', 'field group-first');
+      var own = document.createElement('select');
+      own.id = 'g0-label';
+      GROUP_LABELS.forEach(function (text) { var o = el('option', '', text); o.value = text; own.appendChild(o); });
+      own.value = state.label;
+      own.addEventListener('change', function () { state.label = own.value; groupFocus = own.id; pickChanged(true); });
+      var ownLabel = el('label', '', 'Label of the main words (only you see it)');
+      ownLabel.setAttribute('for', own.id);
+      mine.appendChild(ownLabel);
+      mine.appendChild(own);
+      return mine;
+    }
     var part = picked && picked.parts ? picked.parts[index + 1] : null;
-    var box = el('fieldset', 'group');
+    var box = el('fieldset', 'group group-row');
     box.setAttribute('data-group-index', String(index + 1));
     box.appendChild(el('legend', '', first ? 'First group: the choices above' : (index === 0 ? 'Second group' : 'Third group')));
     var fields = el('div', 'group-fields');
@@ -590,17 +649,17 @@
       node.addEventListener('change', function () { onChange(node.value); groupFocus = node.id; pickChanged(true); });
       return node;
     };
-    field('Label (only you see it)', select('label', GROUP_LABELS, first ? state.label : group.label, function (v) { if (first) state.label = v; else group.label = v; }));
+    field('Label', select('label', GROUP_LABELS, first ? state.label : group.label, function (v) { if (first) state.label = v; else group.label = v; }));
     if (!first) {
       field('Grade level', select('stage', 'f-stage', group.stage, function (v) { group.stage = v; }));
-      field('A sound to practice', select('sound', 'f-sound', group.sound, function (v) { group.sound = v; }));
+      field('Sound', select('sound', 'f-sound', group.sound, function (v) { group.sound = v; }));
       field('Pattern', select('shape', 'f-shape', group.shape, function (v) { group.shape = v; }));
       var number = document.createElement('input');
       // A text box with the number keypad: it takes the page's field style (a number box was 33 px tall).
       number.type = 'text'; number.id = id + '-count'; number.inputMode = 'numeric'; number.maxLength = 2; number.autocomplete = 'off'; number.setAttribute('pattern', '[0-9]*');
       number.value = String(group.count);
       number.addEventListener('change', function () { var n = Math.floor(Number(number.value)); group.count = n >= 1 ? Math.min(MAX_GROUP_WORDS, n) : 1; groupFocus = number.id; pickChanged(true); });
-      field('How many words', number);
+      field('Words', number);
     }
     box.appendChild(fields);
     if (!first) {
@@ -608,14 +667,17 @@
       var says = !part ? '' : part.pool === 0 ? 'No words fit these choices.'
         : got < group.count ? (part.pool < group.count ? 'Only ' + count(part.pool, 'word fits', 'words fit') + '.' : 'The file has room for ' + count(got, 'word') + ' from this group. A longer file (step 3) has room for more.')
           : count(got, 'word') + ' in the file: ' + part.words.join(', ') + '.';
+      var foot = el('div', 'group-foot');
       var said = el('p', 'result-sub group-said', says);
       said.id = id + '-said';
-      box.appendChild(said);
-      var remove = el('button', 'btn btn-text btn-small', 'Remove this group');
+      foot.appendChild(said);
+      var remove = el('button', 'btn btn-text btn-small', 'Remove');
       remove.type = 'button';
       remove.id = id + '-remove';
+      remove.setAttribute('aria-label', 'Remove the ' + (index === 0 ? 'second' : 'third') + ' group');
       remove.addEventListener('click', function () { state.groups.splice(index, 1); groupFocus = 'group-add'; pickChanged(true); });
-      box.appendChild(remove);
+      foot.appendChild(remove);
+      box.appendChild(foot);
     }
     return box;
   }
@@ -742,8 +804,12 @@
       now.push(state.shape ? state.shape + ' pattern' : 'any pattern');
     }
     now.push('version ' + state.version);
+    // 2026-11-17: groups of words and choosing the words yourself are in this box too.
+    if (groupsOn()) now.push(count(state.groups.length + 1, 'group of words', 'groups of words'));
+    if (picking && state.hand) now.push('words chosen yourself');
     setText('more-2-now', now.join(', '));
-    openMore('more-2', state.version !== 'A' || (picking && (!!state.sound || !!state.shape || otherStage(stageRow(state.stage)))));
+    show('more-2-words', picking);
+    openMore('more-2', state.version !== 'A' || (picking && (!!state.sound || !!state.shape || otherStage(stageRow(state.stage)) || groupsOn() || !!state.hand)));
   }
   function pickChanged(keepRemoved) {
     if (!keepRemoved) state.removed = [];
@@ -774,7 +840,7 @@
     setText('pick-line', fit === 0 ? 'No words fit these choices.' : fit < need ? 'Only ' + count(fit, 'word fits', 'words fit') + '.' : count(fit, 'word fits', 'words fit') + '.');
     setText('pick-sub', fit === 0 ? 'Loosen one choice to get words.'
       : fit < need ? 'Your file uses up to ' + count(need, 'word') + '. You can go on with these, or get more by loosening one choice.'
-        : fit > need ? 'The file uses ' + count(need, 'word') + ', shown here. Remove a word and another takes its place.'
+        : fit > need ? 'The file uses ' + count(picked.parts ? picked.parts.reduce(function (n, part) { return n + part.words.length; }, 0) : need, 'word') + ', shown here. Remove a word and another takes its place.'
           : 'All of them are in the file.');
     drawChips();
     // What also matched and why it is not offered: counted, never dropped silently.
@@ -1841,9 +1907,18 @@
     else if (state.hand) what = 'chosen words';
     else if (state.sound) what = soundName(state.sound).replace(/ \(.*\)$/, '') + ' words';
     else if (state.shape) what = state.shape + ' words';
-    else if (state.stage) what = stageName(state.stage);
+    else if (state.stage) what = STAGE_PRACTICE[state.stage] || (levelRow(state.stage) ? stageName(state.stage).toLowerCase() : 'mixed words');
     return 'Word Sounds: ' + what + ', version ' + state.version;
   }
+  // What a stage practices, for the file title a student sees (2026-11-18: no grade or year in it, to avoid stigma).
+  // The teacher still sees the grade in the stage picker. Examples are taken from each stage's own description.
+  var STAGE_PRACTICE = {
+    'K early': 'short-vowel words (cat, sun, hop)', 'K late': 'short words with long vowels (he, go, hi)',
+    'G1 early': 'words with sh, ch, th and blends (ship, chin, thin)', 'G1 late': 'final e and vowel teams (make, rain, boat)',
+    'G2': 'more vowel teams and spellings (out, cow, night)', 'G3+': 'longer words (station, vision, picture)',
+    'Reception': 'letter sounds and first digraphs (cat, ship)', 'Year 1': 'final e, vowel teams and r-controlled vowels (make, rain, car)',
+    'Year 2': 'soft c and g, kn, wr and -tion (city, knee, station)'
+  };
   // A title that ends with the version (", version B", as the page's own titles do) follows the version chosen.
   var TITLE_VERSION = /, version [ABC]$/;
   function titleNow() {

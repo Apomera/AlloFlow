@@ -1249,6 +1249,14 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -1425,6 +1433,14 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -1617,6 +1633,14 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -1782,6 +1806,14 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -1938,6 +1970,14 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -2030,6 +2070,14 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </button>
 </div>
 </div>
+<div class="flex items-center justify-center gap-2 text-sm text-slate-700">
+<label for="ws-tracing-cases" class="font-semibold">Letters to trace:</label>
+<select id="ws-tracing-cases" data-ws-tracing-cases="true" class="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">
+<option value="both" selected="">Capital and lowercase</option>
+<option value="capital">Capital only</option>
+<option value="lowercase">Lowercase only</option>
+</select>
+</div>
 <div class="flex flex-col items-center animate-in fade-in">
 <canvas role="presentation" aria-hidden="true" width="320" height="320" class="hidden">
 </canvas>
@@ -2040,11 +2088,12 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </canvas>
 </div>
 </div>
-<div class="flex items-center justify-center gap-3 mb-6">
+<div class="flex items-center justify-center gap-3 mb-3">
 <span class="text-5xl font-black text-violet-600 bg-violet-50 w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner">C</span>
 <span class="text-lg text-slate-600 font-medium">for <span class="font-bold text-slate-700">cat</span>
 </span>
 </div>
+<p data-ws-trace-how="true" class="text-sm text-slate-600 font-medium text-center max-w-sm mb-4 px-2">Start at the green dot. Follow the arrow.</p>
 <div class="flex gap-4">
 <button class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
 <span class="lucide-icon" data-icon="Trash2">
@@ -2135,6 +2184,14 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -2313,6 +2370,14 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -2499,6 +2564,14 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -2703,6 +2776,14 @@ exports[`layer 2 — render behavior per activity > activity "read_passage" rend
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -2869,6 +2950,14 @@ exports[`layer 2 — render behavior per activity > activity "read_sentence" ren
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -3035,6 +3124,14 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -3219,6 +3316,14 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -3407,6 +3512,14 @@ exports[`layer 2 — render behavior per activity > activity "sentence_match" re
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -3571,6 +3684,14 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -3760,6 +3881,14 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -3989,6 +4118,14 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -4150,6 +4287,14 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -4327,6 +4472,14 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -4537,6 +4690,14 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
@@ -4714,6 +4875,14 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
+<label class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs" data-testid="ws-sound-space">
+<span>Space between sounds</span>
+<select title="The pause between the sounds of a word when it is sounded out. More helps hear each sound; less helps put them together." class="bg-white/90 text-slate-900 rounded-md px-1 py-0.5 text-xs font-bold">
+<option value="more">More</option>
+<option value="some" selected="">Some</option>
+<option value="less">Less</option>
+</select>
+</label>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">

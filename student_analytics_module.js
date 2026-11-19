@@ -10,12 +10,16 @@
   // teacher's device, so the runner covers the dashboard (other students' data)
   // instead of sitting inside it. z-index sits above the Assessment Center
   // overlays (300) and below its confirm dialog (400).
+  // The sheet is portalled to <body>, outside the app's theme wrapper, so it carries the teacher's theme itself
+  // (2026-11-17): a student who needs dark or high contrast keeps it during the probe.
   function SaProbeFullscreen(props) {
-    var R = window.React;
-    var sheet = R.createElement('div', {
+    var React = window.React;
+    var theme = props.theme === 'dark' || props.theme === 'contrast' ? props.theme : 'light';
+    var sheet = React.createElement('div', {
       role: 'dialog', 'aria-modal': 'true', 'aria-label': props.label, 'data-probe-fullscreen': props.kind,
-      style: { position: 'fixed', inset: 0, zIndex: 350, background: '#f8fafc', overflowY: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '16px' }
-    }, R.createElement('div', { className: props.className, style: { width: '100%', maxWidth: '44rem', marginTop: '6vh' } }, props.children));
+      className: `theme-${theme} bg-slate-50`,
+      style: { position: 'fixed', inset: 0, zIndex: 350, overflowY: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '16px' }
+    }, React.createElement('div', { className: props.className, style: { width: '100%', maxWidth: '44rem', marginTop: '6vh' } }, props.children));
     var RD = window.ReactDOM;
     return RD && typeof RD.createPortal === 'function' && typeof document !== 'undefined' && document.body ? RD.createPortal(sheet, document.body) : sheet;
   }
@@ -1071,7 +1075,7 @@ try {
         out.gameCompletions = {};
         Object.keys(data.gameCompletions).slice(0, 40).forEach(function(k) {
           var arr = data.gameCompletions[k];
-          out.gameCompletions[k] = Array.isArray(arr) ? arr.slice(-10) : arr;
+          out.gameCompletions[k] = Array.isArray(arr) ? arr.slice(k === 'symbolRunner' ? -40 : -10) : arr;
         });
       }
     } catch (e) { return null; }
@@ -1868,6 +1872,179 @@ try {
       h('ul', { className: 'list-disc pl-5 text-xs text-slate-800 space-y-0.5' }, list.map(function(r, i) { return h('li', { key: i }, _acWsWrongText(t, r)); })));
   }
   // END WORD SOUNDS SESSIONS AND SKILLS
+  // Symbol Runner rounds from the student's file, per symbol set: the first and the latest round. Practice, so no norms.
+  // A set compares only rounds answered the way its latest round was (aiming first is slower; rehearsal is easier).
+  // From the third such round: a small chart of seconds per card and one of first-try answers, and the rounds as a table.
+  function _acSrRounds(h, t, student) {
+    var gc = student && student.data && student.data.gameCompletions;
+    var list = gc && Array.isArray(gc.symbolRunner) ? gc.symbolRunner.filter(function(e) { return e && typeof e === 'object' && Number(e.total) > 0; }) : [];
+    if (!list.length) return null;
+    var n = function(v) { var x = Math.round(Number(v) || 0); return x > 0 ? x : 0; };
+    var txt = function(v, max) { return typeof v === 'string' || typeof v === 'number' ? String(v).replace(/\s+/g, ' ').trim().slice(0, max || 80) : ''; };
+    var secs = function(ms) { var x = Number(ms) || 0; return x > 0 ? (Math.round(x / 100) / 10).toFixed(1) : '—'; };
+    var day = function(at) { var d = new Date(at); return isNaN(d.getTime()) ? '' : d.toLocaleDateString(); };
+    var first = function(e) { return Math.min(n(e.firstTry), n(e.total)); };
+    var pct = function(e) { return n(e.total) ? Math.round(first(e) / n(e.total) * 100) : 0; };
+    var way = function(e) { return txt(e.controlMode, 20) + (e.rehearsal ? '|r' : ''); };
+    var line = function(key, fb, e) { return _acWsText(t, key, fb, { date: day(e.completedAt), first: first(e), total: n(e.total), secs: secs(e.medianMs) }); };
+    var sets = {}, order = [];
+    list.forEach(function(e) { var k = txt(e.mode, 40) || '?'; if (!sets[k]) { sets[k] = []; order.push(k); } sets[k].push(e); });
+    return h('div', { 'data-sr-rounds': 'true', className: 'mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl' },
+      h('h4', { className: 'font-bold text-amber-900 mb-1' }, '⚡ ', list.length === 1
+        ? _acWsText(t, 'class_analytics.sr_heading_one', 'Symbol Runner: naming practice (1 round)')
+        : _acWsText(t, 'class_analytics.sr_heading', 'Symbol Runner: naming practice ({n} rounds)', { n: list.length })),
+      h('p', { className: 'text-xs text-slate-700 mb-2' }, _acWsText(t, 'class_analytics.sr_note', 'Practice rounds the student played. Not a timed measure: sets and round lengths vary, so compare a set only with itself.')),
+      h('ul', { className: 'space-y-2' }, order.map(function(k) {
+        var r = sets[k], z = r[r.length - 1];
+        var same = r.filter(function(e) { return way(e) === way(z); }), a = same[0], other = r.length - same.length;
+        var tricky = Array.isArray(z.tricky) ? z.tricky.map(function(x) { return txt(x, 24); }).filter(Boolean).slice(0, 4) : [];
+        var mixed = Array.isArray(z.mixedUp) ? z.mixedUp.filter(function(c) { return c && typeof c === 'object'; }).slice(0, 5).map(function(c) {
+          return _acWsText(t, 'class_analytics.sr_mixed_item', '{picked} for {target}', { picked: txt(c.picked, 24), target: txt(c.target, 24) });
+        }) : [];
+        var heard = n(z.helped);
+        var nextKind = _acSrNextKind(r), next = nextKind === 'ready'
+          ? _acWsText(t, 'class_analytics.sr_next_ready', 'Suggestion: the last 3 rounds were 90% or more right on the first try. This set looks secure; try a new set.')
+          : nextKind === 'rehearse' ? _acWsText(t, 'class_analytics.sr_next_rehearse', 'Suggestion: under 70% right on the first try. A rehearsal round, with known symbols mixed in among the tricky ones, may help.')
+          : nextKind === 'shorter' ? _acWsText(t, 'class_analytics.sr_next_shorter', 'Suggestion: under 70% right on the first try, even with rehearsal. A shorter round (10 cards) may help.') : '';
+        return h('li', { key: k, 'data-sr-set': k, className: 'bg-white rounded-lg p-3 border border-amber-100 text-xs text-slate-800' },
+          h('div', { className: 'flex flex-wrap justify-between gap-2 mb-1' },
+            h('span', { className: 'font-medium text-sm text-slate-900' }, txt(z.setTitle, 80) || k),
+            h('span', { className: 'text-slate-700' }, r.length === 1 ? _acWsText(t, 'class_analytics.sr_rounds_one', '1 round') : _acWsText(t, 'class_analytics.sr_rounds', '{n} rounds', { n: r.length }))),
+          h('p', null, line('class_analytics.sr_latest', 'Latest ({date}): {first} of {total} right on the first try, {secs} s a card.', z)),
+          same.length > 1 ? h('p', { className: 'text-slate-700' }, line('class_analytics.sr_earliest', 'First ({date}): {first} of {total} right on the first try, {secs} s a card.', a)) : null,
+          other ? h('p', { className: 'text-slate-700' }, other === 1
+            ? _acWsText(t, 'class_analytics.sr_other_way_one', '1 round answered another way is left out of this comparison.')
+            : _acWsText(t, 'class_analytics.sr_other_way', '{n} rounds answered another way are left out of this comparison.', { n: other })) : null,
+          heard ? h('p', { className: 'text-slate-700' }, heard === 1 ? _acWsText(t, 'class_analytics.sr_heard_one', 'Heard the sound on 1 card.') : _acWsText(t, 'class_analytics.sr_heard', 'Heard the sound on {n} cards.', { n: heard })) : null,
+          tricky.length ? h('p', null, _acWsText(t, 'class_analytics.sr_tricky', 'Tricky in the latest round: {list}', { list: tricky.join(', ') })) : null,
+          mixed.length ? h('p', null, _acWsText(t, 'class_analytics.sr_mixed', 'Mixed up: {list}', { list: mixed.join(', ') })) : null,
+          next ? h('p', { 'data-sr-next': nextKind, className: 'mt-1 font-medium text-slate-900' }, next) : null,
+          same.length >= 3 ? _acSrTrend(h, t, same, { secs: secs, day: day, first: first, pct: pct, n: n }) : null);
+      })));
+  }
+  // The trend for one set: two small one-line charts (each its own scale) and the same rounds as a table.
+  function _acSrTrend(h, t, rounds, f) {
+    var times = rounds.map(function(e) { var ms = Number(e.medianMs) || 0; return ms > 0 ? ms / 1000 : null; });
+    var shares = rounds.map(f.pct);
+    var shown = times.filter(function(v) { return v != null; });
+    var charts = [];
+    if (shown.length >= 2) {
+      var top = Math.max.apply(null, shown) * 1.15;
+      charts.push(_acSrSpark(h, {
+        kind: 'secs', values: times, max: top,
+        title: _acWsText(t, 'class_analytics.sr_chart_secs', 'Seconds per card (lower is quicker)'),
+        label: _acWsText(t, 'class_analytics.sr_chart_secs_label', 'Seconds per card over {n} rounds: {a} at first, {b} in the latest.', { n: rounds.length, a: f.secs(shown[0] * 1000), b: f.secs(shown[shown.length - 1] * 1000) }),
+        show: function(v) { return (Math.round(v * 10) / 10).toFixed(1); },
+        point: function(i) { return _acWsText(t, 'class_analytics.sr_point_secs', '{date}: {secs} s a card', { date: f.day(rounds[i].completedAt), secs: f.secs(rounds[i].medianMs) }); }
+      }));
+    }
+    charts.push(_acSrSpark(h, {
+      kind: 'first', values: shares, max: 100,
+      title: _acWsText(t, 'class_analytics.sr_chart_first', 'Right on the first try (%)'),
+      label: _acWsText(t, 'class_analytics.sr_chart_first_label', 'Right on the first try over {n} rounds: {a}% at first, {b}% in the latest.', { n: rounds.length, a: shares[0], b: shares[shares.length - 1] }),
+      show: function(v) { return v + '%'; },
+      point: function(i) { return _acWsText(t, 'class_analytics.sr_point_first', '{date}: {pct}% right on the first try', { date: f.day(rounds[i].completedAt), pct: shares[i] }); }
+    }));
+    var th = function(key, fb) { return h('th', { scope: 'col', className: 'text-left font-medium pr-3 py-1' }, _acWsText(t, key, fb)); };
+    return h('div', { 'data-sr-trend': 'true', className: 'mt-2' },
+      h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, charts),
+      h('p', { className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.sr_chart_note', 'Each dot is a round, oldest on the left.')),
+      h('details', { className: 'mt-1' },
+        h('summary', { className: 'cursor-pointer text-slate-800 font-medium' }, _acWsText(t, 'class_analytics.sr_table', 'Rounds as a table')),
+        h('div', { className: 'overflow-x-auto' }, h('table', { className: 'mt-1 text-xs text-slate-800' },
+          h('thead', null, h('tr', null,
+            th('class_analytics.sr_col_date', 'Date'), th('class_analytics.sr_col_first', 'Right on the first try'),
+            th('class_analytics.sr_col_secs', 'Seconds per card'), th('class_analytics.sr_col_heard', 'Heard the sound'))),
+          h('tbody', null, rounds.map(function(e, i) {
+            return h('tr', { key: i, className: 'border-t border-slate-200' },
+              h('td', { className: 'pr-3 py-1' }, f.day(e.completedAt)),
+              h('td', { className: 'pr-3 py-1' }, f.first(e) + ' / ' + f.n(e.total)),
+              h('td', { className: 'pr-3 py-1' }, f.secs(e.medianMs)),
+              h('td', { className: 'pr-3 py-1' }, String(f.n(e.helped))));
+          }))))));
+  }
+  // One small line chart: a 2 px line in the text color of its class (so the app's themes recolor it), 8 px dots, a
+  // faint baseline at 0, the first and latest values written beside their dots, and a hover title on every dot.
+  function _acSrSpark(h, o) {
+    var W = 260, H = 76, L = 6, R = 40, T = 16, B = 10;
+    var vals = o.values, count = vals.length;
+    var x = function(i) { return L + (count > 1 ? i * (W - L - R) / (count - 1) : 0); };
+    var y = function(v) { return T + (H - T - B) * (1 - Math.max(0, Math.min(1, v / (o.max || 1)))); };
+    var d = '', pen = false, idx = [];
+    vals.forEach(function(v, i) {
+      if (v == null) { pen = false; return; }
+      d += (pen ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1) + ' ';
+      pen = true; idx.push(i);
+    });
+    var firstI = idx[0], lastI = idx[idx.length - 1];
+    return h('figure', { key: o.kind, 'data-sr-chart': o.kind, className: 'm-0' },
+      h('figcaption', { className: 'text-[11px] font-medium text-slate-800 mb-0.5' }, o.title),
+      h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': o.label, className: 'block text-amber-800', style: { maxWidth: '320px', overflow: 'visible' } },
+        h('line', { x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: 'currentColor', strokeOpacity: 0.25, strokeWidth: 1 }),
+        h('path', { d: d.trim(), fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+        idx.map(function(i) {
+          return h('g', { key: i },
+            h('circle', { cx: x(i), cy: y(vals[i]), r: 4, fill: 'currentColor' }),
+            h('circle', { cx: x(i), cy: y(vals[i]), r: 11, fill: 'transparent', 'data-sr-hit': 'true' }, h('title', null, o.point(i))));
+        }),
+        h('g', { className: 'text-slate-800', fill: 'currentColor', style: { fontSize: '11px' } },
+          h('text', { x: x(firstI), y: y(vals[firstI]) - 7, textAnchor: 'start' }, o.show(vals[firstI])),
+          lastI !== firstI ? h('text', { x: x(lastI) + 8, y: y(vals[lastI]) + 4, textAnchor: 'start' }, o.show(vals[lastI])) : null)));
+  }
+  // A careful next step for one set's rounds (oldest first): 'ready' after three rounds answered the latest way at 90% or
+  // more right on the first try; under 70% in the latest, 'rehearse', or 'shorter' when it was already a rehearsal round
+  // of more than 10 cards; else ''.
+  function _acSrNextKind(r) {
+    var ok = (Array.isArray(r) ? r : []).filter(function(e) { return e && typeof e === 'object' && Number(e.total) > 0; });
+    if (!ok.length) return '';
+    var z = ok[ok.length - 1];
+    var way = function(e) { return String(e.controlMode || '') + (e.rehearsal ? '|r' : ''); };
+    var pct = function(e) { var total = Math.round(Number(e.total) || 0), first = Math.min(total, Math.max(0, Math.round(Number(e.firstTry) || 0))); return total > 0 ? first / total * 100 : 0; };
+    var recent = ok.filter(function(e) { return way(e) === way(z); }).slice(-3);
+    if (recent.length === 3 && recent.every(function(e) { return pct(e) >= 90; })) return 'ready';
+    if (pct(z) < 70 && !z.rehearsal) return 'rehearse';
+    if (pct(z) < 70 && Math.round(Number(z.count) || 0) > 10) return 'shorter';
+    return '';
+  }
+  // Symbol Runner across the class: one row per student with rounds, those who may need help first; a name opens the
+  // student's details. Practice, not a measure (the Assessment Center has the RAN probe).
+  function _acSrClass(h, t, students, open, now) {
+    var at = typeof now === 'number' ? now : Date.now();
+    var txt = function(v, max) { return typeof v === 'string' || typeof v === 'number' ? String(v).replace(/\s+/g, ' ').trim().slice(0, max || 80) : ''; };
+    var n = function(v) { var x = Math.round(Number(v) || 0); return x > 0 ? x : 0; };
+    var rank = { rehearse: 0, shorter: 1, '': 2, ready: 3 };
+    var rows = (Array.isArray(students) ? students : []).map(function(st, i) {
+      var gc = st && st.data && st.data.gameCompletions;
+      var list = gc && Array.isArray(gc.symbolRunner) ? gc.symbolRunner.filter(function(e) { return e && typeof e === 'object' && Number(e.total) > 0; }) : [];
+      if (!list.length) return null;
+      var z = list[list.length - 1];
+      var setRounds = list.filter(function(e) { return txt(e.mode, 40) === txt(z.mode, 40); });
+      var week = list.filter(function(e) { var d = new Date(e.completedAt).getTime(); return d && at - d >= 0 && at - d < 7 * 864e5; }).length;
+      return { st: st, i: i, z: z, week: week, next: _acSrNextKind(setRounds), name: txt(st.name, 60) || '?' };
+    }).filter(Boolean);
+    if (!rows.length) return null;
+    rows.sort(function(a, b) { return rank[a.next] - rank[b.next] || a.name.localeCompare(b.name); });
+    var short = { ready: ['class_analytics.sr_short_ready', 'Ready for a new set'], rehearse: ['class_analytics.sr_short_rehearse', 'Try a rehearsal round'], shorter: ['class_analytics.sr_short_shorter', 'Try a shorter round'] };
+    var secs = function(ms) { var x = Number(ms) || 0; return x > 0 ? (Math.round(x / 100) / 10).toFixed(1) : '\u2014'; };
+    var th = function(key, fb) { return h('th', { scope: 'col', className: 'text-left font-medium text-slate-800 px-2 py-1' }, _acWsText(t, key, fb)); };
+    return h('div', { 'data-sr-class': 'true', className: 'mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl' },
+      h('h3', { className: 'font-bold text-amber-900 mb-1' }, '\u26A1 ', _acWsText(t, 'class_analytics.sr_class_heading', 'Symbol Runner across the class')),
+      h('p', { className: 'text-xs text-slate-700 mb-2' }, _acWsText(t, 'class_analytics.sr_class_note', 'Students whose files have Symbol Runner rounds. Practice, not a measure (the Assessment Center has the RAN probe). Open a student for the details.')),
+      h('div', { className: 'overflow-x-auto' }, h('table', { className: 'w-full text-xs text-slate-800 bg-white rounded-lg', style: { minWidth: '34rem' } },
+        h('thead', null, h('tr', null,
+          th('class_analytics.sr_col_student', 'Student'), th('class_analytics.sr_col_week', 'Rounds in the last 7 days'), th('class_analytics.sr_col_set', 'Latest set'),
+          th('class_analytics.sr_col_latest', 'Latest round'), th('class_analytics.sr_col_next', 'Suggestion'))),
+        h('tbody', null, rows.map(function(row) {
+          var z = row.z, total = n(z.total), first = Math.min(total, n(z.firstTry));
+          return h('tr', { key: row.i, 'data-sr-class-row': row.next || 'none', className: 'border-t border-amber-100' },
+            h('td', { className: 'px-2 py-1' }, h('button', { type: 'button', onClick: function() { if (typeof open === 'function') open(row.st); },
+              className: 'min-h-11 text-left font-medium text-indigo-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700' }, row.name)),
+            h('td', { className: 'px-2 py-1' }, String(row.week)),
+            h('td', { className: 'px-2 py-1' }, txt(z.setTitle, 80) || txt(z.mode, 40)),
+            h('td', { className: 'px-2 py-1 whitespace-nowrap' }, _acWsText(t, 'class_analytics.sr_latest_cell', '{first} of {total}, {secs} s a card', { first: first, total: total, secs: secs(z.medianMs) })),
+            h('td', { className: 'px-2 py-1 font-medium' }, row.next ? _acWsText(t, short[row.next][0], short[row.next][1]) : '\u2014'));
+        })))));
+  }
   // BEGIN TAKE-HOME RESULTS IMPORT
   // Results files a learner saved from a take-home practice file become Word
   // Sounds sessions on the matching student: the CSV "alloflow-packet-result/1"
@@ -4235,6 +4412,7 @@ try {
         bingo: null,
         wordScramble: null,
         definitionDetective: null,
+        symbolRunner: null,
         labelChallengeAvg: 0,
         labelChallengeAttempts: 0,
         labelChallengeBest: 0,
@@ -4307,12 +4485,13 @@ try {
           matching: 'matchingGame',
           syntaxScramble: 'syntaxScramble',
           crossword: 'crosswordGame',
-          timelineGame: 'timelineGame',
-          conceptSortGame: 'conceptSortGame',
+          timeline: 'timelineGame',
+          conceptSort: 'conceptSortGame',
           vennDiagram: 'vennDiagram',
           bingo: 'bingo',
           wordScramble: 'wordScramble',
-          definitionDetective: 'definitionDetective'
+          definitionDetective: 'definitionDetective',
+          symbolRunner: 'symbolRunner'
         };
         for (const [rawType, statKey] of Object.entries(typeMap)) {
           const entries = data.gameCompletions[rawType] || [];
@@ -10562,7 +10741,7 @@ try {
       },
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 text-white rounded-lg font-bold text-sm hover:from-purple-800 hover:to-indigo-800 transition-all shadow-md"
     }, "\u25B6 Start Missing Number"), _acCkSaveButton(React.createElement, t, 'missing_number', checkFileActions)), _acCkSaveDialog(React.createElement, t, 'missing_number', checkFileActions), numeracyHandback && !mnProbeActive && !qdProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
-      kind: 'handback', label: 'Probe finished',
+      kind: 'handback', label: 'Probe finished', theme: theme,
       className: "bg-white rounded-xl border-2 border-slate-300 p-8 shadow-lg text-center"
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-2xl font-bold text-slate-800 mb-2"
@@ -10573,7 +10752,7 @@ try {
       onClick: () => setNumeracyHandback(null),
       className: "px-5 py-3 bg-slate-800 text-white rounded-lg font-bold text-sm"
     }, "Teacher: show results")), mnProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
-      kind: 'missing_number', label: 'Missing Number probe',
+      kind: 'missing_number', label: 'Missing Number probe', theme: theme,
       className: "bg-white rounded-xl border-2 border-purple-300 p-6 shadow-lg"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap items-center justify-between gap-2 mb-4"
@@ -10832,7 +11011,7 @@ try {
       },
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-700 to-sky-700 text-white rounded-lg font-bold text-sm hover:from-cyan-800 hover:to-sky-800 transition-all shadow-md"
     }, "\u25B6 Start QD Probe"), _acCkSaveButton(React.createElement, t, 'quantity_discrimination', checkFileActions)), _acCkSaveDialog(React.createElement, t, 'quantity_discrimination', checkFileActions), qdProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
-      kind: 'quantity_discrimination', label: 'Quantity Discrimination probe',
+      kind: 'quantity_discrimination', label: 'Quantity Discrimination probe', theme: theme,
       className: "bg-white rounded-xl border-2 border-cyan-300 p-6 shadow-lg"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap items-center justify-between gap-2 mb-4"
@@ -11075,7 +11254,7 @@ try {
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg font-bold text-sm hover:from-emerald-800 hover:to-teal-800 transition-all shadow-md"
     }, "\uD83D\uDCCA Export RTI Report"), /*#__PURE__*/React.createElement("span", {
       className: "text-xs text-slate-600"
-    }, "Download CSV with practice review groups, metrics, and educator-review suggestions")), importedStudents.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    }, "Download CSV with practice review groups, metrics, and educator-review suggestions")), _acSrClass(React.createElement, t, importedStudents, setSelectedStudent), importedStudents.length === 0 ? /*#__PURE__*/React.createElement("div", {
       className: "text-center py-12 text-slate-600"
     }, /*#__PURE__*/React.createElement(Users, {
       size: 48,
@@ -12875,6 +13054,10 @@ try {
       key: 'definitionDetective',
       label: 'Definition Detective',
       icon: '🔎'
+    }, {
+      key: 'symbolRunner',
+      label: 'Symbol Runner',
+      icon: '⚡'
     }].filter(g => selectedStudent.stats[g.key]).map(game => {
       const s = selectedStudent.stats[game.key];
       return /*#__PURE__*/React.createElement("div", {
@@ -12909,7 +13092,7 @@ try {
       }, s.best > s.initial ? `+${Math.round(s.best - s.initial)}%` : '—'), /*#__PURE__*/React.createElement("div", {
         className: "text-[11px] text-slate-600 uppercase"
       }, "Growth"))));
-    }))), selectedStudent.data?.labelChallengeResults?.length > 0 && /*#__PURE__*/React.createElement("div", {
+    }))), _acSrRounds(React.createElement, t, selectedStudent), selectedStudent.data?.labelChallengeResults?.length > 0 && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_label_challenge",
       className: "mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl"
     }, /*#__PURE__*/React.createElement("h4", {

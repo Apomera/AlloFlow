@@ -890,9 +890,10 @@
 
   // A sleeping or backgrounded laptop fires every pending module's 30 s
   // watchdog at once on wake; the script usually still arrives. Once it has,
-  // that timeout is not something anyone can act on.
+  // that timeout is not something anyone can act on. Same for a [CDN-FAIL]
+  // that the pinned mirror rescued (an older Canvas paste's SRI pins).
   function recoveredModule(e) {
-    var m = /^\[CDN-TIMEOUT\] (\S+) did not settle/.exec((e && e.message) || '');
+    var m = /^\[CDN-(?:TIMEOUT|FAIL)\] (\S+) (?:did not settle|network error)/.exec((e && e.message) || '');
     if (!m) return '';
     try {
       if (window.AlloModules && window.AlloModules[m[1]]) return m[1];
@@ -2264,11 +2265,11 @@
   }
   try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' || tab === 'session' || tab === 'search' || tab === 'compat' ? tab : 'errors'); }; } catch (_) {}
 
-  // A timed-out module that arrives later drops out of the count.
+  // A timed-out or failed module that arrives later drops out of the count.
   try {
     window.addEventListener('alloflow:module-registry-changed', function () {
       updateBadge();
-      if (buffer.some(function (e) { return e.load === LOAD_ID && /^\[CDN-TIMEOUT\]/.test(e.message || ''); })) refreshPanelForLog();
+      if (buffer.some(function (e) { return e.load === LOAD_ID && /^\[CDN-(?:TIMEOUT|FAIL)\]/.test(e.message || ''); })) refreshPanelForLog();
     });
   } catch (_) {}
 

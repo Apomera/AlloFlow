@@ -94,8 +94,9 @@ describe('brainAtlas sentences carry their values as placeholders', () => {
       ['p_correct_points', '+{points} points'],
       ['p_answer_revealed', 'Answer revealed: {name}'],
       ['p_not_the_target', '{name} is not the target'],
-      ['p_depth_first_side', 'first side visible'],
-      ['p_depth_opposite_side', 'opposite side visible'],
+      // 7d9bda5674 replaced the first/opposite-side pair with one sentence
+      // that names the retained side as a placeholder.
+      ['cutaway_depth_retained', 'Depth {percent}% · retained toward {side}'],
       ['p_milestone_count', '{count} milestones'],
       ['p_target_count', '{count} targets'],
     ].forEach(([key, part]) => {
