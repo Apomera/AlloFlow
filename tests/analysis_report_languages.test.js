@@ -504,7 +504,7 @@ describe('analysis report languages preserve the selected source', () => {
     const props = makeProps({}, { callGemini: vi.fn(async () => 'The fox jumps over the lazy dog.') });
     render(props);
     await act(async () => fixGrammar().click());
-    expect(props.callGemini.mock.calls[0][0]).toContain('SOURCE TEXT:\nThe fox jupms over the lazy dog.');
+    expect(props.callGemini.mock.calls[0][0]).toContain('<UNTRUSTED_SOURCE_TEXT>\nThe fox jupms over the lazy dog.');
     expect(props.callGemini.mock.calls[0][0]).not.toContain('El zorro');
     expect(props.onCorrectAnalysisText).toHaveBeenCalledWith('analysis-a', 'The fox jupms over the lazy dog.', 'The fox jumps over the lazy dog.', ['Spelling: jupms']);
     act(() => buttons().find(button => button.dataset.helpKey === 'analysis_download_audio').click());

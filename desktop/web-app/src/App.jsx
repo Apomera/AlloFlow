@@ -44411,8 +44411,6 @@ const handleSubmitOrganizerReflection = async (...__a) => _alloHostHandlers().ha
       {/* Top-centre toasts clear the measured header (mainTopOffset) and avoid Generate buttons, saved-device/homework banners, and lower-right tools. Match the slide-in direction. */}
       <div
         data-toast-region
-        role="region"
-        aria-label={t('common.notifications') || 'Notifications'}
         className="fixed inset-x-4 z-[170] flex flex-col items-stretch gap-3 pointer-events-none sm:left-1/2 sm:right-auto sm:w-full sm:max-w-md sm:-translate-x-1/2"
         style={{ top: `calc(${Math.max(0, mainTopOffset)}px + 0.75rem)` }}
       >

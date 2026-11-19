@@ -769,8 +769,8 @@ describe('AlloBot hands-free agent button', () => {
     expect(src).toContain("role=\"menuitemcheckbox\"");
     // Escape and outside-click must close it — a menu dismissible only by its
     // own trigger is a keyboard trap.
-    // 946e0f8a8 made the Escape branch a block (preventDefault + focus return); it must still close the menu.
-    expect(src).toMatch(/ev\.key === 'Escape'\)(?: \{\s*ev\.preventDefault\(\);)?\s*setChatMenuOpen\(false\)/);
+    // 946e0f8a8 made the Escape branch a block (preventDefault + focus return) and later added an IME composition guard; it must still close the menu.
+    expect(src).toMatch(/ev\.key === 'Escape'\)(?: \{\s*(?:if \(ev\.isComposing \|\| ev\.keyCode === 229\) return;\s*)?ev\.preventDefault\(\);)?\s*setChatMenuOpen\(false\)/);
     expect(src).toContain("document.addEventListener('mousedown', onDown)");
     expect(src).toContain('document.removeEventListener');
     // Show Me is demoted to a preference and says so: pointing happens anyway.

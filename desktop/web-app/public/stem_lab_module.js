@@ -4767,7 +4767,8 @@
           '.stem-catalog-chip-icon { font-size: 14px; line-height: 1; }',
           '.stem-tool-matchmaker { margin: 0 0 14px; padding: 12px; border-radius: 14px; border: 1px solid rgba(99,102,241,0.30); box-shadow: 0 10px 24px rgba(15,23,42,0.07); }',
           '.stem-tool-matchmaker-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: stretch; }',
-          '.stem-tool-matchmaker-input { min-height: 42px; border-radius: 10px; padding: 0 12px; font-size: 13px; font-weight: 700; border: 1px solid rgba(148,163,184,0.45); outline: none; }',
+          '.stem-tool-matchmaker-input { min-height: 42px; border-radius: 10px; padding: 0 12px; font-size: 13px; font-weight: 700; border: 1px solid rgba(148,163,184,0.45); }',
+          '.stem-tool-matchmaker-input:focus-visible { outline: 3px solid var(--stem-card-focus, #4f46e5); outline-offset: 2px; }',
           '.stem-tool-matchmaker-button { min-height: 42px; padding: 0 14px; border-radius: 10px; font-size: 12px; font-weight: 900; border: 1px solid rgba(99,102,241,0.45); display: inline-flex; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; }',
           '.stem-tool-matchmaker-status { margin-top: 8px; font-size: 11px; font-weight: 800; }',
           '.stem-tool-ai-suggestions { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 10px; }',
@@ -4781,8 +4782,8 @@
           '.stem-tool-card:hover { background-color: var(--stem-card-hover) !important; border-color: var(--stem-card-accent) !important; transform: translateY(-2px) !important; box-shadow: 0 16px 28px rgba(15,23,42,0.12) !important; }',
           '.stem-tool-card:focus-visible { outline: 3px solid var(--stem-card-focus) !important; outline-offset: 3px !important; }',
           '.stem-tool-card-icon { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background-color: var(--stem-card-icon-bg); }', '.theme-contrast .stem-tool-card-icon { color: #000000 !important; }',
-          '.stem-tool-card h4 { color: var(--stem-card-title) !important; line-height: 1.25; }',
-          '.stem-tool-card p { color: var(--stem-card-desc) !important; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }',
+          '.stem-tool-card h4, .stem-tool-card .stem-tool-card-title { color: var(--stem-card-title) !important; line-height: 1.25; }',
+          '.stem-tool-card p, .stem-tool-card .stem-tool-card-desc { color: var(--stem-card-desc) !important; line-height: 1.55; }',
           '.stem-active-toolbar { position: sticky; top: 0; z-index: 100; flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 24px; border-bottom: 1px solid rgba(148,163,184,0.24); backdrop-filter: blur(12px); }',
           '.stem-active-tool-main { display: flex; align-items: center; gap: 10px; min-width: 0; }',
           '.stem-active-tool-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; background: rgba(99,102,241,0.10); }',
@@ -4792,7 +4793,7 @@
           '.stem-active-tool-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }',
           '.stem-active-tool-back { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.35); font-size: 12px; font-weight: 900; }',
           '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
-          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 10px 12px 10px 88px !important; align-items: center !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 160px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 19px !important; line-height: 1.1 !important; white-space: nowrap; } .stem-lab-title-lockup p { font-size: 11.5px !important; line-height: 1.3 !important; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 2px !important; gap: 2px !important; flex-wrap: wrap; max-width: 100%; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 36px !important; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span { display: none !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 10px 12px 10px 88px !important; align-items: center !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 160px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 19px !important; line-height: 1.1 !important; white-space: nowrap; } .stem-lab-title-lockup p { font-size: 11.5px !important; line-height: 1.3 !important; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 2px !important; gap: 2px !important; flex-wrap: wrap; max-width: 100%; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 36px !important; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span { display: none !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4, .stem-tool-card .stem-tool-card-title { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p, .stem-tool-card .stem-tool-card-desc { font-size: 16px !important; line-height: 1.55; } }',
           '@media (max-width: 640px) { .stem-lab-modal-shell { max-height: 100% !important; } .stem-lab-scroll-region { scrollbar-gutter: auto; } }',
           '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
@@ -4853,8 +4854,8 @@
             '[data-stem-lab] .text-purple-800, [data-stem-lab] .text-purple-700, [data-stem-lab] .text-purple-600, [data-stem-lab] .text-violet-800, [data-stem-lab] .text-violet-700, [data-stem-lab] .text-violet-600, [data-stem-lab] .text-fuchsia-700, [data-stem-lab] .text-fuchsia-600 { color: #c4b5fd !important; }',
             '[data-stem-lab] .text-rose-800, [data-stem-lab] .text-rose-700, [data-stem-lab] .text-rose-600, [data-stem-lab] .text-pink-800, [data-stem-lab] .text-pink-700, [data-stem-lab] .text-pink-600, [data-stem-lab] .text-red-700, [data-stem-lab] .text-red-600 { color: #fca5a5 !important; }',
             '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }',
-            '[data-stem-lab] .stem-tool-card h4 { color: #f1f5f9 !important; }',
-            '[data-stem-lab] .stem-tool-card p { color: #cbd5e1 !important; }',
+            '[data-stem-lab] .stem-tool-card h4, [data-stem-lab] .stem-tool-card .stem-tool-card-title { color: #f1f5f9 !important; }',
+            '[data-stem-lab] .stem-tool-card p, [data-stem-lab] .stem-tool-card .stem-tool-card-desc { color: #cbd5e1 !important; }',
             '[data-stem-lab] .stem-tool-card:focus-visible { outline: 3px solid #fbbf24 !important; outline-offset: 3px !important; }',
           ].map(function (rule) {
             // Dark theme paints each tool on renderTool's light card; these remaps are for the
@@ -4878,8 +4879,8 @@
             '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #000000 !important; color: #ffffff !important; border: 2px solid #fbbf24 !important; }',
             '[data-stem-lab] button { border: 1px solid #fbbf24 !important; }',
             '[data-stem-lab] .stem-tool-card { background-color: #000000 !important; border: 2px solid #fbbf24 !important; border-top-width: 4px !important; }',
-            '[data-stem-lab] .stem-tool-card h4 { color: #fbbf24 !important; }',
-            '[data-stem-lab] .stem-tool-card p { color: #ffffff !important; }',
+            '[data-stem-lab] .stem-tool-card h4, [data-stem-lab] .stem-tool-card .stem-tool-card-title { color: #fbbf24 !important; }',
+            '[data-stem-lab] .stem-tool-card p, [data-stem-lab] .stem-tool-card .stem-tool-card-desc { color: #ffffff !important; }',
             '[data-stem-lab] .stem-tool-card:focus-visible { outline: 3px solid #fbbf24 !important; outline-offset: 3px !important; }',
           ].join('\n');
         }
@@ -5080,13 +5081,15 @@
         try {
           if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
         } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       }
       var _stemAiText = _stemAiUsable('text', callGemini);
+      if (!_stemAiText) callGemini = null;
       var _stemAiImages = _stemAiUsable('images', callImagen);
       var _stemAiVision = _stemAiUsable('vision', callGeminiVision);
       var _stemAiImageEdit = _stemAiUsable('imageEdit', callGeminiImageEdit);
-      var _aiPending = {};
+      var _aiPendingRef = React.useRef({});
+      var _aiPending = _aiPendingRef.current;
       var _stemGrade = gradeLevel || '5th Grade';
 
       // AI Hints: default OFF, teacher-controlled. localStorage mirror so the
@@ -6593,8 +6596,16 @@
             if (window.AlloPostFXEnabled === false) return;
             var _ens = function(cb){
               if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
-              var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-              var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+              if (window._isDesktopBundledApp === true) { cb(); return; }
+              var u = [
+                ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js', 'sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj'],
+                ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js', 'sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R'],
+                ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js', 'sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg'],
+                ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js', 'sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs'],
+                ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js', 'sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3'],
+                ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js', 'sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa']
+              ];
+              var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i][0]; s.integrity=u[i][1]; s.crossOrigin="anonymous"; s.referrerPolicy="no-referrer"; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
             };
             _ens(function(){
               try {
@@ -7419,7 +7430,7 @@
           },
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
           "aria-pressed": _narrationOn,
-          "aria-label": "Toggle canvas narration TTS",
+          "aria-label": _narrationOn ? "TTS — toggle canvas narration" : "Mute — toggle canvas narration",
           title: !_narrationOn ? 'Canvas narration OFF — click to enable spoken descriptions'
             : _narrationPref === 'on' ? 'Canvas narration ON — click to disable'
             : _stemTxt(t('stem.narration.tool_voice_title'), 'stem.narration.tool_voice_title', 'This tool reads aloud by default — click to turn narration off')
@@ -7451,7 +7462,7 @@
         _stemTeacherView && !callGemini && /*#__PURE__*/React.createElement("button", {
           onClick: function () { try { if (typeof onOpenAiSetup === 'function') onOpenAiSetup(); } catch (e) {} },
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
-          "aria-label": 'AI extras are off. No AI backend is set up. Click to see the ways to turn AI on.',
+          "aria-label": 'AI extras: off — no AI backend is set up. Click to see the ways to turn AI on.',
           title: 'AI extras (hints, coaching) are off because no AI backend is set up. The lab itself works fully without them. Click to set one up, or use AlloFlow inside Gemini Canvas for free AI.'
         }, '✨', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, 'AI extras: off')),
         isTeacherMode && !!callGemini && /*#__PURE__*/React.createElement("button", {
@@ -7654,9 +7665,11 @@
                             report += '\n';
                           });
                           report += '\nStation: ' + _activeStation.name + ' | Tools: ' + _activeStation.tools.join(', ');
-                          if (navigator.clipboard) {
-                            navigator.clipboard.writeText(report).then(function() {
+                          if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                            Promise.resolve(navigator.clipboard.writeText(report)).then(function() {
                               if (addToast) addToast('\uD83D\uDCCB Report copied to clipboard!', 'success');
+                            }, function() {
+                              if (addToast) addToast('Could not copy to clipboard.', 'error');
                             });
                           }
                         },
@@ -9465,7 +9478,7 @@
                   cursor: _stemToolSuggesting ? 'wait' : 'pointer',
                   opacity: _stemToolSuggesting ? 0.78 : 1
                 },
-                "aria-label": _stemToolSuggesting ? "Thinking..." : "Suggest tools with AI"
+                "aria-label": _stemToolSuggesting ? "Thinking..." : "Suggest tools — with AI"
               }, React.createElement("span", { "aria-hidden": "true" }, "AI"), React.createElement("span", null, _stemToolSuggesting ? "Thinking..." : "Suggest tools"))
             ),
             (_stemToolSuggesting || _stemToolSuggestError) && React.createElement("p", {
@@ -9525,7 +9538,7 @@
           // ── Station Controls ──
           React.createElement("div", { className: "flex items-center gap-2 mb-4" },
             // Create Station button
-            _stemClassAuthoring && React.createElement("button", { "aria-label": "Toggle station builder",
+            _stemClassAuthoring && React.createElement("button", { "aria-label": _showStationBuilder ? "Close Builder — toggle station builder" : "Create Station — toggle station builder",
               onClick: function() { _setShowStationBuilder(!_showStationBuilder); },
               className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
                 (_showStationBuilder ? "bg-indigo-600 text-white" : "bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100")
@@ -10056,18 +10069,18 @@
                   },
                     React.createElement("span", { className: "font-bold text-indigo-800 flex-1" }, st.name),
                     st.grade ? React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold" }, "Gr " + st.grade) : null,
-                    React.createElement("span", { className: "text-[11px] text-slate-500" }, st.tools.length + " tools"),
-                    st.timeEstimate ? React.createElement("span", { className: "text-[11px] text-slate-500" }, st.timeEstimate) : null,
-                    React.createElement("button", { "aria-label": "Load saved station",
+                    React.createElement("span", { className: "text-[11px] text-slate-600" }, st.tools.length + " tools"),
+                    st.timeEstimate ? React.createElement("span", { className: "text-[11px] text-slate-600" }, st.timeEstimate) : null,
+                    React.createElement("button", { type: "button", "aria-label": "Load saved station: " + st.name,
                       onClick: function() {
                         _setActiveStationId(st.id);
                         _setShowStationBuilder(false);
                         if (st.grade && typeof props.setGradeLevel === 'function') props.setGradeLevel(st.grade);
                         if (addToast) addToast('\uD83C\uDFAF Station loaded!', 'success');
                       },
-                      className: "text-[10px] font-bold text-indigo-600 hover:text-indigo-800"
+                      className: "min-h-6 px-2 text-xs font-bold text-indigo-700 hover:text-indigo-900"
                     }, "Load"),
-                    React.createElement("button", { "aria-label": "Delete station: " + st.name,
+                    React.createElement("button", { type: "button", "aria-label": "Delete station: " + st.name,
                       onClick: function() {
                         var filtered = _savedStations.filter(function(s) { return s.id !== st.id; });
                         // Same order as save: an unwritten delete would drop the
@@ -10076,7 +10089,7 @@
                         _setSavedStations(filtered);
                         if (_activeStationId === st.id) _setActiveStationId(null);
                       },
-                      className: "text-[10px] font-bold text-red-400 hover:text-red-600"
+                      className: "min-w-6 min-h-6 inline-flex items-center justify-center text-xs font-bold text-red-700 hover:text-red-900"
                     }, "\u2715")
                   );
                 })
@@ -10089,8 +10102,8 @@
             React.createElement("div", { className: "flex items-center gap-2 mb-1" },
               React.createElement("span", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDFAF " + _activeStation.name),
               _activeStation.grade ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-800 font-bold" }, "Grade " + _activeStation.grade) : null,
-              _activeStation.timeEstimate ? React.createElement("span", { className: "text-[10px] text-emerald-600" }, "\u23F1 " + _activeStation.timeEstimate) : null,
-              React.createElement("span", { className: "text-[10px] text-emerald-600" }, _activeStation.tools.length + " tools")
+              _activeStation.timeEstimate ? React.createElement("span", { className: "text-[10px] text-emerald-800" }, "\u23F1 " + _activeStation.timeEstimate) : null,
+              React.createElement("span", { className: "text-[10px] text-emerald-800" }, _activeStation.tools.length + " tools")
             ),
             _activeStation.teacherNote ? React.createElement("p", { className: "text-xs text-emerald-700 italic mt-1" }, "\uD83D\uDCDD " + _activeStation.teacherNote) : null
           ) : null,
@@ -10104,7 +10117,7 @@
                   key: tool.id,
                   className: "stem-tool-category mt-3 first:mt-0"
                 }, /*#__PURE__*/React.createElement("h3", {
-                  className: "text-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-1 mb-1"
+                  className: "text-sm font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200 pb-1 mb-1"
                 }, tool.label));
               }
               var _ci = _cardIndex++;
@@ -10137,8 +10150,9 @@
                 _cardStyle.animation = 'stemCardIn 0.35s ease-out both';
                 _cardStyle.animationDelay = (_ci * 40) + 'ms';
               }
-              return /*#__PURE__*/React.createElement("button", { "aria-label": tool.label + ': ' + (tool.desc || 'STEM tool'),
+              return /*#__PURE__*/React.createElement("button", {
                 key: tool.id,
+                type: "button",
                 'data-stem-tool-id': tool.id,
                 'data-stem-card-color': _cardColor,
                 onClick: function () {
@@ -10150,21 +10164,22 @@
                 title: tool.desc || tool.label,
                 className: 'stem-tool-card group p-5 rounded-2xl border-2 text-left transition-all duration-200',
                 style: _cardStyle
-              }, /*#__PURE__*/React.createElement("div", {
-                className: "stem-tool-card-icon text-3xl mb-2"
-              }, tool.icon), /*#__PURE__*/React.createElement("h4", {
-                className: 'font-bold text-sm mb-1'
-              }, tool.label), /*#__PURE__*/React.createElement("p", {
-                className: 'text-xs'
+              }, /*#__PURE__*/React.createElement("span", {
+                className: "stem-tool-card-icon text-3xl mb-2",
+                'aria-hidden': "true"
+              }, tool.icon), /*#__PURE__*/React.createElement("span", {
+                className: 'stem-tool-card-title block font-bold text-sm mb-1'
+              }, tool.label), /*#__PURE__*/React.createElement("span", {
+                className: 'stem-tool-card-desc block text-xs'
               }, tool.desc));
             })),
               // No results message
-              _hasCatalogFilter && _toolCount === 0 && /*#__PURE__*/React.createElement("div", { className: "text-center py-12 text-slate-400" },
-            /*#__PURE__*/React.createElement("div", { className: "text-4xl mb-2" }, "\uD83D\uDD0D"),
+              _hasCatalogFilter && _toolCount === 0 && /*#__PURE__*/React.createElement("div", { className: "text-center py-12 text-slate-600" },
+            /*#__PURE__*/React.createElement("div", { className: "text-4xl mb-2", 'aria-hidden': "true" }, "\uD83D\uDD0D"),
             /*#__PURE__*/React.createElement("p", { className: "text-sm font-bold" }, _stemToolSearch ? ('No tools match "' + _stemToolSearch + '"') : 'No tools match this filter'),
-            /*#__PURE__*/React.createElement("button", { "aria-label": "Clear search",
+            /*#__PURE__*/React.createElement("button", { type: "button",
                 onClick: function () { _setStemToolSearch(''); upd('_categoryFilter', ''); },
-                className: "mt-2 text-xs text-indigo-500 hover:text-indigo-700 font-bold transition-colors"
+                className: "mt-2 min-h-11 px-3 py-2 rounded-lg text-xs text-indigo-700 hover:text-indigo-900 font-bold transition-colors"
               }, "Clear filters")
               ));
           })(),

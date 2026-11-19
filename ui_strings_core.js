@@ -2246,7 +2246,7 @@
     "take_home_left_out": "Left out of the file, so nothing plays wrong or silent:",
     "take_home_download": "Download the file",
     "take_home_results_heading": "Look at returned work",
-    "take_home_results_pick": "Open results files (.json)",
+    "take_home_results_pick": "Open results files (.csv or .json)",
     "take_home_results_local": "Files are read on this device only. Names are what each student typed, not a verified identity.",
     "take_home_col_student": "Student",
     "take_home_col_first": "First try",
