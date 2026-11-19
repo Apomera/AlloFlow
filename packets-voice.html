@@ -5,7 +5,7 @@
 <!-- This page is one of the TWO Packets pages that use an AI voice (the other is packets-read-along.html), and only after the teacher asks for it. Its rule differs
      from the other pages' in three ways: it may start a worker from memory (blob:), run WebAssembly, and download the
      voice from Hugging Face. The voice's own code comes from this site and is checked before it runs. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob: 'wasm-unsafe-eval'; worker-src blob:; style-src 'self'; img-src 'self' data:; media-src blob: data:; connect-src 'self' blob: https://huggingface.co https://*.huggingface.co https://*.hf.co; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob: 'wasm-unsafe-eval'; worker-src blob:; style-src 'self'; img-src 'self' data:; media-src blob: data:; connect-src 'self' blob: https://alloflow-cdn.pages.dev https://huggingface.co https://*.huggingface.co https://*.hf.co; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>Make recordings with a computer voice</title>
@@ -41,7 +41,7 @@
       <li>This is one of the two Packets pages that use AI. The other is Make a read-along. The other pages do not, and nothing on them changes.</li>
       <li>The voice is Kokoro, a computer voice made with AI. It runs inside this browser tab. The words you type are turned into sound on this device and are not sent anywhere.</li>
       <li>Nothing is downloaded until you press Get the voice. Then the page downloads the voice, about 88 MB, one time, from Hugging Face (huggingface.co). Hugging Face can see that your browser asked for the voice. It does not receive your words.</li>
-      <li>The program that runs the voice comes from this site, and the page checks it before running it.</li>
+      <li>The program that runs the voice comes from this site (or AlloFlow's CDN at alloflow-cdn.pages.dev when hosted on a mirror without the engine files), and the page checks it before running it.</li>
       <li>Each recording is kept in this browser's storage for this site, under My words, marked as a computer voice. It is not uploaded. It goes only into the files you make.</li>
       <li>There are no cookies and nothing to sign in to.</li>
     </ul>

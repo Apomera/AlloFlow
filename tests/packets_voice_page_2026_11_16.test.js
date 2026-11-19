@@ -32,7 +32,7 @@ describe('the computer-voice page is one of the two places Packets uses an AI vo
     expect(rule['default-src']).toEqual(["'none'"]);
     expect(rule['script-src']).toEqual(["'self'", 'blob:', "'wasm-unsafe-eval'"]);
     expect(rule['worker-src']).toEqual(['blob:']);
-    expect(rule['connect-src']).toEqual(["'self'", 'blob:', 'https://huggingface.co', 'https://*.huggingface.co', 'https://*.hf.co']);
+    expect(rule['connect-src']).toEqual(["'self'", 'blob:', 'https://alloflow-cdn.pages.dev', 'https://huggingface.co', 'https://*.huggingface.co', 'https://*.hf.co']);
     expect(rule['style-src']).toEqual(["'self'"]);
     expect(rule['form-action']).toEqual(["'none'"]);
     // No inline script, no eval of text, no "any site" source, and no code from another site.

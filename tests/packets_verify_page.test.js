@@ -1157,10 +1157,10 @@ describe('the guide for school IT', () => {
     const reaches = (page) => (parse(page).querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || '').match(/https?:\/\/[^\s;]+/g) || [];
     // 2026-11-12: Open a practice file allows the class mailbox for the file it runs (and says so in the mailbox row); the page sends nothing.
     for (const page of pages.filter((name) => name !== 'packets-pictures.html' && name !== 'packets-open.html' && name !== 'packets-vocab-lookup.html' && name !== 'packets-voice.html' && name !== 'packets-read-along.html')) expect(reaches(page), page).toEqual([]);
-    // 2026-11-16: the computer-voice page reaches Hugging Face, for the voice it names, and nothing else.
-    expect(reaches('packets-voice.html')).toEqual(['https://huggingface.co', 'https://*.huggingface.co', 'https://*.hf.co']);
-    // 2026-11-16: Make a read-along uses the same voice, so it reaches the same place and nothing else.
-    expect(reaches('packets-read-along.html')).toEqual(['https://huggingface.co', 'https://*.huggingface.co', 'https://*.hf.co']);
+    // 2026-11-16 (updated 2026-11-19): the computer-voice page reaches AlloFlow's CDN (for the SHA-384-verified runtime when hosted on GitHub Pages, where _config.yml excludes runtime_assets) and Hugging Face (for the voice), and nothing else.
+    expect(reaches('packets-voice.html')).toEqual(['https://alloflow-cdn.pages.dev', 'https://huggingface.co', 'https://*.huggingface.co', 'https://*.hf.co']);
+    // 2026-11-16 (updated 2026-11-19): Make a read-along uses the same voice, so it reaches the same places and nothing else.
+    expect(reaches('packets-read-along.html')).toEqual(['https://alloflow-cdn.pages.dev', 'https://huggingface.co', 'https://*.huggingface.co', 'https://*.hf.co']);
     // 2026-11-12: Look up a word online reaches the one dictionary it names, and not even this site.
     expect(reaches('packets-vocab-lookup.html')).toEqual(['https://api.dictionaryapi.dev']);
     expect(reaches('packets-open.html')).toEqual(['https://script.google.com', 'https://script.googleusercontent.com']);

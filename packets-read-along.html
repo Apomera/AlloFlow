@@ -6,7 +6,7 @@
      teacher asks for it. Its rule is that page's rule: it may start a worker from memory (blob:), run WebAssembly, and
      download the voice from Hugging Face. The voice's own code comes from this site and is checked before it runs.
      The file this page saves has no AI in it: it holds the passage and the recordings, and only plays them. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob: 'wasm-unsafe-eval'; worker-src blob:; style-src 'self'; img-src 'self' data:; media-src blob: data:; connect-src 'self' blob: https://huggingface.co https://*.huggingface.co https://*.hf.co; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob: 'wasm-unsafe-eval'; worker-src blob:; style-src 'self'; img-src 'self' data:; media-src blob: data:; connect-src 'self' blob: https://alloflow-cdn.pages.dev https://huggingface.co https://*.huggingface.co https://*.hf.co; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>Make a read-along</title>
@@ -51,7 +51,7 @@
       <li>The voice is Kokoro, a computer voice made with AI. It runs inside this browser tab. The passage you type is turned into sound on this device and is not sent anywhere.</li>
       <li>The words are yours. This page does not write, shorten or change the passage.</li>
       <li>Nothing is downloaded until you press Get the voice. Then the page downloads the voice, about 88 MB, one time, from Hugging Face (huggingface.co). Hugging Face can see that your browser asked for the voice. It does not receive your passage.</li>
-      <li>The program that runs the voice comes from this site, and the page checks it before running it.</li>
+      <li>The program that runs the voice comes from this site (or AlloFlow's CDN at alloflow-cdn.pages.dev when hosted on a mirror without the engine files), and the page checks it before running it.</li>
       <li>If you press Record on a sentence, this page asks for this device's microphone to record your voice inside this tab. Your recording stays on this device, is not stored and is not uploaded.</li>
       <li>The passage and the recordings stay on this page only while it is open. They are not stored and not uploaded. They go only into the file you save.</li>
       <li>This page loads sixteen files from this site: the page itself, five stylesheets (packets.css, packets-make.css, packets-voice.css, packets-read-along.css, packets-read-along-print.css), ten scripts (packets-page.js, word_sounds_take_home_loader.js, packet_read_along_builder.js, syllable_table_en.js, packets_voice_engine.js, packets_verify_core.js, packets_reopen.js, packets_handoff.js, packets_zip.js, packets-read-along.js) and the tab icon. When you record or use the computer voice, it loads packets_audio_kit.js and lame.min.js from this site to make recordings smaller.</li>
