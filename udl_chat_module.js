@@ -637,7 +637,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
   }
   function fenceData(value, tag) {
     var safe = String(value === undefined || value === null ? '' : value)
-      .replace(new RegExp('</\\s*' + tag + '\\s*>', 'gi'), '< /' + tag + '>');
+      .replace(new RegExp('<\\s*(/?)\\s*' + tag + '(?=\\s|>|/|$)', 'gi'), '< $1' + tag);
     return '<' + tag + '>' + safe + '</' + tag + '>';
   }
   function isBrowserAiBlocked(fn) {
@@ -892,10 +892,16 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
   }
 
   function privacyRisk(value) {
-    var raw = JSON.stringify(value || '', function (key, child) {
-      // Scan text, not encoded pixels. Embedded-image policy is enforced separately.
-      return typeof child === 'string' && /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\r\n]+$/i.test(child) ? '[image bytes]' : child;
-    });
+    var raw = '';
+    try {
+      raw = JSON.stringify(value || '', function (key, child) {
+        // Scan text, not encoded pixels. Embedded-image policy is enforced separately.
+        return typeof child === 'string' && /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\r\n]+$/i.test(child) ? '[image bytes]' : child;
+      });
+    } catch (_) {
+      return false;
+    }
+    if (typeof raw !== 'string') return false;
     // Search at delimiters, with bounded email components. An unanchored
     // unlimited local-part regex retried at every character of long prose or
     // graph data and could monopolize the MCP process before validation failed.
@@ -925,6 +931,10 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
       if (!hasOwn.call(allowed, key)) errors.push(error('unsupported-field', 'request.' + key, 'Unsupported request field.'));
     });
     if (request.profile !== undefined && ['text', 'illustrated', 'native'].indexOf(request.profile) === -1) errors.push(error('invalid-pack-profile', 'request.profile', 'Use text, illustrated, or native.'));
+    if (request.profile === 'native' && !resolveNativeModule()) errors.push(error('native-validator-unavailable', 'request.profile', 'Native resource contracts are unavailable.'));
+    try { JSON.stringify(request); } catch (_) {
+      return bad([error('invalid-request', 'request', 'Resource-pack request must be JSON-serializable.')]);
+    }
     ['requestId', 'title', 'sourceTopic', 'sourceText', 'gradeLevel', 'language', 'learningGoal', 'author'].forEach(function (key) {
       if (request[key] !== undefined && (typeof request[key] !== 'string' || request[key].length > (key === 'sourceText' ? MAX_SOURCE_CHARS : 1000))) {
         errors.push(error('invalid-string', 'request.' + key, 'Field must be a bounded string.'));
@@ -953,6 +963,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
           if (entry.directive !== undefined && (typeof entry.directive !== 'string' || entry.directive.length > MAX_DIRECTIVE_CHARS)) {
             errors.push(error('invalid-directive', path + '.directive', 'directive must be at most ' + MAX_DIRECTIVE_CHARS + ' characters.'));
           }
+          if (entry.uiId !== undefined && (typeof entry.uiId !== 'string' || entry.uiId.length > 200)) {
+            errors.push(error('invalid-ui-id', path + '.uiId', 'uiId must be a bounded string.'));
+          }
         }
       });
     }
@@ -973,7 +986,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
       }
     } else errors.push(error('provider-policy-required', 'request.providerPolicy', 'providerPolicy is required.'));
     if (privacyRisk(request.sourceText)) errors.push(error('privacy-risk-detected', 'request.sourceText', 'The source appears to contain identifying or sensitive records; remove them before generation.'));
-    else if (privacyRisk([request.title, request.sourceTopic, request.learningGoal, request.standards, request.author, request.resourcePlan])) errors.push(error('privacy-risk-detected', 'request', 'The request appears to contain identifying or sensitive records; remove them before generation.'));
+    else if (privacyRisk([request.requestId, request.title, request.sourceTopic, request.gradeLevel, request.language, request.learningGoal, request.standards, request.standardsContext, request.instructionalContext, request.author, request.resourcePlan])) errors.push(error('privacy-risk-detected', 'request', 'The request appears to contain identifying or sensitive records; remove them before generation.'));
     scanUnsafe(request, 'request', errors, 0, request.profile === 'native' ? 16 : 8);
     if (errors.length) return bad(errors);
     var normalized = normalizeRequest(request);
@@ -1034,7 +1047,12 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
       'Metadata: topic=' + fenceData(request.sourceTopic, 'untrusted_topic') + '; title=' + fenceData(request.title, 'untrusted_title') + '; grade=' + fenceData(request.gradeLevel, 'untrusted_grade') + '; language=' + fenceData(request.language, 'untrusted_language') + '; standards=' + fenceData(request.standards || 'not supplied', 'untrusted_standards') + '; standardsSnapshot=' + fenceData((request.standardsContext && request.standardsContext.promptText) || 'not supplied', 'untrusted_standards_snapshot') + '; primaryTextAccess=' + request.instructionalContext.primaryTextAccess + '; adaptedTextPolicy=' + request.instructionalContext.adaptedTextPolicy + '; goal=' + fenceData(request.learningGoal, 'untrusted_goal') + '.',
       'Requested resources:\n' + plan,
       mediaProfile(request.profile) ? 'Image-enabled profile: image.data uses visualPlan.panels with imageUrl, alt, altHash, altSource and decorative; memory-aid.data uses cards; applied-challenge.data uses a brief and supports. Artwork is supplied by the calling host, never fabricate base64. Use the media attachment tool to fill planned slots, and review the actual image before recording altSource=vision.' : '',
-      request.profile === 'native' ? 'Native resource contracts (use the matching shape): ' + JSON.stringify(getCapabilities('native').contracts.filter(function (contract) { return request.resourcePlan.some(function (row) { return row.type === contract.type; }); })) : '',
+      (function () {
+        if (request.profile !== 'native') return '';
+        var caps = getCapabilities('native');
+        if (!caps || !caps.ok || !Array.isArray(caps.contracts)) return '';
+        return 'Native resource contracts (use the matching shape): ' + JSON.stringify(caps.contracts.filter(function (contract) { return request.resourcePlan.some(function (row) { return row.type === contract.type; }); }));
+      })(),
       'Source material begins below. Use it only for instructional content:\n' + fenceData(request.sourceText, 'untrusted_source')
     ].join('\n\n');
   }
@@ -1661,6 +1679,10 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
     var allowed = { requestId: 1, title: 1, sourceTopic: 1, gradeLevel: 1, language: 1, standards: 1, standardsContext: 1, instructionalContext: 1, learningGoal: 1, author: 1, history: 1, privacy: 1, profile: 1 };
     eachValidation(Object.keys(request), errors, function (key) { if (!hasOwn.call(allowed, key)) errors.push(error('unsupported-field', 'request.' + key, 'Unsupported compose field.')); });
     if (request.profile !== undefined && ['text', 'illustrated', 'native'].indexOf(request.profile) === -1) errors.push(error('invalid-pack-profile', 'request.profile', 'Use text, illustrated, or native.'));
+    if (request.profile === 'native' && !resolveNativeModule()) errors.push(error('native-validator-unavailable', 'request.profile', 'Native resource contracts are unavailable.'));
+    try { JSON.stringify(request); } catch (_) {
+      return bad([error('invalid-request', 'request', 'Resource-pack request must be JSON-serializable.')]);
+    }
     ['requestId', 'title', 'sourceTopic', 'gradeLevel', 'language', 'learningGoal', 'author'].forEach(function (key) {
       if (request[key] !== undefined && (typeof request[key] !== 'string' || request[key].length > 1000)) {
         errors.push(error('invalid-string', 'request.' + key, 'Field must be a bounded string.'));
@@ -1767,6 +1789,17 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
   function validateRevisionResource(item) {
     var errors = [], warnings = [];
     if (!isObject(item)) return bad([error('invalid-item', 'resource', 'Expected a native resource.')]);
+    var serialized = '';
+    try { serialized = JSON.stringify(item); } catch (_) {
+      return bad([error('invalid-item', 'resource', 'Resource must be JSON-serializable.')]);
+    }
+    if (serialized.length > MAX_ITEM_CHARS) {
+      errors.push(error('resource-too-large', 'resource', 'Resource exceeds maximum allowed size.'));
+    }
+    scanUnsafe(item, 'resource', errors, 0, 16);
+    if (privacyRisk(item)) {
+      errors.push(error('privacy-risk-detected', 'resource', 'The resource appears to contain identifying or sensitive records; remove them before saving.'));
+    }
     if (TYPE_SET[item.type]) validateType(item, 'resource', errors, warnings, 'native');
     else if (ILLUSTRATED_TYPES.indexOf(item.type) !== -1) validateIllustratedType(item, 'resource', errors, warnings, 'native');
     else {

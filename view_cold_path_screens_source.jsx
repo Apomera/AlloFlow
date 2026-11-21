@@ -474,7 +474,7 @@ function TranslateModalView(props) {
                     <div className="flex gap-2">
                         <button
                             type="button"
-                            onClick={() => { if (!aiTextUsable) return; setTranslateScope('single'); handleTranslateAction('single', { translationMode: companionPolicy.mode }); }}
+                            onClick={() => { setTranslateScope('single'); handleTranslateAction('single', { translationMode: companionPolicy.mode }); }}
                             disabled={isProcessing || !aiTextUsable || !currentBatch.items.length || !primaryLanguage}
                             className="min-h-11 flex-1 py-3 bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 font-bold rounded-xl transition-all motion-reduce:transition-none shadow-sm active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -482,7 +482,7 @@ function TranslateModalView(props) {
                         </button>
                         <button
                             type="button"
-                            onClick={() => { if (!aiTextUsable) return; setTranslateScope('pack'); handleTranslateAction('pack', { translationMode: companionPolicy.mode }); }}
+                            onClick={() => { setTranslateScope('pack'); handleTranslateAction('pack', { translationMode: companionPolicy.mode }); }}
                             disabled={isProcessing || !aiTextUsable || !batch.items.length || !primaryLanguage}
                             className="min-h-11 flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all motion-reduce:transition-none shadow-md active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
                         >

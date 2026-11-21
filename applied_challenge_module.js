@@ -1233,11 +1233,11 @@ function appliedChallengePromptContextSnapshot(value, options) {
     },
     lessonBoundary: {
       factReviewStatus: data.brief.factVerified ? "Teacher verified." : "Teacher review pending.",
-      facts: data.brief.lockedLessonFacts.slice(0, 16).map((item) => _apsString(item, 600)),
-      openQuestions: data.brief.openQuestions.slice(0, 8).map((item) => _apsString(item, 400)),
-      criteria: data.brief.criteria.slice(0, 12).map((item) => _apsString(item, 400)),
-      constraints: data.brief.constraints.slice(0, 12).map((item) => _apsString(item, 400)),
-      evidenceBoundary: _apsString(data.brief.evidenceBoundary, 1200)
+      facts: data.brief.lockedLessonFacts.slice(0, 8).map((item) => _apsString(item, 280)),
+      openQuestions: data.brief.openQuestions.slice(0, 4).map((item) => _apsString(item, 220)),
+      criteria: data.brief.criteria.slice(0, 6).map((item) => _apsString(item, 220)),
+      constraints: data.brief.constraints.slice(0, 6).map((item) => _apsString(item, 220)),
+      evidenceBoundary: _apsString(data.brief.evidenceBoundary, 700)
     },
     currentPhase: phase ? {
       id: phase.id,
@@ -1257,7 +1257,7 @@ function appliedChallengePromptContextSnapshot(value, options) {
     },
     ...(() => {
       const rawExcerpt = String(opts && opts.sourceExcerpt || data.sourceExcerpt || "").trim();
-      const excerptLimit = 2e4;
+      const excerptLimit = 1200;
       const truncated = rawExcerpt.length > excerptLimit;
       return {
         lessonSourceExcerpt: rawExcerpt ? _apsString(rawExcerpt, excerptLimit) + (truncated ? " [...]" : "") : void 0,

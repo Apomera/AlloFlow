@@ -191716,7 +191716,8 @@
       "coach_hint": "Coach hint:",
       "near_limit": "{remaining} characters left in this section.",
       "navigation": "Workspace sections",
-      "stage_progress": "{stage} · Step {number} of 5"
+      "stage_progress": "{stage} · Step {number} of 5",
+      "dictate": "Dictate"
     },
     "cycle": {
       "heading": "Check {n}",

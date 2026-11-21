@@ -1000,7 +1000,7 @@
   style.id = "allo-basic-math-controls-css";
   style.textContent = [
     "[data-stem-basic-math] button:not(table button):not([style*=\"width\"]):not([style*=\"height\"]):not(.fraction-lab-strip-segment):not([data-math-grid-cell]){min-height:44px;min-width:44px}",
-    "[data-stem-basic-math] :is(button,select,summary):is(.text-xs,[class*=\"text-[0.6\"],[class*=\"text-[10px]\"],[class*=\"text-[11px]\"]){font-size:.875rem;line-height:1.45}",
+    "[data-stem-basic-math] :is(button,select,summary):is(.text-xs,[class*=\"text-[0.6\"],[class*=\"text-xs\"],[class*=\"text-xs\"]){font-size:.875rem;line-height:1.45}",
     "[data-stem-basic-math] :is(select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=hidden])){min-height:44px}",
     "[data-stem-basic-math] summary{min-height:44px;align-content:center;cursor:pointer}",
     "[data-stem-basic-math] :is(input[type=checkbox],input[type=radio]){width:20px;height:20px;flex-shrink:0}",
@@ -4595,7 +4595,7 @@
         readingSource, onReturnToReading,
         sourceLocator,
         sourceType,
-        callGemini,
+        callGemini: _propCallGemini,
         callTTS,
         callImagen,
         callGeminiVision,
@@ -4606,6 +4606,7 @@
         // feature in this module already self-disables through its `callGemini`
         // guard; the pill is the one honest indicator that explains why.
         onOpenAiSetup,
+        onSafetyFlag,
         onUseArtwork,
         theme: _themeProp,
         activeProfileId,
@@ -4613,6 +4614,9 @@
         studentNickname,
         isTeacherMode
       } = props;
+      // Mutable binding so the AI-off gate below (`if (!_stemAiText) callGemini = null;`)
+      // does not throw `TypeError: Assignment to constant variable.` when AI is off.
+      var callGemini = _propCallGemini;
       // t (translation function) — pulled from props with a safe fallback
       var t = props.t || function (k) { return k; };
       // Builders and setup are teacher tools: students get the labs. Classroom stations
@@ -5892,19 +5896,36 @@
             }
             if (_showStationBuilderRef.current) {
               e.preventDefault();
+              var _closeStationBuilder = function() {
+                _setShowStationBuilder(false);
+                _setStationName(''); _setStationGrade(''); _setStationNote('');
+                _setStationTools({}); _setStationTimeEst('20');
+                _setStationQuests([]); _setQuestPickerOpen(false);
+                announceToSR('Station builder closed');
+              };
               // Only interrupt when there is actually work to lose. An empty
-              // builder closes straight away; a filled-in one asks first.
+              // builder closes straight away; a filled-in one asks first via the
+              // accessible confirmation dialog (never blocking window.confirm).
               if (_stationBuilderDirtyRef.current) {
-                var _keep = typeof window.confirm === 'function'
-                  ? !window.confirm('Discard this station? The tools, quests and notes you picked will be lost.')
-                  : false;
-                if (_keep) return;
+                var _confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+                var _confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                if (typeof _confirmModule === 'function' && typeof _confirmApi === 'function') {
+                  window.AlloFlowUX.confirm('Discard this station? The tools, quests and notes you picked will be lost.', {
+                    title: 'Discard station draft?',
+                    confirmText: 'Discard station',
+                    cancelText: 'Keep editing',
+                    tone: 'warning'
+                  }).then(function(confirmed) {
+                    if (confirmed) _closeStationBuilder();
+                  }).catch(function() {
+                    announceToSR('Confirmation dialog could not open, so your station draft was kept.');
+                  });
+                } else {
+                  announceToSR('Station draft kept open. Use the close button to finish or discard.');
+                }
+                return;
               }
-              _setShowStationBuilder(false);
-              _setStationName(''); _setStationGrade(''); _setStationNote('');
-              _setStationTools({}); _setStationTimeEst('20');
-              _setStationQuests([]); _setQuestPickerOpen(false);
-              announceToSR('Station builder closed');
+              _closeStationBuilder();
               return;
             }
             // If a tool is open, close the tool first
@@ -7390,7 +7411,7 @@
         })
       ),
         React.createElement("div", {
-          className: "stem-lab-keyboard-badge hidden md:flex items-center gap-1 backdrop-blur rounded-full px-2.5 py-1 text-[11px] font-medium text-white", style: { background: 'rgba(0, 0, 0, 0.25)' },
+          className: "stem-lab-keyboard-badge hidden md:flex items-center gap-1 backdrop-blur rounded-full px-2.5 py-1 text-xs font-medium text-white", style: { background: 'rgba(0, 0, 0, 0.25)' },
           title: "Keyboard shortcuts: Esc = close, Alt+1/2 = switch tabs, Alt+B = back to tools, Alt+R = read aloud (Listen on), Tab = navigate, Arrow keys = orbit 3D views"
         }, React.createElement("span", null, "\u2328\uFE0F"), React.createElement("span", null, "Keyboard accessible")),
       /*#__PURE__*/React.createElement("div", {
@@ -7543,10 +7564,10 @@
             },
               React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "\uD83C\uDFC6 Quest Log"),
               React.createElement("span", { className: "flex items-center gap-2" },
-                React.createElement("span", { className: "text-[10px] text-amber-600 font-bold" },
+                React.createElement("span", { className: "text-xs text-amber-600 font-bold" },
                   _activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length + "/" + _activeStation.quests.length + " complete"
                 ),
-                React.createElement("span", { className: "text-[10px] text-amber-500", "aria-hidden": "true" }, _questHudCollapsed ? "\u25BC" : "\u25B2")
+                React.createElement("span", { className: "text-xs text-amber-500", "aria-hidden": "true" }, _questHudCollapsed ? "\u25BC" : "\u25B2")
               )
             ),
             // Quest list
@@ -7569,12 +7590,12 @@
                 return React.createElement("div", { key: quest.qid, className: "bg-white rounded-lg px-2.5 py-2 border " + (disp.done ? 'border-green-300 bg-green-50/50' : 'border-amber-200') },
                   React.createElement("div", { className: "flex items-center justify-between mb-1" },
                     React.createElement("div", { className: "flex items-center gap-1.5 flex-1 min-w-0" },
-                      React.createElement("span", { className: "text-[11px] font-bold truncate " + (disp.done ? 'text-green-700' : 'text-slate-700') },
+                      React.createElement("span", { className: "text-xs font-bold truncate " + (disp.done ? 'text-green-700' : 'text-slate-700') },
                         (disp.done ? "\u2705 " : (qtDef.icon || "\u2B1C") + " ") + quest.label
                       ),
-                      !disp.done && React.createElement("span", { className: "text-[10px] px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
+                      !disp.done && React.createElement("span", { className: "text-xs px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
                     ),
-                    React.createElement("span", { className: "text-[10px] font-mono shrink-0 ml-1 " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
+                    React.createElement("span", { className: "text-xs font-mono shrink-0 ml-1 " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
                   ),
                   // Live timer for timeSpent quests
                   quest.type === 'timeSpent' && !disp.done && (function() {
@@ -7584,13 +7605,13 @@
                     var sec = Math.floor((ms % 60000) / 1000);
                     var isActive = stemLabTool === quest.toolId;
                     return React.createElement("div", { className: "flex items-center gap-1.5 mt-0.5 mb-0.5" },
-                      React.createElement("span", { className: "text-[10px] " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
+                      React.createElement("span", { className: "text-xs " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
                         (isActive ? '\u25CF ' : '\u25CB ') + min + ':' + sec.toString().padStart(2, '0') + ' / ' + (quest.params.minutes || 5) + ':00'
                       ),
                       // "counting active time", not "timing" — the clock only
                       // advances while the learner is present, so a bare
                       // "timing..." next to a stalled number would be a lie.
-                      isActive && React.createElement("span", { className: "text-[10px] text-green-500" }, 'counting active time')
+                      isActive && React.createElement("span", { className: "text-xs text-green-500" }, 'counting active time')
                     );
                   })(),
                   // Progress bar
@@ -7613,7 +7634,7 @@
                   // would be worse than leaving it.
                   quest.type === 'freeResponse' && React.createElement("div", { className: "mt-1.5" },
                     disp.done && React.createElement("label", {
-                      className: "block text-[10px] font-bold text-green-700 mb-0.5",
+                      className: "block text-xs font-bold text-green-700 mb-0.5",
                       htmlFor: 'stem-quest-response-' + quest.qid
                     }, "Your response (you can still edit it)"),
                     React.createElement("textarea", {
@@ -7649,7 +7670,7 @@
                   allDone ? React.createElement("div", { className: "bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-3 border border-green-300 text-center" },
                     React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF89"),
                     React.createElement("p", { className: "text-sm font-bold text-green-800" }, "All Quests Complete!"),
-                    React.createElement("p", { className: "text-[10px] text-green-600 mb-2" }, "Great work, explorer! You finished all " + _activeStation.quests.length + " quests in this station."),
+                    React.createElement("p", { className: "text-xs text-green-600 mb-2" }, "Great work, explorer! You finished all " + _activeStation.quests.length + " quests in this station."),
                     React.createElement("div", { className: "flex gap-3 justify-center" },
                       React.createElement("button", {
                         'aria-label': 'Copy quest completion report to clipboard',
@@ -7673,7 +7694,7 @@
                             });
                           }
                         },
-                        className: "text-[10px] text-green-700 hover:text-green-900 underline font-bold"
+                        className: "text-xs text-green-700 hover:text-green-900 underline font-bold"
                       }, "\uD83D\uDCCB Copy Report"),
                       React.createElement("button", {
                         'aria-label': 'Reset all quest progress for this station',
@@ -7685,7 +7706,7 @@
                           });
                           if (addToast) addToast('\uD83D\uDD04 Quest progress reset for ' + _activeStation.name, 'info');
                         },
-                        className: "text-[10px] text-green-600 hover:text-green-800 underline"
+                        className: "text-xs text-green-600 hover:text-green-800 underline"
                       }, "\uD83D\uDD04 Reset & Try Again")
                     )
                   ) : null,
@@ -7694,7 +7715,7 @@
                     React.createElement("div", { className: "w-full h-1.5 bg-amber-100 rounded-full overflow-hidden flex-1" },
                       React.createElement("div", { className: "h-full bg-amber-400 rounded-full transition-all", style: { width: Math.round(completedCount / _activeStation.quests.length * 100) + '%' } })
                     ),
-                    React.createElement("span", { className: "text-[10px] font-bold text-amber-700 shrink-0" }, Math.round(completedCount / _activeStation.quests.length * 100) + '%')
+                    React.createElement("span", { className: "text-xs font-bold text-amber-700 shrink-0" }, Math.round(completedCount / _activeStation.quests.length * 100) + '%')
                   ) : null
                 );
               })()
@@ -7869,10 +7890,10 @@
               return React.createElement(React.Fragment, null,
                 React.createElement("div", { className: "mb-3" },
                   React.createElement("div", { className: "flex justify-between items-center mb-1" },
-                    React.createElement("span", { className: "text-[10px] font-bold text-amber-700 uppercase" },
+                    React.createElement("span", { className: "text-xs font-bold text-amber-700 uppercase" },
                       _earnedCount + " Active" + (_maxedCount > 0 ? " \u00B7 " + _maxedCount + " Maxed" : "")
                     ),
-                    React.createElement("span", { className: "text-[10px] font-black text-amber-600" },
+                    React.createElement("span", { className: "text-xs font-black text-amber-600" },
                       // The bar is totalStemXP/10, i.e. it fills at 1000 XP and
                       // turns green there. Nothing said so, so a learner at
                       // 1000+ saw a full bar with no idea what it measured or
@@ -7906,7 +7927,7 @@
                       React.createElement("p", { className: "text-xs text-amber-500" }, "Explore STEM tools and complete quizzes to earn XP. Your progress will appear here.")
                     );
                   }
-                  return React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-[10px]" },
+                  return React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs" },
                     _xpActivities.map(function (act) {
                       var earned = getStemXP(act.id);
                       var pct = Math.min(100, earned);
@@ -7974,7 +7995,7 @@
             className: "text-sm font-bold text-slate-700"
           }, "\uD83D\uDCF8 Tool Snapshots (", toolSnapshots.length, ")"), /*#__PURE__*/React.createElement("button", { "aria-label": "Clear all",
             onClick: () => setToolSnapshots([]),
-            className: "text-[10px] text-slate-500 hover:text-red-500 transition-colors"
+            className: "text-xs text-slate-500 hover:text-red-500 transition-colors"
           }, "\u21BA Clear all")), /*#__PURE__*/React.createElement("div", {
             className: "grid grid-cols-2 gap-2"
           }, toolSnapshots.map((snap, si) => /*#__PURE__*/React.createElement("div", {
@@ -8044,14 +8065,14 @@
                 });
               });
             },
-            className: "text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
+            className: "text-xs font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
           }, "\u21A9 Load"), /*#__PURE__*/React.createElement("button", { "aria-label": "Set Tool Snapshots",
             onClick: () => setToolSnapshots(prev => prev.filter((_, idx) => idx !== si)),
             className: "text-slate-500 hover:text-red-500 transition-colors"
           }, /*#__PURE__*/React.createElement(X, {
             size: 12
           }))), /*#__PURE__*/React.createElement("div", {
-            className: "text-[10px] text-slate-500 mt-1"
+            className: "text-xs text-slate-500 mt-1"
           }, new Date(snap.timestamp).toLocaleTimeString()))))), stemLabTab === 'explore' && !stemLabTool && (() => {
             var _allStemTools = [
               { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals') || 'Math Fundamentals', desc: '', color: 'slate', chip: 'math', palette: ['blue', 'cyan', 'indigo'], category: true },
@@ -8669,7 +8690,7 @@
               { id: '_cat_LearningBehavioral', icon: '', label: t('stem.tools_menu.learning_behavioral_science') || '\uD83E\uDDE0 Learning & Behavioral Science', desc: '', color: 'slate', chip: 'applied', palette: ['indigo', 'violet', 'rose'], category: true },
               {
                 id: 'perceptionLab', icon: '\uD83D\uDC41\uFE0F', label: t('stem.tools_menu.perception_lab', 'Perception Lab'),
-                desc: t('stem.tools_menu.perception_lab_description', 'Investigate optical illusions with six adjustable experiments. Predict, compare, reveal measurements, and explain how context changes what you see.'),
+                desc: t('stem.tools_menu.perception_lab_description', 'Investigate optical illusions with seven adjustable experiments. Predict, compare, reveal measurements, and explain how context changes what you see.'),
                 aliases: ['optical illusions', 'visual perception', 'illusion lab', 'brightness', 'simultaneous contrast', 'Ebbinghaus', 'Muller Lyer', 'Müller-Lyer', 'moire', 'moiré', 'cafe wall', 'café wall', 'ambiguous depth', 'Necker cube'],
                 color: 'violet', ready: true
               },
@@ -9310,9 +9331,9 @@
               /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2" },
                 /*#__PURE__*/React.createElement("span", { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
                 /*#__PURE__*/React.createElement("h3", { className: "text-base font-black text-amber-300 m-0" }, "Your Mastery Atlas"),
-                /*#__PURE__*/React.createElement("span", { className: "text-[11px] text-slate-300 font-mono ml-1" }, _atlasTotal + ' items locked in')
+                /*#__PURE__*/React.createElement("span", { className: "text-xs text-slate-300 font-mono ml-1" }, _atlasTotal + ' items locked in')
               ),
-              /*#__PURE__*/React.createElement("span", { className: "text-[11px] text-slate-400 italic" }, "Click any tool to jump back in")
+              /*#__PURE__*/React.createElement("span", { className: "text-xs text-slate-400 italic" }, "Click any tool to jump back in")
             ),
             /*#__PURE__*/React.createElement("div", {
               className: "grid gap-2",
@@ -9337,7 +9358,7 @@
                     /*#__PURE__*/React.createElement("span", { 'aria-hidden': 'true', style: { fontSize: 20 } }, entry.icon),
                     /*#__PURE__*/React.createElement("div", { className: "flex-1 min-w-0" },
                       /*#__PURE__*/React.createElement("div", { className: "text-[12px] font-black truncate", style: { color: '#f1f5f9' } }, entry.label),
-                      /*#__PURE__*/React.createElement("div", { className: "text-[10px] font-mono", style: { color: entry.color } },
+                      /*#__PURE__*/React.createElement("div", { className: "text-xs font-mono", style: { color: entry.color } },
                         entry.current + ' / ' + entry.total + (isFull ? ' 🏆' : '')
                       )
                     )
@@ -9510,7 +9531,7 @@
                     React.createElement("span", null, suggestion.label)
                   ),
                   React.createElement("span", { className: "stem-tool-ai-suggestion-reason", style: { color: _pal.textMuted } }, suggestion.reason),
-                  suggestion.starter && React.createElement("span", { className: "block mt-1 text-[10px] font-black", style: { color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#4338ca') } }, "Try: " + suggestion.starter)
+                  suggestion.starter && React.createElement("span", { className: "block mt-1 text-xs font-black", style: { color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#4338ca') } }, "Try: " + suggestion.starter)
                 );
               })
             )
@@ -9529,7 +9550,7 @@
                   _setStemToolSearch('');
                   if (typeof announceToSR === 'function') announceToSR(newFilter ? 'Showing ' + cat.label + ' tools' : 'Showing all tools');
                 },
-                className: "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all border " +
+                className: "px-2.5 py-1 rounded-full text-xs font-bold transition-all border " +
                   (isActive ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-600 hover:text-indigo-600')
               }, cat.icon + ' ' + cat.label);
             })
@@ -9546,13 +9567,13 @@
             // Active station indicator
             _activeStation ? React.createElement("div", { className: "flex items-center gap-2 flex-1 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200" },
               React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "\uD83C\uDFAF Station: " + _activeStation.name),
-              _activeStation.grade ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold" }, "Grade " + _activeStation.grade) : null,
+              _activeStation.grade ? React.createElement("span", { className: "text-xs px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold" }, "Grade " + _activeStation.grade) : null,
               React.createElement("button", { "aria-label": "Exit Station",
                 onClick: function() { _setActiveStationId(null); },
-                className: "ml-auto text-[10px] text-emerald-500 hover:text-emerald-700 font-bold"
+                className: "ml-auto text-xs text-emerald-500 hover:text-emerald-700 font-bold"
               }, "\u2715 Exit Station"),
               // Quest count badge
-              _activeStation.quests && _activeStation.quests.length > 0 ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold" },
+              _activeStation.quests && _activeStation.quests.length > 0 ? React.createElement("span", { className: "text-xs px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold" },
                 "\uD83C\uDFC6 " + (_activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length) + "/" + _activeStation.quests.length + " quests"
               ) : null
             ) : null,
@@ -9590,7 +9611,7 @@
 
             // Station name
             React.createElement("div", { className: "mb-3" },
-              React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Station Name"),
+              React.createElement("label", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Station Name"),
               React.createElement("input", {
                 // The "Station Name" caption above is a <label> with no htmlFor,
                 // and this input has no id — so they are not associated and the
@@ -9608,7 +9629,7 @@
             // Grade + Time row
             React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-3" },
               React.createElement("div", null,
-                React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Grade Level"),
+                React.createElement("label", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Grade Level"),
                 React.createElement("select", {
                   "aria-label": "Grade Level",
                   value: _stationGrade,
@@ -9622,7 +9643,7 @@
                 )
               ),
               React.createElement("div", null,
-                React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Time Estimate"),
+                React.createElement("label", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Time Estimate"),
                 React.createElement("select", {
                   "aria-label": "Time Estimate",
                   value: _stationTimeEst,
@@ -9638,7 +9659,7 @@
 
             // Teacher note
             React.createElement("div", { className: "mb-3" },
-              React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Teacher Instructions (optional)"),
+              React.createElement("label", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Teacher Instructions (optional)"),
               React.createElement("textarea", {
                 value: _stationNote, placeholder: "e.g. Start with the Water Cycle tool, then complete the Quiz.",
                 onChange: function(e) { _setStationNote(e.target.value); },
@@ -9660,7 +9681,7 @@
               _questPickerOpen && React.createElement("div", { className: "p-3 bg-amber-50/50 space-y-3" },
                 // Quick preset templates + auto-suggest
                 _stationQuests.length === 0 && React.createElement("div", { className: "space-y-1.5" },
-                  React.createElement("p", { className: "text-[10px] text-amber-600 font-bold uppercase tracking-wider mb-1" }, "\u26A1 Quick Presets"),
+                  React.createElement("p", { className: "text-xs text-amber-600 font-bold uppercase tracking-wider mb-1" }, "\u26A1 Quick Presets"),
                   // Auto-suggest button
                   (function() {
                     var selectedTools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
@@ -9725,7 +9746,7 @@
                         var nTools = Object.keys(toolsCovered).length;
                         if (addToast) addToast('\uD83E\uDD16 ' + autoQuests.length + ' quests generated across ' + nTools + ' of your ' + selectedTools.length + ' tools.', 'success');
                       },
-                      className: "w-full mb-1.5 py-2 rounded-lg text-[10px] font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-600 hover:to-indigo-600 transition-all shadow-sm"
+                      className: "w-full mb-1.5 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-600 hover:to-indigo-600 transition-all shadow-sm"
                     }, "\uD83E\uDD16 Auto-Generate Smart Quests (" + totalHooksAvailable + " available)");
                   })(),
                   React.createElement("div", { className: "grid grid-cols-3 gap-1.5" },
@@ -9767,8 +9788,8 @@
                         className: "bg-white rounded-lg p-2 border border-amber-200 hover:border-amber-400 hover:bg-amber-50 transition-all text-center"
                       },
                         React.createElement("div", { className: "text-lg" }, preset.icon),
-                        React.createElement("div", { className: "text-[10px] font-bold text-amber-800" }, preset.name),
-                        React.createElement("div", { className: "text-[10px] text-amber-600" }, preset.desc)
+                        React.createElement("div", { className: "text-xs font-bold text-amber-800" }, preset.name),
+                        React.createElement("div", { className: "text-xs text-amber-600" }, preset.desc)
                       );
                     })
                   )
@@ -9800,7 +9821,7 @@
                   });
                   if (allHooks.length === 0) return null;
                   return React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-purple-200 space-y-1.5" },
-                    React.createElement("p", { className: "text-[10px] text-purple-600 font-bold uppercase tracking-wider" }, "\uD83C\uDFC6 Tool-Specific Quests (" + allHooks.length + " available)"),
+                    React.createElement("p", { className: "text-xs text-purple-600 font-bold uppercase tracking-wider" }, "\uD83C\uDFC6 Tool-Specific Quests (" + allHooks.length + " available)"),
                     React.createElement("div", { className: "grid grid-cols-1 gap-1 max-h-[200px] overflow-y-auto" },
                       allHooks.map(function(ah, ahi) {
                         var toolLabel = (_allStemTools.find(function(t3) { return t3.id === ah.toolId; }) || {}).label || ah.toolId;
@@ -9816,12 +9837,12 @@
                             }]));
                             if (addToast) addToast('\uD83C\uDFC6 Added: ' + ah.hook.label, 'success');
                           },
-                          className: "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-[10px] bg-purple-50 border border-purple-100 hover:border-purple-400 hover:bg-purple-100 transition-all"
+                          className: "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs bg-purple-50 border border-purple-100 hover:border-purple-400 hover:bg-purple-100 transition-all"
                         },
                           React.createElement("span", { className: "text-sm shrink-0" }, ah.hook.icon || '\uD83C\uDFC6'),
                           React.createElement("div", { className: "flex-1 min-w-0" },
                             React.createElement("div", { className: "font-bold text-purple-800 truncate" }, ah.hook.label),
-                            React.createElement("div", { className: "text-[10px] text-purple-500" }, toolLabel)
+                            React.createElement("div", { className: "text-xs text-purple-500" }, toolLabel)
                           ),
                           React.createElement("span", { className: "text-purple-400 text-xs shrink-0" }, "+")
                         );
@@ -9831,7 +9852,7 @@
                 })(),
                 // Add quest form (universal types)
                 React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-amber-200 space-y-2" },
-                  React.createElement("p", { className: "text-[10px] text-amber-600 font-bold uppercase tracking-wider" }, "Custom Quest"),
+                  React.createElement("p", { className: "text-xs text-amber-600 font-bold uppercase tracking-wider" }, "Custom Quest"),
                   // Type selector
                   React.createElement("div", { className: "grid grid-cols-5 gap-1" },
                     QUEST_TYPES.map(function(qt) {
@@ -9840,7 +9861,7 @@
                         key: qt.id,
                         'aria-label': 'Quest type: ' + qt.label,
                         onClick: function() { upd('_questBuilderType', qt.id); },
-                        className: "px-1.5 py-1.5 rounded-lg text-[10px] font-bold text-center transition-all border " + (isActive ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400')
+                        className: "px-1.5 py-1.5 rounded-lg text-xs font-bold text-center transition-all border " + (isActive ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400')
                       },
                         React.createElement("div", { className: "text-sm" }, qt.icon),
                         React.createElement("div", null, qt.label)
@@ -9849,7 +9870,7 @@
                   ),
                   // Tool selector (for non-freeResponse types)
                   (d._questBuilderType || 'xpThreshold') !== 'freeResponse' && React.createElement("div", null,
-                    React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, "For which tool?"),
+                    React.createElement("label", { className: "text-xs text-slate-500 block mb-0.5" }, "For which tool?"),
                     React.createElement("select", {
                       value: d._questBuilderTool || '',
                       onChange: function(e) { upd('_questBuilderTool', e.target.value); },
@@ -9870,7 +9891,7 @@
                       var qtDef = QUEST_TYPES.find(function(qt2) { return qt2.id === qType; }) || QUEST_TYPES[0];
                       if (qType === 'freeResponse') {
                         return React.createElement("div", null,
-                          React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, "Prompt for student"),
+                          React.createElement("label", { className: "text-xs text-slate-500 block mb-0.5" }, "Prompt for student"),
                           React.createElement("input", {
                             type: "text",
                             "aria-label": "Prompt for student",
@@ -9882,7 +9903,7 @@
                         );
                       }
                       return React.createElement("div", null,
-                        React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, qtDef.paramLabel),
+                        React.createElement("label", { className: "text-xs text-slate-500 block mb-0.5" }, qtDef.paramLabel),
                         React.createElement("input", {
                           type: "number",
                           value: d._questBuilderParam || qtDef.defaultVal,
@@ -9896,17 +9917,17 @@
                           'aria-label': qtDef.paramLabel + ' for quest, ' + (qtDef.minVal || 1) + ' to ' + (qtDef.maxVal || 100) + ' ' + (qtDef.unit || ''),
                           className: "w-20 px-2 py-1.5 text-xs border border-amber-200 rounded-lg"
                         }),
-                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" }, qtDef.unit),
+                        React.createElement("span", { className: "text-xs text-slate-400 ml-1.5" }, qtDef.unit),
                         // Say what the range is, so a clamped value does not
                         // look like the field ignoring what was typed.
-                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" },
+                        React.createElement("span", { className: "text-xs text-slate-400 ml-1.5" },
                           '(' + (qtDef.minVal || 1) + '\u2013' + (qtDef.maxVal || 100) + ')')
                       );
                     })()
                   ),
                   // Preview + Add button
                   React.createElement("div", { className: "flex items-center justify-between" },
-                    React.createElement("span", { className: "text-[10px] text-slate-400 italic" },
+                    React.createElement("span", { className: "text-xs text-slate-400 italic" },
                       "\u201C" + _questAutoLabel(
                         d._questBuilderType || 'xpThreshold',
                         d._questBuilderTool || null,
@@ -9952,7 +9973,7 @@
                         upd('_questBuilderParam', null);
                         upd('_questBuilderPrompt', '');
                       },
-                      className: "px-3 py-1.5 rounded-lg text-[10px] font-bold text-white bg-amber-700 hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-amber-700 hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     }, "+ Add Quest")
                   )
                 )
@@ -9961,7 +9982,7 @@
 
             // Tool selector grid
             React.createElement("div", { className: "mb-3" },
-              React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" },
+              React.createElement("label", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-1" },
                 "Select Tools (" + Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).length + " selected)"
               ),
               React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-[200px] overflow-y-auto p-1" },
@@ -9992,7 +10013,7 @@
                         }
                       }
                     },
-                    className: "p-2 rounded-lg text-left text-[10px] font-bold transition-all border " +
+                    className: "p-2 rounded-lg text-left text-xs font-bold transition-all border " +
                       (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-600")
                   },
                     React.createElement("span", { className: "text-lg block" }, tool.icon),
@@ -10059,7 +10080,7 @@
 
             // Manage saved stations
             _savedStations.length > 0 ? React.createElement("div", { className: "mt-3 pt-3 border-t border-indigo-200" },
-              React.createElement("p", { className: "text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2" },
+              React.createElement("p", { className: "text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2" },
                 "\uD83D\uDCCB Saved Stations (" + _savedStations.length + ")"
               ),
               React.createElement("div", { className: "space-y-1.5" },
@@ -10068,9 +10089,9 @@
                     key: st.id, className: "flex items-center gap-2 px-2 py-1.5 rounded-lg bg-white border border-indigo-100 text-xs"
                   },
                     React.createElement("span", { className: "font-bold text-indigo-800 flex-1" }, st.name),
-                    st.grade ? React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold" }, "Gr " + st.grade) : null,
-                    React.createElement("span", { className: "text-[11px] text-slate-600" }, st.tools.length + " tools"),
-                    st.timeEstimate ? React.createElement("span", { className: "text-[11px] text-slate-600" }, st.timeEstimate) : null,
+                    st.grade ? React.createElement("span", { className: "text-xs px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold" }, "Gr " + st.grade) : null,
+                    React.createElement("span", { className: "text-xs text-slate-600" }, st.tools.length + " tools"),
+                    st.timeEstimate ? React.createElement("span", { className: "text-xs text-slate-600" }, st.timeEstimate) : null,
                     React.createElement("button", { type: "button", "aria-label": "Load saved station: " + st.name,
                       onClick: function() {
                         _setActiveStationId(st.id);
@@ -10101,9 +10122,9 @@
           _activeStation ? React.createElement("div", { className: "mb-4 bg-emerald-50 rounded-xl border border-emerald-200 p-3" },
             React.createElement("div", { className: "flex items-center gap-2 mb-1" },
               React.createElement("span", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDFAF " + _activeStation.name),
-              _activeStation.grade ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-800 font-bold" }, "Grade " + _activeStation.grade) : null,
-              _activeStation.timeEstimate ? React.createElement("span", { className: "text-[10px] text-emerald-800" }, "\u23F1 " + _activeStation.timeEstimate) : null,
-              React.createElement("span", { className: "text-[10px] text-emerald-800" }, _activeStation.tools.length + " tools")
+              _activeStation.grade ? React.createElement("span", { className: "text-xs px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-800 font-bold" }, "Grade " + _activeStation.grade) : null,
+              _activeStation.timeEstimate ? React.createElement("span", { className: "text-xs text-emerald-800" }, "\u23F1 " + _activeStation.timeEstimate) : null,
+              React.createElement("span", { className: "text-xs text-emerald-800" }, _activeStation.tools.length + " tools")
             ),
             _activeStation.teacherNote ? React.createElement("p", { className: "text-xs text-emerald-700 italic mt-1" }, "\uD83D\uDCDD " + _activeStation.teacherNote) : null
           ) : null,
@@ -10634,7 +10655,7 @@
                 React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" })
               ),
               React.createElement("p", { className: "text-center text-xs text-slate-400" }, "\uD83D\uDD2C Loading " + _pluginMeta.label + "..."),
-              React.createElement("p", { className: "text-center text-[10px] text-slate-500 mt-1" }, "The tool plugin is being downloaded. This usually takes 1\u20132 seconds.")
+              React.createElement("p", { className: "text-center text-xs text-slate-500 mt-1" }, "The tool plugin is being downloaded. This usually takes 1\u20132 seconds.")
             );
           }
 
@@ -10765,6 +10786,9 @@
             // Art Studio can hand a static canvas result to a host destination
             // without coupling the plugin to Page Designer or Visual Supports.
             onUseArtwork: typeof onUseArtwork === 'function' ? onUseArtwork : null,
+            // Shared on-device safety-flag pipeline (matches SEL Hub ctx.onSafetyFlag)
+            // so STEM tools with free-text AI or reflection surfaces can report flags.
+            onSafetyFlag: typeof onSafetyFlag === 'function' ? onSafetyFlag : null,
             // _deferSafe wrap: awardStemXP calls setStemXP (parent useState).
             awardXP: typeof awardStemXP === 'function' ? _deferSafe(awardStemXP) : function() {},
             getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },

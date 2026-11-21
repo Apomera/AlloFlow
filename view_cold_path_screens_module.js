@@ -739,7 +739,6 @@ function TranslateModalView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
-      if (!aiTextUsable) return;
       setTranslateScope('single');
       handleTranslateAction('single', {
         translationMode: companionPolicy.mode
@@ -750,7 +749,6 @@ function TranslateModalView(props) {
   }, t('translate.action_current')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
-      if (!aiTextUsable) return;
       setTranslateScope('pack');
       handleTranslateAction('pack', {
         translationMode: companionPolicy.mode

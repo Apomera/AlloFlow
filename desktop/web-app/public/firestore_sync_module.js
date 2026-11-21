@@ -30,7 +30,7 @@
   function stripUndefined(obj, seen) {
     if (obj === null || obj === undefined) return obj;
     if (typeof obj !== 'object' || obj instanceof Date) return obj;
-    const visited = seen || new WeakMap();
+    const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(obj)) return visited.get(obj);
     if (Array.isArray(obj)) {
       const outArr = [];
@@ -109,7 +109,7 @@
     if (!value || typeof value !== 'object' || value instanceof Date) return value;
     const prototype = Object.getPrototypeOf(value);
     if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
-    const visited = seen || new WeakMap();
+    const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(value)) return visited.get(value);
     const cleaned = Array.isArray(value) ? [] : {};
     visited.set(value, cleaned);
@@ -138,7 +138,7 @@
     const prototype = Object.getPrototypeOf(value);
     if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
     if (isMemoryAidBoundaryNode(value)) return stripMemoryAidPracticeEvidence(value);
-    const visited = seen || new WeakMap();
+    const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(value)) return visited.get(value);
     const cleaned = Array.isArray(value) ? [] : {};
     visited.set(value, cleaned);
@@ -177,7 +177,8 @@
             const { imageUrl, ...rest } = item.data;
             return { ...item, data: { ...rest, imageUrl: null } };
         }
-        if (item.type === 'adventure' && item.data && typeof item.data === 'object') {
+        if (item.type === 'adventure' && item.data) {
+             if (typeof item.data !== 'object') return item;
              const { sceneImage, ...rest } = item.data;
              const cleanInventory = stripInvList(rest.inventory);
              let cleanSnapshot = null;
@@ -236,7 +237,7 @@
              // feedback) is kept so reload-from-cloud still shows the record.
              const stripVoice = (node, seenV) => {
                  if (!node || typeof node !== 'object' || node instanceof Date) return node;
-                 const vis = seenV || new WeakMap();
+                 const vis = (seenV instanceof WeakMap) ? seenV : new WeakMap();
                  if (vis.has(node)) return vis.get(node);
                  if (Array.isArray(node)) {
                      const arr = [];
@@ -481,7 +482,7 @@
       return trimSessionString(value);
     }
     if (typeof value !== 'object' || value instanceof Date) return value;
-    const visited = seen || new WeakMap();
+    const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(value)) return visited.get(value);
     if (Array.isArray(value)) {
       const arr = [];
@@ -754,7 +755,7 @@
     if (!value || typeof value !== 'object' || value instanceof Date) return value;
     const prototype = Object.getPrototypeOf(value);
     if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
-    const visited = seen || new WeakMap();
+    const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(value)) return visited.get(value);
     const scope = !!memoryAid || isMemoryAidBoundaryNode(value);
     const inApplied = !!appliedChallenge || (!Array.isArray(value) && [value.type, value.artifactType].some(t => typeof t === 'string' && t.trim().toLowerCase().replace(/[\s_]+/g, '-') === 'applied-challenge'));
@@ -796,7 +797,7 @@
     const report = value.version === 1 && (Array.isArray(value.supplied) && Array.isArray(value.citedIds)
       || Array.isArray(value.items) && value.sourceDecisions && Array.isArray(value.activity));
     if (report) return undefined;
-    const visited = seen || new WeakMap();
+    const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(value)) return visited.get(value);
     const out = Array.isArray(value) ? [] : {};
     visited.set(value, out);
@@ -861,7 +862,7 @@
   // version (feedbackReleaseKeys) rides along so learners get their feedback.
   function withholdGradedQuizKeys(resource, seen) {
     if (!resource || typeof resource !== 'object' || resource instanceof Date) return resource;
-    const visited = seen || new WeakMap();
+    const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(resource)) return visited.get(resource);
     if (Array.isArray(resource)) {
       const arr = [];
@@ -917,7 +918,7 @@
 
   function prepareSessionResourcesForWrite(resources, options) {
     const maxBytes = Math.max(1024, Number(options && options.maxBytes) || SESSION_RESOURCE_SYNC_MAX_BYTES);
-    const source = (Array.isArray(resources) ? resources : []).filter(item => !isUnfilledBlankDraft(item)).map(withStudentWordHelpOnly).map(withholdGradedQuizKeys);
+    const source = (Array.isArray(resources) ? resources : []).filter(item => !isUnfilledBlankDraft(item)).map(item => withStudentWordHelpOnly(item)).map(item => withholdGradedQuizKeys(item));
     const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => sanitizeStudentResearchResource(stripTeacherOnlyResourceFields(sanitizeSessionValue(stripMemoryAidTeacherWorkingData(item), 'resource')))));
     const kept = [];
     let droppedCount = 0;
