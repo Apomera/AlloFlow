@@ -18,12 +18,13 @@
  * Bare invocation is read-only. Nothing here deploys as a side effect.
  *
  * Usage:
- *   node dev-tools/cf_worker.cjs status                  # read-only overview
- *   node dev-tools/cf_worker.cjs kv-list                 # list KV namespaces
+ *   node dev-tools/cf_worker.cjs status                               # read-only overview (both workers)
+ *   node dev-tools/cf_worker.cjs kv-list                              # list KV namespaces
  *   node dev-tools/cf_worker.cjs kv-create <BINDING> --yes
- *   node dev-tools/cf_worker.cjs secret-list [--script s]
- *   node dev-tools/cf_worker.cjs secret-put <NAME> --value <v> --yes
- *   node dev-tools/cf_worker.cjs deploy --yes            # upload src/index.js
+ *   node dev-tools/cf_worker.cjs secret-list [--worker catalog|bug-digest] [--script s]
+ *   node dev-tools/cf_worker.cjs secret-put <NAME> --value <v> [--worker ...] --yes
+ *   node dev-tools/cf_worker.cjs deploy [--worker catalog|bug-digest|all] --yes
+ *   node dev-tools/cf_worker.cjs deploy [--worker catalog|bug-digest|all] --dry-run
  */
 
 const fs = require('fs');
@@ -36,6 +37,245 @@ const WRANGLER_CLIENT_ID = '54d11594-84e4-41aa-b438-e81b8fa78ee7';
 const API = 'https://api.cloudflare.com/client/v4';
 const DEFAULT_SCRIPT = 'alloflow-catalog-submit';
 const WORKER_DIR = path.resolve(__dirname, '..', 'catalog', 'cloudflare-worker');
+const BUG_DIGEST_DIR = path.resolve(__dirname, '..', 'catalog', 'bug-digest-worker');
+const BUG_DIGEST_DEFAULT_SCRIPT = 'alloflow-bug-digest';
+
+const WORKER_TARGETS = {
+  catalog: {
+    id: 'catalog',
+    dir: WORKER_DIR,
+    defaultScript: DEFAULT_SCRIPT,
+    configFile: 'wrangler.toml',
+  },
+  'bug-digest': {
+    id: 'bug-digest',
+    dir: BUG_DIGEST_DIR,
+    defaultScript: BUG_DIGEST_DEFAULT_SCRIPT,
+    configFile: 'wrangler.jsonc',
+  },
+};
+
+// ─── config parsers (pure, local, pre-auth) ─────────────────────────────────
+
+function stripJsonComments(src) {
+  let out = '';
+  let inString = false;
+  let escape = false;
+  for (let i = 0; i < src.length; i += 1) {
+    const ch = src[i];
+    const next = src[i + 1];
+    if (inString) {
+      out += ch;
+      if (escape) {
+        escape = false;
+      } else if (ch === '\\') {
+        escape = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      out += ch;
+      continue;
+    }
+    if (ch === '/' && next === '/') {
+      i += 1;
+      while (i + 1 < src.length && src[i + 1] !== '\n') i += 1;
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      i += 1;
+      while (i + 1 < src.length && !(src[i] === '*' && src[i + 1] === '/')) i += 1;
+      i += 1;
+      continue;
+    }
+    out += ch;
+  }
+  return out.replace(/,\s*([}\]])/g, '$1');
+}
+
+function parseCatalogConfig(workerDir = WORKER_DIR, { allowPlaceholders = false } = {}) {
+  const entry = path.join(workerDir, 'src', 'index.js');
+  const tomlPath = path.join(workerDir, 'wrangler.toml');
+  const toml = fs.readFileSync(tomlPath, 'utf8');
+
+  // Refuse to ship a config that still has placeholder namespace ids — that
+  // deploys a worker whose endpoints fail closed with no error at deploy time.
+  const placeholders = [...toml.matchAll(/binding\s*=\s*"([^"]+)"\s*\nid\s*=\s*"(REPLACE_WITH[^"]*)"/g)].map((m) => m[1]);
+  if (placeholders.length && !allowPlaceholders) {
+    throw new Error(
+      `wrangler.toml still has placeholder KV ids for: ${placeholders.join(', ')}\n` +
+      '  Those endpoints would fail closed. Create them first with kv-create,\n' +
+      '  or pass --allow-placeholders if that is genuinely intended.'
+    );
+  }
+
+  const vars = {};
+  const varsBlock = toml.match(/^\[vars\]\s*\n([\s\S]*?)(?=^\[|\Z)/m);
+  if (varsBlock) {
+    [...varsBlock[1].matchAll(/^\s*([A-Z_]+)\s*=\s*"([^"]*)"/gm)].forEach((m) => { vars[m[1]] = m[2]; });
+  }
+
+  const bindings = [
+    ...Object.entries(vars).map(([name, text]) => ({ type: 'plain_text', name, text })),
+    ...[...toml.matchAll(/\[\[kv_namespaces\]\]\s*\nbinding\s*=\s*"([^"]+)"\s*\nid\s*=\s*"([^"]+)"/g)]
+      .filter((m) => !/^REPLACE_WITH/.test(m[2]))
+      .map((m) => ({ type: 'kv_namespace', name: m[1], namespace_id: m[2] })),
+  ];
+
+  const compatibilityDate = (toml.match(/compatibility_date\s*=\s*"([^"]+)"/) || [])[1] || '2026-04-01';
+  const scriptName = (toml.match(/^name\s*=\s*"([^"]+)"/m) || [])[1] || DEFAULT_SCRIPT;
+
+  // keep_bindings preserves secrets already set on the worker; without it an
+  // upload silently drops every secret_text binding.
+  const metadata = {
+    main_module: 'index.js',
+    compatibility_date: compatibilityDate,
+    bindings,
+    keep_bindings: ['secret_text'],
+  };
+
+  return { entry, scriptName, metadata, bindings, crons: [] };
+}
+
+function parseBugDigestConfig(workerDir = BUG_DIGEST_DIR) {
+  const cfgPath = path.join(workerDir, 'wrangler.jsonc');
+  const raw = fs.readFileSync(cfgPath, 'utf8');
+  const cfg = JSON.parse(stripJsonComments(raw));
+  const mainRel = typeof cfg.main === 'string' && cfg.main.trim() ? cfg.main.trim() : 'src/index.js';
+  const entry = path.resolve(workerDir, mainRel);
+  const scriptName = typeof cfg.name === 'string' && cfg.name.trim() ? cfg.name.trim() : BUG_DIGEST_DEFAULT_SCRIPT;
+  const crons = Array.isArray(cfg.triggers && cfg.triggers.crons)
+    ? cfg.triggers.crons.filter((c) => typeof c === 'string' && c.trim()).map((c) => c.trim())
+    : [];
+  return { cfg, entry, mainModule: path.basename(entry), scriptName, crons };
+}
+
+function buildMigrationPayload(migrations) {
+  if (!Array.isArray(migrations) || !migrations.length) return undefined;
+  if (migrations.length === 1) {
+    const m = migrations[0];
+    const out = { new_tag: m.tag };
+    if (Array.isArray(m.new_sqlite_classes) && m.new_sqlite_classes.length) out.new_sqlite_classes = m.new_sqlite_classes;
+    if (Array.isArray(m.new_classes) && m.new_classes.length) out.new_classes = m.new_classes;
+    if (Array.isArray(m.renamed_classes) && m.renamed_classes.length) out.renamed_classes = m.renamed_classes;
+    if (Array.isArray(m.deleted_classes) && m.deleted_classes.length) out.deleted_classes = m.deleted_classes;
+    return out;
+  }
+  return {
+    new_tag: migrations[migrations.length - 1].tag,
+    steps: migrations.map((m) => {
+      const step = {};
+      if (Array.isArray(m.new_sqlite_classes) && m.new_sqlite_classes.length) step.new_sqlite_classes = m.new_sqlite_classes;
+      if (Array.isArray(m.new_classes) && m.new_classes.length) step.new_classes = m.new_classes;
+      if (Array.isArray(m.renamed_classes) && m.renamed_classes.length) step.renamed_classes = m.renamed_classes;
+      if (Array.isArray(m.deleted_classes) && m.deleted_classes.length) step.deleted_classes = m.deleted_classes;
+      return step;
+    }),
+  };
+}
+
+function buildBugDigestMetadata(parsed, {
+  liveBindings = null,
+  destinationAddress = '',
+  useConfigSendEmail = false,
+  includeMigrations = false,
+  allowUnresolvedSendEmail = false,
+} = {}) {
+  const { cfg, mainModule, scriptName } = parsed;
+  const bindings = [];
+
+  for (const [name, value] of Object.entries(cfg.vars || {})) {
+    bindings.push({ type: 'plain_text', name, text: String(value) });
+  }
+
+  for (const kv of (cfg.kv_namespaces || [])) {
+    if (!kv || !kv.binding || !kv.id || /^REPLACE_WITH/i.test(kv.id)) {
+      throw new Error(`${scriptName} wrangler.jsonc has invalid or placeholder KV binding: ${kv && kv.binding}`);
+    }
+    bindings.push({ type: 'kv_namespace', name: kv.binding, namespace_id: kv.id });
+  }
+
+  for (const doBinding of ((cfg.durable_objects && cfg.durable_objects.bindings) || [])) {
+    if (!doBinding || !doBinding.name || !doBinding.class_name) continue;
+    const entry = {
+      type: 'durable_object_namespace',
+      name: doBinding.name,
+      class_name: doBinding.class_name,
+    };
+    if (doBinding.script_name) entry.script_name = doBinding.script_name;
+    bindings.push(entry);
+  }
+
+  const trimmedDest = String(destinationAddress || '').trim();
+  if (trimmedDest && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedDest)) {
+    throw new Error('BUG_DIGEST_DESTINATION_ADDRESS is not a valid email address.');
+  }
+
+  for (const emailBinding of (cfg.send_email || [])) {
+    if (!emailBinding || !emailBinding.name) continue;
+    if (trimmedDest) {
+      bindings.push({
+        type: 'send_email',
+        name: emailBinding.name,
+        destination_address: trimmedDest,
+      });
+      continue;
+    }
+    const liveMatch = Array.isArray(liveBindings)
+      ? liveBindings.find((b) => b && b.type === 'send_email' && b.name === emailBinding.name)
+      : null;
+    if (liveMatch && liveMatch.destination_address) {
+      bindings.push({
+        type: 'send_email',
+        name: emailBinding.name,
+        destination_address: liveMatch.destination_address,
+      });
+      continue;
+    }
+    if (liveMatch && (liveMatch.allowed_destination_addresses || liveMatch.allowed_sender_addresses)) {
+      const preserved = { type: 'send_email', name: emailBinding.name };
+      if (liveMatch.allowed_destination_addresses) preserved.allowed_destination_addresses = liveMatch.allowed_destination_addresses;
+      if (liveMatch.allowed_sender_addresses) preserved.allowed_sender_addresses = liveMatch.allowed_sender_addresses;
+      bindings.push(preserved);
+      continue;
+    }
+    if (useConfigSendEmail || allowUnresolvedSendEmail) {
+      const configured = { type: 'send_email', name: emailBinding.name };
+      if (emailBinding.destination_address) configured.destination_address = emailBinding.destination_address;
+      if (emailBinding.allowed_destination_addresses) configured.allowed_destination_addresses = emailBinding.allowed_destination_addresses;
+      if (emailBinding.allowed_sender_addresses) configured.allowed_sender_addresses = emailBinding.allowed_sender_addresses;
+      bindings.push(configured);
+      continue;
+    }
+    throw new Error(
+      `Refusing to deploy ${scriptName} without a verified send_email destination_address for "${emailBinding.name}".\n` +
+      '  Workers Free Email Routing requires destination_address (kept out of git by design).\n' +
+      '  For an existing worker, cf_worker.cjs preserves the live destination_address automatically;\n' +
+      '  for a fresh deploy, set BUG_DIGEST_DESTINATION_ADDRESS or pass --use-config-send-email.'
+    );
+  }
+
+  const metadata = {
+    main_module: mainModule,
+    compatibility_date: cfg.compatibility_date || '2026-10-22',
+    bindings,
+    keep_bindings: ['secret_text'],
+  };
+  if (Array.isArray(cfg.compatibility_flags) && cfg.compatibility_flags.length) {
+    metadata.compatibility_flags = [...cfg.compatibility_flags];
+  }
+  if (cfg.observability && typeof cfg.observability === 'object') {
+    metadata.observability = cfg.observability;
+  }
+  if (includeMigrations) {
+    const mig = buildMigrationPayload(cfg.migrations);
+    if (mig) metadata.migrations = mig;
+  }
+  return metadata;
+}
 
 // ─── credentials ────────────────────────────────────────────────────────────
 
@@ -213,10 +453,68 @@ async function reportBindings(scripts, namespaces) {
     }
   }
 
+  if (fs.existsSync(path.join(BUG_DIGEST_DIR, 'wrangler.jsonc'))) {
+    console.log('');
+    await reportBugDigestStatus(scripts, namespaces);
+  }
+
   if (unset.length) {
     console.log('');
     console.log('Unconfigured KV bindings:', unset.join(', '));
     console.log('Create each with:  node dev-tools/cf_worker.cjs kv-create <BINDING> --yes');
+  }
+}
+
+async function reportBugDigestStatus(scripts, namespaces) {
+  let parsed;
+  try {
+    parsed = parseBugDigestConfig(BUG_DIGEST_DIR);
+  } catch (err) {
+    console.log(`Bug-digest worker config error: ${err.message}`);
+    return;
+  }
+  const { scriptName, cfg } = parsed;
+  const deployed = scripts.some((s) => s.id === scriptName);
+  console.log(`Worker "${scriptName}": ${deployed ? 'deployed' : 'NOT DEPLOYED'}`);
+  if (!deployed) return;
+
+  try {
+    const settings = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${scriptName}/settings`);
+    const bindings = (settings && settings.bindings) || [];
+    const bugKvCfg = (cfg.kv_namespaces || []).find((k) => k.binding === 'BUG_REPORTS');
+    const bugKvLive = bindings.find((b) => b.type === 'kv_namespace' && b.name === 'BUG_REPORTS');
+    const kvExists = bugKvCfg && namespaces.some((n) => n.id === bugKvCfg.id);
+    const kvMark = bugKvLive && bugKvCfg && bugKvLive.namespace_id === bugKvCfg.id && kvExists ? 'ok' : 'MISMATCH';
+    const doLive = bindings.find((b) => b.type === 'durable_object_namespace' && b.name === 'BUG_DIGEST');
+    const emailLive = bindings.find((b) => b.type === 'send_email' && b.name === 'EMAIL');
+    const emailMark = emailLive
+      ? (emailLive.destination_address ? 'ok (destination_address set)' : 'ok (sender/destination list)')
+      : 'NOT BOUND';
+    console.log('  Bindings:');
+    console.log(`    [${kvMark.padEnd(28)}] BUG_REPORTS (KV)`);
+    console.log(`    [${(doLive ? `ok (${doLive.class_name})` : 'NOT BOUND').padEnd(28)}] BUG_DIGEST (Durable Object)`);
+    console.log(`    [${emailMark.padEnd(28)}] EMAIL (send_email)`);
+  } catch (err) {
+    console.log('  (could not read settings:', err.message, ')');
+  }
+
+  try {
+    const sched = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${scriptName}/schedules`);
+    const crons = ((sched && sched.schedules) || []).map((s) => s.cron);
+    console.log(`  Cron triggers: ${crons.length ? crons.join(', ') : '(none)'}`);
+  } catch (err) {
+    console.log('  (could not read schedules:', err.message, ')');
+  }
+
+  try {
+    const secrets = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${scriptName}/secrets`);
+    const names = new Set((secrets || []).map((s) => s.name));
+    console.log('  Secrets:');
+    for (const reqSecret of ['ADMIN_TOKEN', 'DIGEST_RECIPIENT']) {
+      console.log(`    [${names.has(reqSecret) ? 'set    ' : 'NOT SET'}] ${reqSecret}`);
+    }
+  } catch (err) {
+    console.log('  (could not read secrets:', err.message, ')');
   }
 }
 
@@ -225,8 +523,22 @@ async function cmdKvList() {
   namespaces.forEach((n) => console.log(`${n.id}  ${n.title}`));
 }
 
+function resolveScriptForWorker(args) {
+  const explicitScript = argVal(args, '--script');
+  if (explicitScript) return explicitScript;
+  const workerFlag = argVal(args, '--worker');
+  if (workerFlag) {
+    const target = WORKER_TARGETS[workerFlag];
+    if (!target) {
+      throw new Error(`Unknown --worker "${workerFlag}". Expected one of: ${Object.keys(WORKER_TARGETS).join(', ')}`);
+    }
+    return target.defaultScript;
+  }
+  return process.env.CF_SCRIPT || DEFAULT_SCRIPT;
+}
+
 async function cmdSecretList(args) {
-  const scriptName = argVal(args, '--script') || process.env.CF_SCRIPT || DEFAULT_SCRIPT;
+  const scriptName = resolveScriptForWorker(args);
   const secrets = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${scriptName}/secrets`);
   if (!secrets || !secrets.length) { console.log('(no secrets set)'); return; }
   secrets.forEach((s) => console.log(`${s.name}  (${s.type})`));
@@ -264,8 +576,8 @@ async function cmdKvCreate(args) {
 async function cmdSecretPut(args) {
   const name = args[0];
   const value = argVal(args, '--value');
-  if (!name || !value) throw new Error('Usage: secret-put <NAME> --value <value> --yes');
-  const scriptName = argVal(args, '--script') || process.env.CF_SCRIPT || DEFAULT_SCRIPT;
+  if (!name || !value) throw new Error('Usage: secret-put <NAME> --value <value> [--worker catalog|bug-digest] --yes');
+  const scriptName = resolveScriptForWorker(args);
   requireYes(args, `set secret ${name} on worker ${scriptName}`);
 
   await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${scriptName}/secrets`, {
@@ -277,53 +589,14 @@ async function cmdSecretPut(args) {
   console.log(`Secret ${name} set on ${scriptName}.`);
 }
 
-async function cmdDeploy(args) {
-  const scriptName = argVal(args, '--script') || process.env.CF_SCRIPT || DEFAULT_SCRIPT;
-  requireYes(args, `deploy ${scriptName} from ${WORKER_DIR}`);
+function resolveDeployTargets(workerFlag) {
+  const raw = (workerFlag || 'catalog').trim();
+  if (raw === 'all') return ['catalog', 'bug-digest'];
+  if (WORKER_TARGETS[raw]) return [raw];
+  throw new Error(`Unknown --worker "${raw}". Expected one of: catalog, bug-digest, all`);
+}
 
-  const entry = path.join(WORKER_DIR, 'src', 'index.js');
-  const tomlPath = path.join(WORKER_DIR, 'wrangler.toml');
-  const toml = fs.readFileSync(tomlPath, 'utf8');
-
-  // Refuse to ship a config that still has placeholder namespace ids — that
-  // deploys a worker whose endpoints fail closed with no error at deploy time.
-  const placeholders = [...toml.matchAll(/binding\s*=\s*"([^"]+)"\s*\nid\s*=\s*"(REPLACE_WITH[^"]*)"/g)].map((m) => m[1]);
-  if (placeholders.length && !args.includes('--allow-placeholders')) {
-    throw new Error(
-      `wrangler.toml still has placeholder KV ids for: ${placeholders.join(', ')}\n` +
-      '  Those endpoints would fail closed. Create them first with kv-create,\n' +
-      '  or pass --allow-placeholders if that is genuinely intended.'
-    );
-  }
-
-  const vars = {};
-  const varsBlock = toml.match(/^\[vars\]\s*\n([\s\S]*?)(?=^\[|\Z)/m);
-  if (varsBlock) {
-    [...varsBlock[1].matchAll(/^\s*([A-Z_]+)\s*=\s*"([^"]*)"/gm)].forEach((m) => { vars[m[1]] = m[2]; });
-  }
-
-  const bindings = [
-    ...Object.entries(vars).map(([name, text]) => ({ type: 'plain_text', name, text })),
-    ...[...toml.matchAll(/\[\[kv_namespaces\]\]\s*\nbinding\s*=\s*"([^"]+)"\s*\nid\s*=\s*"([^"]+)"/g)]
-      .filter((m) => !/^REPLACE_WITH/.test(m[2]))
-      .map((m) => ({ type: 'kv_namespace', name: m[1], namespace_id: m[2] })),
-  ];
-
-  const compatibilityDate = (toml.match(/compatibility_date\s*=\s*"([^"]+)"/) || [])[1] || '2026-04-01';
-
-  // keep_bindings preserves secrets already set on the worker; without it an
-  // upload silently drops every secret_text binding.
-  const metadata = {
-    main_module: 'index.js',
-    compatibility_date: compatibilityDate,
-    bindings,
-    keep_bindings: ['secret_text'],
-  };
-
-  // Validate and include every local ESM dependency before reading credentials
-  // or making a network request. Keep the same metadata, bindings and secrets.
-  const form = createWorkerUpload(entry, metadata);
-
+async function uploadWorkerForm(scriptName, form) {
   const auth = await getAuth();
   const res = await fetch(`${API}/accounts/${ACCOUNT_ID}/workers/scripts/${scriptName}`, {
     method: 'PUT',
@@ -334,11 +607,115 @@ async function cmdDeploy(args) {
   const json = (() => { try { return JSON.parse(text); } catch (_) { return null; } })();
   if (!res.ok || !json || json.success === false) {
     const errs = (json && json.errors || []).map((e) => `${e.code}: ${e.message}`).join('; ');
-    throw new Error(`Deploy failed (${res.status}): ${errs || text.slice(0, 500)}`);
+    throw new Error(`Deploy failed for ${scriptName} (${res.status}): ${errs || text.slice(0, 500)}`);
   }
-  console.log(`Deployed ${scriptName}.`);
-  console.log(`  bindings: ${bindings.map((b) => b.name).join(', ') || '(none)'}`);
-  console.log(`  secrets preserved via keep_bindings`);
+  return json.result;
+}
+
+async function syncWorkerSchedules(scriptName, crons) {
+  if (!Array.isArray(crons) || !crons.length) return;
+  await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${scriptName}/schedules`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(crons.map((cron) => ({ cron }))),
+  });
+}
+
+async function cmdDeploy(args) {
+  const workerFlag = argVal(args, '--worker') || 'catalog';
+  const dryRun = args.includes('--dry-run');
+  const targets = resolveDeployTargets(workerFlag);
+  const explicitScript = argVal(args, '--script');
+  if (explicitScript && targets.length > 1) {
+    throw new Error('Cannot combine --script with --worker all.');
+  }
+
+  if (!dryRun) {
+    const desc = targets.length === 1
+      ? `${explicitScript || (targets[0] === 'catalog' ? (process.env.CF_SCRIPT || DEFAULT_SCRIPT) : BUG_DIGEST_DEFAULT_SCRIPT)} from ${WORKER_TARGETS[targets[0]].dir}`
+      : `Cloudflare Workers (${targets.join(', ')})`;
+    requireYes(args, `deploy ${desc}`);
+  }
+
+  // Phase 1: Validate every selected Worker config and ESM dependency graph
+  // locally BEFORE reading credentials or making any network request.
+  const prepared = [];
+  for (const targetId of targets) {
+    if (targetId === 'catalog') {
+      const parsed = parseCatalogConfig(WORKER_DIR, {
+        allowPlaceholders: args.includes('--allow-placeholders'),
+      });
+      const scriptName = explicitScript || process.env.CF_SCRIPT || parsed.scriptName || DEFAULT_SCRIPT;
+      const form = createWorkerUpload(parsed.entry, parsed.metadata);
+      prepared.push({ targetId, scriptName, parsed, form });
+    } else if (targetId === 'bug-digest') {
+      const parsed = parseBugDigestConfig(BUG_DIGEST_DIR);
+      const scriptName = explicitScript || parsed.scriptName || BUG_DIGEST_DEFAULT_SCRIPT;
+      const previewMetadata = buildBugDigestMetadata(parsed, {
+        destinationAddress: process.env.BUG_DIGEST_DESTINATION_ADDRESS || '',
+        useConfigSendEmail: args.includes('--use-config-send-email'),
+        includeMigrations: args.includes('--with-migrations'),
+        allowUnresolvedSendEmail: true,
+      });
+      // Validates ESM parse + import boundaries before reading auth or network.
+      createWorkerUpload(parsed.entry, previewMetadata);
+      prepared.push({ targetId, scriptName, parsed, previewMetadata });
+    }
+  }
+
+  if (dryRun) {
+    for (const item of prepared) {
+      const bindings = item.targetId === 'catalog'
+        ? item.parsed.bindings.map((b) => b.name)
+        : item.previewMetadata.bindings.map((b) => b.name);
+      console.log(`[dry-run] Validated ${item.scriptName} (${item.targetId})`);
+      console.log(`  entry   : ${item.parsed.entry}`);
+      console.log(`  bindings: ${bindings.join(', ') || '(none)'}`);
+      if (item.parsed.crons && item.parsed.crons.length) {
+        console.log(`  crons   : ${item.parsed.crons.join(', ')}`);
+      }
+      console.log('  secrets : preserved via keep_bindings');
+    }
+    return;
+  }
+
+  // Phase 2: Perform live uploads (only after every local bundle passed).
+  for (const item of prepared) {
+    if (item.targetId === 'catalog') {
+      await uploadWorkerForm(item.scriptName, item.form);
+      console.log(`Deployed ${item.scriptName}.`);
+      console.log(`  bindings: ${item.parsed.bindings.map((b) => b.name).join(', ') || '(none)'}`);
+      console.log('  secrets preserved via keep_bindings');
+    } else if (item.targetId === 'bug-digest') {
+      const settingsRes = await cf(`/accounts/${ACCOUNT_ID}/workers/scripts/${item.scriptName}/settings`, { raw: true });
+      const liveExists = Boolean(settingsRes.ok && settingsRes.json && settingsRes.json.success && settingsRes.json.result);
+      const liveBindings = liveExists && Array.isArray(settingsRes.json.result.bindings)
+        ? settingsRes.json.result.bindings
+        : null;
+      const includeMigrations = !liveExists || args.includes('--with-migrations');
+      const finalMetadata = buildBugDigestMetadata(item.parsed, {
+        liveBindings,
+        destinationAddress: process.env.BUG_DIGEST_DESTINATION_ADDRESS || '',
+        useConfigSendEmail: args.includes('--use-config-send-email'),
+        includeMigrations,
+        allowUnresolvedSendEmail: false,
+      });
+      const form = createWorkerUpload(item.parsed.entry, finalMetadata);
+      await uploadWorkerForm(item.scriptName, form);
+      if (item.parsed.crons.length) {
+        await syncWorkerSchedules(item.scriptName, item.parsed.crons);
+      }
+      const emailBinding = finalMetadata.bindings.find((b) => b.type === 'send_email');
+      console.log(`Deployed ${item.scriptName}.`);
+      console.log(`  bindings  : ${finalMetadata.bindings.map((b) => b.name).join(', ') || '(none)'}`);
+      console.log(`  send_email: ${emailBinding && emailBinding.destination_address ? 'preserved verified destination_address' : 'config binding'}`);
+      console.log(`  migrations: ${includeMigrations && finalMetadata.migrations ? finalMetadata.migrations.new_tag : 'skipped (already applied on live worker)'}`);
+      if (item.parsed.crons.length) {
+        console.log(`  crons     : ${item.parsed.crons.join(', ')}`);
+      }
+      console.log('  secrets preserved via keep_bindings');
+    }
+  }
 }
 
 // ─── plumbing ───────────────────────────────────────────────────────────────
@@ -363,20 +740,34 @@ const COMMANDS = {
   deploy: cmdDeploy,
 };
 
-(async () => {
-  const [cmd, ...rest] = process.argv.slice(2);
-  if (!cmd || cmd === '--help' || cmd === '-h') {
-    console.log('Commands: ' + Object.keys(COMMANDS).join(', '));
-    console.log('Read-only: status, kv-list, secret-list');
-    console.log('Mutating (need --yes): kv-create, secret-put, deploy');
-    process.exit(0);
-  }
-  const fn = COMMANDS[cmd];
-  if (!fn) { console.error(`Unknown command: ${cmd}`); process.exit(2); }
-  try {
-    await fn(rest);
-  } catch (err) {
-    console.error('ERROR: ' + err.message);
-    process.exit(1);
-  }
-})();
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    WORKER_TARGETS,
+    stripJsonComments,
+    parseCatalogConfig,
+    parseBugDigestConfig,
+    buildMigrationPayload,
+    buildBugDigestMetadata,
+    resolveDeployTargets,
+  };
+}
+
+if (typeof module === 'undefined' || (typeof require !== 'undefined' && require.main === module)) {
+  (async () => {
+    const [cmd, ...rest] = process.argv.slice(2);
+    if (!cmd || cmd === '--help' || cmd === '-h') {
+      console.log('Commands: ' + Object.keys(COMMANDS).join(', '));
+      console.log('Read-only: status, kv-list, secret-list, deploy --dry-run');
+      console.log('Mutating (need --yes): kv-create, secret-put, deploy [--worker catalog|bug-digest|all]');
+      process.exit(0);
+    }
+    const fn = COMMANDS[cmd];
+    if (!fn) { console.error(`Unknown command: ${cmd}`); process.exit(2); }
+    try {
+      await fn(rest);
+    } catch (err) {
+      console.error('ERROR: ' + err.message);
+      process.exit(1);
+    }
+  })();
+}

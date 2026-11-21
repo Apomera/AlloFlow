@@ -16,7 +16,7 @@
 #   6.  Auto-commits the post-deploy hash refs (the mirror files)
 #   7.  Pushes the post-deploy commit to origin
 #   8.  Pushes a slim copy of main to the private GitLab backup (warn-only)
-#   9.  (retired: tag push to the old Codeberg mirror)
+#   9.  Optional Cloudflare Workers deploy (opt-in via DEPLOY_WORKERS=1|all|catalog|bug-digest)
 #  10.  Reports the live URL + final hash
 #
 # Aborts on any error. Run `./deploy.sh --help` for details.
@@ -260,10 +260,21 @@ if [[ "${SKIP_COMMENT_BUDGET:-0}" != "1" ]]; then
 fi
 
 # ── Step 0.76: cloud deploy mirror + config parity ────────────────
+PENDING_CLOUD_WORKERS=""
 if [[ "${SKIP_CLOUD_PARITY:-0}" != "1" ]]; then
   echo ""
   echo "=== Step 0.76: cloud deploy mirror and config parity ==="
   node dev-tools/check_cloud_deploy_parity.cjs
+  PENDING_CLOUD_WORKERS=$(node -e "
+    const { inspectCloudParity } = require('./dev-tools/check_cloud_deploy_parity.cjs');
+    const r = inspectCloudParity();
+    const out = [];
+    for (const t of (r.pendingTargets || [])) {
+      if (t.target === 'cloudflare-catalog-worker') out.push('catalog');
+      if (t.target === 'cloudflare-bug-digest-worker') out.push('bug-digest');
+    }
+    process.stdout.write(out.join(' '));
+  " 2>/dev/null || true)
   echo "=== end Step 0.76 ==="
 fi
 
@@ -556,6 +567,40 @@ elif bash dev-tools/push_slim_backup.sh; then
   echo "  ✓ Backup is current."
 else
   echo "  ⚠ Backup push failed; the deploy itself is unaffected. Rerun: bash dev-tools/push_slim_backup.sh"
+fi
+
+# ── Step 9: Optional Cloudflare Workers deploy (opt-in) ────────────
+# Default is OFF (DEPLOY_WORKERS=0) so ordinary Pages deploys never mutate live
+# Cloudflare Workers unexpectedly. Opt in with:
+#   DEPLOY_WORKERS=1 ./deploy.sh "msg"           # deploy changed Worker(s) only
+#   DEPLOY_WORKERS=all ./deploy.sh "msg"         # deploy both catalog + bug-digest
+#   DEPLOY_WORKERS=catalog ./deploy.sh "msg"     # deploy alloflow-catalog-submit
+#   DEPLOY_WORKERS=bug-digest ./deploy.sh "msg"  # deploy alloflow-bug-digest
+# Uses dev-tools/cf_worker.cjs (Cloudflare REST API), so it works on Windows ARM64
+# where wrangler/workerd cannot run. Automatic CI deploys also live in
+# .github/workflows/deploy-cloud-targets.yml.
+WORKER_DEPLOY_MODE="${DEPLOY_WORKERS:-${DEPLOY_CLOUD_WORKERS:-0}}"
+if [[ "$WORKER_DEPLOY_MODE" != "0" && -n "$WORKER_DEPLOY_MODE" ]]; then
+  echo ""
+  echo "=== Step 9: Cloudflare Workers deploy (DEPLOY_WORKERS=$WORKER_DEPLOY_MODE) ==="
+  case "$WORKER_DEPLOY_MODE" in
+    all|catalog|bug-digest)
+      node dev-tools/cf_worker.cjs deploy --worker "$WORKER_DEPLOY_MODE" --yes
+      ;;
+    1|changed|true)
+      if [[ -n "$PENDING_CLOUD_WORKERS" ]]; then
+        for _w in $PENDING_CLOUD_WORKERS; do
+          node dev-tools/cf_worker.cjs deploy --worker "$_w" --yes
+        done
+      else
+        echo "  ✓ No pending Cloudflare Worker changes detected — skipping Worker upload."
+      fi
+      ;;
+    *)
+      echo "  ✗ Unsupported DEPLOY_WORKERS value '$WORKER_DEPLOY_MODE' (expected 0, 1, changed, all, catalog, or bug-digest)." >&2
+      exit 1
+      ;;
+  esac
 fi
 
 # ── Step 10: Post-deploy verification ─────────────────────────────

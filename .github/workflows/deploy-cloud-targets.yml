@@ -1,0 +1,273 @@
+name: Deploy non-Pages cloud targets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'catalog/cloudflare-worker/**'
+      - 'catalog/bug-digest-worker/**'
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
+      - 'desktop/web-app/firestore.rules'
+      - 'desktop/web-app/firestore.indexes.json'
+      - 'desktop/web-app/firebase.live-sessions.json'
+      - 'desktop/web-app/firebase.functions.json'
+      - 'desktop/web-app/functions/**'
+      - 'dev-tools/cf_worker.cjs'
+      - 'dev-tools/cf_worker_upload.cjs'
+      - 'dev-tools/check_cloud_deploy_parity.cjs'
+      - '.github/workflows/deploy-cloud-targets.yml'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Cloud target(s) to deploy'
+        type: choice
+        required: true
+        default: 'cloudflare-workers'
+        options:
+          - changed
+          - cloudflare-workers
+          - catalog-worker
+          - bug-digest-worker
+          - firestore
+          - firebase-functions
+          - all
+      dry_run:
+        description: 'Validate parity, tests, and bundles without deploying live'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-cloud-targets-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Validate and deploy cloud targets
+    if: github.repository == 'Apomera/AlloFlow'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install locked root dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Verify cloud mirror and config parity
+        run: node dev-tools/check_cloud_deploy_parity.cjs
+
+      - name: Validate Cloudflare Worker bundles locally (dry-run)
+        run: node dev-tools/cf_worker.cjs deploy --worker all --dry-run
+
+      - name: Run Cloudflare Worker contract and digest unit tests
+        run: npx vitest run tests/cf_worker_upload.test.js tests/bug_report_digest.test.js tests/canvas_search_worker_contract.test.js --maxWorkers=1
+
+      - name: Resolve requested cloud targets
+        id: plan
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          DISPATCH_TARGET: ${{ inputs.target }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          deploy_catalog="false"
+          deploy_bug_digest="false"
+          deploy_firestore="false"
+          deploy_functions="false"
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_TARGET" != "changed" ]]; then
+            case "$DISPATCH_TARGET" in
+              cloudflare-workers)
+                deploy_catalog="true"
+                deploy_bug_digest="true"
+                ;;
+              catalog-worker)
+                deploy_catalog="true"
+                ;;
+              bug-digest-worker)
+                deploy_bug_digest="true"
+                ;;
+              firestore)
+                deploy_firestore="true"
+                ;;
+              firebase-functions)
+                deploy_functions="true"
+                ;;
+              all)
+                deploy_catalog="true"
+                deploy_bug_digest="true"
+                deploy_firestore="true"
+                deploy_functions="true"
+                ;;
+              *)
+                echo "Unsupported dispatch target: $DISPATCH_TARGET" >&2
+                exit 1
+                ;;
+            esac
+          else
+            since_ref="HEAD~1"
+            if [[ -n "$BEFORE_SHA" && ! "$BEFORE_SHA" =~ ^0+$ ]]; then
+              if git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+                since_ref="$BEFORE_SHA"
+              fi
+            fi
+            if git rev-parse --verify --quiet "$since_ref" >/dev/null 2>&1; then
+              parity_json="$(node dev-tools/check_cloud_deploy_parity.cjs --since "$since_ref" --json)"
+              if printf '%s' "$parity_json" | node -e "const d = JSON.parse(require('fs').readFileSync(0,'utf8')); process.exit((d.pendingTargets || []).some(t => t.target === 'cloudflare-catalog-worker') ? 0 : 1);"; then
+                deploy_catalog="true"
+              fi
+              if printf '%s' "$parity_json" | node -e "const d = JSON.parse(require('fs').readFileSync(0,'utf8')); process.exit((d.pendingTargets || []).some(t => t.target === 'cloudflare-bug-digest-worker') ? 0 : 1);"; then
+                deploy_bug_digest="true"
+              fi
+              if printf '%s' "$parity_json" | node -e "const d = JSON.parse(require('fs').readFileSync(0,'utf8')); process.exit((d.pendingTargets || []).some(t => t.target === 'firestore') ? 0 : 1);"; then
+                deploy_firestore="true"
+              fi
+              if printf '%s' "$parity_json" | node -e "const d = JSON.parse(require('fs').readFileSync(0,'utf8')); process.exit((d.pendingTargets || []).some(t => t.target === 'firebase-functions') ? 0 : 1);"; then
+                deploy_functions="true"
+              fi
+            fi
+          fi
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "dry_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "catalog=$deploy_catalog" >> "$GITHUB_OUTPUT"
+          echo "bug_digest=$deploy_bug_digest" >> "$GITHUB_OUTPUT"
+          echo "firestore=$deploy_firestore" >> "$GITHUB_OUTPUT"
+          echo "firebase_functions=$deploy_functions" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Cloud target deployment plan"
+            echo "- Event: \`$EVENT_NAME\` (dry_run: \`${DRY_RUN:-false}\`)"
+            echo "- \`alloflow-catalog-submit\`: \`$deploy_catalog\`"
+            echo "- \`alloflow-bug-digest\`: \`$deploy_bug_digest\`"
+            echo "- \`firestore\`: \`$deploy_firestore\`"
+            echo "- \`firebase-functions\`: \`$deploy_functions\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check Cloudflare deployment credentials
+        id: cf-auth
+        if: steps.plan.outputs.dry_run != 'true' && (steps.plan.outputs.catalog == 'true' || steps.plan.outputs.bug_digest == 'true')
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$CLOUDFLARE_API_TOKEN" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            msg="CLOUDFLARE_API_TOKEN repository secret is not configured. Add it in Settings -> Secrets and variables -> Actions to enable automated Cloudflare Worker deploys."
+            echo "Warning: $msg"
+            echo "- Cloudflare Workers: skipped (\`CLOUDFLARE_API_TOKEN\` secret not set)" >> "$GITHUB_STEP_SUMMARY"
+            if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+              echo "::error::$msg"
+              exit 1
+            fi
+          fi
+
+      - name: Deploy alloflow-catalog-submit Worker
+        if: steps.plan.outputs.dry_run != 'true' && steps.plan.outputs.catalog == 'true' && steps.cf-auth.outputs.configured == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node dev-tools/cf_worker.cjs deploy --worker catalog --yes
+
+      - name: Deploy alloflow-bug-digest Worker
+        if: steps.plan.outputs.dry_run != 'true' && steps.plan.outputs.bug_digest == 'true' && steps.cf-auth.outputs.configured == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BUG_DIGEST_DESTINATION_ADDRESS: ${{ secrets.BUG_DIGEST_DESTINATION_ADDRESS }}
+        run: node dev-tools/cf_worker.cjs deploy --worker bug-digest --yes
+
+      - name: Verify Firebase security contract
+        if: steps.plan.outputs.firestore == 'true' || steps.plan.outputs.firebase_functions == 'true'
+        run: node dev-tools/check_firebase_security.cjs
+
+      - name: Check optional Firebase deployment credentials
+        id: fb-auth
+        if: steps.plan.outputs.dry_run != 'true' && (steps.plan.outputs.firestore == 'true' || steps.plan.outputs.firebase_functions == 'true')
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          ALLOFLOW_FIREBASE_PROJECT: ${{ secrets.ALLOFLOW_FIREBASE_PROJECT }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$FIREBASE_SERVICE_ACCOUNT" && -n "$ALLOFLOW_FIREBASE_PROJECT" ]]; then
+            case "$ALLOFLOW_FIREBASE_PROJECT" in
+              YOUR_PROJECT_ID|prismflow-911fe|*demo*)
+                echo "::error::Refusing to deploy Firebase to placeholder or disallowed project id."
+                exit 1
+                ;;
+            esac
+            if [[ ! "$ALLOFLOW_FIREBASE_PROJECT" =~ ^[a-z0-9][a-z0-9-]{4,29}$ ]]; then
+              echo "::error::ALLOFLOW_FIREBASE_PROJECT does not look like a valid Firebase project id."
+              exit 1
+            fi
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            msg="Firebase deployment secrets (FIREBASE_SERVICE_ACCOUNT and ALLOFLOW_FIREBASE_PROJECT) are not configured."
+            echo "Notice: $msg"
+            echo "- Firebase targets: skipped (optional \`FIREBASE_SERVICE_ACCOUNT\` / \`ALLOFLOW_FIREBASE_PROJECT\` secrets not set)" >> "$GITHUB_STEP_SUMMARY"
+            if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+              echo "::error::$msg"
+              exit 1
+            fi
+          fi
+
+      - name: Deploy Firestore rules and indexes
+        if: steps.plan.outputs.dry_run != 'true' && steps.plan.outputs.firestore == 'true' && steps.fb-auth.outputs.configured == 'true'
+        shell: bash
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          ALLOFLOW_FIREBASE_PROJECT: ${{ secrets.ALLOFLOW_FIREBASE_PROJECT }}
+        run: |
+          set -euo pipefail
+          sa_file="$RUNNER_TEMP/alloflow-firebase-sa.json"
+          trap 'rm -f "$sa_file"' EXIT
+          umask 077
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$sa_file"
+          GOOGLE_APPLICATION_CREDENTIALS="$sa_file" npx --yes firebase-tools@13.35.1 deploy \
+            --config desktop/web-app/firebase.live-sessions.json \
+            --project "$ALLOFLOW_FIREBASE_PROJECT" \
+            --only firestore:rules,firestore:indexes \
+            --non-interactive
+
+      - name: Deploy optional Firebase Functions
+        if: steps.plan.outputs.dry_run != 'true' && steps.plan.outputs.firebase_functions == 'true' && steps.fb-auth.outputs.configured == 'true'
+        shell: bash
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          ALLOFLOW_FIREBASE_PROJECT: ${{ secrets.ALLOFLOW_FIREBASE_PROJECT }}
+        run: |
+          set -euo pipefail
+          npm ci --prefix desktop/web-app/functions --ignore-scripts --no-audit --no-fund
+          sa_file="$RUNNER_TEMP/alloflow-firebase-sa.json"
+          trap 'rm -f "$sa_file"' EXIT
+          umask 077
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$sa_file"
+          GOOGLE_APPLICATION_CREDENTIALS="$sa_file" npx --yes firebase-tools@13.35.1 deploy \
+            --config desktop/web-app/firebase.functions.json \
+            --project "$ALLOFLOW_FIREBASE_PROJECT" \
+            --only functions \
+            --non-interactive

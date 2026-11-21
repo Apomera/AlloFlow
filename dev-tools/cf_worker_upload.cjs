@@ -44,6 +44,14 @@ function createWorkerUpload(entryPath, metadata) {
         throw new Error('Unsupported computed Worker import in ' + name + '; use a literal relative .js/.mjs path');
       }
       const specifier = node.value;
+      if (/^cloudflare:[a-z0-9_-]+$/i.test(specifier)) {
+        return; // Cloudflare Workers built-in runtime module (e.g. cloudflare:workers).
+      }
+      const hasNodeCompat = Array.isArray(metadata && metadata.compatibility_flags)
+        && metadata.compatibility_flags.includes('nodejs_compat');
+      if (hasNodeCompat && /^node:[a-z0-9_/-]+$/i.test(specifier) && !specifier.includes('..')) {
+        return; // Node.js built-in module provided by the nodejs_compat runtime flag.
+      }
       if (!/^(?:\.\/|\.\.\/)/.test(specifier) || /[\\?#%\x00-\x1f]/.test(specifier)) {
         throw new Error('Unsupported Worker import ' + JSON.stringify(specifier) + ' in ' + name + '; use local relative .js/.mjs ESM files');
       }

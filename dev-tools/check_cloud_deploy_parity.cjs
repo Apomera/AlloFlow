@@ -206,12 +206,12 @@ const CLOUD_TARGETS = [
   },
   {
     id: 'cloudflare-catalog-worker',
-    command: 'node dev-tools/cf_worker.cjs deploy --yes',
+    command: 'node dev-tools/cf_worker.cjs deploy --worker catalog --yes',
     match: (p) => p.startsWith('catalog/cloudflare-worker/'),
   },
   {
     id: 'cloudflare-bug-digest-worker',
-    command: 'npx wrangler deploy --config catalog/bug-digest-worker/wrangler.jsonc',
+    command: 'node dev-tools/cf_worker.cjs deploy --worker bug-digest --yes  # or in CI: npx wrangler deploy --config catalog/bug-digest-worker/wrangler.jsonc',
     match: (p) => p.startsWith('catalog/bug-digest-worker/'),
   },
 ];
@@ -328,6 +328,17 @@ function inspectCloudParity(options = {}) {
 
   if (!fs.existsSync(digestEntryPath)) {
     parityErrors.push(`Missing ${digestEntryRel}`);
+  } else {
+    try {
+      createWorkerUpload(digestEntryPath, {
+        main_module: 'index.js',
+        compatibility_date: '2026-10-22',
+        compatibility_flags: ['nodejs_compat'],
+        bindings: [],
+      });
+    } catch (err) {
+      parityErrors.push(`Cloudflare bug-digest worker bundle validation failed: ${err.message}`);
+    }
   }
   if (!fs.existsSync(digestConfigPath)) {
     parityErrors.push(`Missing ${digestConfigRel}`);
@@ -494,10 +505,10 @@ if (require.main === module) {
       console.log(`Cloud mirror & config parity passed (${result.checkedFiles.length} checked files).`);
     }
     if (result.pendingTargets.length) {
-      console.log(`Pending non-Pages cloud targets (${result.pendingTargets.length}; deploy.sh does not deploy these automatically):`);
+      console.log(`Pending non-Pages cloud targets (${result.pendingTargets.length}; default deploy.sh does not deploy these — use DEPLOY_WORKERS=1 ./deploy.sh or .github/workflows/deploy-cloud-targets.yml):`);
       for (const item of result.pendingTargets) {
         console.log(` - ${item.target}: ${item.files.join(', ')}`);
-        console.log(`   manual deploy: ${item.command}`);
+        console.log(`   deploy: ${item.command}`);
       }
     } else {
       console.log('No pending non-Pages cloud target changes detected.');
